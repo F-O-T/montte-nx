@@ -1,0 +1,79 @@
+{
+   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+   "defaultBase": "master",
+   "plugins": [
+      {
+         "options": {
+            "build": {
+               "buildDepsName": "build-deps",
+               "configName": "tsconfig.lib.json",
+               "targetName": "build",
+               "watchDepsName": "watch-deps"
+            },
+            "typecheck": {
+               "targetName": "tsc:typecheck"
+            }
+         },
+         "plugin": "@nx/js/typescript"
+      }
+   ],
+   "release": {
+      "changelog": {
+         "automaticFromRef": true,
+         "projectChangelogs": {
+            "createRelease": "github",
+            "file": "CHANGELOG.md"
+         },
+         "workspaceChangelog": false
+      },
+      "git": {
+         "commit": true,
+         "tag": true
+      },
+      "projects": ["apps/*", "packages/*"],
+      "projectsRelationship": "independent",
+      "releaseTagPattern": "{projectName}@{version}",
+      "releaseTagPatternRequireSemver": true,
+      "version": {
+         "conventionalCommits": true,
+         "fallbackCurrentVersionResolver": "disk",
+         "preserveLocalDependencyProtocols": true,
+         "updateDependents": "never",
+         "versionActionsOptions": {
+            "skipLockFileUpdate": true
+         }
+      }
+   },
+   "targetDefaults": {
+      "build": {
+         "cache": true,
+         "dependsOn": ["^build:all"],
+         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
+         "outputs": []
+      },
+      "check": {
+         "cache": true,
+         "dependsOn": ["^check"],
+         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
+         "outputs": []
+      },
+      "dev": {
+         "cache": false
+      },
+      "test": {
+         "cache": true,
+         "dependsOn": ["^test"],
+         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
+         "outputs": []
+      },
+      "typecheck": {
+         "cache": true,
+         "dependsOn": ["^typecheck"],
+         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
+         "outputs": []
+      }
+   },
+   "tui": {
+      "enabled": true
+   }
+}

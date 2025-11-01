@@ -1,0 +1,18 @@
+{
+   "actions": {
+      "accept": "Aceitar Convite",
+      "decline": "Recusar Convite"
+   },
+   "description": "Você foi convidado para fazer parte de uma organização.",
+   "loading": "Processando convite...",
+   "messages": {
+      "already-member": "Você já é membro desta organização.",
+      "decline-error": "Falha ao recusar convite. Tente novamente mais tarde.",
+      "decline-success": "Convite recusado com sucesso.",
+      "error": "Falha ao aceitar convite. Tente novamente mais tarde.",
+      "expired": "Este convite expirou.",
+      "invalid": "Link de convite inválido.",
+      "success": "Convite aceito com sucesso!"
+   },
+   "title": "Convite para Organização"
+}

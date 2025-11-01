@@ -1,0 +1,46 @@
+{
+   "confirmations": {
+      "approve-message": "This will approve the idea and send it to the content generation pipeline. This action will create content based on the approved idea.",
+      "delete-message": "This will permanently delete the idea and all associated data. This action cannot be undone."
+   },
+   "content": {
+      "description": "Preview of the generated content",
+      "title": "Idea Preview",
+      "unknown-date": "Unknown date"
+   },
+   "mascot-message": "Review and manage your content idea details.",
+   "meta": {
+      "created": "Created",
+      "description": "Additional details about this idea.",
+      "none": "None",
+      "sources": "Sources",
+      "status": "Status",
+      "tags": "Tags",
+      "title": "Meta Information",
+      "unknown": "Unknown",
+      "updated": "Updated"
+   },
+   "quick-actions": {
+      "approve-idea": "Approve Idea",
+      "delete-idea": "Delete Idea",
+      "description": "Perform common tasks related to this idea.",
+      "title": "Quick Actions"
+   },
+   "rationale": {
+      "description": "AI reasoning behind the confidence score",
+      "title": "Score Rationale"
+   },
+   "stats": {
+      "confidence-score": "Confidence Score",
+      "confidence-score-description": "AI confidence in this idea's potential",
+      "total-keywords": "Total keywords",
+      "total-keywords-description": "Total keywords associated with this idea"
+   },
+   "toasts": {
+      "approve-error": "Error approving idea",
+      "approve-success": "Idea approved successfully and sent to content generation",
+      "delete-error": "Error deleting idea",
+      "delete-success": "Idea deleted successfully",
+      "unknown-error": "Unknown error"
+   }
+}

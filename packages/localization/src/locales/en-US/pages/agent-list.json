@@ -1,0 +1,18 @@
+{
+   "agent-card": {
+      "not-specified": "Not specified"
+   },
+   "create-button": {
+      "aria-label": "Create new agent",
+      "text": "Create a new agent"
+   },
+   "mascot-message": "Here you can manage all your AI agents. Create, edit, or explore your team below!",
+   "toolbar": {
+      "create-new-agent": "Create new agent",
+      "pagination": {
+         "of": "of"
+      },
+      "select-all": "Select All",
+      "unselect-all": "Unselect All"
+   }
+}

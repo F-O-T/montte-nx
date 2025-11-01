@@ -1,0 +1,108 @@
+{
+   "billing": {
+      "actions": {
+         "portal": "Abrir o portal",
+         "title": "Gerenciar assinatura"
+      },
+      "description": "Gerencie sua assinatura e informações de cobrança.",
+      "next-billing": "Próxima data de cobrança:",
+      "state": {
+         "active": {
+            "description": "Visualize o seu uso de créditos deste mês.",
+            "legend": "Créditos utilizados este mês: ",
+            "title": "Uso de créditos"
+         },
+         "not-active": {
+            "description": "Você não tem uma assinatura ativa no momento. Atualize para continuar aproveitando nossos serviços.",
+            "title": "Assinatura inativa"
+         },
+         "organization": {
+            "description": "As assinaturas são gerenciadas pela organização à qual você pertence.",
+            "title": "Assinatura da organização"
+         }
+      },
+      "title": "Assinatura"
+   },
+   "features": {
+      "language-command": {
+         "empty": "Nenhum idioma encontrado.",
+         "search": "Pesquisar idiomas..."
+      },
+      "session-details": {
+         "actions": {
+            "description": "Aqui você pode gerenciar sua sessão atual.",
+            "revoke-current": {
+               "description": "Revogar a sessão atual e sair deste dispositivo.",
+               "title": "Revogar sessão atual"
+            },
+            "title": "Gerencie sua sessão"
+         },
+         "description": "Informações sobre a sessão selecionada.",
+         "title": "Detalhes da sessão"
+      }
+   },
+   "information": {
+      "actions": {
+         "edit-email": "Editar email",
+         "edit-password": "Alterar senha",
+         "edit-profile": "Editar perfil",
+         "title": "Gerenciar informações"
+      },
+      "description": "Atualize suas informações pessoais e de conta.",
+      "title": "Informações do perfil"
+   },
+   "mascot-message": "Gerencie suas informações de perfil e configurações de conta aqui.",
+   "notifications": {
+      "description": "Gerencie suas preferências de notificação.",
+      "items": {
+         "missing-images": {
+            "description": "Notifique-me quando meus posts estão sem imagens.",
+            "label": "Ativar notificações de imagens faltando",
+            "title": "Imagens faltando"
+         }
+      },
+      "title": "Notificações"
+   },
+   "preferences": {
+      "description": "Gerencie suas preferências de conta.",
+      "items": {
+         "language": {
+            "description": "Selecione o idioma preferido para a interface.",
+            "title": "Idioma"
+         },
+         "theme": {
+            "description": "Escolha entre o modo claro, escuro ou siga o do seu sistema.",
+            "title": "Tema"
+         }
+      },
+      "title": "Preferências"
+   },
+   "quick-access": {
+      "api-keys": {
+         "description": "Gerencie suas chaves API para acesso programático.",
+         "title": "Chaves API"
+      },
+      "organization": {
+         "description": "Visualize a organização associada à sua conta.",
+         "title": "Organização"
+      }
+   },
+   "sessions": {
+      "actions": {
+         "revoke-all": "Revogar todas as sessões",
+         "revoke-others": "Revogar outras sessões",
+         "title": "Gerenciar sessões"
+      },
+      "description": "Visualize e gerencie suas sessões de login ativas.",
+      "item": {
+         "created-at": "Iniciado em",
+         "current": "Sessão atual",
+         "details": "Detalhes da sessão",
+         "device": "Dispositivo",
+         "ip-address": "Endereço IP",
+         "last-active": "Última atividade",
+         "unknown-device": "Dispositivo desconhecido"
+      },
+      "title": "Sessões ativas"
+   }
+}

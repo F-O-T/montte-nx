@@ -1,0 +1,46 @@
+{
+   "bulk-actions": {
+      "approve": {
+         "error": "Failed to approve ideas",
+         "items": "{{count}} items",
+         "label": "Approve",
+         "success": "Successfully approved {{count}} ideas",
+         "success-partial": "Successfully approved {{approved}} out of {{total}} selected ideas ({{skipped}} were already approved or in wrong status)"
+      },
+      "approve-confirmation": {
+         "message": "This will approve the selected ideas that are in pending status and send them to the content generation pipeline. Only pending items will be approved. This action will create content based on the approved ideas."
+      },
+      "delete": {
+         "error": "Failed to delete ideas",
+         "items": "{{count}} items",
+         "label": "Delete",
+         "success": "Successfully deleted ideas"
+      },
+      "delete-confirmation": {
+         "message": "This will permanently delete {{count}} idea",
+         "message_plural": "This will permanently delete {{count}} ideas"
+      },
+      "description": "Perform actions on {{count}} selected items",
+      "title": "Bulk Actions"
+   },
+   "card": {
+      "generating": "Generating",
+      "no-description": "No description",
+      "unknown-agent": "Unknown",
+      "unknown-date": "Unknown",
+      "view-details": "View idea details"
+   },
+   "mascot-message": {
+      "agent-specific": "Here you can manage ideas for this specific agent. Create, edit, or explore your creative concepts below!",
+      "general": "Here you can manage all your ideas. Create, edit, or explore your creative concepts below!"
+   },
+   "toolbar": {
+      "bulk-actions": "Bulk Actions",
+      "filtering": "Filtering",
+      "pagination": {
+         "of": "of"
+      },
+      "select-all": "Select All",
+      "unselect-all": "Unselect All"
+   }
+}

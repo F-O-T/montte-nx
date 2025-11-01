@@ -1,0 +1,139 @@
+{
+   "content": {
+      "cancel": "Cancel",
+      "description": "Your AI-generated content with export and edit options",
+      "edit": "Edit Content",
+      "loading": "Generating content...",
+      "save": "Save Changes",
+      "title": "Generated Content"
+   },
+   "details": {
+      "agent": "Agent",
+      "basic-info": "Content Details",
+      "basic-info-description": "Basic information about your content",
+      "content-stats": "Content Stats",
+      "content-stats-description": "Statistics and metadata about your generated content",
+      "created": "Created At",
+      "description": "Description",
+      "keywords": "Keywords",
+      "meta-info": "Meta Information",
+      "meta-info-description": "Keywords, sources, and technical details",
+      "read-time": "Read Time",
+      "read-time-minutes": "{{minutes}} min",
+      "related-slugs": "Related Slugs",
+      "related-slugs-none": "None",
+      "slug": "Slug",
+      "sources": "Sources",
+      "status": "Status",
+      "title": "Title",
+      "updated": "Last Updated"
+   },
+   "edit": {
+      "cancel": "Cancel",
+      "error": "Failed to edit content body. Please try again.",
+      "placeholder": "Edit your content...",
+      "save": "Save",
+      "success": "Content body edited successfully!",
+      "validation": {
+         "body-required": "Body is required"
+      }
+   },
+   "loading": {
+      "progress": {
+         "fallback-message": "Processing your content",
+         "percentage": "{{percent}}% complete",
+         "step-counter": "Step {{current}} of {{total}}"
+      },
+      "steps": {
+         "analyzing": {
+            "description": "Quality check and metadata generation",
+            "label": "Analyzing"
+         },
+         "editing": {
+            "description": "Refining and polishing the content",
+            "label": "Editing"
+         },
+         "grammar_checking": {
+            "description": "Checking and correcting grammar",
+            "label": "Grammar Checking"
+         },
+         "pending": {
+            "description": "Setting up your content generation",
+            "label": "Initializing"
+         },
+         "planning": {
+            "description": "Analyzing requirements and creating strategy",
+            "label": "Planning"
+         },
+         "researching": {
+            "description": "Gathering relevant information and data",
+            "label": "Researching"
+         },
+         "writing": {
+            "description": "Writing your content",
+            "label": "Writing"
+         }
+      }
+   },
+   "mascot-message": "Review, edit, and manage your content details here.",
+   "messages": {
+      "approve-error": "Error approving content: {{error}}",
+      "approve-success": "Content approved successfully!",
+      "delete-error": "Error deleting content: {{error}}",
+      "delete-success": "Content deleted successfully",
+      "regenerate-error": "Error regenerating content: {{error}}",
+      "regenerate-success": "Content regeneration triggered!",
+      "share-error": "Error toggling share status: {{error}}",
+      "share-success": "Content {{status}} successfully!",
+      "status-updated": "Content status updated to {{status}}",
+      "untitled-content": "Untitled Content"
+   },
+   "quick-actions": {
+      "approve": "Approve Content",
+      "delete": "Delete Content",
+      "description": "Perform common tasks related to this content.",
+      "edit": "Edit Content Body",
+      "make-private": "Make Private",
+      "preview": "Blog Preview",
+      "regenerate": "Regenerate Content",
+      "share": "Share Content",
+      "title": "Quick Actions",
+      "upload-image": "Upload Image"
+   },
+   "stats": {
+      "content-quality": "Content Quality",
+      "content-quality-description": "AI-assessed quality score",
+      "word-count": "Word Count",
+      "word-count-description": "Total words in the content"
+   },
+   "status": {
+      "draft": "Draft",
+      "failed": "Failed",
+      "generating": "Generating",
+      "pending": "Pending",
+      "private": "made private",
+      "published": "Published",
+      "shared": "shared"
+   },
+   "upload": {
+      "description": "Upload an image for your content. The image will be displayed with your generated content.",
+      "error": "Failed to upload image",
+      "success": "Image uploaded successfully!",
+      "title": "Upload Content Image",
+      "upload-button": "Upload Image",
+      "uploading": "Uploading...",
+      "validation": {
+         "file-too-large": "File size must be less than 10MB",
+         "invalid-file": "Please select an image file"
+      }
+   },
+   "versions": {
+      "changes-count": "Changes made in this version {{count}}",
+      "current": "Current",
+      "description": "A history of all changes made to this content",
+      "no-versions": "No versions available yet.",
+      "title": "Content Versions",
+      "version-number": "Version {{number}}",
+      "view-details": "View Details"
+   }
+}

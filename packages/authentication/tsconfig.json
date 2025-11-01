@@ -1,0 +1,23 @@
+{
+   "compilerOptions": {
+      "baseUrl": ".",
+      "jsx": "react-jsx"
+   },
+   "exclude": ["node_modules"],
+   "extends": "@tooling/typescript/internal-package.json",
+   "include": ["src"],
+   "references": [
+      {
+         "path": "../environment"
+      },
+      {
+         "path": "../payment"
+      },
+      {
+         "path": "../database"
+      },
+      {
+         "path": "../transactional"
+      }
+   ]
+}

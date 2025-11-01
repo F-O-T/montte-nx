@@ -1,0 +1,108 @@
+{
+   "billing": {
+      "actions": {
+         "portal": "Open portal",
+         "title": "Manage subscription"
+      },
+      "description": "Manage your subscription and billing information.",
+      "next-billing": "Next billing date:",
+      "state": {
+         "active": {
+            "description": "View your credit usage this month.",
+            "legend": "Credits used this month: ",
+            "title": "Credit usage"
+         },
+         "not-active": {
+            "description": "You don't have an active subscription at the moment. Upgrade to continue enjoying our services.",
+            "title": "Inactive subscription"
+         },
+         "organization": {
+            "description": "Subscriptions are managed by the organization you belong to.",
+            "title": "Organization subscription"
+         }
+      },
+      "title": "Subscription"
+   },
+   "features": {
+      "language-command": {
+         "empty": "No languages found.",
+         "search": "Search languages..."
+      },
+      "session-details": {
+         "actions": {
+            "description": "Here you can manage your current session.",
+            "revoke-current": {
+               "description": "Revoke current session and log out from this device.",
+               "title": "Revoke current session"
+            },
+            "title": "Manage your session"
+         },
+         "description": "Information about the selected session.",
+         "title": "Session details"
+      }
+   },
+   "information": {
+      "actions": {
+         "edit-email": "Edit email",
+         "edit-password": "Change password",
+         "edit-profile": "Edit profile",
+         "title": "Manage information"
+      },
+      "description": "Update your personal and account information.",
+      "title": "Profile information"
+   },
+   "mascot-message": "Manage your profile information and account settings here.",
+   "notifications": {
+      "description": "Manage your notification preferences.",
+      "items": {
+         "missing-images": {
+            "description": "Notify me when my posts are missing images.",
+            "label": "Enable missing image notifications",
+            "title": "Missing images"
+         }
+      },
+      "title": "Notifications"
+   },
+   "preferences": {
+      "description": "Manage your account preferences.",
+      "items": {
+         "language": {
+            "description": "Select your preferred interface language.",
+            "title": "Language"
+         },
+         "theme": {
+            "description": "Choose between light mode, dark mode, or follow your system's theme.",
+            "title": "Theme"
+         }
+      },
+      "title": "Preferences"
+   },
+   "quick-access": {
+      "api-keys": {
+         "description": "Manage your API keys for programmatic access.",
+         "title": "API keys"
+      },
+      "organization": {
+         "description": "View the organization associated with your account.",
+         "title": "Organization"
+      }
+   },
+   "sessions": {
+      "actions": {
+         "revoke-all": "Revoke all sessions",
+         "revoke-others": "Revoke other sessions",
+         "title": "Manage sessions"
+      },
+      "description": "View and manage your active login sessions.",
+      "item": {
+         "created-at": "Started at",
+         "current": "Current session",
+         "details": "Session details",
+         "device": "Device",
+         "ip-address": "IP address",
+         "last-active": "Last activity",
+         "unknown-device": "Unknown device"
+      },
+      "title": "Active sessions"
+   }
+}

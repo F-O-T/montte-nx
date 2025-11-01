@@ -1,0 +1,48 @@
+{
+   "description": "Crie sua conta para começar a usar o aplicativo.",
+   "errors": {
+      "unknown": "Erro desconhecido",
+      "user-exists": "Este email já está registrado"
+   },
+   "footer": {
+      "have-account": "Já tem uma conta?",
+      "sign-in-link": "Entre aqui"
+   },
+   "form": {
+      "confirm-password": {
+         "label": "Confirmar Senha",
+         "placeholder": "Confirme sua senha"
+      },
+      "email": {
+         "label": "Email",
+         "placeholder": "Digite seu email"
+      },
+      "name": {
+         "label": "Nome",
+         "placeholder": "Digite seu nome"
+      },
+      "next": "Próximo",
+      "password": {
+         "label": "Senha",
+         "placeholder": "Crie uma senha"
+      },
+      "previous": "Anterior",
+      "submit": "Criar Conta"
+   },
+   "messages": {
+      "loading": "Criando conta...",
+      "success": "Conta criada com sucesso",
+      "welcome": "Bem-vindo"
+   },
+   "steps": {
+      "basic-info": "Suas informações pessoais",
+      "password": "Senha"
+   },
+   "title": "Cadastrar",
+   "validation": {
+      "email-invalid": "Digite um email válido",
+      "name-min-length": "Digite um nome válido",
+      "password-min-length": "Digite uma senha com pelo menos 8 caracteres",
+      "passwords-no-match": "As senhas não coincidem"
+   }
+}

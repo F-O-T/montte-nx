@@ -1,0 +1,17 @@
+{
+   "compilerOptions": {
+      "baseUrl": ".",
+      "jsx": "preserve",
+      "paths": {
+         "@packages/ui/*": ["./src/*"]
+      }
+   },
+   "exclude": ["node_modules"],
+   "extends": "@tooling/typescript/internal-package.json",
+   "include": ["src"],
+   "references": [
+      {
+         "path": "../utils"
+      }
+   ]
+}

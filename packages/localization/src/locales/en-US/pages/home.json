@@ -1,0 +1,20 @@
+{
+   "navigation": {
+      "agents": "Agents",
+      "content": "Content"
+   },
+   "stats-cards": {
+      "agent-stats": {
+         "description": "Active agents registered",
+         "title": "Total Agents"
+      },
+      "content-generated": {
+         "description": "Pieces of content generated",
+         "title": "Content Generated (30d)"
+      },
+      "words-written": {
+         "description": "Words written in the last 30 days",
+         "title": "Words Written (30d)"
+      }
+   }
+}

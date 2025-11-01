@@ -1,0 +1,48 @@
+{
+   "description": "Create your account to start using the app.",
+   "errors": {
+      "unknown": "Unknown error",
+      "user-exists": "This email is already registered"
+   },
+   "footer": {
+      "have-account": "Already have an account?",
+      "sign-in-link": "Sign in here"
+   },
+   "form": {
+      "confirm-password": {
+         "label": "Confirm Password",
+         "placeholder": "Confirm your password"
+      },
+      "email": {
+         "label": "Email",
+         "placeholder": "Enter your email"
+      },
+      "name": {
+         "label": "Name",
+         "placeholder": "Enter your name"
+      },
+      "next": "Next",
+      "password": {
+         "label": "Password",
+         "placeholder": "Create a password"
+      },
+      "previous": "Previous",
+      "submit": "Create Account"
+   },
+   "messages": {
+      "loading": "Signing up...",
+      "success": "Sign up successful",
+      "welcome": "Welcome"
+   },
+   "steps": {
+      "basic-info": "Your personal information",
+      "password": "Password"
+   },
+   "title": "Sign Up",
+   "validation": {
+      "email-invalid": "Please enter a valid email",
+      "name-min-length": "Please enter a valid name",
+      "password-min-length": "Please enter a password with at least 8 characters",
+      "passwords-no-match": "Passwords do not match"
+   }
+}

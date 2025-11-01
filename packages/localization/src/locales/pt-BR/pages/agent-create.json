@@ -1,0 +1,8 @@
+{
+   "messages": {
+      "error": "Falha ao criar agente",
+      "error-console": "Erro ao criar agente:",
+      "success": "Agente criado com sucesso!"
+   },
+   "title": "Criar Agente"
+}

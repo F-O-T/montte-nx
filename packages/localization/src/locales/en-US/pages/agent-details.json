@@ -1,0 +1,147 @@
+{
+   "instructions": {
+      "audience-profile": "Audience Profile",
+      "configured": "Configured",
+      "description": "Customize how your agent creates content",
+      "edit": {
+         "cancel": "Cancel",
+         "error": "Failed to update instructions",
+         "save": "Save",
+         "success": "Instructions updated successfully"
+      },
+      "not-configured": "Not configured",
+      "rag-integration": "RAG Integration",
+      "tabs": {
+         "audience": {
+            "description": "Describe your target audience and their characteristics",
+            "placeholder": "Describe your audience profile here... For example: 'Our audience consists of tech-savvy professionals aged 25-45 who are interested in AI and automation solutions.'",
+            "title": "Audience Profile"
+         },
+         "rag": {
+            "description": "Instructions for using brand knowledge and documents",
+            "placeholder": "Define RAG usage guidelines... For example: 'Always prioritize brand documents as source of truth, cite key brand messaging points, and maintain brand voice consistency.'",
+            "title": "RAG Integration"
+         },
+         "writing": {
+            "description": "Define writing style, tone, and formatting rules",
+            "placeholder": "Specify your writing guidelines here... For example: 'Always write in third person, avoid em dashes, use clear headings, and keep paragraphs under 4 sentences.'",
+            "title": "Writing Guidelines"
+         }
+      },
+      "title": "Agent Instructions",
+      "writing-guidelines": "Writing Guidelines"
+   },
+   "knowledge-base": {
+      "completed": "Completed",
+      "description": "Files generated using your website url",
+      "empty-state": {
+         "description": "Upload Markdown files with your brand's values, voice, or guidelines.",
+         "title": "No brand files yet"
+      },
+      "failed": "Failed",
+      "file-count": {
+         "allowed": "allowed",
+         "files-uploaded": "files uploaded",
+         "more-file": "more file",
+         "more-files": "s",
+         "upload-limit-reached": "Upload limit reached"
+      },
+      "messages": {
+         "delete-failed": "Failed to delete file",
+         "file-deleted": "File deleted successfully!"
+      },
+      "processing": "Processing...",
+      "status": {
+         "indexed": "100% indexed",
+         "uploaded": "Uploaded"
+      },
+      "title": "Brand Knowledge",
+      "upload": "Upload Files"
+   },
+   "mascot-message": "Manage your agent's configuration and knowledge base.",
+   "modals": {
+      "brand-files": {
+         "generate-button": "Generate brand files",
+         "messages": {
+            "generation-error": "An error occurred while generating brand files.",
+            "generation-started": "Brand files generation initiated."
+         },
+         "title": "Generate Brand Files from Website",
+         "validation": {
+            "invalid-url": "Please enter a valid URL"
+         },
+         "website-url-label": "Website url",
+         "website-url-placeholder": "Enter your website URL"
+      },
+      "delete-all-files": {
+         "message": "This will permanently delete all {{count}} uploaded files for this agent, including documents, knowledge base entries, and file processing data. This action cannot be undone.",
+         "messages": {
+            "error": "Failed to delete all files",
+            "success": "All files deleted successfully!"
+         }
+      },
+      "file-viewer": {
+         "description": "View the content of the selected file.",
+         "loading": "Loading content..."
+      },
+      "manage-photo": {
+         "cancel": "Cancel",
+         "description": "Upload a new profile photo for your agent. The image will be displayed in your agent's profile.",
+         "messages": {
+            "file-size-limit": "File size must be less than 5MB",
+            "general-error": "Failed to upload photo",
+            "select-image": "Please select an image file",
+            "success": "Profile photo updated successfully!",
+            "upload-failed": "Failed to upload profile photo"
+         },
+         "title": "Manage Agent Photo",
+         "upload": "Upload Photo",
+         "uploading": "Uploading..."
+      }
+   },
+   "navigation": {
+      "agent-content": "Your agent content",
+      "agent-ideas": "Your agent ideas",
+      "next": "Next Agent",
+      "previous": "Previous Agent"
+   },
+   "persona": {
+      "content-type": "Content Type",
+      "description": "Configuration summary",
+      "edit": "Edit Agent",
+      "name": "Name",
+      "persona": "Persona",
+      "title": "Agent Persona"
+   },
+   "quick-actions": {
+      "create-content": "Create content",
+      "delete-agent": "Delete agent",
+      "delete-all-files": "Delete all uploaded files",
+      "description": "Perform common tasks related to the agent.",
+      "edit-agent": "Edit agent",
+      "edit-instructions": "Edit instructions",
+      "generate-brand-files": "Generate brand files",
+      "manage-agent-photo": "Manage agent photo",
+      "no-files-to-delete": "No files to delete",
+      "title": "Quick Actions",
+      "view-details": "View agent details"
+   },
+   "stats": {
+      "avg-quality-score": "Avg. Quality Score",
+      "avg-quality-score-description": "Average quality score across generated content.",
+      "drafts": "Drafts",
+      "drafts-description": "Number of drafts the agent has saved.",
+      "published": "Published",
+      "published-description": "Number of published pieces produced by the agent.",
+      "total-content": "Total Content",
+      "total-content-description": "All the content produced by the agent.",
+      "total-ideas": "Total Ideas",
+      "total-ideas-description": "Total ideas generated by the agent.",
+      "total-words": "Total Words Written",
+      "total-words-description": "Cumulative words written across all content."
+   },
+   "toasts": {
+      "knowledge-completed": "Brand knowledge job completed",
+      "knowledge-failed": "Brand knowledge job failed"
+   }
+}

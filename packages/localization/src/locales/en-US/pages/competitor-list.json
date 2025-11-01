@@ -1,0 +1,79 @@
+{
+   "actions": {
+      "analyze": "Analyze",
+      "delete": "Delete",
+      "edit": "Edit",
+      "export": "Export",
+      "view": "View"
+   },
+   "card": {
+      "delete-competitor": "Delete competitor",
+      "edit-competitor": "Edit competitor",
+      "features-count": "{{count}} features",
+      "view-details": "View details",
+      "visit-website": "Visit website",
+      "website-label": "Your competitor website: {{url}}"
+   },
+   "empty-state": {
+      "no-competitors": "No competitors yet"
+   },
+   "mascot-message": "Track and analyze your competitors to stay ahead of the market!",
+   "messages": {
+      "analyze-error": "Failed to start analysis. Please try again.",
+      "analyze-success": "Analysis started successfully!",
+      "create-error": "Failed to create competitor: {{error}}",
+      "create-success": "Competitor created successfully!",
+      "delete-error": "Failed to delete competitor: {{error}}",
+      "delete-success": "{{name}} has been deleted successfully.",
+      "update-error": "Failed to update competitor: {{error}}",
+      "update-success": "Competitor updated successfully!"
+   },
+   "modals": {
+      "create-edit": {
+         "cancel": "Cancel",
+         "create": "Create",
+         "create-description": "Add a new competitor to track and analyze.",
+         "create-title": "Add New Competitor",
+         "edit-description": "Update the competitor information below.",
+         "edit-title": "Edit Competitor",
+         "saving": "Saving...",
+         "update": "Update",
+         "website-url-label": "Website URL *",
+         "website-url-placeholder": "https://example.com"
+      },
+      "delete": {
+         "cancel": "Cancel",
+         "confirm": "Delete",
+         "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone and will remove all associated feature tracking data.",
+         "title": "Delete Competitor"
+      }
+   },
+   "status": {
+      "active": "Active",
+      "analyzing": "Analyzing",
+      "inactive": "Inactive"
+   },
+   "table": {
+      "headers": {
+         "actions": "Actions",
+         "industry": "Industry",
+         "last-analyzed": "Last Analyzed",
+         "name": "Name",
+         "status": "Status",
+         "website": "Website"
+      },
+      "loading": "Loading competitors...",
+      "no-data": "No competitors found"
+   },
+   "title": "Competitor Management",
+   "toolbar": {
+      "new-competitor": "New Competitor",
+      "of": "of",
+      "select-all": "Select All",
+      "selected-count": "{{count}} selected",
+      "unselect-all": "Unselect All"
+   },
+   "validation": {
+      "invalid-url": "Please enter a valid URL"
+   }
+}

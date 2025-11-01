@@ -1,0 +1,20 @@
+{
+   "extends": "//",
+   "files": {
+      "includes": ["**", "!**/*.css"]
+   },
+   "overrides": [
+      {
+         "includes": ["**/*.astro"],
+         "linter": {
+            "rules": {
+               "style": {
+                  "useConst": "off",
+                  "useImportType": "off"
+               }
+            }
+         }
+      }
+   ],
+   "root": false
+}

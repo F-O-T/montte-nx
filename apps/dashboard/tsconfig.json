@@ -1,0 +1,55 @@
+{
+  "extends": "@tooling/typescript/vite.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+  ],
+  "compilerOptions": {
+    "types": [
+      "vite/client"
+    ],
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@packages/ui/*": [
+        "../../packages/ui/src/*"
+      ]
+    },
+  },
+  "references": [
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/ui"
+    },
+    {
+      "path": "../../packages/transactional"
+    },
+    {
+      "path": "../../packages/posthog"
+    },
+    {
+      "path": "../../packages/localization"
+    },
+    {
+      "path": "../../packages/environment"
+    },
+    {
+      "path": "../../packages/authentication"
+    },
+    {
+      "path": "../../packages/api"
+    }
+  ]
+}

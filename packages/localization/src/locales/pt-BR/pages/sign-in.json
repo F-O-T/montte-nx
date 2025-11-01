@@ -1,0 +1,34 @@
+{
+   "description": "Digite seus dados para acessar sua conta.",
+   "errors": {
+      "invalid-credentials": "Email ou senha inválidos",
+      "unknown": "Erro desconhecido"
+   },
+   "footer": {
+      "forgot-password": "Esqueceu sua senha?",
+      "no-account": "Não tem uma conta?",
+      "sign-up-link": "Cadastre-se aqui"
+   },
+   "form": {
+      "email": {
+         "label": "Email",
+         "placeholder": "Digite seu email"
+      },
+      "password": {
+         "label": "Senha",
+         "placeholder": "Digite sua senha"
+      },
+      "submit": "Entrar"
+   },
+   "google-button": "Entrar com Google",
+   "messages": {
+      "loading": "Entrando...",
+      "success": "Login realizado com sucesso",
+      "welcome": "Bem-vindo ao {{brand}} {{name}}"
+   },
+   "title": "Entrar",
+   "validation": {
+      "email-invalid": "Digite um endereço de email válido",
+      "password-min-length": "A senha deve ter pelo menos 8 caracteres"
+   }
+}

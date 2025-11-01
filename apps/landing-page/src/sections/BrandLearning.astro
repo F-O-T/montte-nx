@@ -1,0 +1,123 @@
+---
+   import { Brain, Database, Globe, PenTool } from "@lucide/astro";
+   import type { SupportedLng } from "@packages/localization";
+   import { useTranslations } from "../i18n/utils";
+
+   interface _Props {
+      lang?: SupportedLng;
+   }
+
+   const { lang = "en" } = Astro.props;
+   const t = useTranslations(lang);
+
+   const benefits = [
+      {
+         description: t(
+            "pages.landing.brandLearning.benefits.website.description",
+         ),
+         icon: Globe,
+         title: t("pages.landing.brandLearning.benefits.website.title"),
+      },
+      {
+         description: t(
+            "pages.landing.brandLearning.benefits.voice.description",
+         ),
+         icon: PenTool,
+         title: t("pages.landing.brandLearning.benefits.voice.title"),
+      },
+      {
+         description: t(
+            "pages.landing.brandLearning.benefits.knowledge.description",
+         ),
+         icon: Database,
+         title: t("pages.landing.brandLearning.benefits.knowledge.title"),
+      },
+   ];
+---
+<section id="brand-learning" class="bg-muted py-24">
+   <div class="mx-auto w-full max-w-6xl px-6">
+      <div class="mx-auto max-w-3xl text-center">
+         <span class="text-primary font-semibold"
+            >{t("pages.landing.brandLearning.badge")}</span
+         >
+         <h2 class="text-foreground mt-4 text-4xl font-bold">
+            {t("pages.landing.brandLearning.title")}
+         </h2>
+         <p class="text-muted-foreground mb-12 mt-4 text-lg">
+            {t("pages.landing.brandLearning.description")}
+         </p>
+      </div>
+
+      <div
+         class="relative grid grid-cols-1 lg:grid-cols-3 gap-12 items-center mt-16"
+      >
+         <!-- Left Column Benefits -->
+         <div class="space-y-10">
+            <div class="flex items-start gap-4">
+               <div
+                  class="bg-primary/10 text-primary p-3 rounded-lg flex-shrink-0"
+               >
+                  <Globe class="size-6"/>
+               </div>
+               <div>
+                  <h3 class="font-semibold text-foreground">
+                     {benefits[0]?.title}
+                  </h3>
+                  <p class="text-muted-foreground text-sm mt-1">
+                     {benefits[0]?.description}
+                  </p>
+               </div>
+            </div>
+            <div class="flex items-start gap-4">
+               <div
+                  class="bg-primary/10 text-primary p-3 rounded-lg flex-shrink-0"
+               >
+                  <PenTool class="size-6"/>
+               </div>
+               <div>
+                  <h3 class="font-semibold text-foreground">
+                     {benefits[1]?.title}
+                  </h3>
+                  <p class="text-muted-foreground text-sm mt-1">
+                     {benefits[1]?.description}
+                  </p>
+               </div>
+            </div>
+         </div>
+
+         <!-- Center Brain Graphic -->
+         <div
+            class="relative flex items-center justify-center order-first lg:order-none"
+         >
+            <div
+               class="absolute -inset-4 rounded-full bg-gradient-to-t from-primary/30 to-secondary/30 opacity-20 blur-2xl"
+            ></div>
+            <div
+               class="relative bg-background border rounded-full p-8 shadow-2xl shadow-black/5"
+            >
+               <Brain class="size-24 text-primary"/>
+            </div>
+         </div>
+
+         <!-- Right Column Benefit -->
+         <div class="space-y-10">
+            <div class="flex items-start gap-4">
+               <div
+                  class="bg-primary/10 text-primary p-3 rounded-lg flex-shrink-0"
+               >
+                  <Database class="size-6"/>
+               </div>
+               <div>
+                  <h3 class="font-semibold text-foreground">
+                     {benefits[2]?.title}
+                  </h3>
+                  <p class="text-muted-foreground text-sm mt-1">
+                     {benefits[2]?.description}
+                  </p>
+               </div>
+            </div>
+            <!-- You can add another benefit here if you like -->
+         </div>
+      </div>
+   </div>
+</section>

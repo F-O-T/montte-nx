@@ -1,0 +1,147 @@
+{
+   "instructions": {
+      "audience-profile": "Perfil do Público",
+      "configured": "Configurado",
+      "description": "Personalize como seu agente cria conteúdo",
+      "edit": {
+         "cancel": "Cancelar",
+         "error": "Falha ao atualizar instruções",
+         "save": "Salvar",
+         "success": "Instruções atualizadas com sucesso"
+      },
+      "not-configured": "Não configurado",
+      "rag-integration": "Integração RAG",
+      "tabs": {
+         "audience": {
+            "description": "Descreva seu público-alvo e suas características",
+            "placeholder": "Descreva o perfil do seu público aqui... Por exemplo: 'Nosso público consiste em profissionais de tecnologia com idade entre 25-45 anos interessados em soluções de IA e automação.'",
+            "title": "Perfil do Público"
+         },
+         "rag": {
+            "description": "Instruções para usar conhecimento e documentos da marca",
+            "placeholder": "Defina diretrizes de uso RAG... Por exemplo: 'Sempre priorize documentos da marca como fonte de verdade, cite pontos-chave de mensagens da marca e mantenha consistência na voz da marca.'",
+            "title": "Integração RAG"
+         },
+         "writing": {
+            "description": "Defina estilo de escrita, tom e regras de formatação",
+            "placeholder": "Especifique suas diretrizes de escrita aqui... Por exemplo: 'Sempre escreva em terceira pessoa, evite traços, use títulos claros e mantenha parágrafos com menos de 4 frases.'",
+            "title": "Diretrizes de Escrita"
+         }
+      },
+      "title": "Instruções do Agente",
+      "writing-guidelines": "Diretrizes de Escrita"
+   },
+   "knowledge-base": {
+      "completed": "Concluído",
+      "description": "Arquivos gerados usando a URL do seu site",
+      "empty-state": {
+         "description": "Envie arquivos Markdown com os valores, voz ou diretrizes da sua marca.",
+         "title": "Ainda não há arquivos da marca"
+      },
+      "failed": "Falhou",
+      "file-count": {
+         "allowed": "permitido",
+         "files-uploaded": "arquivos enviados",
+         "more-file": "mais arquivo",
+         "more-files": "s",
+         "upload-limit-reached": "Limite de envio atingido"
+      },
+      "messages": {
+         "delete-failed": "Falha ao excluir arquivo",
+         "file-deleted": "Arquivo excluído com sucesso!"
+      },
+      "processing": "Processando...",
+      "status": {
+         "indexed": "100% indexado",
+         "uploaded": "Enviado"
+      },
+      "title": "Conhecimento da Marca",
+      "upload": "Enviar Arquivos"
+   },
+   "mascot-message": "Gerencie a configuração e base de conhecimento do seu agente.",
+   "modals": {
+      "brand-files": {
+         "generate-button": "Gerar arquivos da marca",
+         "messages": {
+            "generation-error": "Ocorreu um erro ao gerar arquivos da marca.",
+            "generation-started": "Geração de arquivos da marca iniciada."
+         },
+         "title": "Gerar Arquivos da Marca do Site",
+         "validation": {
+            "invalid-url": "Por favor, digite uma URL válida"
+         },
+         "website-url-label": "URL do site",
+         "website-url-placeholder": "Digite a URL do seu site"
+      },
+      "delete-all-files": {
+         "message": "Isso excluirá permanentemente todos os {{count}} arquivos enviados para este agente, incluindo documentos, entradas da base de conhecimento e dados de processamento de arquivos. Esta ação não pode ser desfeita.",
+         "messages": {
+            "error": "Falha ao excluir todos os arquivos",
+            "success": "Todos os arquivos excluídos com sucesso!"
+         }
+      },
+      "file-viewer": {
+         "description": "Visualize o conteúdo do arquivo selecionado.",
+         "loading": "Carregando conteúdo..."
+      },
+      "manage-photo": {
+         "cancel": "Cancelar",
+         "description": "Envie uma nova foto de perfil para seu agente. A imagem será exibida no perfil do seu agente.",
+         "messages": {
+            "file-size-limit": "O tamanho do arquivo deve ser menor que 5MB",
+            "general-error": "Falha ao enviar foto",
+            "select-image": "Por favor, selecione um arquivo de imagem",
+            "success": "Foto de perfil atualizada com sucesso!",
+            "upload-failed": "Falha ao enviar foto de perfil"
+         },
+         "title": "Gerenciar Foto do Agente",
+         "upload": "Enviar Foto",
+         "uploading": "Enviando..."
+      }
+   },
+   "navigation": {
+      "agent-content": "Seu conteúdo do agente",
+      "agent-ideas": "Suas ideias do agente",
+      "next": "Próximo Agente",
+      "previous": "Agente Anterior"
+   },
+   "persona": {
+      "content-type": "Tipo de Conteúdo",
+      "description": "Resumo da configuração",
+      "edit": "Editar Agente",
+      "name": "Nome",
+      "persona": "Persona",
+      "title": "Persona do Agente"
+   },
+   "quick-actions": {
+      "create-content": "Criar conteúdo",
+      "delete-agent": "Excluir agente",
+      "delete-all-files": "Excluir todos os arquivos enviados",
+      "description": "Execute tarefas comuns relacionadas ao agente.",
+      "edit-agent": "Editar agente",
+      "edit-instructions": "Editar instruções",
+      "generate-brand-files": "Gerar arquivos da marca",
+      "manage-agent-photo": "Gerenciar foto do agente",
+      "no-files-to-delete": "Nenhum arquivo para excluir",
+      "title": "Ações Rápidas",
+      "view-details": "Ver detalhes do agente"
+   },
+   "stats": {
+      "avg-quality-score": "Pontuação de Qualidade Média",
+      "avg-quality-score-description": "Pontuação de qualidade média em todo o conteúdo gerado.",
+      "drafts": "Rascunhos",
+      "drafts-description": "Número de rascunhos que o agente salvou.",
+      "published": "Publicados",
+      "published-description": "Número de peças publicadas produzidas pelo agente.",
+      "total-content": "Conteúdo Total",
+      "total-content-description": "Todo o conteúdo produzido pelo agente.",
+      "total-ideas": "Total de Ideias",
+      "total-ideas-description": "Total de ideias geradas pelo agente.",
+      "total-words": "Total de Palavras Escritas",
+      "total-words-description": "Palavras escritas cumulativas em todo o conteúdo."
+   },
+   "toasts": {
+      "knowledge-completed": "Trabalho de conhecimento da marca concluído",
+      "knowledge-failed": "Trabalho de conhecimento da marca falhou"
+   }
+}

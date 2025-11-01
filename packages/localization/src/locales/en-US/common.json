@@ -1,0 +1,59 @@
+{
+   "actions": {
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "update": "Update",
+      "updating": "Updating...",
+      "view": "View"
+   },
+   "bugReport": {
+      "validation": {
+         "authRequired": "User must be authenticated",
+         "userReportRequired": "Bug description is required"
+      }
+   },
+   "errorModal": {
+      "backButton": "Back",
+      "errorMessage": "Unable to submit the report. Please try again later.",
+      "errorTitle": "Error submitting report",
+      "placeholder": "Please describe what you were trying to do when the error occurred...",
+      "reportButton": "Report this error",
+      "submitButton": "Submit",
+      "submittingButton": "Submitting...",
+      "successMessage": "Thank you for your feedback! We have received your report and will investigate the issue.",
+      "successTitle": "Report submitted",
+      "title": "Oops! An error occurred",
+      "validationError": "Please describe what happened before submitting"
+   },
+   "form": {
+      "current-email": "Current Email",
+      "email": "Email",
+      "field-required": "This field is required"
+   },
+   "languages": {
+      "en": "Inglês",
+      "pt": "Português"
+   },
+   "messages": {
+      "loading": "Loading..."
+   },
+   "navigation": {
+      "close": "Close"
+   },
+   "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "loading": "Loading..."
+   },
+   "themes": {
+      "dark": "Tema escuro",
+      "light": "Tema claro",
+      "system": "Seguir o sistema"
+   },
+   "time": {
+      "last-modified": "Last Modified",
+      "time": "Time"
+   }
+}

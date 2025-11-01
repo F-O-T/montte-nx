@@ -1,0 +1,104 @@
+---
+   import {
+      CheckCircle,
+      Code,
+      Cog,
+      FileText,
+      Lightbulb,
+      Search,
+   } from "@lucide/astro";
+   import type { SupportedLng } from "@packages/localization";
+   import { useTranslations } from "../i18n/utils";
+
+   interface _Props {
+      lang?: SupportedLng;
+   }
+
+   const { lang = "en" } = Astro.props;
+   const t = useTranslations(lang);
+
+   const steps = [
+      {
+         description: t(
+            "pages.landing.contentWorkflow.steps.strategy.description",
+         ),
+         icon: Cog,
+         title: t("pages.landing.contentWorkflow.steps.strategy.title"),
+      },
+      {
+         description: t("pages.landing.contentWorkflow.steps.idea.description"),
+         icon: Lightbulb,
+         title: t("pages.landing.contentWorkflow.steps.idea.title"),
+      },
+      {
+         description: t(
+            "pages.landing.contentWorkflow.steps.research.description",
+         ),
+         icon: Search,
+         title: t("pages.landing.contentWorkflow.steps.research.title"),
+      },
+      {
+         description: t(
+            "pages.landing.contentWorkflow.steps.draft.description",
+         ),
+         icon: FileText,
+         title: t("pages.landing.contentWorkflow.steps.draft.title"),
+      },
+      {
+         description: t(
+            "pages.landing.contentWorkflow.steps.review.description",
+         ),
+         icon: CheckCircle,
+         title: t("pages.landing.contentWorkflow.steps.review.title"),
+      },
+      {
+         description: t(
+            "pages.landing.contentWorkflow.steps.publish.description",
+         ),
+         icon: Code,
+         title: t("pages.landing.contentWorkflow.steps.publish.title"),
+      },
+   ];
+---
+<section id="content-workflow" class="bg-muted relative py-16 md:py-24">
+   <div class="mx-auto max-w-6xl px-6">
+      <div class="mx-auto max-w-3xl text-center">
+         <h2
+            class="text-balance text-2xl font-bold md:text-3xl lg:text-4xl"
+            set:html={t("pages.landing.contentWorkflow.title")}
+         ></h2>
+         <p class="text-muted-foreground mx-auto mt-4 max-w-2xl text-balance">
+            {t("pages.landing.contentWorkflow.description")}
+         </p>
+      </div>
+
+      <div class="relative mt-20 max-w-3xl mx-auto">
+         <!-- The vertical connecting line -->
+         <div
+            class="absolute left-4 top-4 h-full w-px bg-border -translate-x-1/2"
+         ></div>
+
+         <div class="space-y-12">
+            {
+          steps.map(({ icon: Icon, title, description }
+            ) => (
+            <div class="relative flex items-start gap-6">
+               <div class="flex-shrink-0">
+                  <div
+                     class="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground ring-8 ring-background"
+                  >
+                     <Icon class="h-4 w-4"/>
+                  </div>
+               </div>
+               <div
+                  class="bg-card border rounded-lg p-6 flex-1 shadow-sm hover:shadow-md transition-shadow"
+               >
+                  <h3 class="text-xl font-semibold">{title}</h3>
+                  <p class="mt-2 text-muted-foreground">{description}</p>
+               </div>
+            </div>
+            )) }
+         </div>
+      </div>
+   </div>
+</section>

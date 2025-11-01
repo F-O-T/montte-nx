@@ -1,0 +1,59 @@
+{
+   "actions": {
+      "cancel": "Cancelar",
+      "creating": "Criando...",
+      "delete": "Excluir",
+      "deleting": "Excluindo...",
+      "update": "Atualizar",
+      "updating": "Atualizando...",
+      "view": "Visualizar"
+   },
+   "bugReport": {
+      "validation": {
+         "authRequired": "Usuário precisa estar autenticado",
+         "userReportRequired": "Descrição do bug é obrigatória"
+      }
+   },
+   "errorModal": {
+      "backButton": "Voltar",
+      "errorMessage": "Não foi possível enviar o relatório. Tente novamente mais tarde.",
+      "errorTitle": "Erro ao enviar relatório",
+      "placeholder": "Por favor, descreva o que você estava tentando fazer quando o erro ocorreu...",
+      "reportButton": "Reportar este erro",
+      "submitButton": "Enviar",
+      "submittingButton": "Enviando...",
+      "successMessage": "Obrigado pelo feedback! Recebemos seu relato e vamos investigar o problema.",
+      "successTitle": "Relatório enviado",
+      "title": "Ops! Ocorreu um erro",
+      "validationError": "Por favor, descreva o que aconteceu antes de enviar"
+   },
+   "form": {
+      "current-email": "Email Atual",
+      "email": "Email",
+      "field-required": "Este campo é obrigatório"
+   },
+   "languages": {
+      "en": "Inglês",
+      "pt": "Português"
+   },
+   "messages": {
+      "loading": "Carregando..."
+   },
+   "navigation": {
+      "close": "Fechar"
+   },
+   "status": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "loading": "Carregando..."
+   },
+   "themes": {
+      "dark": "Tema escuro",
+      "light": "Tema claro",
+      "system": "Seguir o sistema"
+   },
+   "time": {
+      "last-modified": "Última Modificação",
+      "time": "Hora"
+   }
+}
