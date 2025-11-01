@@ -21,7 +21,6 @@ import { PasswordInput } from "@packages/ui/components/password-input";
 import { Separator } from "@packages/ui/components/separator";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import brandConfig from "@packages/brand/index.json";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useMemo } from "react";
@@ -96,7 +95,6 @@ export function SignInPage() {
                onSuccess: ({ data }) => {
                   toast.success(translate("pages.sign-in.messages.success"), {
                      description: translate("pages.sign-in.messages.welcome", {
-                        brand: brandConfig.name,
                         name: data.user.name,
                      }),
                      id: "sign-in-toast",

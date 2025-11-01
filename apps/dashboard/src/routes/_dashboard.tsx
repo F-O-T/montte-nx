@@ -8,6 +8,7 @@ import {
 } from "@packages/ui/components/popover";
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { MessageCircle } from "lucide-react";
+import { betterAuthClient } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
 
 export const Route = createFileRoute("/_dashboard")({
@@ -17,9 +18,9 @@ export const Route = createFileRoute("/_dashboard")({
 
 function RouteComponent() {
    const location = useLocation();
-
+   const session = betterAuthClient.useSession();
    return (
-      <DashboardLayout session={session}>
+      <DashboardLayout session={session.data}>
          <div
             className="duration-700 animate-in slide-in-from-bottom-4 fade-in h-full w-full"
             key={location.pathname}
@@ -37,7 +38,7 @@ function RouteComponent() {
                <PopoverContent align="end" className="w-full p-0">
                   <ContentaChat
                      locale={i18n.language as SupportedLng}
-                     sendMessage={sendMessage}
+                     sendMessage={() => {}}
                   />
                </PopoverContent>
             </Popover>

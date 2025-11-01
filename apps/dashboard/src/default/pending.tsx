@@ -1,4 +1,3 @@
-import mascot from "@packages/brand/logo.svg";
 import { Typewriter } from "@packages/ui/components/typewriter";
 
 export function PendingComponent({ message }: { message?: string }) {
@@ -10,7 +9,6 @@ export function PendingComponent({ message }: { message?: string }) {
                   <img
                      alt="Content Agent Mascot"
                      className="w-16 h-16 shadow-lg animate-bounce"
-                     src={mascot}
                   />
                </div>
                <div className="flex-1 px-4 py-3 bg-accent rounded-2xl shadow-lg border border-primary transition-all duration-300 ease-in-out">

@@ -1,4 +1,3 @@
-import mascot from "@packages/brand/logo.svg";
 import { Button } from "@packages/ui/components/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
@@ -14,7 +13,6 @@ export function NotFoundComponent() {
                   <img
                      alt="Content Agent Mascot"
                      className="w-20 h-20 shadow-lg"
-                     src={mascot}
                   />
                </div>
                <div className="flex flex-col items-center gap-2">

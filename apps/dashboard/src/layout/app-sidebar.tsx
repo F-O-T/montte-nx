@@ -1,5 +1,3 @@
-import brandConfig from "@packages/brand/index.json";
-import logo from "@packages/brand/logo.svg";
 import {
    Sidebar,
    SidebarContent,
@@ -89,7 +87,6 @@ export function AppSidebar({
          title: "Organization",
       },
    ];
-
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>
@@ -97,15 +94,11 @@ export function AppSidebar({
                <SidebarMenuItem>
                   <Link className="flex items-center gap-2" to="/home">
                      <figure className="text-primary">
-                        <img
-                           alt="Project logo"
-                           className="w-8 h-8"
-                           src={logo}
-                        />
+                        <img alt="Project logo" className="w-8 h-8" />
                      </figure>
 
                      <span className="text-lg font-semibold">
-                        {brandConfig.name}
+                        Finance tracker
                      </span>
                   </Link>
                </SidebarMenuItem>

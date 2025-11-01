@@ -100,22 +100,12 @@ function NavUserSkeleton() {
 function NavUserContent({ session }: { session: Session | null }) {
    const { isMobile, setOpenMobile } = useSidebar();
    const router = useRouter();
-   const trpc = useTRPC();
    const queryClient = useQueryClient();
-   const { data: customer } = useSuspenseQuery(
-      trpc.authHelpers.getCustomerState.queryOptions(),
-   );
-   const { data: organization } = useSuspenseQuery(
-      trpc.authHelpers.getDefaultOrganization.queryOptions(),
-   );
    const handleLogout = useCallback(async () => {
       await betterAuthClient.signOut(
          {},
          {
             onSuccess: async () => {
-               await queryClient.invalidateQueries({
-                  queryKey: trpc.authHelpers.getSession.queryKey(),
-               });
                router.navigate({
                   to: "/auth/sign-in",
                });
@@ -123,13 +113,7 @@ function NavUserContent({ session }: { session: Session | null }) {
          },
       );
       setOpenMobile(false);
-   }, [
-      router,
-      setOpenMobile,
-      queryClient,
-      trpc.authHelpers.getSession.queryKey,
-      trpc.authHelpers.getSession,
-   ]);
+   }, [router, setOpenMobile, queryClient]);
    if (!session) return <NavUserSkeleton />;
 
    return (
