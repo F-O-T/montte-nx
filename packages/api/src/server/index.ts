@@ -3,8 +3,11 @@ import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
 import type { Polar } from "@polar-sh/sdk";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
+import { transactionRouter } from "./transactions";
 
-export const appRouter = router({});
+export const appRouter = router({
+   transactions: transactionRouter,
+});
 export const createApi = ({
    auth,
    db,
