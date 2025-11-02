@@ -1,9 +1,6 @@
 {
   "dependencies": {
-    "@bull-board/api": "6.13.0",
-    "@bull-board/elysia": "6.13.0",
     "@elysiajs/cors": "catalog:server",
-    "@packages/agents": "workspace:*",
     "@packages/api": "workspace:*",
     "@packages/authentication": "workspace:*",
     "@packages/database": "workspace:*",
@@ -11,10 +8,8 @@
     "@packages/files": "workspace:*",
     "@packages/payment": "workspace:*",
     "@packages/posthog": "workspace:*",
-    "@packages/rag": "workspace:*",
     "@packages/transactional": "workspace:*",
     "@packages/utils": "workspace:*",
-    "@packages/workers": "workspace:*",
     "@trpc/server": "catalog:trpc",
     "elysia": "catalog:server"
   },

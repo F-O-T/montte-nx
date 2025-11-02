@@ -17,7 +17,6 @@
     "@contentagen/assistant-widget": "^0.0.15",
     "@packages/api": "workspace:*",
     "@packages/authentication": "workspace:*",
-    "@packages/brand": "workspace:*",
     "@packages/environment": "workspace:*",
     "@packages/localization": "workspace:*",
     "@packages/posthog": "workspace:*",
