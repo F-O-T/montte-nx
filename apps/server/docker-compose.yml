@@ -1,19 +1,15 @@
-version: "3.8"
-
 services:
-  db:
+  finance-db:
     image: docker.io/postgres:15
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: postgres
+      POSTGRES_DB: finance_tracker
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - finance_tracker_pgdata:/var/lib/postgresql/data
     ports:
-      - "5433:5433"
+      - "5433:5432"
+
 
 volumes:
-  pgdata:
-  miniodata:
-  pgvector-data:
-  redisdata:
+  finance_tracker_pgdata:

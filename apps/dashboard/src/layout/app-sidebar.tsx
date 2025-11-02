@@ -7,16 +7,7 @@ import {
    SidebarMenuItem,
 } from "@packages/ui/components/sidebar";
 import { Link } from "@tanstack/react-router";
-import {
-   Bot,
-   Building2,
-   FilesIcon,
-   FileText,
-   type LayoutDashboardIcon,
-   Lightbulb,
-   Target,
-   Users,
-} from "lucide-react";
+import { type LayoutDashboardIcon } from "lucide-react";
 import type * as React from "react";
 import type { Session } from "@/integrations/clients";
 import type { FileRoutesByTo } from "@/routeTree.gen";
@@ -38,55 +29,7 @@ export function AppSidebar({
    session,
    ...props
 }: React.ComponentProps<typeof Sidebar> & { session: Session | null }) {
-   const navMain: NavigationItems[] = [
-      {
-         icon: FilesIcon,
-         subItems: [
-            {
-               icon: Bot,
-               title: "Content Agents",
-               url: "/agents",
-            },
-            {
-               icon: Lightbulb,
-               title: "Content Ideas",
-               url: "/ideas",
-            },
-            {
-               icon: FileText,
-               title: "Created Content",
-               url: "/content",
-            },
-         ],
-         title: "Content",
-      },
-      {
-         icon: Target,
-         title: "Competitors",
-         url: "/competitors",
-      },
-      {
-         icon: Building2,
-         subItems: [
-            {
-               icon: Building2,
-               title: "Organization Overview",
-               url: "/organization",
-            },
-            {
-               icon: Users,
-               title: "Members",
-               url: "/organization/members",
-            },
-            {
-               icon: FileText,
-               title: "Brand Files",
-               url: "/organization/brand",
-            },
-         ],
-         title: "Organization",
-      },
-   ];
+   const navMain: NavigationItems[] = [];
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>
