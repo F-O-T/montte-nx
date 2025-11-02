@@ -89,7 +89,7 @@ export function ThemeProvider({
          // Validate theme before applying
          const validTheme =
             (theme as ResolvedTheme) === "light" ||
-               (theme as ResolvedTheme) === "dark"
+            (theme as ResolvedTheme) === "dark"
                ? (theme as ResolvedTheme)
                : "light";
 

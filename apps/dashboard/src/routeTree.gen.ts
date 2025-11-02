@@ -15,6 +15,7 @@ import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
+import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 
 const AuthRoute = AuthRouteImport.update({
@@ -46,6 +47,11 @@ const AuthEmailVerificationRoute = AuthEmailVerificationRouteImport.update({
   path: '/email-verification',
   getParentRoute: () => AuthRoute,
 } as any)
+const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardHomeRoute = DashboardHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -55,6 +61,7 @@ const DashboardHomeRoute = DashboardHomeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/home': typeof DashboardHomeRoute
+  '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/home': typeof DashboardHomeRoute
+  '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -73,6 +81,7 @@ export interface FileRoutesById {
   '/_dashboard': typeof DashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/_dashboard/home': typeof DashboardHomeRoute
+  '/_dashboard/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
@@ -83,6 +92,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/auth'
     | '/home'
+    | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -91,6 +101,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/home'
+    | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -100,6 +111,7 @@ export interface FileRouteTypes {
     | '/_dashboard'
     | '/auth'
     | '/_dashboard/home'
+    | '/_dashboard/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
     | '/auth/sign-in'
@@ -155,6 +167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmailVerificationRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_dashboard/transactions': {
+      id: '/_dashboard/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof DashboardTransactionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/home': {
       id: '/_dashboard/home'
       path: '/home'
@@ -167,10 +186,12 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardHomeRoute: typeof DashboardHomeRoute
+  DashboardTransactionsRoute: typeof DashboardTransactionsRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardHomeRoute: DashboardHomeRoute,
+  DashboardTransactionsRoute: DashboardTransactionsRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

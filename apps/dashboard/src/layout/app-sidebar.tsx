@@ -7,7 +7,8 @@ import {
    SidebarMenuItem,
 } from "@packages/ui/components/sidebar";
 import { Link } from "@tanstack/react-router";
-import { type LayoutDashboardIcon } from "lucide-react";
+import type { LayoutDashboardIcon } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import type * as React from "react";
 import type { Session } from "@/integrations/clients";
 import type { FileRoutesByTo } from "@/routeTree.gen";
@@ -29,7 +30,13 @@ export function AppSidebar({
    session,
    ...props
 }: React.ComponentProps<typeof Sidebar> & { session: Session | null }) {
-   const navMain: NavigationItems[] = [];
+   const navMain: NavigationItems[] = [
+      {
+         icon: CreditCard,
+         title: "Transactions",
+         url: "/transactions",
+      },
+   ];
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>
