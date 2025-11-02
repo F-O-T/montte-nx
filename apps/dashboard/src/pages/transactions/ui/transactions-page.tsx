@@ -1,3 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { trpc } from "@/integrations/clients";
 import { AddTransactionSheet } from "../features/add-transaction-sheet";
 import { TransactionsTable } from "./transactions-table";
 
@@ -7,89 +11,21 @@ export type Transaction = {
    date: string;
    description: string;
    id: string;
-   status: "completed" | "pending";
    type: "income" | "expense";
 };
 
-// Mock transaction data
-const mockTransactions: Transaction[] = [
-   {
-      amount: -85.5,
-      category: "Food & Dining",
-      date: "2024-11-02",
-      description: "Grocery Store Purchase",
-      id: "1",
-      status: "completed",
-      type: "expense",
-   },
-   {
-      amount: 3500.0,
-      category: "Income",
-      date: "2024-11-01",
-      description: "Salary Deposit",
-      id: "2",
-      status: "completed",
-      type: "income",
-   },
-   {
-      amount: -120.75,
-      category: "Utilities",
-      date: "2024-10-31",
-      description: "Electric Bill",
-      id: "3",
-      status: "completed",
-      type: "expense",
-   },
-   {
-      amount: -245.99,
-      category: "Shopping",
-      date: "2024-10-30",
-      description: "Online Shopping",
-      id: "4",
-      status: "completed",
-      type: "expense",
-   },
-   {
-      amount: 750.0,
-      category: "Income",
-      date: "2024-10-29",
-      description: "Freelance Payment",
-      id: "5",
-      status: "pending",
-      type: "income",
-   },
-   {
-      amount: -45.2,
-      category: "Transportation",
-      date: "2024-10-28",
-      description: "Gas Station",
-      id: "6",
-      status: "completed",
-      type: "expense",
-   },
-   {
-      amount: -12.5,
-      category: "Food & Dining",
-      date: "2024-10-27",
-      description: "Coffee Shop",
-      id: "7",
-      status: "completed",
-      type: "expense",
-   },
-   {
-      amount: -1200.0,
-      category: "Housing",
-      date: "2024-10-26",
-      description: "Rent Payment",
-      id: "8",
-      status: "completed",
-      type: "expense",
-   },
-];
+function TransactionsContent() {
+   const { data: transactions } = useQuery(
+      trpc.transactions.getAll.queryOptions(),
+   );
 
-export function TransactionsPage() {
-   const categories = Array.from(
-      new Set(mockTransactions.map((t) => t.category)),
+   // Transform API data to match UI expectations
+   const uiTransactions: Transaction[] = (transactions || []).map(
+      (transaction: any) => ({
+         ...transaction,
+         amount: parseFloat(transaction.amount),
+         date: transaction.date.toISOString().split("T")[0],
+      }),
    );
 
    return (
@@ -103,10 +39,58 @@ export function TransactionsPage() {
                   Track and manage your financial transactions
                </p>
             </div>
-            <AddTransactionSheet categories={categories} />
+            <AddTransactionSheet />
          </div>
 
-         <TransactionsTable transactions={mockTransactions} />
+         <TransactionsTable transactions={uiTransactions} />
       </div>
+   );
+}
+
+function TransactionsErrorFallback({
+   error,
+   resetErrorBoundary,
+}: {
+   error: Error;
+   resetErrorBoundary: () => void;
+}) {
+   return (
+      <div className="flex items-center justify-center h-96">
+         <div className="text-center space-y-4">
+            <h2 className="text-xl font-semibold text-destructive">
+               Failed to load transactions
+            </h2>
+            <p className="text-muted-foreground">
+               {error.message || "An unexpected error occurred"}
+            </p>
+            <button
+               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+               onClick={resetErrorBoundary}
+            >
+               Try again
+            </button>
+         </div>
+      </div>
+   );
+}
+
+export function TransactionsPage() {
+   return (
+      <ErrorBoundary FallbackComponent={TransactionsErrorFallback}>
+         <Suspense
+            fallback={
+               <div className="flex items-center justify-center h-96">
+                  <div className="text-center space-y-4">
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                     <p className="text-muted-foreground">
+                        Loading transactions...
+                     </p>
+                  </div>
+               </div>
+            }
+         >
+            <TransactionsContent />
+         </Suspense>
+      </ErrorBoundary>
    );
 }

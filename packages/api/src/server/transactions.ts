@@ -1,4 +1,3 @@
-import { z } from "zod";
 import {
    createTransaction,
    deleteTransaction,
@@ -6,6 +5,7 @@ import {
    findTransactionsByUserId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
+import { z } from "zod";
 import { protectedProcedure, router } from "./trpc";
 
 const createTransactionSchema = z.object({
@@ -37,12 +37,46 @@ export const transactionRouter = router({
 
          return createTransaction(resolvedCtx.db, {
             ...input,
-            id: crypto.randomUUID(),
             amount: input.amount.toString(),
             date: new Date(input.date),
+            id: crypto.randomUUID(),
             userId,
          });
       }),
+
+   delete: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         // First check if transaction exists and belongs to user
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            input.id,
+         );
+
+         if (!existingTransaction || existingTransaction.userId !== userId) {
+            throw new Error("Transaction not found");
+         }
+
+         return deleteTransaction(resolvedCtx.db, input.id);
+      }),
+
+   getAll: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+
+      return findTransactionsByUserId(resolvedCtx.db, userId);
+   }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
@@ -66,22 +100,11 @@ export const transactionRouter = router({
          return transaction;
       }),
 
-   getAll: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
-
-      const userId = resolvedCtx.session.user.id;
-
-      return findTransactionsByUserId(resolvedCtx.db, userId);
-   }),
-
    update: protectedProcedure
       .input(
          z.object({
-            id: z.string(),
             data: updateTransactionSchema,
+            id: z.string(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -115,28 +138,5 @@ export const transactionRouter = router({
          }
 
          return updateTransaction(resolvedCtx.db, input.id, updateData);
-      }),
-
-   delete: protectedProcedure
-      .input(z.object({ id: z.string() }))
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
-
-         // First check if transaction exists and belongs to user
-         const existingTransaction = await findTransactionById(
-            resolvedCtx.db,
-            input.id,
-         );
-
-         if (!existingTransaction || existingTransaction.userId !== userId) {
-            throw new Error("Transaction not found");
-         }
-
-         return deleteTransaction(resolvedCtx.db, input.id);
       }),
 });

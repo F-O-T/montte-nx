@@ -1,65 +1,67 @@
 ---
+   export const prerender = true;
 
+   import { Image } from "astro:assets";
+   import { Button } from "@packages/ui/components/button";
+   import BaseHead from "../components/BaseHead.astro";
+   import Footer from "../components/Footer.astro";
+   import FormattedDate from "../components/FormattedDate.astro";
+   import Navbar from "../components/Navbar.astro";
+   import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+   import { agentId, sdk } from "../contentagen";
 
+   const postsPerPage = 5;
 
-export const prerender = true;
+   // Get first page data for the index
+   const response = await sdk.listContentByAgent({
+      agentId: agentId,
+      limit: postsPerPage,
+      page: 1,
+      status: ["approved"],
+   });
+   const posts = response.posts.sort(
+      (a, b) =>
+         new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf(),
+   );
+   const totalPosts = response.total;
+   const totalPages = Math.ceil(totalPosts / postsPerPage);
+   const currentPage = 1;
 
-import { Image } from "astro:assets";
-import { Button } from "@packages/ui/components/button";
-import BaseHead from "../components/BaseHead.astro";
-import Footer from "../components/Footer.astro";
-import FormattedDate from "../components/FormattedDate.astro";
-import Navbar from "../components/Navbar.astro";
-import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-import { agentId, sdk } from "../contentagen";
-
-const postsPerPage = 5;
-
-// Get first page data for the index
-const response = await sdk.listContentByAgent({
-   agentId: agentId,
-   limit: postsPerPage,
-   page: 1,
-   status: ["approved"],
-});
-const posts = response.posts.sort(
-   (a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf(),
-);
-const totalPosts = response.total;
-const totalPages = Math.ceil(totalPosts / postsPerPage);
-const currentPage = 1;
-
-// Fetch images for posts that have them
-const postsWithImages = await Promise.all(
-   posts.map(async (post) => {
-      if (post.image) {
-         return post; // Already has image data
-      }
-      if (post.imageUrl) {
-         try {
-            const imageData = await sdk.getContentImage({ contentId: post.id });
-            return { ...post, image: imageData };
-         } catch (error) {
-            console.error(`Error fetching image for post ${post.id}:`, error);
-            return post;
+   // Fetch images for posts that have them
+   const postsWithImages = await Promise.all(
+      posts.map(async (post) => {
+         if (post.image) {
+            return post; // Already has image data
          }
-      }
-      return post;
-   }),
-);
+         if (post.imageUrl) {
+            try {
+               const imageData = await sdk.getContentImage({
+                  contentId: post.id,
+               });
+               return { ...post, image: imageData };
+            } catch (error) {
+               console.error(
+                  `Error fetching image for post ${post.id}:`,
+                  error,
+               );
+               return post;
+            }
+         }
+         return post;
+      }),
+   );
 ---
-
 <!doctype html>
 <html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Navbar />
-		<main class="max-w-4xl mx-auto px-4 py-12">
-			<section>
-				<ul class="grid gap-8 md:grid-cols-2 list-none m-0 p-0">
-					{
+   <head>
+      <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION}/>
+   </head>
+   <body>
+      <Navbar/>
+      <main class="max-w-4xl mx-auto px-4 py-12">
+         <section>
+            <ul class="grid gap-8 md:grid-cols-2 list-none m-0 p-0">
+               {
 						postsWithImages.map((post, index) => (
 							<li
 								class={index === 0 ? "md:col-span-2 text-center" : ""}
@@ -97,11 +99,11 @@ const postsWithImages = await Promise.all(
 							</li>
 						))
 					}
-				</ul>
-			</section>
+            </ul>
+         </section>
 
-			<!-- Pagination -->
-			{totalPages > 1 && (
+         <!-- Pagination -->
+         {totalPages > 1 && (
 				<section class="mt-12 flex justify-center">
 					<nav class="flex items-center space-x-2">
 						{Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -129,7 +131,7 @@ const postsWithImages = await Promise.all(
 					</nav>
 				</section>
 			)}
-		</main>
-		<Footer />
-	</body>
+      </main>
+      <footer/>
+   </body>
 </html>

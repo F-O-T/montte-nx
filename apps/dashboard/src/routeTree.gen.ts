@@ -16,7 +16,9 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
+import { Route as DashboardPreferencesRouteImport } from './routes/_dashboard/preferences'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
+import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -52,15 +54,27 @@ const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPreferencesRoute = DashboardPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardHomeRoute = DashboardHomeRouteImport.update({
   id: '/home',
   path: '/home',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCategoriesRoute = DashboardCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
+  '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
+  '/preferences': typeof DashboardPreferencesRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -69,7 +83,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
+  '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
+  '/preferences': typeof DashboardPreferencesRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -80,7 +96,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/_dashboard/categories': typeof DashboardCategoriesRoute
   '/_dashboard/home': typeof DashboardHomeRoute
+  '/_dashboard/preferences': typeof DashboardPreferencesRoute
   '/_dashboard/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -91,7 +109,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/auth'
+    | '/categories'
     | '/home'
+    | '/preferences'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -100,7 +120,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/categories'
     | '/home'
+    | '/preferences'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -110,7 +132,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_dashboard'
     | '/auth'
+    | '/_dashboard/categories'
     | '/_dashboard/home'
+    | '/_dashboard/preferences'
     | '/_dashboard/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -174,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTransactionsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/preferences': {
+      id: '/_dashboard/preferences'
+      path: '/preferences'
+      fullPath: '/preferences'
+      preLoaderRoute: typeof DashboardPreferencesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/home': {
       id: '/_dashboard/home'
       path: '/home'
@@ -181,16 +212,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardHomeRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/categories': {
+      id: '/_dashboard/categories'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof DashboardCategoriesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
 interface DashboardRouteChildren {
+  DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
+  DashboardPreferencesRoute: typeof DashboardPreferencesRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardHomeRoute: DashboardHomeRoute,
+  DashboardPreferencesRoute: DashboardPreferencesRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
 }
 

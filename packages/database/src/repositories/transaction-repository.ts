@@ -47,8 +47,8 @@ export async function findTransactionsByUserId(
 ) {
    try {
       const result = await dbClient.query.transaction.findMany({
-         where: (transaction, { eq }) => eq(transaction.userId, userId),
          orderBy: (transaction, { desc }) => desc(transaction.date),
+         where: (transaction, { eq }) => eq(transaction.userId, userId),
       });
       return result;
    } catch (err) {

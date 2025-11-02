@@ -42,16 +42,6 @@ function TransactionCard({ transaction }: { transaction: Transaction }) {
                      <h3 className="font-medium text-sm">
                         {transaction.description}
                      </h3>
-                     <Badge
-                        className="text-xs"
-                        variant={
-                           transaction.status === "completed"
-                              ? "default"
-                              : "secondary"
-                        }
-                     >
-                        {transaction.status}
-                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                      <Badge className="text-xs font-normal" variant="outline">
@@ -93,7 +83,7 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
    const [currentPage, setCurrentPage] = useState(1);
-   const itemsPerPage = 10;
+   const itemsPerPage = 5;
 
    const filteredTransactions = transactions.filter((transaction) => {
       const matchesSearch =
@@ -190,7 +180,6 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                            Category
                         </TableHead>
                         <TableHead className="font-semibold">Amount</TableHead>
-                        <TableHead className="font-semibold">Status</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -230,18 +219,6 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                                     ${Math.abs(transaction.amount).toFixed(2)}
                                  </span>
                               </div>
-                           </TableCell>
-                           <TableCell>
-                              <Badge
-                                 className="font-normal"
-                                 variant={
-                                    transaction.status === "completed"
-                                       ? "default"
-                                       : "secondary"
-                                 }
-                              >
-                                 {transaction.status}
-                              </Badge>
                            </TableCell>
                         </TableRow>
                      ))}

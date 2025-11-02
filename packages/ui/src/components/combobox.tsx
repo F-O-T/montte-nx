@@ -1,9 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-
-import { cn } from "@packages/ui/lib/utils";
 import { Button } from "@packages/ui/components/button";
 import {
    Command,
@@ -18,6 +14,9 @@ import {
    PopoverContent,
    PopoverTrigger,
 } from "@packages/ui/components/popover";
+import { cn } from "@packages/ui/lib/utils";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import * as React from "react";
 
 export interface ComboboxOption {
    value: string;
@@ -50,14 +49,14 @@ export function Combobox({
    const selectedOption = options.find((option) => option.value === value);
 
    return (
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover onOpenChange={setOpen} open={open}>
          <PopoverTrigger asChild>
             <Button
-               variant="outline"
-               role="combobox"
                aria-expanded={open}
                className={cn("w-[200px] justify-between", className)}
                disabled={disabled}
+               role="combobox"
+               variant="outline"
             >
                {selectedOption ? selectedOption.label : placeholder}
                <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -72,13 +71,13 @@ export function Combobox({
                      {options.map((option) => (
                         <CommandItem
                            key={option.value}
-                           value={option.value}
                            onSelect={(currentValue) => {
                               onValueChange?.(
                                  currentValue === value ? "" : currentValue,
                               );
                               setOpen(false);
                            }}
+                           value={option.value}
                         >
                            <CheckIcon
                               className={cn(

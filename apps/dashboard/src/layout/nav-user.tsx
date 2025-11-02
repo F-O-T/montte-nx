@@ -7,7 +7,6 @@ import { Button } from "@packages/ui/components/button";
 import {
    DropdownMenu,
    DropdownMenuContent,
-   DropdownMenuGroup,
    DropdownMenuItem,
    DropdownMenuLabel,
    DropdownMenuSeparator,
@@ -20,22 +19,12 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { Link, useRouter } from "@tanstack/react-router";
-import {
-   Building2,
-   KeyIcon,
-   LogOutIcon,
-   MoreVerticalIcon,
-   UserCircleIcon,
-} from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { LogOutIcon, MoreVerticalIcon } from "lucide-react";
 import { useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import {
-   betterAuthClient,
-   type Session,
-   useTRPC,
-} from "@/integrations/clients";
+import { betterAuthClient, type Session } from "@/integrations/clients";
 
 function UserAvatarInfo({
    name,
@@ -149,22 +138,6 @@ function NavUserContent({ session }: { session: Session | null }) {
                         />
                      </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                     <DropdownMenuItem asChild>
-                        <Button
-                           asChild
-                           className="w-full items-center cursor-pointer justify-start flex gap-2 h-12"
-                           onClick={() => setOpenMobile(false)}
-                           variant="ghost"
-                        >
-                           <Link to="/profile">
-                              <UserCircleIcon />
-                              Account
-                           </Link>
-                        </Button>
-                     </DropdownMenuItem>
-                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                      <Button

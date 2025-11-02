@@ -25,15 +25,32 @@ import {
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/integrations/clients";
 
-interface AddTransactionSheetProps {
-   categories: string[];
-}
+interface AddTransactionSheetProps {}
 
-export function AddTransactionSheet({ categories }: AddTransactionSheetProps) {
+export function AddTransactionSheet({}: AddTransactionSheetProps) {
    const [isSheetOpen, setIsSheetOpen] = useState(false);
+   const queryClient = useQueryClient();
+
+   const { data: categories = [] } = useQuery(
+      trpc.categories.getAll.queryOptions(),
+   );
+
+   const createTransactionMutation = useMutation(
+      trpc.transactions.create.mutationOptions({
+         onSuccess: () => {
+            // Invalidate and refetch transactions
+            queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAll.queryKey(),
+            });
+            setIsSheetOpen(false);
+         },
+      }),
+   );
 
    const form = useForm({
       defaultValues: {
@@ -43,14 +60,21 @@ export function AddTransactionSheet({ categories }: AddTransactionSheetProps) {
          description: "",
          type: "expense" as "expense" | "income",
       },
-      onSubmit: async ({ value, formApi }) => {
-         // Mock submission - in a real app this would save to backend
-         console.log("New transaction:", {
-            ...value,
-            date: value.date.toISOString().split("T")[0], // Convert Date to string for submission
-         });
-         setIsSheetOpen(false);
-         formApi.reset();
+      onSubmit: async ({ value }) => {
+         if (!value.amount || !value.category || !value.description) {
+            return;
+         }
+         try {
+            await createTransactionMutation.mutateAsync({
+               amount: parseFloat(value.amount),
+               category: value.category as string,
+               date: value.date.toISOString().split("T")[0],
+               description: value.description,
+               type: value.type,
+            });
+         } catch (error) {
+            console.error("Failed to create transaction:", error);
+         }
       },
    });
 
@@ -157,10 +181,10 @@ export function AddTransactionSheet({ categories }: AddTransactionSheetProps) {
                                     <SelectContent>
                                        {categories.map((category) => (
                                           <SelectItem
-                                             key={category}
-                                             value={category}
+                                             key={category.id}
+                                             value={category.name}
                                           >
-                                             {category}
+                                             {category.name}
                                           </SelectItem>
                                        ))}
                                     </SelectContent>
@@ -249,10 +273,15 @@ export function AddTransactionSheet({ categories }: AddTransactionSheetProps) {
                      {(state) => (
                         <Button
                            className="w-full"
-                           disabled={!state.canSubmit || state.isSubmitting}
+                           disabled={
+                              !state.canSubmit ||
+                              state.isSubmitting ||
+                              createTransactionMutation.isPending
+                           }
                            type="submit"
                         >
-                           {state.isSubmitting
+                           {state.isSubmitting ||
+                           createTransactionMutation.isPending
                               ? "Adding..."
                               : "Add Transaction"}
                         </Button>
