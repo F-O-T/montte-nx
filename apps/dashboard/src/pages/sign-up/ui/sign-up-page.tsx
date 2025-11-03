@@ -33,8 +33,6 @@ const steps = [
 
 const { Stepper } = defineStepper(...steps);
 
-// Internal component for basic info step
-
 export function SignUpPage() {
    const router = useRouter();
    const schema = z
