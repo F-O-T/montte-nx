@@ -8,7 +8,7 @@ import {
 } from "@packages/ui/components/sidebar";
 import { Link } from "@tanstack/react-router";
 import type { LayoutDashboardIcon } from "lucide-react";
-import { CreditCard, Settings, Tag } from "lucide-react";
+import { CreditCard, Tag } from "lucide-react";
 import type * as React from "react";
 import type { Session } from "@/integrations/clients";
 import type { FileRoutesByTo } from "@/routeTree.gen";

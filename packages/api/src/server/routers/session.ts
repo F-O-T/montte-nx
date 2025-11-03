@@ -13,6 +13,12 @@ export const sessionRouter = router({
       });
       return sessionsResponse;
    }),
+   logout: protectedProcedure.mutation(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      await resolvedCtx.auth.api.signOut({
+         headers: resolvedCtx.headers,
+      });
+   }),
    revokeOtherSessions: protectedProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       await resolvedCtx.auth.api.revokeOtherSessions({
