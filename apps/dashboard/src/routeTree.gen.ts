@@ -16,6 +16,7 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
+import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardPreferencesRouteImport } from './routes/_dashboard/preferences'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
@@ -54,6 +55,11 @@ const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
   path: '/transactions',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardPreferencesRoute = DashboardPreferencesRouteImport.update({
   id: '/preferences',
   path: '/preferences',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
   '/preferences': typeof DashboardPreferencesRoute
+  '/profile': typeof DashboardProfileRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
   '/preferences': typeof DashboardPreferencesRoute
+  '/profile': typeof DashboardProfileRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/_dashboard/categories': typeof DashboardCategoriesRoute
   '/_dashboard/home': typeof DashboardHomeRoute
   '/_dashboard/preferences': typeof DashboardPreferencesRoute
+  '/_dashboard/profile': typeof DashboardProfileRoute
   '/_dashboard/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/home'
     | '/preferences'
+    | '/profile'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/home'
     | '/preferences'
+    | '/profile'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/_dashboard/categories'
     | '/_dashboard/home'
     | '/_dashboard/preferences'
+    | '/_dashboard/profile'
     | '/_dashboard/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -198,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTransactionsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/profile': {
+      id: '/_dashboard/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/preferences': {
       id: '/_dashboard/preferences'
       path: '/preferences'
@@ -226,6 +245,7 @@ interface DashboardRouteChildren {
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardPreferencesRoute: typeof DashboardPreferencesRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
 }
 
@@ -233,6 +253,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardPreferencesRoute: DashboardPreferencesRoute,
+  DashboardProfileRoute: DashboardProfileRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
 }
 

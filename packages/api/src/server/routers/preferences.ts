@@ -3,7 +3,7 @@ import {
    findPreferenceByUserId,
    upsertPreference,
 } from "@packages/database/repositories/preference-repository";
-import { protectedProcedure, router } from "./trpc";
+import { protectedProcedure, router } from "../trpc";
 
 const updatePreferenceSchema = z.object({
    currency: z.string().optional(),

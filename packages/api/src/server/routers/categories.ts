@@ -6,7 +6,7 @@ import {
    updateCategory,
 } from "@packages/database/repositories/category-repository";
 import { z } from "zod";
-import { protectedProcedure, router } from "./trpc";
+import { protectedProcedure, router } from "../trpc";
 
 const createCategorySchema = z.object({
    color: z.string(),

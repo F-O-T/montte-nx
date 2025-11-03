@@ -6,7 +6,7 @@ import {
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
-import { protectedProcedure, router } from "./trpc";
+import { protectedProcedure, router } from "../trpc";
 
 const createTransactionSchema = z.object({
    amount: z.number(),

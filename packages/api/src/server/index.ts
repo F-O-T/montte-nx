@@ -2,12 +2,14 @@ import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
 import type { Polar } from "@polar-sh/sdk";
-import { categoryRouter } from "./categories";
-import { preferenceRouter } from "./preferences";
-import { transactionRouter } from "./transactions";
+import { categoryRouter } from "./routers/categories";
+import { preferenceRouter } from "./routers/preferences";
+import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
+import { sessionRouter } from "./routers/session";
 
 export const appRouter = router({
+   session: sessionRouter,
    categories: categoryRouter,
    preferences: preferenceRouter,
    transactions: transactionRouter,
