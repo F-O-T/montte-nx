@@ -42,8 +42,8 @@ export function QuickAccessCard({
          tabIndex={disabled ? -1 : 0}
       >
          <CardAction className="px-6 flex items-center justify-between w-full">
-            <div className="rounded-lg bg-accent p-2">{icon}</div>
-            <ArrowUpRight className="w-4 h-4" />
+            <div className="rounded-lg bg-muted p-2">{icon}</div>
+            <ArrowUpRight className="size-4 text-primary" />
          </CardAction>
          <CardHeader>
             <CardTitle>{title}</CardTitle>

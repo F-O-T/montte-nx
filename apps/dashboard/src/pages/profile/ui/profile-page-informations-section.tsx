@@ -4,7 +4,6 @@ import {
    AvatarFallback,
    AvatarImage,
 } from "@packages/ui/components/avatar";
-import { Button } from "@packages/ui/components/button";
 import {
    Card,
    CardContent,
@@ -12,14 +11,7 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import {
-   Empty,
-   EmptyContent,
-   EmptyDescription,
-   EmptyHeader,
-   EmptyMedia,
-   EmptyTitle,
-} from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
    ItemContent,
@@ -29,47 +21,31 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { getInitials } from "@packages/utils/text";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { AlertCircle } from "lucide-react";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
-function ProfileInformationErrorFallback() {
+function ProfileInformationErrorFallback(props: FallbackProps) {
    return (
       <Card>
          <CardHeader>
             <CardTitle>
-               {translate("pages.profile.information.title")}
+               {translate("dashboard.routes.profile.information.title")}
             </CardTitle>
             <CardDescription>
-               {translate("pages.profile.information.description")}
+               {translate("dashboard.routes.profile.information.description")}
             </CardDescription>
          </CardHeader>
          <CardContent>
-            <Empty>
-               <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                     <AlertCircle className="size-6" />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                     {translate("pages.profile.information.state.error.title")}
-                  </EmptyTitle>
-                  <EmptyDescription>
-                     {translate(
-                        "pages.profile.information.state.error.description",
-                     )}
-                  </EmptyDescription>
-               </EmptyHeader>
-               <EmptyContent>
-                  <Button
-                     onClick={() => window.location.reload()}
-                     size="sm"
-                     variant="outline"
-                  >
-                     {translate("common.actions.retry")}
-                  </Button>
-               </EmptyContent>
-            </Empty>
+            {createErrorFallback({
+               errorDescription: translate(
+                  "dashboard.routes.profile.information.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.profile.information.state.error.title",
+               ),
+               retryText: translate("common.actions.retry"),
+            })(props)}
          </CardContent>
       </Card>
    );
@@ -107,10 +83,10 @@ function ProfileInformationContent() {
       <Card className="w-full h-full">
          <CardHeader>
             <CardTitle>
-               {translate("pages.profile.information.title")}
+               {translate("dashboard.routes.profile.information.title")}
             </CardTitle>
             <CardDescription>
-               {translate("pages.profile.information.description")}
+               {translate("dashboard.routes.profile.information.description")}
             </CardDescription>
          </CardHeader>
          <CardContent className="grid place-items-center gap-4">

@@ -28,14 +28,7 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
-import {
-   Empty,
-   EmptyContent,
-   EmptyDescription,
-   EmptyHeader,
-   EmptyMedia,
-   EmptyTitle,
-} from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
    ItemActions,
@@ -48,52 +41,44 @@ import {
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { toast } from "@packages/ui/components/sonner";
-import { TooltipProvider } from "@packages/ui/components/tooltip";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipProvider,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import {
    useMutation,
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AlertCircle, Info, Monitor, MoreVertical, Trash2 } from "lucide-react";
+import { Info, Monitor, MoreVertical, Trash2 } from "lucide-react";
 import { Fragment, Suspense, useMemo } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 import { SessionDetailsSheet } from "../features/session-details-sheet";
 
-function SessionsSectionErrorFallback() {
+function SessionsSectionErrorFallback(props: FallbackProps) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>{translate("pages.profile.sessions.title")}</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.profile.sessions.title")}
+            </CardTitle>
             <CardDescription>
-               {translate("pages.profile.sessions.description")}
+               {translate("dashboard.routes.profile.sessions.description")}
             </CardDescription>
          </CardHeader>
          <CardContent>
-            <Empty>
-               <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                     <AlertCircle className="size-6" />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                     {translate("pages.profile.sessions.state.error.title")}
-                  </EmptyTitle>
-                  <EmptyDescription>
-                     {translate(
-                        "pages.profile.sessions.state.error.description",
-                     )}
-                  </EmptyDescription>
-               </EmptyHeader>
-               <EmptyContent>
-                  <Button
-                     onClick={() => window.location.reload()}
-                     size="sm"
-                     variant="outline"
-                  >
-                     {translate("common.actions.retry")}
-                  </Button>
-               </EmptyContent>
-            </Empty>
+            {createErrorFallback({
+               errorDescription: translate(
+                  "dashboard.routes.profile.sessions.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.profile.sessions.state.error.title",
+               ),
+               retryText: translate("common.actions.retry"),
+            })(props)}
          </CardContent>
       </Card>
    );
@@ -184,7 +169,9 @@ function SessionsSectionContent() {
             disabled: revokeOtherSessionsMutation.isPending,
             icon: <Trash2 className="w-4 h-4 mr-2" />,
             id: "revoke-others",
-            label: translate("pages.profile.sessions.actions.revoke-others"),
+            label: translate(
+               "dashboard.routes.profile.sessions.actions.revoke-others",
+            ),
             variant: "destructive" as const,
          },
          {
@@ -192,7 +179,9 @@ function SessionsSectionContent() {
             disabled: revokeAllSessionsMutation.isPending,
             icon: <Trash2 className="w-4 h-4 mr-2 text-destructive" />,
             id: "revoke-all",
-            label: translate("pages.profile.sessions.actions.revoke-all"),
+            label: translate(
+               "dashboard.routes.profile.sessions.actions.revoke-all",
+            ),
             variant: "destructive" as const,
          },
       ],
@@ -209,17 +198,17 @@ function SessionsSectionContent() {
          <Card>
             <CardHeader>
                <CardTitle>
-                  {translate("pages.profile.sessions.title")}
+                  {translate("dashboard.routes.profile.sessions.title")}
                </CardTitle>
                <CardDescription>
-                  {translate("pages.profile.sessions.description")}
+                  {translate("dashboard.routes.profile.sessions.description")}
                </CardDescription>
                <CardAction>
                   <DropdownMenu>
                      <DropdownMenuTrigger asChild>
                         <Button
                            aria-label={translate(
-                              "pages.profile.sessions.actions.title",
+                              "dashboard.routes.profile.sessions.actions.title",
                            )}
                            size="icon"
                            variant="ghost"
@@ -229,7 +218,9 @@ function SessionsSectionContent() {
                      </DropdownMenuTrigger>
                      <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>
-                           {translate("pages.profile.sessions.actions.title")}
+                           {translate(
+                              "dashboard.routes.profile.sessions.actions.title",
+                           )}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
@@ -249,12 +240,12 @@ function SessionsSectionContent() {
                                     <AlertDialogHeader>
                                        <AlertDialogTitle>
                                           {translate(
-                                             "common.delete-confirmation.title",
+                                             "common.headers.delete-confirmation.title",
                                           )}
                                        </AlertDialogTitle>
                                        <AlertDialogDescription>
                                           {translate(
-                                             "common.delete-confirmation.description",
+                                             "common.headers.delete-confirmation.description",
                                           )}
                                        </AlertDialogDescription>
                                     </AlertDialogHeader>
@@ -289,13 +280,13 @@ function SessionsSectionContent() {
                               <ItemTitle>
                                  {session.userAgent ||
                                     translate(
-                                       "pages.profile.sessions.item.unknown-device",
+                                       "dashboard.routes.profile.sessions.item.unknown-device",
                                     )}
                               </ItemTitle>
                               <ItemDescription>
                                  <span>
                                     {translate(
-                                       "pages.profile.sessions.item.ip-address",
+                                       "dashboard.routes.profile.sessions.item.ip-address",
                                     )}
                                  </span>
                                  <span>:</span>
@@ -309,15 +300,24 @@ function SessionsSectionContent() {
                                  }
                                  session={session}
                               >
-                                 <Button
-                                    aria-label={translate(
-                                       "pages.profile.sessions.item.details",
-                                    )}
-                                    size="icon"
-                                    variant="ghost"
-                                 >
-                                    <Info className="w-4 h-4" />
-                                 </Button>
+                                 <Tooltip>
+                                    <TooltipTrigger asChild>
+                                       <Button
+                                          aria-label={translate(
+                                             "dashboard.routes.profile.sessions.item.details",
+                                          )}
+                                          size="icon"
+                                          variant="ghost"
+                                       >
+                                          <Info className="w-4 h-4" />
+                                       </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                       {translate(
+                                          "dashboard.routes.profile.sessions.item.details",
+                                       )}
+                                    </TooltipContent>
+                                 </Tooltip>
                               </SessionDetailsSheet>
                            </ItemActions>
                         </Item>

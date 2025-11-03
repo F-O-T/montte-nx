@@ -76,24 +76,32 @@ export function SessionDetailsSheet({
             title: "Device",
             value:
                session.userAgent ||
-               translate("pages.profile.sessions.item.unknown-device"),
+               translate(
+                  "dashboard.routes.profile.sessions.item.unknown-device",
+               ),
          },
          {
             isCurrent: false,
             showIcon: false,
-            title: translate("pages.profile.sessions.item.ip-address"),
+            title: translate(
+               "dashboard.routes.profile.sessions.item.ip-address",
+            ),
             value: session.ipAddress || "-",
          },
          {
             isCurrent: false,
             showIcon: false,
-            title: translate("pages.profile.sessions.item.created-at"),
+            title: translate(
+               "dashboard.routes.profile.sessions.item.created-at",
+            ),
             value: formatDate(session.createdAt),
          },
          {
             isCurrent: false,
             showIcon: false,
-            title: translate("pages.profile.sessions.item.last-active"),
+            title: translate(
+               "dashboard.routes.profile.sessions.item.last-active",
+            ),
             value: formatDate(session.updatedAt),
          },
       ];
@@ -105,11 +113,13 @@ export function SessionDetailsSheet({
          <SheetContent>
             <SheetHeader>
                <SheetTitle>
-                  {translate("pages.profile.features.session-details.title")}
+                  {translate(
+                     "dashboard.routes.profile.features.session-details.title",
+                  )}
                </SheetTitle>
                <SheetDescription>
                   {translate(
-                     "pages.profile.features.session-details.description",
+                     "dashboard.routes.profile.features.session-details.description",
                   )}
                </SheetDescription>
             </SheetHeader>
@@ -128,7 +138,7 @@ export function SessionDetailsSheet({
                               <span className="text-primary flex items-center gap-1 text-xs font-semibold">
                                  <CheckCircle2 className="w-4 h-4" />
                                  {translate(
-                                    "pages.profile.sessions.item.current",
+                                    "dashboard.routes.profile.sessions.item.current",
                                  )}
                               </span>
                            )}
@@ -143,12 +153,12 @@ export function SessionDetailsSheet({
             <SheetHeader>
                <SheetTitle>
                   {translate(
-                     "pages.profile.features.session-details.actions.title",
+                     "dashboard.routes.profile.features.session-details.actions.title",
                   )}
                </SheetTitle>
                <SheetDescription>
                   {translate(
-                     "pages.profile.features.session-details.actions.description",
+                     "dashboard.routes.profile.features.session-details.actions.description",
                   )}
                </SheetDescription>
             </SheetHeader>
@@ -157,7 +167,7 @@ export function SessionDetailsSheet({
                   <AlertDialogTrigger asChild>
                      <Item
                         aria-label={translate(
-                           "pages.profile.features.session-details.actions.revoke-current.title",
+                           "dashboard.routes.profile.features.session-details.actions.revoke-current.title",
                         )}
                         className="cursor-pointer"
                         variant="outline"
@@ -168,12 +178,12 @@ export function SessionDetailsSheet({
                         <ItemContent className="gap-1">
                            <ItemTitle className="text-destructive">
                               {translate(
-                                 "pages.profile.features.session-details.actions.revoke-current.title",
+                                 "dashboard.routes.profile.features.session-details.actions.revoke-current.title",
                               )}
                            </ItemTitle>
                            <ItemDescription>
                               {translate(
-                                 "pages.profile.features.session-details.actions.revoke-current.description",
+                                 "dashboard.routes.profile.features.session-details.actions.revoke-current.description",
                               )}
                            </ItemDescription>
                         </ItemContent>
@@ -185,10 +195,14 @@ export function SessionDetailsSheet({
                   <AlertDialogContent>
                      <AlertDialogHeader>
                         <AlertDialogTitle>
-                           {translate("common.delete-confirmation.title")}
+                           {translate(
+                              "common.headers.delete-confirmation.title",
+                           )}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                           {translate("common.delete-confirmation.description")}
+                           {translate(
+                              "common.headers.delete-confirmation.description",
+                           )}
                         </AlertDialogDescription>
                      </AlertDialogHeader>
                      <AlertDialogFooter>
@@ -197,7 +211,7 @@ export function SessionDetailsSheet({
                         </AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete}>
                            {translate(
-                              "pages.profile.features.session-details.actions.revoke-current.title",
+                              "dashboard.routes.profile.features.session-details.actions.revoke-current.title",
                            )}
                         </AlertDialogAction>
                      </AlertDialogFooter>

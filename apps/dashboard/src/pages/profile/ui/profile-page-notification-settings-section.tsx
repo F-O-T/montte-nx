@@ -6,14 +6,7 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import {
-   Empty,
-   EmptyContent,
-   EmptyDescription,
-   EmptyHeader,
-   EmptyMedia,
-   EmptyTitle,
-} from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
    ItemContent,
@@ -22,45 +15,36 @@ import {
    ItemTitle,
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { AlertCircle, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { CurrencyCommand } from "@/pages/profile/features/currency-command";
 
-function AccountConfigurationErrorFallback() {
+function AccountConfigurationErrorFallback(props: FallbackProps) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>{translate("pages.profile.account.title")}</CardTitle>
+            <CardTitle>
+               {translate(
+                  "dashboard.routes.profile.account-configuration.title",
+               )}
+            </CardTitle>
             <CardDescription>
-               {translate("pages.profile.account.description")}
+               {translate(
+                  "dashboard.routes.profile.account-configuration.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
-            <Empty>
-               <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                     <AlertCircle className="size-6" />
-                  </EmptyMedia>
-                  <EmptyTitle>
-                     {translate("pages.profile.account.state.error.title")}
-                  </EmptyTitle>
-                  <EmptyDescription>
-                     {translate(
-                        "pages.profile.account.state.error.description",
-                     )}
-                  </EmptyDescription>
-               </EmptyHeader>
-               <EmptyContent>
-                  <Button
-                     onClick={() => window.location.reload()}
-                     size="sm"
-                     variant="outline"
-                  >
-                     {translate("common.actions.retry")}
-                  </Button>
-               </EmptyContent>
-            </Empty>
+            {createErrorFallback({
+               errorDescription: translate(
+                  "dashboard.routes.profile.account-configuration.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.profile.account-configuration.state.error.title",
+               ),
+               retryText: translate("common.actions.retry"),
+            })(props)}
          </CardContent>
       </Card>
    );
@@ -100,9 +84,15 @@ function AccountConfigurationContent() {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>{translate("pages.profile.account.title")}</CardTitle>
+            <CardTitle>
+               {translate(
+                  "dashboard.routes.profile.account-configuration.title",
+               )}
+            </CardTitle>
             <CardDescription>
-               {translate("pages.profile.account.description")}
+               {translate(
+                  "dashboard.routes.profile.account-configuration.description",
+               )}
             </CardDescription>
          </CardHeader>
 
@@ -113,11 +103,13 @@ function AccountConfigurationContent() {
                </ItemMedia>
                <ItemContent>
                   <ItemTitle>
-                     {translate("pages.profile.account.items.currency.title")}
+                     {translate(
+                        "dashboard.routes.profile.account-configuration.items.currency.title",
+                     )}
                   </ItemTitle>
                   <ItemDescription>
                      {translate(
-                        "pages.profile.account.items.currency.description",
+                        "dashboard.routes.profile.account-configuration.items.currency.description",
                      )}
                   </ItemDescription>
                </ItemContent>

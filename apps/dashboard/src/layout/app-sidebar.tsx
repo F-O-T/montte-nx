@@ -41,11 +41,6 @@ export function AppSidebar({
          title: "Categories",
          url: "/categories",
       },
-      {
-         icon: Settings,
-         title: "Preferences",
-         url: "/preferences",
-      },
    ];
    return (
       <Sidebar collapsible="offcanvas" {...props}>

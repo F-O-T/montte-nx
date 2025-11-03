@@ -8,12 +8,10 @@ import {
 } from "@packages/ui/components/card";
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { AlertCircle, Building2, FolderOpen } from "lucide-react";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 import { ProfilePageBilling } from "./profile-page-billing";
 import { ProfileInformation } from "./profile-page-informations-section";
 import { AccountConfigurationSection } from "./profile-page-notification-settings-section";
@@ -24,21 +22,25 @@ function QuickAccessCardsErrorFallback() {
    const errorCards = [
       {
          description: translate(
-            "pages.profile.quick-access.state.error.description",
+            "dashboard.routes.profile.quick-access.state.error.description",
          ),
          disabled: true,
          icon: <AlertCircle className="w-4 h-4" />,
          onClick: () => {},
-         title: translate("pages.profile.quick-access.state.error.title"),
+         title: translate(
+            "dashboard.routes.profile.quick-access.state.error.title",
+         ),
       },
       {
          description: translate(
-            "pages.profile.quick-access.state.error.description",
+            "dashboard.routes.profile.quick-access.state.error.description",
          ),
          disabled: true,
          icon: <AlertCircle className="w-4 h-4" />,
          onClick: () => {},
-         title: translate("pages.profile.quick-access.state.error.title"),
+         title: translate(
+            "dashboard.routes.profile.quick-access.state.error.title",
+         ),
       },
    ];
 
@@ -89,19 +91,25 @@ function QuickAccessCards() {
       () => [
          {
             description: translate(
-               "pages.profile.quick-access.categories.description",
+               "dashboard.routes.profile.quick-access.categories.description",
             ),
-            icon: <FolderOpen className="w-4 h-4" />,
+            disabled: false,
+            icon: <FolderOpen className="size-4 text-primary" />,
             onClick: () => router.navigate({ to: "/categories" }),
-            title: translate("pages.profile.quick-access.categories.title"),
+            title: translate(
+               "dashboard.routes.profile.quick-access.categories.title",
+            ),
          },
          {
             description: translate(
-               "pages.profile.quick-access.organization.description",
+               "dashboard.routes.profile.quick-access.organization.description",
             ),
-            icon: <Building2 className="w-4 h-4" />,
-            onClick: () => router.navigate({ to: "/organization" }),
-            title: translate("pages.profile.quick-access.organization.title"),
+            disabled: true,
+            icon: <Building2 className="size-4 text-primary" />,
+            onClick: () => {},
+            title: translate(
+               "dashboard.routes.profile.quick-access.organization.title",
+            ),
          },
       ],
       [router],
@@ -112,6 +120,7 @@ function QuickAccessCards() {
          {quickAccessCards.map((card, index) => (
             <QuickAccessCard
                description={card.description}
+               disabled={card.disabled}
                icon={card.icon}
                key={`${card.title}-${index + 1}`}
                onClick={card.onClick}

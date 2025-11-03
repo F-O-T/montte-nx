@@ -28,12 +28,12 @@ export function LanguageCommand() {
       (): LanguageOptions[] => [
          {
             flag: "🇺🇸",
-            name: translate("common.languages.en"),
+            name: translate("common.languages.english"),
             value: "en-US",
          },
          {
             flag: "🇧🇷",
-            name: translate("common.languages.pt"),
+            name: translate("common.languages.portuguese"),
             value: "pt-BR",
          },
       ],
@@ -80,14 +80,14 @@ export function LanguageCommand() {
          <CommandDialog onOpenChange={setIsOpen} open={isOpen}>
             <CommandInput
                placeholder={translate(
-                  "pages.profile.features.language-command.search",
+                  "dashboard.routes.profile.features.language-command.search",
                )}
             />
             <CommandList>
                <Command>
                   <CommandEmpty>
                      {translate(
-                        "pages.profile.features.language-command.empty",
+                        "dashboard.routes.profile.features.language-command.empty",
                      )}
                   </CommandEmpty>
                   <CommandGroup>

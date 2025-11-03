@@ -5,25 +5,27 @@
          "title": "Gerenciar assinatura"
       },
       "description": "Gerencie sua assinatura e informações de cobrança.",
-      "next-billing": "Próxima data de cobrança:",
       "state": {
-         "active": {
-            "description": "Visualize o seu uso de créditos deste mês.",
-            "legend": "Créditos utilizados este mês: ",
-            "title": "Uso de créditos"
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas informações de assinatura.",
+            "title": "Erro ao carregar"
          },
          "not-active": {
-            "description": "Você não tem uma assinatura ativa no momento. Atualize para continuar aproveitando nossos serviços.",
-            "title": "Assinatura inativa"
-         },
-         "organization": {
-            "description": "As assinaturas são gerenciadas pela organização à qual você pertence.",
-            "title": "Assinatura da organização"
+            "description": "O aplicativo está em modo de teste e não estamos cobrando pela assinatura no momento.",
+            "title": "Modo de teste"
          }
       },
       "title": "Assinatura"
    },
    "features": {
+      "currency-command": {
+         "empty": "Nenhuma moeda encontrada.",
+         "search": "Pesquisar moedas...",
+         "currencies": {
+            "USD": "Dólar Americano",
+            "BRL": "Real Brasileiro"
+         }
+      },
       "language-command": {
          "empty": "Nenhum idioma encontrado.",
          "search": "Pesquisar idiomas..."
@@ -49,19 +51,29 @@
          "title": "Gerenciar informações"
       },
       "description": "Atualize suas informações pessoais e de conta.",
-      "title": "Informações do perfil"
-   },
-   "mascot-message": "Gerencie suas informações de perfil e configurações de conta aqui.",
-   "notifications": {
-      "description": "Gerencie suas preferências de notificação.",
-      "items": {
-         "missing-images": {
-            "description": "Notifique-me quando meus posts estão sem imagens.",
-            "label": "Ativar notificações de imagens faltando",
-            "title": "Imagens faltando"
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas informações de perfil.",
+            "title": "Erro ao carregar"
          }
       },
-      "title": "Notificações"
+      "title": "Informações do perfil"
+   },
+   "account-configuration": {
+      "description": "Gerencie suas configurações de conta.",
+      "items": {
+         "currency": {
+            "description": "Selecione a moeda para suas transações.",
+            "title": "Moeda"
+         }
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas preferências de notificação.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "title": "Configuração da conta"
    },
    "preferences": {
       "description": "Gerencie suas preferências de conta.",
@@ -78,13 +90,19 @@
       "title": "Preferências"
    },
    "quick-access": {
-      "api-keys": {
-         "description": "Gerencie suas chaves API para acesso programático.",
-         "title": "Chaves API"
+      "categories": {
+         "description": "Gerencie suas categorias.",
+         "title": "Categorias"
       },
       "organization": {
          "description": "Visualize a organização associada à sua conta.",
          "title": "Organização"
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar seus atalhos.",
+            "title": "Erro ao carregar"
+         }
       }
    },
    "sessions": {
@@ -102,6 +120,12 @@
          "ip-address": "Endereço IP",
          "last-active": "Última atividade",
          "unknown-device": "Dispositivo desconhecido"
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas sessões ativas.",
+            "title": "Erro ao carregar"
+         }
       },
       "title": "Sessões ativas"
    }

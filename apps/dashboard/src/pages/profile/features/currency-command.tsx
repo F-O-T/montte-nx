@@ -1,5 +1,5 @@
 import { translate } from "@packages/localization";
-import { toast } from "@packages/ui/components/sonner";
+import { Button } from "@packages/ui/components/button";
 import {
    Command,
    CommandDialog,
@@ -9,6 +9,7 @@ import {
    CommandItem,
    CommandList,
 } from "@packages/ui/components/command";
+import { toast } from "@packages/ui/components/sonner";
 import {
    useMutation,
    useQueryClient,
@@ -17,7 +18,6 @@ import {
 import { CheckCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
-import { Button } from "@packages/ui/components/button";
 
 export function CurrencyCommand() {
    const trpc = useTRPC();
@@ -46,44 +46,18 @@ export function CurrencyCommand() {
    const currencyOptions = useMemo(
       (): CurrencyOption[] => [
          {
+            name: translate(
+               "dashboard.routes.profile.features.currency-command.currencies.USD",
+            ),
             symbol: "$",
-            name: "US Dollar",
             value: "USD",
          },
          {
-            symbol: "€",
-            name: "Euro",
-            value: "EUR",
-         },
-         {
-            symbol: "£",
-            name: "British Pound",
-            value: "GBP",
-         },
-         {
-            symbol: "¥",
-            name: "Japanese Yen",
-            value: "JPY",
-         },
-         {
-            symbol: "¥",
-            name: "Chinese Yuan",
-            value: "CNY",
-         },
-         {
-            symbol: "C$",
-            name: "Canadian Dollar",
-            value: "CAD",
-         },
-         {
-            symbol: "A$",
-            name: "Australian Dollar",
-            value: "AUD",
-         },
-         {
-            symbol: "CHF",
-            name: "Swiss Franc",
-            value: "CHF",
+            name: translate(
+               "dashboard.routes.profile.features.currency-command.currencies.BRL",
+            ),
+            symbol: "R$",
+            value: "BRL",
          },
       ],
       [],
@@ -127,14 +101,14 @@ export function CurrencyCommand() {
          <CommandDialog onOpenChange={setIsOpen} open={isOpen}>
             <CommandInput
                placeholder={translate(
-                  "pages.profile.features.currency-command.search",
+                  "dashboard.routes.profile.features.currency-command.search",
                )}
             />
             <CommandList>
                <Command>
                   <CommandEmpty>
                      {translate(
-                        "pages.profile.features.currency-command.empty",
+                        "dashboard.routes.profile.features.currency-command.empty",
                      )}
                   </CommandEmpty>
                   <CommandGroup>
@@ -162,4 +136,3 @@ export function CurrencyCommand() {
       </>
    );
 }
-

@@ -1,0 +1,142 @@
+{
+   "billing": {
+      "actions": {
+         "portal": "Abrir o portal",
+         "title": "Gerenciar assinatura"
+      },
+      "description": "Gerencie sua assinatura e informações de cobrança.",
+      "next-billing": "Próxima data de cobrança:",
+      "state": {
+         "active": {
+            "description": "Visualize o seu uso de créditos deste mês.",
+            "legend": "Créditos utilizados este mês: ",
+            "title": "Uso de créditos"
+         },
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas informações de assinatura.",
+            "title": "Erro ao carregar"
+         },
+         "not-active": {
+            "description": "The app is in testing mode and we are not charging for subscriptions at the moment.",
+            "title": "Testing mode"
+         },
+         "organization": {
+            "description": "As assinaturas são gerenciadas pela organização à qual você pertence.",
+            "title": "Assinatura da organização"
+         }
+      },
+      "title": "Assinatura"
+   },
+   "features": {
+      "currency-command": {
+         "empty": "No currencies found.",
+         "search": "Search currencies...",
+         "currencies": {
+            "USD": "US Dollar",
+            "BRL": "Brazilian Real"
+         }
+      },
+      "language-command": {
+         "empty": "Nenhum idioma encontrado.",
+         "search": "Pesquisar idiomas..."
+      },
+      "session-details": {
+         "actions": {
+            "description": "Aqui você pode gerenciar sua sessão atual.",
+            "revoke-current": {
+               "description": "Revogar a sessão atual e sair deste dispositivo.",
+               "title": "Revogar sessão atual"
+            },
+            "title": "Gerencie sua sessão"
+         },
+         "description": "Informações sobre a sessão selecionada.",
+         "title": "Detalhes da sessão"
+      }
+   },
+   "information": {
+      "actions": {
+         "edit-email": "Editar email",
+         "edit-password": "Alterar senha",
+         "edit-profile": "Editar perfil",
+         "title": "Gerenciar informações"
+      },
+      "description": "Atualize suas informações pessoais e de conta.",
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas informações de perfil.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "title": "Informações do perfil"
+   },
+   "account-configuration": {
+      "description": "Gerencie suas configurações de conta.",
+      "items": {
+         "currency": {
+            "description": "Selecione a moeda para suas transações.",
+            "title": "Moeda"
+         }
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas preferências de notificação.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "title": "Configuração da conta"
+   },
+   "preferences": {
+      "description": "Gerencie suas preferências de conta.",
+      "items": {
+         "language": {
+            "description": "Selecione o idioma preferido para a interface.",
+            "title": "Idioma"
+         },
+         "theme": {
+            "description": "Escolha entre o modo claro, escuro ou siga o do seu sistema.",
+            "title": "Tema"
+         }
+      },
+      "title": "Preferências"
+   },
+   "quick-access": {
+      "categories": {
+         "description": "Gerencie suas categorias.",
+         "title": "Categorias"
+      },
+      "organization": {
+         "description": "Visualize a organização associada à sua conta.",
+         "title": "Organização"
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar seus atalhos.",
+            "title": "Erro ao carregar"
+         }
+      }
+   },
+   "sessions": {
+      "actions": {
+         "revoke-all": "Revogar todas as sessões",
+         "revoke-others": "Revogar outras sessões",
+         "title": "Gerenciar sessões"
+      },
+      "description": "Visualize e gerencie suas sessões de login ativas.",
+      "item": {
+         "created-at": "Iniciado em",
+         "current": "Sessão atual",
+         "details": "Detalhes da sessão",
+         "device": "Dispositivo",
+         "ip-address": "Endereço IP",
+         "last-active": "Última atividade",
+         "unknown-device": "Dispositivo desconhecido"
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas sessões ativas.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "title": "Sessões ativas"
+   }
+}

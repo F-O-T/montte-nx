@@ -23,66 +23,64 @@ import { LanguageCommand } from "../features/language-command";
 
 export function PreferencesSection() {
    return (
-      <div className="">
-         <Card>
-            <CardHeader>
-               <CardTitle>
-                  {translate("pages.profile.preferences.title")}
-               </CardTitle>
-               <CardDescription>
-                  {translate("pages.profile.preferences.description")}
-               </CardDescription>
-            </CardHeader>
-            <CardContent>
-               <ItemGroup>
-                  {/* Theme Toggle Group */}
-                  <Item>
-                     <ItemMedia variant="icon">
-                        <Moon className="size-4" />
-                     </ItemMedia>
-                     <ItemContent className="truncate">
-                        <ItemTitle>
-                           {translate(
-                              "pages.profile.preferences.items.theme.title",
-                           )}
-                        </ItemTitle>
-                        <ItemDescription>
-                           {translate(
-                              "pages.profile.preferences.items.theme.description",
-                           )}
-                        </ItemDescription>
-                     </ItemContent>
-                     <ItemActions>
-                        <ThemeSwitcher />
-                     </ItemActions>
-                  </Item>
+      <Card>
+         <CardHeader>
+            <CardTitle>
+               {translate("dashboard.routes.profile.preferences.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate("dashboard.routes.profile.preferences.description")}
+            </CardDescription>
+         </CardHeader>
+         <CardContent>
+            <ItemGroup>
+               {/* Theme Toggle Group */}
+               <Item>
+                  <ItemMedia variant="icon">
+                     <Moon className="size-4" />
+                  </ItemMedia>
+                  <ItemContent className="truncate">
+                     <ItemTitle>
+                        {translate(
+                           "dashboard.routes.profile.preferences.items.theme.title",
+                        )}
+                     </ItemTitle>
+                     <ItemDescription>
+                        {translate(
+                           "dashboard.routes.profile.preferences.items.theme.description",
+                        )}
+                     </ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                     <ThemeSwitcher />
+                  </ItemActions>
+               </Item>
 
-                  <ItemSeparator />
+               <ItemSeparator />
 
-                  {/* Language Selection */}
-                  <Item>
-                     <ItemMedia variant="icon">
-                        <Globe className="size-4" />
-                     </ItemMedia>
-                     <ItemContent className="truncate">
-                        <ItemTitle>
-                           {translate(
-                              "pages.profile.preferences.items.language.title",
-                           )}
-                        </ItemTitle>
-                        <ItemDescription>
-                           {translate(
-                              "pages.profile.preferences.items.language.description",
-                           )}
-                        </ItemDescription>
-                     </ItemContent>
-                     <ItemActions>
-                        <LanguageCommand />
-                     </ItemActions>
-                  </Item>
-               </ItemGroup>
-            </CardContent>
-         </Card>
-      </div>
+               {/* Language Selection */}
+               <Item>
+                  <ItemMedia variant="icon">
+                     <Globe className="size-4" />
+                  </ItemMedia>
+                  <ItemContent className="truncate">
+                     <ItemTitle>
+                        {translate(
+                           "dashboard.routes.profile.preferences.items.language.title",
+                        )}
+                     </ItemTitle>
+                     <ItemDescription>
+                        {translate(
+                           "dashboard.routes.profile.preferences.items.language.description",
+                        )}
+                     </ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                     <LanguageCommand />
+                  </ItemActions>
+               </Item>
+            </ItemGroup>
+         </CardContent>
+      </Card>
    );
 }

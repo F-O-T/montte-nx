@@ -17,7 +17,6 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-pas
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
-import { Route as DashboardPreferencesRouteImport } from './routes/_dashboard/preferences'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
 
@@ -60,11 +59,6 @@ const DashboardProfileRoute = DashboardProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardPreferencesRoute = DashboardPreferencesRouteImport.update({
-  id: '/preferences',
-  path: '/preferences',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardHomeRoute = DashboardHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -80,7 +74,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
-  '/preferences': typeof DashboardPreferencesRoute
   '/profile': typeof DashboardProfileRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
@@ -92,7 +85,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
   '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
-  '/preferences': typeof DashboardPreferencesRoute
   '/profile': typeof DashboardProfileRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
@@ -106,7 +98,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/_dashboard/categories': typeof DashboardCategoriesRoute
   '/_dashboard/home': typeof DashboardHomeRoute
-  '/_dashboard/preferences': typeof DashboardPreferencesRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
   '/_dashboard/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
@@ -120,7 +111,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/categories'
     | '/home'
-    | '/preferences'
     | '/profile'
     | '/transactions'
     | '/auth/email-verification'
@@ -132,7 +122,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/categories'
     | '/home'
-    | '/preferences'
     | '/profile'
     | '/transactions'
     | '/auth/email-verification'
@@ -145,7 +134,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_dashboard/categories'
     | '/_dashboard/home'
-    | '/_dashboard/preferences'
     | '/_dashboard/profile'
     | '/_dashboard/transactions'
     | '/auth/email-verification'
@@ -217,13 +205,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/preferences': {
-      id: '/_dashboard/preferences'
-      path: '/preferences'
-      fullPath: '/preferences'
-      preLoaderRoute: typeof DashboardPreferencesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/home': {
       id: '/_dashboard/home'
       path: '/home'
@@ -244,7 +225,6 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
-  DashboardPreferencesRoute: typeof DashboardPreferencesRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
 }
@@ -252,7 +232,6 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardHomeRoute: DashboardHomeRoute,
-  DashboardPreferencesRoute: DashboardPreferencesRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
 }
