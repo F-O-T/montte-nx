@@ -7,12 +7,10 @@ import {
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
 import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
-} from "@packages/ui/components/select";
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from "@packages/ui/components/popover";
 import {
    Sheet,
    SheetContent,
@@ -24,13 +22,44 @@ import {
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Plus, Palette } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/integrations/clients";
 import { IconSelector } from "./icon-selector";
+import {
+   ColorPicker,
+   ColorPickerSelection,
+   ColorPickerHue,
+   ColorPickerFormat,
+   ColorPickerEyeDropper
+} from "@packages/ui/components/color-picker";
 
-// Common color options
-const COLOR_OPTIONS = [
+// Validate and ensure proper hex color format
+const validateHexColor = (color: string): string => {
+   // Remove # if present and validate
+   const hex = color.replace('#', '');
+
+   // If it's a 3-digit hex, convert to 6-digit
+   if (hex.length === 3) {
+      return '#' + hex.split('').map(c => c + c).join('');
+   }
+
+   // If it's 6-digit hex, return with #
+   if (hex.length === 6 && /^[0-9A-Fa-f]{6}$/.test(hex)) {
+      return '#' + hex;
+   }
+
+   // If it's 8-digit hex (with alpha), strip alpha
+   if (hex.length === 8 && /^[0-9A-Fa-f]{8}$/.test(hex)) {
+      return '#' + hex.substring(0, 6);
+   }
+
+   // Default to black if invalid
+   return '#000000';
+};
+
+// Common color options for quick selection
+const PRESET_COLORS = [
    "#ef4444", // red
    "#f97316", // orange
    "#eab308", // yellow
@@ -40,6 +69,7 @@ const COLOR_OPTIONS = [
    "#8b5cf6", // violet
    "#ec4899", // pink
    "#6b7280", // gray
+   "#000000", // black
 ];
 
 type AddCategorySheetProps = {};
@@ -62,8 +92,8 @@ export function AddCategorySheet({}: AddCategorySheetProps) {
 
    const form = useForm({
       defaultValues: {
-         color: COLOR_OPTIONS[0],
-         icon: "ShoppingBag",
+         color: PRESET_COLORS[0],
+         icon: "shopping-bag",
          name: "",
       },
       onSubmit: async ({ value }) => {
@@ -140,34 +170,97 @@ export function AddCategorySheet({}: AddCategorySheetProps) {
                            const isInvalid =
                               field.state.meta.isTouched &&
                               !field.state.meta.isValid;
+
+                           // Memoize validated color to prevent re-renders
+                           const validatedColor = useMemo(() =>
+                              validateHexColor(field.state.value),
+                              [field.state.value]
+                           );
+
+                           // Memoize color change handler
+                           const handleColorChange = useCallback((color: number[]) => {
+                              try {
+                                 // Convert RGB array to hex string
+                                 if (Array.isArray(color) && color.length >= 3) {
+                                    const [r, g, b] = color;
+                                    const hex = "#" +
+                                       Math.round(r * 255).toString(16).padStart(2, '0') +
+                                       Math.round(g * 255).toString(16).padStart(2, '0') +
+                                       Math.round(b * 255).toString(16).padStart(2, '0');
+
+                                    // Only update if the color actually changed
+                                    if (hex !== validatedColor) {
+                                       field.handleChange(hex);
+                                    }
+                                 }
+                              } catch (error) {
+                                 console.error("Error converting color:", error);
+                              }
+                           }, [validatedColor, field]);
+
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>Color</FieldLabel>
-                                 <Select
-                                    onValueChange={(value) =>
-                                       field.handleChange(value)
-                                    }
-                                    value={field.state.value}
-                                 >
-                                    <SelectTrigger>
-                                       <SelectValue placeholder="Select a color" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                       {COLOR_OPTIONS.map((color) => (
-                                          <SelectItem key={color} value={color}>
-                                             <div className="flex items-center gap-2">
-                                                <div
-                                                   className="w-4 h-4 rounded-full border"
-                                                   style={{
-                                                      backgroundColor: color,
-                                                   }}
-                                                />
-                                                {color}
+                                 <Popover>
+                                    <PopoverTrigger asChild>
+                                       <Button
+                                          variant="outline"
+                                          className="w-full justify-between"
+                                       >
+                                          <div className="flex items-center gap-2">
+                                             <div
+                                                className="w-4 h-4 rounded-full border"
+                                                style={{
+                                                   backgroundColor: validatedColor,
+                                                }}
+                                             />
+                                             <span>{validatedColor}</span>
+                                          </div>
+                                          <Palette className="h-4 w-4" />
+                                       </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80 p-4" align="start">
+                                       <div className="space-y-4">
+                                          {/* Preset colors */}
+                                          <div>
+                                             <p className="text-sm font-medium mb-2">Quick Select</p>
+                                             <div className="grid grid-cols-5 gap-2">
+                                                {PRESET_COLORS.map((color) => (
+                                                   <button
+                                                      key={color}
+                                                      className="w-10 h-10 rounded-md border-2 transition-all hover:scale-110"
+                                                      style={{
+                                                         backgroundColor: color,
+                                                         borderColor: validatedColor === color ? "hsl(var(--primary))" : "transparent",
+                                                      }}
+                                                      onClick={() => field.handleChange(color)}
+                                                   />
+                                                ))}
                                              </div>
-                                          </SelectItem>
-                                       ))}
-                                    </SelectContent>
-                                 </Select>
+                                          </div>
+
+                                          {/* Color picker */}
+                                          <div>
+                                             <p className="text-sm font-medium mb-2">Custom Color</p>
+                                             <ColorPicker
+                                                value={validatedColor}
+                                                onChange={handleColorChange}
+                                             >
+                                                <div className="space-y-3">
+                                                   <div className="h-32 w-full rounded-md">
+                                                      <ColorPickerSelection />
+                                                   </div>
+                                                   <ColorPickerHue />
+                                                   <div className="flex items-center gap-2">
+                                                      <ColorPickerFormat className="flex-1" />
+                                                      <ColorPickerEyeDropper />
+                                                   </div>
+                                                </div>
+                                             </ColorPicker>
+                                          </div>
+                                       </div>
+                                    </PopoverContent>
+                                 </Popover>
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}
