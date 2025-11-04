@@ -15,7 +15,6 @@ const EnvSchema = z.object({
    POLAR_ACCESS_TOKEN: z.string(),
    POLAR_FREE_PLAN_ID: z.string(),
    POLAR_PAID_PLAN_ID: z.string(),
-   REDIS_URL: z.string(),
    RESEND_API_KEY: z.string(),
 });
 export type ServerEnv = z.infer<typeof EnvSchema>;

@@ -1,3 +1,4 @@
+import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    CommandDialog,
@@ -7,7 +8,6 @@ import {
    CommandItem,
    CommandList,
 } from "@packages/ui/components/command";
-import { Badge } from "@packages/ui/components/badge";
 import {
    Field,
    FieldError,
@@ -334,19 +334,19 @@ export const AVAILABLE_ICONS = [
    "router",
    "printer",
    "scanner",
-   "joystick"
+   "joystick",
 ] as const;
 
-export type AvailableIcon = typeof AVAILABLE_ICONS[number];
+export type AvailableIcon = (typeof AVAILABLE_ICONS)[number];
 
 // Create icon components mapping
 const iconComponents: Record<string, any> = {};
 AVAILABLE_ICONS.forEach((iconName) => {
    // Convert kebab-case to PascalCase for Lucide icons
    const pascalCaseName = iconName
-      .split('-')
+      .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join('');
+      .join("");
 
    // Try to get the icon component from Lucide
    const IconComponent = (Icons as any)[pascalCaseName];
@@ -358,90 +358,278 @@ AVAILABLE_ICONS.forEach((iconName) => {
 // Group icons by category
 const iconCategories = [
    {
-     name: "Finance & Business",
-     icons: [
-       "credit-card", "banknote", "wallet", "piggy-bank", "receipt", "calculator",
-       "briefcase", "tie", "shopping-cart", "shopping-bag", "tag", "tags",
-       "gift", "package", "dollar-sign", "euro", "pound-sterling", "yen",
-       "trending-up", "trending-down", "bar-chart", "pie-chart", "activity"
-     ]
+      icons: [
+         "credit-card",
+         "banknote",
+         "wallet",
+         "piggy-bank",
+         "receipt",
+         "calculator",
+         "briefcase",
+         "tie",
+         "shopping-cart",
+         "shopping-bag",
+         "tag",
+         "tags",
+         "gift",
+         "package",
+         "dollar-sign",
+         "euro",
+         "pound-sterling",
+         "yen",
+         "trending-up",
+         "trending-down",
+         "bar-chart",
+         "pie-chart",
+         "activity",
+      ],
+      name: "Finance & Business",
    },
    {
-     name: "Food & Dining",
-     icons: [
-       "utensils", "coffee", "pizza", "beer", "wine", "cocktail", "chef-hat",
-       "cookie", "ice-cream", "popcorn", "cherry", "apple", "grapes", "lemon",
-       "orange", "carrot", "corn", "bread-slice", "egg", "cheese", "drumstick-bite",
-       "fish", "shrimp", "crab", "octopus", "restaurant", "mug"
-     ]
+      icons: [
+         "utensils",
+         "coffee",
+         "pizza",
+         "beer",
+         "wine",
+         "cocktail",
+         "chef-hat",
+         "cookie",
+         "ice-cream",
+         "popcorn",
+         "cherry",
+         "apple",
+         "grapes",
+         "lemon",
+         "orange",
+         "carrot",
+         "corn",
+         "bread-slice",
+         "egg",
+         "cheese",
+         "drumstick-bite",
+         "fish",
+         "shrimp",
+         "crab",
+         "octopus",
+         "restaurant",
+         "mug",
+      ],
+      name: "Food & Dining",
    },
    {
-     name: "Transportation",
-     icons: [
-       "car", "truck", "motorcycle", "bicycle", "bus", "taxi", "plane", "train",
-       "subway", "tram", "ship", "anchor", "helicopter", "rocket", "scooter",
-       "fuel", "map-pin", "navigation", "compass", "route"
-     ]
+      icons: [
+         "car",
+         "truck",
+         "motorcycle",
+         "bicycle",
+         "bus",
+         "taxi",
+         "plane",
+         "train",
+         "subway",
+         "tram",
+         "ship",
+         "anchor",
+         "helicopter",
+         "rocket",
+         "scooter",
+         "fuel",
+         "map-pin",
+         "navigation",
+         "compass",
+         "route",
+      ],
+      name: "Transportation",
    },
    {
-     name: "Home & Living",
-     icons: [
-       "home", "house", "building", "apartment", "hotel", "bed", "bath", "toilet",
-       "sink", "shower", "lamp", "lightbulb", "candle", "fire", "flame", "fan",
-       "wind", "thermometer", "plug", "battery"
-     ]
+      icons: [
+         "home",
+         "house",
+         "building",
+         "apartment",
+         "hotel",
+         "bed",
+         "bath",
+         "toilet",
+         "sink",
+         "shower",
+         "lamp",
+         "lightbulb",
+         "candle",
+         "fire",
+         "flame",
+         "fan",
+         "wind",
+         "thermometer",
+         "plug",
+         "battery",
+      ],
+      name: "Home & Living",
    },
    {
-     name: "Entertainment & Media",
-     icons: [
-       "film", "music", "headphones", "gamepad-2", "tv", "monitor", "smartphone",
-       "laptop", "tablet", "camera", "video", "radio", "speaker", "microphone",
-       "play", "pause", "skip-back", "skip-forward", "repeat", "shuffle"
-     ]
+      icons: [
+         "film",
+         "music",
+         "headphones",
+         "gamepad-2",
+         "tv",
+         "monitor",
+         "smartphone",
+         "laptop",
+         "tablet",
+         "camera",
+         "video",
+         "radio",
+         "speaker",
+         "microphone",
+         "play",
+         "pause",
+         "skip-back",
+         "skip-forward",
+         "repeat",
+         "shuffle",
+      ],
+      name: "Entertainment & Media",
    },
    {
-     name: "Education & Work",
-     icons: [
-       "book", "book-open", "graduation-cap", "pencil", "pen-tool", "palette",
-       "brush", "ruler", "calculator", "school", "library", "backpack",
-       "award", "trophy", "medal", "target", "flag"
-     ]
+      icons: [
+         "book",
+         "book-open",
+         "graduation-cap",
+         "pencil",
+         "pen-tool",
+         "palette",
+         "brush",
+         "ruler",
+         "calculator",
+         "school",
+         "library",
+         "backpack",
+         "award",
+         "trophy",
+         "medal",
+         "target",
+         "flag",
+      ],
+      name: "Education & Work",
    },
    {
-     name: "Health & Fitness",
-     icons: [
-       "heart", "lungs", "bone", "brain", "eye", "ear", "nose", "mouth",
-       "stethoscope", "pill", "syringe", "thermometer", "bandage", "crutch",
-       "wheelchair", "dumbbell", "weight", "activity", "heart-pulse", "droplet"
-     ]
+      icons: [
+         "heart",
+         "lungs",
+         "bone",
+         "brain",
+         "eye",
+         "ear",
+         "nose",
+         "mouth",
+         "stethoscope",
+         "pill",
+         "syringe",
+         "thermometer",
+         "bandage",
+         "crutch",
+         "wheelchair",
+         "dumbbell",
+         "weight",
+         "activity",
+         "heart-pulse",
+         "droplet",
+      ],
+      name: "Health & Fitness",
    },
    {
-     name: "Nature & Environment",
-     icons: [
-       "leaf", "tree", "tree-pine", "flower", "flower-2", "rose", "tulip",
-       "cactus", "mushroom", "seedling", "sprout", "grass", "wheat", "sun",
-       "moon", "star", "cloud", "cloud-rain", "cloud-snow", "umbrella",
-       "snowflake", "waves", "fire", "flame", "campfire"
-     ]
+      icons: [
+         "leaf",
+         "tree",
+         "tree-pine",
+         "flower",
+         "flower-2",
+         "rose",
+         "tulip",
+         "cactus",
+         "mushroom",
+         "seedling",
+         "sprout",
+         "grass",
+         "wheat",
+         "sun",
+         "moon",
+         "star",
+         "cloud",
+         "cloud-rain",
+         "cloud-snow",
+         "umbrella",
+         "snowflake",
+         "waves",
+         "fire",
+         "flame",
+         "campfire",
+      ],
+      name: "Nature & Environment",
    },
    {
-     name: "Animals",
-     icons: [
-       "dog", "cat", "rabbit", "horse", "cow", "pig", "elephant", "lion",
-       "tiger", "bear", "paw-print", "bird", "fish", "whale", "dolphin",
-       "shark", "butterfly", "bee", "ant", "spider", "bug", "snake"
-     ]
+      icons: [
+         "dog",
+         "cat",
+         "rabbit",
+         "horse",
+         "cow",
+         "pig",
+         "elephant",
+         "lion",
+         "tiger",
+         "bear",
+         "paw-print",
+         "bird",
+         "fish",
+         "whale",
+         "dolphin",
+         "shark",
+         "butterfly",
+         "bee",
+         "ant",
+         "spider",
+         "bug",
+         "snake",
+      ],
+      name: "Animals",
    },
    {
-     name: "Technology & Tools",
-     icons: [
-       "smartphone", "laptop", "tablet", "monitor", "desktop", "cpu",
-       "hard-drive", "database", "server", "cloud", "wifi", "bluetooth",
-       "usb", "battery", "charger", "headphones", "speaker", "camera",
-       "video", "gamepad", "joystick", "mouse", "keyboard", "printer",
-       "scanner", "router", "modem", "satellite", "antenna"
-     ]
-   }
+      icons: [
+         "smartphone",
+         "laptop",
+         "tablet",
+         "monitor",
+         "desktop",
+         "cpu",
+         "hard-drive",
+         "database",
+         "server",
+         "cloud",
+         "wifi",
+         "bluetooth",
+         "usb",
+         "battery",
+         "charger",
+         "headphones",
+         "speaker",
+         "camera",
+         "video",
+         "gamepad",
+         "joystick",
+         "mouse",
+         "keyboard",
+         "printer",
+         "scanner",
+         "router",
+         "modem",
+         "satellite",
+         "antenna",
+      ],
+      name: "Technology & Tools",
+   },
 ];
 
 // Icon Selector Dialog Component
@@ -456,58 +644,62 @@ function IconSelectorDialog({
    open,
    onOpenChange,
    onSelectIcon,
-   selectedIcon
+   selectedIcon,
 }: IconSelectorDialogProps) {
    const [searchQuery, setSearchQuery] = useState("");
 
    const handleSelectIcon = (iconName: AvailableIcon) => {
-     onSelectIcon(iconName);
-     onOpenChange(false);
-     setSearchQuery("");
+      onSelectIcon(iconName);
+      onOpenChange(false);
+      setSearchQuery("");
    };
 
-   const filteredCategories = iconCategories.map(category => ({
-     ...category,
-     icons: category.icons.filter(icon =>
-       icon.toLowerCase().includes(searchQuery.toLowerCase())
-     )
-   })).filter(category => category.icons.length > 0);
+   const filteredCategories = iconCategories
+      .map((category) => ({
+         ...category,
+         icons: category.icons.filter((icon) =>
+            icon.toLowerCase().includes(searchQuery.toLowerCase()),
+         ),
+      }))
+      .filter((category) => category.icons.length > 0);
 
    return (
-     <CommandDialog open={open} onOpenChange={onOpenChange}>
-       <CommandInput
-         placeholder="Search for an icon..."
-         value={searchQuery}
-         onValueChange={setSearchQuery}
-       />
-       <CommandList>
-         <CommandEmpty>No icons found.</CommandEmpty>
+      <CommandDialog onOpenChange={onOpenChange} open={open}>
+         <CommandInput
+            onValueChange={setSearchQuery}
+            placeholder="Search for an icon..."
+            value={searchQuery}
+         />
+         <CommandList>
+            <CommandEmpty>No icons found.</CommandEmpty>
 
-         {filteredCategories.map((category) => (
-           <CommandGroup key={category.name} heading={category.name}>
-             {category.icons.map((iconName) => {
-               const IconComponent = iconComponents[iconName];
-               const isSelected = selectedIcon === iconName;
+            {filteredCategories.map((category) => (
+               <CommandGroup heading={category.name} key={category.name}>
+                  {category.icons.map((iconName) => {
+                     const IconComponent = iconComponents[iconName];
+                     const isSelected = selectedIcon === iconName;
 
-               if (!IconComponent) return null;
+                     if (!IconComponent) return null;
 
-               return (
-                 <CommandItem
-                   key={iconName}
-                   value={iconName}
-                   onSelect={() => handleSelectIcon(iconName)}
-                   className="flex items-center gap-2"
-                 >
-                   <IconComponent className="h-4 w-4" />
-                   <span className="flex-1">{iconName}</span>
-                   {isSelected && <Badge variant="secondary">Selected</Badge>}
-                 </CommandItem>
-               );
-             })}
-           </CommandGroup>
-         ))}
-       </CommandList>
-     </CommandDialog>
+                     return (
+                        <CommandItem
+                           className="flex items-center gap-2"
+                           key={iconName}
+                           onSelect={() => handleSelectIcon(iconName)}
+                           value={iconName}
+                        >
+                           <IconComponent className="h-4 w-4" />
+                           <span className="flex-1">{iconName}</span>
+                           {isSelected && (
+                              <Badge variant="secondary">Selected</Badge>
+                           )}
+                        </CommandItem>
+                     );
+                  })}
+               </CommandGroup>
+            ))}
+         </CommandList>
+      </CommandDialog>
    );
 }
 
@@ -527,20 +719,22 @@ function IconSelectorButton({
    variant = "outline",
    size = "default",
    placeholder = "Select an icon",
-   disabled = false
+   disabled = false,
 }: IconSelectorButtonProps) {
    const [dialogOpen, setDialogOpen] = useState(false);
 
-   const SelectedIconComponent = selectedIcon ? iconComponents[selectedIcon] : null;
+   const SelectedIconComponent = selectedIcon
+      ? iconComponents[selectedIcon]
+      : null;
 
    return (
       <>
          <Button
-            variant={variant}
-            size={size}
-            onClick={() => setDialogOpen(true)}
-            disabled={disabled}
             className="justify-start"
+            disabled={disabled}
+            onClick={() => setDialogOpen(true)}
+            size={size}
+            variant={variant}
          >
             {SelectedIconComponent ? (
                <>
@@ -557,9 +751,9 @@ function IconSelectorButton({
          </Button>
 
          <IconSelectorDialog
-            open={dialogOpen}
             onOpenChange={setDialogOpen}
             onSelectIcon={onSelectIcon}
+            open={dialogOpen}
             selectedIcon={selectedIcon}
          />
       </>
@@ -578,15 +772,15 @@ export function IconSelectorField({
    value,
    onChange,
    isInvalid = false,
-   errors = []
+   errors = [],
 }: IconSelectorFieldProps) {
    return (
       <Field data-invalid={isInvalid}>
          <FieldLabel>Icon</FieldLabel>
          <IconSelectorButton
-            selectedIcon={value}
             onSelectIcon={onChange}
             placeholder="Select an icon"
+            selectedIcon={value}
          />
          {isInvalid && <FieldError errors={errors} />}
       </Field>
@@ -609,10 +803,10 @@ export function IconSelector({
 }: IconSelectorProps) {
    return (
       <IconSelectorField
-         value={value as AvailableIcon}
-         onChange={onChange}
-         isInvalid={isInvalid}
          errors={errors}
+         isInvalid={isInvalid}
+         onChange={onChange}
+         value={value as AvailableIcon}
       />
    );
 }
@@ -623,17 +817,24 @@ interface UseIconSelectorProps {
 }
 
 export function useIconSelector({ defaultIcon }: UseIconSelectorProps = {}) {
-   const [selectedIcon, setSelectedIcon] = useState<AvailableIcon | undefined>(defaultIcon);
+   const [selectedIcon, setSelectedIcon] = useState<AvailableIcon | undefined>(
+      defaultIcon,
+   );
 
    return {
-      selectedIcon,
-      setSelectedIcon,
-      IconSelectorButton: (props: Omit<React.ComponentProps<typeof IconSelectorButton>, 'selectedIcon' | 'onSelectIcon'>) => (
+      IconSelectorButton: (
+         props: Omit<
+            React.ComponentProps<typeof IconSelectorButton>,
+            "selectedIcon" | "onSelectIcon"
+         >,
+      ) => (
          <IconSelectorButton
-            selectedIcon={selectedIcon}
             onSelectIcon={setSelectedIcon}
+            selectedIcon={selectedIcon}
             {...props}
          />
-      )
+      ),
+      selectedIcon,
+      setSelectedIcon,
    };
 }
