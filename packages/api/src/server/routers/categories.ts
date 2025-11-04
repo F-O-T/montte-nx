@@ -2,6 +2,7 @@ import {
    createCategory,
    deleteCategory,
    findCategoriesByUserId,
+   findCategoriesByUserIdPaginated,
    findCategoryById,
    updateCategory,
 } from "@packages/database/repositories/category-repository";
@@ -18,6 +19,13 @@ const updateCategorySchema = z.object({
    color: z.string().optional(),
    icon: z.string().optional(),
    name: z.string().optional(),
+});
+
+const paginationSchema = z.object({
+   limit: z.coerce.number().min(1).max(100).default(10),
+   orderBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
+   orderDirection: z.enum(["asc", "desc"]).default("asc"),
+   page: z.coerce.number().min(1).default(1),
 });
 
 export const categoryRouter = router({
@@ -71,6 +79,19 @@ export const categoryRouter = router({
 
       return findCategoriesByUserId(resolvedCtx.db, userId);
    }),
+
+   getAllPaginated: protectedProcedure
+      .input(paginationSchema)
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         return findCategoriesByUserIdPaginated(resolvedCtx.db, userId, input);
+      }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))

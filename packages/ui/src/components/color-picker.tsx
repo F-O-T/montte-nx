@@ -15,6 +15,7 @@ import {
    useRef,
    useState,
 } from "react";
+import { cn } from "../lib/utils";
 import { Button } from "./button";
 import { Input } from "./input";
 import {
@@ -24,9 +25,8 @@ import {
    SelectTrigger,
    SelectValue,
 } from "./select";
-import { cn } from "@packages/ui/lib/utils";
 
-type ColorPickerContextValue = {
+interface ColorPickerContextValue {
    hue: number;
    saturation: number;
    lightness: number;
@@ -37,7 +37,7 @@ type ColorPickerContextValue = {
    setLightness: (lightness: number) => void;
    setAlpha: (alpha: number) => void;
    setMode: (mode: string) => void;
-};
+}
 
 const ColorPickerContext = createContext<ColorPickerContextValue | undefined>(
    undefined,
@@ -88,12 +88,11 @@ export const ColorPicker = ({
    // Update color when controlled value changes
    useEffect(() => {
       if (value) {
-         const color = Color.rgb(value).rgb().object();
-
-         setHue(color.r);
-         setSaturation(color.g);
-         setLightness(color.b);
-         setAlpha(color.a);
+         const color = Color(value);
+         setHue(color.hue());
+         setSaturation(color.saturationl());
+         setLightness(color.lightness());
+         setAlpha(color.alpha() * 100);
       }
    }, [value]);
 
@@ -103,23 +102,23 @@ export const ColorPicker = ({
          const color = Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
          const rgba = color.rgb().array();
 
-         onChange([rgba[0], rgba[1], rgba[2], alpha / 100]);
+         onChange([rgba[0], rgba[1], rgba[2], rgba[3]]);
       }
-   }, [hue, saturation, lightness, alpha, onChange]);
+   }, [hue, saturation, lightness, alpha]);
 
    return (
       <ColorPickerContext.Provider
          value={{
-            hue,
-            saturation,
-            lightness,
             alpha,
+            hue,
+            lightness,
             mode,
-            setHue,
-            setSaturation,
-            setLightness,
+            saturation,
             setAlpha,
+            setHue,
+            setLightness,
             setMode,
+            setSaturation,
          }}
       >
          <div
@@ -205,9 +204,9 @@ export const ColorPickerSelection = memo(
             <div
                className="-translate-x-1/2 -translate-y-1/2 pointer-events-none absolute h-4 w-4 rounded-full border-2 border-white"
                style={{
+                  boxShadow: "0 0 0 1px rgba(0,0,0,0.5)",
                   left: `${positionX * 100}%`,
                   top: `${positionY * 100}%`,
-                  boxShadow: "0 0 0 1px rgba(0,0,0,0.5)",
                }}
             />
          </div>
@@ -229,7 +228,7 @@ export const ColorPickerHue = ({
       <Slider.Root
          className={cn("relative flex h-4 w-full touch-none", className)}
          max={360}
-         onValueChange={([hue]) => setHue(hue)}
+         onValueChange={([hue]) => setHue(hue ?? 1)}
          step={1}
          value={[hue]}
          {...props}
@@ -254,13 +253,19 @@ export const ColorPickerAlpha = ({
       <Slider.Root
          className={cn("relative flex h-4 w-full touch-none", className)}
          max={100}
-         onValueChange={([alpha]) => setAlpha(alpha)}
+         onValueChange={([alpha]) => setAlpha(alpha ?? 1)}
          step={1}
          value={[alpha]}
          {...props}
       >
-         <Slider.Track className="relative my-0.5 h-3 w-full grow rounded-full bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')] bg-center bg-repeat-x dark:bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAALklEQVR4nGP8+vWrCAMewM3N/QafPBM+SWLAqAGDwQBGQgoIpZOB98KoAVQwAADxzQcSVIRCfQAAAABJRU5ErkJggg==')]">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-black/50 dark:to-white/50" />
+         <Slider.Track
+            className="relative my-0.5 h-3 w-full grow rounded-full"
+            style={{
+               background:
+                  'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==") left center',
+            }}
+         >
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-black/50" />
             <Slider.Range className="absolute h-full rounded-full bg-transparent" />
          </Slider.Track>
          <Slider.Thumb className="block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
@@ -284,9 +289,9 @@ export const ColorPickerEyeDropper = ({
          const color = Color(result.sRGBHex);
          const [h, s, l] = color.hsl().array();
 
-         setHue(h);
-         setSaturation(s);
-         setLightness(l);
+         setHue(h ?? 1);
+         setSaturation(s ?? 1);
+         setLightness(l ?? 1);
          setAlpha(100);
       } catch (error) {
          console.error("EyeDropper failed:", error);

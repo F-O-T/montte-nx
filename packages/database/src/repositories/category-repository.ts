@@ -56,6 +56,64 @@ export async function findCategoriesByUserId(
    }
 }
 
+export async function findCategoriesByUserIdPaginated(
+   dbClient: DatabaseInstance,
+   userId: string,
+   options: {
+      page?: number;
+      limit?: number;
+      orderBy?: "name" | "createdAt" | "updatedAt";
+      orderDirection?: "asc" | "desc";
+   } = {},
+) {
+   const {
+      page = 1,
+      limit = 10,
+      orderBy = "name",
+      orderDirection = "asc",
+   } = options;
+
+   const offset = (page - 1) * limit;
+
+   try {
+      const [categories, totalCount] = await Promise.all([
+         dbClient.query.category.findMany({
+            limit,
+            offset,
+            orderBy: (category, { asc, desc }) => {
+               const column = category[orderBy as keyof typeof category];
+               return orderDirection === "asc" ? asc(column) : desc(column);
+            },
+            where: (category, { eq }) => eq(category.userId, userId),
+         }),
+         dbClient.query.category
+            .findMany({
+               where: (category, { eq }) => eq(category.userId, userId),
+            })
+            .then((result) => result.length),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         categories,
+         pagination: {
+            currentPage: page,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            limit,
+            totalCount,
+            totalPages,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find categories by user id paginated: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function updateCategory(
    dbClient: DatabaseInstance,
    categoryId: string,

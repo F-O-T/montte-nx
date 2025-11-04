@@ -1,5 +1,14 @@
 import { Button } from "@packages/ui/components/button";
 import {
+   ColorPicker,
+   ColorPickerAlpha,
+   ColorPickerEyeDropper,
+   ColorPickerFormat,
+   ColorPickerHue,
+   ColorPickerOutput,
+   ColorPickerSelection,
+} from "@packages/ui/components/color-picker";
+import {
    Field,
    FieldError,
    FieldGroup,
@@ -18,64 +27,22 @@ import {
    SheetFooter,
    SheetHeader,
    SheetTitle,
-   SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Palette } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import Color from "color";
 import { trpc } from "@/integrations/clients";
 import { IconSelector } from "./icon-selector";
-import {
-   ColorPicker,
-   ColorPickerSelection,
-   ColorPickerHue,
-   ColorPickerFormat,
-   ColorPickerEyeDropper
-} from "@packages/ui/components/color-picker";
 
-// Validate and ensure proper hex color format
-const validateHexColor = (color: string): string => {
-   // Remove # if present and validate
-   const hex = color.replace('#', '');
-
-   // If it's a 3-digit hex, convert to 6-digit
-   if (hex.length === 3) {
-      return '#' + hex.split('').map(c => c + c).join('');
-   }
-
-   // If it's 6-digit hex, return with #
-   if (hex.length === 6 && /^[0-9A-Fa-f]{6}$/.test(hex)) {
-      return '#' + hex;
-   }
-
-   // If it's 8-digit hex (with alpha), strip alpha
-   if (hex.length === 8 && /^[0-9A-Fa-f]{8}$/.test(hex)) {
-      return '#' + hex.substring(0, 6);
-   }
-
-   // Default to black if invalid
-   return '#000000';
+type AddCategorySheetProps = {
+   onOpen: boolean;
+   onOpenChange: (open: boolean) => void;
 };
 
-// Common color options for quick selection
-const PRESET_COLORS = [
-   "#ef4444", // red
-   "#f97316", // orange
-   "#eab308", // yellow
-   "#22c55e", // green
-   "#06b6d4", // cyan
-   "#3b82f6", // blue
-   "#8b5cf6", // violet
-   "#ec4899", // pink
-   "#6b7280", // gray
-   "#000000", // black
-];
-
-type AddCategorySheetProps = {};
-
-export function AddCategorySheet({}: AddCategorySheetProps) {
-   const [isSheetOpen, setIsSheetOpen] = useState(false);
+export function AddCategorySheet({
+   onOpen,
+   onOpenChange,
+}: AddCategorySheetProps) {
    const queryClient = useQueryClient();
 
    const createCategoryMutation = useMutation(
@@ -85,14 +52,14 @@ export function AddCategorySheet({}: AddCategorySheetProps) {
             queryClient.invalidateQueries({
                queryKey: trpc.categories.getAll.queryKey(),
             });
-            setIsSheetOpen(false);
+            onOpenChange(false);
          },
       }),
    );
 
    const form = useForm({
       defaultValues: {
-         color: PRESET_COLORS[0],
+         color: "#000000",
          icon: "shopping-bag",
          name: "",
       },
@@ -113,13 +80,7 @@ export function AddCategorySheet({}: AddCategorySheetProps) {
    });
 
    return (
-      <Sheet onOpenChange={setIsSheetOpen} open={isSheetOpen}>
-         <SheetTrigger asChild>
-            <Button className="flex gap-2 ">
-               <Plus className="size-4" />
-               Add Category
-            </Button>
-         </SheetTrigger>
+      <Sheet onOpenChange={onOpenChange} open={onOpen}>
          <SheetContent>
             <form
                className="h-full flex flex-col"
@@ -170,97 +131,61 @@ export function AddCategorySheet({}: AddCategorySheetProps) {
                            const isInvalid =
                               field.state.meta.isTouched &&
                               !field.state.meta.isValid;
-
-                           // Memoize validated color to prevent re-renders
-                           const validatedColor = useMemo(() =>
-                              validateHexColor(field.state.value),
-                              [field.state.value]
-                           );
-
-                           // Memoize color change handler
-                           const handleColorChange = useCallback((color: number[]) => {
-                              try {
-                                 // Convert RGB array to hex string
-                                 if (Array.isArray(color) && color.length >= 3) {
-                                    const [r, g, b] = color;
-                                    const hex = "#" +
-                                       Math.round(r * 255).toString(16).padStart(2, '0') +
-                                       Math.round(g * 255).toString(16).padStart(2, '0') +
-                                       Math.round(b * 255).toString(16).padStart(2, '0');
-
-                                    // Only update if the color actually changed
-                                    if (hex !== validatedColor) {
-                                       field.handleChange(hex);
-                                    }
-                                 }
-                              } catch (error) {
-                                 console.error("Error converting color:", error);
-                              }
-                           }, [validatedColor, field]);
-
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>Color</FieldLabel>
+
                                  <Popover>
                                     <PopoverTrigger asChild>
                                        <Button
+                                          aria-invalid={isInvalid || undefined}
+                                          className="w-full flex gap-2 justify-start"
                                           variant="outline"
-                                          className="w-full justify-between"
                                        >
-                                          <div className="flex items-center gap-2">
-                                             <div
-                                                className="w-4 h-4 rounded-full border"
-                                                style={{
-                                                   backgroundColor: validatedColor,
-                                                }}
-                                             />
-                                             <span>{validatedColor}</span>
-                                          </div>
-                                          <Palette className="h-4 w-4" />
+                                          <div
+                                             className="w-4 h-4 rounded border border-gray-300"
+                                             style={{
+                                                backgroundColor:
+                                                   field.state.value,
+                                             }}
+                                          />
+                                          {field.state.value}
                                        </Button>
                                     </PopoverTrigger>
-                                    <PopoverContent className="w-80 p-4" align="start">
-                                       <div className="space-y-4">
-                                          {/* Preset colors */}
-                                          <div>
-                                             <p className="text-sm font-medium mb-2">Quick Select</p>
-                                             <div className="grid grid-cols-5 gap-2">
-                                                {PRESET_COLORS.map((color) => (
-                                                   <button
-                                                      key={color}
-                                                      className="w-10 h-10 rounded-md border-2 transition-all hover:scale-110"
-                                                      style={{
-                                                         backgroundColor: color,
-                                                         borderColor: validatedColor === color ? "hsl(var(--primary))" : "transparent",
-                                                      }}
-                                                      onClick={() => field.handleChange(color)}
-                                                   />
-                                                ))}
+
+                                    <PopoverContent
+                                       align="start"
+                                       className="h-full max-w-sm rounded-md border bg-background shadow-sm"
+                                    >
+                                       <ColorPicker
+                                          value={field.state.value || "#000000"}
+                                          onChange={(rgba) =>
+                                             field.handleChange(
+                                                Color.rgb(rgba[0], rgba[1], rgba[2]).hex(),
+                                             )
+                                          }
+                                          className="size-full flex flex-col gap-4" // never undefined
+                                       >
+                                          <div className="h-24">
+                                             <ColorPickerSelection />
+                                          </div>
+
+                                          <div className="flex items-center gap-4">
+                                             <ColorPickerEyeDropper />
+                                             <div className="grid w-full gap-1">
+                                                <ColorPickerHue />
+                                                <ColorPickerAlpha />
                                              </div>
                                           </div>
 
-                                          {/* Color picker */}
-                                          <div>
-                                             <p className="text-sm font-medium mb-2">Custom Color</p>
-                                             <ColorPicker
-                                                value={validatedColor}
-                                                onChange={handleColorChange}
-                                             >
-                                                <div className="space-y-3">
-                                                   <div className="h-32 w-full rounded-md">
-                                                      <ColorPickerSelection />
-                                                   </div>
-                                                   <ColorPickerHue />
-                                                   <div className="flex items-center gap-2">
-                                                      <ColorPickerFormat className="flex-1" />
-                                                      <ColorPickerEyeDropper />
-                                                   </div>
-                                                </div>
-                                             </ColorPicker>
+                                          <div className="flex items-center gap-2">
+                                             <ColorPickerOutput />
+                                             <ColorPickerFormat />
                                           </div>
-                                       </div>
+                                       </ColorPicker>
                                     </PopoverContent>
                                  </Popover>
+
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}
@@ -280,10 +205,10 @@ export function AddCategorySheet({}: AddCategorySheetProps) {
                               !field.state.meta.isValid;
                            return (
                               <IconSelector
-                                 value={field.state.value}
-                                 onChange={field.handleChange}
-                                 isInvalid={isInvalid}
                                  errors={field.state.meta.errors}
+                                 isInvalid={isInvalid}
+                                 onChange={field.handleChange}
+                                 value={field.state.value}
                               />
                            );
                         }}

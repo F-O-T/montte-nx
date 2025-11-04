@@ -1,0 +1,63 @@
+name: 🚀 Mega Issue
+description: For tracking large, complex initiatives
+title: "[MEGA] "
+labels: ["mega-issue", "epic", "type: epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Mega Issue
+        For tracking large, complex initiatives
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: What is this initiative?
+      description: High-level description
+      placeholder: "Describe the overall goal..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: What defines success?
+      description: Success criteria and metrics
+      placeholder: "- Clear, measurable criteria\n- Key performance indicators"
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: What's in scope?
+      description: In scope and out of scope
+      placeholder: |
+        **In Scope:**
+        - Items included
+        
+        **Out of Scope:**
+        - Items excluded
+    validations:
+      required: true
+
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Timeline
+      description: Expected timeline and milestones
+      placeholder: "- Phase 1: Date range\n- Phase 2: Date range\n- Expected completion: Date"
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Key dependencies and requirements
+      placeholder: "- External dependencies\n- Technical dependencies\n- Resource requirements"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional info
+      description: Risks, stakeholders, etc.
+      placeholder: "Any additional context..."
