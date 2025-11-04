@@ -68,7 +68,8 @@ export const ColorPicker = ({
    className,
    ...props
 }: ColorPickerProps) => {
-   const selectedColor = Color(value);
+   const isControlled = value !== undefined;
+   const selectedColor = isControlled ? Color(value) : Color(defaultValue);
    const defaultColor = Color(defaultValue);
 
    const [hue, setHue] = useState(
@@ -84,27 +85,33 @@ export const ColorPicker = ({
       selectedColor.alpha() * 100 || defaultColor.alpha() * 100,
    );
    const [mode, setMode] = useState("hex");
+   const lastColorRef = useRef<string>("");
 
-   // Update color when controlled value changes
+   // Update color when controlled value changes (but not on every render)
    useEffect(() => {
-      if (value) {
+      if (value && !isControlled) {
          const color = Color(value);
          setHue(color.hue());
          setSaturation(color.saturationl());
          setLightness(color.lightness());
          setAlpha(color.alpha() * 100);
       }
-   }, [value]);
+   }, [value, isControlled]);
 
    // Notify parent of changes
    useEffect(() => {
       if (onChange) {
          const color = Color.hsl(hue, saturation, lightness).alpha(alpha / 100);
-         const rgba = color.rgb().array();
+         const currentColor = color.hex();
 
-         onChange([rgba[0], rgba[1], rgba[2], rgba[3]]);
+         // Only call onChange if the color has actually changed
+         if (currentColor !== lastColorRef.current) {
+            lastColorRef.current = currentColor;
+            const rgba = color.rgb().array();
+            onChange([rgba[0], rgba[1], rgba[2], rgba[3]]);
+         }
       }
-   }, [hue, saturation, lightness, alpha]);
+   }, [hue, saturation, lightness, alpha, onChange]);
 
    return (
       <ColorPickerContext.Provider
