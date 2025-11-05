@@ -32,7 +32,6 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Color from "color";
 import { trpc } from "@/integrations/clients";
-import { IconSelector } from "./icon-selector";
 
 type AddCategorySheetProps = {
    onOpen: boolean;
@@ -60,17 +59,15 @@ export function AddCategorySheet({
    const form = useForm({
       defaultValues: {
          color: "#000000",
-         icon: "shopping-bag",
          name: "",
       },
       onSubmit: async ({ value }) => {
-         if (!value.name || !value.color || !value.icon) {
+         if (!value.name || !value.color) {
             return;
          }
          try {
             await createCategoryMutation.mutateAsync({
                color: value.color,
-               icon: value.icon,
                name: value.name,
             });
          } catch (error) {
@@ -197,24 +194,7 @@ export function AddCategorySheet({
                      </form.Field>
                   </FieldGroup>
 
-                  <FieldGroup>
-                     <form.Field name="icon">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <IconSelector
-                                 errors={field.state.meta.errors}
-                                 isInvalid={isInvalid}
-                                 onChange={field.handleChange}
-                                 value={field.state.value}
-                              />
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-               </div>
+                 </div>
 
                <SheetFooter>
                   <form.Subscribe>

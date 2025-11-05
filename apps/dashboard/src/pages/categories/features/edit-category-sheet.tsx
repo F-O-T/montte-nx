@@ -26,7 +26,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Palette, Pencil } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/integrations/clients";
-import { IconSelector } from "./icon-selector";
 import {
    ColorPicker,
    ColorPickerSelection,
@@ -34,7 +33,7 @@ import {
    ColorPickerFormat,
    ColorPickerEyeDropper
 } from "@packages/ui/components/color-picker";
-import type { Category } from "../ui/categories-page";
+import type { Category } from "@packages/database/repositories/category-repository";
 
 // Validate and ensure proper hex color format
 const validateHexColor = (color: string): string => {
@@ -101,18 +100,16 @@ export function EditCategorySheet({ category, asChild = false }: EditCategoryShe
    const form = useForm({
       defaultValues: {
          color: category.color,
-         icon: category.icon,
          name: category.name,
       },
       onSubmit: async ({ value }) => {
-         if (!value.name || !value.color || !value.icon) {
+         if (!value.name || !value.color) {
             return;
          }
          try {
             await updateCategoryMutation.mutateAsync({
                id: category.id,
                color: value.color,
-               icon: value.icon,
                name: value.name,
             });
          } catch (error) {
@@ -288,24 +285,6 @@ export function EditCategorySheet({ category, asChild = false }: EditCategoryShe
                                     />
                                  )}
                               </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
-                     <form.Field name="icon">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <IconSelector
-                                 value={field.state.value}
-                                 onChange={field.handleChange}
-                                 isInvalid={isInvalid}
-                                 errors={field.state.meta.errors}
-                              />
                            );
                         }}
                      </form.Field>

@@ -1,4 +1,3 @@
-import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -55,98 +54,13 @@ import {
 } from "@packages/ui/components/table";
 import { useMediaQuery } from "@packages/ui/hooks/use-media-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-   Activity,
-   Apple,
-   Banknote,
-   Bike,
-   BookOpen,
-   Briefcase,
-   Building,
-   Bus,
-   Car,
-   ChefHat,
-   Coffee,
-   DollarSign,
-   Download,
-   Dumbbell,
-   FilePlus,
-   Film,
-   Gamepad2,
-   Gift,
-   GraduationCap,
-   Heart,
-   Home,
-   Inbox,
-   Laptop,
-   MapPin,
-   MoreHorizontal,
-   MoreVertical,
-   Music,
-   Palette,
-   Pill,
-   Plane,
-   Scissors,
-   ShoppingBag,
-   Smartphone,
-   Stethoscope,
-   Store,
-   Train,
-   TreePine,
-   Trophy,
-   Tv,
-   Umbrella,
-   Utensils,
-   Wrench,
-   Zap,
-} from "lucide-react";
+import { FilePlus, Inbox, MoreVertical } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
 import { AddCategorySheet } from "../features/add-category-sheet";
 import { DeleteCategory } from "../features/delete-category";
 import { EditCategorySheet } from "../features/edit-category-sheet";
-
-const ICON_MAP = {
-   Activity,
-   Apple,
-   Banknote,
-   Bike,
-   BookOpen,
-   Briefcase,
-   Building,
-   Bus,
-   Car,
-   ChefHat,
-   Coffee,
-   DollarSign,
-   Dumbbell,
-   Film,
-   Gamepad2,
-   Gift,
-   GraduationCap,
-   Heart,
-   Home,
-   Laptop,
-   MapPin,
-   Music,
-   Palette,
-   Pill,
-   Plane,
-   Scissors,
-   ShoppingBag,
-   Smartphone,
-   Stethoscope,
-   Store,
-   Train,
-   TreePine,
-   Trophy,
-   Tv,
-   Umbrella,
-   Utensils,
-   Wrench,
-   Zap,
-};
 
 function CategoriesTableErrorFallback(props: FallbackProps) {
    return (
@@ -277,81 +191,60 @@ function CategoriesTableContent() {
                      {isMobile ? (
                         /* Mobile Item Layout */
                         <ItemGroup className="grid grid-cols-1 gap-4">
-                           {categories.map((category) => {
-                              const iconKey =
-                                 category.icon as keyof typeof ICON_MAP;
-                              const IconComponent = ICON_MAP[iconKey];
-                              return (
-                                 <Item key={category.id} variant="outline">
-                                    <ItemMedia variant="icon">
-                                       {IconComponent ? (
-                                          <IconComponent
-                                             className="size-6"
-                                             style={{ color: category.color }}
-                                          />
-                                       ) : (
+                           {categories.map((category) => (
+                              <Item key={category.id} variant="outline">
+                                 <ItemMedia variant="icon">
+                                    <div
+                                       className="size-8 rounded-sm border"
+                                       style={{
+                                          backgroundColor: category.color,
+                                       }}
+                                    />
+                                 </ItemMedia>
+                                 <ItemContent>
+                                    <ItemTitle>{category.name}</ItemTitle>
+                                    <ItemDescription>
+                                       <div className="flex items-center gap-1">
                                           <div
-                                             className="size-8 rounded-sm border"
+                                             className="w-3 h-3 rounded-full border"
                                              style={{
                                                 backgroundColor: category.color,
                                              }}
                                           />
-                                       )}
-                                    </ItemMedia>
-                                    <ItemContent>
-                                       <ItemTitle>{category.name}</ItemTitle>
-                                       <ItemDescription>
-                                          <div className="flex items-center gap-2">
-                                             <div className="flex items-center gap-1">
-                                                <div
-                                                   className="w-3 h-3 rounded-full border"
-                                                   style={{
-                                                      backgroundColor:
-                                                         category.color,
-                                                   }}
-                                                />
-                                                <span className="text-xs text-muted-foreground">
-                                                   {category.color}
-                                                </span>
-                                             </div>
-                                             <Badge
-                                                className="text-xs"
-                                                variant="outline"
-                                             >
-                                                {category.icon}
-                                             </Badge>
-                                          </div>
-                                       </ItemDescription>
-                                    </ItemContent>
-                                    <ItemActions>
-                                       <DropdownMenu>
-                                          <DropdownMenuTrigger asChild>
-                                             <Button
-                                                className="h-8 w-8 p-0"
-                                                size="icon"
-                                                variant="ghost"
-                                             >
-                                                <span className="sr-only">
-                                                   Open menu
-                                                </span>
-                                                <MoreVertical className="h-4 w-4" />
-                                             </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end">
-                                             <EditCategorySheet
-                                                asChild
-                                                category={category}
-                                             />
-                                             <DeleteCategory
-                                                asChild
-                                                category={category}
-                                             />
-                                          </DropdownMenuContent>
-                                       </DropdownMenu>
-                                    </ItemActions>
-                                 </Item>
-                              );
-                           })}
+                                          <span className="text-xs text-muted-foreground">
+                                             {category.color}
+                                          </span>
+                                       </div>
+                                    </ItemDescription>
+                                 </ItemContent>
+                                 <ItemActions>
+                                    <DropdownMenu>
+                                       <DropdownMenuTrigger asChild>
+                                          <Button
+                                             className="h-8 w-8 p-0"
+                                             size="icon"
+                                             variant="ghost"
+                                          >
+                                             <span className="sr-only">
+                                                Open menu
+                                             </span>
+                                             <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                       </DropdownMenuTrigger>
+                                       <DropdownMenuContent align="end">
+                                          <EditCategorySheet
+                                             asChild
+                                             category={category}
+                                          />
+                                          <DeleteCategory
+                                             asChild
+                                             category={category}
+                                          />
+                                       </DropdownMenuContent>
+                                    </DropdownMenu>
+                                 </ItemActions>
+                              </Item>
+                           ))}
                         </ItemGroup>
                      ) : (
                         /* Desktop Table Layout */
@@ -364,80 +257,59 @@ function CategoriesTableContent() {
                                     </TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Color</TableHead>
-                                    <TableHead>Icon</TableHead>
                                     <TableHead>Actions</TableHead>
                                  </TableRow>
                               </TableHeader>
                               <TableBody>
-                                 {categories.map((category) => {
-                                    const iconKey =
-                                       category.icon as keyof typeof ICON_MAP;
-                                    const IconComponent = ICON_MAP[iconKey];
-                                    return (
-                                       <TableRow key={category.id}>
-                                          <TableCell>
-                                             <Checkbox />
-                                          </TableCell>
-                                          <TableCell className="font-medium">
-                                             {category.name}
-                                          </TableCell>
-                                          <TableCell>
-                                             <div className="flex items-center gap-2">
-                                                <div
-                                                   className="w-4 h-4 rounded-full border"
-                                                   style={{
-                                                      backgroundColor:
-                                                         category.color,
-                                                   }}
+                                 {categories.map((category) => (
+                                    <TableRow key={category.id}>
+                                       <TableCell>
+                                          <Checkbox />
+                                       </TableCell>
+                                       <TableCell className="font-medium">
+                                          {category.name}
+                                       </TableCell>
+                                       <TableCell>
+                                          <div className="flex items-center gap-2">
+                                             <div
+                                                className="w-4 h-4 rounded-full border"
+                                                style={{
+                                                   backgroundColor:
+                                                      category.color,
+                                                }}
+                                             />
+                                             <span className="text-sm text-muted-foreground">
+                                                {category.color}
+                                             </span>
+                                          </div>
+                                       </TableCell>
+                                       <TableCell>
+                                          <DropdownMenu>
+                                             <DropdownMenuTrigger asChild>
+                                                <Button
+                                                   className="h-8 w-8 p-0"
+                                                   variant="ghost"
+                                                >
+                                                   <span className="sr-only">
+                                                      Open menu
+                                                   </span>
+                                                   <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                             </DropdownMenuTrigger>
+                                             <DropdownMenuContent align="end">
+                                                <EditCategorySheet
+                                                   asChild
+                                                   category={category}
                                                 />
-                                                <span className="text-sm text-muted-foreground">
-                                                   {category.color}
-                                                </span>
-                                             </div>
-                                          </TableCell>
-                                          <TableCell>
-                                             <div className="flex items-center gap-2">
-                                                {IconComponent && (
-                                                   <IconComponent
-                                                      className="h-4 w-4"
-                                                      style={{
-                                                         color: category.color,
-                                                      }}
-                                                   />
-                                                )}
-                                                <Badge variant="outline">
-                                                   {category.icon}
-                                                </Badge>
-                                             </div>
-                                          </TableCell>
-                                          <TableCell>
-                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                   <Button
-                                                      className="h-8 w-8 p-0"
-                                                      variant="ghost"
-                                                   >
-                                                      <span className="sr-only">
-                                                         Open menu
-                                                      </span>
-                                                      <MoreVertical className="h-4 w-4" />
-                                                   </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                   <EditCategorySheet
-                                                      asChild
-                                                      category={category}
-                                                   />
-                                                   <DeleteCategory
-                                                      asChild
-                                                      category={category}
-                                                   />
-                                                </DropdownMenuContent>
-                                             </DropdownMenu>
-                                          </TableCell>
-                                       </TableRow>
-                                    );
-                                 })}
+                                                <DeleteCategory
+                                                   asChild
+                                                   category={category}
+                                                />
+                                             </DropdownMenuContent>
+                                          </DropdownMenu>
+                                       </TableCell>
+                                    </TableRow>
+                                 ))}
                               </TableBody>
                            </Table>
                         </div>
