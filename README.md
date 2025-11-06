@@ -12,8 +12,6 @@ Perfect for individuals who want full control over their financial data without 
 - 💰 **Transaction Tracking**: Record and categorize income and expenses with detailed descriptions
 - 📊 **Category Management**: Organize your finances with custom categories and color coding
 - 🌍 **Multi-Currency Support**: Track finances in different currencies with user preferences
-- 🔐 **Secure Authentication**: User accounts with secure sign-in and profile management
-- 📱 **Responsive Dashboard**: Clean, modern interface that works on all devices
 - 📈 **Financial Insights**: View your spending patterns and financial health at a glance
 
 ## 🛠️ Tech Stack
