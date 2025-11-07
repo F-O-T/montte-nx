@@ -16,6 +16,10 @@
          "default": "./src/client.ts",
          "types": "./dist/src/client.d.ts"
       },
+      "./helpers": {
+         "default": "./src/helpers/index.ts",
+         "types": "./dist/src/helpers/index.d.ts"
+      },
       "./server": {
          "default": "./src/server.ts",
          "types": "./dist/src/server.d.ts"
