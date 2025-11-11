@@ -39,9 +39,23 @@ export function SignInPage() {
    const trpc = useTRPC();
    const router = useRouter();
    const googleSignInMutation = useMutation(
-      trpc.auth.googleSignIn.mutationOptions(),
+      trpc.auth.googleSignIn.mutationOptions({
+         onSuccess: async (data) => {
+            if (!data.url) {
+               console.error("No URL returned from Google Sign-In.");
+               return;
+            }
+            window.location.replace(data.url);
+         },
+      }),
    );
-   const signInMutation = useMutation(trpc.auth.signIn.mutationOptions());
+   const signInMutation = useMutation(
+      trpc.auth.signIn.mutationOptions({
+         onSuccess: async () => {
+            await router.navigate({ to: "/home" });
+         },
+      }),
+   );
 
    const form = useForm({
       defaultValues: {
@@ -79,7 +93,7 @@ export function SignInPage() {
                rel="noopener noreferrer"
                target="_blank"
             >
-               Terms of Service
+               {translate("dashboard.routes.sign-in.texts.terms-of-service")}
             </a>
             <span>{text[1]}</span>
             <a
@@ -88,7 +102,7 @@ export function SignInPage() {
                rel="noopener noreferrer"
                target="_blank"
             >
-               Privacy Policy
+               {translate("dashboard.routes.sign-in.texts.privacy-policy")}
             </a>
             <span>{text[2]}</span>
          </>

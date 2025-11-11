@@ -14,5 +14,9 @@
    "password": {
       "label": "Senha",
       "placeholder": "Digite sua senha"
+   },
+   "otp": {
+      "label": "Código OTP",
+      "placeholder": "Digite o código OTP"
    }
 }

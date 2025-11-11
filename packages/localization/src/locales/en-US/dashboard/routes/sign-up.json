@@ -1,48 +1,16 @@
 {
-   "description": "Create your account to start using the app.",
-   "errors": {
-      "unknown": "Unknown error",
-      "user-exists": "This email is already registered"
+   "actions": {
+      "google-sign-up": "Sign up with Google",
+      "sign-in": "Sign in here"
    },
-   "footer": {
-      "have-account": "Already have an account?",
-      "sign-in-link": "Sign in here"
-   },
-   "form": {
-      "confirm-password": {
-         "label": "Confirm Password",
-         "placeholder": "Confirm your password"
-      },
-      "email": {
-         "label": "Email",
-         "placeholder": "Enter your email"
-      },
-      "name": {
-         "label": "Name",
-         "placeholder": "Enter your name"
-      },
-      "next": "Next",
-      "password": {
-         "label": "Password",
-         "placeholder": "Create a password"
-      },
-      "previous": "Previous",
-      "submit": "Create Account"
-   },
-   "messages": {
-      "loading": "Signing up...",
-      "success": "Sign up successful",
-      "welcome": "Welcome"
-   },
-   "steps": {
-      "basic-info": "Your personal information",
-      "password": "Password"
+   "description": "Create your account to start using the application.",
+   "texts": {
+      "have-account": "Already have an account? ",
+      "terms-and-privacy": "By clicking submit, you agree to our {split} and {split}."
    },
    "title": "Sign Up",
-   "validation": {
-      "email-invalid": "Please enter a valid email",
-      "name-min-length": "Please enter a valid name",
-      "password-min-length": "Please enter a password with at least 8 characters",
-      "passwords-no-match": "Passwords do not match"
+   "error-codes": {
+      "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "This email is already registered",
+      "UNKNOWN_ERROR": "Unknown error"
    }
 }

@@ -1,30 +1,7 @@
 {
    "description": "Digite o código de verificação enviado para seu email.",
-   "form": {
-      "resend": "Reenviar código de verificação",
-      "submit": "Enviar Código",
-      "verification-code": {
-         "label": "Código de Verificação",
-         "placeholder": "Digite o código de verificação"
-      }
-   },
-   "messages": {
-      "error": "Código de verificação inválido. Tente novamente.",
-      "invalid-otp": "Código de verificação inválido",
-      "loading-send": "Aguarde enquanto enviamos o código...",
-      "loading-verify": "Validando o código, aguarde...",
-      "resend-error": "Falha ao reenviar código de verificação. Tente novamente.",
-      "resend-success": "Código de verificação enviado com sucesso!",
-      "success": "Email verificado com sucesso!",
-      "success-send": "Código enviado com sucesso",
-      "success-send-description": "Verifique seu email para continuar.",
-      "success-verify": "Email verificado com sucesso",
-      "success-verify-description": "Você será redirecionado para o login.",
-      "unknown-error": "Erro desconhecido",
-      "verification-error": "Ocorreu um erro ao verificar o email"
-   },
    "title": "Verificação de Email",
-   "validation": {
-      "otp-length": "Digite um código de 6 dígitos"
+   "actions": {
+      "resend": "Reenviar Código"
    }
 }

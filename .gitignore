@@ -2,6 +2,7 @@
 
 # Dependencies
 .trigger
+.claude/**
 .mastra
 mastra.db**
 node_modules

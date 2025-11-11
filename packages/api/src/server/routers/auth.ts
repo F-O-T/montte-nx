@@ -1,5 +1,7 @@
 import { getDomain } from "@packages/environment/helpers";
+import { translate, type TranslationKey } from "@packages/localization";
 import { APIError, propagateError } from "@packages/utils/errors";
+import { APIError as BetterAuthAPIError } from "better-auth/api";
 import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
 
@@ -132,17 +134,29 @@ export const authRouter = router({
          const resolvedCtx = await ctx;
          const { email, password, name } = input;
 
-         // Use Better Auth's signUp API
-         const signUpResponse = await resolvedCtx.auth.api.signUpEmail({
-            body: {
-               email,
-               name,
-               password,
-            },
-            headers: resolvedCtx.headers,
-         });
+         try {
+            const signUpResponse = await resolvedCtx.auth.api.signUpEmail({
+               body: {
+                  email,
+                  name,
+                  password,
+               },
+               headers: resolvedCtx.headers,
+            });
 
-         return signUpResponse;
+            return {
+               ...signUpResponse,
+            };
+         } catch (error) {
+            if (error instanceof BetterAuthAPIError) {
+               const translatedMessage = translate(
+                  `dashboard.routes.sign-up.error-codes.${
+                     error.body?.code ?? ""
+                  }` as TranslationKey,
+               );
+               throw APIError.unprocessableContent(translatedMessage);
+            }
+         }
       }),
 
    verifyEmail: publicProcedure

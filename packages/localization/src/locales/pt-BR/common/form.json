@@ -1,4 +1,8 @@
 {
+  "otp": {
+    "label": "Código OTP",
+    "placeholder": "Digite o código OTP"
+  },
   "email": {
     "label": "Email",
     "placeholder": "Digite seu email"
