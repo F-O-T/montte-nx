@@ -27,13 +27,6 @@ export interface AuthOptions {
    resendClient: ResendClient;
 }
 
-export interface AuthPluginOptions {
-   polar: ReturnType<typeof polar>;
-   emailOTP: ReturnType<typeof emailOTP>;
-   openAPI: ReturnType<typeof openAPI>;
-   organization: ReturnType<typeof organization>;
-   apiKey: ReturnType<typeof apiKey>;
-}
 export const getAuthOptions = (
    db: DatabaseInstance,
    resendClient: ResendClient,
@@ -130,6 +123,28 @@ export const getAuthOptions = (
                return state?.activeSubscriptions.length > 0;
             },
             organizationLimit: 1,
+            schema: {
+               organization: {
+                  additionalFields: {
+                     description: {
+                        defaultValue: "",
+                        input: true,
+                        required: false,
+                        type: "string",
+                     },
+                  },
+               },
+               team: {
+                  additionalFields: {
+                     description: {
+                        defaultValue: "",
+                        input: true,
+                        required: false,
+                        type: "string",
+                     },
+                  },
+               },
+            },
             async sendInvitationEmail(data) {
                const inviteLink = `${getDomain()}/callback/organization/invitation/${data.id}`;
                await sendOrganizationInvitation(resendClient, {

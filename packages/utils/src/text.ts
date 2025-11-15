@@ -131,7 +131,7 @@ export function calculateReadabilityScore({ text }: { text: string }) {
 
    return { level, score };
 }
-export function getInitials(name: string, email: string) {
+export function getInitials(name: string, email?: string) {
    if (name) {
       const trimmed = name.trim();
       const segments = trimmed

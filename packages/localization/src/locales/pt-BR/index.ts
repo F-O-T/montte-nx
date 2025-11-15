@@ -10,7 +10,8 @@ import homePagePtBr from "./dashboard/routes/home.json";
 import profilePtBr from "./dashboard/routes/profile.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
-
+import commonFormPtBr from "./common/form.json";
+import commonThemesPtBr from "./common/themes.json";
 const resources = {
    translation: {
       common: {
@@ -20,6 +21,7 @@ const resources = {
          headers: commonHeadersPtBr,
          languages: commonLanguagesPtBr,
          validation: commonValidationPtBr,
+         themes: commonThemesPtBr,
       },
       dashboard: {
          routes: {

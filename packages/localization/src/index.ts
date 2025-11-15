@@ -1,7 +1,5 @@
 import i18n, { type TOptions } from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
-import Backend from "i18next-http-backend";
-import enUSResources from "./locales/en-US";
 import ptBRResources from "./locales/pt-BR";
 
 type RecursiveKeyOf<T> = T extends object
@@ -14,13 +12,12 @@ type RecursiveKeyOf<T> = T extends object
      }[keyof T]
    : never;
 
-type TranslationResources = typeof enUSResources.translation;
+type TranslationResources = typeof ptBRResources.translation;
 
 export type TranslationKey = RecursiveKeyOf<TranslationResources>;
 export type TranslationOptions = TOptions;
 
 const resources = {
-   "en-US": enUSResources,
    "pt-BR": ptBRResources,
 };
 
@@ -31,13 +28,13 @@ declare module "i18next" {
       resources: typeof resources;
    }
 }
-const supportedLngs: SupportedLng[] = ["en-US", "pt-BR"];
+const supportedLngs: SupportedLng[] = ["pt-BR"];
 i18n
    .use(Backend)
    .use(LanguageDetector)
    .init({
       defaultNS: "translation",
-      fallbackLng: "en-US",
+      fallbackLng: "pt-BR",
       interpolation: {
          escapeValue: false,
       },

@@ -20,12 +20,12 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useMutation } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
-import { LogOutIcon, MoreVerticalIcon, UserCircleIcon } from "lucide-react";
-import { useCallback } from "react";
+import { Crown, LogOutIcon, UserCircleIcon } from "lucide-react";
+import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { type Session, useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 function UserAvatarInfo({
    name,
@@ -86,49 +86,56 @@ function NavUserSkeleton() {
 }
 
 // Extracted content with Suspense logic
-// No client-side session fetch, session comes from props
-function NavUserContent({ session }: { session: Session | null }) {
-   const { isMobile, setOpenMobile } = useSidebar();
-   const trpc = useTRPC();
+function NavUserContent() {
+   const { setOpenMobile } = useSidebar();
    const router = useRouter();
-   const logoutMutation = useMutation(
-      trpc.session.logout.mutationOptions({
-         onError: (error) => {
-            console.error("Logout failed:", error);
-         },
-         onSuccess: async () => {
-            await router.navigate({ to: "/auth/sign-in" });
-            setOpenMobile(false);
-         },
-      }),
+   const trpc = useTRPC();
+   const queryClient = useQueryClient();
+   const { data: session } = useSuspenseQuery(
+      trpc.session.getSession.queryOptions(),
    );
    const handleLogout = useCallback(async () => {
-      await logoutMutation.mutateAsync();
-   }, [logoutMutation]);
-   if (!session) return <NavUserSkeleton />;
+      await betterAuthClient.signOut(
+         {},
+         {
+            onSuccess: async () => {
+               await queryClient.invalidateQueries({
+                  queryKey: trpc.session.getSession.queryKey(),
+               });
+               router.navigate({
+                  to: "/auth/sign-in",
+               });
+            },
+         },
+      );
+      setOpenMobile(false);
+   }, [
+      router,
+      setOpenMobile,
+      queryClient,
+      trpc.session.getSession.queryKey,
+      trpc.session.getSession,
+   ]);
 
    return (
       <SidebarMenu>
          <SidebarMenuItem>
             <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton
-                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                     size="lg"
-                  >
-                     <UserAvatarInfo
-                        email={session?.user.email}
-                        grayscale
-                        image={session?.user.image ?? ""}
-                        name={session?.user.name}
+               <DropdownMenuTrigger className="cursor-pointer py-4">
+                  <Avatar>
+                     <AvatarImage
+                        alt={session?.user.name}
+                        src={session?.user.image ?? ""}
                      />
-                     <MoreVerticalIcon className="ml-auto size-4" />
-                  </SidebarMenuButton>
+                     <AvatarFallback className="rounded-lg">
+                        {session?.user.name?.charAt(0) || "?"}
+                     </AvatarFallback>
+                  </Avatar>
                </DropdownMenuTrigger>
                <DropdownMenuContent
                   align="end"
                   className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                  side={isMobile ? "bottom" : "right"}
+                  side="bottom"
                   sideOffset={4}
                >
                   <DropdownMenuLabel className="p-0 font-normal">
@@ -141,7 +148,6 @@ function NavUserContent({ session }: { session: Session | null }) {
                      </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-
                   <DropdownMenuGroup>
                      <DropdownMenuItem asChild>
                         <Button
@@ -176,10 +182,12 @@ function NavUserContent({ session }: { session: Session | null }) {
 }
 
 // Export with Suspense and ErrorBoundary
-export function NavUser({ session }: { session: Session | null }) {
+export function NavUser() {
    return (
       <ErrorBoundary FallbackComponent={NavUserErrorFallback}>
-         <NavUserContent session={session} />
+         <Suspense fallback={<NavUserSkeleton />}>
+            <NavUserContent />
+         </Suspense>
       </ErrorBoundary>
    );
 }

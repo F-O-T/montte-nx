@@ -1,70 +1,70 @@
+import { Separator } from "@packages/ui/components/separator";
 import {
    Sidebar,
    SidebarContent,
    SidebarFooter,
    SidebarHeader,
-   SidebarMenu,
-   SidebarMenuItem,
 } from "@packages/ui/components/sidebar";
-import { Link } from "@tanstack/react-router";
-import type { LayoutDashboardIcon } from "lucide-react";
-import { CreditCard, Tag } from "lucide-react";
+import {
+   Bot,
+   FilesIcon,
+   FileText,
+   type LayoutDashboardIcon,
+   Lightbulb,
+   Target,
+} from "lucide-react";
 import type * as React from "react";
-import type { Session } from "@/integrations/clients";
 import type { FileRoutesByTo } from "@/routeTree.gen";
 import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
+import { OrganizationSwitcher } from "./organization-switcher";
 
 type NavigationItems = {
    url?: keyof FileRoutesByTo;
    title: string;
    icon: typeof LayoutDashboardIcon;
+   disabled?: boolean;
    subItems?: {
       url: keyof FileRoutesByTo;
       title: string;
       icon?: typeof LayoutDashboardIcon;
+      disabled?: boolean;
    }[];
 };
 
-export function AppSidebar({
-   session,
-   ...props
-}: React.ComponentProps<typeof Sidebar> & { session: Session | null }) {
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
    const navMain: NavigationItems[] = [
       {
-         icon: CreditCard,
-         title: "Transactions",
-         url: "/transactions",
-      },
-      {
-         icon: Tag,
-         title: "Categories",
-         url: "/categories",
+         icon: FilesIcon,
+         subItems: [
+            {
+               icon: Bot,
+               title: "Content Agents",
+               url: "/agents",
+            },
+            {
+               icon: Lightbulb,
+               title: "Content Ideas",
+               url: "/ideas",
+            },
+            {
+               icon: FileText,
+               title: "Created Content",
+               url: "/content",
+            },
+         ],
+         title: "Content",
       },
    ];
+
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>
-            <SidebarMenu>
-               <SidebarMenuItem>
-                  <Link className="flex items-center gap-2" to="/home">
-                     <figure className="text-primary">
-                        <img alt="Project logo" className="w-8 h-8" />
-                     </figure>
-
-                     <span className="text-lg font-semibold">
-                        Finance tracker
-                     </span>
-                  </Link>
-               </SidebarMenuItem>
-            </SidebarMenu>
+            <OrganizationSwitcher />
          </SidebarHeader>
          <SidebarContent>
+            <Separator />
             <NavMain items={navMain} />
          </SidebarContent>
-         <SidebarFooter>
-            <NavUser session={session} />
-         </SidebarFooter>
       </Sidebar>
    );
 }
