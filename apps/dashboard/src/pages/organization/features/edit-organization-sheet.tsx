@@ -484,6 +484,7 @@ const CreateOrganizationSheetContent = () => {
       onSubmit: async ({ value, formApi }) => {
          // Create organization first
          await createOrganizationMutation.mutateAsync({
+            slug:createSlug(value.name),
             description: value.description,
             name: value.name,
          });
