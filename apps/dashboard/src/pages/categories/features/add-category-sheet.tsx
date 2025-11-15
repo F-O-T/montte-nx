@@ -31,6 +31,8 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Color from "color";
+import { IconSelector } from "@/features/icon-selector/icon-selector";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { trpc } from "@/integrations/clients";
 
 type AddCategorySheetProps = {
@@ -59,6 +61,7 @@ export function AddCategorySheet({
    const form = useForm({
       defaultValues: {
          color: "#000000",
+         icon: undefined as IconName | undefined,
          name: "",
       },
       onSubmit: async ({ value }) => {
@@ -68,6 +71,7 @@ export function AddCategorySheet({
          try {
             await createCategoryMutation.mutateAsync({
                color: value.color,
+               icon: value.icon,
                name: value.name,
             });
          } catch (error) {
@@ -197,7 +201,32 @@ export function AddCategorySheet({
                         }}
                      </form.Field>
                   </FieldGroup>
-               </div>
+
+                  <FieldGroup>
+                     <form.Field name="icon">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>Icon (Optional)</FieldLabel>
+                                 <IconSelector
+                                    onValueChange={field.handleChange}
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                 </div>
 
                <SheetFooter>
                   <form.Subscribe>

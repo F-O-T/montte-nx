@@ -1,8 +1,8 @@
-import { z } from "zod";
 import {
    findPreferenceByUserId,
    upsertPreference,
 } from "@packages/database/repositories/preference-repository";
+import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 const updatePreferenceSchema = z.object({
@@ -23,11 +23,11 @@ export const preferenceRouter = router({
       // Return default preference if none exists
       return (
          preference || {
-            id: "",
-            userId,
-            currency: "USD",
             createdAt: new Date(),
+            currency: "USD",
+            id: "",
             updatedAt: new Date(),
+            userId,
          }
       );
    }),

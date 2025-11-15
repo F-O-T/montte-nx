@@ -153,9 +153,9 @@ export const authRouter = router({
 
          try {
             const resp = await resolvedCtx.auth.api.signInEmail({
+               asResponse: true,
                body: { email, password },
                headers: resolvedCtx.headers,
-               asResponse: true,
             });
 
             if (resp.headers) {

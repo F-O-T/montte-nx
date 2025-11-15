@@ -1,5 +1,6 @@
 import commonActionsPtBr from "./common/actions.json";
 import commonBrandPtBr from "./common/brand.json";
+import commonFormPtBr from "./common/form.json";
 import commonHeadersPtBr from "./common/headers.json";
 import commonLanguagesPtBr from "./common/languages.json";
 import commonValidationPtBr from "./common/validation.json";
@@ -14,9 +15,9 @@ import commonThemesPtBr from "./common/themes.json";
 const resources = {
    translation: {
       common: {
-         form: commonFormPtBr,
          actions: commonActionsPtBr,
          brand: commonBrandPtBr,
+         form: commonFormPtBr,
          headers: commonHeadersPtBr,
          languages: commonLanguagesPtBr,
          validation: commonValidationPtBr,

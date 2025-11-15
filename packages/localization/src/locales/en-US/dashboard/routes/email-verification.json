@@ -1,0 +1,7 @@
+{
+   "actions": {
+      "resend": "Resend Code"
+   },
+   "description": "Enter the verification code sent to your email.",
+   "title": "Email Verification"
+}

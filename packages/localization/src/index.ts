@@ -1,5 +1,4 @@
 import i18n, { type TOptions } from "i18next";
-import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import ptBRResources from "./locales/pt-BR";
 
