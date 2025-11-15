@@ -1,9 +1,8 @@
 import { createAuth } from "@packages/authentication/server";
-import { openAPI } from "better-auth/plugins";
-
 import { serverEnv as env } from "@packages/environment/server";
 import { getPaymentClient } from "@packages/payment/client";
 import { getResendClient } from "@packages/transactional/client";
+import { openAPI } from "better-auth/plugins";
 import { db } from "./database";
 
 export const resendClient = getResendClient(env.RESEND_API_KEY);
