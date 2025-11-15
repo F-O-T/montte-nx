@@ -7,11 +7,12 @@ import {
 } from "@packages/ui/components/sidebar";
 import {
    Bot,
-   FilesIcon,
+   CreditCard,
    FileText,
    type LayoutDashboardIcon,
-   Lightbulb,
-   Target,
+   PiggyBank,
+   TrendingUp,
+   Wallet,
 } from "lucide-react";
 import type * as React from "react";
 import type { FileRoutesByTo } from "@/routeTree.gen";
@@ -34,25 +35,20 @@ type NavigationItems = {
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
    const navMain: NavigationItems[] = [
       {
-         icon: FilesIcon,
+         icon: CreditCard,
          subItems: [
             {
-               icon: Bot,
-               title: "Content Agents",
-               url: "/agents",
-            },
-            {
-               icon: Lightbulb,
-               title: "Content Ideas",
-               url: "/ideas",
+               icon: TrendingUp,
+               title: "Transactions",
+               url: "/transactions",
             },
             {
                icon: FileText,
-               title: "Created Content",
-               url: "/content",
+               title: "Categories",
+               url: "/categories",
             },
          ],
-         title: "Content",
+         title: "Finance",
       },
    ];
 
