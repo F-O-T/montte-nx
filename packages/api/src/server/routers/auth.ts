@@ -152,15 +152,19 @@ export const authRouter = router({
          const { email, password } = input;
 
          try {
-            const signInResponse = await resolvedCtx.auth.api.signInEmail({
-               body: {
-                  email,
-                  password,
-               },
+            const resp = await resolvedCtx.auth.api.signInEmail({
+               body: { email, password },
                headers: resolvedCtx.headers,
+               asResponse: true,
             });
 
-            return signInResponse;
+            if (resp.headers) {
+               resp.headers.forEach((value, key) => {
+                  resolvedCtx.responseHeaders.append(key, value);
+               });
+            }
+
+            return resp.json();
          } catch (error) {
             console.error("Sign-in error:", error);
             propagateError(error);
