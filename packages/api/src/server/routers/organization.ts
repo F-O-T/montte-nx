@@ -19,6 +19,7 @@ export const organizationRouter = router({
       .input(
          z.object({
             name: z.string().min(1, "Organization name is required"),
+            description: z.string().optional(),
             slug: z.string().min(1, "Organization slug is required"),
          }),
       )
@@ -30,6 +31,7 @@ export const organizationRouter = router({
                body: {
                   name: input.name,
                   slug: input.slug,
+                  description: input.description,
                },
                headers: resolvedCtx.headers,
             });

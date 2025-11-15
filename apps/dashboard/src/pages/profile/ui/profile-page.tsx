@@ -104,9 +104,9 @@ function QuickAccessCards() {
             description: translate(
                "dashboard.routes.profile.quick-access.organization.description",
             ),
-            disabled: true,
+            disabled: false,
             icon: <Building2 className="size-4 text-primary" />,
-            onClick: () => {},
+            onClick: () => router.navigate({ to: "/organization" }),
             title: translate(
                "dashboard.routes.profile.quick-access.organization.title",
             ),

@@ -19,6 +19,10 @@ import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/t
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
+import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
+import { Route as DashboardOrganizationTeamsRouteImport } from './routes/_dashboard/organization/teams'
+import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
+import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -69,6 +73,30 @@ const DashboardCategoriesRoute = DashboardCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardOrganizationIndexRoute =
+  DashboardOrganizationIndexRouteImport.update({
+    id: '/organization/',
+    path: '/organization/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardOrganizationTeamsRoute =
+  DashboardOrganizationTeamsRouteImport.update({
+    id: '/organization/teams',
+    path: '/organization/teams',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardOrganizationMembersRoute =
+  DashboardOrganizationMembersRouteImport.update({
+    id: '/organization/members',
+    path: '/organization/members',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardOrganizationInvitesRoute =
+  DashboardOrganizationInvitesRouteImport.update({
+    id: '/organization/invites',
+    path: '/organization/invites',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
@@ -80,6 +108,10 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/organization/invites': typeof DashboardOrganizationInvitesRoute
+  '/organization/members': typeof DashboardOrganizationMembersRoute
+  '/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
@@ -91,6 +123,10 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/organization/invites': typeof DashboardOrganizationInvitesRoute
+  '/organization/members': typeof DashboardOrganizationMembersRoute
+  '/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +140,10 @@ export interface FileRoutesById {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/_dashboard/organization/invites': typeof DashboardOrganizationInvitesRoute
+  '/_dashboard/organization/members': typeof DashboardOrganizationMembersRoute
+  '/_dashboard/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/_dashboard/organization/': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +157,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/organization/invites'
+    | '/organization/members'
+    | '/organization/teams'
+    | '/organization'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -128,6 +172,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/organization/invites'
+    | '/organization/members'
+    | '/organization/teams'
+    | '/organization'
   id:
     | '__root__'
     | '/_dashboard'
@@ -140,6 +188,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/_dashboard/organization/invites'
+    | '/_dashboard/organization/members'
+    | '/_dashboard/organization/teams'
+    | '/_dashboard/organization/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -219,6 +271,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCategoriesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/organization/': {
+      id: '/_dashboard/organization/'
+      path: '/organization'
+      fullPath: '/organization'
+      preLoaderRoute: typeof DashboardOrganizationIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/organization/teams': {
+      id: '/_dashboard/organization/teams'
+      path: '/organization/teams'
+      fullPath: '/organization/teams'
+      preLoaderRoute: typeof DashboardOrganizationTeamsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/organization/members': {
+      id: '/_dashboard/organization/members'
+      path: '/organization/members'
+      fullPath: '/organization/members'
+      preLoaderRoute: typeof DashboardOrganizationMembersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/organization/invites': {
+      id: '/_dashboard/organization/invites'
+      path: '/organization/invites'
+      fullPath: '/organization/invites'
+      preLoaderRoute: typeof DashboardOrganizationInvitesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
@@ -227,6 +307,10 @@ interface DashboardRouteChildren {
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
+  DashboardOrganizationInvitesRoute: typeof DashboardOrganizationInvitesRoute
+  DashboardOrganizationMembersRoute: typeof DashboardOrganizationMembersRoute
+  DashboardOrganizationTeamsRoute: typeof DashboardOrganizationTeamsRoute
+  DashboardOrganizationIndexRoute: typeof DashboardOrganizationIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -234,6 +318,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
+  DashboardOrganizationInvitesRoute: DashboardOrganizationInvitesRoute,
+  DashboardOrganizationMembersRoute: DashboardOrganizationMembersRoute,
+  DashboardOrganizationTeamsRoute: DashboardOrganizationTeamsRoute,
+  DashboardOrganizationIndexRoute: DashboardOrganizationIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

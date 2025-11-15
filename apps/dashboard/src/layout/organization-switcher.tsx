@@ -138,6 +138,19 @@ function OrganizationSwitcherContent() {
    const { data: logo } = useSuspenseQuery(
       trpc.organization.getLogo.queryOptions(),
    );
+
+   const organizationData = useMemo(
+      () => {
+         const hasOrg = !!activeOrganization;
+         return {
+            hasOrganization: hasOrg,
+            name: activeOrganization?.name || "Personal",
+            description: activeOrganization?.description || "Personal Account",
+         };
+      },
+      [activeOrganization],
+   );
+
    const menuActions = useMemo(
       () => [
          {
@@ -156,62 +169,65 @@ function OrganizationSwitcherContent() {
             <DropdownMenu>
                <DropdownMenuTrigger asChild>
                   <SidebarMenuButton
-                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground data-[disabled]:cursor-not-allowed"
                      size="lg"
+                     disabled={!organizationData.hasOrganization}
                   >
                      <Item className="p-0 w-full">
                         <ItemMedia>
                            <Avatar className=" rounded-lg">
                               <AvatarImage
-                                 alt={activeOrganization?.name || "Personal"}
+                                 alt={organizationData.name}
                                  src={logo?.data ?? ""}
                               />
                               <AvatarFallback className="rounded-lg">
-                                 {getInitials(activeOrganization?.name ?? "")}
+                                 {getInitials(organizationData.name)}
                               </AvatarFallback>
                            </Avatar>
                         </ItemMedia>
                         <ItemContent>
                            <ItemTitle className="">
-                              {activeOrganization?.name || "Personal"}
+                              {organizationData.name}
                            </ItemTitle>
                            <ItemDescription className="text-xs ">
-                              {activeOrganization
-                                 ? activeOrganization.description
-                                 : "Personal Account"}
+                              {organizationData.description}
                            </ItemDescription>
                         </ItemContent>
-                        <ItemActions>
-                           <ChevronsUpDown className="size-4" />
-                        </ItemActions>
+                        {organizationData.hasOrganization && (
+                           <ItemActions>
+                              <ChevronsUpDown className="size-4" />
+                           </ItemActions>
+                        )}
                      </Item>
                   </SidebarMenuButton>
                </DropdownMenuTrigger>
-               <DropdownMenuContent
-                  align="start"
-                  side={isMobile ? "bottom" : "right"}
-                  sideOffset={4}
-               >
-                  <DropdownMenuLabel>Current Organization</DropdownMenuLabel>
-
-                  {activeOrganization &&
-                     menuActions.map(({ key, to, icon: Icon, label }) => (
-                        <DropdownMenuItem asChild key={key}>
-                           <Link className="w-full flex gap-2" to={to}>
-                              <Icon className="size-4" />
-                              {label}
-                           </Link>
-                        </DropdownMenuItem>
-                     ))}
-                  <DropdownMenuSeparator />
-                  <ErrorBoundary
-                     FallbackComponent={OrganizationDropdownErrorFallback}
+               {organizationData.hasOrganization && (
+                  <DropdownMenuContent
+                     align="start"
+                     side={isMobile ? "bottom" : "right"}
+                     sideOffset={4}
                   >
-                     <Suspense fallback={<OrganizationDropdownSkeleton />}>
-                        <OrganizationDropdownContent />
-                     </Suspense>
-                  </ErrorBoundary>
-               </DropdownMenuContent>
+                     <DropdownMenuLabel>Current Organization</DropdownMenuLabel>
+
+                     {activeOrganization &&
+                        menuActions.map(({ key, to, icon: Icon, label }) => (
+                           <DropdownMenuItem asChild key={key}>
+                              <Link className="w-full flex gap-2" to={to}>
+                                 <Icon className="size-4" />
+                                 {label}
+                              </Link>
+                           </DropdownMenuItem>
+                        ))}
+                     <DropdownMenuSeparator />
+                     <ErrorBoundary
+                        FallbackComponent={OrganizationDropdownErrorFallback}
+                     >
+                        <Suspense fallback={<OrganizationDropdownSkeleton />}>
+                           <OrganizationDropdownContent />
+                        </Suspense>
+                     </ErrorBoundary>
+                  </DropdownMenuContent>
+               )}
             </DropdownMenu>
          </SidebarMenuItem>
       </SidebarMenu>
