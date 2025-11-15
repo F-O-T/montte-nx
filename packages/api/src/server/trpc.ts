@@ -18,6 +18,7 @@ export const createTRPCContext = async ({
    headers,
    minioClient,
    minioBucket,
+   responseHeaders,
 }: {
    auth: AuthInstance;
    db: DatabaseInstance;
@@ -25,6 +26,7 @@ export const createTRPCContext = async ({
    minioBucket: string;
    headers: Headers;
    polarClient: Polar;
+   responseHeaders: Headers;
 }): Promise<{
    polarClient: Polar;
    minioBucket: string;
@@ -35,6 +37,7 @@ export const createTRPCContext = async ({
    session: AuthInstance["$Infer"]["Session"] | null;
    contentaSdk: ReturnType<typeof createContentaSdk>;
    language: SupportedLng;
+   responseHeaders: Headers;
 }> => {
    const session = await auth.api.getSession({
       headers,
@@ -55,6 +58,7 @@ export const createTRPCContext = async ({
       minioClient,
       polarClient,
       session,
+      responseHeaders,
    };
 };
 

@@ -1,13 +1,13 @@
 import cors from "@elysiajs/cors";
+import { openapi } from "@elysiajs/openapi";
 import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { Elysia } from "elysia";
-import { auth, polarClient, OpenAPI } from "./integrations/auth";
+import { auth, OpenAPI, polarClient } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
 import { posthogPlugin } from "./integrations/posthog";
-import { openapi } from "@elysiajs/openapi";
 
 const trpcApi = createApi({
    auth,
@@ -57,25 +57,33 @@ const app = new Elysia({
    .use(posthogPlugin)
    .use(
       openapi({
-         path: "/docs",
          documentation: {
             components: await OpenAPI.components,
+
             paths: await OpenAPI.getPaths(),
          },
+         path: "/docs",
       }),
    )
    .mount(auth.handler)
    .all(
       "/trpc/*",
       async (opts) => {
+         const responseHeaders = new Headers();
+
          const res = await fetchRequestHandler({
             createContext: async () =>
                await trpcApi.createTRPCContext({
                   headers: opts.request.headers,
+                  responseHeaders,
                }),
             endpoint: "/trpc",
             req: opts.request,
             router: trpcApi.trpcRouter,
+         });
+
+         responseHeaders.forEach((value, key) => {
+            res.headers.append(key, value);
          });
 
          return res;

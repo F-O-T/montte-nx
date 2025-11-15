@@ -30,7 +30,13 @@ export const createApi = ({
    polarClient: Polar;
 }) => {
    return {
-      createTRPCContext: async ({ headers }: { headers: Headers }) =>
+      createTRPCContext: async ({
+         headers,
+         responseHeaders,
+      }: {
+         headers: Headers;
+         responseHeaders: Headers;
+      }) =>
          await createTRPCContextInternal({
             auth,
             db,
@@ -38,6 +44,7 @@ export const createApi = ({
             minioBucket,
             minioClient,
             polarClient,
+            responseHeaders,
          }),
       trpcRouter: appRouter,
    };
