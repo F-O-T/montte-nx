@@ -19,39 +19,7 @@ import type { FileRoutesByTo } from "@/routeTree.gen";
 import { NavMain } from "./nav-main";
 import { OrganizationSwitcher } from "./organization-switcher";
 
-type NavigationItems = {
-   url?: keyof FileRoutesByTo;
-   title: string;
-   icon: typeof LayoutDashboardIcon;
-   disabled?: boolean;
-   subItems?: {
-      url: keyof FileRoutesByTo;
-      title: string;
-      icon?: typeof LayoutDashboardIcon;
-      disabled?: boolean;
-   }[];
-};
-
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-   const navMain: NavigationItems[] = [
-      {
-         icon: CreditCard,
-         subItems: [
-            {
-               icon: TrendingUp,
-               title: "Transactions",
-               url: "/transactions",
-            },
-            {
-               icon: FileText,
-               title: "Categories",
-               url: "/categories",
-            },
-         ],
-         title: "Finance",
-      },
-   ];
-
    return (
       <Sidebar collapsible="offcanvas" {...props}>
          <SidebarHeader>
@@ -59,7 +27,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
          </SidebarHeader>
          <SidebarContent>
             <Separator />
-            <NavMain items={navMain} />
+            <NavMain />
          </SidebarContent>
       </Sidebar>
    );
