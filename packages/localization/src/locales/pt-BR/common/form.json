@@ -1,22 +1,22 @@
 {
-  "otp": {
-    "label": "Código OTP",
-    "placeholder": "Digite o código OTP"
-  },
-  "email": {
-    "label": "Email",
-    "placeholder": "Digite seu email"
-  },
-  "name": {
-    "label": "Nome",
-    "placeholder": "Digite seu nome completo"
-  },
-  "password": {
-    "label": "Senha",
-    "placeholder": "Digite sua senha"
-  },
-  "confirm-password": {
-    "label": "Confirmar Senha",
-    "placeholder": "Confirme sua senha"
-  }
+   "confirm-password": {
+      "label": "Confirmar Senha",
+      "placeholder": "Confirme sua senha"
+   },
+   "email": {
+      "label": "Email",
+      "placeholder": "Digite seu email"
+   },
+   "name": {
+      "label": "Nome",
+      "placeholder": "Digite seu nome completo"
+   },
+   "otp": {
+      "label": "Código OTP",
+      "placeholder": "Digite o código OTP"
+   },
+   "password": {
+      "label": "Senha",
+      "placeholder": "Digite sua senha"
+   }
 }

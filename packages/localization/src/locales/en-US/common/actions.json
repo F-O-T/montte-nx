@@ -1,7 +1,7 @@
 {
-  "cancel": "Cancel",
-  "submit": "Submit",
-  "retry": "Retry",
-  "previous": "Previous",
-  "next": "Next"
+   "cancel": "Cancel",
+   "next": "Next",
+   "previous": "Previous",
+   "retry": "Retry",
+   "submit": "Submit"
 }

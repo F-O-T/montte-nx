@@ -5,14 +5,14 @@
       "sign-up": "Sign up here"
    },
    "description": "Enter your details to access your account.",
-   "texts": {
-      "no-account": "Don't have an account? ",
-      "terms-and-privacy": "By clicking submit, you agree to our {split} and {split}.",
-      "terms-of-service": "Terms of Service",
-      "privacy-policy": "Privacy Policy"
-   },
-   "title": "Sign In",
    "error-codes": {
       "INVALID_EMAIL_OR_PASSWORD": "Invalid email or password."
-   }
+   },
+   "texts": {
+      "no-account": "Don't have an account? ",
+      "privacy-policy": "Privacy Policy",
+      "terms-and-privacy": "By clicking submit, you agree to our {split} and {split}.",
+      "terms-of-service": "Terms of Service"
+   },
+   "title": "Sign In"
 }

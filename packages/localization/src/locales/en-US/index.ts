@@ -1,6 +1,6 @@
 import commonActionsEnUs from "./common/actions.json";
-import commonFormEnUs from "./common/form.json";
 import commonBrandEnUs from "./common/brand.json";
+import commonFormEnUs from "./common/form.json";
 import commonHeadersEnUs from "./common/headers.json";
 import commonLanguagesEnUs from "./common/languages.json";
 import commonValidationEnUs from "./common/validation.json";
@@ -14,9 +14,9 @@ import signUpEnUs from "./dashboard/routes/sign-up.json";
 const resources = {
    translation: {
       common: {
-         form: commonFormEnUs,
          actions: commonActionsEnUs,
          brand: commonBrandEnUs,
+         form: commonFormEnUs,
          headers: commonHeadersEnUs,
          languages: commonLanguagesEnUs,
          validation: commonValidationEnUs,

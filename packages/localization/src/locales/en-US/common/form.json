@@ -11,12 +11,12 @@
       "label": "Nome",
       "placeholder": "Digite seu nome completo"
    },
-   "password": {
-      "label": "Senha",
-      "placeholder": "Digite sua senha"
-   },
    "otp": {
       "label": "Código OTP",
       "placeholder": "Digite o código OTP"
+   },
+   "password": {
+      "label": "Senha",
+      "placeholder": "Digite sua senha"
    }
 }
