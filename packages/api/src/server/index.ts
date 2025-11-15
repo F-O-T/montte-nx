@@ -8,13 +8,18 @@ import { preferenceRouter } from "./routers/preferences";
 import { sessionRouter } from "./routers/session";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
-
+import { organizationRouter } from "./routers/organization";
+import { organizationInvitesRouter } from "./routers/organization-invites";
+import { organizationTeamsRouter } from "./routers/organization-teams";
 export const appRouter = router({
    auth: authRouter,
    categories: categoryRouter,
    preferences: preferenceRouter,
    session: sessionRouter,
    transactions: transactionRouter,
+   organization: organizationRouter,
+   organizationInvites: organizationInvitesRouter,
+   organizationTeams: organizationTeamsRouter,
 });
 export const createApi = ({
    auth,

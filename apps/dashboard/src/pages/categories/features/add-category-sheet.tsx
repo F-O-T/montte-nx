@@ -152,16 +152,20 @@ export function AddCategorySheet({
 
                                     <PopoverContent
                                        align="start"
-                                       className="h-full max-w-sm rounded-md border bg-background shadow-sm"
+                                       className="h-full rounded-md border bg-background "
                                     >
                                        <ColorPicker
-                                          value={field.state.value || "#000000"}
+                                          className="size-full flex flex-col gap-4"
                                           onChange={(rgba) =>
                                              field.handleChange(
-                                                Color.rgb(rgba[0], rgba[1], rgba[2]).hex(),
+                                                Color.rgb(
+                                                   rgba[0],
+                                                   rgba[1],
+                                                   rgba[2],
+                                                ).hex(),
                                              )
                                           }
-                                          className="size-full flex flex-col gap-4" // never undefined
+                                          value={field.state.value || "#000000"} // never undefined
                                        >
                                           <div className="h-24">
                                              <ColorPickerSelection />
@@ -193,8 +197,7 @@ export function AddCategorySheet({
                         }}
                      </form.Field>
                   </FieldGroup>
-
-                 </div>
+               </div>
 
                <SheetFooter>
                   <form.Subscribe>

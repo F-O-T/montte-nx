@@ -1,7 +1,0 @@
-{
-   "description": "Enter the verification code sent to your email.",
-   "title": "Email Verification",
-   "actions": {
-      "resend": "Resend Code"
-   }
-}
