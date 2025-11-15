@@ -1,7 +1,7 @@
 import i18n, { type TOptions } from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import ptBRResources from "./locales/pt-BR";
-
+import Backend from "i18next-http-backend";
 type RecursiveKeyOf<T> = T extends object
    ? {
         [K in keyof T]: K extends string
