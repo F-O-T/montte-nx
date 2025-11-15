@@ -57,8 +57,8 @@ export const createTRPCContext = async ({
       minioBucket,
       minioClient,
       polarClient,
-      session,
       responseHeaders,
+      session,
    };
 };
 
