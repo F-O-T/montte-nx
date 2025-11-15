@@ -19,92 +19,42 @@ import { Input } from "@packages/ui/components/input";
 import { PasswordInput } from "@packages/ui/components/password-input";
 import { Separator } from "@packages/ui/components/separator";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { type FormEvent, useCallback, useMemo } from "react";
-import { toast } from "sonner";
+import { type FormEvent, useCallback } from "react";
 import { z } from "zod";
-import { betterAuthClient } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
-type codes = "INVALID_EMAIL_OR_PASSWORD" | "default";
 export function SignInPage() {
    const schema = z.object({
-      email: z.email(translate("pages.sign-in.validation.email-invalid")),
+      email: z.email(translate("common.validation.email")),
       password: z
          .string()
-         .min(8, translate("pages.sign-in.validation.password-min-length")),
-   });
-   const router = useRouter();
-   const getErrorMessage = useMemo(
-      () => ({
-         default: translate("pages.sign-in.errors.unknown"),
-         INVALID_EMAIL_OR_PASSWORD: translate(
-            "pages.sign-in.errors.invalid-credentials",
+         .min(
+            8,
+            translate("common.validation.min-length").replace("{min}", "8"),
          ),
+   });
+   const trpc = useTRPC();
+   const router = useRouter();
+   const googleSignInMutation = useMutation(
+      trpc.auth.googleSignIn.mutationOptions({
+         onSuccess: async (data) => {
+            if (!data.url) {
+               console.error("No URL returned from Google Sign-In.");
+               return;
+            }
+            window.location.replace(data.url);
+         },
       }),
-      [],
    );
-   const handleGoogleSignIn = useCallback(async () => {
-      await betterAuthClient.signIn.social(
-         {
-            callbackURL: `${window.location.origin}/home`,
-            provider: "google",
+   const signInMutation = useMutation(
+      trpc.auth.signIn.mutationOptions({
+         onSuccess: async () => {
+            await router.navigate({ to: "/home" });
          },
-         {
-            onError: ({ error }) => {
-               toast.error(
-                  getErrorMessage[error.code as codes] ||
-                     translate("pages.sign-in.errors.unknown"),
-                  {
-                     id: "sign-in-toast",
-                  },
-               );
-            },
-            onRequest: () => {
-               toast.loading(translate("pages.sign-in.messages.loading"), {
-                  id: "sign-in-toast",
-               });
-            },
-         },
-      );
-   }, [getErrorMessage]);
-   const handleSignIn = useCallback(
-      async ({ email, password }: z.infer<typeof schema>) => {
-         await betterAuthClient.signIn.email(
-            {
-               email,
-               password,
-            },
-            {
-               onError: ({ error }) => {
-                  toast.error(
-                     getErrorMessage[error.code as codes] ||
-                        translate("pages.sign-in.errors.unknown"),
-                     {
-                        id: "sign-in-toast",
-                     },
-                  );
-               },
-               onRequest: () => {
-                  toast.loading(translate("pages.sign-in.messages.loading"), {
-                     id: "sign-in-toast",
-                  });
-               },
-               onSuccess: ({ data }) => {
-                  toast.success(translate("pages.sign-in.messages.success"), {
-                     description: translate("pages.sign-in.messages.welcome", {
-                        name: data.user.name,
-                     }),
-                     id: "sign-in-toast",
-                  });
-                  router.navigate({
-                     to: "/home",
-                  });
-               },
-            },
-         );
-      },
-      [getErrorMessage, router],
+      }),
    );
 
    const form = useForm({
@@ -113,7 +63,7 @@ export function SignInPage() {
          password: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await handleSignIn(value);
+         await signInMutation.mutateAsync(value);
          formApi.reset();
       },
       validators: {
@@ -128,21 +78,52 @@ export function SignInPage() {
       },
       [form],
    );
+
+   const TermsAndPrivacyText = () => {
+      const text = translate(
+         "dashboard.routes.sign-in.texts.terms-and-privacy",
+      ).split("{split}");
+
+      return (
+         <>
+            <span>{text[0]}</span>
+            <a
+               className="underline text-muted-foreground hover:text-primary"
+               href="https://contentagen.com/terms-of-service"
+               rel="noopener noreferrer"
+               target="_blank"
+            >
+               {translate("dashboard.routes.sign-in.texts.terms-of-service")}
+            </a>
+            <span>{text[1]}</span>
+            <a
+               className="underline text-muted-foreground hover:text-primary"
+               href="https://contentagen.com/privacy-policy"
+               rel="noopener noreferrer"
+               target="_blank"
+            >
+               {translate("dashboard.routes.sign-in.texts.privacy-policy")}
+            </a>
+            <span>{text[2]}</span>
+         </>
+      );
+   };
+
    return (
       <section className="space-y-4">
          <Card>
             <CardHeader className="text-center">
                <CardTitle className="text-3xl">
-                  {translate("pages.sign-in.title")}
+                  {translate("dashboard.routes.sign-in.title")}
                </CardTitle>
                <CardDescription>
-                  {translate("pages.sign-in.description")}
+                  {translate("dashboard.routes.sign-in.description")}
                </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <Button
                   className="w-full"
-                  onClick={handleGoogleSignIn}
+                  onClick={() => googleSignInMutation.mutate()}
                   variant="outline"
                >
                   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -152,7 +133,11 @@ export function SignInPage() {
                         fill="currentColor"
                      />
                   </svg>
-                  <span>{translate("pages.sign-in.google-button")}</span>
+                  <span>
+                     {translate(
+                        "dashboard.routes.sign-in.actions.google-sign-in",
+                     )}
+                  </span>
                </Button>
                <Separator />
                <form className="space-y-4 " onSubmit={(e) => handleSubmit(e)}>
@@ -165,9 +150,7 @@ export function SignInPage() {
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel htmlFor={field.name}>
-                                    {translate(
-                                       "pages.sign-in.form.email.label",
-                                    )}
+                                    {translate("common.form.email.label")}
                                  </FieldLabel>
                                  <Input
                                     aria-invalid={isInvalid}
@@ -178,7 +161,7 @@ export function SignInPage() {
                                        field.handleChange(e.target.value)
                                     }
                                     placeholder={translate(
-                                       "pages.sign-in.form.email.placeholder",
+                                       "common.form.email.placeholder",
                                     )}
                                     type="email"
                                     value={field.state.value}
@@ -204,16 +187,14 @@ export function SignInPage() {
                               <Field data-invalid={isInvalid}>
                                  <div className="flex justify-between items-center">
                                     <FieldLabel htmlFor={field.name}>
-                                       {translate(
-                                          "pages.sign-in.form.password.label",
-                                       )}
+                                       {translate("common.form.password.label")}
                                     </FieldLabel>
                                     <Link
                                        className="underline text-sm  text-muted-foreground"
                                        to="/auth/forgot-password"
                                     >
                                        {translate(
-                                          "pages.sign-in.footer.forgot-password",
+                                          "dashboard.routes.sign-in.actions.forgot-password",
                                        )}
                                     </Link>
                                  </div>
@@ -227,7 +208,7 @@ export function SignInPage() {
                                        field.handleChange(e.target.value)
                                     }
                                     placeholder={translate(
-                                       "pages.sign-in.form.password.placeholder",
+                                       "common.form.password.placeholder",
                                     )}
                                     value={field.state.value}
                                  />
@@ -250,7 +231,7 @@ export function SignInPage() {
                            }
                            type="submit"
                         >
-                           {translate("pages.sign-in.form.submit")}
+                           {translate("common.actions.submit")}
                            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                         </Button>
                      )}
@@ -259,26 +240,20 @@ export function SignInPage() {
             </CardContent>
             <CardFooter className="text-sm space-y-2 flex flex-col justify-center items-center">
                <div className="w-full  flex gap-1 justify-center items-center">
-                  <span>{translate("pages.sign-in.footer.no-account")}</span>
+                  <span>
+                     {translate("dashboard.routes.sign-in.texts.no-account")}
+                  </span>
                   <Link
                      className="underline text-muted-foreground"
                      to="/auth/sign-up"
                   >
-                     {translate("pages.sign-in.footer.sign-up-link")}
+                     {translate("dashboard.routes.sign-in.actions.sign-up")}
                   </Link>
                </div>
             </CardFooter>
          </Card>
          <FieldDescription className="text-center">
-            <span>By clicking continue, you agree to our</span>
-            &nbsp;
-            <a href="https://contentagen.com/terms-of-service">
-               Terms of Service
-            </a>
-            &nbsp;
-            <span>and</span>
-            &nbsp;
-            <a href="https://contentagen.com/privacy-policy">Privacy Policy</a>.
+            <TermsAndPrivacyText />
          </FieldDescription>
       </section>
    );

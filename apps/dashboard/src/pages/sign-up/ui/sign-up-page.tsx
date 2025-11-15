@@ -18,13 +18,12 @@ import { Input } from "@packages/ui/components/input";
 import { PasswordInput } from "@packages/ui/components/password-input";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { betterAuthClient } from "@/integrations/clients";
-
-type codes = "USER_ALREADY_EXISTS" | "default";
+import { useTRPC } from "@/integrations/clients";
 
 const steps = [
    { id: "basic-info", title: "basic-info" },
@@ -34,70 +33,42 @@ const steps = [
 const { Stepper } = defineStepper(...steps);
 
 export function SignUpPage() {
+   const trpc = useTRPC();
    const router = useRouter();
    const schema = z
       .object({
          confirmPassword: z.string(),
-         email: z.email(translate("pages.sign-up.validation.email-invalid")),
+         email: z.email(translate("common.validation.email")),
          name: z
             .string()
-            .min(2, translate("pages.sign-up.validation.name-min-length")),
+            .min(
+               2,
+               translate("common.validation.min-length").replace("{min}", "2"),
+            ),
          password: z
             .string()
-            .min(8, translate("pages.sign-up.validation.password-min-length")),
+            .min(
+               8,
+               translate("common.validation.min-length").replace("{min}", "8"),
+            ),
       })
       .refine((data) => data.password === data.confirmPassword, {
-         message: translate("pages.sign-up.validation.passwords-no-match"),
+         message: translate("common.validation.password-mismatch"),
          path: ["confirmPassword"],
       });
 
-   const getErrorMessage = useMemo(
-      () => ({
-         default: translate("pages.sign-up.errors.unknown"),
-         USER_ALREADY_EXISTS: translate("pages.sign-up.errors.user-exists"),
+   const signUpMutation = useMutation(
+      trpc.auth.signUp.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message);
+         },
+         onSuccess: async (_, variables) => {
+            router.navigate({
+               search: { email: variables.email },
+               to: "/auth/email-verification",
+            });
+         },
       }),
-      [],
-   );
-
-   const handleSignUp = useCallback(
-      async ({ name, email, password }: z.infer<typeof schema>) => {
-         await betterAuthClient.signUp.email(
-            {
-               email,
-               name,
-               password,
-            },
-            {
-               onError: ({ error }) => {
-                  toast.error(
-                     getErrorMessage[error.code as codes] ||
-                        translate("pages.sign-up.errors.unknown"),
-                     {
-                        id: "sign-up-toast",
-                     },
-                  );
-               },
-               onRequest: () => {
-                  toast.loading(translate("pages.sign-up.messages.loading"), {
-                     id: "sign-up-toast",
-                  });
-               },
-               onSuccess: ({ data }) => {
-                  toast.success(translate("pages.sign-up.messages.success"), {
-                     description: translate("pages.sign-up.messages.welcome", {
-                        name: data.user.name,
-                     }),
-                     id: "sign-up-toast",
-                  });
-                  router.navigate({
-                     search: { email: data.user.email },
-                     to: "/auth/email-verification",
-                  });
-               },
-            },
-         );
-      },
-      [getErrorMessage, router],
    );
 
    const form = useForm({
@@ -108,7 +79,7 @@ export function SignUpPage() {
          password: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await handleSignUp(value);
+         await signUpMutation.mutateAsync(value);
          formApi.reset();
       },
       validators: {
@@ -136,7 +107,7 @@ export function SignUpPage() {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate("pages.sign-up.form.name.label")}
+                              {translate("common.form.name.label")}
                            </FieldLabel>
                            <Input
                               aria-invalid={isInvalid}
@@ -148,7 +119,7 @@ export function SignUpPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "pages.sign-up.form.name.placeholder",
+                                 "common.form.name.placeholder",
                               )}
                               value={field.state.value}
                            />
@@ -168,7 +139,7 @@ export function SignUpPage() {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate("pages.sign-up.form.email.label")}
+                              {translate("common.form.email.label")}
                            </FieldLabel>
                            <Input
                               aria-invalid={isInvalid}
@@ -180,7 +151,7 @@ export function SignUpPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "pages.sign-up.form.email.placeholder",
+                                 "common.form.email.placeholder",
                               )}
                               type="email"
                               value={field.state.value}
@@ -209,7 +180,7 @@ export function SignUpPage() {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate("pages.sign-up.form.password.label")}
+                              {translate("common.form.password.label")}
                            </FieldLabel>
                            <PasswordInput
                               aria-invalid={isInvalid}
@@ -221,7 +192,7 @@ export function SignUpPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "pages.sign-up.form.password.placeholder",
+                                 "common.form.password.placeholder",
                               )}
                               value={field.state.value}
                            />
@@ -241,9 +212,7 @@ export function SignUpPage() {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate(
-                                 "pages.sign-up.form.confirm-password.label",
-                              )}
+                              {translate("common.form.confirm-password.label")}
                            </FieldLabel>
                            <PasswordInput
                               aria-invalid={isInvalid}
@@ -255,7 +224,7 @@ export function SignUpPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "pages.sign-up.form.confirm-password.placeholder",
+                                 "common.form.confirm-password.placeholder",
                               )}
                               value={field.state.value}
                            />
@@ -276,10 +245,10 @@ export function SignUpPage() {
             <Card>
                <CardHeader className="text-center">
                   <CardTitle className="text-3xl  ">
-                     {translate("pages.sign-up.title")}
+                     {translate("dashboard.routes.sign-up.title")}
                   </CardTitle>
                   <CardDescription>
-                     {translate("pages.sign-up.description")}
+                     {translate("dashboard.routes.sign-up.description")}
                   </CardDescription>
                </CardHeader>
                <CardContent className="space-y-4">
@@ -300,7 +269,7 @@ export function SignUpPage() {
                            type="button"
                            variant="outline"
                         >
-                           {translate("pages.sign-up.form.previous")}
+                           {translate("common.actions.previous")}
                         </Button>
                         {methods.isLast ? (
                            <form.Subscribe>
@@ -309,12 +278,13 @@ export function SignUpPage() {
                                     className=" flex gap-2 items-center justify-center"
                                     disabled={
                                        !formState.canSubmit ||
-                                       formState.isSubmitting
+                                       formState.isSubmitting ||
+                                       signUpMutation.isPending
                                     }
                                     type="submit"
                                     variant="default"
                                  >
-                                    {translate("pages.sign-up.form.submit")}
+                                    {translate("common.actions.submit")}
                                  </Button>
                               )}
                            </form.Subscribe>
@@ -331,7 +301,7 @@ export function SignUpPage() {
                                     onClick={methods.next}
                                     type="button"
                                  >
-                                    {translate("pages.sign-up.form.next")}
+                                    {translate("common.actions.next")}
                                  </Button>
                               )}
                            </form.Subscribe>
@@ -340,12 +310,14 @@ export function SignUpPage() {
                   </form>
                </CardContent>
                <CardFooter className=" text-sm flex gap-1 items-center justify-center">
-                  <span>{translate("pages.sign-up.footer.have-account")}</span>
+                  <span>
+                     {translate("dashboard.routes.sign-up.texts.have-account")}
+                  </span>
                   <Link
                      className="underline text-muted-foreground"
                      to="/auth/sign-in"
                   >
-                     {translate("pages.sign-up.footer.sign-in-link")}
+                     {translate("dashboard.routes.sign-up.actions.sign-in")}
                   </Link>
                </CardFooter>
             </Card>

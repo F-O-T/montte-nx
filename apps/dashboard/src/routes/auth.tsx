@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
+import { translate } from "@packages/localization";
 export const Route = createFileRoute("/auth")({
    component: AuthLayout,
 });
@@ -26,7 +27,7 @@ function AuthLayout() {
                         <img alt="Project logo" className="size-8" />
                      </figure>
                      <h1 className="font-bold tracking-tight text-primary text-2xl">
-                        Finance tracker
+                        {translate("common.brand.name")}
                      </h1>
                   </div>
                </header>

@@ -6,7 +6,7 @@ import {
    isOrganizationOwner,
 } from "@packages/database/repositories/auth-repository";
 import type { MinioClient } from "@packages/files/client";
-import type { SupportedLng } from "@packages/localization";
+import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { getCustomerState } from "@packages/payment/ingestion";
 import type { Polar } from "@polar-sh/sdk";
 import { initTRPC, TRPCError } from "@trpc/server";
@@ -41,6 +41,9 @@ export const createTRPCContext = async ({
    });
 
    const language = headers.get("x-locale") as SupportedLng;
+   if (language) {
+      changeLanguage(language);
+   }
    const contentaSdk = createContentaSdk(language || "en");
    return {
       auth,

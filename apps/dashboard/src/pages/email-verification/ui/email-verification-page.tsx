@@ -21,14 +21,13 @@ import {
    InputOTPSlot,
 } from "@packages/ui/components/input-otp";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearch } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { type FormEvent, useCallback, useMemo } from "react";
+import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { betterAuthClient } from "@/integrations/clients";
-
-type codes = "INVALID_OTP" | "default";
+import { useTRPC } from "@/integrations/clients";
 
 export function EmailVerificationPage() {
    const email = useSearch({
@@ -38,110 +37,50 @@ export function EmailVerificationPage() {
    const schema = z.object({
       otp: z
          .string()
-         .min(6, translate("pages.email-verification.validation.otp-length"))
+         .min(
+            6,
+            translate("common.validation.min-length").replace("{min}", "6"),
+         )
          .max(6),
    });
 
-   const getErrorMessage = useMemo(
-      () => ({
-         default: translate("pages.email-verification.messages.unknown-error"),
-         INVALID_OTP: translate(
-            "pages.email-verification.messages.invalid-otp",
-         ),
-      }),
-      [],
-   );
    const router = useRouter();
-   const handleResendEmail = useCallback(async () => {
-      await betterAuthClient.emailOtp.sendVerificationOtp(
-         {
-            email,
+   const trpc = useTRPC();
 
-            type: "email-verification",
+   const sendVerificationOTPMutation = useMutation(
+      trpc.auth.sendVerificationOTP.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message, {
+               id: "verification-code-toast",
+            });
          },
-         {
-            onError: ({ error }) => {
-               toast.error(
-                  getErrorMessage[error.code as codes] ||
-                     translate(
-                        "pages.email-verification.messages.verification-error",
-                     ),
-                  {
-                     id: "verification-code-toast",
-                  },
-               );
-            },
-            onRequest: () => {
-               toast.loading(
-                  translate("pages.email-verification.messages.loading-send"),
-                  {
-                     id: "verification-code-toast",
-                  },
-               );
-            },
-            onSuccess: () => {
-               toast.success(
-                  translate("pages.email-verification.messages.success-send"),
-                  {
-                     description: translate(
-                        "pages.email-verification.messages.success-send-description",
-                     ),
-                     id: "verification-code-toast",
-                  },
-               );
-            },
+      }),
+   );
+
+   const handleResendEmail = useCallback(async () => {
+      await sendVerificationOTPMutation.mutateAsync({
+         email,
+         type: "email-verification",
+      });
+   }, [email, sendVerificationOTPMutation]);
+   const verifyEmailMutation = useMutation(
+      trpc.auth.verifyEmail.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message, {
+               id: "email-verification-toast",
+            });
          },
-      );
-   }, [email, getErrorMessage]);
+      }),
+   );
+
    const handleVerifyEmail = useCallback(
       async (value: z.infer<typeof schema>) => {
-         await betterAuthClient.emailOtp.verifyEmail(
-            {
-               email,
-               otp: value.otp,
-            },
-            {
-               onError: ({ error }) => {
-                  toast.error(
-                     getErrorMessage[error.code as codes] ||
-                        translate(
-                           "pages.email-verification.messages.unknown-error",
-                        ),
-                     {
-                        id: "email-verification-toast",
-                     },
-                  );
-               },
-               onRequest: () => {
-                  toast.loading(
-                     translate(
-                        "pages.email-verification.messages.loading-verify",
-                     ),
-                     {
-                        id: "email-verification-toast",
-                     },
-                  );
-               },
-               onSuccess: () => {
-                  toast.success(
-                     translate(
-                        "pages.email-verification.messages.success-verify",
-                     ),
-                     {
-                        description: translate(
-                           "pages.email-verification.messages.success-verify-description",
-                        ),
-                        id: "email-verification-toast",
-                     },
-                  );
-                  router.navigate({
-                     to: "/home",
-                  });
-               },
-            },
-         );
+         await verifyEmailMutation.mutateAsync({
+            email,
+            otp: value.otp,
+         });
       },
-      [email, router, getErrorMessage],
+      [email, verifyEmailMutation],
    );
    const form = useForm({
       defaultValues: {
@@ -169,10 +108,10 @@ export function EmailVerificationPage() {
       <Card>
          <CardHeader className="text-center">
             <CardTitle className="text-3xl ">
-               {translate("pages.email-verification.title")}
+               {translate("dashboard.routes.email-verification.title")}
             </CardTitle>
             <CardDescription>
-               {translate("pages.email-verification.description")}
+               {translate("dashboard.routes.email-verification.description")}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -194,9 +133,7 @@ export function EmailVerificationPage() {
                               data-invalid={isInvalid}
                            >
                               <FieldLabel>
-                                 {translate(
-                                    "pages.email-verification.form.verification-code.label",
-                                 )}
+                                 {translate("common.form.otp.label")}
                               </FieldLabel>
                               <InputOTP
                                  aria-invalid={isInvalid}
@@ -237,11 +174,13 @@ export function EmailVerificationPage() {
                      <Button
                         className="w-full flex gap-2 items-center justify-center"
                         disabled={
-                           !formState.canSubmit || formState.isSubmitting
+                           !formState.canSubmit ||
+                           formState.isSubmitting ||
+                           verifyEmailMutation.isPending
                         }
                         type="submit"
                      >
-                        {translate("pages.email-verification.form.submit")}
+                        {translate("common.actions.submit")}
                         <ArrowRight className="w-4 h-4 " />
                      </Button>
                   )}
@@ -251,10 +190,11 @@ export function EmailVerificationPage() {
          <CardFooter>
             <Button
                className="w-full text-muted-foreground flex gap-2 items-center justify-center"
+               disabled={sendVerificationOTPMutation.isPending}
                onClick={handleResendEmail}
                variant="link"
             >
-               {translate("pages.email-verification.form.resend")}
+               {translate("dashboard.routes.email-verification.actions.resend")}
             </Button>
          </CardFooter>
       </Card>

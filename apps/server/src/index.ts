@@ -3,11 +3,11 @@ import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { Elysia } from "elysia";
-import { auth, polarClient } from "./integrations/auth";
-import { bullAuth } from "./integrations/bull-auth-guard";
+import { auth, polarClient, OpenAPI } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
 import { posthogPlugin } from "./integrations/posthog";
+import { openapi } from "@elysiajs/openapi";
 
 const trpcApi = createApi({
    auth,
@@ -55,6 +55,15 @@ const app = new Elysia({
       }),
    )
    .use(posthogPlugin)
+   .use(
+      openapi({
+         path: "/docs",
+         documentation: {
+            components: await OpenAPI.components,
+            paths: await OpenAPI.getPaths(),
+         },
+      }),
+   )
    .mount(auth.handler)
    .all(
       "/trpc/*",
@@ -75,13 +84,6 @@ const app = new Elysia({
          parse: "none",
       },
    )
-   .onBeforeHandle(({ request }) => {
-      const url = new URL(request.url);
-
-      if (url.pathname.startsWith("/ui")) {
-         return bullAuth(request);
-      }
-   })
    .listen(process.env.PORT ?? 9876);
 
 console.log(

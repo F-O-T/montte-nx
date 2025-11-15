@@ -55,7 +55,7 @@ export function translate(key: TranslationKey, options?: TOptions) {
    if (result === key && !options) {
       console.warn(`Translation key not found: ${key}`);
    }
-   return result;
+   return result as string;
 }
 
 // Utility to get current language for HTTP requests

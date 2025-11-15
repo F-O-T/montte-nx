@@ -160,6 +160,9 @@ export class APIError extends TRPCError {
          `Validation error: ${message}`,
       );
    }
+   static unprocessableContent(message: string): APIError {
+      return new APIError(ErrorCodes.UNPROCESSABLE_CONTENT, message);
+   }
 
    static notFound(message: string): APIError {
       return new APIError(ErrorCodes.NOT_FOUND, message);

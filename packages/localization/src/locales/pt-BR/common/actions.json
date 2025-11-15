@@ -1,4 +1,7 @@
 {
   "cancel": "Cancelar",
-  "retry": "Tentar novamente"
+  "retry": "Tentar novamente",
+  "submit": "Enviar",
+  "previous": "Voltar",
+  "next": "Próximo"
 }
