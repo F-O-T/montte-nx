@@ -24,11 +24,12 @@ import {
 import { PasswordInput } from "@packages/ui/components/password-input";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { betterAuthClient } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 const steps = [
    { id: "enter-email", title: "enter-email" },
@@ -40,31 +41,64 @@ const { Stepper } = defineStepper(...steps);
 
 export function ForgotPasswordPage() {
    const router = useRouter();
+   const trpc = useTRPC();
    const [sendingOtp, setSendingOtp] = useState(false);
    const schema = z
       .object({
          confirmPassword: z.string(),
-         email: z.email(
-            translate("pages.forgot-password.validation.email-invalid"),
-         ),
+         email: z.email(translate("common.validation.email")),
          otp: z
             .string()
-            .min(6, translate("pages.forgot-password.validation.otp-length")),
+            .min(
+               6,
+               translate("common.validation.min-length").replace("{min}", "6"),
+            ),
          password: z
             .string()
             .min(
                8,
-               translate(
-                  "pages.forgot-password.validation.password-min-length",
-               ),
+               translate("common.validation.min-length").replace("{min}", "8"),
             ),
       })
       .refine((data) => data.password === data.confirmPassword, {
-         message: translate(
-            "pages.forgot-password.validation.passwords-no-match",
-         ),
+         message: translate("common.validation.password-mismatch"),
          path: ["confirmPassword"],
       });
+
+   const sendOtpMutation = useMutation(
+      trpc.auth.sendVerificationOTP.mutationOptions({
+         onError: (error) => {
+            setSendingOtp(false);
+            toast.error(error.message, {
+               id: "send-otp-toast",
+            });
+         },
+         onSuccess: (data) => {
+            setSendingOtp(false);
+            toast.success(data.message, {
+               id: "send-otp-toast",
+            });
+         },
+      }),
+   );
+
+   const resetPasswordMutation = useMutation(
+      trpc.auth.resetPassword.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message, {
+               id: "forgot-password-toast",
+            });
+         },
+         onSuccess: (data) => {
+            toast.success(data.message, {
+               id: "forgot-password-toast",
+            });
+            router.navigate({
+               to: "/auth/sign-in",
+            });
+         },
+      }),
+   );
 
    const handleResetPassword = useCallback(
       async ({
@@ -76,44 +110,13 @@ export function ForgotPasswordPage() {
          otp: string;
          password: string;
       }) => {
-         await betterAuthClient.emailOtp.resetPassword(
-            {
-               email,
-               otp,
-               password,
-            },
-            {
-               onError: () => {
-                  toast.error(
-                     translate("pages.forgot-password.messages.reset-error"),
-                     {
-                        id: "forgot-password-toast",
-                     },
-                  );
-               },
-               onRequest: () => {
-                  toast.loading(
-                     translate("pages.forgot-password.messages.reset-loading"),
-                     {
-                        id: "forgot-password-toast",
-                     },
-                  );
-               },
-               onSuccess: () => {
-                  toast.success(
-                     translate("pages.forgot-password.messages.reset-success"),
-                     {
-                        id: "forgot-password-toast",
-                     },
-                  );
-                  router.navigate({
-                     to: "/auth/sign-in",
-                  });
-               },
-            },
-         );
+         await resetPasswordMutation.mutateAsync({
+            email,
+            otp,
+            password,
+         });
       },
-      [router],
+      [resetPasswordMutation],
    );
    const form = useForm({
       defaultValues: {
@@ -130,44 +133,15 @@ export function ForgotPasswordPage() {
       },
    });
 
-   const sendOtp = useCallback(async (email: string) => {
-      await betterAuthClient.emailOtp.sendVerificationOtp(
-         {
+   const sendOtp = useCallback(
+      async (email: string) => {
+         await sendOtpMutation.mutateAsync({
             email,
             type: "forget-password",
-         },
-
-         {
-            onError: () => {
-               setSendingOtp(false);
-               toast.error(
-                  translate("pages.forgot-password.messages.send-error"),
-                  {
-                     id: "send-otp-toast",
-                  },
-               );
-            },
-            onRequest: () => {
-               setSendingOtp(true);
-               toast.loading(
-                  translate("pages.forgot-password.messages.send-loading"),
-                  {
-                     id: "send-otp-toast",
-                  },
-               );
-            },
-            onSuccess: () => {
-               setSendingOtp(false);
-               toast.success(
-                  translate("pages.forgot-password.messages.send-success"),
-                  {
-                     id: "send-otp-toast",
-                  },
-               );
-            },
-         },
-      );
-   }, []);
+         });
+      },
+      [sendOtpMutation],
+   );
    const handleSubmit = useCallback(
       (e: React.FormEvent) => {
          e.preventDefault();
@@ -187,7 +161,7 @@ export function ForgotPasswordPage() {
                   return (
                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
-                           {translate("pages.forgot-password.form.email.label")}
+                           {translate("common.form.email.label")}
                         </FieldLabel>
                         <Input
                            aria-invalid={isInvalid}
@@ -197,7 +171,7 @@ export function ForgotPasswordPage() {
                            onBlur={field.handleBlur}
                            onChange={(e) => field.handleChange(e.target.value)}
                            placeholder={translate(
-                              "pages.forgot-password.form.email.placeholder",
+                              "common.form.email.placeholder",
                            )}
                            type="email"
                            value={field.state.value}
@@ -223,7 +197,7 @@ export function ForgotPasswordPage() {
                   return (
                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
-                           {translate("pages.forgot-password.form.otp.label")}
+                           {translate("common.form.otp.label")}
                         </FieldLabel>
                         <InputOTP
                            aria-invalid={isInvalid}
@@ -274,9 +248,7 @@ export function ForgotPasswordPage() {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate(
-                                 "pages.forgot-password.labels.new-password",
-                              )}
+                              {translate("common.form.password.label")}
                            </FieldLabel>
                            <PasswordInput
                               aria-invalid={isInvalid}
@@ -288,7 +260,7 @@ export function ForgotPasswordPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "pages.forgot-password.placeholders.enter-new-password",
+                                 "common.form.password.placeholder",
                               )}
                               value={field.state.value}
                            />
@@ -308,9 +280,7 @@ export function ForgotPasswordPage() {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate(
-                                 "pages.forgot-password.labels.confirm-new-password",
-                              )}
+                              {translate("common.form.confirm-password.label")}
                            </FieldLabel>
                            <PasswordInput
                               aria-invalid={isInvalid}
@@ -322,7 +292,7 @@ export function ForgotPasswordPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "pages.forgot-password.placeholders.confirm-new-password",
+                                 "common.form.confirm-password.placeholder",
                               )}
                               value={field.state.value}
                            />
@@ -343,19 +313,19 @@ export function ForgotPasswordPage() {
             <Card>
                <CardHeader className="text-center">
                   <CardTitle className="text-3xl ">
-                     {translate("pages.forgot-password.title")}
+                     {translate("dashboard.routes.forgot-password.title")}
                   </CardTitle>
                   <CardDescription className="">
                      {methods.current.id === "enter-email"
                         ? translate(
-                             "pages.forgot-password.descriptions.enter-email",
+                             "dashboard.routes.forgot-password.descriptions.enter-email",
                           )
                         : methods.current.id === "enter-otp"
                           ? translate(
-                               "pages.forgot-password.descriptions.enter-otp",
+                               "dashboard.routes.forgot-password.descriptions.enter-otp",
                             )
                           : translate(
-                               "pages.forgot-password.descriptions.enter-password",
+                               "dashboard.routes.forgot-password.descriptions.enter-password",
                             )}
                   </CardDescription>
                </CardHeader>
@@ -378,7 +348,7 @@ export function ForgotPasswordPage() {
                            type="button"
                            variant="outline"
                         >
-                           {translate("pages.forgot-password.actions.previous")}
+                           {translate("common.actions.previous")}
                         </Button>
                         {methods.isLast ? (
                            <form.Subscribe>
@@ -387,13 +357,14 @@ export function ForgotPasswordPage() {
                                     className="shadow-lg transition-all duration-300 group bg-primary shadow-primary/20 hover:bg-primary/90 flex gap-2 items-center justify-center"
                                     disabled={
                                        !formState.canSubmit ||
-                                       formState.isSubmitting
+                                       formState.isSubmitting ||
+                                       resetPasswordMutation.isPending
                                     }
                                     type="submit"
                                     variant="default"
                                  >
                                     {translate(
-                                       "pages.forgot-password.actions.reset-password",
+                                       "dashboard.routes.forgot-password.actions.reset-password",
                                     )}
                                  </Button>
                               )}
@@ -414,15 +385,13 @@ export function ForgotPasswordPage() {
                                     }}
                                     type="button"
                                  >
-                                    {translate(
-                                       "pages.forgot-password.actions.next",
-                                    )}
+                                    {translate("common.actions.next")}
                                  </Button>
                               )}
                            </form.Subscribe>
                         ) : (
                            <Button onClick={methods.next} type="button">
-                              {translate("pages.forgot-password.actions.next")}
+                              {translate("common.actions.next")}
                            </Button>
                         )}
                      </Stepper.Controls>
@@ -431,14 +400,16 @@ export function ForgotPasswordPage() {
                <CardFooter className="text-sm flex gap-1 items-center justify-center">
                   <span>
                      {translate(
-                        "pages.forgot-password.actions.remembered-password",
+                        "dashboard.routes.forgot-password.texts.remembered-password",
                      )}
                   </span>
                   <Link
                      className=" underline text-muted-foreground"
                      to="/auth/sign-in"
                   >
-                     {translate("pages.forgot-password.actions.sign-in")}
+                     {translate(
+                        "dashboard.routes.forgot-password.actions.sign-in",
+                     )}
                   </Link>
                </CardFooter>
             </Card>

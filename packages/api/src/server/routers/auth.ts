@@ -1,5 +1,5 @@
 import { getDomain } from "@packages/environment/helpers";
-import { translate, type TranslationKey } from "@packages/localization";
+import { type TranslationKey, translate } from "@packages/localization";
 import { APIError, propagateError } from "@packages/utils/errors";
 import { APIError as BetterAuthAPIError } from "better-auth/api";
 import { z } from "zod";
@@ -18,15 +18,33 @@ export const authRouter = router({
          const resolvedCtx = await ctx;
          const { email } = input;
 
-         const forgotPasswordResponse =
-            await resolvedCtx.auth.api.forgetPassword({
-               body: {
-                  email,
-               },
-               headers: resolvedCtx.headers,
-            });
+         try {
+            const forgotPasswordResponse =
+               await resolvedCtx.auth.api.forgetPassword({
+                  body: {
+                     email,
+                  },
+                  headers: resolvedCtx.headers,
+               });
 
-         return forgotPasswordResponse;
+            return {
+               ...forgotPasswordResponse,
+               message: translate(
+                  "dashboard.routes.forgot-password.messages.send-success",
+               ),
+            };
+         } catch (error) {
+            if (error instanceof BetterAuthAPIError) {
+               const translatedMessage = translate(
+                  `dashboard.routes.forgot-password.error-codes.${error.body?.code}` as TranslationKey,
+               );
+               throw APIError.unprocessableContent(translatedMessage);
+            }
+            propagateError(error);
+            throw APIError.internal(
+               "Failed to send reset code. Please try again.",
+            );
+         }
       }),
    googleSignIn: publicProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;
@@ -57,17 +75,35 @@ export const authRouter = router({
          const resolvedCtx = await ctx;
          const { otp, password, email } = input;
 
-         const resetPasswordResponse =
-            await resolvedCtx.auth.api.resetPasswordEmailOTP({
-               body: {
-                  email,
-                  otp,
-                  password,
-               },
-               headers: resolvedCtx.headers,
-            });
+         try {
+            const resetPasswordResponse =
+               await resolvedCtx.auth.api.resetPasswordEmailOTP({
+                  body: {
+                     email,
+                     otp,
+                     password,
+                  },
+                  headers: resolvedCtx.headers,
+               });
 
-         return resetPasswordResponse;
+            return {
+               ...resetPasswordResponse,
+               message: translate(
+                  "dashboard.routes.forgot-password.messages.reset-success",
+               ),
+            };
+         } catch (error) {
+            if (error instanceof BetterAuthAPIError) {
+               const translatedMessage = translate(
+                  `dashboard.routes.forgot-password.error-codes.${error.body?.code}` as TranslationKey,
+               );
+               throw APIError.unprocessableContent(translatedMessage);
+            }
+            propagateError(error);
+            throw APIError.internal(
+               "Failed to reset password. Please try again.",
+            );
+         }
       }),
    sendVerificationOTP: publicProcedure
       .input(
@@ -80,17 +116,29 @@ export const authRouter = router({
          const resolvedCtx = await ctx;
          const { email, type } = input;
 
-         const sendOTPResponse = await resolvedCtx.auth.api.sendVerificationOTP(
-            {
-               body: {
-                  email,
-                  type,
-               },
-               headers: resolvedCtx.headers,
-            },
-         );
+         try {
+            const sendOTPResponse =
+               await resolvedCtx.auth.api.sendVerificationOTP({
+                  body: {
+                     email,
+                     type,
+                  },
+                  headers: resolvedCtx.headers,
+               });
 
-         return sendOTPResponse;
+            return sendOTPResponse;
+         } catch (error) {
+            if (error instanceof BetterAuthAPIError) {
+               const translatedMessage = translate(
+                  `dashboard.routes.forgot-password.error-codes.${error.body?.code}` as TranslationKey,
+               );
+               throw APIError.unprocessableContent(translatedMessage);
+            }
+            propagateError(error);
+            throw APIError.internal(
+               "Failed to send verification code. Please try again.",
+            );
+         }
       }),
    signIn: publicProcedure
       .input(
