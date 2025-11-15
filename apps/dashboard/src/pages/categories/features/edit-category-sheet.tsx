@@ -25,6 +25,8 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Palette, Pencil } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
+import { IconSelector } from "@/features/icon-selector/icon-selector";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { trpc } from "@/integrations/clients";
 import {
    ColorPicker,
@@ -100,6 +102,7 @@ export function EditCategorySheet({ category, asChild = false }: EditCategoryShe
    const form = useForm({
       defaultValues: {
          color: category.color,
+         icon: category.icon as IconName | undefined,
          name: category.name,
       },
       onSubmit: async ({ value }) => {
@@ -109,8 +112,11 @@ export function EditCategorySheet({ category, asChild = false }: EditCategoryShe
          try {
             await updateCategoryMutation.mutateAsync({
                id: category.id,
-               color: value.color,
-               name: value.name,
+               data: {
+                  color: value.color,
+                  icon: value.icon,
+                  name: value.name,
+               },
             });
          } catch (error) {
             console.error("Failed to update category:", error);
@@ -279,6 +285,30 @@ export function EditCategorySheet({ category, asChild = false }: EditCategoryShe
                                        </div>
                                     </PopoverContent>
                                  </Popover>
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="icon">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>Icon (Optional)</FieldLabel>
+                                 <IconSelector
+                                    onValueChange={field.handleChange}
+                                    value={field.state.value}
+                                 />
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}
