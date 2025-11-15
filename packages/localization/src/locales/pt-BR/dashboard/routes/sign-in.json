@@ -5,14 +5,14 @@
       "sign-up": "Registre-se aqui"
    },
    "description": "Digite seus dados para acessar sua conta.",
-   "texts": {
-      "no-account": "Não tem uma conta? ",
-      "terms-and-privacy": "Ao clicar em enviar, você concorda com nossos {split} e {split}.",
-      "terms-of-service": "Termos de Serviço",
-      "privacy-policy": "Política de Privacidade"
-   },
-   "title": "Entrar",
    "error-codes": {
       "INVALID_EMAIL_OR_PASSWORD": "Email ou senha inválidos."
-   }
+   },
+   "texts": {
+      "no-account": "Não tem uma conta? ",
+      "privacy-policy": "Política de Privacidade",
+      "terms-and-privacy": "Ao clicar em enviar, você concorda com nossos {split} e {split}.",
+      "terms-of-service": "Termos de Serviço"
+   },
+   "title": "Entrar"
 }

@@ -11,11 +11,13 @@ import { protectedProcedure, router } from "../trpc";
 
 const createCategorySchema = z.object({
    color: z.string(),
+   icon: z.string().optional(),
    name: z.string(),
 });
 
 const updateCategorySchema = z.object({
    color: z.string().optional(),
+   icon: z.string().optional(),
    name: z.string().optional(),
 });
 

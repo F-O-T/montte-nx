@@ -57,6 +57,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { FilePlus, Inbox, MoreVertical } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { trpc } from "@/integrations/clients";
 import { AddCategorySheet } from "../features/add-category-sheet";
 import { DeleteCategory } from "../features/delete-category";
@@ -195,11 +197,17 @@ function CategoriesTableContent() {
                               <Item key={category.id} variant="outline">
                                  <ItemMedia variant="icon">
                                     <div
-                                       className="size-8 rounded-sm border"
+                                       className="size-8 rounded-sm border flex items-center justify-center"
                                        style={{
                                           backgroundColor: category.color,
                                        }}
-                                    />
+                                    >
+                                       <IconDisplay
+                                          className="text-white"
+                                          iconName={(category.icon || "Wallet") as IconName}
+                                          size={16}
+                                       />
+                                    </div>
                                  </ItemMedia>
                                  <ItemContent>
                                     <ItemTitle>{category.name}</ItemTitle>
@@ -267,7 +275,21 @@ function CategoriesTableContent() {
                                           <Checkbox />
                                        </TableCell>
                                        <TableCell className="font-medium">
-                                          {category.name}
+                                          <div className="flex items-center gap-2">
+                                             <div
+                                                className="w-8 h-8 rounded-sm border flex items-center justify-center"
+                                                style={{
+                                                   backgroundColor: category.color,
+                                                }}
+                                             >
+                                                <IconDisplay
+                                                   className="text-white"
+                                                   iconName={(category.icon || "Wallet") as IconName}
+                                                   size={16}
+                                                />
+                                             </div>
+                                             {category.name}
+                                          </div>
                                        </TableCell>
                                        <TableCell>
                                           <div className="flex items-center gap-2">

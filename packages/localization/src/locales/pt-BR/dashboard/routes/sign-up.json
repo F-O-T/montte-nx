@@ -4,13 +4,13 @@
       "sign-in": "Entre aqui"
    },
    "description": "Crie sua conta para começar a usar o aplicativo.",
+   "error-codes": {
+      "UNKNOWN_ERROR": "Erro desconhecido",
+      "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "Este email já está registrado"
+   },
    "texts": {
       "have-account": "Já tem uma conta? ",
       "terms-and-privacy": "Ao clicar em enviar, você concorda com nossos {split} e {split}."
    },
-   "title": "Cadastrar",
-   "error-codes": {
-      "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL": "Este email já está registrado",
-      "UNKNOWN_ERROR": "Erro desconhecido"
-   }
+   "title": "Cadastrar"
 }

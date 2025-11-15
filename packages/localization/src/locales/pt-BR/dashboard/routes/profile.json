@@ -1,4 +1,20 @@
 {
+   "account-configuration": {
+      "description": "Gerencie suas configurações de conta.",
+      "items": {
+         "currency": {
+            "description": "Selecione a moeda para suas transações.",
+            "title": "Moeda"
+         }
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas preferências de notificação.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "title": "Configuração da conta"
+   },
    "billing": {
       "actions": {
          "portal": "Abrir o portal",
@@ -19,12 +35,12 @@
    },
    "features": {
       "currency-command": {
-         "empty": "Nenhuma moeda encontrada.",
-         "search": "Pesquisar moedas...",
          "currencies": {
-            "USD": "Dólar Americano",
-            "BRL": "Real Brasileiro"
-         }
+            "BRL": "Real Brasileiro",
+            "USD": "Dólar Americano"
+         },
+         "empty": "Nenhuma moeda encontrada.",
+         "search": "Pesquisar moedas..."
       },
       "language-command": {
          "empty": "Nenhum idioma encontrado.",
@@ -58,22 +74,6 @@
          }
       },
       "title": "Informações do perfil"
-   },
-   "account-configuration": {
-      "description": "Gerencie suas configurações de conta.",
-      "items": {
-         "currency": {
-            "description": "Selecione a moeda para suas transações.",
-            "title": "Moeda"
-         }
-      },
-      "state": {
-         "error": {
-            "description": "Ocorreu um erro ao carregar suas preferências de notificação.",
-            "title": "Erro ao carregar"
-         }
-      },
-      "title": "Configuração da conta"
    },
    "preferences": {
       "description": "Gerencie suas preferências de conta.",
