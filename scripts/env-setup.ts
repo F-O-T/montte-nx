@@ -23,7 +23,7 @@ function setupEnvFile(dir: string, appName: string, envType: string = "local") {
    // All packages/apps need a .env file
    if (envType === "local" || envType === "production") {
       // For database/rag packages with specific env types
-      envPath = path.join(dir, `.env.${envType}.local`);
+      envPath = path.join(dir, `.env.${envType}`);
    } else {
       // Default .env file for all packages/apps
       envPath = path.join(dir, ".env");
