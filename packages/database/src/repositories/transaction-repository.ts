@@ -15,7 +15,19 @@ export async function createTransaction(
          .insert(transaction)
          .values(data)
          .returning();
-      return result[0];
+
+      const createdTransaction = await dbClient.query.transaction.findFirst({
+         where: (transaction, { eq }) => eq(transaction.id, result[0].id),
+         with: {
+            bankAccount: true,
+         },
+      });
+
+      if (!createdTransaction) {
+         throw AppError.database("Failed to fetch created transaction");
+      }
+
+      return createdTransaction;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -31,6 +43,9 @@ export async function findTransactionById(
    try {
       const result = await dbClient.query.transaction.findFirst({
          where: (transaction, { eq }) => eq(transaction.id, transactionId),
+         with: {
+            bankAccount: true,
+         },
       });
       return result;
    } catch (err) {
@@ -49,6 +64,9 @@ export async function findTransactionsByUserId(
       const result = await dbClient.query.transaction.findMany({
          orderBy: (transaction, { desc }) => desc(transaction.date),
          where: (transaction, { eq }) => eq(transaction.userId, userId),
+         with: {
+            bankAccount: true,
+         },
       });
       return result;
    } catch (err) {
@@ -75,7 +93,18 @@ export async function updateTransaction(
          throw AppError.database("Transaction not found");
       }
 
-      return result[0];
+      const updatedTransaction = await dbClient.query.transaction.findFirst({
+         where: (transaction, { eq }) => eq(transaction.id, transactionId),
+         with: {
+            bankAccount: true,
+         },
+      });
+
+      if (!updatedTransaction) {
+         throw AppError.database("Failed to fetch updated transaction");
+      }
+
+      return updatedTransaction;
    } catch (err) {
       propagateError(err);
       throw AppError.database(

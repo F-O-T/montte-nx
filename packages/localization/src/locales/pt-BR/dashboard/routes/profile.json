@@ -15,6 +15,72 @@
       },
       "title": "Configuração da conta"
    },
+   "bank-accounts": {
+      "actions": {
+         "delete": "Excluir",
+         "edit": "Editar"
+      },
+      "create": {
+         "creating": "Criando...",
+         "description": "Adicione uma nova conta bancária para gerenciar suas transações.",
+         "error": "Erro ao criar conta bancária",
+         "fields": {
+            "bank": "Banco",
+            "name": "Nome da Conta",
+            "status": "Status",
+            "type": "Tipo de Conta"
+         },
+         "placeholders": {
+            "bank": "Ex: Nubank, Itaú",
+            "name": "Ex: Conta Corrente Principal",
+            "status": "Selecione o status",
+            "type": "Selecione o tipo"
+         },
+         "submit": "Criar",
+         "success": "Conta bancária criada com sucesso!",
+         "title": "Nova Conta Bancária",
+         "types": {
+            "checking": "Conta Corrente",
+            "investment": "Investimento",
+            "savings": "Poupança"
+         }
+      },
+      "delete": {
+         "cancel": "Cancelar",
+         "confirm": "Excluir",
+         "deleting": "Excluindo...",
+         "description": "Tem certeza que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita e pode afetar transações que usam esta conta.",
+         "error": "Erro ao excluir conta bancária",
+         "success": "Conta bancária excluída com sucesso!",
+         "title": "Excluir Conta Bancária"
+      },
+      "description": "Gerencie suas contas bancárias.",
+      "edit": {
+         "description": "Atualize os detalhes da conta \"{{name}}\".",
+         "error": "Erro ao atualizar conta bancária",
+         "submit": "Atualizar",
+         "success": "Conta bancária atualizada com sucesso!",
+         "title": "Editar Conta Bancária",
+         "updating": "Atualizando..."
+      },
+      "state": {
+         "empty": "Nenhuma conta bancária cadastrada. Clique no botão + para adicionar.",
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas contas bancárias.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "status": {
+         "active": "Ativa",
+         "inactive": "Inativa"
+      },
+      "title": "Contas Bancárias",
+      "types": {
+         "checking": "Conta Corrente",
+         "investment": "Investimento",
+         "savings": "Poupança"
+      }
+   },
    "billing": {
       "actions": {
          "portal": "Abrir o portal",
