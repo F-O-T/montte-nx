@@ -3,6 +3,9 @@ import { TransactionsPage } from "@/pages/transactions/ui/transactions-page";
 
 export const Route = createFileRoute("/_dashboard/transactions")({
    component: RouteComponent,
+   staticData: {
+      breadcrumb: "Transactions",
+   },
 });
 
 function RouteComponent() {

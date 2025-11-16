@@ -2,6 +2,9 @@ import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { translate } from "@packages/localization";
 export const Route = createFileRoute("/auth")({
    component: AuthLayout,
+   staticData: {
+      breadcrumb: "Authentication",
+   },
 });
 
 function AuthLayout() {

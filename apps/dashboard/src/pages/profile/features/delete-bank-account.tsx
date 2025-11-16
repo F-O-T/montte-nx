@@ -1,3 +1,4 @@
+import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
 import {
    AlertDialog,
@@ -16,7 +17,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/integrations/clients";
-import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 
 interface DeleteBankAccountProps {
    bankAccount: BankAccount;

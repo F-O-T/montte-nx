@@ -3,6 +3,9 @@ import { OrganizationPage } from "@/pages/organization/ui/organization-page";
 
 export const Route = createFileRoute("/_dashboard/organization/")({
    component: RouteComponent,
+   staticData: {
+      breadcrumb: "Organization",
+   },
 });
 
 function RouteComponent() {
