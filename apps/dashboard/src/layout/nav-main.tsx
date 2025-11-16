@@ -15,7 +15,15 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ArrowDownRight, ArrowUpRight, ChevronRight, CreditCard, FileText, Receipt, TrendingUp } from "lucide-react";
+import {
+   ArrowDownRight,
+   ArrowUpRight,
+   ChevronRight,
+   CreditCard,
+   FileText,
+   Receipt,
+   TrendingUp,
+} from "lucide-react";
 
 export function NavMain() {
    const { pathname } = useLocation();
@@ -38,7 +46,7 @@ export function NavMain() {
             {
                disabled: false,
                icon: TrendingUp,
-               title: "Transactions",
+               title: "Overview",
                url: "/transactions",
             },
             {
