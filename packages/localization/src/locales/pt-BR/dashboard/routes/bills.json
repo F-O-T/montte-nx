@@ -1,0 +1,112 @@
+{
+   "actions": {
+      "cancel": "Cancelar",
+      "delete": "Excluir",
+      "edit": "Editar",
+      "markAsPaid": "Marcar como Paga",
+      "markAsReceived": "Marcar como Recebida",
+      "pay": "Pagar",
+      "receive": "Receber"
+   },
+   "addBill": "Nova Conta",
+   "allBills": {
+      "description": "Visualize todas as suas contas",
+      "title": "Todas as Contas"
+   },
+   "complete": {
+      "cancel": "Cancelar",
+      "completing": "Concluindo...",
+      "confirm": "Confirmar",
+      "description": "Marcar {{description}} como paga/recebida",
+      "error": "Erro ao concluir conta",
+      "fields": {
+         "bankAccount": "Conta Bancária",
+         "completionDate": "Data de Pagamento/Recebimento"
+      },
+      "info": "Ao confirmar, uma transação será criada automaticamente",
+      "placeholders": {
+         "bankAccount": "Selecione a conta",
+         "completionDate": "Selecione a data"
+      },
+      "success": "Conta concluída e transação criada com sucesso",
+      "title": "Concluir Conta"
+   },
+   "completed": "Concluídas",
+   "completedOn": "Concluída em",
+   "create": {
+      "creating": "Criando...",
+      "description": "Adicione uma nova conta a pagar ou a receber",
+      "error": "Erro ao criar conta",
+      "fields": {
+         "amount": "Valor",
+         "bankAccount": "Conta Bancária (Opcional)",
+         "category": "Categoria",
+         "counterparty": "Fornecedor/Cliente",
+         "description": "Descrição",
+         "dueDate": "Data de Vencimento",
+         "issueDate": "Data de Emissão",
+         "notes": "Observações",
+         "type": "Tipo"
+      },
+      "noCategoryFound": "Nenhuma categoria encontrada",
+      "placeholders": {
+         "bankAccount": "Selecione uma conta",
+         "category": "Selecione uma categoria",
+         "counterparty": "Nome do fornecedor ou cliente",
+         "description": "Digite a descrição da conta...",
+         "dueDate": "Selecione uma data",
+         "issueDate": "Selecione uma data",
+         "notes": "Observações adicionais...",
+         "searchCategory": "Buscar categorias..."
+      },
+      "submit": "Criar Conta",
+      "success": "Conta criada com sucesso",
+      "title": "Nova Conta",
+      "types": {
+         "expense": "Despesa (A Pagar)",
+         "income": "Receita (A Receber)"
+      }
+   },
+   "delete": {
+      "cancel": "Cancelar",
+      "confirm": "Excluir",
+      "deleting": "Excluindo...",
+      "description": "Tem certeza que deseja excluir \"{{description}}\"? Esta ação não pode ser desfeita.",
+      "error": "Erro ao excluir conta",
+      "success": "Conta excluída com sucesso",
+      "title": "Excluir Conta"
+   },
+   "description": "Gerencie suas contas futuras e planejadas",
+   "dueDate": "Vencimento",
+   "edit": {
+      "description": "Atualize os detalhes da conta",
+      "error": "Erro ao atualizar conta",
+      "submit": "Salvar Alterações",
+      "success": "Conta atualizada com sucesso",
+      "title": "Editar Conta",
+      "updating": "Atualizando..."
+   },
+   "empty": "Nenhuma conta encontrada",
+   "overdue": "Vencidas",
+   "overview": {
+      "description": "Gerencie todas as suas contas a pagar e receber",
+      "title": "Visão Geral de Contas"
+   },
+   "payables": {
+      "description": "Gerencie suas despesas futuras",
+      "title": "Contas a Pagar"
+   },
+   "pending": "Pendentes",
+   "receivables": {
+      "description": "Gerencie suas receitas futuras",
+      "title": "Contas a Receber"
+   },
+   "stats": {
+      "description": "Resumo das suas contas",
+      "overdue": "Vencidas",
+      "pendingPayables": "A Pagar",
+      "pendingReceivables": "A Receber",
+      "title": "Estatísticas"
+   },
+   "title": "Contas a Pagar e Receber"
+}
