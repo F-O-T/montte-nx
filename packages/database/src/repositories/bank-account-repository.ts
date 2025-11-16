@@ -47,6 +47,7 @@ export async function findBankAccountsByUserId(
 ) {
    try {
       const result = await dbClient.query.bankAccount.findMany({
+         limit: 100,
          orderBy: (bankAccount, { asc }) => asc(bankAccount.name),
          where: (bankAccount, { eq }) => eq(bankAccount.userId, userId),
       });
@@ -55,64 +56,6 @@ export async function findBankAccountsByUserId(
       propagateError(err);
       throw AppError.database(
          `Failed to find bank accounts by user id: ${(err as Error).message}`,
-      );
-   }
-}
-
-export async function findBankAccountsByUserIdPaginated(
-   dbClient: DatabaseInstance,
-   userId: string,
-   options: {
-      page?: number;
-      limit?: number;
-      orderBy?: "name" | "createdAt" | "updatedAt";
-      orderDirection?: "asc" | "desc";
-   } = {},
-) {
-   const {
-      page = 1,
-      limit = 10,
-      orderBy = "name",
-      orderDirection = "asc",
-   } = options;
-
-   const offset = (page - 1) * limit;
-
-   try {
-      const [bankAccounts, totalCount] = await Promise.all([
-         dbClient.query.bankAccount.findMany({
-            limit,
-            offset,
-            orderBy: (bankAccount, { asc, desc }) => {
-               const column = bankAccount[orderBy as keyof typeof bankAccount];
-               return orderDirection === "asc" ? asc(column) : desc(column);
-            },
-            where: (bankAccount, { eq }) => eq(bankAccount.userId, userId),
-         }),
-         dbClient.query.bankAccount
-            .findMany({
-               where: (bankAccount, { eq }) => eq(bankAccount.userId, userId),
-            })
-            .then((result) => result.length),
-      ]);
-
-      const totalPages = Math.ceil(totalCount / limit);
-
-      return {
-         bankAccounts,
-         pagination: {
-            currentPage: page,
-            hasNextPage: page < totalPages,
-            hasPreviousPage: page > 1,
-            limit,
-            totalCount,
-            totalPages,
-         },
-      };
-   } catch (err) {
-      propagateError(err);
-      throw AppError.database(
-         `Failed to find bank accounts by user id paginated: ${(err as Error).message}`,
       );
    }
 }

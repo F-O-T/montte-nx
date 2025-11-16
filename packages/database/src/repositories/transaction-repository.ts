@@ -16,7 +16,6 @@ export async function createTransaction(
          .values(data)
          .returning();
 
-      // Fetch the created transaction with the bankAccount relation
       const createdTransaction = await dbClient.query.transaction.findFirst({
          where: (transaction, { eq }) => eq(transaction.id, result[0].id),
          with: {
@@ -94,7 +93,6 @@ export async function updateTransaction(
          throw AppError.database("Transaction not found");
       }
 
-      // Fetch the updated transaction with the bankAccount relation
       const updatedTransaction = await dbClient.query.transaction.findFirst({
          where: (transaction, { eq }) => eq(transaction.id, transactionId),
          with: {
