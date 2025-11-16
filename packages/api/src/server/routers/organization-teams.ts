@@ -267,13 +267,13 @@ export const organizationTeamsRouter = router({
          try {
             const updatedTeam = await resolvedCtx.auth.api.updateTeam({
                body: {
-                  teamId: input.teamId,
                   data: {
                      ...(input.name && { name: input.name }),
                      ...(input.description !== undefined && {
                         description: input.description,
                      }),
                   },
+                  teamId: input.teamId,
                },
                headers: resolvedCtx.headers,
             });
