@@ -2,6 +2,7 @@ import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardHeader,
@@ -101,25 +102,23 @@ function BankAccountsContent() {
    );
 
    return (
-      <Card className="flex flex-col h-[300px]">
-         <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
-            <div>
-               <CardTitle>
-                  {translate("dashboard.routes.profile.bank-accounts.title")}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.description",
-                  )}
-               </CardDescription>
-            </div>
-            <Button
-               size="icon"
-               variant="outline"
-               onClick={() => setIsCreateSheetOpen(true)}
-            >
-               <Plus className="size-4" />
-            </Button>
+      <Card className="">
+         <CardHeader className="">
+            <CardTitle>
+               {translate("dashboard.routes.profile.bank-accounts.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate("dashboard.routes.profile.bank-accounts.description")}
+            </CardDescription>
+            <CardAction>
+               <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => setIsCreateSheetOpen(true)}
+               >
+                  <Plus className="size-4" />
+               </Button>
+            </CardAction>
          </CardHeader>
 
          <CardContent className="flex-1 overflow-y-auto">
