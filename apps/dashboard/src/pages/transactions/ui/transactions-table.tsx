@@ -43,10 +43,15 @@ function TransactionCard({ transaction }: { transaction: Transaction }) {
                         {transaction.description}
                      </h3>
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                      <Badge className="text-xs font-normal" variant="outline">
                         {transaction.category}
                      </Badge>
+                     {transaction.bankAccount && (
+                        <Badge className="text-xs font-normal" variant="secondary">
+                           {transaction.bankAccount.name}
+                        </Badge>
+                     )}
                      <span className="text-xs text-muted-foreground">
                         {new Date(transaction.date).toLocaleDateString()}
                      </span>
@@ -179,6 +184,9 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                         <TableHead className="font-semibold">
                            Category
                         </TableHead>
+                        <TableHead className="font-semibold">
+                           Bank Account
+                        </TableHead>
                         <TableHead className="font-semibold">Amount</TableHead>
                      </TableRow>
                   </TableHeader>
@@ -201,6 +209,15 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                               <Badge className="font-normal" variant="outline">
                                  {transaction.category}
                               </Badge>
+                           </TableCell>
+                           <TableCell>
+                              {transaction.bankAccount ? (
+                                 <Badge className="font-normal" variant="secondary">
+                                    {transaction.bankAccount.name}
+                                 </Badge>
+                              ) : (
+                                 <span className="text-xs text-muted-foreground">-</span>
+                              )}
                            </TableCell>
                            <TableCell className="font-mono font-medium">
                               <div className="flex items-center">

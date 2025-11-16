@@ -23,8 +23,8 @@ import { LanguageCommand } from "../features/language-command";
 
 export function PreferencesSection() {
    return (
-      <Card>
-         <CardHeader>
+      <Card className="flex flex-col h-[300px]">
+         <CardHeader className="flex-shrink-0">
             <CardTitle>
                {translate("dashboard.routes.profile.preferences.title")}
             </CardTitle>
@@ -32,7 +32,7 @@ export function PreferencesSection() {
                {translate("dashboard.routes.profile.preferences.description")}
             </CardDescription>
          </CardHeader>
-         <CardContent>
+         <CardContent className="flex-1 overflow-y-auto">
             <ItemGroup>
                {/* Theme Toggle Group */}
                <Item>

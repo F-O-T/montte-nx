@@ -14,7 +14,7 @@ import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ProfilePageBilling } from "./profile-page-billing";
 import { ProfileInformation } from "./profile-page-informations-section";
-import { AccountConfigurationSection } from "./profile-page-notification-settings-section";
+import { BankAccountsSection } from "./profile-page-bank-accounts-section";
 import { PreferencesSection } from "./profile-page-preferences-sections";
 import { ProfilePageSessionsSection } from "./profile-page-sessions-section";
 
@@ -154,7 +154,7 @@ export function ProfilePage() {
             </div>
 
             <div className="md:col-span-3 grid md:grid-cols-2 gap-4">
-               <AccountConfigurationSection />
+               <BankAccountsSection />
                <PreferencesSection />
             </div>
          </div>

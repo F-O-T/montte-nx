@@ -7,6 +7,11 @@ import { TransactionsTable } from "./transactions-table";
 
 export type Transaction = {
    amount: number;
+   bankAccount?: {
+      bank: string;
+      id: string;
+      name: string;
+   } | null;
    category: string;
    date: string;
    description: string;

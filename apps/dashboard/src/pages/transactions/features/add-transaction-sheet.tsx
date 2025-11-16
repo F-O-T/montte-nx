@@ -40,6 +40,14 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
       trpc.categories.getAll.queryOptions(),
    );
 
+   const { data: bankAccounts = [] } = useQuery(
+      trpc.bankAccounts.getAll.queryOptions(),
+   );
+
+   const activeBankAccounts = bankAccounts.filter(
+      (account) => account.status === "active",
+   );
+
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
          onSuccess: () => {
@@ -55,6 +63,7 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
    const form = useForm({
       defaultValues: {
          amount: "",
+         bankAccountId: undefined as string | undefined,
          category: "",
          date: new Date(),
          description: "",
@@ -67,11 +76,13 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
          try {
             await createTransactionMutation.mutateAsync({
                amount: parseFloat(value.amount),
+               bankAccountId: value.bankAccountId || undefined,
                category: value.category as string,
                date: value.date.toISOString().split("T")[0],
                description: value.description,
                type: value.type,
             });
+            form.reset();
          } catch (error) {
             console.error("Failed to create transaction:", error);
          }
@@ -79,7 +90,15 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
    });
 
    return (
-      <Sheet onOpenChange={setIsSheetOpen} open={isSheetOpen}>
+      <Sheet
+         onOpenChange={(open) => {
+            setIsSheetOpen(open);
+            if (!open) {
+               form.reset();
+            }
+         }}
+         open={isSheetOpen}
+      >
          <SheetTrigger asChild>
             <Button className="flex gap-2 ">
                <Plus className="size-4" />
@@ -149,6 +168,46 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
                                     type="number"
                                     value={field.state.value}
                                  />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="bankAccountId">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>Bank Account (Optional)</FieldLabel>
+                                 <Select
+                                    onValueChange={(value) =>
+                                       field.handleChange(value)
+                                    }
+                                    value={field.state.value}
+                                 >
+                                    <SelectTrigger>
+                                       <SelectValue placeholder="Select a bank account" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                       {activeBankAccounts.map((account) => (
+                                          <SelectItem
+                                             key={account.id}
+                                             value={account.id}
+                                          >
+                                             {account.name} - {account.bank}
+                                          </SelectItem>
+                                       ))}
+                                    </SelectContent>
+                                 </Select>
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}
