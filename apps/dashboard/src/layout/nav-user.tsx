@@ -22,10 +22,11 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
-import { Crown, LogOutIcon, UserCircleIcon } from "lucide-react";
+import { Crown, LogOutIcon, Palette, UserCircleIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { betterAuthClient, useTRPC } from "@/integrations/clients";
+import { ThemeSwitcher } from "./theme-provider";
 
 function UserAvatarInfo({
    name,
@@ -163,6 +164,16 @@ function NavUserContent() {
                         </Button>
                      </DropdownMenuItem>
                   </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                     Preferences
+                  </DropdownMenuLabel>
+                  <div className="px-2 py-1">
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Theme</span>
+                        <ThemeSwitcher />
+                     </div>
+                  </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                      <Button

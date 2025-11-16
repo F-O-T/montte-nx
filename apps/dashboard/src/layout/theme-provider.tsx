@@ -254,9 +254,7 @@ export const ThemeSwitcher = ({ className }: ThemeSwitcherProps) => {
                            />
                         </button>
                      </TooltipTrigger>
-                     <TooltipContent>
-                        <p className="text-foreground">{label}</p>
-                     </TooltipContent>
+                     <TooltipContent>{label}</TooltipContent>
                   </Tooltip>
                );
             })}
