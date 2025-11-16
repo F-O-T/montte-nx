@@ -56,7 +56,6 @@ export const transactionRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         // First check if transaction exists and belongs to user
          const existingTransaction = await findTransactionById(
             resolvedCtx.db,
             input.id,
@@ -117,7 +116,6 @@ export const transactionRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         // First check if transaction exists and belongs to user
          const existingTransaction = await findTransactionById(
             resolvedCtx.db,
             input.id,

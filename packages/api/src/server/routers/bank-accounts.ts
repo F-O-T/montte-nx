@@ -3,7 +3,6 @@ import {
    deleteBankAccount,
    findBankAccountById,
    findBankAccountsByUserId,
-   findBankAccountsByUserIdPaginated,
    updateBankAccount,
 } from "@packages/database/repositories/bank-account-repository";
 import { z } from "zod";
@@ -21,13 +20,6 @@ const updateBankAccountSchema = z.object({
    name: z.string().min(1, "Name is required").optional(),
    status: z.enum(["active", "inactive"]).optional(),
    type: z.string().min(1, "Type is required").optional(),
-});
-
-const paginationSchema = z.object({
-   limit: z.coerce.number().min(1).max(100).default(10),
-   orderBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
-   orderDirection: z.enum(["asc", "desc"]).default("asc"),
-   page: z.coerce.number().min(1).default(1),
 });
 
 export const bankAccountRouter = router({
@@ -81,23 +73,6 @@ export const bankAccountRouter = router({
 
       return findBankAccountsByUserId(resolvedCtx.db, userId);
    }),
-
-   getAllPaginated: protectedProcedure
-      .input(paginationSchema)
-      .query(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
-
-         return findBankAccountsByUserIdPaginated(
-            resolvedCtx.db,
-            userId,
-            input,
-         );
-      }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
