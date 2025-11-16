@@ -51,7 +51,6 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
          onSuccess: () => {
-            // Invalidate and refetch transactions
             queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAll.queryKey(),
             });
