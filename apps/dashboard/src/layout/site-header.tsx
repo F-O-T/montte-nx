@@ -1,6 +1,7 @@
 import { Separator } from "@packages/ui/components/separator";
 import { SidebarTrigger } from "@packages/ui/components/sidebar";
 import { NavUser } from "./nav-user";
+import { NavigationBreadcrumb } from "./navigation-breadcrumb";
 export function SiteHeader() {
    return (
       <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear ">
@@ -10,6 +11,9 @@ export function SiteHeader() {
                className="mx-2 data-[orientation=vertical]:h-4"
                orientation="vertical"
             />
+            <div className="flex-1">
+               <NavigationBreadcrumb />
+            </div>
             <div className="ml-auto">
                <NavUser />
             </div>

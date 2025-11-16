@@ -14,6 +14,12 @@ import type { RouterContext } from "../router";
 import "@packages/localization";
 import i18n from "@packages/localization";
 import { NotFoundComponent } from "@/default/not-found";
+
+declare module "@tanstack/react-router" {
+   interface StaticDataRouteOption {
+      breadcrumb?: string;
+   }
+}
 export const Route = createRootRouteWithContext<RouterContext>()({
    component: RootComponent,
 
@@ -77,6 +83,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       </div>
    ),
    ssr: true,
+   staticData: {
+      breadcrumb: "Home",
+   },
    wrapInSuspense: true,
 });
 
