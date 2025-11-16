@@ -3,7 +3,7 @@ import { type TranslationKey, translate } from "@packages/localization";
 import { APIError, propagateError } from "@packages/utils/errors";
 import { APIError as BetterAuthAPIError } from "better-auth/api";
 import { z } from "zod";
-import { publicProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 const otpSchema = z.enum(["email-verification", "sign-in", "forget-password"]);
 export const authRouter = router({
@@ -59,6 +59,28 @@ export const authRouter = router({
       });
 
       return googleSignInResponse;
+   }),
+   logout: protectedProcedure.mutation(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+
+      try {
+         const resp = await resolvedCtx.auth.api.signOut({
+            asResponse: true,
+            headers: resolvedCtx.headers,
+         });
+
+         if (resp.headers) {
+            resp.headers.forEach((value, key) => {
+               resolvedCtx.responseHeaders.append(key, value);
+            });
+         }
+
+         return resp.json();
+      } catch (error) {
+         console.error("Logout error:", error);
+         propagateError(error);
+         throw APIError.internal("Failed to log out. Please try again.");
+      }
    }),
 
    resetPassword: publicProcedure
@@ -171,7 +193,6 @@ export const authRouter = router({
             throw APIError.internal("Failed to sign in. Please try again.");
          }
       }),
-
    signUp: publicProcedure
       .input(
          z.object({
