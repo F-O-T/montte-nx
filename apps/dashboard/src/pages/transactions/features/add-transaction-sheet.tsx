@@ -23,17 +23,36 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/integrations/clients";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from "@packages/ui/components/popover";
+import {
+   Command,
+   CommandEmpty,
+   CommandGroup,
+   CommandInput,
+   CommandItem,
+   CommandList,
+} from "@packages/ui/components/command";
 
-interface AddTransactionSheetProps {}
-
-export function AddTransactionSheet({}: AddTransactionSheetProps) {
+export function AddTransactionSheet() {
    const [isSheetOpen, setIsSheetOpen] = useState(false);
+   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
    const queryClient = useQueryClient();
 
    const { data: categories = [] } = useQuery(
@@ -81,10 +100,20 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
    return (
       <Sheet onOpenChange={setIsSheetOpen} open={isSheetOpen}>
          <SheetTrigger asChild>
-            <Button className="flex gap-2 ">
-               <Plus className="size-4" />
-               Add Transaction
-            </Button>
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button
+                     onClick={() => setIsSheetOpen(true)}
+                     size="icon"
+                     variant="default"
+                  >
+                     <Plus className="size-4" />
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  <p>Add Transaction</p>
+               </TooltipContent>
+            </Tooltip>
          </SheetTrigger>
          <SheetContent>
             <form
@@ -166,29 +195,91 @@ export function AddTransactionSheet({}: AddTransactionSheetProps) {
                            const isInvalid =
                               field.state.meta.isTouched &&
                               !field.state.meta.isValid;
+
+                           const selectedCategory = categories.find(
+                              (category) => category.name === field.state.value,
+                           );
+
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>Category</FieldLabel>
-                                 <Select
-                                    onValueChange={(value) =>
-                                       field.handleChange(value)
-                                    }
-                                    value={field.state.value}
+                                 <Popover
+                                    open={categoryComboboxOpen}
+                                    onOpenChange={setCategoryComboboxOpen}
                                  >
-                                    <SelectTrigger>
-                                       <SelectValue placeholder="Select a category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                       {categories.map((category) => (
-                                          <SelectItem
-                                             key={category.id}
-                                             value={category.name}
-                                          >
-                                             {category.name}
-                                          </SelectItem>
-                                       ))}
-                                    </SelectContent>
-                                 </Select>
+                                    <PopoverTrigger asChild>
+                                       <Button
+                                          aria-expanded={categoryComboboxOpen}
+                                          className="w-full justify-between"
+                                          role="combobox"
+                                          variant="outline"
+                                       >
+                                          {selectedCategory ? (
+                                             <div className="flex items-center gap-2">
+                                                <IconDisplay
+                                                   iconName={
+                                                      selectedCategory.icon as any
+                                                   }
+                                                   size={16}
+                                                />
+                                                <span>
+                                                   {selectedCategory.name}
+                                                </span>
+                                             </div>
+                                          ) : (
+                                             <span className="text-muted-foreground">
+                                                Select a category
+                                             </span>
+                                          )}
+                                          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                       </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                       <Command>
+                                          <CommandInput placeholder="Search categories..." />
+                                          <CommandList>
+                                             <CommandEmpty>
+                                                No category found.
+                                             </CommandEmpty>
+                                             <CommandGroup>
+                                                {categories.map((category) => (
+                                                   <CommandItem
+                                                      key={category.id}
+                                                      onSelect={() => {
+                                                         field.handleChange(
+                                                            category.name ===
+                                                               field.state.value
+                                                               ? ""
+                                                               : category.name,
+                                                         );
+                                                         setCategoryComboboxOpen(
+                                                            false,
+                                                         );
+                                                      }}
+                                                      value={category.name}
+                                                   >
+                                                      <div className="flex items-center gap-2 flex-1">
+                                                         <IconDisplay
+                                                            iconName={
+                                                               category.icon as any
+                                                            }
+                                                            size={16}
+                                                         />
+                                                         <span>
+                                                            {category.name}
+                                                         </span>
+                                                      </div>
+                                                      {field.state.value ===
+                                                         category.name && (
+                                                         <CheckIcon className="ml-2 h-4 w-4" />
+                                                      )}
+                                                   </CommandItem>
+                                                ))}
+                                             </CommandGroup>
+                                          </CommandList>
+                                       </Command>
+                                    </PopoverContent>
+                                 </Popover>
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}
