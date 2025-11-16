@@ -1,5 +1,7 @@
+import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
    Field,
    FieldError,
@@ -23,40 +25,60 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/integrations/clients";
-import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 
-interface EditBankAccountSheetProps {
-   bankAccount: BankAccount;
+type ManageBankAccountSheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   bankAccount?: BankAccount; // If provided, edit mode. If not, create mode
    asChild?: boolean;
-}
+};
 
-export function EditBankAccountSheet({
+export function ManageBankAccountSheet({
+   onOpen,
+   onOpenChange,
    bankAccount,
    asChild = false,
-}: EditBankAccountSheetProps) {
-   const [isSheetOpen, setIsSheetOpen] = useState(false);
+}: ManageBankAccountSheetProps) {
    const queryClient = useQueryClient();
+   const isEditMode = !!bankAccount;
 
-   const updateBankAccountMutation = useMutation(
-      trpc.bankAccounts.update.mutationOptions({
+   // For asChild usage, manage internal state
+   const [internalOpen, setInternalOpen] = useState(false);
+   const isOpen = asChild ? internalOpen : onOpen;
+   const setIsOpen = asChild ? setInternalOpen : onOpenChange;
+
+   const createBankAccountMutation = useMutation(
+      trpc.bankAccounts.create.mutationOptions({
+         onError: (error) => {
+            toast.error(
+               error.message ||
+                  translate(
+                     "dashboard.routes.profile.bank-accounts.create.error",
+                  ),
+            );
+         },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getAll.queryKey(),
             });
             toast.success(
                translate(
-                  "dashboard.routes.profile.bank-accounts.edit.success",
+                  "dashboard.routes.profile.bank-accounts.create.success",
                ),
             );
-            setIsSheetOpen(false);
+            setIsOpen?.(false);
          },
+      }),
+   );
+
+   const updateBankAccountMutation = useMutation(
+      trpc.bankAccounts.update.mutationOptions({
          onError: (error) => {
             toast.error(
                error.message ||
@@ -65,56 +87,83 @@ export function EditBankAccountSheet({
                   ),
             );
          },
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getAll.queryKey(),
+            });
+            toast.success(
+               translate("dashboard.routes.profile.bank-accounts.edit.success"),
+            );
+            setIsOpen?.(false);
+         },
       }),
    );
 
    const form = useForm({
       defaultValues: {
-         bank: bankAccount.bank,
-         name: bankAccount.name,
-         status: bankAccount.status as "active" | "inactive",
-         type: bankAccount.type,
+         bank: bankAccount?.bank || "",
+         name: bankAccount?.name || "",
+         status: bankAccount?.status || ("active" as "active" | "inactive"),
+         type: bankAccount?.type || "",
       },
       onSubmit: async ({ value }) => {
          if (!value.name || !value.type || !value.bank) {
             return;
          }
          try {
-            await updateBankAccountMutation.mutateAsync({
-               data: {
+            if (isEditMode && bankAccount) {
+               await updateBankAccountMutation.mutateAsync({
+                  data: {
+                     bank: value.bank,
+                     name: value.name,
+                     status: value.status,
+                     type: value.type,
+                  },
+                  id: bankAccount.id,
+               });
+            } else {
+               await createBankAccountMutation.mutateAsync({
                   bank: value.bank,
                   name: value.name,
                   status: value.status,
                   type: value.type,
-               },
-               id: bankAccount.id,
-            });
+               });
+            }
          } catch (error) {
-            console.error("Failed to update bank account:", error);
+            console.error(
+               `Failed to ${isEditMode ? "update" : "create"} bank account:`,
+               error,
+            );
          }
       },
    });
 
+   const TriggerComponent = asChild ? (
+      <DropdownMenuItem
+         onSelect={(e) => {
+            e.preventDefault();
+            setIsOpen?.(true);
+         }}
+      >
+         {isEditMode ? (
+            <>
+               <Pencil className="mr-2 h-4 w-4" />
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.edit",
+               )}
+            </>
+         ) : (
+            <>
+               <Plus className="mr-2 h-4 w-4" />
+               {translate("dashboard.routes.profile.bank-accounts.actions.add")}
+            </>
+         )}
+      </DropdownMenuItem>
+   ) : null;
+
    return (
-      <Sheet onOpenChange={setIsSheetOpen} open={isSheetOpen}>
-         <SheetTrigger asChild>
-            {asChild ? (
-               <DropdownMenuItem
-                  onSelect={(e) => {
-                     e.preventDefault();
-                     setIsSheetOpen(true);
-                  }}
-               >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {translate("dashboard.routes.profile.bank-accounts.actions.edit")}
-               </DropdownMenuItem>
-            ) : (
-               <Button variant="ghost" size="sm">
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {translate("dashboard.routes.profile.bank-accounts.actions.edit")}
-               </Button>
-            )}
-         </SheetTrigger>
+      <Sheet onOpenChange={setIsOpen} open={isOpen}>
+         {asChild && <SheetTrigger asChild>{TriggerComponent}</SheetTrigger>}
          <SheetContent>
             <form
                className="h-full flex flex-col"
@@ -126,15 +175,23 @@ export function EditBankAccountSheet({
             >
                <SheetHeader>
                   <SheetTitle>
-                     {translate(
-                        "dashboard.routes.profile.bank-accounts.edit.title",
-                     )}
+                     {isEditMode
+                        ? translate(
+                             "dashboard.routes.profile.bank-accounts.edit.title",
+                          )
+                        : translate(
+                             "dashboard.routes.profile.bank-accounts.create.title",
+                          )}
                   </SheetTitle>
                   <SheetDescription>
-                     {translate(
-                        "dashboard.routes.profile.bank-accounts.edit.description",
-                        { name: bankAccount.name },
-                     )}
+                     {isEditMode
+                        ? translate(
+                             "dashboard.routes.profile.bank-accounts.edit.description",
+                             { name: bankAccount?.name || "" },
+                          )
+                        : translate(
+                             "dashboard.routes.profile.bank-accounts.create.description",
+                          )}
                   </SheetDescription>
                </SheetHeader>
 
@@ -153,17 +210,19 @@ export function EditBankAccountSheet({
                                     )}
                                  </FieldLabel>
                                  <Input
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
                                     placeholder={translate(
                                        "dashboard.routes.profile.bank-accounts.create.placeholders.name",
                                     )}
                                     value={field.state.value}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    onBlur={field.handleBlur}
                                  />
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -185,17 +244,19 @@ export function EditBankAccountSheet({
                                     )}
                                  </FieldLabel>
                                  <Input
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
                                     placeholder={translate(
                                        "dashboard.routes.profile.bank-accounts.create.placeholders.bank",
                                     )}
                                     value={field.state.value}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    onBlur={field.handleBlur}
                                  />
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -217,8 +278,8 @@ export function EditBankAccountSheet({
                                     )}
                                  </FieldLabel>
                                  <Select
-                                    value={field.state.value}
                                     onValueChange={field.handleChange}
+                                    value={field.state.value}
                                  >
                                     <SelectTrigger>
                                        <SelectValue
@@ -246,7 +307,9 @@ export function EditBankAccountSheet({
                                     </SelectContent>
                                  </Select>
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -268,8 +331,8 @@ export function EditBankAccountSheet({
                                     )}
                                  </FieldLabel>
                                  <Select
-                                    value={field.state.value}
                                     onValueChange={field.handleChange}
+                                    value={field.state.value}
                                  >
                                     <SelectTrigger>
                                        <SelectValue
@@ -292,7 +355,9 @@ export function EditBankAccountSheet({
                                     </SelectContent>
                                  </Select>
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -306,21 +371,31 @@ export function EditBankAccountSheet({
                      {(state) => (
                         <Button
                            className="w-full"
-                           type="submit"
                            disabled={
                               !state.canSubmit ||
                               state.isSubmitting ||
+                              createBankAccountMutation.isPending ||
                               updateBankAccountMutation.isPending
                            }
+                           type="submit"
                         >
                            {state.isSubmitting ||
+                           createBankAccountMutation.isPending ||
                            updateBankAccountMutation.isPending
-                              ? translate(
-                                   "dashboard.routes.profile.bank-accounts.edit.updating",
-                                )
-                              : translate(
-                                   "dashboard.routes.profile.bank-accounts.edit.submit",
-                                )}
+                              ? isEditMode
+                                 ? translate(
+                                      "dashboard.routes.profile.bank-accounts.edit.updating",
+                                   )
+                                 : translate(
+                                      "dashboard.routes.profile.bank-accounts.create.creating",
+                                   )
+                              : isEditMode
+                                ? translate(
+                                     "dashboard.routes.profile.bank-accounts.edit.submit",
+                                  )
+                                : translate(
+                                     "dashboard.routes.profile.bank-accounts.create.submit",
+                                  )}
                         </Button>
                      )}
                   </form.Subscribe>

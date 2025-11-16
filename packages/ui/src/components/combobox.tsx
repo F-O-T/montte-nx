@@ -53,7 +53,7 @@ export function Combobox({
          <PopoverTrigger asChild>
             <Button
                aria-expanded={open}
-               className={cn("w-[200px] justify-between", className)}
+               className={cn(" justify-between", className)}
                disabled={disabled}
                role="combobox"
                variant="outline"
