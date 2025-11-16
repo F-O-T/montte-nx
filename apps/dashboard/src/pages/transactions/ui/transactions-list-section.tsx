@@ -1,4 +1,6 @@
 import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
+import { Checkbox } from "@packages/ui/components/checkbox";
 import {
    Card,
    CardContent,
@@ -11,6 +13,13 @@ import {
    Combobox,
    type ComboboxOption,
 } from "@packages/ui/components/combobox";
+import {
+   DropdownMenu,
+   DropdownMenuContent,
+   DropdownMenuItem,
+   DropdownMenuSeparator,
+   DropdownMenuTrigger,
+} from "@packages/ui/components/dropdown-menu";
 import {
    Empty,
    EmptyContent,
@@ -46,10 +55,15 @@ import {
    SelectValue,
 } from "@packages/ui/components/select";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { ArrowDown, ArrowUp, Search, Wallet } from "lucide-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { ArrowDown, ArrowUp, Edit, Eye, MoreHorizontal, PlusIcon, Search, Trash2, Wallet } from "lucide-react";
+import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { DeleteTransaction } from "../features/delete-transaction-dialog";
+import { EditTransactionSheet } from "../features/edit-transaction-sheet";
+import { TransactionListProvider, useTransactionList } from "../features/transaction-list-context";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 
 export type Transaction = {
@@ -61,50 +75,130 @@ export type Transaction = {
    type: "income" | "expense";
 };
 
-function TransactionItem({ transaction }: { transaction: Transaction }) {
+type TransactionItemProps = {
+   transaction: Transaction;
+   categories: Array<{ id: string; name: string; color: string; icon: string | null }>;
+};
+
+function TransactionItem({ transaction, categories }: TransactionItemProps) {
+   const { selectedItems, handleSelectionChange } = useTransactionList();
+
+   // Find the category details for this transaction
+   const categoryDetails = categories.find(cat => cat.id === transaction.category);
+   const categoryColor = categoryDetails?.color || "#6b7280";
+   const categoryIcon = categoryDetails?.icon || "Wallet";
+   const categoryName = categoryDetails?.name || transaction.category;
+
+   const handleViewDetails = () => {
+      // Navigate to transaction details - implement as needed
+      console.log("View transaction details:", transaction.id);
+   };
+
+   const handleCreateContent = () => {
+      // Create content related to transaction - implement as needed
+      console.log("Create content for transaction:", transaction.id);
+   };
+
+   const dropdownItems = [
+      {
+         icon: <Eye className="h-4 w-4" />,
+         label: "View Details",
+         onClick: handleViewDetails,
+      },
+      {
+         icon: <PlusIcon className="h-4 w-4" />,
+         label: "Create Content",
+         onClick: handleCreateContent,
+      },
+   ];
+
    return (
-      <Item>
-         <ItemMedia variant="icon">
-            <div
-               className={`size-8 rounded-full flex items-center justify-center ${
-                  transaction.type === "income" ? "bg-green-100" : "bg-red-100"
-               }`}
-            >
-               {transaction.type === "income" ? (
-                  <ArrowUp className="h-4 w-4 text-green-600" />
-               ) : (
-                  <ArrowDown className="h-4 w-4 text-red-600" />
-               )}
-            </div>
-         </ItemMedia>
-         <ItemContent>
-            <ItemTitle>{transaction.description}</ItemTitle>
-            <ItemDescription>
-               <div className="flex items-center gap-2">
-                  <Badge className="text-xs font-normal" variant="outline">
-                     {transaction.category}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                     {new Date(transaction.date).toLocaleDateString()}
-                  </span>
-               </div>
-            </ItemDescription>
-         </ItemContent>
-         <ItemActions>
-            <div className="text-right">
+      <>
+         <Item>
+            <ItemMedia className="group relative">
                <div
-                  className={`font-mono font-medium text-sm ${
-                     transaction.type === "income"
-                        ? "text-green-600"
-                        : "text-red-600"
+                  className="size-8 rounded-sm border flex items-center justify-center"
+                  style={{
+                     backgroundColor: categoryColor,
+                  }}
+               >
+                  <IconDisplay
+                     className="text-white"
+                     iconName={categoryIcon as IconName}
+                     size={16}
+                  />
+               </div>
+               <div
+                  className={`absolute -top-1 -right-1 transition-opacity ${
+                     selectedItems.has(transaction.id)
+                        ? "opacity-100"
+                        : "opacity-0 group-hover:opacity-100"
                   }`}
                >
-                  ${Math.abs(transaction.amount).toFixed(2)}
+                  <Checkbox
+                     checked={selectedItems.has(transaction.id)}
+                     className="size-4 border-2 border-background"
+                     onCheckedChange={(checked) =>
+                        handleSelectionChange(transaction.id, checked as boolean)
+                     }
+                  />
                </div>
-            </div>
-         </ItemActions>
-         <ItemSeparator />
-      </Item>
+            </ItemMedia>
+            <ItemContent>
+               <ItemTitle className="truncate">
+                  {transaction.description}
+               </ItemTitle>
+               <ItemDescription className="truncate">
+                  <div className="flex items-center gap-2">
+                     <Badge className="text-xs font-normal" variant="outline">
+                        {categoryName}
+                     </Badge>
+                     <span className="text-xs text-muted-foreground">
+                        {new Date(transaction.date).toLocaleDateString()}
+                     </span>
+                  </div>
+               </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+               <div className="text-right">
+                  <div
+                     className={`font-mono font-medium text-sm ${
+                        transaction.type === "income"
+                           ? "text-green-600"
+                           : "text-red-600"
+                     }`}
+                  >
+                     {transaction.type === "income" ? "+" : "-"}${Math.abs(transaction.amount).toFixed(2)}
+                  </div>
+               </div>
+               <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                     <Button size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                     </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                     {dropdownItems.map((item, index) => (
+                        <Fragment key={item.label}>
+                           <DropdownMenuItem onClick={item.onClick}>
+                              <span className="mr-2">{item.icon}</span>
+                              {item.label}
+                           </DropdownMenuItem>
+                           {index < dropdownItems.length - 1 && (
+                              <DropdownMenuSeparator />
+                           )}
+                        </Fragment>
+                     ))}
+                     <DropdownMenuSeparator />
+                     <Suspense fallback={<DropdownMenuItem disabled>Loading...</DropdownMenuItem>}>
+                        <EditTransactionSheet transaction={transaction} asChild />
+                     </Suspense>
+                     <DeleteTransaction transaction={transaction} asChild />
+                  </DropdownMenuContent>
+               </DropdownMenu>
+            </ItemActions>
+         </Item>
+      </>
    );
 }
 
@@ -139,23 +233,29 @@ function TransactionsListSkeleton() {
             </CardDescription>
          </CardHeader>
          <CardContent>
-            <div className="space-y-4">
-               {Array.from({ length: 5 }).map((_, index) => (
-                  <div
-                     className="flex items-center space-x-4 p-4 border rounded-lg"
-                     key={`transaction-skeleton-${index + 1}`}
-                  >
-                     <Skeleton className="h-10 w-10 rounded-full" />
-                     <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-24" />
-                     </div>
-                     <div className="text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                     </div>
-                  </div>
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((index) => (
+                  <Fragment key={`transaction-skeleton-${index + 1}`}>
+                     <Item>
+                        <ItemMedia className="group relative">
+                           <Skeleton className="size-8 rounded-sm" />
+                           <Skeleton className="absolute -top-1 -right-1 size-4 rounded opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </ItemMedia>
+                        <ItemContent className="gap-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-48" />
+                        </ItemContent>
+                        <ItemActions>
+                           <div className="text-right">
+                              <Skeleton className="h-4 w-16 ml-auto mb-2" />
+                           </div>
+                           <Skeleton className="size-8" />
+                        </ItemActions>
+                     </Item>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
                ))}
-            </div>
+            </ItemGroup>
          </CardContent>
          <CardFooter>
             <Skeleton className="h-10 w-full" />
@@ -173,6 +273,10 @@ function TransactionsListContent() {
 
    const { data: transactions } = useSuspenseQuery(
       trpc.transactions.getAll.queryOptions(),
+   );
+
+   const { data: categories = [] } = useSuspenseQuery(
+      trpc.categories.getAll.queryOptions(),
    );
 
    // Transform API data to match UI expectations
@@ -211,13 +315,13 @@ function TransactionsListContent() {
       setCurrentPage(1);
    };
 
-   const categories = Array.from(
+   const transactionCategories = Array.from(
       new Set(uiTransactions.map((t) => t.category)),
    );
 
    const categoryOptions: ComboboxOption[] = [
       { label: "All Categories", value: "all" },
-      ...categories.map((category) => ({ label: category, value: category })),
+      ...transactionCategories.map((category) => ({ label: category, value: category })),
    ];
 
    return (
@@ -289,11 +393,14 @@ function TransactionsListContent() {
                </Empty>
             ) : (
                <ItemGroup>
-                  {paginatedTransactions.map((transaction) => (
-                     <TransactionItem
-                        key={transaction.id}
-                        transaction={transaction}
-                     />
+                  {paginatedTransactions.map((transaction, index) => (
+                     <Fragment key={transaction.id}>
+                        <TransactionItem
+                           transaction={transaction}
+                           categories={categories}
+                        />
+                        {index !== paginatedTransactions.length - 1 && <ItemSeparator />}
+                     </Fragment>
                   ))}
                </ItemGroup>
             )}
@@ -371,9 +478,11 @@ function TransactionsListContent() {
 export function TransactionsListSection() {
    return (
       <ErrorBoundary FallbackComponent={TransactionsListErrorFallback}>
-         <Suspense fallback={<TransactionsListSkeleton />}>
-            <TransactionsListContent />
-         </Suspense>
+         <TransactionListProvider>
+            <Suspense fallback={<TransactionsListSkeleton />}>
+               <TransactionsListContent />
+            </Suspense>
+         </TransactionListProvider>
       </ErrorBoundary>
    );
 }
