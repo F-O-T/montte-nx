@@ -4,9 +4,9 @@ import {
    findCategoriesByUserId,
    findCategoriesByUserIdPaginated,
    findCategoryById,
-   updateCategory,
-   getTotalCategoriesByUserId,
    getCategoryWithMostTransactions,
+   getTotalCategoriesByUserId,
+   updateCategory,
 } from "@packages/database/repositories/category-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -58,7 +58,6 @@ export const categoryRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         // First check if category exists and belongs to user
          const existingCategory = await findCategoryById(
             resolvedCtx.db,
             input.id,
@@ -114,6 +113,28 @@ export const categoryRouter = router({
          return category;
       }),
 
+   getStats: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+
+      const [totalCategories, categoryWithMostTransactions] = await Promise.all(
+         [
+            getTotalCategoriesByUserId(resolvedCtx.db, userId),
+            getCategoryWithMostTransactions(resolvedCtx.db, userId),
+         ],
+      );
+
+      return {
+         categoryWithMostTransactions:
+            categoryWithMostTransactions?.categoryName || null,
+         totalCategories,
+      };
+   }),
+
    update: protectedProcedure
       .input(
          z.object({
@@ -129,7 +150,6 @@ export const categoryRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         // First check if category exists and belongs to user
          const existingCategory = await findCategoryById(
             resolvedCtx.db,
             input.id,
@@ -141,23 +161,4 @@ export const categoryRouter = router({
 
          return updateCategory(resolvedCtx.db, input.id, input.data);
       }),
-
-   getStats: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
-
-      const userId = resolvedCtx.session.user.id;
-
-      const [totalCategories, categoryWithMostTransactions] = await Promise.all([
-         getTotalCategoriesByUserId(resolvedCtx.db, userId),
-         getCategoryWithMostTransactions(resolvedCtx.db, userId),
-      ]);
-
-      return {
-         totalCategories,
-         categoryWithMostTransactions: categoryWithMostTransactions?.categoryName || null,
-      };
-   }),
 });

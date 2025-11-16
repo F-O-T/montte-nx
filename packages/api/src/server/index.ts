@@ -4,6 +4,7 @@ import type { MinioClient } from "@packages/files/client";
 import type { Polar } from "@polar-sh/sdk";
 import { authRouter } from "./routers/auth";
 import { bankAccountRouter } from "./routers/bank-accounts";
+import { billRouter } from "./routers/bills";
 import { categoryRouter } from "./routers/categories";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
@@ -15,6 +16,7 @@ import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 export const appRouter = router({
    auth: authRouter,
    bankAccounts: bankAccountRouter,
+   bills: billRouter,
    categories: categoryRouter,
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
