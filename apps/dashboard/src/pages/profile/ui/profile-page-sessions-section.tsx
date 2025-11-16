@@ -52,7 +52,7 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { Info, Monitor, MoreVertical, Trash2 } from "lucide-react";
+import { Monitor, MoreVertical, Trash2 } from "lucide-react";
 import { Fragment, Suspense, useMemo } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
@@ -205,17 +205,26 @@ function SessionsSectionContent() {
                </CardDescription>
                <CardAction>
                   <DropdownMenu>
-                     <DropdownMenuTrigger asChild>
-                        <Button
-                           aria-label={translate(
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <DropdownMenuTrigger asChild>
+                              <Button
+                                 aria-label={translate(
+                                    "dashboard.routes.profile.sessions.actions.title",
+                                 )}
+                                 size="icon"
+                                 variant="ghost"
+                              >
+                                 <MoreVertical className="w-5 h-5" />
+                              </Button>
+                           </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           {translate(
                               "dashboard.routes.profile.sessions.actions.title",
                            )}
-                           size="icon"
-                           variant="ghost"
-                        >
-                           <MoreVertical className="w-5 h-5" />
-                        </Button>
-                     </DropdownMenuTrigger>
+                        </TooltipContent>
+                     </Tooltip>
                      <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuLabel>
                            {translate(
@@ -299,26 +308,7 @@ function SessionsSectionContent() {
                                     currentSession?.session.id || ""
                                  }
                                  session={session}
-                              >
-                                 <Tooltip>
-                                    <TooltipTrigger asChild>
-                                       <Button
-                                          aria-label={translate(
-                                             "dashboard.routes.profile.sessions.item.details",
-                                          )}
-                                          size="icon"
-                                          variant="ghost"
-                                       >
-                                          <Info className="w-4 h-4" />
-                                       </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                       {translate(
-                                          "dashboard.routes.profile.sessions.item.details",
-                                       )}
-                                    </TooltipContent>
-                                 </Tooltip>
-                              </SessionDetailsSheet>
+                              />
                            </ItemActions>
                         </Item>
                         {index !== sessions.length - 1 && <ItemSeparator />}

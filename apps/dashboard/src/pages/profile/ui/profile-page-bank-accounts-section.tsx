@@ -1,21 +1,26 @@
-import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
 import {
    Card,
-   CardAction,
    CardContent,
    CardDescription,
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import { createErrorFallback } from "@packages/ui/components/error-fallback";
-import { Skeleton } from "@packages/ui/components/skeleton";
-import { Button } from "@packages/ui/components/button";
 import {
    DropdownMenu,
    DropdownMenuContent,
+   DropdownMenuItem,
+   DropdownMenuLabel,
+   DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
    ItemActions,
@@ -26,35 +31,111 @@ import {
    ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building2, MoreVertical, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { trpc } from "@/integrations/clients";
-import { AddBankAccountSheet } from "../features/add-bank-account-sheet";
-import { EditBankAccountSheet } from "../features/edit-bank-account-sheet";
 import { DeleteBankAccount } from "../features/delete-bank-account";
+import { ManageBankAccountSheet } from "../features/manage-bank-account-sheet";
+
+import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
+interface BankAccountActionsProps {
+   bankAccount: BankAccount;
+}
+
+function BankAccountActions({ bankAccount }: BankAccountActionsProps) {
+   return (
+      <DropdownMenu>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <DropdownMenuTrigger asChild>
+                  <Button className="h-8 w-8 p-0" size="icon" variant="ghost">
+                     <span className="sr-only">Abrir menu</span>
+                     <MoreVertical className="h-4 w-4" />
+                  </Button>
+               </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Ações da conta</TooltipContent>
+         </Tooltip>
+         <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Ações da conta</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <ManageBankAccountSheet asChild bankAccount={bankAccount} />
+            <DropdownMenuItem asChild>
+               <DeleteBankAccount asChild bankAccount={bankAccount} />
+            </DropdownMenuItem>
+         </DropdownMenuContent>
+      </DropdownMenu>
+   );
+}
+
+interface CreateBankAccountItemProps {
+   onCreateAccount: () => void;
+}
+
+function CreateBankAccountItem({
+   onCreateAccount,
+}: CreateBankAccountItemProps) {
+   return (
+      <Item
+         className="cursor-pointer hover:bg-muted/50 transition-colors"
+         onClick={onCreateAccount}
+      >
+         <ItemMedia variant="icon">
+            <Plus className="size-4 text-muted-foreground" />
+         </ItemMedia>
+         <ItemContent>
+            <ItemTitle className="text-muted-foreground">
+               Adicionar nova conta
+            </ItemTitle>
+            <ItemDescription>
+               Clique para adicionar uma nova conta bancária
+            </ItemDescription>
+         </ItemContent>
+      </Item>
+   );
+}
+
+interface EmptyBankAccountsStateProps {
+   onCreateAccount: () => void;
+}
+
+function EmptyBankAccountsState({
+   onCreateAccount,
+}: EmptyBankAccountsStateProps) {
+   return (
+      <div className="text-center py-8">
+         <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+            <Building2 className="size-8 text-muted-foreground" />
+         </div>
+         <h3 className="text-lg font-medium mb-2">Nenhuma conta bancária</h3>
+         <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+            Adicione sua primeira conta bancária para começar a controlar suas
+            finanças
+         </p>
+         <Button onClick={onCreateAccount} className="min-w-[200px]">
+            <Plus className="size-4 mr-2" />
+            Criar primeira conta
+         </Button>
+      </div>
+   );
+}
 
 function BankAccountsErrorFallback(props: FallbackProps) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.profile.bank-accounts.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate("dashboard.routes.profile.bank-accounts.description")}
-            </CardDescription>
+            <CardTitle>Contas Bancárias</CardTitle>
+            <CardDescription>Gerencie suas contas bancárias</CardDescription>
          </CardHeader>
          <CardContent>
             {createErrorFallback({
-               errorDescription: translate(
-                  "dashboard.routes.profile.bank-accounts.state.error.description",
-               ),
-               errorTitle: translate(
-                  "dashboard.routes.profile.bank-accounts.state.error.title",
-               ),
-               retryText: translate("common.actions.retry"),
+               errorDescription:
+                  "Ocorreu um erro ao carregar suas contas bancárias. Por favor, tente novamente.",
+               errorTitle: "Erro ao carregar contas",
+               retryText: "Tentar novamente",
             })(props)}
          </CardContent>
       </Card>
@@ -75,7 +156,7 @@ function BankAccountsSkeleton() {
          <CardContent>
             <div className="space-y-4">
                {Array.from({ length: 2 }).map((_, index) => (
-                  <Item key={`skeleton-${index}`} className="p-0">
+                  <Item className="p-0" key={`skeleton-${index + 1}`}>
                      <ItemMedia variant="icon">
                         <Skeleton className="size-4" />
                      </ItemMedia>
@@ -101,24 +182,22 @@ function BankAccountsContent() {
       trpc.bankAccounts.getAll.queryOptions(),
    );
 
+   const getAccountTypeLabel = (type: string) => {
+      const typeMap: Record<string, string> = {
+         checking: "Conta Corrente",
+         savings: "Conta Poupança",
+         investment: "Conta Investimento",
+         credit: "Cartão de Crédito",
+         loan: "Empréstimo",
+      };
+      return typeMap[type] || type;
+   };
+
    return (
-      <Card className="">
-         <CardHeader className="">
-            <CardTitle>
-               {translate("dashboard.routes.profile.bank-accounts.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate("dashboard.routes.profile.bank-accounts.description")}
-            </CardDescription>
-            <CardAction>
-               <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => setIsCreateSheetOpen(true)}
-               >
-                  <Plus className="size-4" />
-               </Button>
-            </CardAction>
+      <Card>
+         <CardHeader>
+            <CardTitle>Contas Bancárias</CardTitle>
+            <CardDescription>Gerencie suas contas bancárias</CardDescription>
          </CardHeader>
 
          <CardContent className="flex-1 overflow-y-auto">
@@ -141,62 +220,35 @@ function BankAccountsContent() {
                                     }
                                  >
                                     {account.status === "active"
-                                       ? translate(
-                                            "dashboard.routes.profile.bank-accounts.status.active",
-                                         )
-                                       : translate(
-                                            "dashboard.routes.profile.bank-accounts.status.inactive",
-                                         )}
+                                       ? "Ativa"
+                                       : "Inativa"}
                                  </Badge>
                               </ItemTitle>
                               <ItemDescription>
                                  {account.bank} •{" "}
-                                 {translate(
-                                    `dashboard.routes.profile.bank-accounts.types.${account.type}`,
-                                 )}
+                                 {getAccountTypeLabel(account.type)}
                               </ItemDescription>
                            </ItemContent>
                            <ItemActions>
-                              <DropdownMenu>
-                                 <DropdownMenuTrigger asChild>
-                                    <Button
-                                       className="h-8 w-8 p-0"
-                                       size="icon"
-                                       variant="ghost"
-                                    >
-                                       <span className="sr-only">
-                                          Open menu
-                                       </span>
-                                       <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                 </DropdownMenuTrigger>
-                                 <DropdownMenuContent align="end">
-                                    <EditBankAccountSheet
-                                       asChild
-                                       bankAccount={account}
-                                    />
-                                    <DeleteBankAccount
-                                       asChild
-                                       bankAccount={account}
-                                    />
-                                 </DropdownMenuContent>
-                              </DropdownMenu>
+                              <BankAccountActions bankAccount={account} />
                            </ItemActions>
                         </Item>
                         {index < bankAccounts.length - 1 && <ItemSeparator />}
                      </>
                   ))}
+                  <ItemSeparator />
+                  <CreateBankAccountItem
+                     onCreateAccount={() => setIsCreateSheetOpen(true)}
+                  />
                </ItemGroup>
             ) : (
-               <div className="text-center py-8 text-sm text-muted-foreground">
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.state.empty",
-                  )}
-               </div>
+               <EmptyBankAccountsState
+                  onCreateAccount={() => setIsCreateSheetOpen(true)}
+               />
             )}
          </CardContent>
 
-         <AddBankAccountSheet
+         <ManageBankAccountSheet
             onOpen={isCreateSheetOpen}
             onOpenChange={setIsCreateSheetOpen}
          />
