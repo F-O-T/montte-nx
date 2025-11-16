@@ -1,3 +1,4 @@
+import type { Category } from "@packages/database/repositories/category-repository";
 import { Button } from "@packages/ui/components/button";
 import {
    ColorPicker,
@@ -8,6 +9,7 @@ import {
    ColorPickerOutput,
    ColorPickerSelection,
 } from "@packages/ui/components/color-picker";
+import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
    Field,
    FieldError,
@@ -27,61 +29,138 @@ import {
    SheetFooter,
    SheetHeader,
    SheetTitle,
+   SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Color from "color";
+import { Pencil, Plus } from "lucide-react";
+import { useState } from "react";
 import { IconSelector } from "@/features/icon-selector/icon-selector";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { trpc } from "@/integrations/clients";
 
-type AddCategorySheetProps = {
-   onOpen: boolean;
-   onOpenChange: (open: boolean) => void;
+type ManageCategorySheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   category?: Category; // If provided, edit mode. If not, create mode
+   asChild?: boolean;
 };
 
-export function AddCategorySheet({
+export function ManageCategorySheet({
    onOpen,
    onOpenChange,
-}: AddCategorySheetProps) {
+   category,
+   asChild = false,
+}: ManageCategorySheetProps) {
    const queryClient = useQueryClient();
+   const isEditMode = !!category;
+
+   // For asChild usage, manage internal state
+   const [internalOpen, setInternalOpen] = useState(false);
+   const isOpen = asChild ? internalOpen : onOpen;
+   const setIsOpen = asChild ? setInternalOpen : onOpenChange;
 
    const createCategoryMutation = useMutation(
       trpc.categories.create.mutationOptions({
-         onSuccess: () => {
-            // Invalidate and refetch categories
-            queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAll.queryKey(),
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.categories.getAllPaginated.queryKey(),
             });
-            onOpenChange(false);
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
+   const updateCategoryMutation = useMutation(
+      trpc.categories.update.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to update category:", error);
+         },
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.categories.getAllPaginated.queryKey(),
+            });
+            setIsOpen?.(false);
          },
       }),
    );
 
    const form = useForm({
       defaultValues: {
-         color: "#000000",
-         icon: undefined as IconName | undefined,
-         name: "",
+         color: category?.color || "#000000",
+         icon: category?.icon as IconName | undefined,
+         name: category?.name || "",
       },
       onSubmit: async ({ value }) => {
          if (!value.name || !value.color) {
             return;
          }
+
          try {
-            await createCategoryMutation.mutateAsync({
-               color: value.color,
-               icon: value.icon,
-               name: value.name,
-            });
+            if (isEditMode && category) {
+               await updateCategoryMutation.mutateAsync({
+                  data: {
+                     color: value.color,
+                     icon: value.icon,
+                     name: value.name,
+                  },
+                  id: category.id,
+               });
+            } else {
+               await createCategoryMutation.mutateAsync({
+                  color: value.color,
+                  icon: value.icon,
+                  name: value.name,
+               });
+            }
          } catch (error) {
-            console.error("Failed to create category:", error);
+            console.error(
+               `Failed to ${isEditMode ? "update" : "create"} category:`,
+               error,
+            );
          }
       },
    });
 
+   const TriggerComponent = asChild ? (
+      <DropdownMenuItem
+         onSelect={(e) => {
+            e.preventDefault();
+            setIsOpen?.(true);
+         }}
+      >
+         {isEditMode ? (
+            <>
+               <Pencil className="mr-2 h-4 w-4" />
+               Edit
+            </>
+         ) : (
+            <>
+               <Plus className="mr-2 h-4 w-4" />
+               Add Category
+            </>
+         )}
+      </DropdownMenuItem>
+   ) : (
+      <Button size="sm" variant="ghost">
+         {isEditMode ? (
+            <>
+               <Pencil className="mr-2 h-4 w-4" />
+               Edit
+            </>
+         ) : (
+            <>
+               <Plus className="mr-2 h-4 w-4" />
+               Add Category
+            </>
+         )}
+      </Button>
+   );
+
    return (
-      <Sheet onOpenChange={onOpenChange} open={onOpen}>
+      <Sheet onOpenChange={setIsOpen} open={isOpen}>
+         {asChild && <SheetTrigger asChild>{TriggerComponent}</SheetTrigger>}
          <SheetContent>
             <form
                className="h-full flex flex-col"
@@ -92,9 +171,13 @@ export function AddCategorySheet({
                }}
             >
                <SheetHeader>
-                  <SheetTitle>Create New Category</SheetTitle>
+                  <SheetTitle>
+                     {isEditMode ? "Edit Category" : "Create New Category"}
+                  </SheetTitle>
                   <SheetDescription>
-                     Add a new category to organize your transactions.
+                     {isEditMode
+                        ? `Update the category details for "${category.name}".`
+                        : "Add a new category to organize your transactions."}
                   </SheetDescription>
                </SheetHeader>
                <div className="grid gap-4 px-4">
@@ -160,15 +243,17 @@ export function AddCategorySheet({
                                     >
                                        <ColorPicker
                                           className="size-full flex flex-col gap-4"
-                                          onChange={(rgba) =>
-                                             field.handleChange(
-                                                Color.rgb(
-                                                   rgba[0],
-                                                   rgba[1],
-                                                   rgba[2],
-                                                ).hex(),
-                                             )
-                                          }
+                                          onChange={(rgba) => {
+                                             if (Array.isArray(rgba)) {
+                                                field.handleChange(
+                                                   Color.rgb(
+                                                      rgba[0],
+                                                      rgba[1],
+                                                      rgba[2],
+                                                   ).hex(),
+                                                );
+                                             }
+                                          }}
                                           value={field.state.value || "#000000"} // never undefined
                                        >
                                           <div className="h-24">
@@ -225,8 +310,7 @@ export function AddCategorySheet({
                         }}
                      </form.Field>
                   </FieldGroup>
-
-                 </div>
+               </div>
 
                <SheetFooter>
                   <form.Subscribe>
@@ -236,14 +320,20 @@ export function AddCategorySheet({
                            disabled={
                               !state.canSubmit ||
                               state.isSubmitting ||
-                              createCategoryMutation.isPending
+                              createCategoryMutation.isPending ||
+                              updateCategoryMutation.isPending
                            }
                            type="submit"
                         >
                            {state.isSubmitting ||
-                           createCategoryMutation.isPending
-                              ? "Creating..."
-                              : "Create Category"}
+                           createCategoryMutation.isPending ||
+                           updateCategoryMutation.isPending
+                              ? isEditMode
+                                 ? "Updating..."
+                                 : "Creating..."
+                              : isEditMode
+                                ? "Update Category"
+                                : "Create Category"}
                         </Button>
                      )}
                   </form.Subscribe>

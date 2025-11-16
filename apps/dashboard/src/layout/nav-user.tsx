@@ -20,12 +20,17 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
-import { Crown, LogOutIcon, UserCircleIcon } from "lucide-react";
+import { LogOutIcon, UserCircleIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { betterAuthClient, useTRPC } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
+import { ThemeSwitcher } from "./theme-provider";
 
 function UserAvatarInfo({
    name,
@@ -94,28 +99,28 @@ function NavUserContent() {
    const { data: session } = useSuspenseQuery(
       trpc.session.getSession.queryOptions(),
    );
-   const handleLogout = useCallback(async () => {
-      await betterAuthClient.signOut(
-         {},
-         {
-            onSuccess: async () => {
-               await queryClient.invalidateQueries({
-                  queryKey: trpc.session.getSession.queryKey(),
-               });
-               router.navigate({
-                  to: "/auth/sign-in",
-               });
-            },
+
+   const logoutMutation = useMutation(
+      trpc.auth.logout.mutationOptions({
+         onSuccess: async () => {
+            router.navigate({
+               to: "/auth/sign-in",
+            });
+            await queryClient.invalidateQueries({
+               queryKey: trpc.session.getSession.queryKey(),
+            });
          },
-      );
+      }),
+   );
+
+   const handleLogout = useCallback(async () => {
+      try {
+         await logoutMutation.mutateAsync();
+      } catch (error) {
+         console.error("Logout failed:", error);
+      }
       setOpenMobile(false);
-   }, [
-      router,
-      setOpenMobile,
-      queryClient,
-      trpc.session.getSession.queryKey,
-      trpc.session.getSession,
-   ]);
+   }, [logoutMutation, setOpenMobile]);
 
    return (
       <SidebarMenu>
@@ -163,6 +168,16 @@ function NavUserContent() {
                         </Button>
                      </DropdownMenuItem>
                   </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                     Preferences
+                  </DropdownMenuLabel>
+                  <div className="px-2 py-1">
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Theme</span>
+                        <ThemeSwitcher />
+                     </div>
+                  </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                      <Button

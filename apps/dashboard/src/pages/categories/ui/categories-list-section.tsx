@@ -1,0 +1,310 @@
+import { Button } from "@packages/ui/components/button";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import {
+   DropdownMenu,
+   DropdownMenuContent,
+   DropdownMenuLabel,
+   DropdownMenuSeparator,
+   DropdownMenuTrigger,
+} from "@packages/ui/components/dropdown-menu";
+import {
+   Empty,
+   EmptyContent,
+   EmptyDescription,
+   EmptyMedia,
+   EmptyTitle,
+} from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import {
+   Item,
+   ItemActions,
+   ItemContent,
+   ItemDescription,
+   ItemGroup,
+   ItemMedia,
+   ItemSeparator,
+   ItemTitle,
+} from "@packages/ui/components/item";
+import {
+   Pagination,
+   PaginationContent,
+   PaginationItem,
+   PaginationLink,
+   PaginationNext,
+   PaginationPrevious,
+} from "@packages/ui/components/pagination";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Inbox, MoreVertical } from "lucide-react";
+import { Suspense, useState } from "react";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { trpc } from "@/integrations/clients";
+import { DeleteCategory } from "../features/delete-category";
+import { ManageCategorySheet } from "../features/manage-category-sheet";
+import type { Category } from "../ui/categories-page";
+
+function CategoryActionsDropdown({ category }: { category: Category }) {
+   const [isOpen, setIsOpen] = useState(false);
+
+   return (
+      <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <DropdownMenuTrigger asChild>
+                  <Button
+                     aria-label="Category actions"
+                     className="h-8 w-8 p-0"
+                     size="icon"
+                     title="Category actions"
+                     variant="ghost"
+                  >
+                     <MoreVertical className="h-4 w-4" />
+                  </Button>
+               </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>Category actions</TooltipContent>
+         </Tooltip>
+         <DropdownMenuContent align="end">
+            <DropdownMenuLabel>
+               Manage category: {category.name}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <ManageCategorySheet asChild category={category} />
+            <DeleteCategory asChild category={category} />
+         </DropdownMenuContent>
+      </DropdownMenu>
+   );
+}
+
+function CategoriesListErrorFallback(props: FallbackProps) {
+   return (
+      <Card>
+         <CardHeader>
+            <CardTitle>Categories List</CardTitle>
+            <CardDescription>
+               Manage all your transaction categories
+            </CardDescription>
+         </CardHeader>
+         <CardContent>
+            {createErrorFallback({
+               errorDescription:
+                  "Failed to load categories. Please try again later.",
+               errorTitle: "Error loading categories",
+               retryText: "Retry",
+            })(props)}
+         </CardContent>
+      </Card>
+   );
+}
+
+function CategoriesListSkeleton() {
+   return (
+      <Card>
+         <CardHeader>
+            <CardTitle>Categories List</CardTitle>
+            <CardDescription>
+               Manage all your transaction categories
+            </CardDescription>
+         </CardHeader>
+         <CardContent>
+            <div className="space-y-4">
+               {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                     className="flex items-center space-x-4 p-4 border rounded-lg"
+                     key={`category-skeleton-${index + 1}`}
+                  >
+                     <Skeleton className="h-10 w-10 rounded-full" />
+                     <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                     </div>
+                     <Skeleton className="h-8 w-8" />
+                  </div>
+               ))}
+            </div>
+         </CardContent>
+         <CardFooter>
+            <Skeleton className="h-10 w-full" />
+         </CardFooter>
+      </Card>
+   );
+}
+
+function CategoriesListContent() {
+   const [currentPage, setCurrentPage] = useState(1);
+   const pageSize = 10;
+
+   const { data: paginatedData } = useSuspenseQuery(
+      trpc.categories.getAllPaginated.queryOptions({
+         limit: pageSize,
+         page: currentPage,
+      }),
+   );
+
+   const { categories, pagination } = paginatedData;
+
+   return (
+      <Card>
+         <CardHeader>
+            <CardTitle>Categories List</CardTitle>
+            <CardDescription>
+               Manage all your transaction categories
+            </CardDescription>
+         </CardHeader>
+         <CardContent>
+            {categories.length === 0 && pagination.totalCount === 0 ? (
+               <Empty>
+                  <EmptyContent>
+                     <EmptyMedia variant="icon">
+                        <Inbox className="size-6" />
+                     </EmptyMedia>
+                     <EmptyTitle>No categories yet</EmptyTitle>
+                     <EmptyDescription>
+                        Create your first category to get started organizing
+                        your transactions.
+                     </EmptyDescription>
+                  </EmptyContent>
+               </Empty>
+            ) : (
+               <ItemGroup>
+                  {categories.map((category) => (
+                     <Item key={category.id}>
+                        <ItemMedia variant="icon">
+                           <div
+                              className="size-8 rounded-sm border flex items-center justify-center"
+                              style={{
+                                 backgroundColor: category.color,
+                              }}
+                           >
+                              <IconDisplay
+                                 className="text-white"
+                                 iconName={
+                                    (category.icon || "Wallet") as IconName
+                                 }
+                                 size={16}
+                              />
+                           </div>
+                        </ItemMedia>
+                        <ItemContent>
+                           <ItemTitle>{category.name}</ItemTitle>
+                           <ItemDescription>
+                              <div className="flex items-center gap-1">
+                                 <div
+                                    className="w-3 h-3 rounded-full border"
+                                    style={{
+                                       backgroundColor: category.color,
+                                    }}
+                                 />
+                                 <span className="text-xs text-muted-foreground">
+                                    {category.color}
+                                 </span>
+                              </div>
+                           </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                           <CategoryActionsDropdown category={category} />
+                        </ItemActions>
+                        <ItemSeparator />
+                     </Item>
+                  ))}
+               </ItemGroup>
+            )}
+         </CardContent>
+         {pagination.totalPages > 1 && (
+            <CardFooter>
+               <Pagination>
+                  <PaginationContent>
+                     <PaginationItem>
+                        <PaginationPrevious
+                           className={
+                              !pagination.hasPreviousPage
+                                 ? "pointer-events-none opacity-50"
+                                 : ""
+                           }
+                           href="#"
+                           onClick={() =>
+                              setCurrentPage((prev) => {
+                                 const newPage = prev - 1;
+                                 return newPage >= 1 ? newPage : prev;
+                              })
+                           }
+                        />
+                     </PaginationItem>
+
+                     {Array.from(
+                        { length: Math.min(5, pagination.totalPages) },
+                        (_, i: number): number => {
+                           if (pagination.totalPages <= 5) {
+                              return i + 1;
+                           } else if (currentPage <= 3) {
+                              return i + 1;
+                           } else if (
+                              currentPage >=
+                              pagination.totalPages - 2
+                           ) {
+                              return pagination.totalPages - 4 + i;
+                           } else {
+                              return currentPage - 2 + i;
+                           }
+                        },
+                     ).map((pageNum) => (
+                        <PaginationItem key={pageNum}>
+                           <PaginationLink
+                              href="#"
+                              isActive={pageNum === currentPage}
+                              onClick={() => setCurrentPage(pageNum)}
+                           >
+                              {pageNum}
+                           </PaginationLink>
+                        </PaginationItem>
+                     ))}
+
+                     <PaginationItem>
+                        <PaginationNext
+                           className={
+                              !pagination.hasNextPage
+                                 ? "pointer-events-none opacity-50"
+                                 : ""
+                           }
+                           href="#"
+                           onClick={() =>
+                              setCurrentPage((prev) => {
+                                 const newPage = prev + 1;
+                                 return newPage <= pagination.totalPages
+                                    ? newPage
+                                    : prev;
+                              })
+                           }
+                        />
+                     </PaginationItem>
+                  </PaginationContent>
+               </Pagination>
+            </CardFooter>
+         )}
+      </Card>
+   );
+}
+
+export function CategoriesListSection() {
+   return (
+      <ErrorBoundary FallbackComponent={CategoriesListErrorFallback}>
+         <Suspense fallback={<CategoriesListSkeleton />}>
+            <CategoriesListContent />
+         </Suspense>
+      </ErrorBoundary>
+   );
+}

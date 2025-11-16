@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { eq } from "drizzle-orm";
+import { eq, sql, gte, lte, and } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { transaction } from "../schemas/transactions";
 
@@ -132,6 +132,87 @@ export async function deleteTransaction(
       propagateError(err);
       throw AppError.database(
          `Failed to delete transaction: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getTotalTransactionsByUserId(
+   dbClient: DatabaseInstance,
+   userId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({ count: sql<number>`count(*)` })
+         .from(transaction)
+         .where(eq(transaction.userId, userId));
+
+      return result[0]?.count || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total transactions count: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getTotalIncomeByUserId(
+   dbClient: DatabaseInstance,
+   userId: string,
+) {
+   try {
+      // Get current month's start and end dates
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const result = await dbClient
+         .select({ total: sql<number>`sum(CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)` })
+         .from(transaction)
+         .where(
+            and(
+               eq(transaction.userId, userId),
+               gte(transaction.date, currentMonthStart),
+               lte(transaction.date, currentMonthEnd),
+               eq(transaction.type, 'income')
+            )
+         );
+
+      return result[0]?.total || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total income: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getTotalExpensesByUserId(
+   dbClient: DatabaseInstance,
+   userId: string,
+) {
+   try {
+      // Get current month's start and end dates
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      const result = await dbClient
+         .select({ total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)` })
+         .from(transaction)
+         .where(
+            and(
+               eq(transaction.userId, userId),
+               gte(transaction.date, currentMonthStart),
+               lte(transaction.date, currentMonthEnd),
+               eq(transaction.type, 'expense')
+            )
+         );
+
+      return result[0]?.total || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total expenses: ${(err as Error).message}`,
       );
    }
 }
