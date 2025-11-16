@@ -6,6 +6,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 export const Route = createFileRoute("/_dashboard")({
    component: RouteComponent,
    wrapInSuspense: true,
+   staticData: {
+      breadcrumb: "Dashboard Layout",
+   },
 });
 
 function RouteComponent() {

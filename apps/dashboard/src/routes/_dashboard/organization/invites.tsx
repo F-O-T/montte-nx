@@ -3,6 +3,9 @@ import { OrganizationInvitesPage } from "@/pages/organization-invites/ui/organiz
 
 export const Route = createFileRoute("/_dashboard/organization/invites")({
    component: RouteComponent,
+   staticData: {
+      breadcrumb: "Invites",
+   },
 });
 
 function RouteComponent() {
