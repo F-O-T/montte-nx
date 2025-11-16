@@ -1,7 +1,8 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { eq } from "drizzle-orm";
+import { count, eq, desc } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
+import { transaction } from "../schemas/transactions";
 
 export type Category = typeof category.$inferSelect;
 export type NewCategory = typeof category.$inferInsert;
@@ -158,6 +159,52 @@ export async function deleteCategory(
       propagateError(err);
       throw AppError.database(
          `Failed to delete category: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getTotalCategoriesByUserId(
+   dbClient: DatabaseInstance,
+   userId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({ count: count() })
+         .from(category)
+         .where(eq(category.userId, userId));
+
+      return result[0]?.count || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total categories: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getCategoryWithMostTransactions(
+   dbClient: DatabaseInstance,
+   userId: string,
+) {
+   try {
+      const transactionCount = count();
+
+      const result = await dbClient
+         .select({
+            categoryName: transaction.category,
+            transactionCount,
+         })
+         .from(transaction)
+         .where(eq(transaction.userId, userId))
+         .groupBy(transaction.category)
+         .orderBy(desc(transactionCount))
+         .limit(1);
+
+      return result[0] || null;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category with most transactions: ${(err as Error).message}`,
       );
    }
 }

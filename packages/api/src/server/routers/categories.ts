@@ -5,6 +5,8 @@ import {
    findCategoriesByUserIdPaginated,
    findCategoryById,
    updateCategory,
+   getTotalCategoriesByUserId,
+   getCategoryWithMostTransactions,
 } from "@packages/database/repositories/category-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -139,4 +141,23 @@ export const categoryRouter = router({
 
          return updateCategory(resolvedCtx.db, input.id, input.data);
       }),
+
+   getStats: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+
+      const [totalCategories, categoryWithMostTransactions] = await Promise.all([
+         getTotalCategoriesByUserId(resolvedCtx.db, userId),
+         getCategoryWithMostTransactions(resolvedCtx.db, userId),
+      ]);
+
+      return {
+         totalCategories,
+         categoryWithMostTransactions: categoryWithMostTransactions?.categoryName || null,
+      };
+   }),
 });
