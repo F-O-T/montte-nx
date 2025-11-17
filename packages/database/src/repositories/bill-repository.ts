@@ -71,6 +71,90 @@ export async function findBillsByUserId(
    }
 }
 
+export async function findBillsByUserIdPaginated(
+   dbClient: DatabaseInstance,
+   userId: string,
+   options: {
+      page?: number;
+      limit?: number;
+      type?: "income" | "expense";
+      month?: string;
+      orderBy?: "dueDate" | "issueDate" | "amount" | "createdAt";
+      orderDirection?: "asc" | "desc";
+   } = {},
+) {
+   const {
+      page = 1,
+      limit = 10,
+      type,
+      month,
+      orderBy = "dueDate",
+      orderDirection = "desc",
+   } = options;
+
+   const offset = (page - 1) * limit;
+
+   try {
+      const buildWhereCondition = (bill: any, { eq, and, gte, lte }: any) => {
+         const conditions = [eq(bill.userId, userId)];
+
+         if (type) {
+            conditions.push(eq(bill.type, type));
+         }
+
+         if (month) {
+            const [year, monthNum] = month.split("-").map(Number);
+            const monthStart = new Date(year, monthNum - 1, 1);
+            const monthEnd = new Date(year, monthNum, 0, 23, 59, 59, 999);
+            conditions.push(gte(bill.dueDate, monthStart));
+            conditions.push(lte(bill.dueDate, monthEnd));
+         }
+
+         return and(...conditions);
+      };
+
+      const [bills, totalCount] = await Promise.all([
+         dbClient.query.bill.findMany({
+            limit,
+            offset,
+            orderBy: (bill, { asc, desc }) => {
+               const column = bill[orderBy as keyof typeof bill];
+               return orderDirection === "asc" ? asc(column) : desc(column);
+            },
+            where: buildWhereCondition,
+            with: {
+               bankAccount: true,
+               transaction: true,
+            },
+         }),
+         dbClient.query.bill
+            .findMany({
+               where: buildWhereCondition,
+            })
+            .then((result) => result.length),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         bills,
+         pagination: {
+            currentPage: page,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            limit,
+            totalCount,
+            totalPages,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bills by user id paginated: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findBillsByUserIdAndType(
    dbClient: DatabaseInstance,
    userId: string,
