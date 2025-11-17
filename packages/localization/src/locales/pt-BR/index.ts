@@ -1,4 +1,5 @@
 import commonActionsPtBr from "./common/actions.json";
+import layoutPtBr from "./dashboard/layout.json";
 import commonBrandPtBr from "./common/brand.json";
 import commonFormPtBr from "./common/form.json";
 import commonHeadersPtBr from "./common/headers.json";
@@ -25,6 +26,7 @@ const resources = {
          validation: commonValidationPtBr,
       },
       dashboard: {
+         layout: layoutPtBr,
          routes: {
             bills: billsPtBr,
             "email-verification": emailVerificationPtBr,

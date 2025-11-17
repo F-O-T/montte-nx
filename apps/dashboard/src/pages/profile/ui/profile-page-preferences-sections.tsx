@@ -19,7 +19,7 @@ import {
 } from "@packages/ui/components/item";
 import { Globe, Moon } from "lucide-react";
 import { ThemeSwitcher } from "@/layout/theme-provider";
-import { LanguageCommand } from "../features/language-command";
+import { LanguageCommand } from "@/layout/language-command";
 
 export function PreferencesSection() {
    return (

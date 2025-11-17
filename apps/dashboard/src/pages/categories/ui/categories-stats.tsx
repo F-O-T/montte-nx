@@ -1,18 +1,18 @@
-import { StatsCard } from "@packages/ui/components/stats-card";
 import { translate } from "@packages/localization";
-import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
-import {
-   Card,
-   CardHeader,
-   CardTitle,
-   CardDescription,
-   CardContent,
-} from "@packages/ui/components/card";
 
 function CategoriesStatsErrorFallback(props: FallbackProps) {
    return (
