@@ -1,16 +1,16 @@
-# Contributing to ContentaGen
+# Contributing to Quoto
 
 ## Quick Start
 
-1. **Clone & install:** `git clone <repo> && cd contentagen && bun install`
-2. **Set up env:** Copy `.env.example` to `.env` and configure
-3. **Start dev:** `bun run dev:all` (or `bun run dev:dashboard`, `bun run dev:blog`)
-4. **Database:** `bun run db:push:local && bun run db:studio:local`
+1. **Clone & install:** `git clone https://github.com/F-O-T/finance-nx.git && cd finance-nx && bun install`
+2. **Set up env:** Run `bun run env-setup` to configure your environment files
+3. **Database:** Run `bun run db:push:local` to set up the database schema
+4. **Start dev:** `bun run dev:all` (or `bun run dev:dashboard`, `bun run dev:blog`)
 
 ## How to Contribute
 
 ### 🐛 Testing & Bugs
-- Test at [app.contentagen.com](https://app.contentagen.com)
+- Test your changes thoroughly before submitting
 - Report issues with steps to reproduce
 - Test edge cases and performance
 
@@ -19,7 +19,7 @@
 - Translate UI text, error messages, help docs
 
 ### ✨ Features & Docs
-- Suggest SEO features and workflow improvements
+- Suggest finance tracking features and workflow improvements
 - Improve documentation and examples
 
 ## Project Structure
@@ -27,7 +27,7 @@
 Nx monorepo with:
 
 **Apps:** `server/` (ElysiaJS + tRPC), `dashboard/` (React), `blog/` (Astro), `docs/`, `landing-page/`
-**Packages:** `api/`, `authentication/`, `database/`, `workers/`, `ui/` (shadcn/ui)
+**Packages:** `api/`, `authentication/`, `database/`, `ui/` (shadcn/ui), and more for localization, environment management
 
 ## Code Standards
 
@@ -42,14 +42,14 @@ Run checks: `bun run format && bun run typecheck && bun run test`
 
 1. **Branch:** `git checkout -b feature/name` or `fix/issue-description`
 2. **Code:** Follow standards, write tests, update docs
-3. **Check:** `bun run check && bun run typecheck && bun run test`
+3. **Check:** `bun run format && bun run typecheck`
 4. **Commit:** `git commit -m "feat(scope): description"`
 5. **Push & PR:** Create PR with descriptive title and changes
 
 ## Testing
 
-- Run: `bun run test` (all) or `npx nx test project-name` (specific)
-- Write tests for new features
+- Run: `bun run test` (if available) or test manually
+- Write tests for new features when appropriate
 - Test happy path and error cases
 
 ## Issues
