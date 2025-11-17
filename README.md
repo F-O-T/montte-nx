@@ -47,99 +47,12 @@ This project is a monorepo managed by Nx. All applications and shared packages a
     -   `ui`: Shared React components library based on shadcn/ui.
     -   And many more for localization, environment management, etc.
 
-## 🏁 Getting Started
-
-Follow these steps to set up and run the project locally.
-
-### Prerequisites
-
--   [Bun](https://bun.sh/) (v1.2.23 or later)
--   [Podman](https://podman.io/) & `podman-compose`
--   Git
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/quoto.git
-cd quoto
-```
-
-### 2. Install Dependencies
-
-```bash
-bun install
-```
-
-### 3. Set Up Local Services
-
-The project uses podman-compose to run local instances of PostgreSQL and MinIO.
-
-```bash
-bun run container-start
-```
-
-This will start the required services in the background.
-
-### 4. Configure Environment Variables
-
-Copy the example environment files for the server and dashboard apps.
-
-```bash
-cp apps/server/.env.example apps/server/.env
-cp apps/dashboard/.env.example apps/dashboard/.env
-```
-
-Now, open apps/server/.env and apps/dashboard/.env and fill in the required values. For local development, the defaults for DATABASE_URL and MinIO should work correctly with the podman-compose setup.
-
-### 5. Push Database Schema
-
-Apply the database schema to your local PostgreSQL instance.
-
-```bash
-bun run db:push:local
-```
-
-You can view the database using Drizzle Studio:
-
-```bash
-bun run db:studio:local
-```
-
-## 🏃 Running the Application
-
-You can run all applications simultaneously or start them individually.
-
-### Run all apps (Dashboard, Server, Landing Page, etc.):
-
-```bash
-bun run dev:all
-```
-
-### Run only the Dashboard and Server:
-
-```bash
-bun run dev:dashboard
-```
-
-- Server will be available at http://localhost:9876
-- Dashboard will be available at http://localhost:3000
-
-### Run individual applications:
-
-```bash
-# Run only the server
-bun run dev:server
-
-# Run only the dashboard
-bun run dev:dashboard-only
-```
-
 ## 🤝 Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
 
-Please read our CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## 📜 License
 
-This project is licensed under the Apache-2.0 License. See the LICENSE.md file for details.
+This project is licensed under the Apache-2.0 License. See the [LICENSE.md](LICENSE.md) file for details.
