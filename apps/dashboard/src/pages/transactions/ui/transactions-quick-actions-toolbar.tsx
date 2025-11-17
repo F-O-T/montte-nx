@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import {
    Item,
    ItemContent,
@@ -11,9 +12,11 @@ export function TransactionsQuickActionsToolbar() {
    return (
       <Item variant="outline">
          <ItemContent>
-            <ItemTitle>Transactions Actions</ItemTitle>
+            <ItemTitle>
+               {translate("common.headers.actions-toolbar.title")}
+            </ItemTitle>
             <ItemDescription>
-               Manage your financial transactions
+               {translate("common.headers.actions-toolbar.description")}
             </ItemDescription>
          </ItemContent>
          <ItemActions>
@@ -22,4 +25,3 @@ export function TransactionsQuickActionsToolbar() {
       </Item>
    );
 }
-

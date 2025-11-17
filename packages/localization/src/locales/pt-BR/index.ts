@@ -14,6 +14,7 @@ import homePagePtBr from "./dashboard/routes/home.json";
 import profilePtBr from "./dashboard/routes/profile.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
+import transactionsPtBr from "./dashboard/routes/transactions.json";
 
 const resources = {
    translation: {
@@ -37,6 +38,7 @@ const resources = {
             profile: profilePtBr,
             "sign-in": signInPtBr,
             "sign-up": signUpPtBr,
+            transactions: transactionsPtBr,
          },
       },
    },

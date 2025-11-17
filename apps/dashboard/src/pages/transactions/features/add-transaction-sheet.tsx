@@ -49,7 +49,7 @@ import {
    CommandItem,
    CommandList,
 } from "@packages/ui/components/command";
-
+import { translate } from "@packages/localization";
 export function AddTransactionSheet() {
    const [isSheetOpen, setIsSheetOpen] = useState(false);
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
@@ -121,6 +121,9 @@ export function AddTransactionSheet() {
             <Tooltip>
                <TooltipTrigger asChild>
                   <Button
+                     aria-label={translate(
+                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                     )}
                      onClick={() => setIsSheetOpen(true)}
                      size="icon"
                      variant="default"
@@ -129,7 +132,9 @@ export function AddTransactionSheet() {
                   </Button>
                </TooltipTrigger>
                <TooltipContent>
-                  <p>Add Transaction</p>
+                  {translate(
+                     "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                  )}
                </TooltipContent>
             </Tooltip>
          </SheetTrigger>
@@ -215,7 +220,9 @@ export function AddTransactionSheet() {
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Bank Account (Optional)</FieldLabel>
+                                 <FieldLabel>
+                                    Bank Account (Optional)
+                                 </FieldLabel>
                                  <Select
                                     onValueChange={(value) =>
                                        field.handleChange(value)

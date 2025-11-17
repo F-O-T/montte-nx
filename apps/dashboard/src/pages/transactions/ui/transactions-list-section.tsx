@@ -56,17 +56,7 @@ import {
 } from "@packages/ui/components/select";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-   ArrowDown,
-   ArrowUp,
-   Edit,
-   Eye,
-   MoreHorizontal,
-   PlusIcon,
-   Search,
-   Trash2,
-   Wallet,
-} from "lucide-react";
+import { Eye, MoreHorizontal, PlusIcon, Search, Wallet } from "lucide-react";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";

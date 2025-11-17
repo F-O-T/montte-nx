@@ -3,9 +3,7 @@
       "actions": {
          "add-new": "Adicionar nova categoria",
          "delete-selected": "Excluir selecionados"
-      },
-      "description": "A barra de ações fornece acesso rápido às ações mais comuns.",
-      "title": "Barra de ações"
+      }
    },
    "features": {
       "create-category": {

@@ -66,12 +66,12 @@ function TransactionsStatsContent() {
          <StatsCard
             description="This month"
             title="Total Income"
-            value={`$${stats.totalIncome.toFixed(2)}`}
+            value={`R$${stats.totalIncome.toFixed(2)}`}
          />
          <StatsCard
             description="This month"
             title="Total Expenses"
-            value={`$${stats.totalExpenses.toFixed(2)}`}
+            value={`R$${stats.totalExpenses.toFixed(2)}`}
          />
       </div>
    );
@@ -86,3 +86,4 @@ export function TransactionsStats() {
       </ErrorBoundary>
    );
 }
+
