@@ -28,8 +28,7 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMemo, useState } from "react";
 import { trpc } from "@/integrations/clients";
 
 type ManageBankAccountSheetProps = {
@@ -48,6 +47,28 @@ export function ManageBankAccountSheet({
    const queryClient = useQueryClient();
    const isEditMode = !!bankAccount;
 
+   const modeTexts = useMemo(() => {
+      const createTexts = {
+         description: translate(
+            "dashboard.routes.profile.features.create-bank-account.description",
+         ),
+         title: translate(
+            "dashboard.routes.profile.features.create-bank-account.title",
+         ),
+      };
+
+      const editTexts = {
+         description: translate(
+            "dashboard.routes.profile.features.edit-bank-account.description",
+         ),
+         title: translate(
+            "dashboard.routes.profile.features.edit-bank-account.title",
+         ),
+      };
+
+      return isEditMode ? editTexts : createTexts;
+   }, [isEditMode]);
+
    // For asChild usage, manage internal state
    const [internalOpen, setInternalOpen] = useState(false);
    const isOpen = asChild ? internalOpen : onOpen;
@@ -55,23 +76,10 @@ export function ManageBankAccountSheet({
 
    const createBankAccountMutation = useMutation(
       trpc.bankAccounts.create.mutationOptions({
-         onError: (error) => {
-            toast.error(
-               error.message ||
-                  translate(
-                     "dashboard.routes.profile.bank-accounts.create.error",
-                  ),
-            );
-         },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getAll.queryKey(),
             });
-            toast.success(
-               translate(
-                  "dashboard.routes.profile.bank-accounts.create.success",
-               ),
-            );
             setIsOpen?.(false);
          },
       }),
@@ -79,21 +87,10 @@ export function ManageBankAccountSheet({
 
    const updateBankAccountMutation = useMutation(
       trpc.bankAccounts.update.mutationOptions({
-         onError: (error) => {
-            toast.error(
-               error.message ||
-                  translate(
-                     "dashboard.routes.profile.bank-accounts.edit.error",
-                  ),
-            );
-         },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getAll.queryKey(),
             });
-            toast.success(
-               translate("dashboard.routes.profile.bank-accounts.edit.success"),
-            );
             setIsOpen?.(false);
          },
       }),
@@ -144,10 +141,11 @@ export function ManageBankAccountSheet({
             e.preventDefault();
             setIsOpen?.(true);
          }}
+         className="flex items-center gap-2"
       >
          {isEditMode ? (
             <>
-               <Pencil className="mr-2 h-4 w-4" />
+               <Pencil className="size-4" />
                {translate(
                   "dashboard.routes.profile.bank-accounts.actions.edit",
                )}
@@ -155,7 +153,9 @@ export function ManageBankAccountSheet({
          ) : (
             <>
                <Plus className="mr-2 h-4 w-4" />
-               {translate("dashboard.routes.profile.bank-accounts.actions.add")}
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.add-account.title",
+               )}
             </>
          )}
       </DropdownMenuItem>
@@ -174,25 +174,8 @@ export function ManageBankAccountSheet({
                }}
             >
                <SheetHeader>
-                  <SheetTitle>
-                     {isEditMode
-                        ? translate(
-                             "dashboard.routes.profile.bank-accounts.edit.title",
-                          )
-                        : translate(
-                             "dashboard.routes.profile.bank-accounts.create.title",
-                          )}
-                  </SheetTitle>
-                  <SheetDescription>
-                     {isEditMode
-                        ? translate(
-                             "dashboard.routes.profile.bank-accounts.edit.description",
-                             { name: bankAccount?.name || "" },
-                          )
-                        : translate(
-                             "dashboard.routes.profile.bank-accounts.create.description",
-                          )}
-                  </SheetDescription>
+                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetDescription>{modeTexts.description}</SheetDescription>
                </SheetHeader>
 
                <div className="grid gap-4 px-4">
@@ -205,9 +188,7 @@ export function ManageBankAccountSheet({
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.profile.bank-accounts.create.fields.name",
-                                    )}
+                                    {translate("common.form.name.label")}
                                  </FieldLabel>
                                  <Input
                                     onBlur={field.handleBlur}
@@ -215,7 +196,7 @@ export function ManageBankAccountSheet({
                                        field.handleChange(e.target.value)
                                     }
                                     placeholder={translate(
-                                       "dashboard.routes.profile.bank-accounts.create.placeholders.name",
+                                       "common.form.name.placeholder",
                                     )}
                                     value={field.state.value}
                                  />
@@ -239,9 +220,7 @@ export function ManageBankAccountSheet({
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.profile.bank-accounts.create.fields.bank",
-                                    )}
+                                    {translate("common.form.bank.label")}
                                  </FieldLabel>
                                  <Input
                                     onBlur={field.handleBlur}
@@ -249,7 +228,7 @@ export function ManageBankAccountSheet({
                                        field.handleChange(e.target.value)
                                     }
                                     placeholder={translate(
-                                       "dashboard.routes.profile.bank-accounts.create.placeholders.bank",
+                                       "common.form.bank.placeholder",
                                     )}
                                     value={field.state.value}
                                  />
@@ -274,7 +253,7 @@ export function ManageBankAccountSheet({
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
                                     {translate(
-                                       "dashboard.routes.profile.bank-accounts.create.fields.type",
+                                       "common.form.account-type.label",
                                     )}
                                  </FieldLabel>
                                  <Select
@@ -284,24 +263,24 @@ export function ManageBankAccountSheet({
                                     <SelectTrigger>
                                        <SelectValue
                                           placeholder={translate(
-                                             "dashboard.routes.profile.bank-accounts.create.placeholders.type",
+                                             "common.form.account-type.placeholder",
                                           )}
                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                        <SelectItem value="checking">
                                           {translate(
-                                             "dashboard.routes.profile.bank-accounts.create.types.checking",
+                                             "dashboard.routes.profile.bank-accounts.types.checking",
                                           )}
                                        </SelectItem>
                                        <SelectItem value="savings">
                                           {translate(
-                                             "dashboard.routes.profile.bank-accounts.create.types.savings",
+                                             "dashboard.routes.profile.bank-accounts.types.savings",
                                           )}
                                        </SelectItem>
                                        <SelectItem value="investment">
                                           {translate(
-                                             "dashboard.routes.profile.bank-accounts.create.types.investment",
+                                             "dashboard.routes.profile.bank-accounts.types.investment",
                                           )}
                                        </SelectItem>
                                     </SelectContent>
@@ -326,9 +305,7 @@ export function ManageBankAccountSheet({
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.profile.bank-accounts.create.fields.status",
-                                    )}
+                                    {translate("common.form.status.label")}
                                  </FieldLabel>
                                  <Select
                                     onValueChange={field.handleChange}
@@ -337,7 +314,7 @@ export function ManageBankAccountSheet({
                                     <SelectTrigger>
                                        <SelectValue
                                           placeholder={translate(
-                                             "dashboard.routes.profile.bank-accounts.create.placeholders.status",
+                                             "common.form.status.placeholder",
                                           )}
                                        />
                                     </SelectTrigger>
@@ -379,23 +356,7 @@ export function ManageBankAccountSheet({
                            }
                            type="submit"
                         >
-                           {state.isSubmitting ||
-                           createBankAccountMutation.isPending ||
-                           updateBankAccountMutation.isPending
-                              ? isEditMode
-                                 ? translate(
-                                      "dashboard.routes.profile.bank-accounts.edit.updating",
-                                   )
-                                 : translate(
-                                      "dashboard.routes.profile.bank-accounts.create.creating",
-                                   )
-                              : isEditMode
-                                ? translate(
-                                     "dashboard.routes.profile.bank-accounts.edit.submit",
-                                  )
-                                : translate(
-                                     "dashboard.routes.profile.bank-accounts.create.submit",
-                                  )}
+                           {modeTexts.title}
                         </Button>
                      )}
                   </form.Subscribe>
