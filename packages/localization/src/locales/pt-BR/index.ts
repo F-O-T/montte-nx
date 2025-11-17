@@ -12,7 +12,7 @@ import homePagePtBr from "./dashboard/routes/home.json";
 import profilePtBr from "./dashboard/routes/profile.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
-
+import categoriesPtBr from "./dashboard/routes/categories.json";
 const resources = {
    translation: {
       common: {
@@ -33,6 +33,7 @@ const resources = {
             profile: profilePtBr,
             "sign-in": signInPtBr,
             "sign-up": signUpPtBr,
+            categories: categoriesPtBr,
          },
       },
    },

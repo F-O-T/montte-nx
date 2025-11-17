@@ -1,0 +1,39 @@
+{
+  "actions-toolbar": {
+    "actions": {
+      "add-new": "Adicionar nova categoria",
+      "delete-selected": "Excluir selecionados"
+    },
+    "description": "A barra de ações fornece acesso rápido às ações mais comuns.",
+    "title": "Barra de ações"
+  },
+  "list-section": {
+    "description": "Visualize e gerencie suas categorias aqui.",
+    "title": "Suas categorias",
+    "actions": {
+      "label": "Gerencie sua categoria",
+      "edit-category": "Editar categoria",
+      "delete-category": "Excluir categoria"
+    }
+  },
+  "stats": {
+    "most-transactions": {
+      "description": "A categoria com o maior número de transações associadas.",
+      "title": "Categoria com mais transações"
+    },
+    "total-categories": {
+      "description": "Número total de categorias que você criou.",
+      "title": "Total de categorias"
+    }
+  },
+  "features": {
+    "create-category": {
+      "title": "Criar Nova Categoria",
+      "description": "Adicione uma nova categoria para organizar suas transações."
+    },
+    "edit-category": {
+      "title": "Editar Categoria",
+      "description": "Atualize os detalhes da sua categoria."
+    }
+  }
+}

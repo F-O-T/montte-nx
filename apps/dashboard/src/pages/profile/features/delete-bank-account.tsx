@@ -82,7 +82,7 @@ export function DeleteBankAccount({ bankAccount }: DeleteBankAccountProps) {
                   {translate("common.actions.cancel")}
                </AlertDialogCancel>
                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="bg-destructive text-destructive-foreground "
                   disabled={deleteBankAccountMutation.isPending}
                   onClick={handleDelete}
                >

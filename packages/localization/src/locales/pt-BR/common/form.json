@@ -30,5 +30,13 @@
    "password": {
       "label": "Senha",
       "placeholder": "Digite sua senha"
+   },
+   "color": {
+      "label": "Cor",
+      "placeholder": "Selecione uma cor"
+   },
+   "icon": {
+      "label": "Ícone ",
+      "placeholder": "Selecione um ícone"
    }
 }

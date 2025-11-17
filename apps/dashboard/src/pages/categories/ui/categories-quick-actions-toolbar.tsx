@@ -1,6 +1,8 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Item,
+   ItemActions,
    ItemContent,
    ItemDescription,
    ItemTitle,
@@ -21,16 +23,24 @@ export function CategoriesQuickActionsToolbar() {
       <>
          <Item variant="outline">
             <ItemContent>
-               <ItemTitle>Categories Actions</ItemTitle>
+               <ItemTitle>
+                  {translate(
+                     "dashboard.routes.categories.actions-toolbar.title",
+                  )}
+               </ItemTitle>
                <ItemDescription>
-                  Manage your transaction categories
+                  {translate(
+                     "dashboard.routes.categories.actions-toolbar.description",
+                  )}
                </ItemDescription>
             </ItemContent>
-            <div className="ml-auto">
+            <ItemActions>
                <Tooltip>
                   <TooltipTrigger asChild>
                      <Button
-                        aria-label="Add new category"
+                        aria-label={translate(
+                           "dashboard.routes.categories.actions-toolbar.actions.add-new",
+                        )}
                         onClick={() => setOpen(true)}
                         size="icon"
                         variant="outline"
@@ -39,10 +49,14 @@ export function CategoriesQuickActionsToolbar() {
                      </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                     <p>Add Category</p>
+                     <p>
+                        {translate(
+                           "dashboard.routes.categories.actions-toolbar.actions.add-new",
+                        )}
+                     </p>
                   </TooltipContent>
                </Tooltip>
-            </div>
+            </ItemActions>
          </Item>
          <ManageCategorySheet onOpen={open} onOpenChange={setOpen} />
       </>
