@@ -75,7 +75,7 @@ function CategoriesStatsContent() {
             title={translate(
                "dashboard.routes.categories.stats.most-transactions.title",
             )}
-            value={stats.categoryWithMostTransactions || "No data"}
+            value={stats.categoryWithMostTransactions || "N/A"}
          />
       </div>
    );

@@ -1,6 +1,5 @@
-import { Button } from "@packages/ui/components/button";
 import { translate } from "@packages/localization";
-import { Fragment } from "react";
+import { Button } from "@packages/ui/components/button";
 import {
    Card,
    CardContent,
@@ -50,7 +49,7 @@ import {
 } from "@packages/ui/components/tooltip";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Inbox, MoreVertical } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -58,6 +57,19 @@ import { trpc } from "@/integrations/clients";
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 import type { Category } from "../ui/categories-page";
+
+function CategoriesCardHeader() {
+   return (
+      <CardHeader>
+         <CardTitle>
+            {translate("dashboard.routes.categories.list-section.title")}
+         </CardTitle>
+         <CardDescription>
+            {translate("dashboard.routes.categories.list-section.description")}
+         </CardDescription>
+      </CardHeader>
+   );
+}
 
 function CategoryActionsDropdown({ category }: { category: Category }) {
    const [isOpen, setIsOpen] = useState(false);
@@ -94,7 +106,7 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ManageCategorySheet asChild category={category} />
-            <DeleteCategory asChild category={category} />
+            <DeleteCategory category={category} />
          </DropdownMenuContent>
       </DropdownMenu>
    );
@@ -103,18 +115,16 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
 function CategoriesListErrorFallback(props: FallbackProps) {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>Categories List</CardTitle>
-            <CardDescription>
-               Manage all your transaction categories
-            </CardDescription>
-         </CardHeader>
+         <CategoriesCardHeader />
          <CardContent>
             {createErrorFallback({
-               errorDescription:
-                  "Failed to load categories. Please try again later.",
-               errorTitle: "Error loading categories",
-               retryText: "Retry",
+               errorDescription: translate(
+                  "dashboard.routes.categories.list-section.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.categories.list-section.state.error.title",
+               ),
+               retryText: translate("common.actions.retry"),
             })(props)}
          </CardContent>
       </Card>
@@ -124,12 +134,7 @@ function CategoriesListErrorFallback(props: FallbackProps) {
 function CategoriesListSkeleton() {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>Categories List</CardTitle>
-            <CardDescription>
-               Manage all your transaction categories
-            </CardDescription>
-         </CardHeader>
+         <CategoriesCardHeader />
          <CardContent>
             <div className="space-y-4">
                {Array.from({ length: 3 }).map((_, index) => (
@@ -169,16 +174,7 @@ function CategoriesListContent() {
 
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.categories.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.categories.list-section.description",
-               )}
-            </CardDescription>
-         </CardHeader>
+         <CategoriesCardHeader />
          <CardContent>
             {categories.length === 0 && pagination.totalCount === 0 ? (
                <Empty>
@@ -186,10 +182,15 @@ function CategoriesListContent() {
                      <EmptyMedia variant="icon">
                         <Inbox className="size-6" />
                      </EmptyMedia>
-                     <EmptyTitle>No categories yet</EmptyTitle>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.categories.list-section.state.empty.title",
+                        )}
+                     </EmptyTitle>
                      <EmptyDescription>
-                        Create your first category to get started organizing
-                        your transactions.
+                        {translate(
+                           "dashboard.routes.categories.list-section.state.empty.description",
+                        )}
                      </EmptyDescription>
                   </EmptyContent>
                </Empty>
