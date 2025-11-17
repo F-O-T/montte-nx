@@ -1,5 +1,7 @@
 import { translate } from "@packages/localization";
+import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { Button } from "@packages/ui/components/button";
+import { Checkbox } from "@packages/ui/components/checkbox";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import {
 	Field,
@@ -98,6 +100,8 @@ export function AddBillSheet({ onOpen, onOpenChange }: AddBillSheetProps) {
 			issueDate: new Date(),
 			notes: "",
 			type: "expense" as "expense" | "income",
+			isRecurring: false,
+			recurrencePattern: undefined as RecurrencePattern | undefined,
 		},
 		onSubmit: async ({ value }) => {
 			if (!value.amount || !value.category || !value.description) {
@@ -114,6 +118,8 @@ export function AddBillSheet({ onOpen, onOpenChange }: AddBillSheetProps) {
 					issueDate: value.issueDate.toISOString().split("T")[0],
 					notes: value.notes || undefined,
 					type: value.type,
+					isRecurring: value.isRecurring,
+					recurrencePattern: value.isRecurring ? value.recurrencePattern : undefined,
 				});
 			} catch (error) {
 				console.error("Failed to create bill:", error);
@@ -497,6 +503,69 @@ export function AddBillSheet({ onOpen, onOpenChange }: AddBillSheetProps) {
 								}}
 							</form.Field>
 						</FieldGroup>
+
+						<FieldGroup>
+							<form.Field name="isRecurring">
+								{(field) => {
+									return (
+										<div className="flex items-center space-x-2">
+											<Checkbox
+												id="isRecurring"
+												checked={field.state.value}
+												onCheckedChange={(checked) => field.handleChange(!!checked)}
+											/>
+											<label
+												htmlFor="isRecurring"
+												className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+											>
+												Conta recorrente
+											</label>
+										</div>
+									);
+								}}
+							</form.Field>
+						</FieldGroup>
+
+						<form.Subscribe selector={(state) => state.values.isRecurring}>
+							{(isRecurring) =>
+								isRecurring && (
+									<FieldGroup>
+										<form.Field name="recurrencePattern">
+											{(field) => {
+												const isInvalid =
+													field.state.meta.isTouched && !field.state.meta.isValid;
+												return (
+													<Field data-invalid={isInvalid}>
+														<FieldLabel>
+															Padrão de recorrência
+														</FieldLabel>
+														<Select
+															onValueChange={(value) =>
+																field.handleChange(value as RecurrencePattern)
+															}
+															value={field.state.value}
+														>
+															<SelectTrigger>
+																<SelectValue placeholder="Selecione o período" />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value="monthly">Mensal</SelectItem>
+																<SelectItem value="quarterly">Trimestral</SelectItem>
+																<SelectItem value="semiannual">Semestral</SelectItem>
+																<SelectItem value="annual">Anual</SelectItem>
+															</SelectContent>
+														</Select>
+														{isInvalid && (
+															<FieldError errors={field.state.meta.errors} />
+														)}
+													</Field>
+												);
+											}}
+										</form.Field>
+									</FieldGroup>
+								)
+							}
+						</form.Subscribe>
 					</div>
 
 					<SheetFooter>

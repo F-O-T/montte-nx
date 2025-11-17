@@ -1,11 +1,15 @@
 {
+   "account-type": {
+      "label": "Tipo de Conta",
+      "placeholder": "Selecione o tipo de conta"
+   },
    "bank": {
       "label": "Banco",
       "placeholder": "Selecione seu banco"
    },
-   "account-type": {
-      "label": "Tipo de Conta",
-      "placeholder": "Selecione o tipo de conta"
+   "color": {
+      "label": "Cor",
+      "placeholder": "Selecione uma cor"
    },
    "confirm-password": {
       "label": "Confirmar Senha",
@@ -15,6 +19,10 @@
       "label": "Email",
       "placeholder": "Digite seu email"
    },
+   "icon": {
+      "label": "Ícone ",
+      "placeholder": "Selecione um ícone"
+   },
    "name": {
       "label": "Nome",
       "placeholder": "Digite seu nome completo"
@@ -23,20 +31,12 @@
       "label": "Código OTP",
       "placeholder": "Digite o código OTP"
    },
-   "status": {
-      "label": "Status",
-      "placeholder": "Selecione o status"
-   },
    "password": {
       "label": "Senha",
       "placeholder": "Digite sua senha"
    },
-   "color": {
-      "label": "Cor",
-      "placeholder": "Selecione uma cor"
-   },
-   "icon": {
-      "label": "Ícone ",
-      "placeholder": "Selecione um ícone"
+   "status": {
+      "label": "Status",
+      "placeholder": "Selecione o status"
    }
 }
