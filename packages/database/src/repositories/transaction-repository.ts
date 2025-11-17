@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { eq, sql, gte, lte, and } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { transaction } from "../schemas/transactions";
 
@@ -163,18 +163,24 @@ export async function getTotalIncomeByUserId(
       // Get current month's start and end dates
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const currentMonthEnd = new Date(
+         now.getFullYear(),
+         now.getMonth() + 1,
+         0,
+      );
 
       const result = await dbClient
-         .select({ total: sql<number>`sum(CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)` })
+         .select({
+            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+         })
          .from(transaction)
          .where(
             and(
                eq(transaction.userId, userId),
                gte(transaction.date, currentMonthStart),
                lte(transaction.date, currentMonthEnd),
-               eq(transaction.type, 'income')
-            )
+               eq(transaction.type, "income"),
+            ),
          );
 
       return result[0]?.total || 0;
@@ -194,18 +200,24 @@ export async function getTotalExpensesByUserId(
       // Get current month's start and end dates
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const currentMonthEnd = new Date(
+         now.getFullYear(),
+         now.getMonth() + 1,
+         0,
+      );
 
       const result = await dbClient
-         .select({ total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)` })
+         .select({
+            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+         })
          .from(transaction)
          .where(
             and(
                eq(transaction.userId, userId),
                gte(transaction.date, currentMonthStart),
                lte(transaction.date, currentMonthEnd),
-               eq(transaction.type, 'expense')
-            )
+               eq(transaction.type, "expense"),
+            ),
          );
 
       return result[0]?.total || 0;

@@ -5,6 +5,7 @@ import commonHeadersPtBr from "./common/headers.json";
 import commonLanguagesPtBr from "./common/languages.json";
 import commonThemesPtBr from "./common/themes.json";
 import commonValidationPtBr from "./common/validation.json";
+import billsPtBr from "./dashboard/routes/bills.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
 import forgotPasswordPtBr from "./dashboard/routes/forgot-password.json";
 import homePagePtBr from "./dashboard/routes/home.json";
@@ -25,6 +26,7 @@ const resources = {
       },
       dashboard: {
          routes: {
+            bills: billsPtBr,
             "email-verification": emailVerificationPtBr,
             "forgot-password": forgotPasswordPtBr,
             home: homePagePtBr,

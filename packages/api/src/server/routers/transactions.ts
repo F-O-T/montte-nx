@@ -3,10 +3,10 @@ import {
    deleteTransaction,
    findTransactionById,
    findTransactionsByUserId,
-   updateTransaction,
-   getTotalTransactionsByUserId,
-   getTotalIncomeByUserId,
    getTotalExpensesByUserId,
+   getTotalIncomeByUserId,
+   getTotalTransactionsByUserId,
+   updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -104,6 +104,29 @@ export const transactionRouter = router({
          return transaction;
       }),
 
+   getStats: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+
+      const [totalTransactions, totalIncome, totalExpenses] = await Promise.all(
+         [
+            getTotalTransactionsByUserId(resolvedCtx.db, userId),
+            getTotalIncomeByUserId(resolvedCtx.db, userId),
+            getTotalExpensesByUserId(resolvedCtx.db, userId),
+         ],
+      );
+
+      return {
+         totalExpenses: totalExpenses || 0,
+         totalIncome: totalIncome || 0,
+         totalTransactions,
+      };
+   }),
+
    update: protectedProcedure
       .input(
          z.object({
@@ -163,25 +186,4 @@ export const transactionRouter = router({
 
          return updateTransaction(resolvedCtx.db, input.id, updateData);
       }),
-
-   getStats: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
-
-      const userId = resolvedCtx.session.user.id;
-
-      const [totalTransactions, totalIncome, totalExpenses] = await Promise.all([
-         getTotalTransactionsByUserId(resolvedCtx.db, userId),
-         getTotalIncomeByUserId(resolvedCtx.db, userId),
-         getTotalExpensesByUserId(resolvedCtx.db, userId),
-      ]);
-
-      return {
-         totalTransactions,
-         totalIncome: totalIncome || 0,
-         totalExpenses: totalExpenses || 0,
-      };
-   }),
 });
