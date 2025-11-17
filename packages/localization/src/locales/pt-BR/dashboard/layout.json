@@ -1,0 +1,29 @@
+{
+  "language-command": {
+    "empty": "Nenhum idioma encontrado.",
+    "search": "Pesquisar idiomas..."
+  },
+  "nav-main": {
+    "finance": {
+      "title": "Suas finanças",
+      "categories": "Categorias",
+      "label": "Finanças",
+      "overview": "Visão geral",
+      "payables": "Contas a pagar",
+      "receivables": "Contas a receber"
+    }
+  },
+  "nav-user": {
+    "actions": {
+      "logout": "Sair"
+    },
+    "main": {
+      "account": "Conta"
+    },
+    "preferences": {
+      "label": "Preferencias",
+      "language": "Idioma",
+      "theme": "Tema"
+    }
+  }
+}

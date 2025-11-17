@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import {
    Collapsible,
    CollapsibleContent,
@@ -21,7 +22,6 @@ import {
    ChevronRight,
    CreditCard,
    FileText,
-   Receipt,
    TrendingUp,
 } from "lucide-react";
 
@@ -46,35 +46,39 @@ export function NavMain() {
             {
                disabled: false,
                icon: TrendingUp,
-               title: "Overview",
+               title: translate("dashboard.layout.nav-main.finance.overview"),
                url: "/transactions",
             },
             {
                disabled: false,
                icon: ArrowDownRight,
-               title: "Payables",
+               title: translate("dashboard.layout.nav-main.finance.payables"),
                url: "/bills/payables",
             },
             {
                disabled: false,
                icon: ArrowUpRight,
-               title: "Receivables",
+               title: translate(
+                  "dashboard.layout.nav-main.finance.receivables",
+               ),
                url: "/bills/receivables",
             },
             {
                disabled: false,
                icon: FileText,
-               title: "Categories",
+               title: translate("dashboard.layout.nav-main.finance.categories"),
                url: "/categories",
             },
          ],
-         title: "Finance",
+         title: translate("dashboard.layout.nav-main.finance.label"),
       },
    ];
 
    return (
       <SidebarGroup>
-         <SidebarGroupLabel>Your finance</SidebarGroupLabel>
+         <SidebarGroupLabel>
+            {translate("dashboard.layout.nav-main.finance.title")}
+         </SidebarGroupLabel>
          <SidebarMenu>
             {items.map((item) => (
                <Collapsible

@@ -53,13 +53,13 @@ export function Combobox({
          <PopoverTrigger asChild>
             <Button
                aria-expanded={open}
-               className={cn(" justify-between", className)}
+               className={cn("flex items-center gap-2", className)}
                disabled={disabled}
                role="combobox"
                variant="outline"
             >
                {selectedOption ? selectedOption.label : placeholder}
-               <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+               <ChevronsUpDownIcon className="size-4" />
             </Button>
          </PopoverTrigger>
          <PopoverContent className=" p-0">

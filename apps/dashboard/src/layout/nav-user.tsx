@@ -1,3 +1,5 @@
+import { LanguageCommand } from "./language-command";
+import { translate } from "@packages/localization";
 import {
    Avatar,
    AvatarFallback,
@@ -163,19 +165,39 @@ function NavUserContent() {
                         >
                            <Link to="/profile">
                               <UserCircleIcon />
-                              Account
+                              {translate(
+                                 "dashboard.layout.nav-user.main.account",
+                              )}
                            </Link>
                         </Button>
                      </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
-                     Preferences
+                  <DropdownMenuLabel>
+                     {translate("dashboard.layout.nav-user.preferences.label")}
                   </DropdownMenuLabel>
-                  <div className="px-2 py-1">
-                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Theme</span>
-                        <ThemeSwitcher />
+                  <DropdownMenuSeparator />
+
+                  <div className="space-y-1">
+                     <div className="px-2 py-1">
+                        <div className="flex items-center justify-between">
+                           <span className="text-sm font-medium">
+                              {translate(
+                                 "dashboard.layout.nav-user.preferences.theme",
+                              )}
+                           </span>
+                           <ThemeSwitcher />
+                        </div>
+                     </div>
+                     <div className="px-2 py-1">
+                        <div className="flex items-center gap-8">
+                           <span className="text-sm font-medium">
+                              {translate(
+                                 "dashboard.layout.nav-user.preferences.language",
+                              )}
+                           </span>
+                           <LanguageCommand />
+                        </div>
                      </div>
                   </div>
                   <DropdownMenuSeparator />
@@ -186,7 +208,7 @@ function NavUserContent() {
                         variant="ghost"
                      >
                         <LogOutIcon />
-                        Log out
+                        {translate("dashboard.layout.nav-user.actions.logout")}
                      </Button>
                   </DropdownMenuItem>
                </DropdownMenuContent>

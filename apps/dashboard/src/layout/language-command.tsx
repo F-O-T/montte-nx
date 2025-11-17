@@ -7,7 +7,11 @@ import {
 import { Combobox } from "@packages/ui/components/combobox";
 import { useCallback, useMemo } from "react";
 
-export function LanguageCommand() {
+interface LanguageCommandProps {
+   compact?: boolean;
+}
+
+export function LanguageCommand({ compact = false }: LanguageCommandProps) {
    const languageOptions = useMemo(
       () => [
          {
@@ -24,10 +28,10 @@ export function LanguageCommand() {
    const comboboxOptions = useMemo(
       () =>
          languageOptions.map((option) => ({
-            label: `${option.flag} ${option.name}`,
+            label: compact ? option.flag : `${option.flag} ${option.name}`,
             value: option.value,
          })),
-      [languageOptions],
+      [languageOptions, compact],
    );
 
    const handleLanguageChange = useCallback(
@@ -50,14 +54,11 @@ export function LanguageCommand() {
    return (
       <Combobox
          className="gap-2 flex items-center justify-center"
-         emptyMessage={translate(
-            "dashboard.routes.profile.features.language-command.empty",
-         )}
+         emptyMessage={translate("dashboard.layout.language-command.empty")}
          onValueChange={handleLanguageChange}
          options={comboboxOptions}
-         placeholder="Select language..."
          searchPlaceholder={translate(
-            "dashboard.routes.profile.features.language-command.search",
+            "dashboard.layout.language-command.search",
          )}
          value={currentLanguage}
       />

@@ -48,10 +48,6 @@
          "description": "Edite os detalhes da sua conta bancária existente.",
          "title": "Editar conta bancária"
       },
-      "language-command": {
-         "empty": "Nenhum idioma encontrado.",
-         "search": "Pesquisar idiomas..."
-      },
       "session-details": {
          "actions": {
             "description": "Aqui você pode gerenciar sua sessão atual.",
