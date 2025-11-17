@@ -4,6 +4,7 @@ import {
    findBillById,
    findBillsByUserId,
    findBillsByUserIdAndType,
+   findBillsByUserIdPaginated,
    findCompletedBillsByUserId,
    findOverdueBillsByUserId,
    findPendingBillsByUserId,
@@ -17,6 +18,10 @@ import {
    updateBill,
 } from "@packages/database/repositories/bill-repository";
 import { createTransaction } from "@packages/database/repositories/transaction-repository";
+import {
+   generateFutureDates,
+   getNextDueDate,
+} from "@packages/utils/recurrence";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -27,8 +32,12 @@ const createBillSchema = z.object({
    counterparty: z.string().optional(),
    description: z.string(),
    dueDate: z.string(),
+   isRecurring: z.boolean().optional().default(false),
    issueDate: z.string(),
    notes: z.string().optional(),
+   recurrencePattern: z
+      .enum(["monthly", "quarterly", "semiannual", "annual"])
+      .optional(),
    type: z.enum(["income", "expense"]),
 });
 
@@ -39,14 +48,29 @@ const updateBillSchema = z.object({
    counterparty: z.string().optional(),
    description: z.string().optional(),
    dueDate: z.string().optional(),
+   isRecurring: z.boolean().optional(),
    issueDate: z.string().optional(),
    notes: z.string().optional(),
+   recurrencePattern: z
+      .enum(["monthly", "quarterly", "semiannual", "annual"])
+      .optional(),
    type: z.enum(["income", "expense"]).optional(),
 });
 
 const completeBillSchema = z.object({
    bankAccountId: z.string().optional(),
    completionDate: z.string(),
+});
+
+const paginationSchema = z.object({
+   limit: z.coerce.number().min(1).max(100).default(10),
+   month: z.string().optional(),
+   orderBy: z
+      .enum(["dueDate", "issueDate", "amount", "createdAt"])
+      .default("dueDate"),
+   orderDirection: z.enum(["asc", "desc"]).default("desc"),
+   page: z.coerce.number().min(1).default(1),
+   type: z.enum(["income", "expense"]).optional(),
 });
 
 export const billRouter = router({
@@ -106,14 +130,50 @@ export const billRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return createBill(resolvedCtx.db, {
+         const firstBill = await createBill(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
             dueDate: new Date(input.dueDate),
             id: crypto.randomUUID(),
+            isRecurring: input.isRecurring ?? false,
             issueDate: new Date(input.issueDate),
+            recurrencePattern: input.recurrencePattern,
             userId,
          });
+
+         if (input.isRecurring && input.recurrencePattern) {
+            const futureDueDates = generateFutureDates(
+               new Date(input.dueDate),
+               input.recurrencePattern,
+            );
+            const futureIssueDates = generateFutureDates(
+               new Date(input.issueDate),
+               input.recurrencePattern,
+            );
+
+            const futureBillsPromises = futureDueDates.map((dueDate, index) => {
+               return createBill(resolvedCtx.db, {
+                  amount: input.amount.toString(),
+                  bankAccountId: input.bankAccountId,
+                  category: input.category,
+                  counterparty: input.counterparty,
+                  description: input.description,
+                  dueDate,
+                  id: crypto.randomUUID(),
+                  isRecurring: true,
+                  issueDate: futureIssueDates[index],
+                  notes: input.notes,
+                  parentBillId: firstBill.id,
+                  recurrencePattern: input.recurrencePattern,
+                  type: input.type,
+                  userId,
+               });
+            });
+
+            await Promise.all(futureBillsPromises);
+         }
+
+         return firstBill;
       }),
 
    delete: protectedProcedure
@@ -141,6 +201,62 @@ export const billRouter = router({
          return deleteBill(resolvedCtx.db, input.id);
       }),
 
+   generateNext: protectedProcedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         const existingBill = await findBillById(resolvedCtx.db, input.id);
+
+         if (!existingBill || existingBill.userId !== userId) {
+            throw new Error("Bill not found");
+         }
+
+         if (!existingBill.isRecurring || !existingBill.recurrencePattern) {
+            throw new Error("Bill is not recurring");
+         }
+
+         const nextDueDate = getNextDueDate(
+            existingBill.dueDate,
+            existingBill.recurrencePattern as
+               | "monthly"
+               | "quarterly"
+               | "semiannual"
+               | "annual",
+         );
+
+         const nextIssueDate = getNextDueDate(
+            existingBill.issueDate,
+            existingBill.recurrencePattern as
+               | "monthly"
+               | "quarterly"
+               | "semiannual"
+               | "annual",
+         );
+
+         return createBill(resolvedCtx.db, {
+            amount: existingBill.amount,
+            bankAccountId: existingBill.bankAccountId,
+            category: existingBill.category,
+            counterparty: existingBill.counterparty,
+            description: existingBill.description,
+            dueDate: nextDueDate,
+            id: crypto.randomUUID(),
+            isRecurring: existingBill.isRecurring,
+            issueDate: nextIssueDate,
+            notes: existingBill.notes,
+            parentBillId: existingBill.id,
+            recurrencePattern: existingBill.recurrencePattern,
+            type: existingBill.type,
+            userId,
+         });
+      }),
+
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       if (!resolvedCtx.session?.user) {
@@ -151,6 +267,19 @@ export const billRouter = router({
 
       return findBillsByUserId(resolvedCtx.db, userId);
    }),
+
+   getAllPaginated: protectedProcedure
+      .input(paginationSchema)
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         return findBillsByUserIdPaginated(resolvedCtx.db, userId, input);
+      }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
@@ -312,6 +441,14 @@ export const billRouter = router({
 
          if (input.data.notes !== undefined) {
             updateData.notes = input.data.notes;
+         }
+
+         if (input.data.isRecurring !== undefined) {
+            updateData.isRecurring = input.data.isRecurring;
+         }
+
+         if (input.data.recurrencePattern !== undefined) {
+            updateData.recurrencePattern = input.data.recurrencePattern;
          }
 
          return updateBill(resolvedCtx.db, input.id, updateData);
