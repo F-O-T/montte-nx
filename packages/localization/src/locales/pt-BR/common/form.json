@@ -1,4 +1,12 @@
 {
+   "bank": {
+      "label": "Banco",
+      "placeholder": "Selecione seu banco"
+   },
+   "account-type": {
+      "label": "Tipo de Conta",
+      "placeholder": "Selecione o tipo de conta"
+   },
    "confirm-password": {
       "label": "Confirmar Senha",
       "placeholder": "Confirme sua senha"
@@ -14,6 +22,10 @@
    "otp": {
       "label": "Código OTP",
       "placeholder": "Digite o código OTP"
+   },
+   "status": {
+      "label": "Status",
+      "placeholder": "Selecione o status"
    },
    "password": {
       "label": "Senha",

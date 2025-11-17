@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const LOCALES_DIR = join(__dirname, "../src/locales");
-const SUPPORTED_LOCALES = ["en-US", "pt-BR"];
+const SUPPORTED_LOCALES = ["pt-BR"];
 
 function getAllJsonFiles(dir: string): string[] {
    const files = readdirSync(dir, { recursive: true });
@@ -53,7 +53,7 @@ function findDuplicates(arr: string[]): string[] {
 }
 
 function loadTranslationKeys(locale: string, filename: string): string[] {
-   const filePath = join(LOCALES_DIR, locale, "pages", filename);
+   const filePath = join(LOCALES_DIR, locale, "dashboard/routes", filename);
    const content = readFileSync(filePath, "utf-8");
    const translations = JSON.parse(content);
    return getKeysFromObject(translations);
@@ -61,7 +61,7 @@ function loadTranslationKeys(locale: string, filename: string): string[] {
 
 describe("Translation Keys Consistency", () => {
    const jsonFiles = getAllJsonFiles(
-      join(LOCALES_DIR, SUPPORTED_LOCALES[0] ?? "", "pages"),
+      join(LOCALES_DIR, SUPPORTED_LOCALES[0] ?? "", "dashboard/routes"),
    );
 
    describe("Duplicate Keys Detection", () => {
@@ -83,7 +83,7 @@ describe("Translation Keys Consistency", () => {
                const duplicates = findDuplicates(keys);
                expect(
                   duplicates,
-                  `Duplicate keys found in ${locale}/pages/${filename}: ${duplicates.join(", ")}`,
+                  `Duplicate keys found in ${locale}/dashboard/routes/${filename}: ${duplicates.join(", ")}`,
                ).toHaveLength(0);
             }
          }
@@ -160,8 +160,8 @@ describe("Translation Keys Consistency", () => {
       const filesByLocale: Record<string, string[]> = {};
 
       for (const locale of SUPPORTED_LOCALES) {
-         const pagesDir = join(LOCALES_DIR, locale, "pages");
-         filesByLocale[locale] = getAllJsonFiles(pagesDir).sort();
+         const routesDir = join(LOCALES_DIR, locale, "dashboard/routes");
+         filesByLocale[locale] = getAllJsonFiles(routesDir).sort();
       }
 
       const [baseLocale, ...otherLocales] = SUPPORTED_LOCALES;

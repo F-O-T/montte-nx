@@ -11,7 +11,6 @@ import {
    AlertDialogTitle,
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
-import { Button } from "@packages/ui/components/button";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -20,13 +19,9 @@ import { trpc } from "@/integrations/clients";
 
 interface DeleteBankAccountProps {
    bankAccount: BankAccount;
-   asChild?: boolean;
 }
 
-export function DeleteBankAccount({
-   bankAccount,
-   asChild = false,
-}: DeleteBankAccountProps) {
+export function DeleteBankAccount({ bankAccount }: DeleteBankAccountProps) {
    const queryClient = useQueryClient();
 
    const deleteBankAccountMutation = useMutation(
@@ -63,57 +58,37 @@ export function DeleteBankAccount({
    return (
       <AlertDialog>
          <AlertDialogTrigger asChild>
-            {asChild ? (
-               <DropdownMenuItem
-                  className="text-destructive"
-                  onSelect={(e) => e.preventDefault()}
-               >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.actions.delete",
-                  )}
-               </DropdownMenuItem>
-            ) : (
-               <Button className="text-destructive" size="sm" variant="ghost">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.actions.delete",
-                  )}
-               </Button>
-            )}
+            <DropdownMenuItem
+               className="text-destructive flex items-center gap-2"
+               onSelect={(e) => e.preventDefault()}
+            >
+               <Trash2 className="size-4" />
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.delete",
+               )}
+            </DropdownMenuItem>
          </AlertDialogTrigger>
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.delete.title",
-                  )}
+                  {translate("common.headers.delete-confirmation.title")}
                </AlertDialogTitle>
                <AlertDialogDescription>
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.delete.description",
-                     { name: bankAccount.name },
-                  )}
+                  {translate("common.headers.delete-confirmation.description")}
                </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
                <AlertDialogCancel>
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.delete.cancel",
-                  )}
+                  {translate("common.actions.cancel")}
                </AlertDialogCancel>
                <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   disabled={deleteBankAccountMutation.isPending}
                   onClick={handleDelete}
                >
-                  {deleteBankAccountMutation.isPending
-                     ? translate(
-                          "dashboard.routes.profile.bank-accounts.delete.deleting",
-                       )
-                     : translate(
-                          "dashboard.routes.profile.bank-accounts.delete.confirm",
-                       )}
+                  {translate(
+                     "dashboard.routes.profile.bank-accounts.actions.delete",
+                  )}
                </AlertDialogAction>
             </AlertDialogFooter>
          </AlertDialogContent>

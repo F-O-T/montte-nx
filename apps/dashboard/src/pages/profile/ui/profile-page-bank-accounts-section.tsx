@@ -1,4 +1,5 @@
 import { Badge } from "@packages/ui/components/badge";
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -52,15 +53,22 @@ function BankAccountActions({ bankAccount }: BankAccountActionsProps) {
             <TooltipTrigger asChild>
                <DropdownMenuTrigger asChild>
                   <Button className="h-8 w-8 p-0" size="icon" variant="ghost">
-                     <span className="sr-only">Abrir menu</span>
                      <MoreVertical className="h-4 w-4" />
                   </Button>
                </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent>Ações da conta</TooltipContent>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.label",
+               )}
+            </TooltipContent>
          </Tooltip>
          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Ações da conta</DropdownMenuLabel>
+            <DropdownMenuLabel>
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.label",
+               )}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ManageBankAccountSheet asChild bankAccount={bankAccount} />
             <DropdownMenuItem asChild>
@@ -88,38 +96,17 @@ function CreateBankAccountItem({
          </ItemMedia>
          <ItemContent>
             <ItemTitle className="text-muted-foreground">
-               Adicionar nova conta
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.add-account.title",
+               )}
             </ItemTitle>
             <ItemDescription>
-               Clique para adicionar uma nova conta bancária
+               {translate(
+                  "dashboard.routes.profile.bank-accounts.actions.add-account.description",
+               )}
             </ItemDescription>
          </ItemContent>
       </Item>
-   );
-}
-
-interface EmptyBankAccountsStateProps {
-   onCreateAccount: () => void;
-}
-
-function EmptyBankAccountsState({
-   onCreateAccount,
-}: EmptyBankAccountsStateProps) {
-   return (
-      <div className="text-center py-8">
-         <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-            <Building2 className="size-8 text-muted-foreground" />
-         </div>
-         <h3 className="text-lg font-medium mb-2">Nenhuma conta bancária</h3>
-         <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-            Adicione sua primeira conta bancária para começar a controlar suas
-            finanças
-         </p>
-         <Button onClick={onCreateAccount} className="min-w-[200px]">
-            <Plus className="size-4 mr-2" />
-            Criar primeira conta
-         </Button>
-      </div>
    );
 }
 
@@ -196,56 +183,54 @@ function BankAccountsContent() {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Contas Bancárias</CardTitle>
-            <CardDescription>Gerencie suas contas bancárias</CardDescription>
+            <CardTitle>
+               {translate("dashboard.routes.profile.bank-accounts.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate("dashboard.routes.profile.bank-accounts.description")}
+            </CardDescription>
          </CardHeader>
 
          <CardContent className="flex-1 overflow-y-auto">
-            {bankAccounts && bankAccounts.length > 0 ? (
-               <ItemGroup>
-                  {bankAccounts.map((account, index) => (
-                     <>
-                        <Item key={account.id}>
-                           <ItemMedia variant="icon">
-                              <Building2 className="size-4" />
-                           </ItemMedia>
-                           <ItemContent>
-                              <ItemTitle className="flex items-center gap-2">
-                                 {account.name}
-                                 <Badge
-                                    variant={
-                                       account.status === "active"
-                                          ? "default"
-                                          : "secondary"
-                                    }
-                                 >
-                                    {account.status === "active"
-                                       ? "Ativa"
-                                       : "Inativa"}
-                                 </Badge>
-                              </ItemTitle>
-                              <ItemDescription>
-                                 {account.bank} •{" "}
-                                 {getAccountTypeLabel(account.type)}
-                              </ItemDescription>
-                           </ItemContent>
-                           <ItemActions>
-                              <BankAccountActions bankAccount={account} />
-                           </ItemActions>
-                        </Item>
-                        {index < bankAccounts.length - 1 && <ItemSeparator />}
-                     </>
-                  ))}
-                  <ItemSeparator />
-                  <CreateBankAccountItem
-                     onCreateAccount={() => setIsCreateSheetOpen(true)}
-                  />
-               </ItemGroup>
-            ) : (
-               <EmptyBankAccountsState
+            <ItemGroup>
+               {bankAccounts.map((account, index) => (
+                  <>
+                     <Item key={account.id}>
+                        <ItemMedia variant="icon">
+                           <Building2 className="size-4" />
+                        </ItemMedia>
+                        <ItemContent>
+                           <ItemTitle className="flex items-center gap-2">
+                              {account.name}
+                              <Badge
+                                 variant={
+                                    account.status === "active"
+                                       ? "default"
+                                       : "secondary"
+                                 }
+                              >
+                                 {account.status === "active"
+                                    ? "Ativa"
+                                    : "Inativa"}
+                              </Badge>
+                           </ItemTitle>
+                           <ItemDescription>
+                              {account.bank} •{" "}
+                              {getAccountTypeLabel(account.type)}
+                           </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                           <BankAccountActions bankAccount={account} />
+                        </ItemActions>
+                     </Item>
+                     {index < bankAccounts.length - 1 && <ItemSeparator />}
+                  </>
+               ))}
+               {bankAccounts.length > 0 && <ItemSeparator />}
+               <CreateBankAccountItem
                   onCreateAccount={() => setIsCreateSheetOpen(true)}
                />
-            )}
+            </ItemGroup>
          </CardContent>
 
          <ManageBankAccountSheet

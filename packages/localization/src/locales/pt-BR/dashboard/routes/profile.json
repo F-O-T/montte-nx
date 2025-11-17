@@ -1,84 +1,24 @@
 {
-   "account-configuration": {
-      "description": "Gerencie suas configurações de conta.",
-      "items": {
-         "currency": {
-            "description": "Selecione a moeda para suas transações.",
-            "title": "Moeda"
-         }
-      },
-      "state": {
-         "error": {
-            "description": "Ocorreu um erro ao carregar suas preferências de notificação.",
-            "title": "Erro ao carregar"
-         }
-      },
-      "title": "Configuração da conta"
-   },
    "bank-accounts": {
       "actions": {
-         "delete": "Excluir",
-         "edit": "Editar"
-      },
-      "create": {
-         "creating": "Criando...",
-         "description": "Adicione uma nova conta bancária para gerenciar suas transações.",
-         "error": "Erro ao criar conta bancária",
-         "fields": {
-            "bank": "Banco",
-            "name": "Nome da Conta",
-            "status": "Status",
-            "type": "Tipo de Conta"
+         "add-account": {
+            "description": "Clique para adicionar uma nova conta bancária.",
+            "title": "Adicionar conta bancária"
          },
-         "placeholders": {
-            "bank": "Ex: Nubank, Itaú",
-            "name": "Ex: Conta Corrente Principal",
-            "status": "Selecione o status",
-            "type": "Selecione o tipo"
-         },
-         "submit": "Criar",
-         "success": "Conta bancária criada com sucesso!",
-         "title": "Nova Conta Bancária",
-         "types": {
-            "checking": "Conta Corrente",
-            "investment": "Investimento",
-            "savings": "Poupança"
-         }
-      },
-      "delete": {
-         "cancel": "Cancelar",
-         "confirm": "Excluir",
-         "deleting": "Excluindo...",
-         "description": "Tem certeza que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita e pode afetar transações que usam esta conta.",
-         "error": "Erro ao excluir conta bancária",
-         "success": "Conta bancária excluída com sucesso!",
-         "title": "Excluir Conta Bancária"
+         "delete": "Excluir conta",
+         "edit": "Editar conta",
+         "label": "Gerencia sua conta bancária"
       },
       "description": "Gerencie suas contas bancárias.",
-      "edit": {
-         "description": "Atualize os detalhes da conta \"{{name}}\".",
-         "error": "Erro ao atualizar conta bancária",
-         "submit": "Atualizar",
-         "success": "Conta bancária atualizada com sucesso!",
-         "title": "Editar Conta Bancária",
-         "updating": "Atualizando..."
-      },
-      "state": {
-         "empty": "Nenhuma conta bancária cadastrada. Clique no botão + para adicionar.",
-         "error": {
-            "description": "Ocorreu um erro ao carregar suas contas bancárias.",
-            "title": "Erro ao carregar"
-         }
-      },
       "status": {
          "active": "Ativa",
          "inactive": "Inativa"
       },
       "title": "Contas Bancárias",
       "types": {
-         "checking": "Conta Corrente",
-         "investment": "Investimento",
-         "savings": "Poupança"
+         "checking": "Conta corrente",
+         "investment": "Conta de investimento",
+         "savings": "Conta poupança"
       }
    },
    "billing": {
@@ -100,13 +40,13 @@
       "title": "Assinatura"
    },
    "features": {
-      "currency-command": {
-         "currencies": {
-            "BRL": "Real Brasileiro",
-            "USD": "Dólar Americano"
-         },
-         "empty": "Nenhuma moeda encontrada.",
-         "search": "Pesquisar moedas..."
+      "create-bank-account": {
+         "description": "Crie sua conta bancária para começar a fazer transações.",
+         "title": "Criar conta bancária"
+      },
+      "edit-bank-account": {
+         "description": "Edite os detalhes da sua conta bancária existente.",
+         "title": "Editar conta bancária"
       },
       "language-command": {
          "empty": "Nenhum idioma encontrado.",
