@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Command,
@@ -72,23 +73,23 @@ export function IconSelector({
                   </>
                ) : (
                   <span className="text-muted-foreground">
-                     Select an icon...
+                     {translate("common.form.icon.placeholder")}
                   </span>
                )}
             </Button>
          </PopoverTrigger>
-         <PopoverContent align="start" className="w-[400px] p-0">
+         <PopoverContent align="start" className="p-0">
             <Command>
                <CommandInput
                   onValueChange={setSearch}
                   placeholder="Search icons..."
                   value={search}
                />
-               <CommandList className="max-h-[400px]">
+               <CommandList className="">
                   {!hasResults && <CommandEmpty>No icon found.</CommandEmpty>}
                   {Object.entries(filteredCategories).map(
                      ([category, icons]) => (
-                        <CommandGroup key={category} heading={category}>
+                        <CommandGroup heading={category} key={category}>
                            {icons.map((iconName) => (
                               <CommandItem
                                  className="flex items-center gap-3 cursor-pointer"
@@ -99,7 +100,10 @@ export function IconSelector({
                                  }}
                                  value={iconName}
                               >
-                                 <IconDisplay iconName={iconName as IconName} size={20} />
+                                 <IconDisplay
+                                    iconName={iconName as IconName}
+                                    size={20}
+                                 />
                                  <span className="flex-1">{iconName}</span>
                                  {value === iconName && (
                                     <Check className="h-4 w-4 text-primary" />

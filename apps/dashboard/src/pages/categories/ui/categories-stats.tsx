@@ -1,4 +1,5 @@
 import { StatsCard } from "@packages/ui/components/stats-card";
+import { translate } from "@packages/localization";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -59,13 +60,21 @@ function CategoriesStatsContent() {
    return (
       <div className="grid gap-4 h-min">
          <StatsCard
-            description="All categories"
-            title="Total Categories"
+            description={translate(
+               "dashboard.routes.categories.stats.total-categories.description",
+            )}
+            title={translate(
+               "dashboard.routes.categories.stats.total-categories.title",
+            )}
             value={stats.totalCategories}
          />
          <StatsCard
-            description="Most used category"
-            title="Category with Most Transactions"
+            description={translate(
+               "dashboard.routes.categories.stats.most-transactions.description",
+            )}
+            title={translate(
+               "dashboard.routes.categories.stats.most-transactions.title",
+            )}
             value={stats.categoryWithMostTransactions || "No data"}
          />
       </div>

@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import {
    AlertDialog,
    AlertDialogAction,
@@ -9,7 +10,6 @@ import {
    AlertDialogTitle,
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
-import { Button } from "@packages/ui/components/button";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
@@ -18,20 +18,13 @@ import type { Category } from "../ui/categories-page";
 
 interface DeleteCategoryProps {
    category: Category;
-   asChild?: boolean;
 }
 
-export function DeleteCategory({
-   category,
-   asChild = false,
-}: DeleteCategoryProps) {
+export function DeleteCategory({ category }: DeleteCategoryProps) {
    const queryClient = useQueryClient();
 
    const deleteCategoryMutation = useMutation(
       trpc.categories.delete.mutationOptions({
-         onError: (error) => {
-            console.error("Failed to delete category:", error);
-         },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.categories.getAll.queryKey(),
@@ -51,38 +44,37 @@ export function DeleteCategory({
    return (
       <AlertDialog>
          <AlertDialogTrigger asChild>
-            {asChild ? (
-               <DropdownMenuItem
-                  className="text-destructive"
-                  onSelect={(e) => e.preventDefault()}
-               >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-               </DropdownMenuItem>
-            ) : (
-               <Button className="text-destructive" size="sm" variant="ghost">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-               </Button>
-            )}
+            <DropdownMenuItem
+               className="text-destructive flex items-center gap-2"
+               onSelect={(e) => e.preventDefault()}
+            >
+               <Trash2 className="size-4" />
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.delete-category",
+               )}
+            </DropdownMenuItem>
          </AlertDialogTrigger>
          <AlertDialogContent>
             <AlertDialogHeader>
-               <AlertDialogTitle>Delete Category</AlertDialogTitle>
+               <AlertDialogTitle>
+                  {translate("common.headers.delete-confirmation.title")}
+               </AlertDialogTitle>
                <AlertDialogDescription>
-                  Are you sure you want to delete "{category.name}"? This action
-                  cannot be undone and may affect transactions that use this
-                  category.
+                  {translate("common.headers.delete-confirmation.description")}
                </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-               <AlertDialogCancel>Cancel</AlertDialogCancel>
+               <AlertDialogCancel>
+                  {translate("common.actions.cancel")}
+               </AlertDialogCancel>
                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="bg-destructive text-destructive-foreground"
                   disabled={deleteCategoryMutation.isPending}
                   onClick={handleDelete}
                >
-                  {deleteCategoryMutation.isPending ? "Deleting..." : "Delete"}
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.delete-category",
+                  )}
                </AlertDialogAction>
             </AlertDialogFooter>
          </AlertDialogContent>

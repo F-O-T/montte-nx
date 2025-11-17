@@ -1,4 +1,5 @@
 import type { Category } from "@packages/database/repositories/category-repository";
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    ColorPicker,
@@ -35,7 +36,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Color from "color";
 import { Pencil, Plus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { IconSelector } from "@/features/icon-selector/icon-selector";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { trpc } from "@/integrations/clients";
@@ -55,6 +56,29 @@ export function ManageCategorySheet({
 }: ManageCategorySheetProps) {
    const queryClient = useQueryClient();
    const isEditMode = !!category;
+
+   const modeTexts = useMemo(() => {
+      const createTexts = {
+         description: translate(
+            "dashboard.routes.categories.features.create-category.description",
+         ),
+         title: translate(
+            "dashboard.routes.categories.features.create-category.title",
+         ),
+      };
+
+      const editTexts = {
+         description: translate(
+            "dashboard.routes.categories.features.edit-category.description",
+            { name: category?.name || "" },
+         ),
+         title: translate(
+            "dashboard.routes.categories.features.edit-category.title",
+         ),
+      };
+
+      return isEditMode ? editTexts : createTexts;
+   }, [isEditMode, category?.name]);
 
    // For asChild usage, manage internal state
    const [internalOpen, setInternalOpen] = useState(false);
@@ -123,39 +147,28 @@ export function ManageCategorySheet({
       },
    });
 
-   const TriggerComponent = asChild ? (
+   const TriggerComponent = (
       <DropdownMenuItem
          onSelect={(e) => {
             e.preventDefault();
             setIsOpen?.(true);
          }}
+         className="flex items-center gap-2"
       >
          {isEditMode ? (
             <>
-               <Pencil className="mr-2 h-4 w-4" />
-               Edit
+               <Pencil className="size-4" />
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.edit-category",
+               )}
             </>
          ) : (
             <>
-               <Plus className="mr-2 h-4 w-4" />
-               Add Category
+               <Plus className="size-4" />
+               {translate("dashboard.routes.categories.actions.add-category")}
             </>
          )}
       </DropdownMenuItem>
-   ) : (
-      <Button size="sm" variant="ghost">
-         {isEditMode ? (
-            <>
-               <Pencil className="mr-2 h-4 w-4" />
-               Edit
-            </>
-         ) : (
-            <>
-               <Plus className="mr-2 h-4 w-4" />
-               Add Category
-            </>
-         )}
-      </Button>
    );
 
    return (
@@ -171,14 +184,8 @@ export function ManageCategorySheet({
                }}
             >
                <SheetHeader>
-                  <SheetTitle>
-                     {isEditMode ? "Edit Category" : "Create New Category"}
-                  </SheetTitle>
-                  <SheetDescription>
-                     {isEditMode
-                        ? `Update the category details for "${category.name}".`
-                        : "Add a new category to organize your transactions."}
-                  </SheetDescription>
+                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetDescription>{modeTexts.description}</SheetDescription>
                </SheetHeader>
                <div className="grid gap-4 px-4">
                   <FieldGroup>
@@ -189,13 +196,17 @@ export function ManageCategorySheet({
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Name</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.name.label")}
+                                 </FieldLabel>
                                  <Input
                                     onBlur={field.handleBlur}
                                     onChange={(e) =>
                                        field.handleChange(e.target.value)
                                     }
-                                    placeholder="Enter category name..."
+                                    placeholder={translate(
+                                       "common.form.name.placeholder",
+                                    )}
                                     value={field.state.value}
                                  />
                                  {isInvalid && (
@@ -217,7 +228,9 @@ export function ManageCategorySheet({
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Color</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.color.label")}
+                                 </FieldLabel>
 
                                  <Popover>
                                     <PopoverTrigger asChild>
@@ -295,7 +308,9 @@ export function ManageCategorySheet({
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Icon (Optional)</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.icon.label")}
+                                 </FieldLabel>
                                  <IconSelector
                                     onValueChange={field.handleChange}
                                     value={field.state.value}
@@ -325,15 +340,7 @@ export function ManageCategorySheet({
                            }
                            type="submit"
                         >
-                           {state.isSubmitting ||
-                           createCategoryMutation.isPending ||
-                           updateCategoryMutation.isPending
-                              ? isEditMode
-                                 ? "Updating..."
-                                 : "Creating..."
-                              : isEditMode
-                                ? "Update Category"
-                                : "Create Category"}
+                           {modeTexts.title}
                         </Button>
                      )}
                   </form.Subscribe>

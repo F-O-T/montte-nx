@@ -1,4 +1,6 @@
 import { Button } from "@packages/ui/components/button";
+import { translate } from "@packages/localization";
+import { Fragment } from "react";
 import {
    Card,
    CardContent,
@@ -66,7 +68,9 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
             <TooltipTrigger asChild>
                <DropdownMenuTrigger asChild>
                   <Button
-                     aria-label="Category actions"
+                     aria-label={translate(
+                        "dashboard.routes.categories.list-section.actions.label",
+                     )}
                      className="h-8 w-8 p-0"
                      size="icon"
                      title="Category actions"
@@ -76,11 +80,17 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
                   </Button>
                </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent>Category actions</TooltipContent>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.label",
+               )}
+            </TooltipContent>
          </Tooltip>
          <DropdownMenuContent align="end">
             <DropdownMenuLabel>
-               Manage category: {category.name}
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.label",
+               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ManageCategorySheet asChild category={category} />
@@ -146,7 +156,7 @@ function CategoriesListSkeleton() {
 
 function CategoriesListContent() {
    const [currentPage, setCurrentPage] = useState(1);
-   const pageSize = 10;
+   const pageSize = 5;
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.categories.getAllPaginated.queryOptions({
@@ -160,9 +170,13 @@ function CategoriesListContent() {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Categories List</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.categories.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Manage all your transaction categories
+               {translate(
+                  "dashboard.routes.categories.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -181,45 +195,47 @@ function CategoriesListContent() {
                </Empty>
             ) : (
                <ItemGroup>
-                  {categories.map((category) => (
-                     <Item key={category.id}>
-                        <ItemMedia variant="icon">
-                           <div
-                              className="size-8 rounded-sm border flex items-center justify-center"
-                              style={{
-                                 backgroundColor: category.color,
-                              }}
-                           >
-                              <IconDisplay
-                                 className="text-white"
-                                 iconName={
-                                    (category.icon || "Wallet") as IconName
-                                 }
-                                 size={16}
-                              />
-                           </div>
-                        </ItemMedia>
-                        <ItemContent>
-                           <ItemTitle>{category.name}</ItemTitle>
-                           <ItemDescription>
-                              <div className="flex items-center gap-1">
-                                 <div
-                                    className="w-3 h-3 rounded-full border"
-                                    style={{
-                                       backgroundColor: category.color,
-                                    }}
+                  {categories.map((category, index) => (
+                     <Fragment key={category.id}>
+                        <Item>
+                           <ItemMedia variant="icon">
+                              <div
+                                 className="size-8 rounded-sm border flex items-center justify-center"
+                                 style={{
+                                    backgroundColor: category.color,
+                                 }}
+                              >
+                                 <IconDisplay
+                                    className="text-white"
+                                    iconName={
+                                       (category.icon || "Wallet") as IconName
+                                    }
+                                    size={16}
                                  />
-                                 <span className="text-xs text-muted-foreground">
-                                    {category.color}
-                                 </span>
                               </div>
-                           </ItemDescription>
-                        </ItemContent>
-                        <ItemActions>
-                           <CategoryActionsDropdown category={category} />
-                        </ItemActions>
-                        <ItemSeparator />
-                     </Item>
+                           </ItemMedia>
+                           <ItemContent>
+                              <ItemTitle>{category.name}</ItemTitle>
+                              <ItemDescription>
+                                 <div className="flex items-center gap-1">
+                                    <div
+                                       className="w-3 h-3 rounded-full border"
+                                       style={{
+                                          backgroundColor: category.color,
+                                       }}
+                                    />
+                                    <span className="text-xs text-muted-foreground">
+                                       {category.color}
+                                    </span>
+                                 </div>
+                              </ItemDescription>
+                           </ItemContent>
+                           <ItemActions>
+                              <CategoryActionsDropdown category={category} />
+                           </ItemActions>
+                        </Item>
+                        {index !== categories.length - 1 && <ItemSeparator />}
+                     </Fragment>
                   ))}
                </ItemGroup>
             )}
@@ -264,7 +280,6 @@ function CategoriesListContent() {
                      ).map((pageNum) => (
                         <PaginationItem key={pageNum}>
                            <PaginationLink
-                              href="#"
                               isActive={pageNum === currentPage}
                               onClick={() => setCurrentPage(pageNum)}
                            >
@@ -280,7 +295,6 @@ function CategoriesListContent() {
                                  ? "pointer-events-none opacity-50"
                                  : ""
                            }
-                           href="#"
                            onClick={() =>
                               setCurrentPage((prev) => {
                                  const newPage = prev + 1;

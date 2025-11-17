@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { type Button, buttonVariants } from "@packages/ui/components/button";
 import { cn } from "@packages/ui/lib/utils";
 import {
@@ -13,7 +14,6 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
          aria-label="pagination"
          className={cn("mx-auto flex w-full justify-center", className)}
          data-slot="pagination"
-         role="navigation"
          {...props}
       />
    );
@@ -76,7 +76,9 @@ function PaginationPrevious({
          {...props}
       >
          <ChevronLeftIcon />
-         <span className="hidden sm:block">Previous</span>
+         <span className="hidden sm:block">
+            {translate("common.actions.previous")}
+         </span>
       </PaginationLink>
    );
 }
@@ -92,7 +94,9 @@ function PaginationNext({
          size="default"
          {...props}
       >
-         <span className="hidden sm:block">Next</span>
+         <span className="hidden sm:block">
+            {translate("common.actions.next")}
+         </span>
          <ChevronRightIcon />
       </PaginationLink>
    );

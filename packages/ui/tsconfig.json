@@ -10,8 +10,11 @@
    "extends": "@tooling/typescript/internal-package.json",
    "include": ["src"],
    "references": [
-      {
-         "path": "../utils"
-      }
-   ]
+    {
+      "path": "../localization"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
 }
