@@ -6,8 +6,6 @@
 
 **Quoto** is a modern, open-source finance tracker designed to help you manage your personal and shared expenses with ease. Built on a powerful and scalable monorepo architecture, it features a fast, reactive dashboard and a robust backend.
 
-![Quoto Dashboard Screenshot](apps/dashboard/public/screenshot.png) <!--- Note: Add a screenshot of your dashboard to the 'apps/dashboard/public' folder for this to display correctly. --->
-
 ---
 
 ## ✨ Key Features
