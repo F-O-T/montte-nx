@@ -75,7 +75,7 @@ function TransactionsStatsContent() {
             title={translate(
                "dashboard.routes.transactions.stats-section.income.title",
             )}
-            value={`R$${stats.totalIncome.toFixed(2)}`}
+            value={`R$ ${stats.totalIncome}`}
          />
          <StatsCard
             description={translate(
@@ -84,7 +84,7 @@ function TransactionsStatsContent() {
             title={translate(
                "dashboard.routes.transactions.stats-section.expense.title",
             )}
-            value={`R$${stats.totalExpenses.toFixed(2)}`}
+            value={`R$ ${stats.totalExpenses}`}
          />
       </div>
    );
