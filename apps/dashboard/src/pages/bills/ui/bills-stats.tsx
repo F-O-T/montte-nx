@@ -94,7 +94,26 @@ function BillsStatsContent({ type }: BillsStatsProps) {
 		);
 	}
 
-	return null;
+	// Unified view - show all stats
+	return (
+		<div className="grid gap-4 h-min">
+			<StatsCard
+				description={translate("dashboard.routes.bills.stats.totalPayables")}
+				title="Payables"
+				value={`R$ ${stats?.totalPendingPayables?.toFixed(2) || "0.00"}`}
+			/>
+			<StatsCard
+				description={translate("dashboard.routes.bills.stats.totalReceivables")}
+				title="Receivables"
+				value={`R$ ${stats?.totalPendingReceivables?.toFixed(2) || "0.00"}`}
+			/>
+			<StatsCard
+				description={translate("dashboard.routes.bills.stats.totalOverdue")}
+				title="Overdue Bills"
+				value={(stats?.totalOverduePayables || 0) + (stats?.totalOverdueReceivables || 0)}
+			/>
+		</div>
+	);
 }
 
 export function BillsStats({ type }: BillsStatsProps) {
