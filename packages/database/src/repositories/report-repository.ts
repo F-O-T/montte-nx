@@ -61,9 +61,6 @@ export interface PaymentPerformance {
    averageDelayDays: number;
 }
 
-/**
- * Get financial summary for a period based on completed bills (actual transactions)
- */
 export async function getFinancialSummaryByPeriod(
    dbClient: DatabaseInstance,
    userId: string,
@@ -123,9 +120,6 @@ export async function getFinancialSummaryByPeriod(
    }
 }
 
-/**
- * Get breakdown by category for a period
- */
 export async function getCategoryBreakdownByPeriod(
    dbClient: DatabaseInstance,
    userId: string,
@@ -184,9 +178,6 @@ export async function getCategoryBreakdownByPeriod(
    }
 }
 
-/**
- * Get planned (bills) vs actual (transactions) comparison
- */
 export async function getPlannedVsActualByPeriod(
    dbClient: DatabaseInstance,
    userId: string,
@@ -299,9 +290,6 @@ export async function getPlannedVsActualByPeriod(
    }
 }
 
-/**
- * Get cash flow data grouped by day/week/month
- */
 export async function getCashFlowByPeriod(
    dbClient: DatabaseInstance,
    userId: string,
@@ -432,9 +420,6 @@ export async function getCashFlowByPeriod(
    }
 }
 
-/**
- * Get payment performance metrics
- */
 export async function getPaymentPerformanceByPeriod(
    dbClient: DatabaseInstance,
    userId: string,
