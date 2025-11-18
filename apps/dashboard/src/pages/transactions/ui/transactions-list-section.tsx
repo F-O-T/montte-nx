@@ -300,13 +300,17 @@ function TransactionsListContent() {
                   <Empty>
                      <EmptyContent>
                         <EmptyMedia variant="icon">
-                           <Wallet className="size-6" />
+                           <Wallet />
                         </EmptyMedia>
-                        <EmptyTitle>No transactions found</EmptyTitle>
+                        <EmptyTitle>
+                           {translate(
+                              "dashboard.routes.transactions.list-section.state.empty.title",
+                           )}
+                        </EmptyTitle>
                         <EmptyDescription>
-                           {filteredTransactions.length === 0
-                              ? "Create your first transaction to get started tracking your finances."
-                              : "Try adjusting your filters to find what you're looking for."}
+                           {translate(
+                              "dashboard.routes.transactions.list-section.state.empty.description",
+                           )}
                         </EmptyDescription>
                      </EmptyContent>
                   </Empty>

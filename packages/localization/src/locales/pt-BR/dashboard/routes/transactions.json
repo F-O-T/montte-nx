@@ -36,6 +36,12 @@
     "types": {
       "expense": "Despesa",
       "income": "Receita"
+    },
+    "state": {
+      "empty": {
+        "description": "Tente ajustar seus filtros ou adicionar uma nova transação.",
+        "title": "Nenhuma Transação Encontrada"
+      }
     }
   },
   "stats-section": {
