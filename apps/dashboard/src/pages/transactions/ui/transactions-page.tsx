@@ -5,7 +5,7 @@ import { TransactionsStats } from "./transactions-stats";
 export function TransactionsPage() {
    return (
       <main className="grid md:grid-cols-3 gap-4">
-         <div className="col-span-1 md:col-span-2 grid gap-4">
+         <div className="h-min col-span-1 md:col-span-2 grid gap-4">
             <TransactionsQuickActionsToolbar />
             <TransactionsListSection />
          </div>
@@ -13,3 +13,4 @@ export function TransactionsPage() {
       </main>
    );
 }
+

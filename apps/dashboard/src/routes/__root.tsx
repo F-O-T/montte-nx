@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { PostHogWrapper } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
 import appCss from "@packages/ui/globals.css?url";
@@ -29,11 +30,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
             href: appCss,
             rel: "stylesheet",
          },
-         { href: "/favicon.svg", rel: "icon" },
+         { href: "/light-logo.svg", id: "favicon", rel: "icon" },
       ],
       meta: [
          {
-            title: `Finance tracker`,
+            description: translate("common.brand.description"),
+            title: translate("common.brand.name"),
          },
          {
             charSet: "UTF-8",

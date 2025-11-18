@@ -1,5 +1,9 @@
+import type { Transaction } from "@packages/database/repositories/transaction-repository";
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import { Combobox } from "@packages/ui/components/combobox";
 import { DatePicker } from "@packages/ui/components/date-picker";
+import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
    Field,
    FieldError,
@@ -23,37 +27,54 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { useState } from "react";
-import { trpc } from "@/integrations/clients";
+import { Pencil, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-import {
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-} from "@packages/ui/components/popover";
-import {
-   Command,
-   CommandEmpty,
-   CommandGroup,
-   CommandInput,
-   CommandItem,
-   CommandList,
-} from "@packages/ui/components/command";
+import { trpc } from "@/integrations/clients";
 
-export function AddTransactionSheet() {
-   const [isSheetOpen, setIsSheetOpen] = useState(false);
-   const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+type ManageTransactionSheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   transaction?: Transaction; // If provided, edit mode. If not, create mode
+   asChild?: boolean;
+};
+
+export function ManageTransactionSheet({
+   onOpen,
+   onOpenChange,
+   transaction,
+   asChild = false,
+}: ManageTransactionSheetProps) {
    const queryClient = useQueryClient();
+   const isEditMode = !!transaction;
+
+   const modeTexts = useMemo(() => {
+      const createTexts = {
+         description: translate(
+            "dashboard.routes.transactions.features.add-new.description",
+         ),
+         title: translate(
+            "dashboard.routes.transactions.features.add-new.title",
+         ),
+      };
+
+      const editTexts = {
+         description: translate(
+            "dashboard.routes.transactions.features.edit.description",
+         ),
+         title: translate("dashboard.routes.transactions.features.edit.title"),
+      };
+
+      return isEditMode ? editTexts : createTexts;
+   }, [isEditMode]);
+
+   // For asChild usage, manage internal state
+   const [internalOpen, setInternalOpen] = useState(false);
+   const isOpen = asChild ? internalOpen : onOpen;
+   const setIsOpen = asChild ? setInternalOpen : onOpenChange;
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
@@ -69,70 +90,102 @@ export function AddTransactionSheet() {
 
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
-         onSuccess: () => {
-            queryClient.invalidateQueries({
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAll.queryKey(),
             });
-            setIsSheetOpen(false);
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
+   const updateTransactionMutation = useMutation(
+      trpc.transactions.update.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to update transaction:", error);
+         },
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAll.queryKey(),
+            });
+            setIsOpen?.(false);
          },
       }),
    );
 
    const form = useForm({
       defaultValues: {
-         amount: "",
-         bankAccountId: undefined as string | undefined,
-         category: "",
-         date: new Date(),
-         description: "",
-         type: "expense" as "expense" | "income",
+         amount: transaction?.amount?.toString() || "",
+         bankAccountId: transaction?.bankAccountId || "",
+         category: transaction?.category || "",
+         date: transaction?.date ? new Date(transaction.date) : new Date(),
+         description: transaction?.description || "",
+         type: transaction?.type || ("expense" as "expense" | "income"),
       },
       onSubmit: async ({ value }) => {
          if (!value.amount || !value.category || !value.description) {
             return;
          }
+
          try {
-            await createTransactionMutation.mutateAsync({
-               amount: parseFloat(value.amount),
-               bankAccountId: value.bankAccountId || undefined,
-               category: value.category as string,
-               date: value.date.toISOString().split("T")[0],
-               description: value.description,
-               type: value.type,
-            });
-            form.reset();
+            if (isEditMode && transaction) {
+               await updateTransactionMutation.mutateAsync({
+                  data: {
+                     amount: parseFloat(value.amount),
+                     bankAccountId: value.bankAccountId || undefined,
+                     category: value.category,
+                     date: value.date.toISOString().split("T")[0],
+                     description: value.description,
+                     type: value.type,
+                  },
+                  id: transaction.id,
+               });
+            } else {
+               await createTransactionMutation.mutateAsync({
+                  amount: parseFloat(value.amount),
+                  bankAccountId: value.bankAccountId || undefined,
+                  category: value.category,
+                  date: value.date.toISOString().split("T")[0],
+                  description: value.description,
+                  type: value.type,
+               });
+            }
          } catch (error) {
-            console.error("Failed to create transaction:", error);
+            console.error(
+               `Failed to ${isEditMode ? "update" : "create"} transaction:`,
+               error,
+            );
          }
       },
    });
 
-   return (
-      <Sheet
-         onOpenChange={(open) => {
-            setIsSheetOpen(open);
-            if (!open) {
-               form.reset();
-            }
+   const TriggerComponent = asChild ? (
+      <DropdownMenuItem
+         className="flex items-center gap-2"
+         onSelect={(e) => {
+            e.preventDefault();
+            setIsOpen?.(true);
          }}
-         open={isSheetOpen}
       >
-         <SheetTrigger asChild>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsSheetOpen(true)}
-                     size="icon"
-                     variant="default"
-                  >
-                     <Plus className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  <p>Add Transaction</p>
-               </TooltipContent>
-            </Tooltip>
-         </SheetTrigger>
+         {isEditMode ? (
+            <>
+               <Pencil className="size-4" />
+               {translate("dashboard.routes.transactions.features.edit.title")}
+            </>
+         ) : (
+            <>
+               <Plus className="size-4" />
+               {translate(
+                  "dashboard.routes.transactions.features.add-new.title",
+               )}
+            </>
+         )}
+      </DropdownMenuItem>
+   ) : null;
+
+   return (
+      <Sheet onOpenChange={setIsOpen} open={isOpen}>
+         {asChild && <SheetTrigger asChild>{TriggerComponent}</SheetTrigger>}
          <SheetContent>
             <form
                className="h-full flex flex-col"
@@ -143,10 +196,8 @@ export function AddTransactionSheet() {
                }}
             >
                <SheetHeader>
-                  <SheetTitle>Add New Transaction</SheetTitle>
-                  <SheetDescription>
-                     Enter the details for your new transaction.
-                  </SheetDescription>
+                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetDescription>{modeTexts.description}</SheetDescription>
                </SheetHeader>
                <div className="grid gap-4 px-4">
                   <FieldGroup>
@@ -157,13 +208,17 @@ export function AddTransactionSheet() {
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Description</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.description.label")}
+                                 </FieldLabel>
                                  <Textarea
                                     onBlur={field.handleBlur}
                                     onChange={(e) =>
                                        field.handleChange(e.target.value)
                                     }
-                                    placeholder="Enter transaction description..."
+                                    placeholder={translate(
+                                       "common.form.description.placeholder",
+                                    )}
                                     value={field.state.value}
                                  />
                                  {isInvalid && (
@@ -185,7 +240,9 @@ export function AddTransactionSheet() {
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Amount</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.amount.label")}
+                                 </FieldLabel>
                                  <Input
                                     onBlur={field.handleBlur}
                                     onChange={(e) =>
@@ -215,7 +272,9 @@ export function AddTransactionSheet() {
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Bank Account (Optional)</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.bank.label")}
+                                 </FieldLabel>
                                  <Select
                                     onValueChange={(value) =>
                                        field.handleChange(value)
@@ -223,7 +282,11 @@ export function AddTransactionSheet() {
                                     value={field.state.value}
                                  >
                                     <SelectTrigger>
-                                       <SelectValue placeholder="Select a bank account" />
+                                       <SelectValue
+                                          placeholder={translate(
+                                             "common.form.bank.placeholder",
+                                          )}
+                                       />
                                     </SelectTrigger>
                                     <SelectContent>
                                        {activeBankAccounts.map((account) => (
@@ -254,90 +317,45 @@ export function AddTransactionSheet() {
                               field.state.meta.isTouched &&
                               !field.state.meta.isValid;
 
-                           const selectedCategory = categories.find(
-                              (category) => category.name === field.state.value,
+                           const categoryOptions = categories.map(
+                              (category) => ({
+                                 label: category.name,
+                                 value: category.name,
+                                 icon: category.icon,
+                              }),
                            );
 
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Category</FieldLabel>
-                                 <Popover
-                                    open={categoryComboboxOpen}
-                                    onOpenChange={setCategoryComboboxOpen}
-                                 >
-                                    <PopoverTrigger asChild>
-                                       <Button
-                                          aria-expanded={categoryComboboxOpen}
-                                          className="w-full justify-between"
-                                          role="combobox"
-                                          variant="outline"
-                                       >
-                                          {selectedCategory ? (
-                                             <div className="flex items-center gap-2">
-                                                <IconDisplay
-                                                   iconName={
-                                                      selectedCategory.icon as any
-                                                   }
-                                                   size={16}
-                                                />
-                                                <span>
-                                                   {selectedCategory.name}
-                                                </span>
-                                             </div>
-                                          ) : (
-                                             <span className="text-muted-foreground">
-                                                Select a category
-                                             </span>
-                                          )}
-                                          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                       </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-full p-0">
-                                       <Command>
-                                          <CommandInput placeholder="Search categories..." />
-                                          <CommandList>
-                                             <CommandEmpty>
-                                                No category found.
-                                             </CommandEmpty>
-                                             <CommandGroup>
-                                                {categories.map((category) => (
-                                                   <CommandItem
-                                                      key={category.id}
-                                                      onSelect={() => {
-                                                         field.handleChange(
-                                                            category.name ===
-                                                               field.state.value
-                                                               ? ""
-                                                               : category.name,
-                                                         );
-                                                         setCategoryComboboxOpen(
-                                                            false,
-                                                         );
-                                                      }}
-                                                      value={category.name}
-                                                   >
-                                                      <div className="flex items-center gap-2 flex-1">
-                                                         <IconDisplay
-                                                            iconName={
-                                                               category.icon as any
-                                                            }
-                                                            size={16}
-                                                         />
-                                                         <span>
-                                                            {category.name}
-                                                         </span>
-                                                      </div>
-                                                      {field.state.value ===
-                                                         category.name && (
-                                                         <CheckIcon className="ml-2 h-4 w-4" />
-                                                      )}
-                                                   </CommandItem>
-                                                ))}
-                                             </CommandGroup>
-                                          </CommandList>
-                                       </Command>
-                                    </PopoverContent>
-                                 </Popover>
+                                 <FieldLabel>
+                                    {translate("common.form.category.label")}
+                                 </FieldLabel>
+                                 <Combobox
+                                    className="flex-1"
+                                    emptyMessage={translate(
+                                       "common.form.search.no-results",
+                                    )}
+                                    onValueChange={field.handleChange}
+                                    options={categoryOptions.map((opt) => ({
+                                       label: (
+                                          <div className="flex items-center gap-2">
+                                             <IconDisplay
+                                                iconName={opt.icon}
+                                                size={16}
+                                             />
+                                             <span>{opt.label}</span>
+                                          </div>
+                                       ),
+                                       value: opt.value,
+                                    }))}
+                                    placeholder={translate(
+                                       "common.form.category.placeholder",
+                                    )}
+                                    searchPlaceholder={translate(
+                                       "common.form.search.label",
+                                    )}
+                                    value={field.state.value}
+                                 />
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}
@@ -357,7 +375,9 @@ export function AddTransactionSheet() {
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Type</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.type.label")}
+                                 </FieldLabel>
                                  <Select
                                     onValueChange={(value) =>
                                        field.handleChange(
@@ -371,10 +391,14 @@ export function AddTransactionSheet() {
                                     </SelectTrigger>
                                     <SelectContent>
                                        <SelectItem value="expense">
-                                          Expense
+                                          {translate(
+                                             "dashboard.routes.transactions.list-section.types.expense",
+                                          )}
                                        </SelectItem>
                                        <SelectItem value="income">
-                                          Income
+                                          {translate(
+                                             "dashboard.routes.transactions.list-section.types.income",
+                                          )}
                                        </SelectItem>
                                     </SelectContent>
                                  </Select>
@@ -397,13 +421,17 @@ export function AddTransactionSheet() {
                               !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
-                                 <FieldLabel>Date</FieldLabel>
+                                 <FieldLabel>
+                                    {translate("common.form.date.label")}
+                                 </FieldLabel>
                                  <DatePicker
                                     date={field.state.value}
                                     onSelect={(date) =>
                                        field.handleChange(date || new Date())
                                     }
-                                    placeholder="Pick a date"
+                                    placeholder={translate(
+                                       "common.form.date.placeholder",
+                                    )}
                                  />
                                  {isInvalid && (
                                     <FieldError
@@ -425,14 +453,12 @@ export function AddTransactionSheet() {
                            disabled={
                               !state.canSubmit ||
                               state.isSubmitting ||
-                              createTransactionMutation.isPending
+                              createTransactionMutation.isPending ||
+                              updateTransactionMutation.isPending
                            }
                            type="submit"
                         >
-                           {state.isSubmitting ||
-                           createTransactionMutation.isPending
-                              ? "Adding..."
-                              : "Add Transaction"}
+                           {modeTexts.title}
                         </Button>
                      )}
                   </form.Subscribe>

@@ -1,4 +1,9 @@
 {
+   "breadcrumbs": {
+      "categories": "Categorias",
+      "profile": "Perfil",
+      "transactions": "Transações"
+   },
    "language-command": {
       "empty": "Nenhum idioma encontrado.",
       "search": "Pesquisar idiomas..."

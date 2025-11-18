@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import type React from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 
 interface TransactionListContextType {
    selectedItems: Set<string>;
@@ -9,22 +10,31 @@ interface TransactionListContextType {
    selectedCount: number;
 }
 
-const TransactionListContext = createContext<TransactionListContextType | undefined>(undefined);
+const TransactionListContext = createContext<
+   TransactionListContextType | undefined
+>(undefined);
 
-export function TransactionListProvider({ children }: { children: React.ReactNode }) {
+export function TransactionListProvider({
+   children,
+}: {
+   children: React.ReactNode;
+}) {
    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
-   const handleSelectionChange = useCallback((id: string, selected: boolean) => {
-      setSelectedItems((prev) => {
-         const newSet = new Set(prev);
-         if (selected) {
-            newSet.add(id);
-         } else {
-            newSet.delete(id);
-         }
-         return newSet;
-      });
-   }, []);
+   const handleSelectionChange = useCallback(
+      (id: string, selected: boolean) => {
+         setSelectedItems((prev) => {
+            const newSet = new Set(prev);
+            if (selected) {
+               newSet.add(id);
+            } else {
+               newSet.delete(id);
+            }
+            return newSet;
+         });
+      },
+      [],
+   );
 
    const clearSelection = useCallback(() => {
       setSelectedItems(new Set());
@@ -42,12 +52,12 @@ export function TransactionListProvider({ children }: { children: React.ReactNod
    }, []);
 
    const value = {
-      selectedItems,
-      handleSelectionChange,
       clearSelection,
+      handleSelectionChange,
       selectAll,
-      toggleAll,
       selectedCount: selectedItems.size,
+      selectedItems,
+      toggleAll,
    };
 
    return (
@@ -60,7 +70,9 @@ export function TransactionListProvider({ children }: { children: React.ReactNod
 export function useTransactionList() {
    const context = useContext(TransactionListContext);
    if (context === undefined) {
-      throw new Error("useTransactionList must be used within a TransactionListProvider");
+      throw new Error(
+         "useTransactionList must be used within a TransactionListProvider",
+      );
    }
    return context;
 }
