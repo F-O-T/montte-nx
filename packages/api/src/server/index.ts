@@ -9,6 +9,7 @@ import { categoryRouter } from "./routers/categories";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
+import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
@@ -20,6 +21,7 @@ export const appRouter = router({
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
+   reports: reportRouter,
    session: sessionRouter,
    transactions: transactionRouter,
 });

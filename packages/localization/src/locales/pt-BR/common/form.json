@@ -1,19 +1,19 @@
 {
-   "date": {
-      "label": "Data",
-      "placeholder": "Selecione uma data"
-   },
-   "category": {
-      "label": "Categoria",
-      "placeholder": "Selecione uma categoria"
-   },
    "account-type": {
       "label": "Tipo de Conta",
       "placeholder": "Selecione o tipo de conta"
    },
+   "amount": {
+      "label": "Valor",
+      "placeholder": "Digite o valor"
+   },
    "bank": {
       "label": "Banco",
       "placeholder": "Selecione seu banco"
+   },
+   "category": {
+      "label": "Categoria",
+      "placeholder": "Selecione uma categoria"
    },
    "color": {
       "label": "Cor",
@@ -22,6 +22,14 @@
    "confirm-password": {
       "label": "Confirmar Senha",
       "placeholder": "Confirme sua senha"
+   },
+   "date": {
+      "label": "Data",
+      "placeholder": "Selecione uma data"
+   },
+   "description": {
+      "label": "Descrição",
+      "placeholder": "Digite a descrição"
    },
    "email": {
       "label": "Email",
@@ -43,25 +51,17 @@
       "label": "Senha",
       "placeholder": "Digite sua senha"
    },
-   "description": {
-      "label": "Descrição",
-      "placeholder": "Digite a descrição"
-   },
-   "type": {
-      "label": "Tipo",
-      "placeholder": "Selecione o tipo"
-   },
-   "amount": {
-      "label": "Valor",
-      "placeholder": "Digite o valor"
+   "search": {
+      "label": "Pesquisar",
+      "no-results": "Nenhum resultado encontrado",
+      "placeholder": "Digite para pesquisar"
    },
    "status": {
       "label": "Status",
       "placeholder": "Selecione o status"
    },
-   "search": {
-      "label": "Pesquisar",
-      "placeholder": "Digite para pesquisar",
-      "no-results": "Nenhum resultado encontrado"
+   "type": {
+      "label": "Tipo",
+      "placeholder": "Selecione o tipo"
    }
 }
