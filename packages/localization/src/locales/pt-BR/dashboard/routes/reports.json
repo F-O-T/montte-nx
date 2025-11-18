@@ -1,0 +1,104 @@
+{
+   "category-details": {
+      "description": "Detalhamento completo de todas as categorias",
+      "title": "Detalhes por Categoria",
+      "transactions": "transações"
+   },
+   "charts": {
+      "budget-compliance": {
+         "description": "Comparação planejado vs realizado",
+         "title": "Conformidade Orçamentária"
+      },
+      "cash-flow-analysis": {
+         "description": "Fluxo de caixa detalhado no período selecionado",
+         "title": "Análise de Fluxo de Caixa"
+      },
+      "category-analysis": {
+         "description": "Detalhamento por categoria",
+         "title": "Análise por Categoria"
+      },
+      "category-overview": {
+         "description": "Principais categorias por volume",
+         "title": "Visão Geral por Categoria"
+      },
+      "financial-evolution": {
+         "description": "Receitas e despesas ao longo do tempo",
+         "title": "Evolução Financeira"
+      }
+   },
+   "description": "Análise e insights financeiros detalhados",
+   "financial-summary": {
+      "net-balance": {
+         "description": "Receitas - Despesas",
+         "title": "Saldo Líquido"
+      },
+      "total-expenses": {
+         "description": "Despesas do período",
+         "title": "Despesas Totais"
+      },
+      "total-income": {
+         "description": "Receita do período",
+         "title": "Receita Total"
+      },
+      "transactions": {
+         "description": "Total completadas",
+         "title": "Transações"
+      }
+   },
+   "payment-performance": {
+      "avg-delay": "Atraso Médio",
+      "days": "dias",
+      "on-time-compliance": "Conformidade de Pontualidade",
+      "on-time-rate": {
+         "description": "no prazo",
+         "title": "Taxa de Pontualidade"
+      },
+      "overdue": "Vencidas",
+      "overdue-bills": {
+         "description": "Necessitam atenção",
+         "title": "Contas Vencidas"
+      },
+      "paid-late": "Pagas com Atraso",
+      "paid-on-time": "Pagas no Prazo",
+      "payment-completion": "Conclusão de Pagamentos",
+      "payment-rate": {
+         "description": "pagas",
+         "title": "Taxa de Pagamento"
+      },
+      "payment-status": {
+         "description": "Distribuição dos status das contas",
+         "title": "Status de Pagamento"
+      },
+      "pending": "Pendentes",
+      "performance-metrics": {
+         "description": "Indicadores-chave de pagamento",
+         "title": "Métricas de Desempenho"
+      },
+      "total-bills": {
+         "description": "Contas no período",
+         "title": "Total de Contas"
+      }
+   },
+   "planned-vs-actual": {
+      "actual-income": {
+         "description": "Receita realizada",
+         "title": "Receita Real"
+      },
+      "income-variance": {
+         "description": "Diferença do planejado",
+         "title": "Variação da Receita"
+      },
+      "planned-income": {
+         "description": "Receita esperada",
+         "title": "Receita Planejada"
+      },
+      "variance": "variação"
+   },
+   "tabs": {
+      "cashflow": "Fluxo de Caixa",
+      "categories": "Categorias",
+      "overview": "Visão Geral",
+      "performance": "Desempenho"
+   },
+   "title": "Relatórios Financeiros"
+}

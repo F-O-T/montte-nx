@@ -1,20 +1,38 @@
 {
-   "navigation": {
-      "agents": "Agentes",
-      "content": "Conteúdo"
-   },
-   "stats-cards": {
-      "agent-stats": {
-         "description": "Agentes ativos registrados",
-         "title": "Total de Agentes"
+   "charts": {
+      "cash-flow": {
+         "description": "Fluxo de caixa líquido ao longo do tempo",
+         "title": "Fluxo de Caixa"
       },
-      "content-generated": {
-         "description": "Peças de conteúdo geradas",
-         "title": "Conteúdo Gerado (30d)"
+      "financial-evolution": {
+         "description": "Receitas e despesas no período selecionado",
+         "title": "Evolução Financeira"
       },
-      "words-written": {
-         "description": "Palavras escritas nos últimos 30 dias",
-         "title": "Palavras Escritas (30d)"
+      "planned-vs-actual": {
+         "description": "Conformidade orçamentária",
+         "title": "Planejado vs Real"
       }
-   }
+   },
+   "description": "Seu painel financeiro e relatórios",
+   "financial-summary": {
+      "net-balance": {
+         "description": "Receitas - Despesas",
+         "title": "Saldo Líquido"
+      },
+      "payment-rate": {
+         "bills-paid": "contas pagas",
+         "description": "de",
+         "title": "Taxa de Pagamento"
+      },
+      "total-expenses": {
+         "description": "Despesas do período",
+         "title": "Despesas Totais"
+      },
+      "total-income": {
+         "description": "Receita do período",
+         "title": "Receita Total"
+      }
+   },
+   "title": "Visão Geral Financeira",
+   "view-detailed-reports": "Ver Relatórios Detalhados"
 }

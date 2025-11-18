@@ -1,5 +1,6 @@
 import commonActionsPtBr from "./common/actions.json";
 import commonBrandPtBr from "./common/brand.json";
+import commonChartsPtBr from "./common/charts.json";
 import commonFormPtBr from "./common/form.json";
 import commonHeadersPtBr from "./common/headers.json";
 import commonLanguagesPtBr from "./common/languages.json";
@@ -12,6 +13,7 @@ import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
 import forgotPasswordPtBr from "./dashboard/routes/forgot-password.json";
 import homePagePtBr from "./dashboard/routes/home.json";
 import profilePtBr from "./dashboard/routes/profile.json";
+import reportsPtBr from "./dashboard/routes/reports.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
 
@@ -20,6 +22,7 @@ const resources = {
       common: {
          actions: commonActionsPtBr,
          brand: commonBrandPtBr,
+         charts: commonChartsPtBr,
          form: commonFormPtBr,
          headers: commonHeadersPtBr,
          languages: commonLanguagesPtBr,
@@ -35,6 +38,7 @@ const resources = {
             "forgot-password": forgotPasswordPtBr,
             home: homePagePtBr,
             profile: profilePtBr,
+            reports: reportsPtBr,
             "sign-in": signInPtBr,
             "sign-up": signUpPtBr,
          },
