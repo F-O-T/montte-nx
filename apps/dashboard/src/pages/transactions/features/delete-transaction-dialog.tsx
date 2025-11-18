@@ -1,75 +1,88 @@
-import { Button } from "@packages/ui/components/button";
+import { translate } from "@packages/localization";
 import {
-   Dialog,
-   DialogContent,
-   DialogDescription,
-   DialogFooter,
-   DialogHeader,
-   DialogTitle,
-   DialogTrigger,
-} from "@packages/ui/components/dialog";
-import { Trash2 } from "lucide-react";
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+   AlertDialogTrigger,
+} from "@packages/ui/components/alert-dialog";
+import { Button } from "@packages/ui/components/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import type { Transaction } from "../ui/transactions-list-section";
+import { Trash2 } from "lucide-react";
 import { trpc } from "@/integrations/clients";
+import type { Transaction } from "../ui/transactions-list-section";
 
 interface DeleteTransactionProps {
    transaction: Transaction;
    asChild?: boolean;
 }
 
-export function DeleteTransaction({ transaction, asChild }: DeleteTransactionProps) {
-   const [open, setOpen] = useState(false);
+export function DeleteTransaction({
+   transaction,
+   asChild,
+}: DeleteTransactionProps) {
    const queryClient = useQueryClient();
 
-   const deleteTransactionMutation = useMutation({
-      ...trpc.transactions.delete.mutationOptions(),
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: trpc.transactions.getAll.queryKey() });
-         setOpen(false);
-      },
-   });
+   const deleteTransactionMutation = useMutation(
+      trpc.transactions.delete.mutationOptions({
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAll.queryKey(),
+            });
+         },
+      }),
+   );
 
-   const handleDelete = () => {
-      deleteTransactionMutation.mutate(transaction.id);
+   const handleDelete = async () => {
+      try {
+         await deleteTransactionMutation.mutateAsync({ id: transaction.id });
+      } catch (error) {
+         console.error("Failed to delete transaction:", error);
+      }
    };
 
    return (
-      <Dialog onOpenChange={setOpen} open={open}>
-         <DialogTrigger asChild={asChild}>
-            <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive">
+      <AlertDialog>
+         <AlertDialogTrigger asChild={asChild}>
+            <Button
+               className="text-destructive hover:text-destructive"
+               size="sm"
+               variant="ghost"
+            >
                <Trash2 className="h-4 w-4" />
-               Delete
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.delete",
+               )}
             </Button>
-         </DialogTrigger>
-         <DialogContent>
-            <DialogHeader>
-               <DialogTitle>Delete Transaction</DialogTitle>
-               <DialogDescription>
-                  Are you sure you want to delete the transaction "{transaction.description}"?
-                  This action cannot be undone.
-               </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-               <Button
-                  disabled={deleteTransactionMutation.isPending}
-                  onClick={() => setOpen(false)}
-                  variant="outline"
-               >
-                  Cancel
-               </Button>
-               <Button
+         </AlertDialogTrigger>
+         <AlertDialogContent>
+            <AlertDialogHeader>
+               <AlertDialogTitle>
+                  {translate("common.headers.delete-confirmation.title")}
+               </AlertDialogTitle>
+               <AlertDialogDescription>
+                  {translate("common.headers.delete-confirmation.description")}
+               </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+               <AlertDialogCancel>
+                  {translate("common.actions.cancel")}
+               </AlertDialogCancel>
+               <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground"
                   disabled={deleteTransactionMutation.isPending}
                   onClick={handleDelete}
-                  variant="destructive"
                >
-                  {deleteTransactionMutation.isPending
-                     ? "Deleting..."
-                     : "Delete Transaction"}
-               </Button>
-            </DialogFooter>
-         </DialogContent>
-      </Dialog>
+                  {translate(
+                     "dashboard.routes.transactions.list-section.actions.delete",
+                  )}
+               </AlertDialogAction>
+            </AlertDialogFooter>
+         </AlertDialogContent>
+      </AlertDialog>
    );
 }

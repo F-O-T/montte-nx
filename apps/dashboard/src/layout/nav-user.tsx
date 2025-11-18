@@ -1,4 +1,3 @@
-import { LanguageCommand } from "./language-command";
 import { translate } from "@packages/localization";
 import {
    Avatar,
@@ -32,6 +31,7 @@ import { LogOutIcon, UserCircleIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
+import { LanguageCommand } from "./language-command";
 import { ThemeSwitcher } from "./theme-provider";
 
 function UserAvatarInfo({
@@ -128,7 +128,7 @@ function NavUserContent() {
       <SidebarMenu>
          <SidebarMenuItem>
             <DropdownMenu>
-               <DropdownMenuTrigger className="cursor-pointer py-4">
+               <DropdownMenuTrigger asChild className="cursor-pointer ">
                   <Avatar>
                      <AvatarImage
                         alt={session?.user.name}

@@ -24,14 +24,10 @@ export function CategoriesQuickActionsToolbar() {
          <Item variant="outline">
             <ItemContent>
                <ItemTitle>
-                  {translate(
-                     "dashboard.routes.categories.actions-toolbar.title",
-                  )}
+                  {translate("common.headers.actions-toolbar.title")}
                </ItemTitle>
                <ItemDescription>
-                  {translate(
-                     "dashboard.routes.categories.actions-toolbar.description",
-                  )}
+                  {translate("common.headers.actions-toolbar.description")}
                </ItemDescription>
             </ItemContent>
             <ItemActions>

@@ -1,0 +1,61 @@
+{
+  "actions-toolbar": {
+    "actions": {
+      "add-new": "Adicionar nova transação",
+      "delete-selected": "Excluir selecionados"
+    }
+  },
+  "features": {
+    "add-new": {
+      "description": "Adicione uma nova transação ao seu registro financeiro.",
+      "title": "Adicionar Nova Transação"
+    },
+    "edit": {
+      "description": "Modifique os detalhes da transação selecionada.",
+      "title": "Editar Transação"
+    },
+    "filter": {
+      "actions": {
+        "clear-filters": "Limpar Filtros"
+      },
+      "description": "Refine a lista de transações com base em critérios específicos.",
+      "items": {
+        "all-categories": "Todas as Categorias",
+        "all-types": "Todos os Tipos"
+      },
+      "title": "Filtrar Transações"
+    }
+  },
+  "list-section": {
+    "actions": {
+      "delete": "Excluir transação",
+      "label": "Gerencie sua transação"
+    },
+    "description": "Veja todas as suas transações financeiras aqui.",
+    "title": "Lista de Transações",
+    "types": {
+      "expense": "Despesa",
+      "income": "Receita"
+    },
+    "state": {
+      "empty": {
+        "description": "Tente ajustar seus filtros ou adicionar uma nova transação.",
+        "title": "Nenhuma Transação Encontrada"
+      }
+    }
+  },
+  "stats-section": {
+    "expense": {
+      "description": "Veja o total acumulado de todas as suas despesas.",
+      "title": "Total de Despesas"
+    },
+    "income": {
+      "description": "Veja o total acumulado de todas as suas receitas.",
+      "title": "Total de Receitas"
+    },
+    "total": {
+      "description": "Veja o total acumulado de todas as suas transações.",
+      "title": "Total de Transações"
+    }
+  }
+}

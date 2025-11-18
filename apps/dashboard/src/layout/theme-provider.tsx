@@ -75,6 +75,8 @@ export function ThemeProvider({
       function updateTheme() {
          root.classList.remove("light", "dark");
 
+         let currentTheme: ResolvedTheme;
+
          if (theme === "system" && enableSystem) {
             const systemTheme = window.matchMedia(
                "(prefers-color-scheme: dark)",
@@ -83,22 +85,29 @@ export function ThemeProvider({
                : "light";
             setResolvedTheme(systemTheme);
             root.classList.add(systemTheme);
-            return;
+            currentTheme = systemTheme;
+         } else {
+            // Validate theme before applying
+            const validTheme =
+               (theme as ResolvedTheme) === "light" ||
+               (theme as ResolvedTheme) === "dark"
+                  ? (theme as ResolvedTheme)
+                  : "light";
+
+            setResolvedTheme(validTheme);
+            currentTheme = validTheme;
+
+            if (attribute === "class") {
+               root.classList.add(validTheme);
+            } else {
+               root.setAttribute(attribute, validTheme);
+            }
          }
 
-         // Validate theme before applying
-         const validTheme =
-            (theme as ResolvedTheme) === "light" ||
-            (theme as ResolvedTheme) === "dark"
-               ? (theme as ResolvedTheme)
-               : "light";
-
-         setResolvedTheme(validTheme);
-
-         if (attribute === "class") {
-            root.classList.add(validTheme);
-         } else {
-            root.setAttribute(attribute, validTheme);
+         // Update favicon based on theme
+         const favicon = document.querySelector('#favicon') as HTMLLinkElement;
+         if (favicon) {
+            favicon.href = currentTheme === 'dark' ? '/dark-logo.svg' : '/light-logo.svg';
          }
       }
 
@@ -137,17 +146,24 @@ export function ThemeProvider({
                const theme: string | null = localStorage.getItem(storageKey);
                const root = document.documentElement;
 
-               if (
+               const isDark =
                   theme === "dark" ||
                   ((theme === null || theme === "system") &&
                      enableSystem &&
-                     window.matchMedia("(prefers-color-scheme: dark)").matches)
-               ) {
+                     window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+               if (isDark) {
                   if (attribute === "class") {
                      root.classList.add("dark");
                   } else {
                      root.setAttribute(attribute, "dark");
                   }
+               }
+
+               // Update favicon based on theme
+               const favicon = document.querySelector('#favicon') as HTMLLinkElement;
+               if (favicon) {
+                  favicon.href = isDark ? '/dark-logo.svg' : '/light-logo.svg';
                }
             }}
          </FunctionOnce>
@@ -164,6 +180,37 @@ export function useTheme() {
 
    return context;
 }
+
+export function useLogoPath() {
+   const { resolvedTheme } = useTheme();
+   return resolvedTheme === 'dark' ? '/dark-logo.svg' : '/light-logo.svg';
+}
+
+export interface ThemeLogoProps {
+   alt?: string;
+   className?: string;
+   width?: number;
+   height?: number;
+}
+
+export const ThemeLogo = ({
+   alt = "logo",
+   className,
+   width,
+   height
+}: ThemeLogoProps) => {
+   const logoPath = useLogoPath();
+
+   return (
+      <img
+         src={logoPath}
+         alt={alt}
+         className={className}
+         width={width}
+         height={height}
+      />
+   );
+};
 
 export type ThemeSwitcherProps = {
    className?: string;
