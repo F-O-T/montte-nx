@@ -16,6 +16,7 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
+import { Route as DashboardReportsRouteImport } from './routes/_dashboard/reports'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
@@ -58,6 +59,11 @@ const AuthEmailVerificationRoute = AuthEmailVerificationRouteImport.update({
 const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
   id: '/transactions',
   path: '/transactions',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
   '/profile': typeof DashboardProfileRoute
+  '/reports': typeof DashboardReportsRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
   '/profile': typeof DashboardProfileRoute
+  '/reports': typeof DashboardReportsRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/_dashboard/categories': typeof DashboardCategoriesRoute
   '/_dashboard/home': typeof DashboardHomeRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
+  '/_dashboard/reports': typeof DashboardReportsRoute
   '/_dashboard/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/home'
     | '/profile'
+    | '/reports'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/home'
     | '/profile'
+    | '/reports'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/_dashboard/categories'
     | '/_dashboard/home'
     | '/_dashboard/profile'
+    | '/_dashboard/reports'
     | '/_dashboard/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -273,6 +285,13 @@ declare module '@tanstack/react-router' {
       path: '/transactions'
       fullPath: '/transactions'
       preLoaderRoute: typeof DashboardTransactionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/reports': {
+      id: '/_dashboard/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/profile': {
@@ -345,6 +364,7 @@ interface DashboardRouteChildren {
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardBillsPayablesRoute: typeof DashboardBillsPayablesRoute
   DashboardBillsReceivablesRoute: typeof DashboardBillsReceivablesRoute
@@ -358,6 +378,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardProfileRoute: DashboardProfileRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardBillsPayablesRoute: DashboardBillsPayablesRoute,
   DashboardBillsReceivablesRoute: DashboardBillsReceivablesRoute,
