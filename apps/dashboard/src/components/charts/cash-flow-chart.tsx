@@ -42,7 +42,6 @@ export function CashFlowChart({
 }: CashFlowChartProps) {
 	const chartConfig = getChartConfig();
 
-	// Calculate net cash flow for each period
 	const chartData = data.map((item) => ({
 		...item,
 		plannedNet: item.plannedIncome - item.plannedExpenses,
