@@ -1,5 +1,5 @@
-import { PostHogWrapper } from "@packages/posthog/client";
 import { translate } from "@packages/localization";
+import { PostHogWrapper } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
 import appCss from "@packages/ui/globals.css?url";
 import {
@@ -30,12 +30,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
             href: appCss,
             rel: "stylesheet",
          },
-         { href: "/light-logo.svg", rel: "icon", id: "favicon" },
+         { href: "/light-logo.svg", id: "favicon", rel: "icon" },
       ],
       meta: [
          {
-            title: translate("common.brand.name"),
             description: translate("common.brand.description"),
+            title: translate("common.brand.name"),
          },
          {
             charSet: "UTF-8",
@@ -52,19 +52,19 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       scripts: [
          ...(!import.meta.env.PROD
             ? [
-               {
-                  children: `import RefreshRuntime from "/@react-refresh"
+                 {
+                    children: `import RefreshRuntime from "/@react-refresh"
   RefreshRuntime.injectIntoGlobalHook(window)
   window.$RefreshReg$ = () => {}
   window.$RefreshSig$ = () => (type) => type
   window.__vite_plugin_react_preamble_installed__ = true`,
-                  type: "module",
-               },
-               {
-                  src: "/@vite/client",
-                  type: "module",
-               },
-            ]
+                    type: "module",
+                 },
+                 {
+                    src: "/@vite/client",
+                    type: "module",
+                 },
+              ]
             : []),
          {
             src: import.meta.env.PROD

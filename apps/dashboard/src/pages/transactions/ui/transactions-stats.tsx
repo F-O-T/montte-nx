@@ -1,4 +1,5 @@
 import { StatsCard } from "@packages/ui/components/stats-card";
+import { translate } from "@packages/localization";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -59,18 +60,30 @@ function TransactionsStatsContent() {
    return (
       <div className="grid gap-4 h-min">
          <StatsCard
-            description="All transactions"
-            title="Total Transactions"
+            title={translate(
+               "dashboard.routes.transactions.stats-section.total.title",
+            )}
+            description={translate(
+               "dashboard.routes.transactions.stats-section.total.description",
+            )}
             value={stats.totalTransactions}
          />
          <StatsCard
-            description="This month"
-            title="Total Income"
+            description={translate(
+               "dashboard.routes.transactions.stats-section.income.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.income.title",
+            )}
             value={`R$${stats.totalIncome.toFixed(2)}`}
          />
          <StatsCard
-            description="This month"
-            title="Total Expenses"
+            description={translate(
+               "dashboard.routes.transactions.stats-section.expense.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.expense.title",
+            )}
             value={`R$${stats.totalExpenses.toFixed(2)}`}
          />
       </div>
@@ -86,4 +99,3 @@ export function TransactionsStats() {
       </ErrorBoundary>
    );
 }
-

@@ -1,3 +1,6 @@
+import type { RouterOutput } from "@packages/api/client";
+
+import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -8,12 +11,8 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import { Checkbox } from "@packages/ui/components/checkbox";
 import {
-   Combobox,
-   type ComboboxOption,
-} from "@packages/ui/components/combobox";
-import {
+   DropdownMenuLabel,
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
@@ -28,7 +27,11 @@ import {
    EmptyTitle,
 } from "@packages/ui/components/empty";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
-import { Input } from "@packages/ui/components/input";
+import {
+   InputGroup,
+   InputGroupAddon,
+   InputGroupInput,
+} from "@packages/ui/components/input-group";
 import {
    Item,
    ItemActions,
@@ -47,181 +50,85 @@ import {
    PaginationNext,
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
-import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
-} from "@packages/ui/components/select";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Eye, MoreHorizontal, PlusIcon, Search, Wallet } from "lucide-react";
+import { Filter, MoreVertical, Search, Wallet } from "lucide-react";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
+import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteTransaction } from "../features/delete-transaction-dialog";
-import { EditTransactionSheet } from "../features/edit-transaction-sheet";
-import {
-   TransactionListProvider,
-   useTransactionList,
-} from "../features/transaction-list-context";
+import { FilterSheet } from "../features/filter-sheet";
+import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
+import { TransactionListProvider } from "../features/transaction-list-context";
 
-export type Transaction = {
-   amount: number;
-   category: string;
-   date: string;
-   description: string;
-   id: string;
-   type: "income" | "expense";
-};
-
+export type Transaction = RouterOutput["transactions"]["getAll"][number];
 type TransactionItemProps = {
    transaction: Transaction;
-   categories: Array<{
-      id: string;
-      name: string;
-      color: string;
-      icon: string | null;
-   }>;
+   categories: Category[];
 };
 
 function TransactionItem({ transaction, categories }: TransactionItemProps) {
-   const { selectedItems, handleSelectionChange } = useTransactionList();
-
    // Find the category details for this transaction
    const categoryDetails = categories.find(
-      (cat) => cat.id === transaction.category,
+      (cat) => cat.name === transaction.category,
    );
    const categoryColor = categoryDetails?.color || "#6b7280";
    const categoryIcon = categoryDetails?.icon || "Wallet";
-   const categoryName = categoryDetails?.name || transaction.category;
-
-   const handleViewDetails = () => {
-      // Navigate to transaction details - implement as needed
-      console.log("View transaction details:", transaction.id);
-   };
-
-   const handleCreateContent = () => {
-      // Create content related to transaction - implement as needed
-      console.log("Create content for transaction:", transaction.id);
-   };
-
-   const dropdownItems = [
-      {
-         icon: <Eye className="h-4 w-4" />,
-         label: "View Details",
-         onClick: handleViewDetails,
-      },
-      {
-         icon: <PlusIcon className="h-4 w-4" />,
-         label: "Create Content",
-         onClick: handleCreateContent,
-      },
-   ];
 
    return (
-      <>
-         <Item>
-            <ItemMedia className="group relative">
-               <div
-                  className="size-8 rounded-sm border flex items-center justify-center"
-                  style={{
-                     backgroundColor: categoryColor,
-                  }}
-               >
-                  <IconDisplay
-                     className="text-white"
-                     iconName={categoryIcon as IconName}
-                     size={16}
-                  />
-               </div>
-               <div
-                  className={`absolute -top-1 -right-1 transition-opacity ${
-                     selectedItems.has(transaction.id)
-                        ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-100"
-                  }`}
-               >
-                  <Checkbox
-                     checked={selectedItems.has(transaction.id)}
-                     className="size-4 border-2 border-background"
-                     onCheckedChange={(checked) =>
-                        handleSelectionChange(
-                           transaction.id,
-                           checked as boolean,
-                        )
+      <Item>
+         <ItemMedia
+            variant="icon"
+            style={{
+               backgroundColor: categoryColor,
+            }}
+         >
+            <IconDisplay iconName={categoryIcon as IconName} size={16} />
+         </ItemMedia>
+         <ItemContent>
+            <ItemTitle className="truncate">
+               {transaction.description}
+            </ItemTitle>
+            <ItemDescription>
+               {new Date(transaction.date).toLocaleDateString()}
+            </ItemDescription>
+         </ItemContent>
+         <ItemActions>
+            <Badge
+               variant={
+                  transaction.type === "income" ? "default" : "destructive"
+               }
+            >
+               {transaction.type === "income" ? "+" : "-"}R$
+               {Math.abs(parseFloat(transaction.amount))}
+            </Badge>
+            <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                  <Button aria-label="Actions" size="icon" variant="ghost">
+                     <MoreVertical className="size-4" />
+                  </Button>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                     {translate(
+                        "dashboard.routes.transactions.list-section.actions.label",
+                     )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Suspense
+                     fallback={
+                        <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
                      }
-                  />
-               </div>
-            </ItemMedia>
-            <ItemContent>
-               <ItemTitle className="truncate">
-                  {transaction.description}
-               </ItemTitle>
-               <ItemDescription className="truncate">
-                  <div className="flex items-center gap-2">
-                     <Badge className="text-xs font-normal" variant="outline">
-                        {categoryName}
-                     </Badge>
-                     <span className="text-xs text-muted-foreground">
-                        {new Date(transaction.date).toLocaleDateString()}
-                     </span>
-                  </div>
-               </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-               <div className="text-right">
-                  <div
-                     className={`font-mono font-medium text-sm ${
-                        transaction.type === "income"
-                           ? "text-green-600"
-                           : "text-red-600"
-                     }`}
-                  >
-                     {transaction.type === "income" ? "+" : "-"}$
-                     {Math.abs(transaction.amount).toFixed(2)}
-                  </div>
-               </div>
-               <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                     <Button size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                     {dropdownItems.map((item, index) => (
-                        <Fragment key={item.label}>
-                           <DropdownMenuItem onClick={item.onClick}>
-                              <span className="mr-2">{item.icon}</span>
-                              {item.label}
-                           </DropdownMenuItem>
-                           {index < dropdownItems.length - 1 && (
-                              <DropdownMenuSeparator />
-                           )}
-                        </Fragment>
-                     ))}
-                     <DropdownMenuSeparator />
-                     <Suspense
-                        fallback={
-                           <DropdownMenuItem disabled>
-                              Loading...
-                           </DropdownMenuItem>
-                        }
-                     >
-                        <EditTransactionSheet
-                           asChild
-                           transaction={transaction}
-                        />
-                     </Suspense>
-                     <DeleteTransaction asChild transaction={transaction} />
-                  </DropdownMenuContent>
-               </DropdownMenu>
-            </ItemActions>
-         </Item>
-      </>
+                  ></Suspense>
+                  <ManageTransactionSheet asChild transaction={transaction} />
+                  <DeleteTransaction asChild transaction={transaction} />
+               </DropdownMenuContent>
+            </DropdownMenu>
+         </ItemActions>
+      </Item>
    );
 }
 
@@ -229,9 +136,13 @@ function TransactionsListErrorFallback(props: FallbackProps) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Transactions List</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Manage all your financial transactions
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -250,19 +161,31 @@ function TransactionsListSkeleton() {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Transactions List</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Manage all your financial transactions
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
+            <div className="flex items-center gap-3 pt-4">
+               <div className="relative flex-1 max-w-md">
+                  <Skeleton className="h-10 w-full" />
+               </div>
+               <Skeleton className="ml-auto h-10 w-10" />
+            </div>
          </CardHeader>
          <CardContent>
             <ItemGroup>
-               {Array.from({ length: 5 }).map((index) => (
+               {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`transaction-skeleton-${index + 1}`}>
                      <Item>
-                        <ItemMedia className="group relative">
-                           <Skeleton className="size-8 rounded-sm" />
-                           <Skeleton className="absolute -top-1 -right-1 size-4 rounded opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ItemMedia variant="icon">
+                           <div className="size-8 rounded-sm border group relative">
+                              <Skeleton className="size-8 rounded-sm" />
+                              <Skeleton className="absolute -top-1 -right-1 size-4 rounded opacity-0 group-hover:opacity-100 transition-opacity" />
+                           </div>
                         </ItemMedia>
                         <ItemContent className="gap-1">
                            <Skeleton className="h-4 w-32" />
@@ -292,6 +215,7 @@ function TransactionsListContent() {
    const [searchTerm, setSearchTerm] = useState("");
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
+   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const pageSize = 10;
 
    const { data: transactions } = useSuspenseQuery(
@@ -302,16 +226,7 @@ function TransactionsListContent() {
       trpc.categories.getAll.queryOptions(),
    );
 
-   // Transform API data to match UI expectations
-   const uiTransactions: Transaction[] = (transactions || []).map(
-      (transaction: any) => ({
-         ...transaction,
-         amount: parseFloat(transaction.amount),
-         date: transaction.date.toISOString().split("T")[0],
-      }),
-   );
-
-   const filteredTransactions = uiTransactions.filter((transaction) => {
+   const filteredTransactions = transactions.filter((transaction) => {
       const matchesSearch =
          transaction.description
             .toLowerCase()
@@ -338,168 +253,164 @@ function TransactionsListContent() {
       setCurrentPage(1);
    };
 
-   const transactionCategories = Array.from(
-      new Set(uiTransactions.map((t) => t.category)),
-   );
-
-   const categoryOptions: ComboboxOption[] = [
-      { label: "All Categories", value: "all" },
-      ...transactionCategories.map((category) => ({
-         label: category,
-         value: category,
-      })),
-   ];
+   const hasActiveFilters = categoryFilter !== "all" || typeFilter !== "all";
 
    return (
-      <Card>
-         <CardHeader>
-            <CardTitle>Transactions List</CardTitle>
-            <CardDescription>
-               Manage all your financial transactions
-            </CardDescription>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center pt-4">
-               <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                     className="pl-10 h-10"
-                     onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        handleFilterChange();
-                     }}
-                     placeholder="Search transactions..."
-                     value={searchTerm}
-                  />
-               </div>
-               <div className="flex gap-3">
-                  <Combobox
-                     className="w-48"
-                     emptyMessage="No categories found."
-                     onValueChange={(value) => {
-                        setCategoryFilter(value);
-                        handleFilterChange();
-                     }}
-                     options={categoryOptions}
-                     placeholder="All Categories"
-                     searchPlaceholder="Search categories..."
-                     value={categoryFilter}
-                  />
-                  <Select
-                     onValueChange={(value) => {
-                        setTypeFilter(value);
-                        handleFilterChange();
-                     }}
-                     value={typeFilter}
-                  >
-                     <SelectTrigger className="w-36 h-10">
-                        <SelectValue placeholder="All Types" />
-                     </SelectTrigger>
-                     <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="income">Income</SelectItem>
-                        <SelectItem value="expense">Expense</SelectItem>
-                     </SelectContent>
-                  </Select>
-               </div>
-            </div>
-         </CardHeader>
-         <CardContent>
-            {paginatedTransactions.length === 0 ? (
-               <Empty>
-                  <EmptyContent>
-                     <EmptyMedia variant="icon">
-                        <Wallet className="size-6" />
-                     </EmptyMedia>
-                     <EmptyTitle>No transactions found</EmptyTitle>
-                     <EmptyDescription>
-                        {filteredTransactions.length === 0
-                           ? "Create your first transaction to get started tracking your finances."
-                           : "Try adjusting your filters to find what you're looking for."}
-                     </EmptyDescription>
-                  </EmptyContent>
-               </Empty>
-            ) : (
-               <ItemGroup>
-                  {paginatedTransactions.map((transaction, index) => (
-                     <Fragment key={transaction.id}>
-                        <TransactionItem
-                           categories={categories}
-                           transaction={transaction}
-                        />
-                        {index !== paginatedTransactions.length - 1 && (
-                           <ItemSeparator />
+      <>
+         <Card>
+            <CardHeader>
+               <CardTitle>
+                  {translate(
+                     "dashboard.routes.transactions.list-section.title",
+                  )}
+               </CardTitle>
+               <CardDescription>
+                  {translate(
+                     "dashboard.routes.transactions.list-section.description",
+                  )}
+               </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-2 max-h-80 h-full">
+               <div className="flex items-center justify-between gap-8">
+                  <InputGroup>
+                     <InputGroupInput
+                        onChange={(e) => {
+                           setSearchTerm(e.target.value);
+                           handleFilterChange();
+                        }}
+                        placeholder={translate(
+                           "common.form.search.placeholder",
                         )}
-                     </Fragment>
-                  ))}
-               </ItemGroup>
-            )}
-         </CardContent>
-         {totalPages > 1 && (
-            <CardFooter>
-               <Pagination>
-                  <PaginationContent>
-                     <PaginationItem>
-                        <PaginationPrevious
-                           className={
-                              currentPage === 1
-                                 ? "pointer-events-none opacity-50"
-                                 : ""
-                           }
-                           href="#"
-                           onClick={() =>
-                              setCurrentPage((prev) => {
-                                 const newPage = prev - 1;
-                                 return newPage >= 1 ? newPage : prev;
-                              })
-                           }
-                        />
-                     </PaginationItem>
+                        value={searchTerm}
+                     />
+                     <InputGroupAddon>
+                        <Search />
+                     </InputGroupAddon>
+                  </InputGroup>
+                  <Button
+                     onClick={() => setIsFilterSheetOpen(true)}
+                     size="icon"
+                     variant={hasActiveFilters ? "default" : "outline"}
+                  >
+                     <Filter className="size-4" />
+                  </Button>
+               </div>
 
-                     {Array.from(
-                        { length: Math.min(5, totalPages) },
-                        (_, i: number): number => {
-                           if (totalPages <= 5) {
-                              return i + 1;
-                           } else if (currentPage <= 3) {
-                              return i + 1;
-                           } else if (currentPage >= totalPages - 2) {
-                              return totalPages - 4 + i;
-                           } else {
-                              return currentPage - 2 + i;
-                           }
-                        },
-                     ).map((pageNum) => (
-                        <PaginationItem key={pageNum}>
-                           <PaginationLink
-                              href="#"
-                              isActive={pageNum === currentPage}
-                              onClick={() => setCurrentPage(pageNum)}
-                           >
-                              {pageNum}
-                           </PaginationLink>
-                        </PaginationItem>
+               {paginatedTransactions.length === 0 ? (
+                  <Empty>
+                     <EmptyContent>
+                        <EmptyMedia variant="icon">
+                           <Wallet className="size-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>No transactions found</EmptyTitle>
+                        <EmptyDescription>
+                           {filteredTransactions.length === 0
+                              ? "Create your first transaction to get started tracking your finances."
+                              : "Try adjusting your filters to find what you're looking for."}
+                        </EmptyDescription>
+                     </EmptyContent>
+                  </Empty>
+               ) : (
+                  <ItemGroup>
+                     {paginatedTransactions.map((transaction, index) => (
+                        <Fragment key={transaction.id}>
+                           <TransactionItem
+                              categories={categories}
+                              transaction={transaction}
+                           />
+                           {index !== paginatedTransactions.length - 1 && (
+                              <ItemSeparator />
+                           )}
+                        </Fragment>
                      ))}
+                  </ItemGroup>
+               )}
+            </CardContent>
+            {totalPages > 1 && (
+               <CardFooter>
+                  <Pagination>
+                     <PaginationContent>
+                        <PaginationItem>
+                           <PaginationPrevious
+                              className={
+                                 currentPage === 1
+                                    ? "pointer-events-none opacity-50"
+                                    : ""
+                              }
+                              href="#"
+                              onClick={() =>
+                                 setCurrentPage((prev) => {
+                                    const newPage = prev - 1;
+                                    return newPage >= 1 ? newPage : prev;
+                                 })
+                              }
+                           />
+                        </PaginationItem>
 
-                     <PaginationItem>
-                        <PaginationNext
-                           className={
-                              currentPage === totalPages
-                                 ? "pointer-events-none opacity-50"
-                                 : ""
-                           }
-                           href="#"
-                           onClick={() =>
-                              setCurrentPage((prev) => {
-                                 const newPage = prev + 1;
-                                 return newPage <= totalPages ? newPage : prev;
-                              })
-                           }
-                        />
-                     </PaginationItem>
-                  </PaginationContent>
-               </Pagination>
-            </CardFooter>
-         )}
-      </Card>
+                        {Array.from(
+                           { length: Math.min(5, totalPages) },
+                           (_, i: number): number => {
+                              if (totalPages <= 5) {
+                                 return i + 1;
+                              } else if (currentPage <= 3) {
+                                 return i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                 return totalPages - 4 + i;
+                              } else {
+                                 return currentPage - 2 + i;
+                              }
+                           },
+                        ).map((pageNum) => (
+                           <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                 href="#"
+                                 isActive={pageNum === currentPage}
+                                 onClick={() => setCurrentPage(pageNum)}
+                              >
+                                 {pageNum}
+                              </PaginationLink>
+                           </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                           <PaginationNext
+                              className={
+                                 currentPage === totalPages
+                                    ? "pointer-events-none opacity-50"
+                                    : ""
+                              }
+                              href="#"
+                              onClick={() =>
+                                 setCurrentPage((prev) => {
+                                    const newPage = prev + 1;
+                                    return newPage <= totalPages
+                                       ? newPage
+                                       : prev;
+                                 })
+                              }
+                           />
+                        </PaginationItem>
+                     </PaginationContent>
+                  </Pagination>
+               </CardFooter>
+            )}
+         </Card>
+         <FilterSheet
+            categories={categories}
+            categoryFilter={categoryFilter}
+            isOpen={isFilterSheetOpen}
+            onCategoryFilterChange={(value) => {
+               setCategoryFilter(value);
+               handleFilterChange();
+            }}
+            onOpenChange={setIsFilterSheetOpen}
+            onTypeFilterChange={(value) => {
+               setTypeFilter(value);
+               handleFilterChange();
+            }}
+            typeFilter={typeFilter}
+         />
+      </>
    );
 }
 

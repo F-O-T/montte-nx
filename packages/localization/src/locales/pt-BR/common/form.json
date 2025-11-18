@@ -1,4 +1,12 @@
 {
+   "date": {
+      "label": "Data",
+      "placeholder": "Selecione uma data"
+   },
+   "category": {
+      "label": "Categoria",
+      "placeholder": "Selecione uma categoria"
+   },
    "account-type": {
       "label": "Tipo de Conta",
       "placeholder": "Selecione o tipo de conta"
@@ -35,8 +43,25 @@
       "label": "Senha",
       "placeholder": "Digite sua senha"
    },
+   "description": {
+      "label": "Descrição",
+      "placeholder": "Digite a descrição"
+   },
+   "type": {
+      "label": "Tipo",
+      "placeholder": "Selecione o tipo"
+   },
+   "amount": {
+      "label": "Valor",
+      "placeholder": "Digite o valor"
+   },
    "status": {
       "label": "Status",
       "placeholder": "Selecione o status"
+   },
+   "search": {
+      "label": "Pesquisar",
+      "placeholder": "Digite para pesquisar",
+      "no-results": "Nenhum resultado encontrado"
    }
 }
