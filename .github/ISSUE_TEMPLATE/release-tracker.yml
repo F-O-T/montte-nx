@@ -1,0 +1,102 @@
+name: 🚀 Release Tracker
+description: Track the progress of an upcoming release
+title: "[RELEASE] v"
+labels: ["release", "type: process"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Release Tracker
+        Use this issue to track the progress of an upcoming release. Update the checkboxes as tasks are completed.
+
+  - type: input
+    id: version
+    attributes:
+      label: Release Version
+      description: The version number for this release
+      placeholder: "v1.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: target-date
+    attributes:
+      label: Target Release Date
+      description: Expected release date (optional)
+      placeholder: "YYYY-MM-DD"
+
+  - type: textarea
+    id: release-notes
+    attributes:
+      label: Release Notes Summary
+      description: High-level summary of what's included in this release
+      placeholder: "This release includes..."
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Release Checklist
+
+  - type: checkboxes
+    id: pre-release
+    attributes:
+      label: Pre-Release Tasks
+      options:
+        - label: "✅ All features implemented and tested"
+          required: false
+        - label: "✅ Documentation updated"
+          required: false
+        - label: "✅ Changelog updated"
+          required: false
+        - label: "✅ Version bumped in package.json"
+          required: false
+        - label: "✅ All tests passing"
+          required: false
+        - label: "✅ Security review completed"
+          required: false
+
+  - type: checkboxes
+    id: release-tasks
+    attributes:
+      label: Release Tasks
+      options:
+        - label: "🏷️ Create and push git tag"
+          required: false
+        - label: "📦 Build and publish release"
+          required: false
+        - label: "📝 Create GitHub release with notes"
+          required: false
+        - label: "📢 Update documentation website"
+          required: false
+        - label: "🐛 Monitor for critical issues"
+          required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 📦 Included Issues & PRs
+        List the key issues and pull requests included in this release:
+
+  - type: textarea
+    id: issues-prs
+    attributes:
+      label: Issues & PRs
+      placeholder: |
+        - #123 - Feature description
+        - #124 - Bug fix
+        - #45 - Enhancement
+      description: Link to relevant issues and PRs
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Known Issues
+        List any known issues that will be addressed in a future release:
+
+  - type: textarea
+    id: known-issues
+    attributes:
+      label: Known Issues
+      placeholder: "Describe any known issues..."
