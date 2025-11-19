@@ -21,7 +21,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "@/integrations/clients";
 import { ManageBankAccountSheet } from "@/pages/profile/features/manage-bank-account-sheet";
-import { DeleteBankAccountDialog } from "../features/delete-bank-account-dialog";
+import { DeleteBankAccount } from "../features/delete-bank-account";
 
 export function BankAccountQuickActionsToolbar({
    bankAccountId,
@@ -129,10 +129,10 @@ export function BankAccountQuickActionsToolbar({
             onOpen={isEditSheetOpen}
             onOpenChange={setIsEditSheetOpen}
          />
-         <DeleteBankAccountDialog
-            bankAccountId={bankAccountId}
-            onOpenChange={setIsDeleteDialogOpen}
+         <DeleteBankAccount
+            bankAccount={bankAccount}
             open={isDeleteDialogOpen}
+            setOpen={setIsDeleteDialogOpen}
          />
          <input
             accept=".ofx"

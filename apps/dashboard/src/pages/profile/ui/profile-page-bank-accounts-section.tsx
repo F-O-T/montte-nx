@@ -1,6 +1,5 @@
-import { Badge } from "@packages/ui/components/badge";
 import { translate } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
+import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
    CardContent,
@@ -8,22 +7,9 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
-   ItemActions,
    ItemContent,
    ItemDescription,
    ItemGroup,
@@ -33,50 +19,12 @@ import {
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, useRouter } from "@tanstack/react-router";
-import { ArrowRight, Building2, MoreVertical, Plus } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Building2, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
 import { trpc } from "@/integrations/clients";
-import { DeleteBankAccount } from "../features/delete-bank-account";
-import { ManageBankAccountSheet } from "../features/manage-bank-account-sheet";
-
-import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
-
-interface BankAccountActionsProps {
-   bankAccount: BankAccount;
-}
-
-function BankAccountActions({ bankAccount }: BankAccountActionsProps) {
-   return (
-      <DropdownMenu>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <DropdownMenuTrigger asChild>
-                  <Button className="h-8 w-8 p-0" size="icon" variant="ghost">
-                     <MoreVertical className="h-4 w-4" />
-                  </Button>
-               </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.profile.bank-accounts.actions.label",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <DropdownMenuContent align="end">
-            <DropdownMenuLabel>
-               {translate(
-                  "dashboard.routes.profile.bank-accounts.actions.label",
-               )}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <ManageBankAccountSheet asChild bankAccount={bankAccount} />
-            <DeleteBankAccount bankAccount={bankAccount} />
-         </DropdownMenuContent>
-      </DropdownMenu>
-   );
-}
 
 interface CreateBankAccountItemProps {
    onCreateAccount: () => void;
@@ -171,32 +119,23 @@ function BankAccountsContent() {
    const getAccountTypeLabel = (type: string) => {
       const typeMap: Record<string, string> = {
          checking: "Conta Corrente",
-         savings: "Conta Poupança",
-         investment: "Conta Investimento",
          credit: "Cartão de Crédito",
+         investment: "Conta Investimento",
          loan: "Empréstimo",
+         savings: "Conta Poupança",
       };
       return typeMap[type] || type;
    };
 
    return (
       <Card>
-         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <div className="grid gap-1">
-               <CardTitle>
-                  {translate("dashboard.routes.profile.bank-accounts.title")}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.profile.bank-accounts.description",
-                  )}
-               </CardDescription>
-            </div>
-            <Button asChild size="icon" variant="ghost">
-               <Link to="/bank-accounts">
-                  <ArrowRight className="size-4" />
-               </Link>
-            </Button>
+         <CardHeader className="">
+            <CardTitle>
+               {translate("dashboard.routes.profile.bank-accounts.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate("dashboard.routes.profile.bank-accounts.description")}
+            </CardDescription>
          </CardHeader>
 
          <CardContent className="flex-1 overflow-y-auto">
@@ -204,10 +143,10 @@ function BankAccountsContent() {
                {bankAccounts.map((account, index) => (
                   <>
                      <Link
-                        key={account.id}
-                        to="/bank-accounts/$bankAccountId"
-                        params={{ bankAccountId: account.id }}
                         className="block"
+                        key={account.id}
+                        params={{ bankAccountId: account.id }}
+                        to="/bank-accounts/$bankAccountId"
                      >
                         <Item className="cursor-pointer hover:bg-muted/50 transition-colors">
                            <ItemMedia variant="icon">
@@ -233,9 +172,6 @@ function BankAccountsContent() {
                                  {getAccountTypeLabel(account.type)}
                               </ItemDescription>
                            </ItemContent>
-                           <ItemActions onClick={(e) => e.preventDefault()}>
-                              <BankAccountActions bankAccount={account} />
-                           </ItemActions>
                         </Item>
                      </Link>
                      {index < bankAccounts.length - 1 && <ItemSeparator />}
@@ -245,13 +181,12 @@ function BankAccountsContent() {
                <CreateBankAccountItem
                   onCreateAccount={() => setIsCreateSheetOpen(true)}
                />
+               <ManageBankAccountSheet
+                  onOpen={isCreateSheetOpen}
+                  onOpenChange={setIsCreateSheetOpen}
+               />
             </ItemGroup>
          </CardContent>
-
-         <ManageBankAccountSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
       </Card>
    );
 }

@@ -44,8 +44,8 @@ function AccountBalanceStat({ bankAccountId }: { bankAccountId: string }) {
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
          id: bankAccountId,
-         page: 1,
          limit: 100,
+         page: 1,
       }),
    );
 
@@ -62,8 +62,8 @@ function AccountBalanceStat({ bankAccountId }: { bankAccountId: string }) {
          description="Current calculated balance"
          title="Balance"
          value={new Intl.NumberFormat("pt-BR", {
-            style: "currency",
             currency: "BRL",
+            style: "currency",
          }).format(balance)}
       />
    );
@@ -74,8 +74,8 @@ function AccountIncomeStat({ bankAccountId }: { bankAccountId: string }) {
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
          id: bankAccountId,
-         page: 1,
          limit: 100,
+         page: 1,
       }),
    );
 
@@ -92,8 +92,8 @@ function AccountIncomeStat({ bankAccountId }: { bankAccountId: string }) {
          description="Total income"
          title="Income"
          value={new Intl.NumberFormat("pt-BR", {
-            style: "currency",
             currency: "BRL",
+            style: "currency",
          }).format(income)}
       />
    );
@@ -104,8 +104,8 @@ function AccountExpenseStat({ bankAccountId }: { bankAccountId: string }) {
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
          id: bankAccountId,
-         page: 1,
          limit: 100,
+         page: 1,
       }),
    );
 
@@ -122,8 +122,8 @@ function AccountExpenseStat({ bankAccountId }: { bankAccountId: string }) {
          description="Total expenses"
          title="Expenses"
          value={new Intl.NumberFormat("pt-BR", {
-            style: "currency",
             currency: "BRL",
+            style: "currency",
          }).format(expense)}
       />
    );
