@@ -43,7 +43,7 @@ function BankAccountContent() {
    return (
       <main className="flex flex-col h-full w-full gap-4">
          <div className="grid md:grid-cols-3 gap-4">
-            <div className="col-span-1 md:col-span-2 grid gap-4">
+            <div className="h-min col-span-1 md:col-span-2 grid gap-4">
                <BankAccountQuickActionsToolbar bankAccountId={bankAccountId} />
                <BankAccountInfo bankAccountId={bankAccountId} />
                <RecentTransactions bankAccountId={bankAccountId} />

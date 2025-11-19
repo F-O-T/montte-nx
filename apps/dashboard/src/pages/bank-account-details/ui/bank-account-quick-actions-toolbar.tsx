@@ -16,7 +16,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useTRPC } from "@/integrations/clients";
 import { ManageBankAccountSheet } from "@/pages/profile/features/manage-bank-account-sheet";
-import { DeleteBankAccountDialog } from "../features/delete-bank-account-dialog";
+import { DeleteBankAccount } from "../features/delete-bank-account";
 
 export function BankAccountQuickActionsToolbar({
    bankAccountId,
@@ -80,11 +80,7 @@ export function BankAccountQuickActionsToolbar({
             onOpen={isEditSheetOpen}
             onOpenChange={setIsEditSheetOpen}
          />
-         <DeleteBankAccountDialog
-            bankAccountId={bankAccountId}
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         />
+         <DeleteBankAccount bankAccount={bankAccount} />
       </>
    );
 }
