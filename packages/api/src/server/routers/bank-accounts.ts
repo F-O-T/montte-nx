@@ -6,10 +6,11 @@ import {
    updateBankAccount,
 } from "@packages/database/repositories/bank-account-repository";
 import {
-   findTransactionsByBankAccountId,
+   createTransaction,
    findTransactionsByBankAccountIdPaginated,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
+import { parseOfxContent } from "../services/ofx-parser";
 import { protectedProcedure, router } from "../trpc";
 
 const createBankAccountSchema = z.object({
@@ -104,8 +105,8 @@ export const bankAccountRouter = router({
       .input(
          z.object({
             id: z.string(),
-            page: z.number().min(1).default(1),
             limit: z.number().min(1).max(100).default(10),
+            page: z.number().min(1).default(1),
          }),
       )
       .query(async ({ ctx, input }) => {
@@ -129,10 +130,52 @@ export const bankAccountRouter = router({
             resolvedCtx.db,
             input.id,
             {
-               page: input.page,
                limit: input.limit,
+               page: input.page,
             },
          );
+      }),
+
+   parseOfx: protectedProcedure
+      .input(z.object({ bankAccountId: z.string(), content: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+         const transactions = await parseOfxContent(input.content);
+
+         const createdTransactions = [];
+
+         for (const trn of transactions) {
+            const existingTransaction =
+               await resolvedCtx.db.query.transaction.findFirst({
+                  where: (transaction, { eq, and }) =>
+                     and(
+                        eq(transaction.bankAccountId, input.bankAccountId),
+                        eq(transaction.externalId, trn.fitid),
+                     ),
+               });
+
+            if (!existingTransaction) {
+               const newTransaction = await createTransaction(resolvedCtx.db, {
+                  amount: trn.amount.toString(),
+                  bankAccountId: input.bankAccountId,
+                  category: "Uncategorized",
+                  date: trn.date,
+                  description: trn.description,
+                  externalId: trn.fitid,
+                  id: crypto.randomUUID(),
+                  type: trn.type,
+                  userId,
+               });
+               createdTransactions.push(newTransaction);
+            }
+         }
+
+         return createdTransactions;
       }),
 
    update: protectedProcedure
