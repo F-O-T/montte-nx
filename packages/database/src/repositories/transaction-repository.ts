@@ -156,7 +156,6 @@ export async function findTransactionsByUserIdPaginated(
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         transactions,
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
@@ -165,6 +164,7 @@ export async function findTransactionsByUserIdPaginated(
             totalCount,
             totalPages,
          },
+         transactions,
       };
    } catch (err) {
       propagateError(err);
@@ -230,7 +230,6 @@ export async function findTransactionsByBankAccountIdPaginated(
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         transactions,
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
@@ -239,6 +238,7 @@ export async function findTransactionsByBankAccountIdPaginated(
             totalCount,
             totalPages,
          },
+         transactions,
       };
    } catch (err) {
       propagateError(err);

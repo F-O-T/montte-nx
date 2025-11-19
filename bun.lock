@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "contentagen-nx",
+      "dependencies": {
+        "ofx-data-extractor": "^1.4.8",
+      },
       "devDependencies": {
         "@biomejs/biome": "2.3.3",
         "@commitlint/cli": "20.1.0",
@@ -179,6 +182,7 @@
         "@polar-sh/sdk": "catalog:payment",
         "@trpc/client": "catalog:trpc",
         "@trpc/server": "catalog:trpc",
+        "ofx-data-extractor": "^1.4.8",
         "superjson": "catalog:trpc",
         "url-join": "catalog:trpc",
         "zod": "catalog:validation",
@@ -2835,6 +2839,8 @@
     "object-inspect": ["object-inspect@1.13.4", "", {}, "sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew=="],
 
     "ofetch": ["ofetch@1.4.1", "", { "dependencies": { "destr": "^2.0.3", "node-fetch-native": "^1.6.4", "ufo": "^1.5.4" } }, "sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw=="],
+
+    "ofx-data-extractor": ["ofx-data-extractor@1.4.8", "", {}, "sha512-YouH8YOoB9IU/8w7LHpv9fr9zU9qEDdc6DCUb/+iO0KX7+E4IPOgq1gKBf1lLpvOsLaF5lETRqS+ut3uu9RrlQ=="],
 
     "ohash": ["ohash@2.0.11", "", {}, "sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ=="],
 

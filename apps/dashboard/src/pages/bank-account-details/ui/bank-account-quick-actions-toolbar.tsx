@@ -11,9 +11,14 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import {
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
+import { Edit, Trash2, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "@/integrations/clients";
 import { ManageBankAccountSheet } from "@/pages/profile/features/manage-bank-account-sheet";
 import { DeleteBankAccount } from "../features/delete-bank-account";
@@ -24,18 +29,62 @@ export function BankAccountQuickActionsToolbar({
    bankAccountId: string;
 }) {
    const trpc = useTRPC();
+   const queryClient = useQueryClient();
    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const fileInputRef = useRef<HTMLInputElement>(null);
 
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
+
+   const parseOfxMutation = useMutation(
+      trpc.bankAccounts.parseOfx.mutationOptions({
+         onError: (error) => {
+            toast.error(`Failed to parse OFX: ${error.message}`);
+         },
+         onSuccess: (data) => {
+            toast.success(`Imported ${data.length} transactions.`);
+            queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getTransactions.queryKey({
+                  id: bankAccountId,
+               }),
+            });
+            queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getById.queryKey({
+                  id: bankAccountId,
+               }),
+            });
+         },
+      }),
+   );
+
+   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+         const content = e.target?.result as string;
+         parseOfxMutation.mutate({ bankAccountId, content });
+         if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+         }
+      };
+      reader.readAsText(file);
+   };
 
    const quickActions = [
       {
          icon: <Edit className="size-4" />,
          label: "Edit Account",
          onClick: () => setIsEditSheetOpen(true),
+         variant: "outline" as const,
+      },
+      {
+         icon: <Upload className="size-4" />,
+         label: "Import OFX",
+         onClick: () => fileInputRef.current?.click(),
          variant: "outline" as const,
       },
       {
@@ -84,6 +133,13 @@ export function BankAccountQuickActionsToolbar({
             bankAccount={bankAccount}
             open={isDeleteDialogOpen}
             setOpen={setIsDeleteDialogOpen}
+         />
+         <input
+            accept=".ofx"
+            className="hidden"
+            onChange={handleFileUpload}
+            ref={fileInputRef}
+            type="file"
          />
       </>
    );

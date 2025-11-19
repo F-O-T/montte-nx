@@ -156,6 +156,10 @@ export const organizationRouter = router({
       }
    }),
 
+   getOrganizationLimit: protectedProcedure.query(async () => {
+      return ORGANIZATION_LIMIT;
+   }),
+
    getOrganizations: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
@@ -175,10 +179,6 @@ export const organizationRouter = router({
          propagateError(error);
          throw APIError.internal("Failed to retrieve organizations");
       }
-   }),
-
-   getOrganizationLimit: protectedProcedure.query(async () => {
-      return ORGANIZATION_LIMIT;
    }),
 
    getRecentInvites: protectedProcedure.query(async ({ ctx }) => {
