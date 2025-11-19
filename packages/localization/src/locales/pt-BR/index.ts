@@ -17,6 +17,7 @@ import reportsPtBr from "./dashboard/routes/reports.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
 import transactionsPtBr from "./dashboard/routes/transactions.json";
+import organizationPtBr from "./dashboard/routes/organization.json";
 
 const resources = {
    translation: {
@@ -37,6 +38,7 @@ const resources = {
             categories: categoriesPtBr,
             "email-verification": emailVerificationPtBr,
             "forgot-password": forgotPasswordPtBr,
+            organization: organizationPtBr,
             home: homePagePtBr,
             profile: profilePtBr,
             reports: reportsPtBr,

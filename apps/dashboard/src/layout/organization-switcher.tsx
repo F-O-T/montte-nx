@@ -1,5 +1,5 @@
 import { useTRPC } from "@/integrations/clients";
-import { EditOrganizationSheet } from "@/pages/organization/features/edit-organization-sheet";
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
 import {
    Avatar,
    AvatarFallback,
@@ -29,7 +29,11 @@ import {
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { getInitials } from "@packages/utils/text";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Building, ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
@@ -116,8 +120,9 @@ function OrganizationDropdownContent() {
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            })
-         }}),
+            });
+         },
+      }),
    );
 
    function handleSetActiveOrganization(organizationId: string) {
@@ -141,7 +146,10 @@ function OrganizationDropdownContent() {
          {organizations?.map((organization) => (
             <DropdownMenuItem
                onClick={() => handleSetActiveOrganization(organization.id)}
-               disabled={setActiveOrganization.isPending || organization.id === activeOrganization?.id}
+               disabled={
+                  setActiveOrganization.isPending ||
+                  organization.id === activeOrganization?.id
+               }
                className="gap-2 p-2"
                key={organization.id}
             >
@@ -221,7 +229,7 @@ function OrganizationSwitcherContent() {
                            <ItemTitle className="truncate w-full">
                               {organizationData.name}
                            </ItemTitle>
-                           <ItemDescription className="text-xs truncate">
+                           <ItemDescription className="text-xs line-clamp-1">
                               {organizationData.description}
                            </ItemDescription>
                         </ItemContent>
@@ -266,7 +274,11 @@ function OrganizationSwitcherContent() {
                      <DropdownMenuItem
                         disabled={hasReachedLimit}
                         onClick={() => setIsCreateSheetOpen(true)}
-                        title={hasReachedLimit ? "Você não pode criar mais organizações" : undefined}
+                        title={
+                           hasReachedLimit
+                              ? "Você não pode criar mais organizações"
+                              : undefined
+                        }
                      >
                         <Plus className="size-4" />
                         Create Organization
@@ -276,7 +288,7 @@ function OrganizationSwitcherContent() {
             </DropdownMenu>
          </SidebarMenuItem>
 
-         <EditOrganizationSheet
+         <ManageOrganizationSheet
             onOpen={isCreateSheetOpen}
             onOpenChange={setIsCreateSheetOpen}
          />

@@ -148,7 +148,9 @@ export function ManageOrganizationSheet({
                if (value.logo) {
                   try {
                      fileUpload.setUploading(true);
-                     const base64 = await fileUpload.convertToBase64(value.logo);
+                     const base64 = await fileUpload.convertToBase64(
+                        value.logo,
+                     );
 
                      await uploadLogoMutation.mutateAsync({
                         contentType: value.logo.type,
@@ -180,7 +182,9 @@ export function ManageOrganizationSheet({
                if (value.logo) {
                   try {
                      fileUpload.setUploading(true);
-                     const base64 = await fileUpload.convertToBase64(value.logo);
+                     const base64 = await fileUpload.convertToBase64(
+                        value.logo,
+                     );
 
                      await uploadLogoMutation.mutateAsync({
                         contentType: value.logo.type,
@@ -224,7 +228,8 @@ export function ManageOrganizationSheet({
                   <form.Field name="logo">
                      {(field) => {
                         const currentLogoFile = field.state.value;
-                        const displayImage = fileUpload.filePreview || logoData?.data;
+                        const displayImage =
+                           fileUpload.filePreview || logoData?.data;
 
                         return (
                            <Field
@@ -252,7 +257,11 @@ export function ManageOrganizationSheet({
                                  maxFiles={1}
                                  maxSize={5 * 1024 * 1024}
                                  onDrop={handleFileSelect}
-                                 src={currentLogoFile ? [currentLogoFile] : undefined}
+                                 src={
+                                    currentLogoFile
+                                       ? [currentLogoFile]
+                                       : undefined
+                                 }
                               >
                                  <DropzoneEmptyState>
                                     {isEditMode && logoData?.data && (
@@ -278,7 +287,9 @@ export function ManageOrganizationSheet({
                               </Dropzone>
                               {currentLogoFile && (
                                  <p className="text-sm text-muted-foreground">
-                                    Logo will be uploaded when you {isEditMode ? "save" : "create"} the organization
+                                    Logo will be uploaded when you{" "}
+                                    {isEditMode ? "save" : "create"} the
+                                    organization
                                  </p>
                               )}
                               {fileUpload.error && (
@@ -288,7 +299,9 @@ export function ManageOrganizationSheet({
                               )}
                               {field.state.meta.isTouched &&
                                  !field.state.meta.isValid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                            </Field>
                         );
@@ -298,7 +311,8 @@ export function ManageOrganizationSheet({
                   <form.Field name="name">
                      {(field) => {
                         const isInvalid =
-                           field.state.meta.isTouched && !field.state.meta.isValid;
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
 
                         return (
                            <Field data-invalid={isInvalid}>
@@ -310,7 +324,9 @@ export function ManageOrganizationSheet({
                                  id={field.name}
                                  name={field.name}
                                  onBlur={field.handleBlur}
-                                 onChange={(e) => field.handleChange(e.target.value)}
+                                 onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                 }
                                  value={field.state.value}
                               />
 
@@ -325,7 +341,8 @@ export function ManageOrganizationSheet({
                   <form.Field name="description">
                      {(field) => {
                         const isInvalid =
-                           field.state.meta.isTouched && !field.state.meta.isValid;
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
 
                         return (
                            <Field data-invalid={isInvalid}>
@@ -338,7 +355,9 @@ export function ManageOrganizationSheet({
                                  id={field.name}
                                  name={field.name}
                                  onBlur={field.handleBlur}
-                                 onChange={(e) => field.handleChange(e.target.value)}
+                                 onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                 }
                                  rows={3}
                                  value={field.state.value}
                               />
@@ -379,5 +398,3 @@ export function ManageOrganizationSheet({
       </Sheet>
    );
 }
-
-export const EditOrganizationSheet = ManageOrganizationSheet;

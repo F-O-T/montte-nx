@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
@@ -6,6 +7,7 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
    ItemActions,
@@ -23,6 +25,24 @@ import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
+// Internal components for consistent localization
+function RecentInvitesCardHeader() {
+   return (
+      <CardHeader className="">
+         <CardTitle className="">
+            {translate(
+               "dashboard.routes.organization.recent-invites-section.title",
+            )}
+         </CardTitle>
+         <CardDescription>
+            {translate(
+               "dashboard.routes.organization.recent-invites-section.description",
+            )}
+         </CardDescription>
+      </CardHeader>
+   );
+}
+
 function RecentInvitesContent() {
    const trpc = useTRPC();
    const { data: recentInvites } = useSuspenseQuery(
@@ -30,13 +50,8 @@ function RecentInvitesContent() {
    );
 
    return (
-      <Card className="w-full">
-         <CardHeader className="">
-            <CardTitle className="">Recent Invites</CardTitle>
-            <CardDescription>
-               Most recent invitations sent to new members
-            </CardDescription>
-         </CardHeader>
+      <Card>
+         <RecentInvitesCardHeader />
          <CardContent>
             <ItemGroup>
                {recentInvites.map((invite, index) => (
@@ -73,12 +88,7 @@ function RecentInvitesContent() {
 function RecentInvitesSkeleton() {
    return (
       <Card className="w-full">
-         <CardHeader className="">
-            <CardTitle className="">Recent Invites</CardTitle>
-            <CardDescription>
-               Most recent invitations sent to new members
-            </CardDescription>
-         </CardHeader>
+         <RecentInvitesCardHeader />
          <CardContent>
             <ItemGroup>
                {[1, 2, 3].map((index) => (
@@ -105,23 +115,24 @@ function RecentInvitesSkeleton() {
 }
 
 function RecentInvitesErrorFallback({ error }: { error: Error }) {
+   const ErrorFallbackComponent = createErrorFallback({
+      errorDescription: translate(
+         "dashboard.routes.organization.recent-invites-section.state.error.description",
+      ),
+      errorTitle: translate(
+         "dashboard.routes.organization.recent-invites-section.state.error.title",
+      ),
+      retryText: translate("common.actions.retry"),
+   });
+
    return (
       <Card className="w-full">
-         <CardHeader className="">
-            <CardTitle className="">Recent Invites</CardTitle>
-            <CardDescription>
-               Most recent invitations sent to new members
-            </CardDescription>
-         </CardHeader>
+         <RecentInvitesCardHeader />
          <CardContent>
-            <div className="text-center py-4">
-               <p className="text-sm text-muted-foreground">
-                  Unable to load recent invites
-               </p>
-               <p className="text-xs text-muted-foreground mt-1">
-                  {error.message}
-               </p>
-            </div>
+            <ErrorFallbackComponent
+               error={error}
+               resetErrorBoundary={() => {}}
+            />
          </CardContent>
       </Card>
    );
