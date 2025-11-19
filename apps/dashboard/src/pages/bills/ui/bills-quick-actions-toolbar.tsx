@@ -12,10 +12,10 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { FilePlus, Filter } from "lucide-react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import { FilePlus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ManageBillSheet } from "../features/manage-bill-sheet";
+import { useBillList } from "../features/bill-list-context";
 
 type BillsQuickActionsToolbarProps = {
    type?: "payable" | "receivable";
@@ -25,80 +25,34 @@ export function BillsQuickActionsToolbar({
    type,
 }: BillsQuickActionsToolbarProps) {
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-   const navigate = useNavigate({ from: "/_dashboard/bills/" });
-   const search = useSearch({ from: "/_dashboard/bills/" });
+   const { setCurrentFilterType } = useBillList();
 
-   const title =
-      type === "payable"
-         ? translate("dashboard.routes.bills.payables.actions.title")
-         : type === "receivable"
-           ? translate("dashboard.routes.bills.receivables.actions.title")
-           : translate("dashboard.routes.bills.actions.title");
-
-   const description =
-      type === "payable"
-         ? translate("dashboard.routes.bills.payables.description")
-         : type === "receivable"
-           ? translate("dashboard.routes.bills.receivables.description")
-           : translate("dashboard.routes.bills.allBills.description");
-
-   const handleTypeFilter = (newType?: "payable" | "receivable") => {
-      if (newType) {
-         navigate({
-            search: { ...search, type: newType },
-         });
-      } else {
-         const { type, ...rest } = search;
-         navigate({
-            search: Object.keys(rest).length > 0 ? rest : {},
-         });
-      }
-   };
+   // Set the context filter type based on the component prop
+   useEffect(() => {
+      setCurrentFilterType(type);
+   }, [type, setCurrentFilterType]);
 
    return (
       <>
          <Item variant="outline">
             <ItemContent>
                <ItemTitle className="flex items-center gap-2">
-                  {title}
+                  {translate("common.headers.actions-toolbar.title")}
                   {type && (
-                     <Badge variant="secondary" className="text-xs">
+                     <Badge variant="secondary">
                         {type === "payable"
-                           ? translate("dashboard.routes.bills.types.payable")
+                           ? translate("dashboard.routes.bills.payables.title")
                            : translate(
-                                "dashboard.routes.bills.types.receivable",
+                                "dashboard.routes.bills.receivables.title",
                              )}
                      </Badge>
                   )}
                </ItemTitle>
-               <ItemDescription>{description}</ItemDescription>
+               <ItemDescription>
+                  {translate("common.headers.actions-toolbar.description")}
+               </ItemDescription>
             </ItemContent>
             <div className="flex items-center gap-2 ml-auto">
-               {/* Type filter buttons */}
-               <div className="flex items-center gap-1 mr-2">
-                  <Button
-                     size="sm"
-                     variant={!type ? "default" : "outline"}
-                     onClick={() => handleTypeFilter()}
-                  >
-                     {translate("common.form.all")}
-                  </Button>
-                  <Button
-                     size="sm"
-                     variant={type === "payable" ? "default" : "outline"}
-                     onClick={() => handleTypeFilter("payable")}
-                  >
-                     {translate("dashboard.routes.bills.types.payable")}
-                  </Button>
-                  <Button
-                     size="sm"
-                     variant={type === "receivable" ? "default" : "outline"}
-                     onClick={() => handleTypeFilter("receivable")}
-                  >
-                     {translate("dashboard.routes.bills.types.receivable")}
-                  </Button>
-               </div>
-
                <Tooltip>
                   <TooltipTrigger asChild>
                      <Button

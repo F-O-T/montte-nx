@@ -1,6 +1,7 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Combobox } from "@packages/ui/components/combobox";
+import { DatePicker } from "@packages/ui/components/date-picker";
 import { Field, FieldGroup, FieldLabel } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
 import {
@@ -18,39 +19,66 @@ import {
    SheetTitle,
 } from "@packages/ui/components/sheet";
 import { X } from "lucide-react";
+import { useBillList } from "./bill-list-context";
 
 type BillFilterSheetProps = {
-   searchTerm: string;
-   categoryFilter: string;
-   statusFilter: string;
-   typeFilter: string;
-   onSearchTermChange: (value: string) => void;
-   onCategoryFilterChange: (value: string) => void;
-   onStatusFilterChange: (value: string) => void;
-   onTypeFilterChange: (value: string) => void;
    categories: Array<{
       id: string;
       name: string;
       color: string;
       icon: string | null;
    }>;
-   isOpen: boolean;
-   onOpenChange: (open: boolean) => void;
+   isOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
 };
 
 export function BillFilterSheet({
-   searchTerm,
-   categoryFilter,
-   statusFilter,
-   typeFilter,
-   onSearchTermChange,
-   onCategoryFilterChange,
-   onStatusFilterChange,
-   onTypeFilterChange,
    categories,
    isOpen,
    onOpenChange,
 }: BillFilterSheetProps) {
+   const {
+      categoryFilter,
+      statusFilter,
+      typeFilter,
+      selectedMonth,
+      setCategoryFilter,
+      setStatusFilter,
+      setTypeFilter,
+      setSelectedMonth,
+      setCurrentPage,
+      isFilterSheetOpen,
+      setIsFilterSheetOpen,
+   } = useBillList();
+
+   const handleFilterChange = () => {
+      setCurrentPage(1);
+   };
+
+   const handleCategoryFilterChange = (value: string) => {
+      setCategoryFilter(value);
+      handleFilterChange();
+   };
+
+   const handleStatusFilterChange = (value: string) => {
+      setStatusFilter(value);
+      handleFilterChange();
+   };
+
+   const handleTypeFilterChange = (value: string) => {
+      setTypeFilter(value);
+      handleFilterChange();
+   };
+
+   const handleMonthChange = (date: Date | undefined) => {
+      setSelectedMonth(date || new Date());
+      handleFilterChange();
+   };
+
+   const handleOpenChange = (open: boolean) => {
+      setIsFilterSheetOpen(open);
+      onOpenChange?.(open);
+   };
    const categoryOptions = [
       {
          label: translate(
@@ -113,20 +141,18 @@ export function BillFilterSheet({
    ];
 
    const hasActiveFilters =
-      searchTerm !== "" ||
       categoryFilter !== "all" ||
       statusFilter !== "all" ||
       typeFilter !== "all";
 
    const clearFilters = () => {
-      onSearchTermChange("");
-      onCategoryFilterChange("all");
-      onStatusFilterChange("all");
-      onTypeFilterChange("all");
+      handleCategoryFilterChange("all");
+      handleStatusFilterChange("all");
+      handleTypeFilterChange("all");
    };
 
    return (
-      <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <Sheet open={isFilterSheetOpen} onOpenChange={handleOpenChange}>
          <SheetContent side="right" className="">
             <SheetHeader>
                <SheetTitle>
@@ -157,28 +183,13 @@ export function BillFilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("common.form.search.label")}
-                     </FieldLabel>
-                     <Input
-                        placeholder={translate(
-                           "dashboard.routes.bills.features.filter.search-placeholder",
-                        )}
-                        value={searchTerm}
-                        onChange={(e) => onSearchTermChange(e.target.value)}
-                     />
-                  </Field>
-               </FieldGroup>
-
-               <FieldGroup>
-                  <Field>
-                     <FieldLabel>
                         {translate("common.form.category.label")}
                      </FieldLabel>
                      <Combobox
                         emptyMessage={translate(
                            "common.form.search.no-results",
                         )}
-                        onValueChange={onCategoryFilterChange}
+                        onValueChange={handleCategoryFilterChange}
                         options={categoryOptions}
                         placeholder={translate(
                            "common.form.category.placeholder",
@@ -197,7 +208,7 @@ export function BillFilterSheet({
                         {translate("common.form.status.label")}
                      </FieldLabel>
                      <Select
-                        onValueChange={onStatusFilterChange}
+                        onValueChange={handleStatusFilterChange}
                         value={statusFilter}
                      >
                         <SelectTrigger>
@@ -227,7 +238,7 @@ export function BillFilterSheet({
                         {translate("common.form.type.label")}
                      </FieldLabel>
                      <Select
-                        onValueChange={onTypeFilterChange}
+                        onValueChange={handleTypeFilterChange}
                         value={typeFilter}
                      >
                         <SelectTrigger>
@@ -248,6 +259,19 @@ export function BillFilterSheet({
                            ))}
                         </SelectContent>
                      </Select>
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate("dashboard.routes.bills.features.filter.month.label")}
+                     </FieldLabel>
+                     <DatePicker
+                        date={selectedMonth}
+                        onSelect={handleMonthChange}
+                        placeholder={translate("dashboard.routes.bills.features.filter.month.placeholder")}
+                     />
                   </Field>
                </FieldGroup>
             </div>

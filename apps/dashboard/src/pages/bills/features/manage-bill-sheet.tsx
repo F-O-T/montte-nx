@@ -29,6 +29,12 @@ import {
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
 import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
+import { ChevronDownIcon } from "lucide-react";
+import {
    Command,
    CommandEmpty,
    CommandGroup,
@@ -48,6 +54,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
+import { useBillList } from "./bill-list-context";
 
 type ManageBillSheetProps = {
    onOpen?: boolean;
@@ -63,6 +70,8 @@ export function ManageBillSheet({
    asChild = false,
 }: ManageBillSheetProps) {
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+   const { currentFilterType } = useBillList();
    const queryClient = useQueryClient();
 
    const { data: categories = [] } = useQuery(
@@ -123,19 +132,19 @@ export function ManageBillSheet({
    );
 
    // Default values for create mode
-   const defaultValues = {
+   const defaultValues = useMemo(() => ({
       amount: "",
       bankAccountId: undefined as string | undefined,
       category: "",
       counterparty: "",
       description: "",
       dueDate: new Date(),
-      issueDate: new Date(),
+      issueDate: undefined as Date | undefined,
       notes: "",
-      type: "expense" as "expense" | "income",
+      type: (currentFilterType === "payable" ? "expense" : currentFilterType === "receivable" ? "income" : "expense") as "expense" | "income",
       isRecurring: false,
       recurrencePattern: undefined as RecurrencePattern | undefined,
-   };
+   }), [currentFilterType]);
 
    // Values for edit mode - convert from Bill data
    const editValues = bill ? {
@@ -145,7 +154,7 @@ export function ManageBillSheet({
       counterparty: bill.counterparty || "",
       description: bill.description,
       dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
-      issueDate: bill.issueDate ? new Date(bill.issueDate) : new Date(),
+      issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
       notes: bill.notes || "",
       type: bill.type as "expense" | "income",
       isRecurring: bill.isRecurring,
@@ -171,7 +180,7 @@ export function ManageBillSheet({
                      counterparty: value.counterparty,
                      description: value.description,
                      dueDate: value.dueDate.toISOString().split("T")[0],
-                     issueDate: value.issueDate.toISOString().split("T")[0],
+                     issueDate: value.issueDate ? value.issueDate.toISOString().split("T")[0] : undefined,
                      notes: value.notes,
                      type: value.type,
                      isRecurring: value.isRecurring,
@@ -187,7 +196,7 @@ export function ManageBillSheet({
                   counterparty: value.counterparty || undefined,
                   description: value.description,
                   dueDate: value.dueDate.toISOString().split("T")[0],
-                  issueDate: value.issueDate.toISOString().split("T")[0],
+                  issueDate: value.issueDate ? value.issueDate.toISOString().split("T")[0] : undefined,
                   notes: value.notes || undefined,
                   type: value.type,
                   isRecurring: value.isRecurring,
@@ -236,497 +245,519 @@ export function ManageBillSheet({
             </SheetHeader>
 
             <div className="grid gap-4 px-4">
-               <FieldGroup>
-                  <form.Field name="type">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.type",
-                                 )}
-                              </FieldLabel>
-                              <Select
-                                 onValueChange={(value) =>
-                                    field.handleChange(
-                                       value as "expense" | "income",
-                                    )
-                                 }
-                                 value={field.state.value}
-                              >
-                                 <SelectTrigger>
-                                    <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                    <SelectItem value="expense">
-                                       {translate(
-                                          "dashboard.routes.bills.create.types.expense",
-                                       )}
-                                    </SelectItem>
-                                    <SelectItem value="income">
-                                       {translate(
-                                          "dashboard.routes.bills.create.types.income",
-                                       )}
-                                    </SelectItem>
-                                 </SelectContent>
-                              </Select>
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-
-               <FieldGroup>
-                  <form.Field name="description">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.description",
-                                 )}
-                              </FieldLabel>
-                              <Textarea
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.bills.create.placeholders.description",
-                                 )}
-                                 value={field.state.value}
-                              />
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-
-               <FieldGroup>
-                  <form.Field name="amount">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.amount",
-                                 )}
-                              </FieldLabel>
-                              <Input
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder="0.00"
-                                 step="0.01"
-                                 type="number"
-                                 value={field.state.value}
-                              />
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-
-               <FieldGroup>
-                  <form.Field name="category">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-
-                        const selectedCategory = categories.find(
-                           (category) => category.name === field.state.value,
-                        );
-
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.category",
-                                 )}
-                              </FieldLabel>
-                              <Popover
-                                 open={categoryComboboxOpen}
-                                 onOpenChange={setCategoryComboboxOpen}
-                              >
-                                 <PopoverTrigger asChild>
-                                    <Button
-                                       aria-expanded={categoryComboboxOpen}
-                                       className="w-full justify-between"
-                                       role="combobox"
-                                       variant="outline"
-                                    >
-                                       {selectedCategory ? (
-                                          <div className="flex items-center gap-2">
-                                             <IconDisplay
-                                                iconName={
-                                                   selectedCategory.icon as any
-                                                }
-                                                size={16}
-                                             />
-                                             <span>
-                                                {selectedCategory.name}
-                                             </span>
-                                          </div>
-                                       ) : (
-                                          <span className="text-muted-foreground">
-                                             {translate(
-                                                "dashboard.routes.bills.create.placeholders.category",
-                                             )}
-                                          </span>
-                                       )}
-                                       <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                 </PopoverTrigger>
-                                 <PopoverContent className="w-full p-0">
-                                    <Command>
-                                       <CommandInput
-                                          placeholder={translate(
-                                             "dashboard.routes.bills.create.placeholders.searchCategory",
+               {/* Essential Fields */}
+               <div className="space-y-4">
+                  <FieldGroup>
+                     <form.Field name="type">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.bills.create.fields.type",
+                                    )}
+                                 </FieldLabel>
+                                 <Select
+                                    onValueChange={(value) =>
+                                       field.handleChange(
+                                          value as "expense" | "income",
+                                       )
+                                    }
+                                    value={field.state.value}
+                                 >
+                                    <SelectTrigger>
+                                       <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                       <SelectItem value="expense">
+                                          {translate(
+                                             "dashboard.routes.bills.create.types.expense",
                                           )}
-                                       />
-                                       <CommandList>
-                                          <CommandEmpty>
-                                             {translate(
-                                                "dashboard.routes.bills.create.noCategoryFound",
+                                       </SelectItem>
+                                       <SelectItem value="income">
+                                          {translate(
+                                             "dashboard.routes.bills.create.types.income",
+                                          )}
+                                       </SelectItem>
+                                    </SelectContent>
+                                 </Select>
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="description">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.bills.create.fields.description",
+                                    )}
+                                 </FieldLabel>
+                                 <Input
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.bills.create.placeholders.description",
+                                    )}
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="amount">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.bills.create.fields.amount",
+                                    )}
+                                 </FieldLabel>
+                                 <Input
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
+                                    placeholder="0.00"
+                                    step="0.01"
+                                    type="number"
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="category">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+
+                           const selectedCategory = categories.find(
+                              (category) => category.name === field.state.value,
+                           );
+
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.bills.create.fields.category",
+                                    )}
+                                 </FieldLabel>
+                                 <Popover
+                                    open={categoryComboboxOpen}
+                                    onOpenChange={setCategoryComboboxOpen}
+                                 >
+                                    <PopoverTrigger asChild>
+                                       <Button
+                                          aria-expanded={categoryComboboxOpen}
+                                          className="w-full justify-between"
+                                          role="combobox"
+                                          variant="outline"
+                                       >
+                                          {selectedCategory ? (
+                                             <div className="flex items-center gap-2">
+                                                <IconDisplay
+                                                   iconName={
+                                                      selectedCategory.icon as any
+                                                   }
+                                                   size={16}
+                                                />
+                                                <span>
+                                                   {selectedCategory.name}
+                                                </span>
+                                             </div>
+                                          ) : (
+                                             <span className="text-muted-foreground">
+                                                {translate(
+                                                   "dashboard.routes.bills.create.placeholders.category",
+                                                )}
+                                             </span>
+                                          )}
+                                          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                       </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                       <Command>
+                                          <CommandInput
+                                             placeholder={translate(
+                                                "dashboard.routes.bills.create.placeholders.searchCategory",
                                              )}
-                                          </CommandEmpty>
-                                          <CommandGroup>
-                                             {categories.map((category) => (
-                                                <CommandItem
-                                                   key={category.id}
-                                                   onSelect={() => {
-                                                      field.handleChange(
-                                                         category.name ===
-                                                            field.state.value
-                                                            ? ""
-                                                            : category.name,
-                                                      );
-                                                      setCategoryComboboxOpen(
-                                                         false,
-                                                      );
-                                                   }}
-                                                   value={category.name}
-                                                >
-                                                   <div className="flex items-center gap-2 flex-1">
-                                                      <IconDisplay
-                                                         iconName={
-                                                            category.icon as any
-                                                         }
-                                                         size={16}
-                                                      />
-                                                      <span>
-                                                         {category.name}
-                                                      </span>
-                                                   </div>
-                                                   {field.state.value ===
-                                                      category.name && (
-                                                      <CheckIcon className="ml-2 h-4 w-4" />
-                                                   )}
-                                                </CommandItem>
-                                             ))}
-                                          </CommandGroup>
-                                       </CommandList>
-                                    </Command>
-                                 </PopoverContent>
-                              </Popover>
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
+                                          />
+                                          <CommandList>
+                                             <CommandEmpty>
+                                                {translate(
+                                                   "dashboard.routes.bills.create.noCategoryFound",
+                                                )}
+                                             </CommandEmpty>
+                                             <CommandGroup>
+                                                {categories.map((category) => (
+                                                   <CommandItem
+                                                      key={category.id}
+                                                      onSelect={() => {
+                                                         field.handleChange(
+                                                            category.name ===
+                                                               field.state.value
+                                                               ? ""
+                                                               : category.name,
+                                                         );
+                                                         setCategoryComboboxOpen(
+                                                            false,
+                                                         );
+                                                      }}
+                                                      value={category.name}
+                                                   >
+                                                      <div className="flex items-center gap-2 flex-1">
+                                                         <IconDisplay
+                                                            iconName={
+                                                               category.icon as any
+                                                            }
+                                                            size={16}
+                                                         />
+                                                         <span>
+                                                            {category.name}
+                                                         </span>
+                                                      </div>
+                                                      {field.state.value ===
+                                                         category.name && (
+                                                         <CheckIcon className="ml-2 h-4 w-4" />
+                                                      )}
+                                                   </CommandItem>
+                                                ))}
+                                             </CommandGroup>
+                                          </CommandList>
+                                       </Command>
+                                    </PopoverContent>
+                                 </Popover>
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
 
-               <FieldGroup>
-                  <form.Field name="counterparty">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.counterparty",
-                                 )}
-                              </FieldLabel>
-                              <Input
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.bills.create.placeholders.counterparty",
-                                 )}
-                                 value={field.state.value}
-                              />
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
+                  <FieldGroup>
+                     <form.Field name="dueDate">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.bills.create.fields.dueDate",
+                                    )}
+                                 </FieldLabel>
+                                 <DatePicker
+                                    date={field.state.value}
+                                    onSelect={(date) =>
+                                       field.handleChange(date || new Date())
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.bills.create.placeholders.dueDate",
+                                    )}
                                  />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
 
-               <FieldGroup>
-                  <form.Field name="dueDate">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.dueDate",
-                                 )}
-                              </FieldLabel>
-                              <DatePicker
-                                 date={field.state.value}
-                                 onSelect={(date) =>
-                                    field.handleChange(date || new Date())
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.bills.create.placeholders.dueDate",
-                                 )}
-                              />
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
+                  <FieldGroup>
+                     <form.Field name="isRecurring">
+                        {(field) => {
+                           return (
+                              <div className="flex items-center space-x-2">
+                                 <Checkbox
+                                    id="isRecurring"
+                                    checked={field.state.value}
+                                    onCheckedChange={(checked) =>
+                                       field.handleChange(!!checked)
+                                    }
                                  />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
+                                 <label
+                                    htmlFor="isRecurring"
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                 >
+                                    Conta recorrente
+                                 </label>
+                              </div>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
 
-               <FieldGroup>
-                  <form.Field name="issueDate">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.issueDate",
-                                 )}
-                              </FieldLabel>
-                              <DatePicker
-                                 date={field.state.value}
-                                 onSelect={(date) =>
-                                    field.handleChange(date || new Date())
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.bills.create.placeholders.issueDate",
-                                 )}
-                              />
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
+                  <form.Subscribe
+                     selector={(state) => state.values.isRecurring}
+                  >
+                     {(isRecurring) =>
+                        isRecurring && (
+                           <FieldGroup>
+                              <form.Field name="recurrencePattern">
+                                 {(field) => {
+                                    const isInvalid =
+                                       field.state.meta.isTouched &&
+                                       !field.state.meta.isValid;
+                                    return (
+                                       <Field data-invalid={isInvalid}>
+                                          <FieldLabel>
+                                             Padrão de recorrência
+                                          </FieldLabel>
+                                          <Select
+                                             onValueChange={(value) =>
+                                                field.handleChange(
+                                                   value as RecurrencePattern,
+                                                )
+                                             }
+                                             value={field.state.value}
+                                          >
+                                             <SelectTrigger>
+                                                <SelectValue placeholder="Selecione o período" />
+                                             </SelectTrigger>
+                                             <SelectContent>
+                                                <SelectItem value="monthly">
+                                                   Mensal
+                                                </SelectItem>
+                                                <SelectItem value="quarterly">
+                                                   Trimestral
+                                                </SelectItem>
+                                                <SelectItem value="semiannual">
+                                                   Semestral
+                                                </SelectItem>
+                                                <SelectItem value="annual">
+                                                   Anual
+                                                </SelectItem>
+                                             </SelectContent>
+                                          </Select>
+                                          {isInvalid && (
+                                             <FieldError
+                                                errors={field.state.meta.errors}
+                                             />
+                                          )}
+                                       </Field>
+                                   );
+                                 }}
+                              </form.Field>
+                           </FieldGroup>
+                        )
+                     }
+                  </form.Subscribe>
+               </div>
 
-               <FieldGroup>
-                  <form.Field name="bankAccountId">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.bankAccount",
-                                 )}
-                              </FieldLabel>
-                              <Select
-                                 onValueChange={(value) =>
-                                    field.handleChange(value)
-                                 }
-                                 value={field.state.value}
-                              >
-                                 <SelectTrigger>
-                                    <SelectValue
+               {/* Optional Details Section */}
+               <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                  <CollapsibleTrigger asChild>
+                     <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm font-medium"
+                     >
+                        Detalhes adicionais
+                        <ChevronDownIcon
+                           className="h-4 w-4 transition-transform duration-200"
+                           style={{
+                              transform: isDetailsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                           }}
+                        />
+                     </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 mt-4">
+                     <FieldGroup>
+                        <form.Field name="issueDate">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.issueDate",
+                                       )}
+                                    </FieldLabel>
+                                    <DatePicker
+                                       date={field.state.value}
+                                       onSelect={(date) =>
+                                          field.handleChange(date)
+                                       }
                                        placeholder={translate(
-                                          "dashboard.routes.bills.create.placeholders.bankAccount",
+                                          "dashboard.routes.bills.create.placeholders.issueDate",
                                        )}
                                     />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                    {activeBankAccounts.map((account) => (
-                                       <SelectItem
-                                          key={account.id}
-                                          value={account.id}
-                                       >
-                                          {account.name} - {account.bank}
-                                       </SelectItem>
-                                    ))}
-                                 </SelectContent>
-                              </Select>
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
 
-               <FieldGroup>
-                  <form.Field name="notes">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.bills.create.fields.notes",
-                                 )}
-                              </FieldLabel>
-                              <Textarea
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.bills.create.placeholders.notes",
-                                 )}
-                                 value={field.state.value}
-                              />
-                              {isInvalid && (
-                                 <FieldError
-                                    errors={field.state.meta.errors}
-                                 />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-
-               <FieldGroup>
-                  <form.Field name="isRecurring">
-                     {(field) => {
-                        return (
-                           <div className="flex items-center space-x-2">
-                              <Checkbox
-                                 id="isRecurring"
-                                 checked={field.state.value}
-                                 onCheckedChange={(checked) =>
-                                    field.handleChange(!!checked)
-                                 }
-                              />
-                              <label
-                                 htmlFor="isRecurring"
-                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                 Conta recorrente
-                              </label>
-                           </div>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-
-               <form.Subscribe
-                  selector={(state) => state.values.isRecurring}
-               >
-                  {(isRecurring) =>
-                     isRecurring && (
-                        <FieldGroup>
-                           <form.Field name="recurrencePattern">
-                              {(field) => {
-                                 const isInvalid =
-                                    field.state.meta.isTouched &&
-                                    !field.state.meta.isValid;
-                                 return (
-                                    <Field data-invalid={isInvalid}>
-                                       <FieldLabel>
-                                          Padrão de recorrência
-                                       </FieldLabel>
-                                       <Select
-                                          onValueChange={(value) =>
-                                             field.handleChange(
-                                                value as RecurrencePattern,
-                                             )
-                                          }
-                                          value={field.state.value}
-                                       >
-                                          <SelectTrigger>
-                                             <SelectValue placeholder="Selecione o período" />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                             <SelectItem value="monthly">
-                                                Mensal
-                                             </SelectItem>
-                                             <SelectItem value="quarterly">
-                                                Trimestral
-                                             </SelectItem>
-                                             <SelectItem value="semiannual">
-                                                Semestral
-                                             </SelectItem>
-                                             <SelectItem value="annual">
-                                                Anual
-                                             </SelectItem>
-                                          </SelectContent>
-                                       </Select>
-                                       {isInvalid && (
-                                          <FieldError
-                                             errors={field.state.meta.errors}
-                                          />
+                     <FieldGroup>
+                        <form.Field name="counterparty">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.counterparty",
                                        )}
-                                    </Field>
-                                 );
-                              }}
-                           </form.Field>
-                        </FieldGroup>
-                     )
-                  }
-               </form.Subscribe>
+                                    </FieldLabel>
+                                    <Input
+                                       onBlur={field.handleBlur}
+                                       onChange={(e) =>
+                                          field.handleChange(e.target.value)
+                                       }
+                                       placeholder={translate(
+                                          "dashboard.routes.bills.create.placeholders.counterparty",
+                                       )}
+                                       value={field.state.value}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+
+                     <FieldGroup>
+                        <form.Field name="bankAccountId">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.bankAccount",
+                                       )}
+                                    </FieldLabel>
+                                    <Select
+                                       onValueChange={(value) =>
+                                          field.handleChange(value)
+                                       }
+                                       value={field.state.value}
+                                    >
+                                       <SelectTrigger>
+                                          <SelectValue
+                                             placeholder={translate(
+                                                "dashboard.routes.bills.create.placeholders.bankAccount",
+                                             )}
+                                          />
+                                       </SelectTrigger>
+                                       <SelectContent>
+                                          {activeBankAccounts.map((account) => (
+                                             <SelectItem
+                                                key={account.id}
+                                                value={account.id}
+                                             >
+                                                {account.name} - {account.bank}
+                                             </SelectItem>
+                                          ))}
+                                       </SelectContent>
+                                    </Select>
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+
+                     <FieldGroup>
+                        <form.Field name="notes">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.notes",
+                                       )}
+                                    </FieldLabel>
+                                    <Textarea
+                                       onBlur={field.handleBlur}
+                                       onChange={(e) =>
+                                          field.handleChange(e.target.value)
+                                       }
+                                       placeholder={translate(
+                                          "dashboard.routes.bills.create.placeholders.notes",
+                                       )}
+                                       value={field.state.value}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+                  </CollapsibleContent>
+               </Collapsible>
             </div>
 
             <SheetFooter>

@@ -22,9 +22,9 @@ function BillsStatsErrorFallback(props: FallbackProps) {
 	return (
 		<div className="grid gap-4 h-min">
 			{createErrorFallback({
-				errorDescription: "Failed to load bills stats. Please try again later.",
-				errorTitle: "Error loading stats",
-				retryText: "Retry",
+				errorDescription: translate("dashboard.routes.bills.stats.error.description"),
+				errorTitle: translate("dashboard.routes.bills.stats.error.title"),
+				retryText: translate("common.form.retry"),
 			})(props)}
 		</div>
 	);
@@ -63,12 +63,12 @@ function BillsStatsContent({ type }: BillsStatsProps) {
 			<div className="grid gap-4 h-min">
 				<StatsCard
 					description={translate("dashboard.routes.bills.stats.pendingPayables")}
-					title="Total Payables"
+					title={translate("dashboard.routes.bills.stats.totalPayables.title")}
 					value={`R$ ${stats?.totalPendingPayables?.toFixed(2) || "0.00"}`}
 				/>
 				<StatsCard
 					description={translate("dashboard.routes.bills.stats.overdue")}
-					title="Overdue Bills"
+					title={translate("dashboard.routes.bills.stats.overduePayables.title")}
 					value={stats?.totalOverduePayables || 0}
 				/>
 			</div>
@@ -82,12 +82,12 @@ function BillsStatsContent({ type }: BillsStatsProps) {
 					description={translate(
 						"dashboard.routes.bills.stats.pendingReceivables",
 					)}
-					title="Total Receivables"
+					title={translate("dashboard.routes.bills.stats.totalReceivables.title")}
 					value={`R$ ${stats?.totalPendingReceivables?.toFixed(2) || "0.00"}`}
 				/>
 				<StatsCard
 					description={translate("dashboard.routes.bills.stats.overdue")}
-					title="Overdue Bills"
+					title={translate("dashboard.routes.bills.stats.overdueReceivables.title")}
 					value={stats?.totalOverdueReceivables || 0}
 				/>
 			</div>
@@ -99,17 +99,17 @@ function BillsStatsContent({ type }: BillsStatsProps) {
 		<div className="grid gap-4 h-min">
 			<StatsCard
 				description={translate("dashboard.routes.bills.stats.totalPayables")}
-				title="Payables"
+				title={translate("dashboard.routes.bills.stats.payables.title")}
 				value={`R$ ${stats?.totalPendingPayables?.toFixed(2) || "0.00"}`}
 			/>
 			<StatsCard
 				description={translate("dashboard.routes.bills.stats.totalReceivables")}
-				title="Receivables"
+				title={translate("dashboard.routes.bills.stats.receivables.title")}
 				value={`R$ ${stats?.totalPendingReceivables?.toFixed(2) || "0.00"}`}
 			/>
 			<StatsCard
 				description={translate("dashboard.routes.bills.stats.totalOverdue")}
-				title="Overdue Bills"
+				title={translate("dashboard.routes.bills.stats.overdueBills.title")}
 				value={(stats?.totalOverduePayables || 0) + (stats?.totalOverdueReceivables || 0)}
 			/>
 		</div>

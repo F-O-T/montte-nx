@@ -8,6 +8,23 @@ interface BillListContextType {
    selectAll: (ids: string[]) => void;
    toggleAll: (ids: string[]) => void;
    selectedCount: number;
+   currentFilterType?: "payable" | "receivable";
+   setCurrentFilterType: (type?: "payable" | "receivable") => void;
+   // Filter state
+   selectedMonth: Date;
+   setSelectedMonth: (date: Date) => void;
+   currentPage: number;
+   setCurrentPage: (page: number) => void;
+   searchTerm: string;
+   setSearchTerm: (term: string) => void;
+   categoryFilter: string;
+   setCategoryFilter: (filter: string) => void;
+   statusFilter: string;
+   setStatusFilter: (filter: string) => void;
+   typeFilter: string;
+   setTypeFilter: (filter: string) => void;
+   isFilterSheetOpen: boolean;
+   setIsFilterSheetOpen: (open: boolean) => void;
 }
 
 const BillListContext = createContext<BillListContextType | undefined>(undefined);
@@ -18,6 +35,16 @@ export function BillListProvider({
    children: React.ReactNode;
 }) {
    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+   const [currentFilterType, setCurrentFilterType] = useState<"payable" | "receivable" | undefined>();
+
+   // Filter state
+   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+   const [currentPage, setCurrentPage] = useState(1);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [categoryFilter, setCategoryFilter] = useState("all");
+   const [statusFilter, setStatusFilter] = useState("all");
+   const [typeFilter, setTypeFilter] = useState("all");
+   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -56,6 +83,23 @@ export function BillListProvider({
       selectedCount: selectedItems.size,
       selectedItems,
       toggleAll,
+      currentFilterType,
+      setCurrentFilterType,
+      // Filter state
+      selectedMonth,
+      setSelectedMonth,
+      currentPage,
+      setCurrentPage,
+      searchTerm,
+      setSearchTerm,
+      categoryFilter,
+      setCategoryFilter,
+      statusFilter,
+      setStatusFilter,
+      typeFilter,
+      setTypeFilter,
+      isFilterSheetOpen,
+      setIsFilterSheetOpen,
    };
 
    return (
