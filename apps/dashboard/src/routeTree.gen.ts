@@ -21,11 +21,13 @@ import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profil
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
 import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
+import { Route as DashboardBankAccountsIndexRouteImport } from './routes/_dashboard/bank-accounts.index'
 import { Route as DashboardOrganizationTeamsRouteImport } from './routes/_dashboard/organization/teams'
 import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
 import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
 import { Route as DashboardBillsReceivablesRouteImport } from './routes/_dashboard/bills/receivables'
 import { Route as DashboardBillsPayablesRouteImport } from './routes/_dashboard/bills/payables'
+import { Route as DashboardBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/bank-accounts.$bankAccountId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -87,6 +89,12 @@ const DashboardOrganizationIndexRoute =
     path: '/organization/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardBankAccountsIndexRoute =
+  DashboardBankAccountsIndexRouteImport.update({
+    id: '/bank-accounts/',
+    path: '/bank-accounts/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardOrganizationTeamsRoute =
   DashboardOrganizationTeamsRouteImport.update({
     id: '/organization/teams',
@@ -116,6 +124,12 @@ const DashboardBillsPayablesRoute = DashboardBillsPayablesRouteImport.update({
   path: '/bills/payables',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardBankAccountsBankAccountIdRoute =
+  DashboardBankAccountsBankAccountIdRouteImport.update({
+    id: '/bank-accounts/$bankAccountId',
+    path: '/bank-accounts/$bankAccountId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
@@ -128,11 +142,13 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
   '/bills/payables': typeof DashboardBillsPayablesRoute
   '/bills/receivables': typeof DashboardBillsReceivablesRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/bank-accounts': typeof DashboardBankAccountsIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesByTo {
@@ -146,11 +162,13 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
   '/bills/payables': typeof DashboardBillsPayablesRoute
   '/bills/receivables': typeof DashboardBillsReceivablesRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/bank-accounts': typeof DashboardBankAccountsIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesById {
@@ -166,11 +184,13 @@ export interface FileRoutesById {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
+  '/_dashboard/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
   '/_dashboard/bills/payables': typeof DashboardBillsPayablesRoute
   '/_dashboard/bills/receivables': typeof DashboardBillsReceivablesRoute
   '/_dashboard/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/_dashboard/organization/members': typeof DashboardOrganizationMembersRoute
   '/_dashboard/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/_dashboard/bank-accounts/': typeof DashboardBankAccountsIndexRoute
   '/_dashboard/organization/': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,11 +206,13 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/bank-accounts/$bankAccountId'
     | '/bills/payables'
     | '/bills/receivables'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
+    | '/bank-accounts'
     | '/organization'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,11 +226,13 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/bank-accounts/$bankAccountId'
     | '/bills/payables'
     | '/bills/receivables'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
+    | '/bank-accounts'
     | '/organization'
   id:
     | '__root__'
@@ -223,11 +247,13 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/_dashboard/bank-accounts/$bankAccountId'
     | '/_dashboard/bills/payables'
     | '/_dashboard/bills/receivables'
     | '/_dashboard/organization/invites'
     | '/_dashboard/organization/members'
     | '/_dashboard/organization/teams'
+    | '/_dashboard/bank-accounts/'
     | '/_dashboard/organization/'
   fileRoutesById: FileRoutesById
 }
@@ -322,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrganizationIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/bank-accounts/': {
+      id: '/_dashboard/bank-accounts/'
+      path: '/bank-accounts'
+      fullPath: '/bank-accounts'
+      preLoaderRoute: typeof DashboardBankAccountsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/organization/teams': {
       id: '/_dashboard/organization/teams'
       path: '/organization/teams'
@@ -357,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillsPayablesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/bank-accounts/$bankAccountId': {
+      id: '/_dashboard/bank-accounts/$bankAccountId'
+      path: '/bank-accounts/$bankAccountId'
+      fullPath: '/bank-accounts/$bankAccountId'
+      preLoaderRoute: typeof DashboardBankAccountsBankAccountIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
@@ -366,11 +406,13 @@ interface DashboardRouteChildren {
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
+  DashboardBankAccountsBankAccountIdRoute: typeof DashboardBankAccountsBankAccountIdRoute
   DashboardBillsPayablesRoute: typeof DashboardBillsPayablesRoute
   DashboardBillsReceivablesRoute: typeof DashboardBillsReceivablesRoute
   DashboardOrganizationInvitesRoute: typeof DashboardOrganizationInvitesRoute
   DashboardOrganizationMembersRoute: typeof DashboardOrganizationMembersRoute
   DashboardOrganizationTeamsRoute: typeof DashboardOrganizationTeamsRoute
+  DashboardBankAccountsIndexRoute: typeof DashboardBankAccountsIndexRoute
   DashboardOrganizationIndexRoute: typeof DashboardOrganizationIndexRoute
 }
 
@@ -380,11 +422,14 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardReportsRoute: DashboardReportsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
+  DashboardBankAccountsBankAccountIdRoute:
+    DashboardBankAccountsBankAccountIdRoute,
   DashboardBillsPayablesRoute: DashboardBillsPayablesRoute,
   DashboardBillsReceivablesRoute: DashboardBillsReceivablesRoute,
   DashboardOrganizationInvitesRoute: DashboardOrganizationInvitesRoute,
   DashboardOrganizationMembersRoute: DashboardOrganizationMembersRoute,
   DashboardOrganizationTeamsRoute: DashboardOrganizationTeamsRoute,
+  DashboardBankAccountsIndexRoute: DashboardBankAccountsIndexRoute,
   DashboardOrganizationIndexRoute: DashboardOrganizationIndexRoute,
 }
 

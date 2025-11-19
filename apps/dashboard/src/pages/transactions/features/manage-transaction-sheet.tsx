@@ -92,7 +92,10 @@ export function ManageTransactionSheet({
       trpc.transactions.create.mutationOptions({
          onSuccess: async () => {
             await queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAll.queryKey(),
+               queryKey: trpc.transactions.getAllPaginated.queryKey(),
+            });
+            await queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
             setIsOpen?.(false);
          },
@@ -106,7 +109,10 @@ export function ManageTransactionSheet({
          },
          onSuccess: async () => {
             await queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAll.queryKey(),
+               queryKey: trpc.transactions.getAllPaginated.queryKey(),
+            });
+            await queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
             setIsOpen?.(false);
          },
