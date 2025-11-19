@@ -71,6 +71,63 @@ export async function findBillsByUserId(
    }
 }
 
+export async function findBillsByUserIdFiltered(
+   dbClient: DatabaseInstance,
+   userId: string,
+   options: {
+      type?: "income" | "expense";
+      month?: string;
+      orderBy?: "dueDate" | "issueDate" | "amount" | "createdAt";
+      orderDirection?: "asc" | "desc";
+   } = {},
+) {
+   const {
+      type,
+      month,
+      orderBy = "dueDate",
+      orderDirection = "desc",
+   } = options;
+
+   try {
+      const buildWhereCondition = (bill: any, { eq, and, gte, lte }: any) => {
+         const conditions = [eq(bill.userId, userId)];
+
+         if (type) {
+            conditions.push(eq(bill.type, type));
+         }
+
+         if (month) {
+            const [year, monthNum] = month.split("-").map(Number);
+            const monthStart = new Date(year, monthNum - 1, 1);
+            const monthEnd = new Date(year, monthNum, 0, 23, 59, 59, 999);
+            conditions.push(gte(bill.dueDate, monthStart));
+            conditions.push(lte(bill.dueDate, monthEnd));
+         }
+
+         return and(...conditions);
+      };
+
+      const result = await dbClient.query.bill.findMany({
+         orderBy: (bill, { asc, desc }) => {
+            const column = bill[orderBy as keyof typeof bill];
+            return orderDirection === "asc" ? asc(column) : desc(column);
+         },
+         where: buildWhereCondition,
+         with: {
+            bankAccount: true,
+            transaction: true,
+         },
+      });
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bills by user id with filters: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findBillsByUserIdPaginated(
    dbClient: DatabaseInstance,
    userId: string,

@@ -4,6 +4,7 @@ import {
    findBillById,
    findBillsByUserId,
    findBillsByUserIdAndType,
+   findBillsByUserIdFiltered,
    findBillsByUserIdPaginated,
    findCompletedBillsByUserId,
    findOverdueBillsByUserId,
@@ -70,6 +71,15 @@ const paginationSchema = z.object({
       .default("dueDate"),
    orderDirection: z.enum(["asc", "desc"]).default("desc"),
    page: z.coerce.number().min(1).default(1),
+   type: z.enum(["income", "expense"]).optional(),
+});
+
+const filterSchema = z.object({
+   month: z.string().optional(),
+   orderBy: z
+      .enum(["dueDate", "issueDate", "amount", "createdAt"])
+      .default("dueDate"),
+   orderDirection: z.enum(["asc", "desc"]).default("desc"),
    type: z.enum(["income", "expense"]).optional(),
 });
 
@@ -257,16 +267,22 @@ export const billRouter = router({
          });
       }),
 
-   getAll: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+   getAll: protectedProcedure
+      .input(filterSchema.optional())
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
 
-      const userId = resolvedCtx.session.user.id;
+         const userId = resolvedCtx.session.user.id;
 
-      return findBillsByUserId(resolvedCtx.db, userId);
-   }),
+         if (input && (input.month || input.type)) {
+            return findBillsByUserIdFiltered(resolvedCtx.db, userId, input);
+         }
+
+         return findBillsByUserId(resolvedCtx.db, userId);
+      }),
 
    getAllPaginated: protectedProcedure
       .input(paginationSchema)

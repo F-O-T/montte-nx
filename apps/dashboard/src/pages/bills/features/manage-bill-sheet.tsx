@@ -3,14 +3,6 @@ import { translate } from "@packages/localization";
 import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
-import {
-   Command,
-   CommandEmpty,
-   CommandGroup,
-   CommandInput,
-   CommandItem,
-   CommandList,
-} from "@packages/ui/components/command";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import {
    Field,
@@ -19,11 +11,6 @@ import {
    FieldLabel,
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
-import {
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-} from "@packages/ui/components/popover";
 import {
    Select,
    SelectContent,
@@ -38,28 +25,53 @@ import {
    SheetFooter,
    SheetHeader,
    SheetTitle,
+   SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
+import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
+import { ChevronDownIcon } from "lucide-react";
+import {
+   Command,
+   CommandEmpty,
+   CommandGroup,
+   CommandInput,
+   CommandItem,
+   CommandList,
+} from "@packages/ui/components/command";
+import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from "@packages/ui/components/popover";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useState } from "react";
+import { CheckIcon, ChevronsUpDownIcon, Pencil, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
+import { useBillList } from "./bill-list-context";
 
-type EditBillSheetProps = {
-   bill: Bill;
-   onOpen: boolean;
-   onOpenChange: (open: boolean) => void;
+type ManageBillSheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   bill?: Bill; // If provided, edit mode. If not, create mode
+   asChild?: boolean;
 };
 
-export function EditBillSheet({
-   bill,
+export function ManageBillSheet({
    onOpen,
    onOpenChange,
-}: EditBillSheetProps) {
+   bill,
+   asChild = false,
+}: ManageBillSheetProps) {
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
+   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+   const { currentFilterType } = useBillList();
    const queryClient = useQueryClient();
 
    const { data: categories = [] } = useQuery(
@@ -72,6 +84,31 @@ export function EditBillSheet({
 
    const activeBankAccounts = bankAccounts.filter(
       (account) => account.status === "active",
+   );
+
+   const isEditMode = !!bill;
+   const isOpen = onOpen ?? false;
+
+   const createBillMutation = useMutation(
+      trpc.bills.create.mutationOptions({
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.bills.getAll.queryKey(),
+            });
+            await queryClient.invalidateQueries({
+               queryKey: trpc.bills.getStats.queryKey(),
+            });
+            toast.success(translate("dashboard.routes.bills.create.success"));
+            form.reset();
+            onOpenChange?.(false);
+         },
+         onError: (error) => {
+            toast.error(
+               error.message ||
+                  translate("dashboard.routes.bills.create.error"),
+            );
+         },
+      }),
    );
 
    const updateBillMutation = useMutation(
@@ -89,73 +126,127 @@ export function EditBillSheet({
                queryKey: trpc.bills.getStats.queryKey(),
             });
             toast.success(translate("dashboard.routes.bills.edit.success"));
-            onOpenChange(false);
+            onOpenChange?.(false);
          },
       }),
    );
 
+   // Default values for create mode
+   const defaultValues = useMemo(() => ({
+      amount: "",
+      bankAccountId: undefined as string | undefined,
+      category: "",
+      counterparty: "",
+      description: "",
+      dueDate: new Date(),
+      issueDate: undefined as Date | undefined,
+      notes: "",
+      type: (currentFilterType === "payable" ? "expense" : currentFilterType === "receivable" ? "income" : "expense") as "expense" | "income",
+      isRecurring: false,
+      recurrencePattern: undefined as RecurrencePattern | undefined,
+   }), [currentFilterType]);
+
+   // Values for edit mode - convert from Bill data
+   const editValues = bill ? {
+      amount: bill.amount,
+      bankAccountId: bill.bankAccountId || undefined,
+      category: bill.category,
+      counterparty: bill.counterparty || "",
+      description: bill.description,
+      dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
+      issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
+      notes: bill.notes || "",
+      type: bill.type as "expense" | "income",
+      isRecurring: bill.isRecurring,
+      recurrencePattern: bill.recurrencePattern as RecurrencePattern | undefined,
+   } : defaultValues;
+
    const form = useForm({
-      defaultValues: {
-         amount: bill.amount,
-         bankAccountId: bill.bankAccountId || undefined,
-         category: bill.category,
-         counterparty: bill.counterparty || "",
-         description: bill.description,
-         dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
-         issueDate: bill.issueDate ? new Date(bill.issueDate) : new Date(),
-         notes: bill.notes || "",
-         type: bill.type as "expense" | "income",
-         isRecurring: bill.isRecurring || false,
-         recurrencePattern: bill.recurrencePattern as RecurrencePattern | undefined,
-      },
+      defaultValues: editValues,
       onSubmit: async ({ value }) => {
          if (!value.amount || !value.category || !value.description) {
             return;
          }
+
          try {
-            await updateBillMutation.mutateAsync({
-               data: {
+            if (isEditMode && bill) {
+               // Update existing bill
+               await updateBillMutation.mutateAsync({
+                  id: bill.id,
+                  data: {
+                     amount: parseFloat(value.amount),
+                     bankAccountId: value.bankAccountId,
+                     category: value.category,
+                     counterparty: value.counterparty,
+                     description: value.description,
+                     dueDate: value.dueDate.toISOString().split("T")[0],
+                     issueDate: value.issueDate ? value.issueDate.toISOString().split("T")[0] : undefined,
+                     notes: value.notes,
+                     type: value.type,
+                     isRecurring: value.isRecurring,
+                     recurrencePattern: value.recurrencePattern,
+                  },
+               });
+            } else {
+               // Create new bill
+               await createBillMutation.mutateAsync({
                   amount: parseFloat(value.amount),
                   bankAccountId: value.bankAccountId || undefined,
                   category: value.category as string,
                   counterparty: value.counterparty || undefined,
                   description: value.description,
                   dueDate: value.dueDate.toISOString().split("T")[0],
-                  issueDate: value.issueDate.toISOString().split("T")[0],
+                  issueDate: value.issueDate ? value.issueDate.toISOString().split("T")[0] : undefined,
                   notes: value.notes || undefined,
                   type: value.type,
                   isRecurring: value.isRecurring,
-                  recurrencePattern: value.isRecurring ? value.recurrencePattern : undefined,
-               },
-               id: bill.id,
-            });
+                  recurrencePattern: value.isRecurring
+                     ? value.recurrencePattern
+                     : undefined,
+               });
+            }
          } catch (error) {
-            console.error("Failed to update bill:", error);
+            console.error(`Failed to ${isEditMode ? "update" : "create"} bill:`, error);
          }
       },
    });
 
-   return (
-      <Sheet onOpenChange={onOpenChange} open={onOpen}>
-         <SheetContent className="overflow-y-auto">
-            <form
-               className="h-full flex flex-col"
-               onSubmit={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  form.handleSubmit();
-               }}
-            >
-               <SheetHeader>
-                  <SheetTitle>
-                     {translate("dashboard.routes.bills.edit.title")}
-                  </SheetTitle>
-                  <SheetDescription>
-                     {translate("dashboard.routes.bills.edit.description")}
-                  </SheetDescription>
-               </SheetHeader>
+   const title = isEditMode
+      ? translate("dashboard.routes.bills.edit.title")
+      : translate("dashboard.routes.bills.create.title");
 
-               <div className="grid gap-4 px-4">
+   const description = isEditMode
+      ? translate("dashboard.routes.bills.edit.description")
+      : translate("dashboard.routes.bills.create.description");
+
+   const submitText = isEditMode
+      ? translate("dashboard.routes.bills.edit.submit")
+      : translate("dashboard.routes.bills.create.submit");
+
+   const submittingText = isEditMode
+      ? translate("dashboard.routes.bills.edit.updating")
+      : translate("dashboard.routes.bills.create.creating");
+
+   const isPending = createBillMutation.isPending || updateBillMutation.isPending;
+
+   const content = (
+      <SheetContent className="overflow-y-auto">
+         <form
+            className="h-full flex flex-col"
+            onSubmit={(e) => {
+               e.preventDefault();
+               e.stopPropagation();
+               form.handleSubmit();
+            }}
+         >
+            <SheetHeader>
+               <SheetTitle>{title}</SheetTitle>
+               <SheetDescription>{description}</SheetDescription>
+            </SheetHeader>
+
+            <div className="grid gap-4 px-4">
+               {/* Essential Fields */}
+               <div className="space-y-4">
                   <FieldGroup>
                      <form.Field name="type">
                         {(field) => {
@@ -217,7 +308,7 @@ export function EditBillSheet({
                                        "dashboard.routes.bills.create.fields.description",
                                     )}
                                  </FieldLabel>
-                                 <Textarea
+                                 <Input
                                     onBlur={field.handleBlur}
                                     onChange={(e) =>
                                        field.handleChange(e.target.value)
@@ -291,8 +382,8 @@ export function EditBillSheet({
                                     )}
                                  </FieldLabel>
                                  <Popover
-                                    onOpenChange={setCategoryComboboxOpen}
                                     open={categoryComboboxOpen}
+                                    onOpenChange={setCategoryComboboxOpen}
                                  >
                                     <PopoverTrigger asChild>
                                        <Button
@@ -387,40 +478,6 @@ export function EditBillSheet({
                   </FieldGroup>
 
                   <FieldGroup>
-                     <form.Field name="counterparty">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.counterparty",
-                                    )}
-                                 </FieldLabel>
-                                 <Input
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder={translate(
-                                       "dashboard.routes.bills.create.placeholders.counterparty",
-                                    )}
-                                    value={field.state.value}
-                                 />
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
                      <form.Field name="dueDate">
                         {(field) => {
                            const isInvalid =
@@ -454,121 +511,6 @@ export function EditBillSheet({
                   </FieldGroup>
 
                   <FieldGroup>
-                     <form.Field name="issueDate">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.issueDate",
-                                    )}
-                                 </FieldLabel>
-                                 <DatePicker
-                                    date={field.state.value}
-                                    onSelect={(date) =>
-                                       field.handleChange(date || new Date())
-                                    }
-                                    placeholder={translate(
-                                       "dashboard.routes.bills.create.placeholders.issueDate",
-                                    )}
-                                 />
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
-                     <form.Field name="bankAccountId">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.bankAccount",
-                                    )}
-                                 </FieldLabel>
-                                 <Select
-                                    onValueChange={(value) =>
-                                       field.handleChange(value)
-                                    }
-                                    value={field.state.value}
-                                 >
-                                    <SelectTrigger>
-                                       <SelectValue
-                                          placeholder={translate(
-                                             "dashboard.routes.bills.create.placeholders.bankAccount",
-                                          )}
-                                       />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                       {activeBankAccounts.map((account) => (
-                                          <SelectItem
-                                             key={account.id}
-                                             value={account.id}
-                                          >
-                                             {account.name} - {account.bank}
-                                          </SelectItem>
-                                       ))}
-                                    </SelectContent>
-                                 </Select>
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
-                     <form.Field name="notes">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.notes",
-                                    )}
-                                 </FieldLabel>
-                                 <Textarea
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder={translate(
-                                       "dashboard.routes.bills.create.placeholders.notes",
-                                    )}
-                                    value={field.state.value}
-                                 />
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
                      <form.Field name="isRecurring">
                         {(field) => {
                            return (
@@ -576,7 +518,9 @@ export function EditBillSheet({
                                  <Checkbox
                                     id="isRecurring"
                                     checked={field.state.value}
-                                    onCheckedChange={(checked) => field.handleChange(!!checked)}
+                                    onCheckedChange={(checked) =>
+                                       field.handleChange(!!checked)
+                                    }
                                  />
                                  <label
                                     htmlFor="isRecurring"
@@ -590,14 +534,17 @@ export function EditBillSheet({
                      </form.Field>
                   </FieldGroup>
 
-                  <form.Subscribe selector={(state) => state.values.isRecurring}>
+                  <form.Subscribe
+                     selector={(state) => state.values.isRecurring}
+                  >
                      {(isRecurring) =>
                         isRecurring && (
                            <FieldGroup>
                               <form.Field name="recurrencePattern">
                                  {(field) => {
                                     const isInvalid =
-                                       field.state.meta.isTouched && !field.state.meta.isValid;
+                                       field.state.meta.isTouched &&
+                                       !field.state.meta.isValid;
                                     return (
                                        <Field data-invalid={isInvalid}>
                                           <FieldLabel>
@@ -605,7 +552,9 @@ export function EditBillSheet({
                                           </FieldLabel>
                                           <Select
                                              onValueChange={(value) =>
-                                                field.handleChange(value as RecurrencePattern)
+                                                field.handleChange(
+                                                   value as RecurrencePattern,
+                                                )
                                              }
                                              value={field.state.value}
                                           >
@@ -613,17 +562,27 @@ export function EditBillSheet({
                                                 <SelectValue placeholder="Selecione o período" />
                                              </SelectTrigger>
                                              <SelectContent>
-                                                <SelectItem value="monthly">Mensal</SelectItem>
-                                                <SelectItem value="quarterly">Trimestral</SelectItem>
-                                                <SelectItem value="semiannual">Semestral</SelectItem>
-                                                <SelectItem value="annual">Anual</SelectItem>
+                                                <SelectItem value="monthly">
+                                                   Mensal
+                                                </SelectItem>
+                                                <SelectItem value="quarterly">
+                                                   Trimestral
+                                                </SelectItem>
+                                                <SelectItem value="semiannual">
+                                                   Semestral
+                                                </SelectItem>
+                                                <SelectItem value="annual">
+                                                   Anual
+                                                </SelectItem>
                                              </SelectContent>
                                           </Select>
                                           {isInvalid && (
-                                             <FieldError errors={field.state.meta.errors} />
+                                             <FieldError
+                                                errors={field.state.meta.errors}
+                                             />
                                           )}
                                        </Field>
-                                    );
+                                   );
                                  }}
                               </form.Field>
                            </FieldGroup>
@@ -632,29 +591,231 @@ export function EditBillSheet({
                   </form.Subscribe>
                </div>
 
-               <SheetFooter>
-                  <form.Subscribe>
-                     {(state) => (
-                        <Button
-                           className="w-full"
-                           disabled={
-                              !state.canSubmit ||
-                              state.isSubmitting ||
-                              updateBillMutation.isPending
-                           }
-                           type="submit"
-                        >
-                           {state.isSubmitting || updateBillMutation.isPending
-                              ? translate(
-                                   "dashboard.routes.bills.edit.updating",
-                                )
-                              : translate("dashboard.routes.bills.edit.submit")}
-                        </Button>
-                     )}
-                  </form.Subscribe>
-               </SheetFooter>
-            </form>
-         </SheetContent>
+               {/* Optional Details Section */}
+               <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                  <CollapsibleTrigger asChild>
+                     <Button
+                        variant="ghost"
+                        className="w-full justify-between text-sm font-medium"
+                     >
+                        Detalhes adicionais
+                        <ChevronDownIcon
+                           className="h-4 w-4 transition-transform duration-200"
+                           style={{
+                              transform: isDetailsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                           }}
+                        />
+                     </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-4 mt-4">
+                     <FieldGroup>
+                        <form.Field name="issueDate">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.issueDate",
+                                       )}
+                                    </FieldLabel>
+                                    <DatePicker
+                                       date={field.state.value}
+                                       onSelect={(date) =>
+                                          field.handleChange(date)
+                                       }
+                                       placeholder={translate(
+                                          "dashboard.routes.bills.create.placeholders.issueDate",
+                                       )}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+
+                     <FieldGroup>
+                        <form.Field name="counterparty">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.counterparty",
+                                       )}
+                                    </FieldLabel>
+                                    <Input
+                                       onBlur={field.handleBlur}
+                                       onChange={(e) =>
+                                          field.handleChange(e.target.value)
+                                       }
+                                       placeholder={translate(
+                                          "dashboard.routes.bills.create.placeholders.counterparty",
+                                       )}
+                                       value={field.state.value}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+
+                     <FieldGroup>
+                        <form.Field name="bankAccountId">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.bankAccount",
+                                       )}
+                                    </FieldLabel>
+                                    <Select
+                                       onValueChange={(value) =>
+                                          field.handleChange(value)
+                                       }
+                                       value={field.state.value}
+                                    >
+                                       <SelectTrigger>
+                                          <SelectValue
+                                             placeholder={translate(
+                                                "dashboard.routes.bills.create.placeholders.bankAccount",
+                                             )}
+                                          />
+                                       </SelectTrigger>
+                                       <SelectContent>
+                                          {activeBankAccounts.map((account) => (
+                                             <SelectItem
+                                                key={account.id}
+                                                value={account.id}
+                                             >
+                                                {account.name} - {account.bank}
+                                             </SelectItem>
+                                          ))}
+                                       </SelectContent>
+                                    </Select>
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+
+                     <FieldGroup>
+                        <form.Field name="notes">
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched &&
+                                 !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel>
+                                       {translate(
+                                          "dashboard.routes.bills.create.fields.notes",
+                                       )}
+                                    </FieldLabel>
+                                    <Textarea
+                                       onBlur={field.handleBlur}
+                                       onChange={(e) =>
+                                          field.handleChange(e.target.value)
+                                       }
+                                       placeholder={translate(
+                                          "dashboard.routes.bills.create.placeholders.notes",
+                                       )}
+                                       value={field.state.value}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError
+                                          errors={field.state.meta.errors}
+                                       />
+                                    )}
+                                 </Field>
+                              );
+                           }}
+                        </form.Field>
+                     </FieldGroup>
+                  </CollapsibleContent>
+               </Collapsible>
+            </div>
+
+            <SheetFooter>
+               <form.Subscribe>
+                  {(state) => (
+                     <Button
+                        className="w-full"
+                        disabled={
+                           !state.canSubmit ||
+                           state.isSubmitting ||
+                           isPending
+                        }
+                        type="submit"
+                     >
+                        {state.isSubmitting || isPending
+                           ? submittingText
+                           : submitText}
+                     </Button>
+                  )}
+               </form.Subscribe>
+            </SheetFooter>
+         </form>
+      </SheetContent>
+   );
+
+   if (asChild) {
+      return (
+         <Sheet
+            onOpenChange={(open) => {
+               onOpenChange?.(open);
+               if (!open && !isEditMode) {
+                  form.reset();
+               }
+            }}
+            open={isOpen}
+         >
+            <SheetTrigger asChild>
+               <Button>
+                  {isEditMode ? <Pencil className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                  {isEditMode ? translate("common.actions.edit") : translate("common.actions.add")}
+               </Button>
+            </SheetTrigger>
+            {content}
+         </Sheet>
+      );
+   }
+
+   return (
+      <Sheet
+         onOpenChange={(open) => {
+            onOpenChange?.(open);
+            if (!open && !isEditMode) {
+               form.reset();
+            }
+         }}
+         open={isOpen}
+      >
+         {content}
       </Sheet>
    );
 }
