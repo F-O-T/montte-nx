@@ -217,11 +217,11 @@ function OrganizationSwitcherContent() {
                               </AvatarFallback>
                            </Avatar>
                         </ItemMedia>
-                        <ItemContent>
-                           <ItemTitle className="">
+                        <ItemContent className="min-w-0">
+                           <ItemTitle className="truncate w-full">
                               {organizationData.name}
                            </ItemTitle>
-                           <ItemDescription className="text-xs ">
+                           <ItemDescription className="text-xs truncate">
                               {organizationData.description}
                            </ItemDescription>
                         </ItemContent>
