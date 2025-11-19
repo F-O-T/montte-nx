@@ -80,7 +80,11 @@ export function BankAccountQuickActionsToolbar({
             onOpen={isEditSheetOpen}
             onOpenChange={setIsEditSheetOpen}
          />
-         <DeleteBankAccount bankAccount={bankAccount} />
+         <DeleteBankAccount
+            bankAccount={bankAccount}
+            open={isDeleteDialogOpen}
+            setOpen={setIsDeleteDialogOpen}
+         />
       </>
    );
 }

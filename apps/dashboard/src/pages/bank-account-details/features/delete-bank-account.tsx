@@ -11,7 +11,12 @@ import {
    AlertDialogTitle,
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
-import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
+import { Button } from "@packages/ui/components/button";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,9 +24,15 @@ import { trpc } from "@/integrations/clients";
 
 interface DeleteBankAccountProps {
    bankAccount: BankAccount;
+   open: boolean;
+   setOpen: (open: boolean) => void;
 }
 
-export function DeleteBankAccount({ bankAccount }: DeleteBankAccountProps) {
+export function DeleteBankAccount({
+   bankAccount,
+   open,
+   setOpen,
+}: DeleteBankAccountProps) {
    const queryClient = useQueryClient();
 
    const deleteBankAccountMutation = useMutation(
@@ -56,18 +67,7 @@ export function DeleteBankAccount({ bankAccount }: DeleteBankAccountProps) {
    };
 
    return (
-      <AlertDialog>
-         <AlertDialogTrigger asChild>
-            <DropdownMenuItem
-               className="text-destructive flex items-center gap-2"
-               onSelect={(e) => e.preventDefault()}
-            >
-               <Trash2 className="size-4" />
-               {translate(
-                  "dashboard.routes.profile.bank-accounts.actions.delete",
-               )}
-            </DropdownMenuItem>
-         </AlertDialogTrigger>
+      <AlertDialog onOpenChange={setOpen} open={open}>
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>

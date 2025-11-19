@@ -23,6 +23,9 @@ function BankAccountContent() {
    const bankAccountId = (params as any).bankAccountId as string;
    const trpc = useTRPC();
 
+   const { data: bankAccount } = useSuspenseQuery(
+      trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
+   );
    if (!bankAccountId) {
       return (
          <BankAccountPageError
@@ -31,10 +34,6 @@ function BankAccountContent() {
          />
       );
    }
-
-   const { data: bankAccount } = useSuspenseQuery(
-      trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
-   );
 
    if (!bankAccount) {
       return null;
