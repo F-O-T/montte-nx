@@ -7,6 +7,7 @@ import {
    getTotalIncomeByUserId,
    getTotalTransactionsByUserId,
    updateTransaction,
+   findTransactionsByUserIdPaginated,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -26,6 +27,16 @@ const updateTransactionSchema = z.object({
    category: z.string().optional(),
    date: z.string().optional(),
    description: z.string().optional(),
+   type: z.enum(["income", "expense"]).optional(),
+});
+
+const paginationSchema = z.object({
+   category: z.string().optional(),
+   limit: z.coerce.number().min(1).max(100).default(10),
+   orderBy: z.enum(["date", "amount"]).default("date"),
+   orderDirection: z.enum(["asc", "desc"]).default("desc"),
+   page: z.coerce.number().min(1).default(1),
+   search: z.string().optional(),
    type: z.enum(["income", "expense"]).optional(),
 });
 
@@ -81,6 +92,23 @@ export const transactionRouter = router({
 
       return findTransactionsByUserId(resolvedCtx.db, userId);
    }),
+
+   getAllPaginated: protectedProcedure
+      .input(paginationSchema)
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         return findTransactionsByUserIdPaginated(
+            resolvedCtx.db,
+            userId,
+            input,
+         );
+      }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))

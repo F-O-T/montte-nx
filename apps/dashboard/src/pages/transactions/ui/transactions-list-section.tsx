@@ -51,9 +51,9 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Filter, MoreVertical, Search, Wallet } from "lucide-react";
-import { Fragment, Suspense, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -64,14 +64,14 @@ import { FilterSheet } from "../features/filter-sheet";
 import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
 import { TransactionListProvider } from "../features/transaction-list-context";
 
-export type Transaction = RouterOutput["transactions"]["getAll"][number];
+export type Transaction =
+   RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
 type TransactionItemProps = {
    transaction: Transaction;
    categories: Category[];
 };
 
 function TransactionItem({ transaction, categories }: TransactionItemProps) {
-   // Find the category details for this transaction
    const categoryDetails = categories.find(
       (cat) => cat.name === transaction.category,
    );
@@ -218,37 +218,40 @@ function TransactionsListContent() {
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const pageSize = 10;
 
-   const { data: transactions } = useSuspenseQuery(
-      trpc.transactions.getAll.queryOptions(),
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setDebouncedSearchTerm(searchTerm);
+         setCurrentPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+   }, [searchTerm]);
+
+   const { data } = useSuspenseQuery(
+      trpc.transactions.getAllPaginated.queryOptions(
+         {
+            page: currentPage,
+            limit: pageSize,
+            type:
+               typeFilter === "all"
+                  ? undefined
+                  : (typeFilter as "income" | "expense"),
+            category: categoryFilter === "all" ? undefined : categoryFilter,
+            search: debouncedSearchTerm || undefined,
+         },
+         {
+            placeholderData: keepPreviousData,
+         },
+      ),
    );
+
+   const { transactions, pagination } = data;
+   const { totalPages } = pagination;
 
    const { data: categories = [] } = useSuspenseQuery(
       trpc.categories.getAll.queryOptions(),
    );
 
-   const filteredTransactions = transactions.filter((transaction) => {
-      const matchesSearch =
-         transaction.description
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-         transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-         categoryFilter === "all" || transaction.category === categoryFilter;
-      const matchesType =
-         typeFilter === "all" || transaction.type === typeFilter;
-
-      return matchesSearch && matchesCategory && matchesType;
-   });
-
-   // Pagination logic
-   const totalPages = Math.ceil(filteredTransactions.length / pageSize);
-   const startIndex = (currentPage - 1) * pageSize;
-   const paginatedTransactions = filteredTransactions.slice(
-      startIndex,
-      startIndex + pageSize,
-   );
-
-   // Reset to first page when filters change
    const handleFilterChange = () => {
       setCurrentPage(1);
    };
@@ -276,7 +279,6 @@ function TransactionsListContent() {
                      <InputGroupInput
                         onChange={(e) => {
                            setSearchTerm(e.target.value);
-                           handleFilterChange();
                         }}
                         placeholder={translate(
                            "common.form.search.placeholder",
@@ -296,7 +298,7 @@ function TransactionsListContent() {
                   </Button>
                </div>
 
-               {paginatedTransactions.length === 0 ? (
+               {transactions.length === 0 ? (
                   <Empty>
                      <EmptyContent>
                         <EmptyMedia variant="icon">
@@ -316,13 +318,13 @@ function TransactionsListContent() {
                   </Empty>
                ) : (
                   <ItemGroup>
-                     {paginatedTransactions.map((transaction, index) => (
+                     {transactions.map((transaction, index) => (
                         <Fragment key={transaction.id}>
                            <TransactionItem
                               categories={categories}
                               transaction={transaction}
                            />
-                           {index !== paginatedTransactions.length - 1 && (
+                           {index !== transactions.length - 1 && (
                               <ItemSeparator />
                            )}
                         </Fragment>
@@ -342,12 +344,12 @@ function TransactionsListContent() {
                                     : ""
                               }
                               href="#"
-                              onClick={() =>
-                                 setCurrentPage((prev) => {
-                                    const newPage = prev - 1;
-                                    return newPage >= 1 ? newPage : prev;
-                                 })
-                              }
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 setCurrentPage((prev) =>
+                                    Math.max(1, prev - 1),
+                                 );
+                              }}
                            />
                         </PaginationItem>
 
@@ -369,7 +371,10 @@ function TransactionsListContent() {
                               <PaginationLink
                                  href="#"
                                  isActive={pageNum === currentPage}
-                                 onClick={() => setCurrentPage(pageNum)}
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(pageNum);
+                                 }}
                               >
                                  {pageNum}
                               </PaginationLink>
@@ -384,14 +389,12 @@ function TransactionsListContent() {
                                     : ""
                               }
                               href="#"
-                              onClick={() =>
-                                 setCurrentPage((prev) => {
-                                    const newPage = prev + 1;
-                                    return newPage <= totalPages
-                                       ? newPage
-                                       : prev;
-                                 })
-                              }
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 setCurrentPage((prev) =>
+                                    Math.min(totalPages, prev + 1),
+                                 );
+                              }}
                            />
                         </PaginationItem>
                      </PaginationContent>

@@ -31,7 +31,10 @@ export function DeleteTransaction({
       trpc.transactions.delete.mutationOptions({
          onSuccess: () => {
             queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAll.queryKey(),
+               queryKey: trpc.transactions.getAllPaginated.queryKey(),
+            });
+            queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
          },
       }),

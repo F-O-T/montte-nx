@@ -16,8 +16,12 @@ export async function createTransaction(
          .values(data)
          .returning();
 
+      if (!result[0]) {
+         throw AppError.database("Failed to create transaction");
+      }
+
       const createdTransaction = await dbClient.query.transaction.findFirst({
-         where: (transaction, { eq }) => eq(transaction.id, result[0].id),
+         where: (transaction, { eq }) => eq(transaction.id, result[0]!.id),
          with: {
             bankAccount: true,
          },
@@ -73,6 +77,173 @@ export async function findTransactionsByUserId(
       propagateError(err);
       throw AppError.database(
          `Failed to find transactions by user id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findTransactionsByUserIdPaginated(
+   dbClient: DatabaseInstance,
+   userId: string,
+   options: {
+      page?: number;
+      limit?: number;
+      type?: "income" | "expense";
+      category?: string;
+      search?: string;
+      orderBy?: "date" | "amount";
+      orderDirection?: "asc" | "desc";
+   } = {},
+) {
+   const {
+      page = 1,
+      limit = 10,
+      type,
+      category,
+      search,
+      orderBy = "date",
+      orderDirection = "desc",
+   } = options;
+
+   const offset = (page - 1) * limit;
+
+   try {
+      const buildWhereCondition = (
+         transaction: any,
+         { eq, and, or, ilike }: any,
+      ) => {
+         const conditions = [eq(transaction.userId, userId)];
+
+         if (type && type !== ("all" as any)) {
+            conditions.push(eq(transaction.type, type));
+         }
+
+         if (category && category !== "all") {
+            conditions.push(eq(transaction.category, category));
+         }
+
+         if (search) {
+            conditions.push(
+               or(
+                  ilike(transaction.description, `%${search}%`),
+                  ilike(transaction.category, `%${search}%`),
+               ),
+            );
+         }
+
+         return and(...conditions);
+      };
+
+      const [transactions, totalCount] = await Promise.all([
+         dbClient.query.transaction.findMany({
+            limit,
+            offset,
+            orderBy: (transaction, { asc, desc }) => {
+               const column = transaction[orderBy as keyof typeof transaction];
+               return orderDirection === "asc" ? asc(column) : desc(column);
+            },
+            where: buildWhereCondition,
+            with: {
+               bankAccount: true,
+            },
+         }),
+         dbClient.query.transaction
+            .findMany({
+               where: buildWhereCondition,
+            })
+            .then((result) => result.length),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         transactions,
+         pagination: {
+            currentPage: page,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            limit,
+            totalCount,
+            totalPages,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transactions by user id paginated: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findTransactionsByBankAccountId(
+   dbClient: DatabaseInstance,
+   bankAccountId: string,
+) {
+   try {
+      const result = await dbClient.query.transaction.findMany({
+         orderBy: (transaction, { desc }) => desc(transaction.date),
+         where: (transaction, { eq }) =>
+            eq(transaction.bankAccountId, bankAccountId),
+         with: {
+            bankAccount: true,
+         },
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transactions by bank account id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findTransactionsByBankAccountIdPaginated(
+   dbClient: DatabaseInstance,
+   bankAccountId: string,
+   options: {
+      page?: number;
+      limit?: number;
+   } = {},
+) {
+   const { page = 1, limit = 10 } = options;
+   const offset = (page - 1) * limit;
+
+   try {
+      const [transactions, totalCount] = await Promise.all([
+         dbClient.query.transaction.findMany({
+            limit,
+            offset,
+            orderBy: (transaction, { desc }) => desc(transaction.date),
+            where: (transaction, { eq }) =>
+               eq(transaction.bankAccountId, bankAccountId),
+            with: {
+               bankAccount: true,
+            },
+         }),
+         dbClient.query.transaction
+            .findMany({
+               where: (transaction, { eq }) =>
+                  eq(transaction.bankAccountId, bankAccountId),
+            })
+            .then((result) => result.length),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         transactions,
+         pagination: {
+            currentPage: page,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            limit,
+            totalCount,
+            totalPages,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transactions by bank account id paginated: ${(err as Error).message}`,
       );
    }
 }
@@ -160,7 +331,6 @@ export async function getTotalIncomeByUserId(
    userId: string,
 ) {
    try {
-      // Get current month's start and end dates
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const currentMonthEnd = new Date(
@@ -197,7 +367,6 @@ export async function getTotalExpensesByUserId(
    userId: string,
 ) {
    try {
-      // Get current month's start and end dates
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const currentMonthEnd = new Date(

@@ -11,7 +11,6 @@ import {
 import {
    DropdownMenu,
    DropdownMenuContent,
-   DropdownMenuItem,
    DropdownMenuLabel,
    DropdownMenuSeparator,
    DropdownMenuTrigger,
@@ -34,7 +33,8 @@ import {
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, MoreVertical, Plus } from "lucide-react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { ArrowRight, Building2, MoreVertical, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
@@ -42,6 +42,7 @@ import { DeleteBankAccount } from "../features/delete-bank-account";
 import { ManageBankAccountSheet } from "../features/manage-bank-account-sheet";
 
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
+
 interface BankAccountActionsProps {
    bankAccount: BankAccount;
 }
@@ -71,9 +72,7 @@ function BankAccountActions({ bankAccount }: BankAccountActionsProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <ManageBankAccountSheet asChild bankAccount={bankAccount} />
-            <DropdownMenuItem asChild>
-               <DeleteBankAccount asChild bankAccount={bankAccount} />
-            </DropdownMenuItem>
+            <DeleteBankAccount bankAccount={bankAccount} />
          </DropdownMenuContent>
       </DropdownMenu>
    );
@@ -182,47 +181,63 @@ function BankAccountsContent() {
 
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.profile.bank-accounts.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate("dashboard.routes.profile.bank-accounts.description")}
-            </CardDescription>
+         <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div className="grid gap-1">
+               <CardTitle>
+                  {translate("dashboard.routes.profile.bank-accounts.title")}
+               </CardTitle>
+               <CardDescription>
+                  {translate(
+                     "dashboard.routes.profile.bank-accounts.description",
+                  )}
+               </CardDescription>
+            </div>
+            <Button asChild size="icon" variant="ghost">
+               <Link to="/bank-accounts">
+                  <ArrowRight className="size-4" />
+               </Link>
+            </Button>
          </CardHeader>
 
          <CardContent className="flex-1 overflow-y-auto">
             <ItemGroup>
                {bankAccounts.map((account, index) => (
                   <>
-                     <Item key={account.id}>
-                        <ItemMedia variant="icon">
-                           <Building2 className="size-4" />
-                        </ItemMedia>
-                        <ItemContent>
-                           <ItemTitle className="flex items-center gap-2">
-                              {account.name}
-                              <Badge
-                                 variant={
-                                    account.status === "active"
-                                       ? "default"
-                                       : "secondary"
-                                 }
-                              >
-                                 {account.status === "active"
-                                    ? "Ativa"
-                                    : "Inativa"}
-                              </Badge>
-                           </ItemTitle>
-                           <ItemDescription>
-                              {account.bank} •{" "}
-                              {getAccountTypeLabel(account.type)}
-                           </ItemDescription>
-                        </ItemContent>
-                        <ItemActions>
-                           <BankAccountActions bankAccount={account} />
-                        </ItemActions>
-                     </Item>
+                     <Link
+                        key={account.id}
+                        to="/bank-accounts/$bankAccountId"
+                        params={{ bankAccountId: account.id }}
+                        className="block"
+                     >
+                        <Item className="cursor-pointer hover:bg-muted/50 transition-colors">
+                           <ItemMedia variant="icon">
+                              <Building2 className="size-4" />
+                           </ItemMedia>
+                           <ItemContent>
+                              <ItemTitle className="flex items-center gap-2">
+                                 {account.name}
+                                 <Badge
+                                    variant={
+                                       account.status === "active"
+                                          ? "default"
+                                          : "secondary"
+                                    }
+                                 >
+                                    {account.status === "active"
+                                       ? "Ativa"
+                                       : "Inativa"}
+                                 </Badge>
+                              </ItemTitle>
+                              <ItemDescription>
+                                 {account.bank} •{" "}
+                                 {getAccountTypeLabel(account.type)}
+                              </ItemDescription>
+                           </ItemContent>
+                           <ItemActions onClick={(e) => e.preventDefault()}>
+                              <BankAccountActions bankAccount={account} />
+                           </ItemActions>
+                        </Item>
+                     </Link>
                      {index < bankAccounts.length - 1 && <ItemSeparator />}
                   </>
                ))}
