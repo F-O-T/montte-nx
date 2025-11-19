@@ -139,17 +139,14 @@ function OrganizationSwitcherContent() {
       trpc.organization.getLogo.queryOptions(),
    );
 
-   const organizationData = useMemo(
-      () => {
-         const hasOrg = !!activeOrganization;
-         return {
-            hasOrganization: hasOrg,
-            name: activeOrganization?.name || "Personal",
-            description: activeOrganization?.description || "Personal Account",
-         };
-      },
-      [activeOrganization],
-   );
+   const organizationData = useMemo(() => {
+      const hasOrg = !!activeOrganization;
+      return {
+         description: activeOrganization?.description || "Personal Account",
+         hasOrganization: hasOrg,
+         name: activeOrganization?.name || "Personal",
+      };
+   }, [activeOrganization]);
 
    const menuActions = useMemo(
       () => [
@@ -170,8 +167,8 @@ function OrganizationSwitcherContent() {
                <DropdownMenuTrigger asChild>
                   <SidebarMenuButton
                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground data-[disabled]:cursor-not-allowed"
-                     size="lg"
                      disabled={!organizationData.hasOrganization}
+                     size="lg"
                   >
                      <Item className="p-0 w-full">
                         <ItemMedia>

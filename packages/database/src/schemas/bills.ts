@@ -22,7 +22,7 @@ export const bill = pgTable("bill", {
    dueDate: timestamp("due_date").notNull(),
    id: text("id").primaryKey(),
    isRecurring: boolean("is_recurring").default(false).notNull(),
-   issueDate: timestamp("issue_date").notNull(),
+   issueDate: timestamp("issue_date"),
    notes: text("notes"),
    parentBillId: text("parent_bill_id"),
    recurrencePattern: text("recurrence_pattern"),

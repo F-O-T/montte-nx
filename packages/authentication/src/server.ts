@@ -118,10 +118,6 @@ export const getAuthOptions = (
          }),
          openAPI(),
          organization({
-            allowUserToCreateOrganization: async (user) => {
-               const state = await getCustomerState(polarClient, user.id);
-               return state?.activeSubscriptions.length > 0;
-            },
             organizationLimit: 1,
             schema: {
                organization: {

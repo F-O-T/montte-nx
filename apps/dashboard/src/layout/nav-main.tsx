@@ -26,10 +26,17 @@ import {
 } from "lucide-react";
 
 export function NavMain() {
-   const { pathname } = useLocation();
+   const { pathname, searchStr } = useLocation();
    const { setOpenMobile } = useSidebar();
    const isActive = (url: string) => {
       if (!url) return false;
+
+      // Handle query parameter URLs for bills
+      if (url.includes('/bills?')) {
+         const [path, params] = url.split('?');
+         return pathname === path && searchStr === params;
+      }
+
       return pathname === url;
    };
 
@@ -53,7 +60,7 @@ export function NavMain() {
                disabled: false,
                icon: ArrowDownRight,
                title: translate("dashboard.layout.nav-main.finance.payables"),
-               url: "/bills/payables",
+               url: "/bills?type=payable",
             },
             {
                disabled: false,
@@ -61,7 +68,7 @@ export function NavMain() {
                title: translate(
                   "dashboard.layout.nav-main.finance.receivables",
                ),
-               url: "/bills/receivables",
+               url: "/bills?type=receivable",
             },
             {
                disabled: false,

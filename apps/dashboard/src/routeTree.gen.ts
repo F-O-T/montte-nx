@@ -21,11 +21,10 @@ import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profil
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
 import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
+import { Route as DashboardBillsIndexRouteImport } from './routes/_dashboard/bills/index'
 import { Route as DashboardOrganizationTeamsRouteImport } from './routes/_dashboard/organization/teams'
 import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
 import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
-import { Route as DashboardBillsReceivablesRouteImport } from './routes/_dashboard/bills/receivables'
-import { Route as DashboardBillsPayablesRouteImport } from './routes/_dashboard/bills/payables'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -87,6 +86,11 @@ const DashboardOrganizationIndexRoute =
     path: '/organization/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardBillsIndexRoute = DashboardBillsIndexRouteImport.update({
+  id: '/bills/',
+  path: '/bills/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardOrganizationTeamsRoute =
   DashboardOrganizationTeamsRouteImport.update({
     id: '/organization/teams',
@@ -105,17 +109,6 @@ const DashboardOrganizationInvitesRoute =
     path: '/organization/invites',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardBillsReceivablesRoute =
-  DashboardBillsReceivablesRouteImport.update({
-    id: '/bills/receivables',
-    path: '/bills/receivables',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardBillsPayablesRoute = DashboardBillsPayablesRouteImport.update({
-  id: '/bills/payables',
-  path: '/bills/payables',
-  getParentRoute: () => DashboardRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
@@ -128,11 +121,10 @@ export interface FileRoutesByFullPath {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/bills/payables': typeof DashboardBillsPayablesRoute
-  '/bills/receivables': typeof DashboardBillsReceivablesRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/bills': typeof DashboardBillsIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesByTo {
@@ -146,11 +138,10 @@ export interface FileRoutesByTo {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/bills/payables': typeof DashboardBillsPayablesRoute
-  '/bills/receivables': typeof DashboardBillsReceivablesRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/bills': typeof DashboardBillsIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesById {
@@ -166,11 +157,10 @@ export interface FileRoutesById {
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/_dashboard/bills/payables': typeof DashboardBillsPayablesRoute
-  '/_dashboard/bills/receivables': typeof DashboardBillsReceivablesRoute
   '/_dashboard/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/_dashboard/organization/members': typeof DashboardOrganizationMembersRoute
   '/_dashboard/organization/teams': typeof DashboardOrganizationTeamsRoute
+  '/_dashboard/bills/': typeof DashboardBillsIndexRoute
   '/_dashboard/organization/': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRouteTypes {
@@ -186,11 +176,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/bills/payables'
-    | '/bills/receivables'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
+    | '/bills'
     | '/organization'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -204,11 +193,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/bills/payables'
-    | '/bills/receivables'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
+    | '/bills'
     | '/organization'
   id:
     | '__root__'
@@ -223,11 +211,10 @@ export interface FileRouteTypes {
     | '/auth/forgot-password'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/_dashboard/bills/payables'
-    | '/_dashboard/bills/receivables'
     | '/_dashboard/organization/invites'
     | '/_dashboard/organization/members'
     | '/_dashboard/organization/teams'
+    | '/_dashboard/bills/'
     | '/_dashboard/organization/'
   fileRoutesById: FileRoutesById
 }
@@ -322,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrganizationIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/bills/': {
+      id: '/_dashboard/bills/'
+      path: '/bills'
+      fullPath: '/bills'
+      preLoaderRoute: typeof DashboardBillsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/organization/teams': {
       id: '/_dashboard/organization/teams'
       path: '/organization/teams'
@@ -343,20 +337,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrganizationInvitesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/bills/receivables': {
-      id: '/_dashboard/bills/receivables'
-      path: '/bills/receivables'
-      fullPath: '/bills/receivables'
-      preLoaderRoute: typeof DashboardBillsReceivablesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/_dashboard/bills/payables': {
-      id: '/_dashboard/bills/payables'
-      path: '/bills/payables'
-      fullPath: '/bills/payables'
-      preLoaderRoute: typeof DashboardBillsPayablesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
   }
 }
 
@@ -366,11 +346,10 @@ interface DashboardRouteChildren {
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
-  DashboardBillsPayablesRoute: typeof DashboardBillsPayablesRoute
-  DashboardBillsReceivablesRoute: typeof DashboardBillsReceivablesRoute
   DashboardOrganizationInvitesRoute: typeof DashboardOrganizationInvitesRoute
   DashboardOrganizationMembersRoute: typeof DashboardOrganizationMembersRoute
   DashboardOrganizationTeamsRoute: typeof DashboardOrganizationTeamsRoute
+  DashboardBillsIndexRoute: typeof DashboardBillsIndexRoute
   DashboardOrganizationIndexRoute: typeof DashboardOrganizationIndexRoute
 }
 
@@ -380,11 +359,10 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardReportsRoute: DashboardReportsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
-  DashboardBillsPayablesRoute: DashboardBillsPayablesRoute,
-  DashboardBillsReceivablesRoute: DashboardBillsReceivablesRoute,
   DashboardOrganizationInvitesRoute: DashboardOrganizationInvitesRoute,
   DashboardOrganizationMembersRoute: DashboardOrganizationMembersRoute,
   DashboardOrganizationTeamsRoute: DashboardOrganizationTeamsRoute,
+  DashboardBillsIndexRoute: DashboardBillsIndexRoute,
   DashboardOrganizationIndexRoute: DashboardOrganizationIndexRoute,
 }
 
