@@ -1,3 +1,5 @@
+import { useTRPC } from "@/integrations/clients";
+import { EditOrganizationSheet } from "@/pages/organization/features/edit-organization-sheet";
 import {
    Avatar,
    AvatarFallback,
@@ -27,12 +29,11 @@ import {
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { getInitials } from "@packages/utils/text";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Building, ChevronsUpDown } from "lucide-react";
-import { Suspense, useMemo } from "react";
+import { Building, ChevronsUpDown, Plus } from "lucide-react";
+import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
    return (
@@ -100,28 +101,51 @@ export function OrganizationSwitcher() {
 function OrganizationDropdownContent() {
    const trpc = useTRPC();
 
-   // Get teams for the current active organization
-   const { data: teams } = useSuspenseQuery(
-      trpc.organization.listTeams.queryOptions(),
+   const { data: activeOrganization } = useSuspenseQuery(
+      trpc.organization.getActiveOrganization.queryOptions(),
    );
+
+   const { data: organizations } = useSuspenseQuery(
+      trpc.organization.getOrganizations.queryOptions(),
+   );
+
+   const queryClient = useQueryClient();
+
+   const setActiveOrganization = useMutation(
+      trpc.organization.setActiveOrganization.mutationOptions({
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.organization.getActiveOrganization.queryKey(),
+            })
+         }}),
+   );
+
+   function handleSetActiveOrganization(organizationId: string) {
+      setActiveOrganization.mutateAsync({ organizationId });
+   }
 
    return (
       <>
          <DropdownMenuLabel className="text-muted-foreground text-xs">
-            Teams
+            Organizations
          </DropdownMenuLabel>
 
-         {teams?.length === 0 && (
+         {organizations?.length === 0 && (
             <DropdownMenuItem disabled>
                <div className="p-2 text-muted-foreground text-sm w-full text-center">
-                  No teams available
+                  No organizations available
                </div>
             </DropdownMenuItem>
          )}
 
-         {teams?.map((team) => (
-            <DropdownMenuItem className="gap-2 p-2" key={team.id}>
-               <div className="flex-1 text-sm">{team.name}</div>
+         {organizations?.map((organization) => (
+            <DropdownMenuItem
+               onClick={() => handleSetActiveOrganization(organization.id)}
+               disabled={setActiveOrganization.isPending || organization.id === activeOrganization?.id}
+               className="gap-2 p-2"
+               key={organization.id}
+            >
+               <div className="flex-1 text-sm">{organization.name}</div>
             </DropdownMenuItem>
          ))}
       </>
@@ -132,12 +156,23 @@ function OrganizationSwitcherContent() {
    const { isMobile } = useSidebar();
    const trpc = useTRPC();
 
+   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+
    const { data: activeOrganization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
    );
    const { data: logo } = useSuspenseQuery(
       trpc.organization.getLogo.queryOptions(),
    );
+   const { data: organizations } = useSuspenseQuery(
+      trpc.organization.getOrganizations.queryOptions(),
+   );
+   const { data: organizationLimit } = useSuspenseQuery(
+      trpc.organization.getOrganizationLimit.queryOptions(),
+   );
+
+   const hasReachedLimit =
+      (organizations?.length ?? 0) >= (organizationLimit ?? 3);
 
    const organizationData = useMemo(() => {
       const hasOrg = !!activeOrganization;
@@ -215,7 +250,9 @@ function OrganizationSwitcherContent() {
                               </Link>
                            </DropdownMenuItem>
                         ))}
+
                      <DropdownMenuSeparator />
+
                      <ErrorBoundary
                         FallbackComponent={OrganizationDropdownErrorFallback}
                      >
@@ -223,10 +260,26 @@ function OrganizationSwitcherContent() {
                            <OrganizationDropdownContent />
                         </Suspense>
                      </ErrorBoundary>
+
+                     <DropdownMenuSeparator />
+
+                     <DropdownMenuItem
+                        disabled={hasReachedLimit}
+                        onClick={() => setIsCreateSheetOpen(true)}
+                        title={hasReachedLimit ? "Você não pode criar mais organizações" : undefined}
+                     >
+                        <Plus className="size-4" />
+                        Create Organization
+                     </DropdownMenuItem>
                   </DropdownMenuContent>
                )}
             </DropdownMenu>
          </SidebarMenuItem>
+
+         <EditOrganizationSheet
+            onOpen={isCreateSheetOpen}
+            onOpenChange={setIsCreateSheetOpen}
+         />
       </SidebarMenu>
    );
 }

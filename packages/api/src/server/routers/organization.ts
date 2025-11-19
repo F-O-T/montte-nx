@@ -1,3 +1,4 @@
+import { ORGANIZATION_LIMIT } from "@packages/authentication/server";
 import {
    findOrganizationById,
    updateOrganization,
@@ -168,21 +169,16 @@ export const organizationRouter = router({
             return [];
          }
 
-         // Get the active organization ID
-         const activeOrganizationId =
-            resolvedCtx.session?.session?.activeOrganizationId;
-
-         // Filter out the active organization from the list
-         const otherOrganizations = organizations.filter(
-            (org) => org.id !== activeOrganizationId,
-         );
-
-         return otherOrganizations;
+         return organizations;
       } catch (error) {
          console.error("Failed to get organizations:", error);
          propagateError(error);
          throw APIError.internal("Failed to retrieve organizations");
       }
+   }),
+
+   getOrganizationLimit: protectedProcedure.query(async () => {
+      return ORGANIZATION_LIMIT;
    }),
 
    getRecentInvites: protectedProcedure.query(async ({ ctx }) => {
