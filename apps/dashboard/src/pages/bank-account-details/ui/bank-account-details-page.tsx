@@ -20,7 +20,6 @@ import { BankAccountStats } from "./bank-account-stats";
 
 function BankAccountContent() {
    const params = useParams({ strict: false });
-   // Force string type as we are in a route that requires it
    const bankAccountId = (params as any).bankAccountId as string;
    const trpc = useTRPC();
 

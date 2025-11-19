@@ -48,7 +48,6 @@ export function DeleteBankAccountDialog({
                ),
             );
             onOpenChange(false);
-            // Navigate back to profile or dashboard
             router.navigate({ to: "/profile" });
          },
       }),

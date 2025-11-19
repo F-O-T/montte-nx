@@ -72,7 +72,6 @@ type TransactionItemProps = {
 };
 
 function TransactionItem({ transaction, categories }: TransactionItemProps) {
-   // Find the category details for this transaction
    const categoryDetails = categories.find(
       (cat) => cat.name === transaction.category,
    );
@@ -219,12 +218,11 @@ function TransactionsListContent() {
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const pageSize = 10;
 
-   // Debounce search term
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
-         setCurrentPage(1); // Reset to first page on search
+         setCurrentPage(1);
       }, 300);
       return () => clearTimeout(timer);
    }, [searchTerm]);
@@ -254,7 +252,6 @@ function TransactionsListContent() {
       trpc.categories.getAll.queryOptions(),
    );
 
-   // Reset to first page when filters change
    const handleFilterChange = () => {
       setCurrentPage(1);
    };
