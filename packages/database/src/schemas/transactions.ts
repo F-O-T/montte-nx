@@ -11,11 +11,12 @@ export const transaction = pgTable("transaction", {
    createdAt: timestamp("created_at").defaultNow().notNull(),
    date: timestamp("date").notNull(),
    description: text("description").notNull(),
+   externalId: text("external_id"),
    id: text("id").primaryKey(),
    type: text("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
    userId: text("user_id").notNull(),
 });
