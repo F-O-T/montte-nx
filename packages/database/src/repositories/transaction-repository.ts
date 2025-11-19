@@ -331,7 +331,6 @@ export async function getTotalIncomeByUserId(
    userId: string,
 ) {
    try {
-      // Get current month's start and end dates
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const currentMonthEnd = new Date(
@@ -368,7 +367,6 @@ export async function getTotalExpensesByUserId(
    userId: string,
 ) {
    try {
-      // Get current month's start and end dates
       const now = new Date();
       const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const currentMonthEnd = new Date(
