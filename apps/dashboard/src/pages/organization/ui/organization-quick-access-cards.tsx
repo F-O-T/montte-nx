@@ -1,4 +1,5 @@
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
+import { translate } from "@packages/localization";
 import { useRouter } from "@tanstack/react-router";
 import { Building2, Mail, Palette, Users } from "lucide-react";
 
@@ -6,28 +7,44 @@ export function QuickAccessCards() {
    const router = useRouter();
    const quickAccessItems = [
       {
-         description: "Manage organization teams and collaborate",
+         description: translate(
+            "dashboard.routes.organization.quick-access-section.teams.description",
+         ),
          icon: <Building2 className="size-5" />,
          onClick: () => router.navigate({ to: "/organization/teams" }),
-         title: "Teams",
+         title: translate(
+            "dashboard.routes.organization.quick-access-section.teams.title",
+         ),
       },
       {
-         description: "Configure brand settings and assets",
+         description: translate(
+            "dashboard.routes.organization.quick-access-section.transactions.description",
+         ),
          icon: <Palette className="size-5" />,
          onClick: () => router.navigate({ to: "/transactions" }),
-         title: "Transactions",
+         title: translate(
+            "dashboard.routes.organization.quick-access-section.transactions.title",
+         ),
       },
       {
-         description: "View and manage all organization members",
+         description: translate(
+            "dashboard.routes.organization.quick-access-section.members.description",
+         ),
          icon: <Users className="size-5" />,
          onClick: () => router.navigate({ to: "/organization/members" }),
-         title: "Members",
+         title: translate(
+            "dashboard.routes.organization.quick-access-section.members.title",
+         ),
       },
       {
-         description: "Manage invitations and send new invites",
+         description: translate(
+            "dashboard.routes.organization.quick-access-section.invitations.description",
+         ),
          icon: <Mail className="size-5" />,
          onClick: () => router.navigate({ to: "/organization/invites" }),
-         title: "Invites",
+         title: translate(
+            "dashboard.routes.organization.quick-access-section.invitations.title",
+         ),
       },
    ];
 

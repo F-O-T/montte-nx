@@ -1,4 +1,3 @@
-import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -18,12 +17,13 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { EditOrganizationSheet } from "../features/edit-organization-sheet";
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 import { OrganizationInfo } from "./organization-information-section";
 import { QuickAccessCards } from "./organization-quick-access-cards";
 import { QuickActionsToolbar } from "./organization-quick-actions-toolbar";
 import { RecentInvites } from "./organization-recent-invites-section";
-import { OrganizationRoles } from "./organization-recent-users-sections";
+import { OrganizationRoles } from "./organization-roles-section";
 import { OrganizationStats } from "./organization-stats";
 
 function OrganizationContent() {
@@ -62,9 +62,9 @@ function OrganizationContent() {
                         <TooltipTrigger asChild>
                            <Button
                               disabled={hasReachedLimit}
+                              onClick={() => setIsCreateSheetOpen(true)}
                               size="default"
                               variant="default"
-                              onClick={() => setIsCreateSheetOpen(true)}
                            >
                               <Plus className="size-4" />
                               Create Organization
@@ -76,9 +76,9 @@ function OrganizationContent() {
                            </TooltipContent>
                         )}
                      </Tooltip>
-                     <EditOrganizationSheet
-                       onOpen={isCreateSheetOpen}
-                       onOpenChange={setIsCreateSheetOpen}
+                     <ManageOrganizationSheet
+                        onOpen={isCreateSheetOpen}
+                        onOpenChange={setIsCreateSheetOpen}
                      />
                   </EmptyContent>
                </Empty>

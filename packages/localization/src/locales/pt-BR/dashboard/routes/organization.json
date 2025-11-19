@@ -1,0 +1,94 @@
+{
+  "quick-access-section": {
+    "invitations": {
+      "description": "Envie e gerencie convites para ingressar na organização.",
+      "title": "Convites"
+    },
+    "members": {
+      "description": "Gerencie os membros da sua organização.",
+      "title": "Membros"
+    },
+    "teams": {
+      "description": "Gerencie as equipes da sua organização.",
+      "title": "Equipes"
+    },
+    "transactions": {
+      "description": "Visualize e gerencie as transações da sua organização.",
+      "title": "Transações"
+    }
+  },
+  "recent-invites-section": {
+    "description": "Uma lista dos convites mais recentes enviados para ingressar na organização.",
+    "title": "Convites Recentes",
+    "state": {
+      "error": {
+        "description": "Não foi possível carregar os convites recentes.",
+        "title": "Erro ao Carregar Convites"
+      }
+    }
+  },
+  "stats-section": {
+    "members-count": {
+      "description": "O número total de membros na organização.",
+      "title": "Total de Membros"
+    },
+    "teams-count": {
+      "description": "O número total de equipes dentro da organização.",
+      "title": "Total de Equipes"
+    }
+  },
+  "toolbar-section": {
+    "actions": {
+      "create-team": "Criar Equipe",
+      "delete-organization": "Excluir Organização",
+      "edit-organization": "Editar Organização",
+      "invite-member": "Convidar Membro",
+      "invite-new-member": "Convidar Novo Membro"
+    }
+  },
+  "information-section": {
+    "state": {
+      "error": {
+        "description": "Ocorreu um erro ao carregar as informações da organização. Tente novamente mais tarde.",
+        "title": "Erro ao Carregar Informações"
+      }
+    }
+  },
+  "roles-section": {
+    "title": "Cargos da Organização",
+    "description": "Cargos e permissões de controle de acesso para gestão da organização",
+    "dialog": {
+      "permissions-title": "Permissões",
+      "permissions-description": "Permissões e capacidades detalhadas para este cargo"
+    },
+    "roles": {
+      "owner": {
+        "title": "Dono",
+        "description": "O usuário que criou a organização. Tem controle total sobre a organização e pode executar qualquer ação.",
+        "permissions.0": "Organização: atualizar, excluir",
+        "permissions.1": "Membro: criar, atualizar, excluir",
+        "permissions.2": "Convite: criar, cancelar",
+        "permissions.3": "Transferir propriedade",
+        "permissions.4": "Controle total sobre todos os recursos"
+      },
+      "admin": {
+        "title": "Administrador",
+        "description": "Controle total sobre a organização, exceto excluir a organização ou alterar o dono.",
+        "permissions.0": "Organização: atualizar",
+        "permissions.1": "Membro: criar, atualizar, excluir",
+        "permissions.2": "Convite: criar, cancelar",
+        "permissions.3": "Não pode excluir organização",
+        "permissions.4": "Não pode alterar dono"
+      },
+      "member": {
+        "title": "Membro",
+        "description": "Controle limitado sobre a organização. Pode criar projetos, convidar usuários e gerenciar projetos que criou.",
+        "permissions.0": "Ler dados da organização",
+        "permissions.1": "Criar projetos",
+        "permissions.2": "Convidar usuários",
+        "permissions.3": "Gerenciar próprios projetos",
+        "permissions.4": "Sem controle sobre ações de organização/membro/convite"
+      }
+    }
+  }
+}

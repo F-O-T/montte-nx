@@ -1,4 +1,4 @@
-import { Alert, AlertDescription } from "@packages/ui/components/alert";
+import { translate } from "@packages/localization";
 import {
    Card,
    CardContent,
@@ -16,9 +16,11 @@ import { useTRPC } from "@/integrations/clients";
 // Error Fallback Component
 function StatErrorFallback() {
    return (
-      <Alert variant="destructive">
-         <AlertDescription>Failed to load statistics</AlertDescription>
-      </Alert>
+      <StatsCard
+         description="Failed to load statistic"
+         title="Failed to load"
+         value="0"
+      />
    );
 }
 
@@ -50,8 +52,12 @@ function MembersStat() {
 
    return (
       <StatsCard
-         description="Total organization members"
-         title="Members"
+         description={translate(
+            "dashboard.routes.organization.stats-section.members-count.description",
+         )}
+         title={translate(
+            "dashboard.routes.organization.stats-section.members-count.title",
+         )}
          value={String(members?.length || 0)}
       />
    );
@@ -66,32 +72,22 @@ function TeamsStat() {
 
    return (
       <StatsCard
-         description="Active teams in organization"
-         title="Teams"
+         description={translate(
+            "dashboard.routes.organization.stats-section.teams-count.description",
+         )}
+         title={translate(
+            "dashboard.routes.organization.stats-section.teams-count.title",
+         )}
          value={String(teams?.length || 0)}
       />
    );
 }
 
 // Authors Stat Component (replacing Projects)
-function AuthorsStat() {
-   const trpc = useTRPC();
-   const { data: authors } = useSuspenseQuery(
-      trpc.organization.getActiveOrganizationAuthors.queryOptions(),
-   );
-
-   return (
-      <StatsCard
-         description="Total authors in organization"
-         title="Authors"
-         value={String(authors || 0)}
-      />
-   );
-}
 
 export function OrganizationStats() {
    return (
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 gap-4">
          <ErrorBoundary FallbackComponent={StatErrorFallback}>
             <Suspense fallback={<StatSkeleton />}>
                <MembersStat />
@@ -101,12 +97,6 @@ export function OrganizationStats() {
          <ErrorBoundary FallbackComponent={StatErrorFallback}>
             <Suspense fallback={<StatSkeleton />}>
                <TeamsStat />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <AuthorsStat />
             </Suspense>
          </ErrorBoundary>
       </div>

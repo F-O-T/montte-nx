@@ -1,4 +1,4 @@
-import { Alert, AlertDescription } from "@packages/ui/components/alert";
+import { translate } from "@packages/localization";
 import {
    Avatar,
    AvatarFallback,
@@ -18,37 +18,6 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
-// Error Fallback Component
-function OrganizationInfoErrorFallback() {
-   return (
-      <Alert variant="destructive">
-         <AlertDescription>
-            Failed to load organization information
-         </AlertDescription>
-      </Alert>
-   );
-}
-
-// Loading Skeleton Component
-function OrganizationInfoSkeleton() {
-   return (
-      <Item className="w-full rounded-lg" variant="outline">
-         <ItemMedia>
-            <Skeleton className="size-12 rounded-full" />
-         </ItemMedia>
-         <ItemContent>
-            <ItemTitle>
-               <Skeleton className="h-5 w-32" />
-            </ItemTitle>
-            <ItemDescription>
-               <Skeleton className="h-4 w-48" />
-            </ItemDescription>
-         </ItemContent>
-      </Item>
-   );
-}
-
-// Internal avatar component that makes the API call
 function OrganizationAvatar() {
    const trpc = useTRPC();
    const { data: orgData } = useSuspenseQuery(
@@ -105,9 +74,15 @@ function LogoErrorFallback() {
 function ContentErrorFallback() {
    return (
       <ItemContent>
-         <ItemTitle>Organization</ItemTitle>
+         <ItemTitle>
+            {translate(
+               "dashboard.routes.organization.information-section.state.error.title",
+            )}
+         </ItemTitle>
          <ItemDescription>
-            Unable to load organization information
+            {translate(
+               "dashboard.routes.organization.information-section.state.error.description",
+            )}
          </ItemDescription>
       </ItemContent>
    );
@@ -115,30 +90,26 @@ function ContentErrorFallback() {
 
 export function OrganizationInfo() {
    return (
-      <ErrorBoundary FallbackComponent={OrganizationInfoErrorFallback}>
-         <Suspense fallback={<OrganizationInfoSkeleton />}>
-            <Item className="w-full rounded-lg" variant="outline">
-               <ItemMedia variant="image">
-                  <OrganizationAvatar />
-               </ItemMedia>
-               <ErrorBoundary FallbackComponent={ContentErrorFallback}>
-                  <Suspense
-                     fallback={
-                        <ItemContent>
-                           <ItemTitle>
-                              <Skeleton className="h-5 w-32" />
-                           </ItemTitle>
-                           <ItemDescription>
-                              <Skeleton className="h-4 w-48" />
-                           </ItemDescription>
-                        </ItemContent>
-                     }
-                  >
-                     <OrganizationContent />
-                  </Suspense>
-               </ErrorBoundary>
-            </Item>
-         </Suspense>
-      </ErrorBoundary>
+      <Item className="w-full rounded-lg" variant="outline">
+         <ItemMedia variant="image">
+            <OrganizationAvatar />
+         </ItemMedia>
+         <ErrorBoundary FallbackComponent={ContentErrorFallback}>
+            <Suspense
+               fallback={
+                  <ItemContent>
+                     <ItemTitle>
+                        <Skeleton className="h-5 w-32" />
+                     </ItemTitle>
+                     <ItemDescription>
+                        <Skeleton className="h-4 w-48" />
+                     </ItemDescription>
+                  </ItemContent>
+               }
+            >
+               <OrganizationContent />
+            </Suspense>
+         </ErrorBoundary>
+      </Item>
    );
 }

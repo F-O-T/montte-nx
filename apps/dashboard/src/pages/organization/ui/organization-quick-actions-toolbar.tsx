@@ -1,4 +1,5 @@
 import { SendInvitationSheet } from "@/features/organization-actions/ui/send-invitation-sheet";
+import { translate } from "@packages/localization";
 import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -14,56 +15,41 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Edit, Plus, Trash2, UserPlus } from "lucide-react";
+import { Edit, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { DeleteOrganizationDialog } from "../features/delete-organization-dialog";
-import { EditOrganizationSheet } from "../features/edit-organization-sheet";
-
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
 export function QuickActionsToolbar() {
    const trpc = useTRPC();
    const { data: activeOrganization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
    );
-   const { data: organizations } = useSuspenseQuery(
-      trpc.organization.getOrganizations.queryOptions(),
-   );
-   const { data: organizationLimit } = useSuspenseQuery(
-      trpc.organization.getOrganizationLimit.queryOptions(),
-   );
    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
    const [isInvitationSheetOpen, setIsInvitationSheetOpen] = useState(false);
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-
-   const hasReachedLimit =
-      (organizations?.length ?? 0) >= (organizationLimit ?? 3);
 
    const quickActions = [
       {
          icon: <Edit className="size-4" />,
-         label: "Edit Organization",
+         label: translate(
+            "dashboard.routes.organization.toolbar-section.actions.edit-organization",
+         ),
          onClick: () => setIsEditSheetOpen(true),
          variant: "outline" as const,
       },
       {
-         icon: <Plus className="size-4" />,
-         label: "Add new Organization",
-         onClick: () => setIsCreateSheetOpen(true),
-         variant: "outline" as const,
-         disabled: hasReachedLimit,
-         tooltip: hasReachedLimit
-            ? "Você não pode criar mais organizações"
-            : "Add new Organization",
-      },
-      {
          icon: <UserPlus className="size-4" />,
-         label: "Add new Member",
+         label: translate(
+            "dashboard.routes.organization.toolbar-section.actions.invite-new-member",
+         ),
          onClick: () => setIsInvitationSheetOpen(true),
          variant: "outline" as const,
       },
       {
          icon: <Trash2 className="size-4" />,
-         label: "Delete Organization",
+         label: translate(
+            "dashboard.routes.organization.toolbar-section.actions.delete-organization",
+         ),
          onClick: () => setIsDeleteDialogOpen(true),
          variant: "destructive" as const,
       },
@@ -73,8 +59,12 @@ export function QuickActionsToolbar() {
       <>
          <Item variant="outline">
             <ItemContent>
-               <ItemTitle>Actions Toolbar</ItemTitle>
-               <ItemDescription>Common tasks and operations</ItemDescription>
+               <ItemTitle>
+                  {translate("common.headers.actions-toolbar.title")}
+               </ItemTitle>
+               <ItemDescription>
+                  {translate("common.headers.actions-toolbar.description")}
+               </ItemDescription>
             </ItemContent>
             <ItemActions>
                <div className="flex flex-wrap gap-2">
@@ -82,7 +72,6 @@ export function QuickActionsToolbar() {
                      <Tooltip key={`quick-action-${index + 1}`}>
                         <TooltipTrigger asChild>
                            <Button
-                              disabled={action.disabled}
                               onClick={action.onClick}
                               size="icon"
                               variant={action.variant}
@@ -91,7 +80,7 @@ export function QuickActionsToolbar() {
                            </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                           <p>{action.tooltip ?? action.label}</p>
+                           <p>{action.label}</p>
                         </TooltipContent>
                      </Tooltip>
                   ))}
@@ -99,11 +88,7 @@ export function QuickActionsToolbar() {
             </ItemActions>
          </Item>
 
-         <EditOrganizationSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
-         <EditOrganizationSheet
+         <ManageOrganizationSheet
             onOpen={isEditSheetOpen}
             onOpenChange={setIsEditSheetOpen}
             organization={activeOrganization || undefined}
