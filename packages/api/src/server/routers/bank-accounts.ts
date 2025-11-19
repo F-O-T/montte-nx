@@ -5,6 +5,10 @@ import {
    findBankAccountsByUserId,
    updateBankAccount,
 } from "@packages/database/repositories/bank-account-repository";
+import {
+   findTransactionsByBankAccountId,
+   findTransactionsByBankAccountIdPaginated,
+} from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -94,6 +98,41 @@ export const bankAccountRouter = router({
          }
 
          return bankAccount;
+      }),
+
+   getTransactions: protectedProcedure
+      .input(
+         z.object({
+            id: z.string(),
+            page: z.number().min(1).default(1),
+            limit: z.number().min(1).max(100).default(10),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.id,
+         );
+
+         if (!bankAccount || bankAccount.userId !== userId) {
+            throw new Error("Bank account not found");
+         }
+
+         return findTransactionsByBankAccountIdPaginated(
+            resolvedCtx.db,
+            input.id,
+            {
+               page: input.page,
+               limit: input.limit,
+            },
+         );
       }),
 
    update: protectedProcedure
