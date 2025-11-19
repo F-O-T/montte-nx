@@ -1,3 +1,4 @@
+import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -8,11 +9,15 @@ import {
    EmptyTitle,
 } from "@packages/ui/components/empty";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 import { EditOrganizationSheet } from "../features/edit-organization-sheet";
 import { OrganizationInfo } from "./organization-information-section";
 import { QuickAccessCards } from "./organization-quick-access-cards";
@@ -27,6 +32,15 @@ function OrganizationContent() {
    const { data: activeOrganization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
    );
+   const { data: organizations } = useSuspenseQuery(
+      trpc.organization.getOrganizations.queryOptions(),
+   );
+   const { data: organizationLimit } = useSuspenseQuery(
+      trpc.organization.getOrganizationLimit.queryOptions(),
+   );
+
+   const hasReachedLimit =
+      (organizations?.length ?? 0) >= (organizationLimit ?? 3);
 
    if (!activeOrganization) {
       return (
@@ -44,16 +58,26 @@ function OrganizationContent() {
                      </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
-                     <Button
-                        size="default"
-                        variant="default"
-                        onClick={() => setIsCreateSheetOpen(true)}
-                     >
-                        <Plus className="size-4" />
-                        Create Organization
-                     </Button>
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button
+                              disabled={hasReachedLimit}
+                              size="default"
+                              variant="default"
+                              onClick={() => setIsCreateSheetOpen(true)}
+                           >
+                              <Plus className="size-4" />
+                              Create Organization
+                           </Button>
+                        </TooltipTrigger>
+                        {hasReachedLimit && (
+                           <TooltipContent>
+                              <p>Você não pode criar mais organizações</p>
+                           </TooltipContent>
+                        )}
+                     </Tooltip>
                      <EditOrganizationSheet
-                       open={isCreateSheetOpen}
+                       onOpen={isCreateSheetOpen}
                        onOpenChange={setIsCreateSheetOpen}
                      />
                   </EmptyContent>

@@ -3,7 +3,6 @@ import { findMemberByUserId } from "@packages/database/repositories/auth-reposit
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
 import type { PaymentClient } from "@packages/payment/client";
-import { getCustomerState } from "@packages/payment/ingestion";
 import { POLAR_PLAN_SLUGS, POLAR_PLANS } from "@packages/payment/plans";
 import {
    type ResendClient,
@@ -26,6 +25,8 @@ export interface AuthOptions {
    polarClient: PaymentClient;
    resendClient: ResendClient;
 }
+
+export const ORGANIZATION_LIMIT = 3;
 
 export const getAuthOptions = (
    db: DatabaseInstance,
@@ -118,7 +119,7 @@ export const getAuthOptions = (
          }),
          openAPI(),
          organization({
-            organizationLimit: 1,
+            organizationLimit: ORGANIZATION_LIMIT,
             schema: {
                organization: {
                   additionalFields: {
