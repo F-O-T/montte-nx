@@ -1,3 +1,4 @@
+import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
 import {
    AlertDialog,
@@ -8,25 +9,31 @@ import {
    AlertDialogFooter,
    AlertDialogHeader,
    AlertDialogTitle,
+   AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
+import { Button } from "@packages/ui/components/button";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/integrations/clients";
-import { useRouter } from "@tanstack/react-router";
 
-interface DeleteBankAccountDialogProps {
-   bankAccountId: string;
+interface DeleteBankAccountProps {
+   bankAccount: BankAccount;
    open: boolean;
-   onOpenChange: (open: boolean) => void;
+   setOpen: (open: boolean) => void;
 }
 
-export function DeleteBankAccountDialog({
-   bankAccountId,
+export function DeleteBankAccount({
+   bankAccount,
    open,
-   onOpenChange,
-}: DeleteBankAccountDialogProps) {
+   setOpen,
+}: DeleteBankAccountProps) {
    const queryClient = useQueryClient();
-   const router = useRouter();
 
    const deleteBankAccountMutation = useMutation(
       trpc.bankAccounts.delete.mutationOptions({
@@ -47,22 +54,20 @@ export function DeleteBankAccountDialog({
                   "dashboard.routes.profile.bank-accounts.delete.success",
                ),
             );
-            onOpenChange(false);
-            router.navigate({ to: "/profile" });
          },
       }),
    );
 
    const handleDelete = async () => {
       try {
-         await deleteBankAccountMutation.mutateAsync({ id: bankAccountId });
+         await deleteBankAccountMutation.mutateAsync({ id: bankAccount.id });
       } catch (error) {
          console.error("Failed to delete bank account:", error);
       }
    };
 
    return (
-      <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialog onOpenChange={setOpen} open={open}>
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>
@@ -77,12 +82,9 @@ export function DeleteBankAccountDialog({
                   {translate("common.actions.cancel")}
                </AlertDialogCancel>
                <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="bg-destructive text-destructive-foreground "
                   disabled={deleteBankAccountMutation.isPending}
-                  onClick={(e) => {
-                     e.preventDefault();
-                     handleDelete();
-                  }}
+                  onClick={handleDelete}
                >
                   {translate(
                      "dashboard.routes.profile.bank-accounts.actions.delete",
