@@ -12,10 +12,10 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import {
-   DropdownMenuLabel,
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
+   DropdownMenuLabel,
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
@@ -81,10 +81,10 @@ function TransactionItem({ transaction, categories }: TransactionItemProps) {
    return (
       <Item>
          <ItemMedia
-            variant="icon"
             style={{
                backgroundColor: categoryColor,
             }}
+            variant="icon"
          >
             <IconDisplay iconName={categoryIcon as IconName} size={16} />
          </ItemMedia>
@@ -216,7 +216,7 @@ function TransactionsListContent() {
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-   const pageSize = 10;
+   const pageSize = 5;
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
@@ -230,14 +230,14 @@ function TransactionsListContent() {
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions(
          {
-            page: currentPage,
+            category: categoryFilter === "all" ? undefined : categoryFilter,
             limit: pageSize,
+            page: currentPage,
+            search: debouncedSearchTerm || undefined,
             type:
                typeFilter === "all"
                   ? undefined
                   : (typeFilter as "income" | "expense"),
-            category: categoryFilter === "all" ? undefined : categoryFilter,
-            search: debouncedSearchTerm || undefined,
          },
          {
             placeholderData: keepPreviousData,
@@ -273,7 +273,7 @@ function TransactionsListContent() {
                   )}
                </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-2 max-h-80 h-full">
+            <CardContent className="grid gap-2">
                <div className="flex items-center justify-between gap-8">
                   <InputGroup>
                      <InputGroupInput
