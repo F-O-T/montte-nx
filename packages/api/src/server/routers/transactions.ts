@@ -7,6 +7,7 @@ import {
    getTotalExpensesByUserId,
    getTotalIncomeByUserId,
    getTotalTransactionsByUserId,
+   getTotalTransfersByUserId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
@@ -133,28 +134,42 @@ export const transactionRouter = router({
          return transaction;
       }),
 
-   getStats: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+   getStats: protectedProcedure
+      .input(
+         z
+            .object({
+               bankAccountId: z.string().optional(),
+            })
+            .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
 
-      const userId = resolvedCtx.session.user.id;
+         const userId = resolvedCtx.session.user.id;
+         const bankAccountId = input?.bankAccountId;
 
-      const [totalTransactions, totalIncome, totalExpenses] = await Promise.all(
-         [
-            getTotalTransactionsByUserId(resolvedCtx.db, userId),
-            getTotalIncomeByUserId(resolvedCtx.db, userId),
-            getTotalExpensesByUserId(resolvedCtx.db, userId),
-         ],
-      );
+         const [totalTransactions, totalIncome, totalExpenses, totalTransfers] =
+            await Promise.all([
+               getTotalTransactionsByUserId(
+                  resolvedCtx.db,
+                  userId,
+                  bankAccountId,
+               ),
+               getTotalIncomeByUserId(resolvedCtx.db, userId, bankAccountId),
+               getTotalExpensesByUserId(resolvedCtx.db, userId, bankAccountId),
+               getTotalTransfersByUserId(resolvedCtx.db, userId, bankAccountId),
+            ]);
 
-      return {
-         totalExpenses: totalExpenses || 0,
-         totalIncome: totalIncome || 0,
-         totalTransactions,
-      };
-   }),
+         return {
+            totalExpenses: totalExpenses || 0,
+            totalIncome: totalIncome || 0,
+            totalTransactions,
+            totalTransfers: totalTransfers || 0,
+         };
+      }),
 
    transfer: protectedProcedure
       .input(

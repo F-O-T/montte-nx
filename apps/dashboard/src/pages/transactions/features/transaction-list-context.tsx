@@ -8,6 +8,12 @@ interface TransactionListContextType {
    selectAll: (ids: string[]) => void;
    toggleAll: (ids: string[]) => void;
    selectedCount: number;
+   bankAccountFilter: string;
+   setBankAccountFilter: (value: string) => void;
+   categoryFilter: string;
+   setCategoryFilter: (value: string) => void;
+   typeFilter: string;
+   setTypeFilter: (value: string) => void;
 }
 
 const TransactionListContext = createContext<
@@ -20,6 +26,9 @@ export function TransactionListProvider({
    children: React.ReactNode;
 }) {
    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+   const [bankAccountFilter, setBankAccountFilter] = useState("all");
+   const [categoryFilter, setCategoryFilter] = useState("all");
+   const [typeFilter, setTypeFilter] = useState("all");
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -58,6 +67,12 @@ export function TransactionListProvider({
       selectedCount: selectedItems.size,
       selectedItems,
       toggleAll,
+      bankAccountFilter,
+      setBankAccountFilter,
+      categoryFilter,
+      setCategoryFilter,
+      typeFilter,
+      setTypeFilter,
    };
 
    return (

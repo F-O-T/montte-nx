@@ -62,7 +62,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteTransaction } from "../features/delete-transaction-dialog";
 import { FilterSheet } from "../features/filter-sheet";
 import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
-import { TransactionListProvider } from "../features/transaction-list-context";
+import { useTransactionList } from "../features/transaction-list-context";
 
 export type Transaction =
    RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
@@ -214,11 +214,17 @@ function TransactionsListSkeleton() {
 function TransactionsListContent() {
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
-   const [categoryFilter, setCategoryFilter] = useState("all");
-   const [typeFilter, setTypeFilter] = useState("all");
-   const [bankAccountFilter, setBankAccountFilter] = useState("all");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const pageSize = 5;
+
+   const {
+      categoryFilter,
+      setCategoryFilter,
+      typeFilter,
+      setTypeFilter,
+      bankAccountFilter,
+      setBankAccountFilter,
+   } = useTransactionList();
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
@@ -437,11 +443,9 @@ function TransactionsListContent() {
 export function TransactionsListSection() {
    return (
       <ErrorBoundary FallbackComponent={TransactionsListErrorFallback}>
-         <TransactionListProvider>
-            <Suspense fallback={<TransactionsListSkeleton />}>
-               <TransactionsListContent />
-            </Suspense>
-         </TransactionListProvider>
+         <Suspense fallback={<TransactionsListSkeleton />}>
+            <TransactionsListContent />
+         </Suspense>
       </ErrorBoundary>
    );
 }
