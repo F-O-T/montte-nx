@@ -19,13 +19,14 @@ import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/t
 import { Route as DashboardReportsRouteImport } from './routes/_dashboard/reports'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
-import { Route as DashboardCategoriesRouteImport } from './routes/_dashboard/categories'
 import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
+import { Route as DashboardCategoriesIndexRouteImport } from './routes/_dashboard/categories.index'
 import { Route as DashboardBillsIndexRouteImport } from './routes/_dashboard/bills/index'
 import { Route as DashboardBankAccountsIndexRouteImport } from './routes/_dashboard/bank-accounts.index'
 import { Route as DashboardOrganizationTeamsRouteImport } from './routes/_dashboard/organization/teams'
 import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
 import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
+import { Route as DashboardCategoriesCategoryIdRouteImport } from './routes/_dashboard/categories.$categoryId'
 import { Route as DashboardBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/bank-accounts.$bankAccountId'
 
 const AuthRoute = AuthRouteImport.update({
@@ -77,15 +78,16 @@ const DashboardHomeRoute = DashboardHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardCategoriesRoute = DashboardCategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const DashboardOrganizationIndexRoute =
   DashboardOrganizationIndexRouteImport.update({
     id: '/organization/',
     path: '/organization/',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardCategoriesIndexRoute =
+  DashboardCategoriesIndexRouteImport.update({
+    id: '/categories/',
+    path: '/categories/',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardBillsIndexRoute = DashboardBillsIndexRouteImport.update({
@@ -117,6 +119,12 @@ const DashboardOrganizationInvitesRoute =
     path: '/organization/invites',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardCategoriesCategoryIdRoute =
+  DashboardCategoriesCategoryIdRouteImport.update({
+    id: '/categories/$categoryId',
+    path: '/categories/$categoryId',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardBankAccountsBankAccountIdRoute =
   DashboardBankAccountsBankAccountIdRouteImport.update({
     id: '/bank-accounts/$bankAccountId',
@@ -126,7 +134,6 @@ const DashboardBankAccountsBankAccountIdRoute =
 
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
-  '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
   '/profile': typeof DashboardProfileRoute
   '/reports': typeof DashboardReportsRoute
@@ -136,16 +143,17 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
+  '/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
   '/bank-accounts': typeof DashboardBankAccountsIndexRoute
   '/bills': typeof DashboardBillsIndexRoute
+  '/categories': typeof DashboardCategoriesIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
-  '/categories': typeof DashboardCategoriesRoute
   '/home': typeof DashboardHomeRoute
   '/profile': typeof DashboardProfileRoute
   '/reports': typeof DashboardReportsRoute
@@ -155,18 +163,19 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
+  '/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
   '/bank-accounts': typeof DashboardBankAccountsIndexRoute
   '/bills': typeof DashboardBillsIndexRoute
+  '/categories': typeof DashboardCategoriesIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/_dashboard/categories': typeof DashboardCategoriesRoute
   '/_dashboard/home': typeof DashboardHomeRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
   '/_dashboard/reports': typeof DashboardReportsRoute
@@ -176,18 +185,19 @@ export interface FileRoutesById {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/_dashboard/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
+  '/_dashboard/categories/$categoryId': typeof DashboardCategoriesCategoryIdRoute
   '/_dashboard/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/_dashboard/organization/members': typeof DashboardOrganizationMembersRoute
   '/_dashboard/organization/teams': typeof DashboardOrganizationTeamsRoute
   '/_dashboard/bank-accounts/': typeof DashboardBankAccountsIndexRoute
   '/_dashboard/bills/': typeof DashboardBillsIndexRoute
+  '/_dashboard/categories/': typeof DashboardCategoriesIndexRoute
   '/_dashboard/organization/': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/auth'
-    | '/categories'
     | '/home'
     | '/profile'
     | '/reports'
@@ -197,16 +207,17 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/bank-accounts/$bankAccountId'
+    | '/categories/$categoryId'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
     | '/bank-accounts'
     | '/bills'
+    | '/categories'
     | '/organization'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/categories'
     | '/home'
     | '/profile'
     | '/reports'
@@ -216,17 +227,18 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/bank-accounts/$bankAccountId'
+    | '/categories/$categoryId'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
     | '/bank-accounts'
     | '/bills'
+    | '/categories'
     | '/organization'
   id:
     | '__root__'
     | '/_dashboard'
     | '/auth'
-    | '/_dashboard/categories'
     | '/_dashboard/home'
     | '/_dashboard/profile'
     | '/_dashboard/reports'
@@ -236,11 +248,13 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/_dashboard/bank-accounts/$bankAccountId'
+    | '/_dashboard/categories/$categoryId'
     | '/_dashboard/organization/invites'
     | '/_dashboard/organization/members'
     | '/_dashboard/organization/teams'
     | '/_dashboard/bank-accounts/'
     | '/_dashboard/bills/'
+    | '/_dashboard/categories/'
     | '/_dashboard/organization/'
   fileRoutesById: FileRoutesById
 }
@@ -321,18 +335,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardHomeRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/categories': {
-      id: '/_dashboard/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof DashboardCategoriesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/organization/': {
       id: '/_dashboard/organization/'
       path: '/organization'
       fullPath: '/organization'
       preLoaderRoute: typeof DashboardOrganizationIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/categories/': {
+      id: '/_dashboard/categories/'
+      path: '/categories'
+      fullPath: '/categories'
+      preLoaderRoute: typeof DashboardCategoriesIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/_dashboard/bills/': {
@@ -370,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrganizationInvitesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/_dashboard/categories/$categoryId': {
+      id: '/_dashboard/categories/$categoryId'
+      path: '/categories/$categoryId'
+      fullPath: '/categories/$categoryId'
+      preLoaderRoute: typeof DashboardCategoriesCategoryIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/_dashboard/bank-accounts/$bankAccountId': {
       id: '/_dashboard/bank-accounts/$bankAccountId'
       path: '/bank-accounts/$bankAccountId'
@@ -381,33 +402,35 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
-  DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardBankAccountsBankAccountIdRoute: typeof DashboardBankAccountsBankAccountIdRoute
+  DashboardCategoriesCategoryIdRoute: typeof DashboardCategoriesCategoryIdRoute
   DashboardOrganizationInvitesRoute: typeof DashboardOrganizationInvitesRoute
   DashboardOrganizationMembersRoute: typeof DashboardOrganizationMembersRoute
   DashboardOrganizationTeamsRoute: typeof DashboardOrganizationTeamsRoute
   DashboardBankAccountsIndexRoute: typeof DashboardBankAccountsIndexRoute
   DashboardBillsIndexRoute: typeof DashboardBillsIndexRoute
+  DashboardCategoriesIndexRoute: typeof DashboardCategoriesIndexRoute
   DashboardOrganizationIndexRoute: typeof DashboardOrganizationIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardHomeRoute: DashboardHomeRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardReportsRoute: DashboardReportsRoute,
   DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardBankAccountsBankAccountIdRoute:
     DashboardBankAccountsBankAccountIdRoute,
+  DashboardCategoriesCategoryIdRoute: DashboardCategoriesCategoryIdRoute,
   DashboardOrganizationInvitesRoute: DashboardOrganizationInvitesRoute,
   DashboardOrganizationMembersRoute: DashboardOrganizationMembersRoute,
   DashboardOrganizationTeamsRoute: DashboardOrganizationTeamsRoute,
   DashboardBankAccountsIndexRoute: DashboardBankAccountsIndexRoute,
   DashboardBillsIndexRoute: DashboardBillsIndexRoute,
+  DashboardCategoriesIndexRoute: DashboardCategoriesIndexRoute,
   DashboardOrganizationIndexRoute: DashboardOrganizationIndexRoute,
 }
 
