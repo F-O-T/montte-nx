@@ -43,7 +43,7 @@
     "@vitejs/plugin-react": "catalog:vite",
     "typescript": "catalog:development",
     "vite": "catalog:vite",
-    "vite-plugin-pwa": "^1.1.0"
+    "vite-plugin-pwa": "catalog:vite"
   },
   "version": "0.15.0"
 }

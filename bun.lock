@@ -85,7 +85,7 @@
         "@vitejs/plugin-react": "catalog:vite",
         "typescript": "catalog:development",
         "vite": "catalog:vite",
-        "vite-plugin-pwa": "^1.1.0",
+        "vite-plugin-pwa": "catalog:vite",
       },
     },
     "apps/docs": {
@@ -516,6 +516,7 @@
       "@tailwindcss/vite": "^4.1.8",
       "@vitejs/plugin-react": "^4.3.4",
       "vite": "^6.1.0",
+      "vite-plugin-pwa": "^1.1.0",
       "vite-tsconfig-paths": "^5.1.4",
     },
     "workers": {
