@@ -310,7 +310,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
       typeFilter,
       setIsFilterSheetOpen,
    } = useBillList();
-   const pageSize = 10;
+   const pageSize = 5;
 
    const formattedMonth = `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, "0")}`;
 
@@ -415,7 +415,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
                   </CardDescription>
                </div>
             </CardHeader>
-            <CardContent className="grid gap-2 max-h-80 h-full">
+            <CardContent className="grid gap-2">
                <div className="flex items-center justify-between gap-8">
                   <InputGroup>
                      <InputGroupInput

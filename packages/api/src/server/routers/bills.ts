@@ -64,7 +64,7 @@ const completeBillSchema = z.object({
 });
 
 const paginationSchema = z.object({
-   limit: z.coerce.number().min(1).max(100).default(10),
+   limit: z.coerce.number().min(1).max(100).default(5),
    month: z.string().optional(),
    orderBy: z
       .enum(["dueDate", "issueDate", "amount", "createdAt"])
