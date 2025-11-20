@@ -7,9 +7,7 @@ const searchParams = z.object({
 });
 export const Route = createFileRoute("/auth/email-verification")({
    component: RouteComponent,
-   ssr: true,
    validateSearch: searchParams,
-   wrapInSuspense: true,
 });
 
 function RouteComponent() {

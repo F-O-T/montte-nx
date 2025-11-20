@@ -5,13 +5,10 @@
   "type": "module",
   "scripts": {
     "check": "bunx --bun biome check --write .",
-    "typecheck": "tsc ",
-    "dev": "node server",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "vite build",
-    "build:server": "vite build --ssr",
-    "serve": "NODE_ENV=production node server",
-    "debug": "node --inspect-brk server"
+    "typecheck": "tsc",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@contentagen/assistant-widget": "^0.0.15",
@@ -28,15 +25,9 @@
     "@tanstack/react-query": "catalog:tanstack",
     "@tanstack/react-query-devtools": "catalog:tanstack",
     "@tanstack/react-router": "catalog:tanstack",
-    "@tanstack/react-router-with-query": "catalog:tanstack",
-    "@tanstack/router-plugin": "catalog:tanstack",
+    "@tanstack/react-start": "catalog:tanstack",
     "@trpc/tanstack-react-query": "catalog:trpc",
-    "compression": "catalog:server",
-    "express": "catalog:server",
     "framer-motion": "catalog:ui",
-    "get-port": "catalog:server",
-    "isbot": "catalog:server",
-    "node-fetch": "catalog:server",
     "react": "catalog:react",
     "react-dom": "catalog:react",
     "react-error-boundary": "catalog:react",
@@ -47,7 +38,6 @@
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "catalog:tanstack",
-    "@types/express": "catalog:server",
     "@tooling/typescript": "workspace:*",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",

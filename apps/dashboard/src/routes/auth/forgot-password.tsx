@@ -3,8 +3,6 @@ import { ForgotPasswordPage } from "@/pages/forgot-password/ui/forgot-password-p
 
 export const Route = createFileRoute("/auth/forgot-password")({
    component: RouteComponent,
-   ssr: true,
-   wrapInSuspense: true,
 });
 
 function RouteComponent() {

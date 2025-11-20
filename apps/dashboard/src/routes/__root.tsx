@@ -1,80 +1,20 @@
-import { translate } from "@packages/localization";
 import { PostHogWrapper } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
-import appCss from "@packages/ui/globals.css?url";
-import {
-   createRootRouteWithContext,
-   HeadContent,
-   Outlet,
-   redirect,
-   Scripts,
-} from "@tanstack/react-router";
+import { createRootRoute, Outlet, redirect } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ThemeProvider } from "@/layout/theme-provider";
-import type { RouterContext } from "../router";
 import "@packages/localization";
-import i18n from "@packages/localization";
 import { NotFoundComponent } from "@/default/not-found";
+import { QueryProvider } from "@/integrations/clients";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {
       breadcrumb?: string;
    }
 }
-export const Route = createRootRouteWithContext<RouterContext>()({
+export const Route = createRootRoute({
    component: RootComponent,
-
-   head: () => ({
-      links: [
-         {
-            href: appCss,
-            rel: "stylesheet",
-         },
-         { href: "/light-logo.svg", id: "favicon", rel: "icon" },
-      ],
-      meta: [
-         {
-            description: translate("common.brand.description"),
-            title: translate("common.brand.name"),
-         },
-         {
-            charSet: "UTF-8",
-         },
-         {
-            content: "width=device-width, initial-scale=1.0",
-            name: "viewport",
-         },
-         {
-            content: i18n.language,
-            name: "language",
-         },
-      ],
-      scripts: [
-         ...(!import.meta.env.PROD
-            ? [
-                 {
-                    children: `import RefreshRuntime from "/@react-refresh"
-  RefreshRuntime.injectIntoGlobalHook(window)
-  window.$RefreshReg$ = () => {}
-  window.$RefreshSig$ = () => (type) => type
-  window.__vite_plugin_react_preamble_installed__ = true`,
-                    type: "module",
-                 },
-                 {
-                    src: "/@vite/client",
-                    type: "module",
-                 },
-              ]
-            : []),
-         {
-            src: import.meta.env.PROD
-               ? "/assets/entry-client.js"
-               : "/src/entry-client.tsx",
-            type: "module",
-         },
-      ],
-   }),
-   loader: async ({ location }) => {
+   loader: async ({ location }: { location: { href: string } }) => {
       if (location.href === "/") {
          throw redirect({ to: "/auth/sign-in" });
       }
@@ -84,33 +24,21 @@ export const Route = createRootRouteWithContext<RouterContext>()({
          <NotFoundComponent />
       </div>
    ),
-   ssr: true,
    staticData: {
       breadcrumb: "Home",
    },
-   wrapInSuspense: true,
 });
 
 function RootComponent() {
    return (
-      <html lang={i18n.language}>
-         <head>
-            <HeadContent />
-         </head>
-         <body>
-            <PostHogWrapper>
-               <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-               >
-                  <Toaster />
-                  <Outlet /> {/* Start rendering router matches */}
-                  <TanStackRouterDevtools position="bottom-left" />
-               </ThemeProvider>
-            </PostHogWrapper>
-            <Scripts />
-         </body>
-      </html>
+      <PostHogWrapper>
+         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <QueryProvider>
+               <Toaster />
+               <Outlet />
+               <TanStackRouterDevtools position="bottom-left" />
+            </QueryProvider>
+         </ThemeProvider>
+      </PostHogWrapper>
    );
 }
