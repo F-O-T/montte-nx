@@ -11,6 +11,7 @@ import {
    FieldLabel,
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
+import { MoneyInput } from "@packages/ui/components/money-input";
 import {
    Select,
    SelectContent,
@@ -28,6 +29,7 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
+import { reaisToCents, centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
@@ -138,7 +140,9 @@ export function ManageTransactionSheet({
 
    const form = useForm({
       defaultValues: {
-         amount: transaction?.amount?.toString() || "",
+         amount: transaction?.amount
+            ? Math.round(Number(transaction.amount) * 100)
+            : 0, // Store as cents
          bankAccountId: transaction?.bankAccountId || "",
          toBankAccountId: "",
          category: transaction?.category || "",
@@ -156,10 +160,13 @@ export function ManageTransactionSheet({
          }
 
          try {
+            // Convert cents back to decimal for database
+            const amountInDecimal = centsToReais(value.amount);
+
             if (isEditMode && transaction) {
                await updateTransactionMutation.mutateAsync({
                   data: {
-                     amount: parseFloat(value.amount),
+                     amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      category: value.category,
                      date: value.date.toISOString().split("T")[0],
@@ -172,7 +179,7 @@ export function ManageTransactionSheet({
                if (value.type === "transfer") {
                   if (!value.toBankAccountId || !value.bankAccountId) return;
                   await transferTransactionMutation.mutateAsync({
-                     amount: parseFloat(value.amount),
+                     amount: amountInDecimal,
                      fromBankAccountId: value.bankAccountId,
                      toBankAccountId: value.toBankAccountId,
                      date: value.date.toISOString().split("T")[0],
@@ -181,7 +188,7 @@ export function ManageTransactionSheet({
                } else {
                    if (!value.category) return;
                   await createTransactionMutation.mutateAsync({
-                     amount: parseFloat(value.amount),
+                     amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      category: value.category,
                      date: value.date.toISOString().split("T")[0],
@@ -283,15 +290,14 @@ export function ManageTransactionSheet({
                                  <FieldLabel>
                                     {translate("common.form.amount.label")}
                                  </FieldLabel>
-                                 <Input
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder="0.00"
-                                    step="0.01"
-                                    type="number"
+                                 <MoneyInput
                                     value={field.state.value}
+                                    onChange={(value) => {
+                                       field.handleChange(value || 0);
+                                    }}
+                                    onBlur={field.handleBlur}
+                                    placeholder="0,00"
+                                    valueInCents={true}
                                  />
                                  {isInvalid && (
                                     <FieldError

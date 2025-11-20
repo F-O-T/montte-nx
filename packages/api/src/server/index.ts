@@ -5,6 +5,7 @@ import type { Polar } from "@polar-sh/sdk";
 import { authRouter } from "./routers/auth";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
+import { brasilApiRouter } from "./routers/brasil-api";
 import { categoryRouter } from "./routers/categories";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
@@ -17,6 +18,7 @@ export const appRouter = router({
    auth: authRouter,
    bankAccounts: bankAccountRouter,
    bills: billRouter,
+   brasilApi: brasilApiRouter,
    categories: categoryRouter,
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,

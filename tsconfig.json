@@ -36,6 +36,9 @@
     },
     {
       "path": "./packages/contenta-sdk"
+    },
+    {
+      "path": "./packages/brasil-api"
     }
   ]
 }
