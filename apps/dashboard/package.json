@@ -25,7 +25,6 @@
     "@tanstack/react-query": "catalog:tanstack",
     "@tanstack/react-query-devtools": "catalog:tanstack",
     "@tanstack/react-router": "catalog:tanstack",
-    "@tanstack/react-start": "catalog:tanstack",
     "@trpc/tanstack-react-query": "catalog:trpc",
     "framer-motion": "catalog:ui",
     "react": "catalog:react",
@@ -43,7 +42,8 @@
     "@types/react-dom": "catalog:react",
     "@vitejs/plugin-react": "catalog:vite",
     "typescript": "catalog:development",
-    "vite": "catalog:vite"
+    "vite": "catalog:vite",
+    "vite-plugin-pwa": "catalog:vite"
   },
   "version": "0.15.0"
 }
