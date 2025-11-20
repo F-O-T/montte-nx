@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { count, desc, eq, ilike, and, sql } from "drizzle-orm";
+import { count, desc, eq, ilike, and, sql, gte, lte } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
@@ -199,16 +199,16 @@ export async function getCategoryWithMostTransactions(
 ) {
    try {
       const result = await dbClient.execute<{
-         categoryName: string;
+         categoryId: string;
          transactionCount: string;
       }>(sql`
-         SELECT category_name as "categoryName", COUNT(*) as "transactionCount"
+         SELECT category_id as "categoryId", COUNT(*) as "transactionCount"
          FROM (
-            SELECT unnest(${transaction.category}) as category_name
+            SELECT unnest(${transaction.categoryIds}) as category_id
             FROM ${transaction}
             WHERE ${transaction.userId} = ${userId}
          ) sub
-         GROUP BY category_name
+         GROUP BY category_id
          ORDER BY "transactionCount" DESC
          LIMIT 1
       `);
@@ -216,13 +216,50 @@ export async function getCategoryWithMostTransactions(
       if (!result[0]) return null;
 
       return {
-         categoryName: result[0].categoryName,
+         categoryId: result[0].categoryId,
          transactionCount: parseInt(result[0].transactionCount, 10),
       };
    } catch (err) {
       propagateError(err);
       throw AppError.database(
          `Failed to get category with most transactions: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getCategorySpending(
+   dbClient: DatabaseInstance,
+   userId: string,
+   categoryId: string,
+) {
+   try {
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(
+         now.getFullYear(),
+         now.getMonth() + 1,
+         0,
+      );
+
+      const result = await dbClient
+         .select({
+            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+         })
+         .from(transaction)
+         .where(
+            and(
+               eq(transaction.userId, userId),
+               gte(transaction.date, currentMonthStart),
+               lte(transaction.date, currentMonthEnd),
+               sql`${transaction.categoryIds} @> ARRAY[${categoryId}]::text[]`
+            )
+         );
+
+      return result[0]?.total || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category spending: ${(err as Error).message}`,
       );
    }
 }

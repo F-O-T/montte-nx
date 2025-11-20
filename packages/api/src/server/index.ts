@@ -10,6 +10,7 @@ import { categoryRouter } from "./routers/categories";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
+import { notificationRouter } from "./routers/notifications";
 import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
 import { transactionRouter } from "./routers/transactions";
@@ -23,6 +24,7 @@ export const appRouter = router({
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
+   notifications: notificationRouter,
    reports: reportRouter,
    session: sessionRouter,
    transactions: transactionRouter,

@@ -37,6 +37,7 @@ import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
+import { toast } from "@packages/ui/components/sonner";
 
 type ManageTransactionSheetProps = {
    onOpen?: boolean;
@@ -93,13 +94,22 @@ export function ManageTransactionSheet({
 
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
-         onSuccess: async () => {
+         onSuccess: async (data) => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
+
+            if (data.notifications && data.notifications.length > 0) {
+               data.notifications.forEach((notification) => {
+                  toast.error(notification.title, {
+                     description: notification.message,
+                  });
+               });
+            }
+
             setIsOpen?.(false);
          },
       }),
@@ -110,13 +120,22 @@ export function ManageTransactionSheet({
          onError: (error) => {
             console.error("Failed to update transaction:", error);
          },
-         onSuccess: async () => {
+         onSuccess: async (data) => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
+
+            if (data.notifications && data.notifications.length > 0) {
+               data.notifications.forEach((notification) => {
+                  toast.error(notification.title, {
+                     description: notification.message,
+                  });
+               });
+            }
+
             setIsOpen?.(false);
          },
       }),
@@ -146,7 +165,7 @@ export function ManageTransactionSheet({
             : 0, // Store as cents
          bankAccountId: transaction?.bankAccountId || "",
          toBankAccountId: "",
-         category: transaction?.category || [],
+         categoryIds: transaction?.categoryIds || [],
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
          type: transaction?.type || ("expense" as "expense" | "income" | "transfer"),
@@ -156,7 +175,7 @@ export function ManageTransactionSheet({
              return;
          }
 
-         if (value.type !== "transfer" && (!value.category || value.category.length === 0)) {
+         if (value.type !== "transfer" && (!value.categoryIds || value.categoryIds.length === 0)) {
              return;
          }
 
@@ -169,7 +188,7 @@ export function ManageTransactionSheet({
                   data: {
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
-                     category: value.category,
+                     categoryIds: value.categoryIds,
                      date: value.date.toISOString().split("T")[0],
                      description: value.description,
                      type: value.type,
@@ -187,11 +206,11 @@ export function ManageTransactionSheet({
                      description: value.description,
                   });
                } else {
-                   if (!value.category || value.category.length === 0) return;
+                   if (!value.categoryIds || value.categoryIds.length === 0) return;
                   await createTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
-                     category: value.category as string[],
+                     categoryIds: value.categoryIds as string[],
                      date: value.date.toISOString().split("T")[0],
                      description: value.description,
                      type: value.type,
@@ -413,20 +432,20 @@ export function ManageTransactionSheet({
 
                           {type !== "transfer" && (
                               <FieldGroup>
-                                 <form.Field name="category">
+                                 <form.Field name="categoryIds">
                                     {(field) => {
                                        const isInvalid =
                                           field.state.meta.isTouched &&
                                           !field.state.meta.isValid;
-            
+
                                        const categoryOptions = categories.map(
                                           (category) => ({
                                              label: category.name,
-                                             value: category.name,
+                                             value: category.id,
                                              icon: <IconDisplay iconName={category.icon} size={16} />,
                                           }),
                                        );
-            
+
                                        return (
                                           <Field data-invalid={isInvalid}>
                                              <FieldLabel>
