@@ -12,6 +12,7 @@ import {
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
 import { MoneyInput } from "@packages/ui/components/money-input";
+import { MultiSelect } from "@packages/ui/components/multi-select";
 import {
    Select,
    SelectContent,
@@ -145,7 +146,7 @@ export function ManageTransactionSheet({
             : 0, // Store as cents
          bankAccountId: transaction?.bankAccountId || "",
          toBankAccountId: "",
-         category: transaction?.category || "",
+         category: transaction?.category || [],
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
          type: transaction?.type || ("expense" as "expense" | "income" | "transfer"),
@@ -155,7 +156,7 @@ export function ManageTransactionSheet({
              return;
          }
 
-         if (value.type !== "transfer" && !value.category) {
+         if (value.type !== "transfer" && (!value.category || value.category.length === 0)) {
              return;
          }
 
@@ -186,11 +187,11 @@ export function ManageTransactionSheet({
                      description: value.description,
                   });
                } else {
-                   if (!value.category) return;
+                   if (!value.category || value.category.length === 0) return;
                   await createTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
-                     category: value.category,
+                     category: value.category as string[],
                      date: value.date.toISOString().split("T")[0],
                      description: value.description,
                      type: value.type,
@@ -422,7 +423,7 @@ export function ManageTransactionSheet({
                                           (category) => ({
                                              label: category.name,
                                              value: category.name,
-                                             icon: category.icon,
+                                             icon: <IconDisplay iconName={category.icon} size={16} />,
                                           }),
                                        );
             
@@ -431,31 +432,17 @@ export function ManageTransactionSheet({
                                              <FieldLabel>
                                                 {translate("common.form.category.label")}
                                              </FieldLabel>
-                                             <Combobox
+                                             <MultiSelect
                                                 className="flex-1"
                                                 emptyMessage={translate(
                                                    "common.form.search.no-results",
                                                 )}
-                                                onValueChange={field.handleChange}
-                                                options={categoryOptions.map((opt) => ({
-                                                   label: (
-                                                      <div className="flex items-center gap-2">
-                                                         <IconDisplay
-                                                            iconName={opt.icon}
-                                                            size={16}
-                                                         />
-                                                         <span>{opt.label}</span>
-                                                      </div>
-                                                   ),
-                                                   value: opt.value,
-                                                }))}
+                                                onChange={(val) => field.handleChange(val)}
+                                                options={categoryOptions}
                                                 placeholder={translate(
                                                    "common.form.category.placeholder",
                                                 )}
-                                                searchPlaceholder={translate(
-                                                   "common.form.search.label",
-                                                )}
-                                                value={field.state.value}
+                                                selected={(field.state.value as unknown as string[]) || []}
                                              />
                                              {isInvalid && (
                                                 <FieldError

@@ -77,8 +77,14 @@ type TransactionItemProps = {
 };
 
 function TransactionItem({ transaction, categories }: TransactionItemProps) {
+   // Handle both array and string (for safety/migration)
+   const transactionCategories = Array.isArray(transaction.category)
+      ? transaction.category
+      : [transaction.category as unknown as string];
+      
+   const primaryCategoryName = transactionCategories[0];
    const categoryDetails = categories.find(
-      (cat) => cat.name === transaction.category,
+      (cat) => cat.name === primaryCategoryName,
    );
    const categoryColor = categoryDetails?.color || "#6b7280";
    const categoryIcon = categoryDetails?.icon || "Wallet";
