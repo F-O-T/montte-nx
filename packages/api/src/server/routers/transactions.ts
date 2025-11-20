@@ -3,8 +3,6 @@ import {
    getCategorySpending,
 } from "@packages/database/repositories/category-repository";
 import { createNotification } from "@packages/database/repositories/notification-repository";
-import { category } from "@packages/database/schemas/categories";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import {
    createTransaction,
    deleteTransaction,
@@ -17,6 +15,8 @@ import {
    getTotalTransfersByUserId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
+import { category } from "@packages/database/schemas/categories";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -32,7 +32,10 @@ const createTransactionSchema = z.object({
 const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   categoryIds: z.array(z.string()).min(1, "At least one category is required").optional(),
+   categoryIds: z
+      .array(z.string())
+      .min(1, "At least one category is required")
+      .optional(),
    date: z.string().optional(),
    description: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
@@ -57,11 +60,7 @@ async function checkBudgetAndNotify(
    const notifications = [];
    for (const categoryId of categoryIds) {
       const category = await findCategoryById(db, categoryId);
-      if (
-         !category ||
-         !category.budget ||
-         Number(category.budget) === 0
-      )
+      if (!category || !category.budget || Number(category.budget) === 0)
          continue;
 
       const spent = await getCategorySpending(db, userId, categoryId);
@@ -73,11 +72,11 @@ async function checkBudgetAndNotify(
 
          const notification = await createNotification(db, {
             id: crypto.randomUUID(),
-            userId,
-            title: `Orçamento Excedido: ${category.name}`,
             message: `Você excedeu seu orçamento de ${formattedBudget} para ${category.name}. Total gasto: ${formattedSpent}`,
+            metadata: { budget, categoryId, spent },
+            title: `Orçamento Excedido: ${category.name}`,
             type: "budget_alert",
-            metadata: { categoryId, budget, spent },
+            userId,
          });
          notifications.push(notification);
       }
@@ -247,23 +246,21 @@ export const transactionRouter = router({
          const userId = resolvedCtx.session.user.id;
 
          return resolvedCtx.db.transaction(async (tx) => {
-            // Get or create Transfer category
             const transferCategory = await tx.query.category.findFirst({
-               where: (cat, { eq, and }) => and(
-                  eq(cat.userId, userId),
-                  eq(cat.name, "Transfer")
-               ),
+               where: (cat, { eq, and }) =>
+                  and(eq(cat.userId, userId), eq(cat.name, "Transfer")),
             });
 
-            const transferCategoryId = transferCategory?.id || crypto.randomUUID();
+            const transferCategoryId =
+               transferCategory?.id || crypto.randomUUID();
 
             if (!transferCategory) {
                await tx.insert(category).values({
-                  id: transferCategoryId,
-                  userId,
-                  name: "Transfer",
-                  icon: "ArrowLeftRight",
                   color: "#6b7280",
+                  icon: "ArrowLeftRight",
+                  id: transferCategoryId,
+                  name: "Transfer",
+                  userId,
                });
             }
 
