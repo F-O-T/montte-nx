@@ -107,7 +107,6 @@ export const transactionRouter = router({
          return findTransactionsByUserIdPaginated(
             resolvedCtx.db,
             userId,
-            // @ts-expect-error - type mismatch between zod enum and string literal
             input,
          );
       }),
