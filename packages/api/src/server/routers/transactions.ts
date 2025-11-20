@@ -1,4 +1,11 @@
 import {
+   findCategoryById,
+   getCategorySpending,
+} from "@packages/database/repositories/category-repository";
+import { createNotification } from "@packages/database/repositories/notification-repository";
+import { category } from "@packages/database/schemas/categories";
+import { formatDecimalCurrency } from "@packages/utils/money";
+import {
    createTransaction,
    deleteTransaction,
    findTransactionById,
@@ -16,7 +23,7 @@ import { protectedProcedure, router } from "../trpc";
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
-   category: z.array(z.string()).min(1, "At least one category is required"),
+   categoryIds: z.array(z.string()).min(1, "At least one category is required"),
    date: z.string(),
    description: z.string(),
    type: z.enum(["income", "expense", "transfer"]),
@@ -25,7 +32,7 @@ const createTransactionSchema = z.object({
 const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   category: z.array(z.string()).min(1, "At least one category is required").optional(),
+   categoryIds: z.array(z.string()).min(1, "At least one category is required").optional(),
    date: z.string().optional(),
    description: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
@@ -42,6 +49,42 @@ const paginationSchema = z.object({
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
+async function checkBudgetAndNotify(
+   db: any,
+   userId: string,
+   categoryIds: string[],
+) {
+   const notifications = [];
+   for (const categoryId of categoryIds) {
+      const category = await findCategoryById(db, categoryId);
+      if (
+         !category ||
+         !category.budget ||
+         Number(category.budget) === 0
+      )
+         continue;
+
+      const spent = await getCategorySpending(db, userId, categoryId);
+      const budget = Number(category.budget);
+
+      if (spent >= budget) {
+         const formattedBudget = formatDecimalCurrency(budget, "BRL", "pt-BR");
+         const formattedSpent = formatDecimalCurrency(spent, "BRL", "pt-BR");
+
+         const notification = await createNotification(db, {
+            id: crypto.randomUUID(),
+            userId,
+            title: `Orçamento Excedido: ${category.name}`,
+            message: `Você excedeu seu orçamento de ${formattedBudget} para ${category.name}. Total gasto: ${formattedSpent}`,
+            type: "budget_alert",
+            metadata: { categoryId, budget, spent },
+         });
+         notifications.push(notification);
+      }
+   }
+   return notifications;
+}
+
 export const transactionRouter = router({
    create: protectedProcedure
       .input(createTransactionSchema)
@@ -53,13 +96,27 @@ export const transactionRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return createTransaction(resolvedCtx.db, {
+         const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
             date: new Date(input.date),
             id: crypto.randomUUID(),
             userId,
          });
+
+         let notifications: any[] = [];
+         if (input.type === "expense") {
+            notifications = await checkBudgetAndNotify(
+               resolvedCtx.db,
+               userId,
+               input.categoryIds,
+            );
+         }
+
+         return {
+            notifications,
+            transaction,
+         };
       }),
 
    delete: protectedProcedure
@@ -190,10 +247,30 @@ export const transactionRouter = router({
          const userId = resolvedCtx.session.user.id;
 
          return resolvedCtx.db.transaction(async (tx) => {
+            // Get or create Transfer category
+            const transferCategory = await tx.query.category.findFirst({
+               where: (cat, { eq, and }) => and(
+                  eq(cat.userId, userId),
+                  eq(cat.name, "Transfer")
+               ),
+            });
+
+            const transferCategoryId = transferCategory?.id || crypto.randomUUID();
+
+            if (!transferCategory) {
+               await tx.insert(category).values({
+                  id: transferCategoryId,
+                  userId,
+                  name: "Transfer",
+                  icon: "ArrowLeftRight",
+                  color: "#6b7280",
+               });
+            }
+
             const fromTransaction = await createTransaction(tx, {
                amount: (-input.amount).toString(),
                bankAccountId: input.fromBankAccountId,
-               category: ["Transfer"],
+               categoryIds: [transferCategoryId],
                date: new Date(input.date),
                description: input.description,
                id: crypto.randomUUID(),
@@ -204,7 +281,7 @@ export const transactionRouter = router({
             const toTransaction = await createTransaction(tx, {
                amount: input.amount.toString(),
                bankAccountId: input.toBankAccountId,
-               category: ["Transfer"],
+               categoryIds: [transferCategoryId],
                date: new Date(input.date),
                description: input.description,
                id: crypto.randomUUID(),
@@ -261,8 +338,8 @@ export const transactionRouter = router({
             updateData.bankAccountId = input.data.bankAccountId;
          }
 
-         if (input.data.category !== undefined) {
-            updateData.category = input.data.category;
+         if (input.data.categoryIds !== undefined) {
+            updateData.categoryIds = input.data.categoryIds;
          }
 
          if (input.data.description !== undefined) {
@@ -273,6 +350,26 @@ export const transactionRouter = router({
             updateData.type = input.data.type;
          }
 
-         return updateTransaction(resolvedCtx.db, input.id, updateData);
+         const updatedTransaction = await updateTransaction(
+            resolvedCtx.db,
+            input.id,
+            updateData,
+         );
+
+         let notifications: any[] = [];
+         if (updatedTransaction.type === "expense") {
+            const categoriesToCheck =
+               updateData.categoryIds || existingTransaction.categoryIds;
+            notifications = await checkBudgetAndNotify(
+               resolvedCtx.db,
+               userId,
+               categoriesToCheck,
+            );
+         }
+
+         return {
+            notifications,
+            transaction: updatedTransaction,
+         };
       }),
 });
