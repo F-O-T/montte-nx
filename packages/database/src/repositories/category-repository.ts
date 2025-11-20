@@ -198,7 +198,10 @@ export async function getCategoryWithMostTransactions(
    userId: string,
 ) {
    try {
-      const result = await dbClient.execute(sql`
+      const result = await dbClient.execute<{
+         categoryName: string;
+         transactionCount: string;
+      }>(sql`
          SELECT category_name as "categoryName", COUNT(*) as "transactionCount"
          FROM (
             SELECT unnest(${transaction.category}) as category_name
@@ -213,8 +216,8 @@ export async function getCategoryWithMostTransactions(
       if (!result[0]) return null;
 
       return {
-         categoryName: result[0].categoryName as string,
-         transactionCount: Number(result[0].transactionCount),
+         categoryName: result[0].categoryName,
+         transactionCount: parseInt(result[0].transactionCount, 10),
       };
    } catch (err) {
       propagateError(err);

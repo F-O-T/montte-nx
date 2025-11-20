@@ -131,7 +131,7 @@ export async function findTransactionsByUserIdPaginated(
             conditions.push(
                or(
                   ilike(transaction.description, `%${search}%`),
-                  sql`exists (select 1 from unnest(${transaction.category}) as c where c ilike ${`%${search}%`})`,
+                  sql`exists (select 1 from unnest(${transaction.category}) as c where c ilike ${'%' + search + '%'})`,
                ),
             );
          }

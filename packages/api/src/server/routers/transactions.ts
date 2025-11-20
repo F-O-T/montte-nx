@@ -16,7 +16,7 @@ import { protectedProcedure, router } from "../trpc";
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
-   category: z.array(z.string()),
+   category: z.array(z.string()).min(1, "At least one category is required"),
    date: z.string(),
    description: z.string(),
    type: z.enum(["income", "expense", "transfer"]),
@@ -25,7 +25,7 @@ const createTransactionSchema = z.object({
 const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   category: z.array(z.string()).optional(),
+   category: z.array(z.string()).min(1, "At least one category is required").optional(),
    date: z.string().optional(),
    description: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
