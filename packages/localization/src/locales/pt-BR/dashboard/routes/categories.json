@@ -5,6 +5,20 @@
          "delete-selected": "Excluir selecionados"
       }
    },
+   "details-section": {
+      "description": "Detalhes da categoria",
+      "budget": {
+         "title": "Meta de Gastos",
+         "remaining": "Restante",
+         "exceeded": "Excedido",
+         "spent": "Gasto",
+         "not-set": "Nenhuma meta definida"
+      },
+      "transactions": {
+         "description": "Todas as transações desta categoria",
+         "title": "Transações"
+      }
+   },
    "features": {
       "create-category": {
          "description": "Adicione uma nova categoria para organizar suas transações.",
@@ -13,6 +27,10 @@
       "edit-category": {
          "description": "Atualize os detalhes da sua categoria.",
          "title": "Editar Categoria"
+      },
+      "set-budget": {
+         "description": "Defina uma meta de gastos mensal para esta categoria.",
+         "title": "Definir Meta"
       }
    },
    "list-section": {
