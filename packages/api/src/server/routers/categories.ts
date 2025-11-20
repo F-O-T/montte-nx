@@ -30,6 +30,7 @@ const paginationSchema = z.object({
    orderBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),
+   search: z.string().optional(),
 });
 
 export const categoryRouter = router({
@@ -94,7 +95,13 @@ export const categoryRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return findCategoriesByUserIdPaginated(resolvedCtx.db, userId, input);
+         return findCategoriesByUserIdPaginated(resolvedCtx.db, userId, {
+            limit: input.limit,
+            orderBy: input.orderBy,
+            orderDirection: input.orderDirection,
+            page: input.page,
+            search: input.search,
+         });
       }),
 
    getById: protectedProcedure

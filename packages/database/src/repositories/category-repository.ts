@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { count, desc, eq } from "drizzle-orm";
+import { count, desc, eq, ilike, and } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
@@ -65,6 +65,7 @@ export async function findCategoriesByUserIdPaginated(
       limit?: number;
       orderBy?: "name" | "createdAt" | "updatedAt";
       orderDirection?: "asc" | "desc";
+      search?: string;
    } = {},
 ) {
    const {
@@ -72,11 +73,21 @@ export async function findCategoriesByUserIdPaginated(
       limit = 10,
       orderBy = "name",
       orderDirection = "asc",
+      search,
    } = options;
 
    const offset = (page - 1) * limit;
 
    try {
+      // Build the where condition
+      const baseWhereCondition = eq(category.userId, userId);
+      const whereCondition = search
+         ? and(
+              baseWhereCondition,
+              ilike(category.name, `%${search}%`)
+           )
+         : baseWhereCondition;
+
       const [categories, totalCount] = await Promise.all([
          dbClient.query.category.findMany({
             limit,
@@ -85,11 +96,11 @@ export async function findCategoriesByUserIdPaginated(
                const column = category[orderBy as keyof typeof category];
                return orderDirection === "asc" ? asc(column) : desc(column);
             },
-            where: (category, { eq }) => eq(category.userId, userId),
+            where: whereCondition,
          }),
          dbClient.query.category
             .findMany({
-               where: (category, { eq }) => eq(category.userId, userId),
+               where: whereCondition,
             })
             .then((result) => result.length),
       ]);
