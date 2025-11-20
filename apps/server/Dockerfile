@@ -30,12 +30,8 @@ COPY apps/server/package.json ./apps/server/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/api/package.json ./packages/api/
 COPY packages/authentication/package.json ./packages/authentication/
-COPY packages/server-events/package.json ./packages/server-events/
 COPY packages/localization/package.json ./packages/localization/
-COPY packages/agents/package.json ./packages/agents/
-COPY packages/brand/package.json ./packages/brand/
 COPY packages/utils/package.json ./packages/utils/
-COPY packages/rag/package.json ./packages/rag/
 COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/contenta-sdk/package.json ./packages/contenta-sdk/
@@ -43,7 +39,8 @@ COPY packages/files/package.json ./packages/files/
 COPY packages/payment/package.json ./packages/payment/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
-COPY packages/workers/package.json ./packages/workers/
+COPY packages/brasil-api/package.json ./packages/brasil-api/
+
 
 # Install all dependencies (monorepo-aware)
 RUN bun install
@@ -71,22 +68,17 @@ COPY package.json ./
 COPY apps/server/package.json ./apps/server/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/api/package.json ./packages/api/
-COPY packages/contenta-sdk/package.json ./packages/contenta-sdk/
-
 COPY packages/authentication/package.json ./packages/authentication/
-COPY packages/server-events/package.json ./packages/server-events/
 COPY packages/localization/package.json ./packages/localization/
-COPY packages/agents/package.json ./packages/agents/
-COPY packages/brand/package.json ./packages/brand/
 COPY packages/utils/package.json ./packages/utils/
-COPY packages/rag/package.json ./packages/rag/
 COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
+COPY packages/contenta-sdk/package.json ./packages/contenta-sdk/
 COPY packages/files/package.json ./packages/files/
 COPY packages/payment/package.json ./packages/payment/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
-COPY packages/workers/package.json ./packages/workers/
+COPY packages/brasil-api/package.json ./packages/brasil-api/
 
 # Install only production dependencies.
 RUN bun install 
