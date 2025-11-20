@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { ScrollArea } from "@packages/ui/components/scroll-area";
 import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
@@ -138,54 +139,56 @@ function BankAccountsContent() {
             </CardDescription>
          </CardHeader>
 
-         <CardContent className="flex-1 overflow-y-auto">
-            <ItemGroup>
-               {bankAccounts.map((account, index) => (
-                  <>
-                     <Link
-                        className="block"
-                        key={account.id}
-                        params={{ bankAccountId: account.id }}
-                        to="/bank-accounts/$bankAccountId"
-                     >
-                        <Item className="cursor-pointer hover:bg-muted/50 transition-colors">
-                           <ItemMedia variant="icon">
-                              <Building2 className="size-4" />
-                           </ItemMedia>
-                           <ItemContent>
-                              <ItemTitle className="flex items-center gap-2">
-                                 {account.name}
-                                 <Badge
-                                    variant={
-                                       account.status === "active"
-                                          ? "default"
-                                          : "secondary"
-                                    }
-                                 >
-                                    {account.status === "active"
-                                       ? "Ativa"
-                                       : "Inativa"}
-                                 </Badge>
-                              </ItemTitle>
-                              <ItemDescription>
-                                 {account.bank} •{" "}
-                                 {getAccountTypeLabel(account.type)}
-                              </ItemDescription>
-                           </ItemContent>
-                        </Item>
-                     </Link>
-                     {index < bankAccounts.length - 1 && <ItemSeparator />}
-                  </>
-               ))}
-               {bankAccounts.length > 0 && <ItemSeparator />}
-               <CreateBankAccountItem
-                  onCreateAccount={() => setIsCreateSheetOpen(true)}
-               />
-               <ManageBankAccountSheet
-                  onOpen={isCreateSheetOpen}
-                  onOpenChange={setIsCreateSheetOpen}
-               />
-            </ItemGroup>
+         <CardContent>
+            <ScrollArea className="h-40">
+               <ItemGroup>
+                  {bankAccounts.map((account, index) => (
+                     <>
+                        <Link
+                           className="block"
+                           key={account.id}
+                           params={{ bankAccountId: account.id }}
+                           to="/bank-accounts/$bankAccountId"
+                        >
+                           <Item className="cursor-pointer hover:bg-muted/50 transition-colors">
+                              <ItemMedia variant="icon">
+                                 <Building2 className="size-4" />
+                              </ItemMedia>
+                              <ItemContent>
+                                 <ItemTitle className="flex items-center gap-2">
+                                    {account.name}
+                                    <Badge
+                                       variant={
+                                          account.status === "active"
+                                             ? "default"
+                                             : "secondary"
+                                       }
+                                    >
+                                       {account.status === "active"
+                                          ? "Ativa"
+                                          : "Inativa"}
+                                    </Badge>
+                                 </ItemTitle>
+                                 <ItemDescription>
+                                    {account.bank} •{" "}
+                                    {getAccountTypeLabel(account.type)}
+                                 </ItemDescription>
+                              </ItemContent>
+                           </Item>
+                        </Link>
+                        {index < bankAccounts.length - 1 && <ItemSeparator />}
+                     </>
+                  ))}
+                  {bankAccounts.length > 0 && <ItemSeparator />}
+                  <CreateBankAccountItem
+                     onCreateAccount={() => setIsCreateSheetOpen(true)}
+                  />
+                  <ManageBankAccountSheet
+                     onOpen={isCreateSheetOpen}
+                     onOpenChange={setIsCreateSheetOpen}
+                  />
+               </ItemGroup>
+            </ScrollArea>
          </CardContent>
       </Card>
    );

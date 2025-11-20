@@ -172,6 +172,7 @@
       "version": "0.9.1",
       "dependencies": {
         "@packages/authentication": "workspace:*",
+        "@packages/brasil-api": "workspace:*",
         "@packages/contenta-sdk": "workspace:*",
         "@packages/database": "workspace:*",
         "@packages/files": "workspace:*",
@@ -205,6 +206,14 @@
         "@polar-sh/better-auth": "catalog:auth",
         "better-auth": "catalog:auth",
       },
+      "devDependencies": {
+        "@tooling/typescript": "workspace:*",
+        "typescript": "catalog:development",
+      },
+    },
+    "packages/brasil-api": {
+      "name": "@packages/brasil-api",
+      "version": "0.3.0",
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
         "typescript": "catalog:development",
@@ -1113,6 +1122,8 @@
     "@packages/api": ["@packages/api@workspace:packages/api"],
 
     "@packages/authentication": ["@packages/authentication@workspace:packages/authentication"],
+
+    "@packages/brasil-api": ["@packages/brasil-api@workspace:packages/brasil-api"],
 
     "@packages/contenta-sdk": ["@packages/contenta-sdk@workspace:packages/contenta-sdk"],
 

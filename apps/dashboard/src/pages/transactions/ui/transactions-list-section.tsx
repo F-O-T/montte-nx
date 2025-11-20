@@ -216,7 +216,7 @@ function TransactionsListContent() {
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-   const pageSize = 10;
+   const pageSize = 5;
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
@@ -273,7 +273,7 @@ function TransactionsListContent() {
                   )}
                </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-2 max-h-80 h-full">
+            <CardContent className="grid gap-2 ">
                <div className="flex items-center justify-between gap-8">
                   <InputGroup>
                      <InputGroupInput

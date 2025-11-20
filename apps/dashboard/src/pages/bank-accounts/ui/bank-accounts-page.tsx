@@ -21,7 +21,7 @@ import { Building, Building2, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
-import { ManageBankAccountSheet } from "@/pages/profile/features/manage-bank-account-sheet";
+import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
 
 function BankAccountsListContent() {
    const trpc = useTRPC();
