@@ -32,7 +32,7 @@ const updateTransactionSchema = z.object({
 
 const paginationSchema = z.object({
    category: z.string().optional(),
-   limit: z.coerce.number().min(1).max(100).default(10),
+   limit: z.coerce.number().min(1).max(100).default(5),
    orderBy: z.enum(["date", "amount"]).default("date"),
    orderDirection: z.enum(["asc", "desc"]).default("desc"),
    page: z.coerce.number().min(1).default(1),
