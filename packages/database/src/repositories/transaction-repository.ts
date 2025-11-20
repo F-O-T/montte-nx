@@ -87,7 +87,8 @@ export async function findTransactionsByUserIdPaginated(
    options: {
       page?: number;
       limit?: number;
-      type?: "income" | "expense";
+      type?: "income" | "expense" | "transfer";
+      bankAccountId?: string;
       category?: string;
       search?: string;
       orderBy?: "date" | "amount";
@@ -98,6 +99,7 @@ export async function findTransactionsByUserIdPaginated(
       page = 1,
       limit = 10,
       type,
+      bankAccountId,
       category,
       search,
       orderBy = "date",
@@ -112,6 +114,10 @@ export async function findTransactionsByUserIdPaginated(
          { eq, and, or, ilike }: any,
       ) => {
          const conditions = [eq(transaction.userId, userId)];
+
+         if (bankAccountId && bankAccountId !== "all") {
+            conditions.push(eq(transaction.bankAccountId, bankAccountId));
+         }
 
          if (type && type !== ("all" as any)) {
             conditions.push(eq(transaction.type, type));

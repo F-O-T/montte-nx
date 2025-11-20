@@ -119,18 +119,40 @@ export function ManageTransactionSheet({
       }),
    );
 
+   const transferTransactionMutation = useMutation(
+      trpc.transactions.transfer.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to create transfer:", error);
+         },
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAllPaginated.queryKey(),
+            });
+            await queryClient.invalidateQueries({
+               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
+            });
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
    const form = useForm({
       defaultValues: {
          amount: transaction?.amount?.toString() || "",
          bankAccountId: transaction?.bankAccountId || "",
+         toBankAccountId: "",
          category: transaction?.category || "",
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
-         type: transaction?.type || ("expense" as "expense" | "income"),
+         type: transaction?.type || ("expense" as "expense" | "income" | "transfer"),
       },
       onSubmit: async ({ value }) => {
-         if (!value.amount || !value.category || !value.description) {
-            return;
+         if (!value.amount || !value.description) {
+             return;
+         }
+
+         if (value.type !== "transfer" && !value.category) {
+             return;
          }
 
          try {
@@ -147,14 +169,26 @@ export function ManageTransactionSheet({
                   id: transaction.id,
                });
             } else {
-               await createTransactionMutation.mutateAsync({
-                  amount: parseFloat(value.amount),
-                  bankAccountId: value.bankAccountId || undefined,
-                  category: value.category,
-                  date: value.date.toISOString().split("T")[0],
-                  description: value.description,
-                  type: value.type,
-               });
+               if (value.type === "transfer") {
+                  if (!value.toBankAccountId || !value.bankAccountId) return;
+                  await transferTransactionMutation.mutateAsync({
+                     amount: parseFloat(value.amount),
+                     fromBankAccountId: value.bankAccountId,
+                     toBankAccountId: value.toBankAccountId,
+                     date: value.date.toISOString().split("T")[0],
+                     description: value.description,
+                  });
+               } else {
+                   if (!value.category) return;
+                  await createTransactionMutation.mutateAsync({
+                     amount: parseFloat(value.amount),
+                     bankAccountId: value.bankAccountId || undefined,
+                     category: value.category,
+                     date: value.date.toISOString().split("T")[0],
+                     description: value.description,
+                     type: value.type,
+                  });
+               }
             }
          } catch (error) {
             console.error(
@@ -270,108 +304,167 @@ export function ManageTransactionSheet({
                      </form.Field>
                   </FieldGroup>
 
-                  <FieldGroup>
-                     <form.Field name="bankAccountId">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate("common.form.bank.label")}
-                                 </FieldLabel>
-                                 <Select
-                                    onValueChange={(value) =>
-                                       field.handleChange(value)
-                                    }
-                                    value={field.state.value}
-                                 >
-                                    <SelectTrigger>
-                                       <SelectValue
-                                          placeholder={translate(
-                                             "common.form.bank.placeholder",
-                                          )}
-                                       />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                       {activeBankAccounts.map((account) => (
-                                          <SelectItem
-                                             key={account.id}
-                                             value={account.id}
-                                          >
-                                             {account.name} - {account.bank}
-                                          </SelectItem>
-                                       ))}
-                                    </SelectContent>
-                                 </Select>
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
+                  <form.Subscribe selector={(state) => state.values.type}>
+                    {(type) => (
+                        <>
+                         <FieldGroup>
+                             <form.Field name="bankAccountId">
+                                {(field) => {
+                                   const isInvalid =
+                                      field.state.meta.isTouched &&
+                                      !field.state.meta.isValid;
+                                   return (
+                                      <Field data-invalid={isInvalid}>
+                                         <FieldLabel>
+                                            {type === "transfer" 
+                                                ? translate("common.form.from-account.label")
+                                                : translate("common.form.bank.label")}
+                                         </FieldLabel>
+                                         <Select
+                                            onValueChange={(value) =>
+                                               field.handleChange(value)
+                                            }
+                                            value={field.state.value}
+                                         >
+                                            <SelectTrigger>
+                                               <SelectValue
+                                                  placeholder={type === "transfer"
+                                                    ? translate("common.form.from-account.placeholder")
+                                                    : translate("common.form.bank.placeholder")}
+                                               />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                               {activeBankAccounts.map((account) => (
+                                                  <SelectItem
+                                                     key={account.id}
+                                                     value={account.id}
+                                                  >
+                                                     {account.name} - {account.bank}
+                                                  </SelectItem>
+                                               ))}
+                                            </SelectContent>
+                                         </Select>
+                                         {isInvalid && (
+                                            <FieldError
+                                               errors={field.state.meta.errors}
+                                            />
+                                         )}
+                                      </Field>
+                                   );
+                                }}
+                             </form.Field>
+                          </FieldGroup>
 
-                  <FieldGroup>
-                     <form.Field name="category">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
+                          {type === "transfer" && (
+                            <FieldGroup>
+                                <form.Field name="toBankAccountId">
+                                    {(field) => {
+                                    const isInvalid =
+                                        field.state.meta.isTouched &&
+                                        !field.state.meta.isValid;
+                                    return (
+                                        <Field data-invalid={isInvalid}>
+                                            <FieldLabel>
+                                                {translate("common.form.to-account.label")}
+                                            </FieldLabel>
+                                            <Select
+                                                onValueChange={(value) =>
+                                                field.handleChange(value)
+                                                }
+                                                value={field.state.value}
+                                            >
+                                                <SelectTrigger>
+                                                <SelectValue
+                                                    placeholder={translate(
+                                                        "common.form.to-account.placeholder",
+                                                    )}
+                                                />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                {activeBankAccounts.map((account) => (
+                                                    <SelectItem
+                                                        key={account.id}
+                                                        value={account.id}
+                                                        disabled={account.id === form.getFieldValue("bankAccountId")}
+                                                    >
+                                                        {account.name} - {account.bank}
+                                                    </SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {isInvalid && (
+                                                <FieldError
+                                                errors={field.state.meta.errors}
+                                                />
+                                            )}
+                                        </Field>
+                                    );
+                                    }}
+                                </form.Field>
+                            </FieldGroup>
+                          )}
 
-                           const categoryOptions = categories.map(
-                              (category) => ({
-                                 label: category.name,
-                                 value: category.name,
-                                 icon: category.icon,
-                              }),
-                           );
-
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate("common.form.category.label")}
-                                 </FieldLabel>
-                                 <Combobox
-                                    className="flex-1"
-                                    emptyMessage={translate(
-                                       "common.form.search.no-results",
-                                    )}
-                                    onValueChange={field.handleChange}
-                                    options={categoryOptions.map((opt) => ({
-                                       label: (
-                                          <div className="flex items-center gap-2">
-                                             <IconDisplay
-                                                iconName={opt.icon}
-                                                size={16}
+                          {type !== "transfer" && (
+                              <FieldGroup>
+                                 <form.Field name="category">
+                                    {(field) => {
+                                       const isInvalid =
+                                          field.state.meta.isTouched &&
+                                          !field.state.meta.isValid;
+            
+                                       const categoryOptions = categories.map(
+                                          (category) => ({
+                                             label: category.name,
+                                             value: category.name,
+                                             icon: category.icon,
+                                          }),
+                                       );
+            
+                                       return (
+                                          <Field data-invalid={isInvalid}>
+                                             <FieldLabel>
+                                                {translate("common.form.category.label")}
+                                             </FieldLabel>
+                                             <Combobox
+                                                className="flex-1"
+                                                emptyMessage={translate(
+                                                   "common.form.search.no-results",
+                                                )}
+                                                onValueChange={field.handleChange}
+                                                options={categoryOptions.map((opt) => ({
+                                                   label: (
+                                                      <div className="flex items-center gap-2">
+                                                         <IconDisplay
+                                                            iconName={opt.icon}
+                                                            size={16}
+                                                         />
+                                                         <span>{opt.label}</span>
+                                                      </div>
+                                                   ),
+                                                   value: opt.value,
+                                                }))}
+                                                placeholder={translate(
+                                                   "common.form.category.placeholder",
+                                                )}
+                                                searchPlaceholder={translate(
+                                                   "common.form.search.label",
+                                                )}
+                                                value={field.state.value}
                                              />
-                                             <span>{opt.label}</span>
-                                          </div>
-                                       ),
-                                       value: opt.value,
-                                    }))}
-                                    placeholder={translate(
-                                       "common.form.category.placeholder",
-                                    )}
-                                    searchPlaceholder={translate(
-                                       "common.form.search.label",
-                                    )}
-                                    value={field.state.value}
-                                 />
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
+                                             {isInvalid && (
+                                                <FieldError
+                                                   errors={field.state.meta.errors}
+                                                />
+                                             )}
+                                          </Field>
+                                       );
+                                    }}
+                                 </form.Field>
+                              </FieldGroup>
+                          )}
+                        </>
+                    )}
+                  </form.Subscribe>
 
                   <FieldGroup>
                      <form.Field name="type">
@@ -387,7 +480,7 @@ export function ManageTransactionSheet({
                                  <Select
                                     onValueChange={(value) =>
                                        field.handleChange(
-                                          value as "expense" | "income",
+                                          value as "expense" | "income" | "transfer",
                                        )
                                     }
                                     value={field.state.value}
@@ -404,6 +497,11 @@ export function ManageTransactionSheet({
                                        <SelectItem value="income">
                                           {translate(
                                              "dashboard.routes.transactions.list-section.types.income",
+                                          )}
+                                       </SelectItem>
+                                       <SelectItem value="transfer">
+                                          {translate(
+                                             "dashboard.routes.transactions.list-section.types.transfer",
                                           )}
                                        </SelectItem>
                                     </SelectContent>
@@ -460,7 +558,8 @@ export function ManageTransactionSheet({
                               !state.canSubmit ||
                               state.isSubmitting ||
                               createTransactionMutation.isPending ||
-                              updateTransactionMutation.isPending
+                              updateTransactionMutation.isPending ||
+                              transferTransactionMutation.isPending
                            }
                            type="submit"
                         >
