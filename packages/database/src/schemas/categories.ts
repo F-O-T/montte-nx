@@ -1,7 +1,8 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { decimal, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
 export const category = pgTable("category", {
+   budget: decimal("budget", { precision: 10, scale: 2 }).default("0"),
    color: text("color").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    icon: text("icon").default("Wallet"),

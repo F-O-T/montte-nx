@@ -12,12 +12,14 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 const createCategorySchema = z.object({
+   budget: z.number().optional(),
    color: z.string(),
    icon: z.string().optional(),
    name: z.string(),
 });
 
 const updateCategorySchema = z.object({
+   budget: z.number().optional(),
    color: z.string().optional(),
    icon: z.string().optional(),
    name: z.string().optional(),
@@ -43,6 +45,7 @@ export const categoryRouter = router({
 
          return createCategory(resolvedCtx.db, {
             ...input,
+            budget: input.budget?.toString(),
             id: crypto.randomUUID(),
             userId,
          });
@@ -159,6 +162,9 @@ export const categoryRouter = router({
             throw new Error("Category not found");
          }
 
-         return updateCategory(resolvedCtx.db, input.id, input.data);
+         return updateCategory(resolvedCtx.db, input.id, {
+            ...input.data,
+            budget: input.data.budget?.toString(),
+         });
       }),
 });

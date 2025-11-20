@@ -11,6 +11,7 @@ import {
 import {
    DropdownMenu,
    DropdownMenuContent,
+   DropdownMenuItem,
    DropdownMenuLabel,
    DropdownMenuSeparator,
    DropdownMenuTrigger,
@@ -48,7 +49,8 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Inbox, MoreVertical } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Eye, Inbox, MoreVertical } from "lucide-react";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
@@ -73,6 +75,7 @@ function CategoriesCardHeader() {
 
 function CategoryActionsDropdown({ category }: { category: Category }) {
    const [isOpen, setIsOpen] = useState(false);
+   const navigate = useNavigate();
 
    return (
       <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
@@ -105,6 +108,14 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
                )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+               onClick={() => {
+                  navigate({ to: `/categories/${category.id}` });
+               }}
+            >
+               <Eye className="h-4 w-4 mr-2" />
+               View Details
+            </DropdownMenuItem>
             <ManageCategorySheet asChild category={category} />
             <DeleteCategory category={category} />
          </DropdownMenuContent>
