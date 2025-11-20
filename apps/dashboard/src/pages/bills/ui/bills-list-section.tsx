@@ -183,10 +183,14 @@ function BillItem({ bill, categories }: BillItemProps) {
                      <DropdownMenuSeparator />
                      {!bill.completionDate && (
                         <CompleteBillDialog bill={bill}>
-                           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                           <DropdownMenuItem
+                              onSelect={(e) => e.preventDefault()}
+                           >
                               <Wallet className="size-4 mr-2" />
                               {bill.type === "expense"
-                                 ? translate("dashboard.routes.bills.actions.pay")
+                                 ? translate(
+                                      "dashboard.routes.bills.actions.pay",
+                                   )
                                  : translate(
                                       "dashboard.routes.bills.actions.receive",
                                    )}
@@ -390,30 +394,24 @@ function BillsListContent({ type }: BillsListSectionProps) {
       <>
          <Card>
             <CardHeader>
-               <div>
-                  <CardTitle>
-                     {type === "payable"
-                        ? translate("dashboard.routes.bills.payables.title")
-                        : type === "receivable"
-                          ? translate(
-                               "dashboard.routes.bills.receivables.title",
-                            )
-                          : translate("dashboard.routes.bills.allBills.title")}
-                  </CardTitle>
-                  <CardDescription>
-                     {type === "payable"
-                        ? translate(
-                             "dashboard.routes.bills.payables.description",
-                          )
-                        : type === "receivable"
-                          ? translate(
-                               "dashboard.routes.bills.receivables.description",
-                            )
-                          : translate(
-                               "dashboard.routes.bills.allBills.description",
-                            )}
-                  </CardDescription>
-               </div>
+               <CardTitle>
+                  {type === "payable"
+                     ? translate("dashboard.routes.bills.payables.title")
+                     : type === "receivable"
+                       ? translate("dashboard.routes.bills.receivables.title")
+                       : translate("dashboard.routes.bills.allBills.title")}
+               </CardTitle>
+               <CardDescription>
+                  {type === "payable"
+                     ? translate("dashboard.routes.bills.payables.description")
+                     : type === "receivable"
+                       ? translate(
+                            "dashboard.routes.bills.receivables.description",
+                         )
+                       : translate(
+                            "dashboard.routes.bills.allBills.description",
+                         )}
+               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
                <div className="flex items-center justify-between gap-8">
@@ -432,13 +430,20 @@ function BillsListContent({ type }: BillsListSectionProps) {
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
-                  <Button
-                     onClick={() => setIsFilterSheetOpen(true)}
-                     size="icon"
-                     variant={hasActiveFilters ? "default" : "outline"}
-                  >
-                     <Filter className="size-4" />
-                  </Button>
+                  <Tooltip>
+                  <TooltipTrigger asChild>
+                     <Button
+                        onClick={() => setIsFilterSheetOpen(true)}
+                        size="icon"
+                        variant={hasActiveFilters ? "default" : "outline"}
+                     >
+                        <Filter className="size-4" />
+                     </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                     <p>Filter bills</p>
+                  </TooltipContent>
+               </Tooltip>
                </div>
 
                {paginatedBills.length === 0 ? (

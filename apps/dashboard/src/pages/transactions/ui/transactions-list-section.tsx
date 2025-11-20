@@ -50,6 +50,11 @@ import {
    PaginationNext,
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Filter, MoreVertical, Search, Wallet } from "lucide-react";
@@ -302,13 +307,20 @@ function TransactionsListContent() {
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
-                  <Button
-                     onClick={() => setIsFilterSheetOpen(true)}
-                     size="icon"
-                     variant={hasActiveFilters ? "default" : "outline"}
-                  >
-                     <Filter className="size-4" />
-                  </Button>
+                  <Tooltip>
+                     <TooltipTrigger asChild>
+                        <Button
+                           onClick={() => setIsFilterSheetOpen(true)}
+                           size="icon"
+                           variant={hasActiveFilters ? "default" : "outline"}
+                        >
+                           <Filter className="size-4" />
+                        </Button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                        <p>Filter transactions</p>
+                     </TooltipContent>
+                  </Tooltip>
                </div>
 
                {transactions.length === 0 ? (
