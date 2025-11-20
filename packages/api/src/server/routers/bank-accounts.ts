@@ -163,7 +163,7 @@ export const bankAccountRouter = router({
                const newTransaction = await createTransaction(resolvedCtx.db, {
                   amount: trn.amount.toString(),
                   bankAccountId: input.bankAccountId,
-                  category: "Uncategorized",
+                  category: ["Uncategorized"],
                   date: trn.date,
                   description: trn.description,
                   externalId: trn.fitid,
