@@ -87,7 +87,8 @@ export async function findTransactionsByUserIdPaginated(
    options: {
       page?: number;
       limit?: number;
-      type?: "income" | "expense";
+      type?: "income" | "expense" | "transfer";
+      bankAccountId?: string;
       category?: string;
       search?: string;
       orderBy?: "date" | "amount";
@@ -98,6 +99,7 @@ export async function findTransactionsByUserIdPaginated(
       page = 1,
       limit = 10,
       type,
+      bankAccountId,
       category,
       search,
       orderBy = "date",
@@ -112,6 +114,10 @@ export async function findTransactionsByUserIdPaginated(
          { eq, and, or, ilike }: any,
       ) => {
          const conditions = [eq(transaction.userId, userId)];
+
+         if (bankAccountId && bankAccountId !== "all") {
+            conditions.push(eq(transaction.bankAccountId, bankAccountId));
+         }
 
          if (type && type !== ("all" as any)) {
             conditions.push(eq(transaction.type, type));
@@ -310,12 +316,19 @@ export async function deleteTransaction(
 export async function getTotalTransactionsByUserId(
    dbClient: DatabaseInstance,
    userId: string,
+   bankAccountId?: string,
 ) {
    try {
+      const conditions = [eq(transaction.userId, userId)];
+
+      if (bankAccountId && bankAccountId !== "all") {
+         conditions.push(eq(transaction.bankAccountId, bankAccountId));
+      }
+
       const result = await dbClient
          .select({ count: sql<number>`count(*)` })
          .from(transaction)
-         .where(eq(transaction.userId, userId));
+         .where(and(...conditions));
 
       return result[0]?.count || 0;
    } catch (err) {
@@ -329,6 +342,7 @@ export async function getTotalTransactionsByUserId(
 export async function getTotalIncomeByUserId(
    dbClient: DatabaseInstance,
    userId: string,
+   bankAccountId?: string,
 ) {
    try {
       const now = new Date();
@@ -339,19 +353,23 @@ export async function getTotalIncomeByUserId(
          0,
       );
 
+      const conditions = [
+         eq(transaction.userId, userId),
+         gte(transaction.date, currentMonthStart),
+         lte(transaction.date, currentMonthEnd),
+         eq(transaction.type, "income"),
+      ];
+
+      if (bankAccountId && bankAccountId !== "all") {
+         conditions.push(eq(transaction.bankAccountId, bankAccountId));
+      }
+
       const result = await dbClient
          .select({
             total: sql<number>`sum(CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
          })
          .from(transaction)
-         .where(
-            and(
-               eq(transaction.userId, userId),
-               gte(transaction.date, currentMonthStart),
-               lte(transaction.date, currentMonthEnd),
-               eq(transaction.type, "income"),
-            ),
-         );
+         .where(and(...conditions));
 
       return result[0]?.total || 0;
    } catch (err) {
@@ -365,6 +383,7 @@ export async function getTotalIncomeByUserId(
 export async function getTotalExpensesByUserId(
    dbClient: DatabaseInstance,
    userId: string,
+   bankAccountId?: string,
 ) {
    try {
       const now = new Date();
@@ -375,25 +394,70 @@ export async function getTotalExpensesByUserId(
          0,
       );
 
+      const conditions = [
+         eq(transaction.userId, userId),
+         gte(transaction.date, currentMonthStart),
+         lte(transaction.date, currentMonthEnd),
+         eq(transaction.type, "expense"),
+      ];
+
+      if (bankAccountId && bankAccountId !== "all") {
+         conditions.push(eq(transaction.bankAccountId, bankAccountId));
+      }
+
       const result = await dbClient
          .select({
             total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
          })
          .from(transaction)
-         .where(
-            and(
-               eq(transaction.userId, userId),
-               gte(transaction.date, currentMonthStart),
-               lte(transaction.date, currentMonthEnd),
-               eq(transaction.type, "expense"),
-            ),
-         );
+         .where(and(...conditions));
 
       return result[0]?.total || 0;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
          `Failed to get total expenses: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getTotalTransfersByUserId(
+   dbClient: DatabaseInstance,
+   userId: string,
+   bankAccountId?: string,
+) {
+   try {
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(
+         now.getFullYear(),
+         now.getMonth() + 1,
+         0,
+      );
+
+      const conditions = [
+         eq(transaction.userId, userId),
+         gte(transaction.date, currentMonthStart),
+         lte(transaction.date, currentMonthEnd),
+         eq(transaction.type, "transfer"),
+      ];
+
+      if (bankAccountId && bankAccountId !== "all") {
+         conditions.push(eq(transaction.bankAccountId, bankAccountId));
+      }
+
+      const result = await dbClient
+         .select({
+            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'transfer' AND CAST(${transaction.amount} AS REAL) > 0 THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+         })
+         .from(transaction)
+         .where(and(...conditions));
+
+      return result[0]?.total || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total transfers: ${(err as Error).message}`,
       );
    }
 }

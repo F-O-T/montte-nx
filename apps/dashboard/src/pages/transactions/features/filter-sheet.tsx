@@ -21,13 +21,20 @@ import { X } from "lucide-react";
 type FilterSheetProps = {
    categoryFilter: string;
    typeFilter: string;
+   bankAccountFilter: string;
    onCategoryFilterChange: (value: string) => void;
    onTypeFilterChange: (value: string) => void;
+   onBankAccountFilterChange: (value: string) => void;
    categories: Array<{
       id: string;
       name: string;
       color: string;
       icon: string | null;
+   }>;
+   bankAccounts: Array<{
+      id: string;
+      name: string;
+      bank: string;
    }>;
    isOpen: boolean;
    onOpenChange: (open: boolean) => void;
@@ -36,9 +43,12 @@ type FilterSheetProps = {
 export function FilterSheet({
    categoryFilter,
    typeFilter,
+   bankAccountFilter,
    onCategoryFilterChange,
    onTypeFilterChange,
+   onBankAccountFilterChange,
    categories,
+   bankAccounts,
    isOpen,
    onOpenChange,
 }: FilterSheetProps) {
@@ -51,7 +61,20 @@ export function FilterSheet({
       },
       ...categories.map((category) => ({
          label: category.name,
-         value: category.id,
+         value: category.name,
+      })),
+   ];
+
+   const bankAccountOptions = [
+      {
+         label: translate(
+            "dashboard.routes.transactions.features.filter.items.all-accounts",
+         ),
+         value: "all",
+      },
+      ...bankAccounts.map((account) => ({
+         label: `${account.name} - ${account.bank}`,
+         value: account.id,
       })),
    ];
 
@@ -74,13 +97,23 @@ export function FilterSheet({
          ),
          value: "expense",
       },
+      {
+         label: translate(
+            "dashboard.routes.transactions.list-section.types.transfer",
+         ),
+         value: "transfer",
+      },
    ];
 
-   const hasActiveFilters = categoryFilter !== "all" || typeFilter !== "all";
+   const hasActiveFilters =
+      categoryFilter !== "all" ||
+      typeFilter !== "all" ||
+      bankAccountFilter !== "all";
 
    const clearFilters = () => {
       onCategoryFilterChange("all");
       onTypeFilterChange("all");
+      onBankAccountFilterChange("all");
    };
 
    return (
@@ -131,6 +164,36 @@ export function FilterSheet({
                         )}
                         value={categoryFilter}
                      />
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate("common.form.bank.label")}
+                     </FieldLabel>
+                     <Select
+                        onValueChange={onBankAccountFilterChange}
+                        value={bankAccountFilter}
+                     >
+                        <SelectTrigger>
+                           <SelectValue
+                              placeholder={translate(
+                                 "common.form.bank.placeholder",
+                              )}
+                           />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {bankAccountOptions.map((option) => (
+                              <SelectItem
+                                 key={option.value}
+                                 value={option.value}
+                              >
+                                 {option.label}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
                   </Field>
                </FieldGroup>
 

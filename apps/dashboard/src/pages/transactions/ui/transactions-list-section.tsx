@@ -62,7 +62,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteTransaction } from "../features/delete-transaction-dialog";
 import { FilterSheet } from "../features/filter-sheet";
 import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
-import { TransactionListProvider } from "../features/transaction-list-context";
+import { useTransactionList } from "../features/transaction-list-context";
 
 export type Transaction =
    RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
@@ -77,6 +77,11 @@ function TransactionItem({ transaction, categories }: TransactionItemProps) {
    );
    const categoryColor = categoryDetails?.color || "#6b7280";
    const categoryIcon = categoryDetails?.icon || "Wallet";
+
+   const amount = parseFloat(transaction.amount);
+   const isPositive =
+      transaction.type === "income" ||
+      (transaction.type === "transfer" && amount > 0);
 
    return (
       <Item>
@@ -97,13 +102,9 @@ function TransactionItem({ transaction, categories }: TransactionItemProps) {
             </ItemDescription>
          </ItemContent>
          <ItemActions>
-            <Badge
-               variant={
-                  transaction.type === "income" ? "default" : "destructive"
-               }
-            >
-               {transaction.type === "income" ? "+" : "-"}R$
-               {Math.abs(parseFloat(transaction.amount))}
+            <Badge variant={isPositive ? "default" : "destructive"}>
+               {isPositive ? "+" : "-"}R$
+               {Math.abs(amount)}
             </Badge>
             <DropdownMenu>
                <DropdownMenuTrigger asChild>
@@ -213,10 +214,17 @@ function TransactionsListSkeleton() {
 function TransactionsListContent() {
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
-   const [categoryFilter, setCategoryFilter] = useState("all");
-   const [typeFilter, setTypeFilter] = useState("all");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const pageSize = 5;
+
+   const {
+      categoryFilter,
+      setCategoryFilter,
+      typeFilter,
+      setTypeFilter,
+      bankAccountFilter,
+      setBankAccountFilter,
+   } = useTransactionList();
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
@@ -231,13 +239,14 @@ function TransactionsListContent() {
       trpc.transactions.getAllPaginated.queryOptions(
          {
             category: categoryFilter === "all" ? undefined : categoryFilter,
+            bankAccountId: bankAccountFilter === "all" ? undefined : bankAccountFilter,
             limit: pageSize,
             page: currentPage,
             search: debouncedSearchTerm || undefined,
             type:
                typeFilter === "all"
                   ? undefined
-                  : (typeFilter as "income" | "expense"),
+                  : (typeFilter as "income" | "expense" | "transfer"),
          },
          {
             placeholderData: keepPreviousData,
@@ -252,11 +261,15 @@ function TransactionsListContent() {
       trpc.categories.getAll.queryOptions(),
    );
 
+   const { data: bankAccounts = [] } = useSuspenseQuery(
+      trpc.bankAccounts.getAll.queryOptions(),
+   );
+
    const handleFilterChange = () => {
       setCurrentPage(1);
    };
 
-   const hasActiveFilters = categoryFilter !== "all" || typeFilter !== "all";
+   const hasActiveFilters = categoryFilter !== "all" || typeFilter !== "all" || bankAccountFilter !== "all";
 
    return (
       <>
@@ -403,6 +416,12 @@ function TransactionsListContent() {
             )}
          </Card>
          <FilterSheet
+            bankAccounts={bankAccounts}
+            bankAccountFilter={bankAccountFilter}
+            onBankAccountFilterChange={(value) => {
+               setBankAccountFilter(value);
+               handleFilterChange();
+            }}
             categories={categories}
             categoryFilter={categoryFilter}
             isOpen={isFilterSheetOpen}
@@ -424,11 +443,9 @@ function TransactionsListContent() {
 export function TransactionsListSection() {
    return (
       <ErrorBoundary FallbackComponent={TransactionsListErrorFallback}>
-         <TransactionListProvider>
-            <Suspense fallback={<TransactionsListSkeleton />}>
-               <TransactionsListContent />
-            </Suspense>
-         </TransactionListProvider>
+         <Suspense fallback={<TransactionsListSkeleton />}>
+            <TransactionsListContent />
+         </Suspense>
       </ErrorBoundary>
    );
 }

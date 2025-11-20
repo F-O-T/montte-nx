@@ -52,7 +52,9 @@ function AccountBalanceStat({ bankAccountId }: { bankAccountId: string }) {
    const balance = data.transactions.reduce(
       (acc: number, curr: { amount: string; type: string }) => {
          const amount = parseFloat(curr.amount);
-         return curr.type === "income" ? acc + amount : acc - amount;
+         if (curr.type === "income") return acc + amount;
+         if (curr.type === "expense") return acc - amount;
+         return acc + amount;
       },
       0,
    );

@@ -1,18 +1,19 @@
-import { StatsCard } from "@packages/ui/components/stats-card";
 import { translate } from "@packages/localization";
-import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
-import {
-   Card,
-   CardHeader,
-   CardTitle,
-   CardDescription,
-   CardContent,
-} from "@packages/ui/components/card";
+import { useTransactionList } from "../features/transaction-list-context";
 
 function TransactionsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -29,8 +30,8 @@ function TransactionsStatsErrorFallback(props: FallbackProps) {
 
 function TransactionsStatsSkeleton() {
    return (
-      <div className="grid gap-4 h-min">
-         {[1, 2, 3].map((index) => (
+      <div className="grid grid-cols-2 gap-4 h-min">
+         {[1, 2, 3, 4].map((index) => (
             <Card
                className="col-span-1 h-full w-full"
                key={`stats-skeleton-card-${index + 1}`}
@@ -53,18 +54,23 @@ function TransactionsStatsSkeleton() {
 }
 
 function TransactionsStatsContent() {
+   const { bankAccountFilter } = useTransactionList();
+
    const { data: stats } = useSuspenseQuery(
-      trpc.transactions.getStats.queryOptions(),
+      trpc.transactions.getStats.queryOptions({
+         bankAccountId:
+            bankAccountFilter === "all" ? undefined : bankAccountFilter,
+      }),
    );
 
    return (
-      <div className="grid gap-4 h-min">
+      <div className="grid grid-cols-2 gap-4 h-min">
          <StatsCard
-            title={translate(
-               "dashboard.routes.transactions.stats-section.total.title",
-            )}
             description={translate(
                "dashboard.routes.transactions.stats-section.total.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.total.title",
             )}
             value={stats.totalTransactions}
          />
@@ -85,6 +91,15 @@ function TransactionsStatsContent() {
                "dashboard.routes.transactions.stats-section.expense.title",
             )}
             value={`R$ ${stats.totalExpenses}`}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.transfer.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.transfer.title",
+            )}
+            value={`R$ ${stats.totalTransfers}`}
          />
       </div>
    );

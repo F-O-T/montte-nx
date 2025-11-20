@@ -20,6 +20,7 @@
          },
          "description": "Refine a lista de transações com base em critérios específicos.",
          "items": {
+            "all-accounts": "Todas as Contas",
             "all-categories": "Todas as Categorias",
             "all-types": "Todos os Tipos"
          },
@@ -41,7 +42,8 @@
       "title": "Lista de Transações",
       "types": {
          "expense": "Despesa",
-         "income": "Receita"
+         "income": "Receita",
+         "transfer": "Transferência"
       }
    },
    "stats-section": {
@@ -56,6 +58,10 @@
       "total": {
          "description": "Veja o total acumulado de todas as suas transações.",
          "title": "Total de Transações"
+      },
+      "transfer": {
+         "description": "Veja o total acumulado de todas as suas transferências.",
+         "title": "Total de Transferências"
       }
    }
 }

@@ -7,6 +7,7 @@ import {
    getTotalExpensesByUserId,
    getTotalIncomeByUserId,
    getTotalTransactionsByUserId,
+   getTotalTransfersByUserId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
@@ -18,7 +19,7 @@ const createTransactionSchema = z.object({
    category: z.string(),
    date: z.string(),
    description: z.string(),
-   type: z.enum(["income", "expense"]),
+   type: z.enum(["income", "expense", "transfer"]),
 });
 
 const updateTransactionSchema = z.object({
@@ -27,17 +28,18 @@ const updateTransactionSchema = z.object({
    category: z.string().optional(),
    date: z.string().optional(),
    description: z.string().optional(),
-   type: z.enum(["income", "expense"]).optional(),
+   type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
 const paginationSchema = z.object({
+   bankAccountId: z.string().optional(),
    category: z.string().optional(),
    limit: z.coerce.number().min(1).max(100).default(5),
    orderBy: z.enum(["date", "amount"]).default("date"),
    orderDirection: z.enum(["asc", "desc"]).default("desc"),
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
-   type: z.enum(["income", "expense"]).optional(),
+   type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
 export const transactionRouter = router({
@@ -132,28 +134,88 @@ export const transactionRouter = router({
          return transaction;
       }),
 
-   getStats: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+   getStats: protectedProcedure
+      .input(
+         z
+            .object({
+               bankAccountId: z.string().optional(),
+            })
+            .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
 
-      const userId = resolvedCtx.session.user.id;
+         const userId = resolvedCtx.session.user.id;
+         const bankAccountId = input?.bankAccountId;
 
-      const [totalTransactions, totalIncome, totalExpenses] = await Promise.all(
-         [
-            getTotalTransactionsByUserId(resolvedCtx.db, userId),
-            getTotalIncomeByUserId(resolvedCtx.db, userId),
-            getTotalExpensesByUserId(resolvedCtx.db, userId),
-         ],
-      );
+         const [totalTransactions, totalIncome, totalExpenses, totalTransfers] =
+            await Promise.all([
+               getTotalTransactionsByUserId(
+                  resolvedCtx.db,
+                  userId,
+                  bankAccountId,
+               ),
+               getTotalIncomeByUserId(resolvedCtx.db, userId, bankAccountId),
+               getTotalExpensesByUserId(resolvedCtx.db, userId, bankAccountId),
+               getTotalTransfersByUserId(resolvedCtx.db, userId, bankAccountId),
+            ]);
 
-      return {
-         totalExpenses: totalExpenses || 0,
-         totalIncome: totalIncome || 0,
-         totalTransactions,
-      };
-   }),
+         return {
+            totalExpenses: totalExpenses || 0,
+            totalIncome: totalIncome || 0,
+            totalTransactions,
+            totalTransfers: totalTransfers || 0,
+         };
+      }),
+
+   transfer: protectedProcedure
+      .input(
+         z.object({
+            amount: z.number().positive(),
+            date: z.string(),
+            description: z.string(),
+            fromBankAccountId: z.string(),
+            toBankAccountId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         if (!resolvedCtx.session?.user) {
+            throw new Error("Unauthorized");
+         }
+
+         const userId = resolvedCtx.session.user.id;
+
+         // @ts-expect-error - Drizzle transaction type
+         return resolvedCtx.db.transaction(async (tx) => {
+            const fromTransaction = await createTransaction(tx, {
+               amount: (-input.amount).toString(),
+               bankAccountId: input.fromBankAccountId,
+               category: "Transfer",
+               date: new Date(input.date),
+               description: input.description,
+               id: crypto.randomUUID(),
+               type: "transfer",
+               userId,
+            });
+
+            const toTransaction = await createTransaction(tx, {
+               amount: input.amount.toString(),
+               bankAccountId: input.toBankAccountId,
+               category: "Transfer",
+               date: new Date(input.date),
+               description: input.description,
+               id: crypto.randomUUID(),
+               type: "transfer",
+               userId,
+            });
+
+            return [fromTransaction, toTransaction];
+         });
+      }),
 
    update: protectedProcedure
       .input(
@@ -185,7 +247,7 @@ export const transactionRouter = router({
             category?: string;
             date?: Date;
             description?: string;
-            type?: "income" | "expense";
+            type?: "income" | "expense" | "transfer";
          } = {};
 
          if (input.data.amount !== undefined) {
