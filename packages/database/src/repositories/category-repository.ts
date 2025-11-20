@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { count, desc, eq, ilike, and } from "drizzle-orm";
+import { count, desc, eq, ilike, and, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
@@ -198,20 +198,27 @@ export async function getCategoryWithMostTransactions(
    userId: string,
 ) {
    try {
-      const transactionCount = count();
+      const result = await dbClient.execute<{
+         categoryName: string;
+         transactionCount: string;
+      }>(sql`
+         SELECT category_name as "categoryName", COUNT(*) as "transactionCount"
+         FROM (
+            SELECT unnest(${transaction.category}) as category_name
+            FROM ${transaction}
+            WHERE ${transaction.userId} = ${userId}
+         ) sub
+         GROUP BY category_name
+         ORDER BY "transactionCount" DESC
+         LIMIT 1
+      `);
 
-      const result = await dbClient
-         .select({
-            categoryName: transaction.category,
-            transactionCount,
-         })
-         .from(transaction)
-         .where(eq(transaction.userId, userId))
-         .groupBy(transaction.category)
-         .orderBy(desc(transactionCount))
-         .limit(1);
+      if (!result[0]) return null;
 
-      return result[0] || null;
+      return {
+         categoryName: result[0].categoryName,
+         transactionCount: parseInt(result[0].transactionCount, 10),
+      };
    } catch (err) {
       propagateError(err);
       throw AppError.database(

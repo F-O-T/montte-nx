@@ -16,7 +16,7 @@ import { protectedProcedure, router } from "../trpc";
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
-   category: z.string(),
+   category: z.array(z.string()).min(1, "At least one category is required"),
    date: z.string(),
    description: z.string(),
    type: z.enum(["income", "expense", "transfer"]),
@@ -25,7 +25,7 @@ const createTransactionSchema = z.object({
 const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   category: z.string().optional(),
+   category: z.array(z.string()).min(1, "At least one category is required").optional(),
    date: z.string().optional(),
    description: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
@@ -189,12 +189,11 @@ export const transactionRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         // @ts-expect-error - Drizzle transaction type
          return resolvedCtx.db.transaction(async (tx) => {
             const fromTransaction = await createTransaction(tx, {
                amount: (-input.amount).toString(),
                bankAccountId: input.fromBankAccountId,
-               category: "Transfer",
+               category: ["Transfer"],
                date: new Date(input.date),
                description: input.description,
                id: crypto.randomUUID(),
@@ -205,7 +204,7 @@ export const transactionRouter = router({
             const toTransaction = await createTransaction(tx, {
                amount: input.amount.toString(),
                bankAccountId: input.toBankAccountId,
-               category: "Transfer",
+               category: ["Transfer"],
                date: new Date(input.date),
                description: input.description,
                id: crypto.randomUUID(),
@@ -244,7 +243,7 @@ export const transactionRouter = router({
          const updateData: {
             amount?: string;
             bankAccountId?: string;
-            category?: string;
+            category?: string[];
             date?: Date;
             description?: string;
             type?: "income" | "expense" | "transfer";

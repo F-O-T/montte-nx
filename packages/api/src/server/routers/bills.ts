@@ -115,7 +115,7 @@ export const billRouter = router({
                input.data.bankAccountId ||
                existingBill.bankAccountId ||
                undefined,
-            category: existingBill.category,
+            category: [existingBill.category],
             date: new Date(input.data.completionDate),
             description: existingBill.description,
             id: crypto.randomUUID(),
