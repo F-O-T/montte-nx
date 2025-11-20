@@ -20,7 +20,7 @@ import { Edit, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "@/integrations/clients";
-import { ManageBankAccountSheet } from "@/pages/profile/features/manage-bank-account-sheet";
+import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
 import { DeleteBankAccount } from "../features/delete-bank-account";
 
 export function BankAccountQuickActionsToolbar({

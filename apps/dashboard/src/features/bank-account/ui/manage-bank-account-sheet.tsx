@@ -1,6 +1,7 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import { Combobox } from "@packages/ui/components/combobox";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
    Field,
@@ -25,11 +26,17 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
+import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
-import { useMemo, useState } from "react";
-import { trpc } from "@/integrations/clients";
+import { Suspense, useMemo, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { useTRPC } from "@/integrations/clients";
 
 type ManageBankAccountSheetProps = {
    onOpen?: boolean;
@@ -38,12 +45,63 @@ type ManageBankAccountSheetProps = {
    asChild?: boolean;
 };
 
+interface BankComboboxProps {
+   value?: string;
+   onValueChange?: (value: string) => void;
+}
+
+function BankComboboxContent({ value, onValueChange }: BankComboboxProps) {
+   const trpc = useTRPC();
+   const { data: banks = [] } = useSuspenseQuery(
+      trpc.brasilApi.banks.getAll.queryOptions(),
+   );
+
+   const formattedBanks = banks.map((bank) => ({
+      label: bank.fullName,
+      value: bank.fullName,
+   }));
+
+   return (
+      <Combobox
+         emptyMessage={translate("common.form.search.no-results")}
+         onValueChange={onValueChange}
+         options={formattedBanks}
+         placeholder={translate("common.form.bank.placeholder")}
+         searchPlaceholder={translate("common.form.search.placeholder")}
+         value={value}
+      />
+   );
+}
+
+function ErrorFallback({ error }: { error: Error }) {
+   return (
+      <div className="text-sm text-red-600 p-2 border rounded-md">
+         {error.message}
+      </div>
+   );
+}
+
+function LoadingFallback() {
+   return <Skeleton className="h-10 w-full" />;
+}
+
+function BankCombobox(props: BankComboboxProps) {
+   return (
+      <ErrorBoundary FallbackComponent={ErrorFallback}>
+         <Suspense fallback={<LoadingFallback />}>
+            <BankComboboxContent {...props} />
+         </Suspense>
+      </ErrorBoundary>
+   );
+}
+
 export function ManageBankAccountSheet({
    onOpen,
    onOpenChange,
    bankAccount,
    asChild = false,
 }: ManageBankAccountSheetProps) {
+   const trpc = useTRPC();
    const queryClient = useQueryClient();
    const isEditMode = !!bankAccount;
 
@@ -137,11 +195,11 @@ export function ManageBankAccountSheet({
 
    const TriggerComponent = asChild ? (
       <DropdownMenuItem
+         className="flex items-center gap-2"
          onSelect={(e) => {
             e.preventDefault();
             setIsOpen?.(true);
          }}
-         className="flex items-center gap-2"
       >
          {isEditMode ? (
             <>
@@ -222,14 +280,8 @@ export function ManageBankAccountSheet({
                                  <FieldLabel>
                                     {translate("common.form.bank.label")}
                                  </FieldLabel>
-                                 <Input
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder={translate(
-                                       "common.form.bank.placeholder",
-                                    )}
+                                 <BankCombobox
+                                    onValueChange={field.handleChange}
                                     value={field.state.value}
                                  />
                                  {isInvalid && (

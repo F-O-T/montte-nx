@@ -1,6 +1,7 @@
 {
    "dependencies": {
       "@packages/authentication": "workspace:*",
+      "@packages/brasil-api": "workspace:*",
       "@packages/contenta-sdk": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
