@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { bill } from "../schemas/bills";
 
@@ -10,8 +10,13 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
    try {
       const result = await dbClient.insert(bill).values(data).returning();
 
+      const createdBillId = result[0]?.id;
+      if (!createdBillId) {
+         throw AppError.database("Failed to get created bill ID");
+      }
+
       const createdBill = await dbClient.query.bill.findFirst({
-         where: (bill, { eq }) => eq(bill.id, result[0].id),
+         where: (bill, { eq }) => eq(bill.id, createdBillId),
          with: {
             bankAccount: true,
             transaction: true,
@@ -89,7 +94,7 @@ export async function findBillsByUserIdFiltered(
    } = options;
 
    try {
-      const buildWhereCondition = (bill: any, { eq, and, gte, lte }: any) => {
+      const buildWhereCondition = () => {
          const conditions = [eq(bill.userId, userId)];
 
          if (type) {
@@ -98,10 +103,12 @@ export async function findBillsByUserIdFiltered(
 
          if (month) {
             const [year, monthNum] = month.split("-").map(Number);
-            const monthStart = new Date(year, monthNum - 1, 1);
-            const monthEnd = new Date(year, monthNum, 0, 23, 59, 59, 999);
-            conditions.push(gte(bill.dueDate, monthStart));
-            conditions.push(lte(bill.dueDate, monthEnd));
+            if (year && monthNum) {
+               const monthStart = new Date(year, monthNum - 1, 1);
+               const monthEnd = new Date(year, monthNum, 0, 23, 59, 59, 999);
+               conditions.push(gte(bill.dueDate, monthStart));
+               conditions.push(lte(bill.dueDate, monthEnd));
+            }
          }
 
          return and(...conditions);
@@ -152,7 +159,7 @@ export async function findBillsByUserIdPaginated(
    const offset = (page - 1) * limit;
 
    try {
-      const buildWhereCondition = (bill: any, { eq, and, gte, lte }: any) => {
+      const buildWhereCondition = () => {
          const conditions = [eq(bill.userId, userId)];
 
          if (type) {
@@ -161,10 +168,12 @@ export async function findBillsByUserIdPaginated(
 
          if (month) {
             const [year, monthNum] = month.split("-").map(Number);
-            const monthStart = new Date(year, monthNum - 1, 1);
-            const monthEnd = new Date(year, monthNum, 0, 23, 59, 59, 999);
-            conditions.push(gte(bill.dueDate, monthStart));
-            conditions.push(lte(bill.dueDate, monthEnd));
+            if (year && monthNum) {
+               const monthStart = new Date(year, monthNum - 1, 1);
+               const monthEnd = new Date(year, monthNum, 0, 23, 59, 59, 999);
+               conditions.push(gte(bill.dueDate, monthStart));
+               conditions.push(lte(bill.dueDate, monthEnd));
+            }
          }
 
          return and(...conditions);
