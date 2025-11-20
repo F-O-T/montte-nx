@@ -124,14 +124,14 @@ export async function findTransactionsByUserIdPaginated(
          }
 
          if (category && category !== "all") {
-            conditions.push(eq(transaction.category, category));
+            conditions.push(sql`${transaction.category} @> ARRAY[${category}]::text[]`);
          }
 
          if (search) {
             conditions.push(
                or(
                   ilike(transaction.description, `%${search}%`),
-                  ilike(transaction.category, `%${search}%`),
+                  sql`exists (select 1 from unnest(${transaction.category}) as c where c ilike ${`%${search}%`})`,
                ),
             );
          }

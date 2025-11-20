@@ -7,7 +7,7 @@ export const transaction = pgTable("transaction", {
    bankAccountId: text("bank_account_id").references(() => bankAccount.id, {
       onDelete: "cascade",
    }),
-   category: text("category").notNull(),
+   category: text("category").array().notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    date: timestamp("date").notNull(),
    description: text("description").notNull(),
