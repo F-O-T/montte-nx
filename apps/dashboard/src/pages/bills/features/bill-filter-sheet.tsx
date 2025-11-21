@@ -3,7 +3,6 @@ import { Button } from "@packages/ui/components/button";
 import { Combobox } from "@packages/ui/components/combobox";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import { Field, FieldGroup, FieldLabel } from "@packages/ui/components/field";
-import { Input } from "@packages/ui/components/input";
 import {
    Select,
    SelectContent,
@@ -156,9 +155,7 @@ export function BillFilterSheet({
          <SheetContent side="right" className="">
             <SheetHeader>
                <SheetTitle>
-                  {translate(
-                     "dashboard.routes.bills.features.filter.title",
-                  )}
+                  {translate("dashboard.routes.bills.features.filter.title")}
                </SheetTitle>
                <SheetDescription>
                   {translate(
@@ -265,12 +262,16 @@ export function BillFilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.bills.features.filter.month.label")}
+                        {translate(
+                           "dashboard.routes.bills.features.filter.month.label",
+                        )}
                      </FieldLabel>
                      <DatePicker
                         date={selectedMonth}
                         onSelect={handleMonthChange}
-                        placeholder={translate("dashboard.routes.bills.features.filter.month.placeholder")}
+                        placeholder={translate(
+                           "dashboard.routes.bills.features.filter.month.placeholder",
+                        )}
                      />
                   </Field>
                </FieldGroup>
@@ -279,3 +280,4 @@ export function BillFilterSheet({
       </Sheet>
    );
 }
+

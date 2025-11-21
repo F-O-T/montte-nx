@@ -3,6 +3,7 @@ import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Item,
+   ItemActions,
    ItemContent,
    ItemDescription,
    ItemTitle,
@@ -13,7 +14,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { FilePlus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ManageBillSheet } from "../features/manage-bill-sheet";
 import { useBillList } from "../features/bill-list-context";
 
@@ -31,32 +32,31 @@ export function BillsQuickActionsToolbar({
    useEffect(() => {
       setCurrentFilterType(type);
    }, [type, setCurrentFilterType]);
-
+   const badgeText = useMemo(() => {
+      if (type === "payable") {
+         return translate("dashboard.routes.bills.views.payables.title");
+      }
+      return translate("dashboard.routes.bills.views.receivables.title");
+   }, [type]);
    return (
       <>
          <Item variant="outline">
             <ItemContent>
                <ItemTitle className="flex items-center gap-2">
                   {translate("common.headers.actions-toolbar.title")}
-                  {type && (
-                     <Badge variant="secondary">
-                        {type === "payable"
-                           ? translate("dashboard.routes.bills.payables.title")
-                           : translate(
-                                "dashboard.routes.bills.receivables.title",
-                             )}
-                     </Badge>
-                  )}
+                  {type && <Badge variant="secondary">{badgeText}</Badge>}
                </ItemTitle>
                <ItemDescription>
                   {translate("common.headers.actions-toolbar.description")}
                </ItemDescription>
             </ItemContent>
-            <div className="flex items-center gap-2 ml-auto">
+            <ItemActions>
                <Tooltip>
                   <TooltipTrigger asChild>
                      <Button
-                        aria-label={translate("dashboard.routes.bills.addBill")}
+                        aria-label={translate(
+                           "dashboard.routes.bills.actions-toolbar.actions.add-new",
+                        )}
                         onClick={() => setIsCreateSheetOpen(true)}
                         size="icon"
                         variant="outline"
@@ -65,10 +65,14 @@ export function BillsQuickActionsToolbar({
                      </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                     <p>{translate("dashboard.routes.bills.addBill")}</p>
+                     <p>
+                        {translate(
+                           "dashboard.routes.bills.actions-toolbar.actions.add-new",
+                        )}
+                     </p>
                   </TooltipContent>
                </Tooltip>
-            </div>
+            </ItemActions>
          </Item>
 
          <ManageBillSheet
