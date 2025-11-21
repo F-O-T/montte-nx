@@ -5,34 +5,10 @@
          "delete-selected": "Excluir selecionados"
       }
    },
-   "details-section": {
-      "description": "Detalhes da conta",
-      "status": {
-         "completed": "Concluída",
-         "completedOn": "Concluída em",
-         "dueDate": "Vencimento",
-         "overdue": "Vencidas",
-         "pending": "Pendentes"
-      }
-   },
    "features": {
       "complete-bill": {
-         "cancel": "Cancelar",
-         "completing": "Concluindo...",
-         "confirm": "Confirmar",
-         "description": "Marcar {{description}} como paga/recebida",
-         "error": "Erro ao concluir conta",
-         "fields": {
-            "bankAccount": "Conta Bancária",
-            "completionDate": "Data de Pagamento/Recebimento"
-         },
-         "info": "Ao confirmar, uma transação será criada automaticamente",
-         "placeholders": {
-            "bankAccount": "Selecione a conta",
-            "completionDate": "Selecione a data"
-         },
-         "success": "Conta concluída e transação criada com sucesso",
-         "title": "Concluir Conta"
+         "title": "Concluir Conta",
+         "description": "Marque a conta como paga ou recebida"
       },
       "create-bill": {
          "creating": "Criando...",
