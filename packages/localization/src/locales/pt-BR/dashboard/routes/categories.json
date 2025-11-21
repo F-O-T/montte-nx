@@ -37,7 +37,8 @@
       "actions": {
          "delete-category": "Excluir categoria",
          "edit-category": "Editar categoria",
-         "label": "Gerencie sua categoria"
+         "label": "Gerencie sua categoria",
+         "view-details": "Ver detalhes"
       },
       "description": "Visualize e gerencie suas categorias aqui.",
       "state": {
@@ -53,13 +54,25 @@
       "title": "Suas categorias"
    },
    "stats": {
-      "most-transactions": {
-         "description": "A categoria com o maior número de transações associadas.",
-         "title": "Categoria com mais transações"
+      "most-spending": {
+         "description": "A categoria onde você mais gastou dinheiro este mês.",
+         "title": "Categoria com maiores gastos"
       },
       "total-categories": {
          "description": "Número total de categorias que você criou.",
          "title": "Total de categorias"
+      },
+      "breakdown": {
+         "title": "Análise por Categoria",
+         "description": "Despesas mensais por categoria",
+         "state": {
+            "no-data": "Nenhuma despesa disponível para este mês"
+         },
+         "text": {
+            "total-expenses": "Total de Despesas",
+            "categories-count": "{count} categorias este mês",
+            "showing-expenses": "Mostrando total de despesas para {month}"
+         }
       }
    }
 }
