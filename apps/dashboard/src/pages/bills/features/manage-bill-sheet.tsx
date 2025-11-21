@@ -1,8 +1,20 @@
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
-import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
+import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
+import {
+   Command,
+   CommandEmpty,
+   CommandGroup,
+   CommandInput,
+   CommandItem,
+   CommandList,
+} from "@packages/ui/components/command";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import {
    Field,
@@ -11,6 +23,11 @@ import {
    FieldLabel,
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
+import {
+   Popover,
+   PopoverContent,
+   PopoverTrigger,
+} from "@packages/ui/components/popover";
 import {
    Select,
    SelectContent,
@@ -28,28 +45,16 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
-import {
-   Collapsible,
-   CollapsibleContent,
-   CollapsibleTrigger,
-} from "@packages/ui/components/collapsible";
-import { ChevronDownIcon } from "lucide-react";
-import {
-   Command,
-   CommandEmpty,
-   CommandGroup,
-   CommandInput,
-   CommandItem,
-   CommandList,
-} from "@packages/ui/components/command";
-import {
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-} from "@packages/ui/components/popover";
+import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckIcon, ChevronsUpDownIcon, Pencil, Plus } from "lucide-react";
+import {
+   CheckIcon,
+   ChevronDownIcon,
+   ChevronsUpDownIcon,
+   Pencil,
+   Plus,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -91,6 +96,12 @@ export function ManageBillSheet({
 
    const createBillMutation = useMutation(
       trpc.bills.create.mutationOptions({
+         onError: (error) => {
+            toast.error(
+               error.message ||
+               translate("dashboard.routes.bills.create.error"),
+            );
+         },
          onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.bills.getAll.queryKey(),
@@ -101,12 +112,6 @@ export function ManageBillSheet({
             toast.success(translate("dashboard.routes.bills.create.success"));
             form.reset();
             onOpenChange?.(false);
-         },
-         onError: (error) => {
-            toast.error(
-               error.message ||
-                  translate("dashboard.routes.bills.create.error"),
-            );
          },
       }),
    );
@@ -132,34 +137,45 @@ export function ManageBillSheet({
    );
 
    // Default values for create mode
-   const defaultValues = useMemo(() => ({
-      amount: "",
-      bankAccountId: undefined as string | undefined,
-      category: "",
-      counterparty: "",
-      description: "",
-      dueDate: new Date(),
-      issueDate: undefined as Date | undefined,
-      notes: "",
-      type: (currentFilterType === "payable" ? "expense" : currentFilterType === "receivable" ? "income" : "expense") as "expense" | "income",
-      isRecurring: false,
-      recurrencePattern: undefined as RecurrencePattern | undefined,
-   }), [currentFilterType]);
+   const defaultValues = useMemo(
+      () => ({
+         amount: "",
+         bankAccountId: undefined as string | undefined,
+         category: "",
+         counterparty: "",
+         description: "",
+         dueDate: new Date(),
+         isRecurring: false,
+         issueDate: undefined as Date | undefined,
+         notes: "",
+         recurrencePattern: undefined as RecurrencePattern | undefined,
+         type: (currentFilterType === "payable"
+            ? "expense"
+            : currentFilterType === "receivable"
+               ? "income"
+               : "expense") as "expense" | "income",
+      }),
+      [currentFilterType],
+   );
 
    // Values for edit mode - convert from Bill data
-   const editValues = bill ? {
-      amount: bill.amount,
-      bankAccountId: bill.bankAccountId || undefined,
-      category: bill.category,
-      counterparty: bill.counterparty || "",
-      description: bill.description,
-      dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
-      issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
-      notes: bill.notes || "",
-      type: bill.type as "expense" | "income",
-      isRecurring: bill.isRecurring,
-      recurrencePattern: bill.recurrencePattern as RecurrencePattern | undefined,
-   } : defaultValues;
+   const editValues = bill
+      ? {
+         amount: bill.amount,
+         bankAccountId: bill.bankAccountId || undefined,
+         category: bill.category,
+         counterparty: bill.counterparty || "",
+         description: bill.description,
+         dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
+         isRecurring: bill.isRecurring,
+         issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
+         notes: bill.notes || "",
+         recurrencePattern: bill.recurrencePattern as
+            | RecurrencePattern
+            | undefined,
+         type: bill.type as "expense" | "income",
+      }
+      : defaultValues;
 
    const form = useForm({
       defaultValues: editValues,
@@ -172,7 +188,6 @@ export function ManageBillSheet({
             if (isEditMode && bill) {
                // Update existing bill
                await updateBillMutation.mutateAsync({
-                  id: bill.id,
                   data: {
                      amount: parseFloat(value.amount),
                      bankAccountId: value.bankAccountId,
@@ -180,12 +195,15 @@ export function ManageBillSheet({
                      counterparty: value.counterparty,
                      description: value.description,
                      dueDate: value.dueDate.toISOString().split("T")[0],
-                     issueDate: value.issueDate ? value.issueDate.toISOString().split("T")[0] : undefined,
-                     notes: value.notes,
-                     type: value.type,
                      isRecurring: value.isRecurring,
+                     issueDate: value.issueDate
+                        ? value.issueDate.toISOString().split("T")[0]
+                        : undefined,
+                     notes: value.notes,
                      recurrencePattern: value.recurrencePattern,
+                     type: value.type,
                   },
+                  id: bill.id,
                });
             } else {
                // Create new bill
@@ -196,17 +214,22 @@ export function ManageBillSheet({
                   counterparty: value.counterparty || undefined,
                   description: value.description,
                   dueDate: value.dueDate.toISOString().split("T")[0],
-                  issueDate: value.issueDate ? value.issueDate.toISOString().split("T")[0] : undefined,
-                  notes: value.notes || undefined,
-                  type: value.type,
                   isRecurring: value.isRecurring,
+                  issueDate: value.issueDate
+                     ? value.issueDate.toISOString().split("T")[0]
+                     : undefined,
+                  notes: value.notes || undefined,
                   recurrencePattern: value.isRecurring
                      ? value.recurrencePattern
                      : undefined,
+                  type: value.type,
                });
             }
          } catch (error) {
-            console.error(`Failed to ${isEditMode ? "update" : "create"} bill:`, error);
+            console.error(
+               `Failed to ${isEditMode ? "update" : "create"} bill:`,
+               error,
+            );
          }
       },
    });
@@ -227,7 +250,8 @@ export function ManageBillSheet({
       ? translate("dashboard.routes.bills.edit.updating")
       : translate("dashboard.routes.bills.create.creating");
 
-   const isPending = createBillMutation.isPending || updateBillMutation.isPending;
+   const isPending =
+      createBillMutation.isPending || updateBillMutation.isPending;
 
    const content = (
       <SheetContent className="overflow-y-auto">
@@ -382,8 +406,8 @@ export function ManageBillSheet({
                                     )}
                                  </FieldLabel>
                                  <Popover
-                                    open={categoryComboboxOpen}
                                     onOpenChange={setCategoryComboboxOpen}
+                                    open={categoryComboboxOpen}
                                  >
                                     <PopoverTrigger asChild>
                                        <Button
@@ -457,8 +481,8 @@ export function ManageBillSheet({
                                                       </div>
                                                       {field.state.value ===
                                                          category.name && (
-                                                         <CheckIcon className="ml-2 h-4 w-4" />
-                                                      )}
+                                                            <CheckIcon className="ml-2 h-4 w-4" />
+                                                         )}
                                                    </CommandItem>
                                                 ))}
                                              </CommandGroup>
@@ -516,15 +540,15 @@ export function ManageBillSheet({
                            return (
                               <div className="flex items-center space-x-2">
                                  <Checkbox
-                                    id="isRecurring"
                                     checked={field.state.value}
+                                    id="isRecurring"
                                     onCheckedChange={(checked) =>
                                        field.handleChange(!!checked)
                                     }
                                  />
                                  <label
-                                    htmlFor="isRecurring"
                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    htmlFor="isRecurring"
                                  >
                                     Conta recorrente
                                  </label>
@@ -582,7 +606,7 @@ export function ManageBillSheet({
                                              />
                                           )}
                                        </Field>
-                                   );
+                                    );
                                  }}
                               </form.Field>
                            </FieldGroup>
@@ -592,17 +616,22 @@ export function ManageBillSheet({
                </div>
 
                {/* Optional Details Section */}
-               <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+               <Collapsible
+                  onOpenChange={setIsDetailsOpen}
+                  open={isDetailsOpen}
+               >
                   <CollapsibleTrigger asChild>
                      <Button
-                        variant="ghost"
                         className="w-full justify-between text-sm font-medium"
+                        variant="ghost"
                      >
                         Detalhes adicionais
                         <ChevronDownIcon
                            className="h-4 w-4 transition-transform duration-200"
                            style={{
-                              transform: isDetailsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transform: isDetailsOpen
+                                 ? "rotate(180deg)"
+                                 : "rotate(0deg)",
                            }}
                         />
                      </Button>
@@ -766,9 +795,7 @@ export function ManageBillSheet({
                      <Button
                         className="w-full"
                         disabled={
-                           !state.canSubmit ||
-                           state.isSubmitting ||
-                           isPending
+                           !state.canSubmit || state.isSubmitting || isPending
                         }
                         type="submit"
                      >
@@ -796,8 +823,14 @@ export function ManageBillSheet({
          >
             <SheetTrigger asChild>
                <Button>
-                  {isEditMode ? <Pencil className="h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-                  {isEditMode ? translate("common.actions.edit") : translate("common.actions.add")}
+                  {isEditMode ? (
+                     <Pencil className="h-4 w-4 mr-2" />
+                  ) : (
+                     <Plus className="h-4 w-4 mr-2" />
+                  )}
+                  {isEditMode
+                     ? translate("common.actions.edit")
+                     : translate("common.actions.add")}
                </Button>
             </SheetTrigger>
             {content}
