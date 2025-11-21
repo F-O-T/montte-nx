@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { count, desc, eq, ilike, and, sql, gte, lte } from "drizzle-orm";
+import { and, count, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
@@ -82,10 +82,7 @@ export async function findCategoriesByUserIdPaginated(
       // Build the where condition
       const baseWhereCondition = eq(category.userId, userId);
       const whereCondition = search
-         ? and(
-              baseWhereCondition,
-              ilike(category.name, `%${search}%`)
-           )
+         ? and(baseWhereCondition, ilike(category.name, `%${search}%`))
          : baseWhereCondition;
 
       const [categories, totalCount] = await Promise.all([
@@ -201,23 +198,32 @@ export async function getCategoryWithMostTransactions(
       const result = await dbClient.execute<{
          categoryId: string;
          transactionCount: string;
+         categoryName: string;
       }>(sql`
-         SELECT category_id as "categoryId", COUNT(*) as "transactionCount"
-         FROM (
-            SELECT unnest(${transaction.categoryIds}) as category_id
+         SELECT
+            c.id as "categoryId",
+            c.name as "categoryName",
+            COUNT(t.id) as "transactionCount"
+         FROM ${category} c
+         LEFT JOIN (
+            SELECT id, unnest(category_ids) as category_id
             FROM ${transaction}
-            WHERE ${transaction.userId} = ${userId}
-         ) sub
-         GROUP BY category_id
+            WHERE user_id = ${userId}
+         ) t ON c.id = t.category_id
+         WHERE c.user_id = ${userId}
+         GROUP BY c.id, c.name
          ORDER BY "transactionCount" DESC
          LIMIT 1
       `);
 
-      if (!result[0]) return null;
+      // Access rows!
+      const rows = result.rows;
+      if (!rows || rows.length === 0) return null;
 
       return {
-         categoryId: result[0].categoryId,
-         transactionCount: parseInt(result[0].transactionCount, 10),
+         categoryId: rows[0]?.categoryId,
+         categoryName: rows[0]?.categoryName,
+         transactionCount: parseInt(rows[0]?.transactionCount ?? "", 10),
       };
    } catch (err) {
       propagateError(err);
@@ -251,8 +257,8 @@ export async function getCategorySpending(
                eq(transaction.userId, userId),
                gte(transaction.date, currentMonthStart),
                lte(transaction.date, currentMonthEnd),
-               sql`${transaction.categoryIds} @> ARRAY[${categoryId}]::text[]`
-            )
+               sql`${transaction.categoryIds} @> ARRAY[${categoryId}]::text[]`,
+            ),
          );
 
       return result[0]?.total || 0;
@@ -260,6 +266,69 @@ export async function getCategorySpending(
       propagateError(err);
       throw AppError.database(
          `Failed to get category spending: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function searchCategories(
+   dbClient: DatabaseInstance,
+   userId: string,
+   query: string,
+   options: {
+      limit?: number;
+      includeTransactionCount?: boolean;
+   } = {},
+) {
+   const { limit = 20, includeTransactionCount = false } = options;
+
+   try {
+      if (includeTransactionCount) {
+         const result = await dbClient.execute<{
+            id: string;
+            name: string;
+            color: string;
+            userId: string;
+            createdAt: Date;
+            updatedAt: Date;
+            transactionCount: string;
+         }>(sql`
+            SELECT
+               c.*,
+               COUNT(t.id) as "transactionCount"
+            FROM ${category} c
+            LEFT JOIN (
+               SELECT id, unnest(category_ids) as category_id
+               FROM ${transaction}
+               WHERE user_id = ${userId}
+            ) t ON c.id = t.category_id
+            WHERE
+               ${eq(category.userId, userId)}
+               AND ${ilike(category.name, `%${query}%`)}
+            GROUP BY c.id
+            ORDER BY c.name ASC
+            LIMIT ${limit}
+         `);
+
+         return result.rows.map((row) => ({
+            ...row,
+            transactionCount: parseInt(row.transactionCount, 10),
+         }));
+      } else {
+         const result = await dbClient.query.category.findMany({
+            limit,
+            orderBy: (category, { asc }) => asc(category.name),
+            where: and(
+               eq(category.userId, userId),
+               ilike(category.name, `%${query}%`),
+            ),
+         });
+
+         return result;
+      }
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to search categories: ${(err as Error).message}`,
       );
    }
 }

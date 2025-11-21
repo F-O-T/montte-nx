@@ -94,7 +94,7 @@ export const transactionRouter = router({
          }
 
          const userId = resolvedCtx.session.user.id;
-
+         console.log("Creating transaction with input:", input);
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),

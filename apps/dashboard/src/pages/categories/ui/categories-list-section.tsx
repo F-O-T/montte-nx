@@ -116,12 +116,15 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
+               className="flex items-center gap-2"
                onClick={() => {
                   navigate({ to: `/categories/${category.id}` });
                }}
             >
-               <Eye className="h-4 w-4 mr-2" />
-               View Details
+               <Eye className="size-4" />
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.view-details",
+               )}
             </DropdownMenuItem>
             <ManageCategorySheet asChild category={category} />
             <DeleteCategory category={category} />
@@ -189,14 +192,8 @@ function CategoriesListContent() {
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const pageSize = 5;
 
-   const {
-      nameFilter,
-      setNameFilter,
-      orderBy,
-      setOrderBy,
-      orderDirection,
-      setOrderDirection,
-   } = useCategoryList();
+   const { orderBy, setOrderBy, orderDirection, setOrderDirection } =
+      useCategoryList();
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
