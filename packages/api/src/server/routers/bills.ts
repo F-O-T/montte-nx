@@ -29,7 +29,7 @@ import { protectedProcedure, router } from "../trpc";
 const createBillSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
-   category: z.string(),
+   categoryId: z.string(),
    counterparty: z.string().optional(),
    description: z.string(),
    dueDate: z.string(),
@@ -45,7 +45,7 @@ const createBillSchema = z.object({
 const updateBillSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   category: z.string().optional(),
+   categoryId: z.string().optional(),
    counterparty: z.string().optional(),
    description: z.string().optional(),
    dueDate: z.string().optional(),
@@ -115,7 +115,7 @@ export const billRouter = router({
                input.data.bankAccountId ||
                existingBill.bankAccountId ||
                undefined,
-            category: [existingBill.category],
+            categoryIds: [existingBill.categoryId],
             date: new Date(input.data.completionDate),
             description: existingBill.description,
             id: crypto.randomUUID(),
@@ -165,7 +165,7 @@ export const billRouter = router({
                return createBill(resolvedCtx.db, {
                   amount: input.amount.toString(),
                   bankAccountId: input.bankAccountId,
-                  category: input.category,
+                  categoryId: input.categoryId,
                   counterparty: input.counterparty,
                   description: input.description,
                   dueDate,
@@ -252,7 +252,7 @@ export const billRouter = router({
          return createBill(resolvedCtx.db, {
             amount: existingBill.amount,
             bankAccountId: existingBill.bankAccountId,
-            category: existingBill.category,
+            categoryId: existingBill.categoryId,
             counterparty: existingBill.counterparty,
             description: existingBill.description,
             dueDate: nextDueDate,
@@ -439,8 +439,8 @@ export const billRouter = router({
             updateData.bankAccountId = input.data.bankAccountId;
          }
 
-         if (input.data.category !== undefined) {
-            updateData.category = input.data.category;
+         if (input.data.categoryId !== undefined) {
+            updateData.categoryId = input.data.categoryId;
          }
 
          if (input.data.description !== undefined) {
