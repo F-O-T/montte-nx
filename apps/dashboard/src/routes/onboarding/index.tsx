@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -49,29 +50,50 @@ export const Route = createFileRoute("/onboarding/")({
 
 const steps = [
    {
-      description: "Add your first bank account",
+      description: "dashboard.routes.onboarding.steps.bank-account.description",
       id: "bank-account",
-      title: "Bank Account",
+      title: "dashboard.routes.onboarding.steps.bank-account.title",
    },
    {
-      description: "Create your first category",
+      description: "dashboard.routes.onboarding.steps.category.description",
       id: "category",
-      title: "Category",
+      title: "dashboard.routes.onboarding.steps.category.title",
    },
 ] as const;
 
 const { Stepper, useStepper } = defineStepper(...steps);
 
 const createBankAccountSchema = z.object({
-   bank: z.string().min(1, "Bank name is required"),
-   name: z.string().min(1, "Account name is required"),
-   type: z.string().min(1, "Account type is required"),
+   bank: z
+      .string()
+      .min(1, translate("dashboard.routes.onboarding.validation.bank-required")),
+   name: z
+      .string()
+      .min(
+         1,
+         translate("dashboard.routes.onboarding.validation.account-name-required"),
+      ),
+   type: z
+      .string()
+      .min(
+         1,
+         translate("dashboard.routes.onboarding.validation.account-type-required"),
+      ),
 });
 
 const createCategorySchema = z.object({
    budget: z.coerce.number().min(0).optional(),
-   color: z.string().min(1, "Color is required"),
-   name: z.string().min(1, "Category name is required"),
+   color: z
+      .string()
+      .min(1, translate("dashboard.routes.onboarding.validation.color-required")),
+   name: z
+      .string()
+      .min(
+         1,
+         translate(
+            "dashboard.routes.onboarding.validation.category-name-required",
+         ),
+      ),
 });
 
 function OnboardingPage() {
@@ -79,7 +101,16 @@ function OnboardingPage() {
       <Stepper.Provider>
          <div className="flex w-full flex-col gap-8">
             <div className="flex justify-center">
-               <Stepper.Navigation className="w-full max-w-2xl" />
+               <Stepper.Navigation className="w-full max-w-2xl">
+                  {steps.map((step) => (
+                     <Stepper.Step key={step.id} of={step.id}>
+                        <Stepper.Title>{translate(step.title)}</Stepper.Title>
+                        <Stepper.Description>
+                           {translate(step.description)}
+                        </Stepper.Description>
+                     </Stepper.Step>
+                  ))}
+               </Stepper.Navigation>
             </div>
 
             <div className="flex justify-center">
@@ -125,7 +156,9 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
             toast.error(error.message);
          },
          onSuccess: () => {
-            toast.success("Bank account created successfully");
+            toast.success(
+               translate("dashboard.routes.onboarding.bank-account.toast.success"),
+            );
             onNext();
          },
       }),
@@ -158,9 +191,11 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Create Bank Account</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.onboarding.bank-account.title")}
+            </CardTitle>
             <CardDescription>
-               Let's start by setting up your primary bank account.
+               {translate("dashboard.routes.onboarding.bank-account.description")}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -174,7 +209,9 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                         return (
                            <Field data-invalid={isInvalid}>
                               <FieldLabel htmlFor={field.name}>
-                                 Account Name
+                                 {translate(
+                                    "dashboard.routes.onboarding.bank-account.form.name.label",
+                                 )}
                               </FieldLabel>
                               <Input
                                  aria-invalid={isInvalid}
@@ -184,7 +221,9 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                                  onChange={(e) =>
                                     field.handleChange(e.target.value)
                                  }
-                                 placeholder="e.g. Main Account"
+                                 placeholder={translate(
+                                    "dashboard.routes.onboarding.bank-account.form.name.placeholder",
+                                 )}
                                  value={field.state.value}
                               />
                               {isInvalid && (
@@ -204,7 +243,9 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                         return (
                            <Field data-invalid={isInvalid}>
                               <FieldLabel htmlFor={field.name}>
-                                 Bank Name
+                                 {translate(
+                                    "dashboard.routes.onboarding.bank-account.form.bank.label",
+                                 )}
                               </FieldLabel>
                               <Input
                                  aria-invalid={isInvalid}
@@ -214,7 +255,9 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                                  onChange={(e) =>
                                     field.handleChange(e.target.value)
                                  }
-                                 placeholder="e.g. Chase, Nubank"
+                                 placeholder={translate(
+                                    "dashboard.routes.onboarding.bank-account.form.bank.placeholder",
+                                 )}
                                  value={field.state.value}
                               />
                               {isInvalid && (
@@ -229,7 +272,11 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                   <form.Field name="type">
                      {(field) => (
                         <Field>
-                           <FieldLabel>Account Type</FieldLabel>
+                           <FieldLabel>
+                              {translate(
+                                 "dashboard.routes.onboarding.bank-account.form.type.label",
+                              )}
+                           </FieldLabel>
                            <Select
                               onValueChange={(value) =>
                                  field.handleChange(value)
@@ -237,19 +284,28 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                               value={field.state.value}
                            >
                               <SelectTrigger>
-                                 <SelectValue placeholder="Select account type" />
+                                 <SelectValue
+                                    placeholder={translate(
+                                       "dashboard.routes.onboarding.bank-account.form.type.placeholder",
+                                    )}
+                                 />
                               </SelectTrigger>
                               <SelectContent>
                                  <SelectItem value="checking">
-                                    Checking
+                                    {translate(
+                                       "dashboard.routes.onboarding.bank-account.form.type.options.checking",
+                                    )}
                                  </SelectItem>
                                  <SelectItem value="savings">
-                                    Savings
+                                    {translate(
+                                       "dashboard.routes.onboarding.bank-account.form.type.options.savings",
+                                    )}
                                  </SelectItem>
                                  <SelectItem value="investment">
-                                    Investment
+                                    {translate(
+                                       "dashboard.routes.onboarding.bank-account.form.type.options.investment",
+                                    )}
                                  </SelectItem>
-                                 <SelectItem value="cash">Cash</SelectItem>
                               </SelectContent>
                            </Select>
                         </Field>
@@ -271,7 +327,9 @@ function BankAccountStep({ onNext }: { onNext: () => void }) {
                            {createBankAccount.isPending && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                            )}
-                           Next Step
+                           {translate(
+                              "dashboard.routes.onboarding.actions.next",
+                           )}
                         </Button>
                      )}
                   </form.Subscribe>
@@ -290,7 +348,9 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
             toast.error(error.message);
          },
          onSuccess: () => {
-            toast.success("Category created successfully");
+            toast.success(
+               translate("dashboard.routes.onboarding.category.toast.success"),
+            );
             onNext();
          },
       }),
@@ -323,9 +383,11 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Create Category</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.onboarding.category.title")}
+            </CardTitle>
             <CardDescription>
-               Create your first category to organize your expenses.
+               {translate("dashboard.routes.onboarding.category.description")}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -339,7 +401,9 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
                         return (
                            <Field data-invalid={isInvalid}>
                               <FieldLabel htmlFor={field.name}>
-                                 Category Name
+                                 {translate(
+                                    "dashboard.routes.onboarding.category.form.name.label",
+                                 )}
                               </FieldLabel>
                               <Input
                                  aria-invalid={isInvalid}
@@ -349,7 +413,9 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
                                  onChange={(e) =>
                                     field.handleChange(e.target.value)
                                  }
-                                 placeholder="e.g. Groceries"
+                                 placeholder={translate(
+                                    "dashboard.routes.onboarding.category.form.name.placeholder",
+                                 )}
                                  value={field.state.value}
                               />
                               {isInvalid && (
@@ -369,7 +435,9 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
                         return (
                            <Field data-invalid={isInvalid}>
                               <FieldLabel htmlFor={field.name}>
-                                 Monthly Budget (Optional)
+                                 {translate(
+                                    "dashboard.routes.onboarding.category.form.budget.label",
+                                 )}
                               </FieldLabel>
                               <Input
                                  aria-invalid={isInvalid}
@@ -395,7 +463,11 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
                   <form.Field name="color">
                      {(field) => (
                         <Field>
-                           <FieldLabel>Color</FieldLabel>
+                           <FieldLabel>
+                              {translate(
+                                 "dashboard.routes.onboarding.category.form.color.label",
+                              )}
+                           </FieldLabel>
                            <Popover>
                               <PopoverTrigger asChild>
                                  <Button
@@ -463,7 +535,9 @@ function CategoryStep({ onNext }: { onNext: () => void }) {
                            {createCategory.isPending && (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                            )}
-                           Complete Onboarding
+                           {translate(
+                              "dashboard.routes.onboarding.actions.complete",
+                           )}
                         </Button>
                      )}
                   </form.Subscribe>

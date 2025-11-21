@@ -9,8 +9,7 @@ import { getQueryClient, trpc, useTRPC } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
 
 export const Route = createFileRoute("/_dashboard")({
-   component: RouteComponent,
-   beforeLoad: async ({ location }) => {
+   beforeLoad: async () => {
       const queryClient = getQueryClient();
       try {
          const status = await queryClient.fetchQuery(
@@ -31,6 +30,7 @@ export const Route = createFileRoute("/_dashboard")({
          throw redirect({ to: "/auth/sign-in" });
       }
    },
+   component: RouteComponent,
    staticData: {
       breadcrumb: "Dashboard Layout",
    },
