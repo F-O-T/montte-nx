@@ -1,5 +1,4 @@
 import type { AuthInstance } from "@packages/authentication/server";
-import { createContentaSdk } from "@packages/contenta-sdk";
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    findMemberByUserId,
@@ -30,7 +29,6 @@ export const createTRPCContext = async ({
    auth: AuthInstance;
    headers: Headers;
    session: AuthInstance["$Infer"]["Session"] | null;
-   contentaSdk: ReturnType<typeof createContentaSdk>;
    language: SupportedLng;
    responseHeaders: Headers;
 }> => {
@@ -42,10 +40,8 @@ export const createTRPCContext = async ({
    if (language) {
       changeLanguage(language);
    }
-   const contentaSdk = createContentaSdk(language || "en");
    return {
       auth,
-      contentaSdk,
       db,
       headers,
       language,

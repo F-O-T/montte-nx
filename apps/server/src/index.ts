@@ -25,7 +25,6 @@ const app = new Elysia({
       db,
       minioBucket: env.MINIO_BUCKET,
       minioClient,
-      polarClient,
    }))
    .use(
       cors({
