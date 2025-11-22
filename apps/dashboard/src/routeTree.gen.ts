@@ -11,16 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as AuthOnboardingRouteImport } from './routes/auth/onboarding'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
 import { Route as DashboardReportsRouteImport } from './routes/_dashboard/reports'
 import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
-import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
 import { Route as DashboardCategoriesIndexRouteImport } from './routes/_dashboard/categories.index'
 import { Route as DashboardBillsIndexRouteImport } from './routes/_dashboard/bills/index'
@@ -40,11 +39,6 @@ const DashboardRoute = DashboardRouteImport.update({
   id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
@@ -53,6 +47,11 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthOnboardingRoute = AuthOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthRoute,
 } as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
@@ -90,12 +89,6 @@ const DashboardOrganizationIndexRoute =
     id: '/organization/',
     path: '/organization/',
     getParentRoute: () => DashboardRoute,
-  } as any)
-const OnboardingIndexRoute =
-  OnboardingIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => OnboardingRoute,
   } as any)
 const DashboardCategoriesIndexRoute =
   DashboardCategoriesIndexRouteImport.update({
@@ -148,12 +141,12 @@ const DashboardBankAccountsBankAccountIdRoute =
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
   '/home': typeof DashboardHomeRoute
-  '/onboarding': typeof OnboardingRouteWithChildren
   '/profile': typeof DashboardProfileRoute
   '/reports': typeof DashboardReportsRoute
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
@@ -164,7 +157,6 @@ export interface FileRoutesByFullPath {
   '/bank-accounts': typeof DashboardBankAccountsIndexRoute
   '/bills': typeof DashboardBillsIndexRoute
   '/categories': typeof DashboardCategoriesIndexRoute
-  '/onboarding/': typeof OnboardingIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesByTo {
@@ -175,6 +167,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
@@ -185,20 +178,19 @@ export interface FileRoutesByTo {
   '/bank-accounts': typeof DashboardBankAccountsIndexRoute
   '/bills': typeof DashboardBillsIndexRoute
   '/categories': typeof DashboardCategoriesIndexRoute
-  '/onboarding': typeof OnboardingIndexRoute
   '/organization': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/onboarding': typeof OnboardingRouteWithChildren
   '/_dashboard/home': typeof DashboardHomeRoute
   '/_dashboard/profile': typeof DashboardProfileRoute
   '/_dashboard/reports': typeof DashboardReportsRoute
   '/_dashboard/transactions': typeof DashboardTransactionsRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/_dashboard/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
@@ -209,7 +201,6 @@ export interface FileRoutesById {
   '/_dashboard/bank-accounts/': typeof DashboardBankAccountsIndexRoute
   '/_dashboard/bills/': typeof DashboardBillsIndexRoute
   '/_dashboard/categories/': typeof DashboardCategoriesIndexRoute
-  '/onboarding/': typeof OnboardingIndexRoute
   '/_dashboard/organization/': typeof DashboardOrganizationIndexRoute
 }
 export interface FileRouteTypes {
@@ -217,12 +208,12 @@ export interface FileRouteTypes {
   fullPaths:
     | '/auth'
     | '/home'
-    | '/onboarding'
     | '/profile'
     | '/reports'
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
+    | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/bank-accounts/$bankAccountId'
@@ -233,7 +224,6 @@ export interface FileRouteTypes {
     | '/bank-accounts'
     | '/bills'
     | '/categories'
-    | '/onboarding/'
     | '/organization'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -244,6 +234,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
+    | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/bank-accounts/$bankAccountId'
@@ -254,19 +245,18 @@ export interface FileRouteTypes {
     | '/bank-accounts'
     | '/bills'
     | '/categories'
-    | '/onboarding'
     | '/organization'
   id:
     | '__root__'
     | '/_dashboard'
     | '/auth'
-    | '/onboarding'
     | '/_dashboard/home'
     | '/_dashboard/profile'
     | '/_dashboard/reports'
     | '/_dashboard/transactions'
     | '/auth/email-verification'
     | '/auth/forgot-password'
+    | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/_dashboard/bank-accounts/$bankAccountId'
@@ -277,14 +267,12 @@ export interface FileRouteTypes {
     | '/_dashboard/bank-accounts/'
     | '/_dashboard/bills/'
     | '/_dashboard/categories/'
-    | '/onboarding/'
     | '/_dashboard/organization/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
-  OnboardingRoute: typeof OnboardingRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -315,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/onboarding': {
+      id: '/auth/onboarding'
+      path: '/onboarding'
+      fullPath: '/auth/onboarding'
+      preLoaderRoute: typeof AuthOnboardingRouteImport
       parentRoute: typeof AuthRoute
     }
     '/auth/forgot-password': {
@@ -352,13 +347,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_dashboard/home': {
       id: '/_dashboard/home'
       path: '/home'
@@ -372,13 +360,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/organization'
       preLoaderRoute: typeof DashboardOrganizationIndexRouteImport
       parentRoute: typeof DashboardRoute
-    }
-    '/onboarding/': {
-      id: '/onboarding/'
-      path: '/'
-      fullPath: '/onboarding/'
-      preLoaderRoute: typeof OnboardingIndexRouteImport
-      parentRoute: typeof OnboardingRoute
     }
     '/_dashboard/categories/': {
       id: '/_dashboard/categories/'
@@ -439,17 +420,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface OnboardingRouteChildren {
-  OnboardingIndexRoute: typeof OnboardingIndexRoute
-}
-
-const OnboardingRouteChildren: OnboardingRouteChildren = {
-  OnboardingIndexRoute: OnboardingIndexRoute,
-}
-
-const OnboardingRouteWithChildren =
-  OnboardingRoute._addFileChildren(OnboardingRouteChildren)
-
 interface DashboardRouteChildren {
   DashboardHomeRoute: typeof DashboardHomeRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
@@ -490,6 +460,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 interface AuthRouteChildren {
   AuthEmailVerificationRoute: typeof AuthEmailVerificationRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthOnboardingRoute: typeof AuthOnboardingRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
 }
@@ -497,6 +468,7 @@ interface AuthRouteChildren {
 const AuthRouteChildren: AuthRouteChildren = {
   AuthEmailVerificationRoute: AuthEmailVerificationRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthOnboardingRoute: AuthOnboardingRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
 }
@@ -506,7 +478,6 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-  OnboardingRoute: OnboardingRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

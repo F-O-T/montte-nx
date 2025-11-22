@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_dashboard")({
             trpc.onboarding.getOnboardingStatus.queryOptions(),
          );
          if (status.needsOnboarding) {
-            throw redirect({ to: "/onboarding" });
+            throw redirect({ to: "/auth/onboarding" });
          }
       } catch (error) {
          if (

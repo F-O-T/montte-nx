@@ -36,6 +36,8 @@
   },
   "devDependencies": {
     "@tanstack/react-router-devtools": "catalog:tanstack",
+    "@tanstack/router-cli": "catalog:tanstack",
+    "@tanstack/router-plugin": "catalog:tanstack",
     "@tooling/typescript": "workspace:*",
     "@types/react": "catalog:react",
     "@types/react-dom": "catalog:react",
