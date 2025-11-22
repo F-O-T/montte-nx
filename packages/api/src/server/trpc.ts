@@ -7,13 +7,10 @@ import {
 } from "@packages/database/repositories/auth-repository";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
-import { getCustomerState } from "@packages/payment/ingestion";
-import type { Polar } from "@polar-sh/sdk";
 import { initTRPC, TRPCError } from "@trpc/server";
 import SuperJSON from "superjson";
 export const createTRPCContext = async ({
    auth,
-   polarClient,
    db,
    headers,
    minioClient,
@@ -25,10 +22,8 @@ export const createTRPCContext = async ({
    minioClient: MinioClient;
    minioBucket: string;
    headers: Headers;
-   polarClient: Polar;
    responseHeaders: Headers;
 }): Promise<{
-   polarClient: Polar;
    minioBucket: string;
    db: DatabaseInstance;
    minioClient: MinioClient;
@@ -56,7 +51,6 @@ export const createTRPCContext = async ({
       language,
       minioBucket,
       minioClient,
-      polarClient,
       responseHeaders,
       session,
    };
@@ -175,18 +169,6 @@ const hasOrganizationAccess = t.middleware(async ({ ctx, next }) => {
          });
       }
 
-      const ownerState = await getCustomerState(
-         resolvedCtx.polarClient,
-         ownerMember.userId,
-      );
-
-      if (!ownerState.activeSubscriptions) {
-         throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Organization owner must have an active subscription",
-         });
-      }
-
       return next({
          ctx: {
             session: { ...resolvedCtx.session },
@@ -194,21 +176,8 @@ const hasOrganizationAccess = t.middleware(async ({ ctx, next }) => {
       });
    }
 
-   // User is not part of any organization - check their own subscription
-   const customerState = await resolvedCtx.auth.api.state({
-      headers: resolvedCtx.headers,
-   });
-
-   if (!customerState.activeSubscriptions) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message: "Active subscription required",
-      });
-   }
-
    return next({
       ctx: {
-         customerState,
          session: { ...resolvedCtx.session },
       },
    });
@@ -226,17 +195,6 @@ const hasOrganizationOwnerAccess = t.middleware(async ({ ctx, next }) => {
    const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
 
    if (!memberWithOrg) {
-      const customerState = await resolvedCtx.auth.api.state({
-         headers: resolvedCtx.headers,
-      });
-
-      if (!customerState.activeSubscriptions) {
-         throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Active subscription required",
-         });
-      }
-
       return next({
          ctx: {
             session: { ...resolvedCtx.session },
@@ -255,17 +213,6 @@ const hasOrganizationOwnerAccess = t.middleware(async ({ ctx, next }) => {
       throw new TRPCError({
          code: "FORBIDDEN",
          message: "User is not the owner of the organization",
-      });
-   }
-
-   const customerState = await resolvedCtx.auth.api.state({
-      headers: resolvedCtx.headers,
-   });
-
-   if (!customerState.activeSubscriptions) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message: "Active subscription required",
       });
    }
 
@@ -288,25 +235,8 @@ export const hasGenerationCredits = t.middleware(async ({ ctx, next }) => {
    const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
 
    if (!memberWithOrg) {
-      const customerState = await resolvedCtx.auth.api.state({
-         headers: resolvedCtx.headers,
-      });
-
-      const hasBalance = customerState.activeMeters?.some(
-         (meter) => meter.creditedUnits > 0 && meter.balance > 0,
-      );
-
-      if (!hasBalance) {
-         throw new TRPCError({
-            code: "FORBIDDEN",
-            message:
-               "Insufficient generation credits. Please upgrade your plan or purchase more credits.",
-         });
-      }
-
       return next({
          ctx: {
-            customerState,
             session: { ...resolvedCtx.session },
          },
       });
@@ -327,26 +257,8 @@ export const hasGenerationCredits = t.middleware(async ({ ctx, next }) => {
       });
    }
 
-   const customerStateToCheck = await getCustomerState(
-      resolvedCtx.polarClient,
-      ownerMember.userId,
-   );
-
-   const hasBalance = customerStateToCheck.activeMeters?.some(
-      (meter) => meter.creditedUnits > 0 && meter.balance > 0,
-   );
-
-   if (!hasBalance) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message:
-            "Insufficient generation credits. Please upgrade your plan or purchase more credits.",
-      });
-   }
-
    return next({
       ctx: {
-         customerState: customerStateToCheck,
          session: { ...resolvedCtx.session },
       },
    });

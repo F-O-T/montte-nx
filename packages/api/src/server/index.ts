@@ -1,7 +1,6 @@
 import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
-import type { Polar } from "@polar-sh/sdk";
 import { authRouter } from "./routers/auth";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
@@ -36,13 +35,11 @@ export const createApi = ({
    db,
    minioClient,
    minioBucket,
-   polarClient,
 }: {
    minioBucket: string;
    auth: AuthInstance;
    db: DatabaseInstance;
    minioClient: MinioClient;
-   polarClient: Polar;
 }) => {
    return {
       createTRPCContext: async ({
@@ -58,7 +55,6 @@ export const createApi = ({
             headers,
             minioBucket,
             minioClient,
-            polarClient,
             responseHeaders,
          }),
       trpcRouter: appRouter,
