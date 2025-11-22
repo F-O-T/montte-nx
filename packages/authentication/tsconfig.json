@@ -19,9 +19,6 @@
          "path": "../environment"
       },
       {
-         "path": "../payment"
-      },
-      {
          "path": "../database"
       },
       {
