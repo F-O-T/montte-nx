@@ -1,6 +1,5 @@
-import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 import { translate } from "@packages/localization";
-import { ThemeLogo } from "@/layout/theme-provider";
+import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 export const Route = createFileRoute("/auth")({
    component: AuthLayout,
    staticData: {
@@ -27,14 +26,6 @@ function AuthLayout() {
             >
                <header className="flex flex-col justify-center items-center space-y-2 text-center">
                   <div className="flex gap-2 justify-center items-center">
-                     <figure className="text-primary">
-                        <ThemeLogo
-                           alt="quoto logo"
-                           className="size-8"
-                           width={32}
-                           height={32}
-                        />
-                     </figure>
                      <h1 className="font-bold tracking-tight text-primary text-2xl">
                         {translate("common.brand.name")}
                      </h1>
