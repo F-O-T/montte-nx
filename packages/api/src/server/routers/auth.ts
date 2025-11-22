@@ -20,7 +20,7 @@ export const authRouter = router({
 
          try {
             const forgotPasswordResponse =
-               await resolvedCtx.auth.api.forgetPassword({
+               await resolvedCtx.auth.api.requestPasswordReset({
                   body: {
                      email,
                   },
@@ -173,25 +173,30 @@ export const authRouter = router({
          const resolvedCtx = await ctx;
          const { email, password } = input;
 
-         try {
-            const resp = await resolvedCtx.auth.api.signInEmail({
-               asResponse: true,
+         const resp = await resolvedCtx.auth.api
+            .signInEmail({
                body: { email, password },
                headers: resolvedCtx.headers,
+               returnHeaders: true,
+            })
+            .catch((error: BetterAuthAPIError) => {
+               // TODO: move to the auth package the function to handle the error codes and get the message
+               if (error.body?.code === "INVALID_EMAIL_OR_PASSWORD") {
+                  throw APIError.unauthorized(
+                     translate("server.auth.errors.invalid-email-or-password"),
+                  );
+               }
+
+               throw APIError.internal("An unexpected error occurred.");
             });
 
-            if (resp.headers) {
-               resp.headers.forEach((value, key) => {
-                  resolvedCtx.responseHeaders.append(key, value);
-               });
-            }
-
-            return resp.json();
-         } catch (error) {
-            console.error("Sign-in error:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to sign in. Please try again.");
+         if (resp.headers) {
+            resp.headers.forEach((value, key) => {
+               resolvedCtx.responseHeaders.append(key, value);
+            });
          }
+
+         return resp.response.user;
       }),
    signUp: publicProcedure
       .input(

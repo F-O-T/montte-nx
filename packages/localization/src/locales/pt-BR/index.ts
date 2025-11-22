@@ -12,13 +12,14 @@ import categoriesPtBr from "./dashboard/routes/categories.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
 import forgotPasswordPtBr from "./dashboard/routes/forgot-password.json";
 import homePagePtBr from "./dashboard/routes/home.json";
+import onboardingPtBr from "./dashboard/routes/onboarding.json";
 import organizationPtBr from "./dashboard/routes/organization.json";
 import profilePtBr from "./dashboard/routes/profile.json";
 import reportsPtBr from "./dashboard/routes/reports.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
 import transactionsPtBr from "./dashboard/routes/transactions.json";
-import onboardingPtBr from "./dashboard/routes/onboarding.json";
+import serverAuthPtBr from "./server/auth.json";
 
 const resources = {
    translation: {
@@ -48,6 +49,9 @@ const resources = {
             "sign-up": signUpPtBr,
             transactions: transactionsPtBr,
          },
+      },
+      server: {
+         auth: serverAuthPtBr,
       },
    },
 };
