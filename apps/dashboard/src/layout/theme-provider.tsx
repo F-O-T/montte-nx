@@ -105,9 +105,10 @@ export function ThemeProvider({
          }
 
          // Update favicon based on theme
-         const favicon = document.querySelector('#favicon') as HTMLLinkElement;
+         const favicon = document.querySelector("#favicon") as HTMLLinkElement;
          if (favicon) {
-            favicon.href = currentTheme === 'dark' ? '/dark-logo.svg' : '/light-logo.svg';
+            favicon.href =
+               currentTheme === "dark" ? "/dark-logo.svg" : "/light-logo.svg";
          }
       }
 
@@ -161,9 +162,11 @@ export function ThemeProvider({
                }
 
                // Update favicon based on theme
-               const favicon = document.querySelector('#favicon') as HTMLLinkElement;
+               const favicon = document.querySelector(
+                  "#favicon",
+               ) as HTMLLinkElement;
                if (favicon) {
-                  favicon.href = isDark ? '/dark-logo.svg' : '/light-logo.svg';
+                  favicon.href = isDark ? "/dark-logo.svg" : "/light-logo.svg";
                }
             }}
          </FunctionOnce>
@@ -181,9 +184,9 @@ export function useTheme() {
    return context;
 }
 
-export function useLogoPath() {
+function useLogoPath() {
    const { resolvedTheme } = useTheme();
-   return resolvedTheme === 'dark' ? '/dark-logo.svg' : '/light-logo.svg';
+   return resolvedTheme === "dark" ? "/dark-logo.svg" : "/light-logo.svg";
 }
 
 export interface ThemeLogoProps {
@@ -197,17 +200,17 @@ export const ThemeLogo = ({
    alt = "logo",
    className,
    width,
-   height
+   height,
 }: ThemeLogoProps) => {
    const logoPath = useLogoPath();
 
    return (
       <img
-         src={logoPath}
          alt={alt}
          className={className}
-         width={width}
          height={height}
+         src={logoPath}
+         width={width}
       />
    );
 };
