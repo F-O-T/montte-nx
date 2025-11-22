@@ -129,7 +129,7 @@ function NavUserContent() {
          <SidebarMenuItem>
             <DropdownMenu>
                <DropdownMenuTrigger asChild className="cursor-pointer ">
-                  <Avatar>
+                  <Avatar className="border-border border-2">
                      <AvatarImage
                         alt={session?.user.name}
                         src={session?.user.image ?? ""}
