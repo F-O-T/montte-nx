@@ -1,9 +1,9 @@
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { trpc } from "@/integrations/clients";
+import type { Category } from "@/pages/categories/ui/categories-page";
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
-import {
-   getRecurrenceLabel,
-   type RecurrencePattern,
-} from "@packages/utils/recurrence";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -17,16 +17,11 @@ import {
 import {
    DropdownMenu,
    DropdownMenuContent,
-   DropdownMenuLabel,
    DropdownMenuItem,
+   DropdownMenuLabel,
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
 import {
    Empty,
    EmptyContent,
@@ -59,6 +54,15 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
+import {
+   getRecurrenceLabel,
+   type RecurrencePattern,
+} from "@packages/utils/recurrence";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -70,18 +74,13 @@ import {
    Trash2,
    Wallet,
 } from "lucide-react";
-import { Fragment, Suspense, useEffect } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
-import type { Category } from "@/pages/categories/ui/categories-page";
-import { CompleteBillDialog } from "../features/complete-bill-dialog";
 import { BillFilterSheet } from "../features/bill-filter-sheet";
+import { useBillList } from "../features/bill-list-context";
+import { CompleteBillDialog } from "../features/complete-bill-dialog";
 import { DeleteBillDialog } from "../features/delete-bill-dialog";
 import { ManageBillSheet } from "../features/manage-bill-sheet";
-import { useBillList } from "../features/bill-list-context";
-import { useState } from "react";
 
 type BillsListSectionProps = {
    type?: "payable" | "receivable";
@@ -113,10 +112,10 @@ function BillItem({ bill, categories }: BillItemProps) {
       <>
          <Item>
             <ItemMedia
-               variant="icon"
                style={{
                   backgroundColor: categoryColor,
                }}
+               variant="icon"
             >
                <IconDisplay iconName={categoryIcon as IconName} size={16} />
             </ItemMedia>
@@ -124,14 +123,14 @@ function BillItem({ bill, categories }: BillItemProps) {
                <ItemTitle className="truncate flex items-center gap-2">
                   {bill.description}
                   {bill.isRecurring && bill.recurrencePattern && (
-                     <Badge variant="outline" className="text-xs">
+                     <Badge className="text-xs" variant="outline">
                         {getRecurrenceLabel(
                            bill.recurrencePattern as RecurrencePattern,
                         )}
                      </Badge>
                   )}
                   {isOverdue && (
-                     <Badge variant="destructive" className="text-xs">
+                     <Badge className="text-xs" variant="destructive">
                         {translate("dashboard.routes.bills.overdue")}
                      </Badge>
                   )}
@@ -152,8 +151,8 @@ function BillItem({ bill, categories }: BillItemProps) {
             </ItemContent>
             <ItemActions>
                <Badge
-                  variant={statusColor}
                   className={bill.completionDate ? "opacity-60" : ""}
+                  variant={statusColor}
                >
                   R$ {parseFloat(bill.amount).toFixed(2)}
                </Badge>
@@ -390,28 +389,39 @@ function BillsListContent({ type }: BillsListSectionProps) {
       statusFilter !== "all" ||
       typeFilter !== "all";
 
+   const { title, description } = (() => {
+      if (type === "payable") {
+         return {
+            description: translate(
+               "dashboard.routes.bills.views.payables.description",
+            ),
+            title: translate("dashboard.routes.bills.views.payables.title"),
+         };
+      }
+
+      if (type === "receivable") {
+         return {
+            description: translate(
+               "dashboard.routes.bills.views.receivables.description",
+            ),
+            title: translate("dashboard.routes.bills.views.receivables.title"),
+         };
+      }
+
+      return {
+         description: translate(
+            "dashboard.routes.bills.views.allBills.description",
+         ),
+         title: translate("dashboard.routes.bills.views.allBills.title"),
+      };
+   })();
+
    return (
       <>
          <Card>
             <CardHeader>
-               <CardTitle>
-                  {type === "payable"
-                     ? translate("dashboard.routes.bills.payables.title")
-                     : type === "receivable"
-                       ? translate("dashboard.routes.bills.receivables.title")
-                       : translate("dashboard.routes.bills.allBills.title")}
-               </CardTitle>
-               <CardDescription>
-                  {type === "payable"
-                     ? translate("dashboard.routes.bills.payables.description")
-                     : type === "receivable"
-                       ? translate(
-                            "dashboard.routes.bills.receivables.description",
-                         )
-                       : translate(
-                            "dashboard.routes.bills.allBills.description",
-                         )}
-               </CardDescription>
+               <CardTitle>{title}</CardTitle>
+               <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-2">
                <div className="flex items-center justify-between gap-8">
@@ -431,19 +441,19 @@ function BillsListContent({ type }: BillsListSectionProps) {
                      </InputGroupAddon>
                   </InputGroup>
                   <Tooltip>
-                  <TooltipTrigger asChild>
-                     <Button
-                        onClick={() => setIsFilterSheetOpen(true)}
-                        size="icon"
-                        variant={hasActiveFilters ? "default" : "outline"}
-                     >
-                        <Filter className="size-4" />
-                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                     <p>Filter bills</p>
-                  </TooltipContent>
-               </Tooltip>
+                     <TooltipTrigger asChild>
+                        <Button
+                           onClick={() => setIsFilterSheetOpen(true)}
+                           size="icon"
+                           variant={hasActiveFilters ? "default" : "outline"}
+                        >
+                           <Filter className="size-4" />
+                        </Button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                        <p>Filter bills</p>
+                     </TooltipContent>
+                  </Tooltip>
                </div>
 
                {paginatedBills.length === 0 ? (
