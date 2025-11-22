@@ -34,9 +34,6 @@
     },
     {
       "path": "../brasil-api"
-    },
-    {
-      "path": "../authentication"
     }
   ]
 }

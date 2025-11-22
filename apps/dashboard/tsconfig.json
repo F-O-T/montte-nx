@@ -49,9 +49,6 @@
       "path": "../../packages/environment"
     },
     {
-      "path": "../../packages/authentication"
-    },
-    {
       "path": "../../packages/api"
     }
   ]
