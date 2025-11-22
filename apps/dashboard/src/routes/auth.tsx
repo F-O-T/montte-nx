@@ -14,7 +14,7 @@ function AuthLayout() {
       <div className="overflow-hidden relative w-full min-h-screen bg-background">
          <div
             aria-hidden="true"
-            className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"
+            className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,#80808040_1.5px,transparent_0)] bg-[size:24px_24px]"
          />
          <div aria-hidden="true" className="absolute w-full h-full">
             <div className="absolute top-0 left-0 to-transparent rounded-full -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] bg-gradient-radial from-primary/20 via-primary/5" />
