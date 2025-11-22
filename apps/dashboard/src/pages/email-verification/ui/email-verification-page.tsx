@@ -70,6 +70,11 @@ export function EmailVerificationPage() {
                id: "email-verification-toast",
             });
          },
+         onSuccess: async () => {
+            router.navigate({
+               to: "/home",
+            });
+         },
       }),
    );
 
