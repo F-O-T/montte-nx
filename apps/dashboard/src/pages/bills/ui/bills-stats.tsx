@@ -115,16 +115,20 @@ function BillsStatsContent({ type }: BillsStatsProps) {
       <div className="grid gap-4 h-min">
          <StatsCard
             description={translate(
-               "dashboard.routes.bills.stats.totalPayables",
+               "dashboard.routes.bills.stats.totalPayables.description",
             )}
-            title={translate("dashboard.routes.bills.stats.payables.title")}
+            title={translate(
+               "dashboard.routes.bills.stats.totalPayables.title",
+            )}
             value={`R$ ${stats?.totalPendingPayables?.toFixed(2) || "0.00"}`}
          />
          <StatsCard
             description={translate(
-               "dashboard.routes.bills.stats.totalReceivables",
+               "dashboard.routes.bills.stats.totalReceivables.description",
             )}
-            title={translate("dashboard.routes.bills.stats.receivables.title")}
+            title={translate(
+               "dashboard.routes.bills.stats.totalReceivables.title",
+            )}
             value={`R$ ${stats?.totalPendingReceivables?.toFixed(2) || "0.00"}`}
          />
          <StatsCard
