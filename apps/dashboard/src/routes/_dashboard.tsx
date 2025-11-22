@@ -1,14 +1,40 @@
-import { useTRPC } from "@/integrations/clients";
-import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
-import { DashboardLayout } from "@/layout/dashboard-layout";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+   createFileRoute,
+   Outlet,
+   redirect,
+   useLocation,
+} from "@tanstack/react-router";
+import { getQueryClient, trpc, useTRPC } from "@/integrations/clients";
+import { DashboardLayout } from "@/layout/dashboard-layout";
 
 export const Route = createFileRoute("/_dashboard")({
+   beforeLoad: async () => {
+      const queryClient = getQueryClient();
+      try {
+         const status = await queryClient.fetchQuery(
+            trpc.onboarding.getOnboardingStatus.queryOptions(),
+         );
+         if (status.needsOnboarding) {
+            throw redirect({ to: "/onboarding" });
+         }
+      } catch (error) {
+         if (
+            error instanceof Response ||
+            (typeof error === "object" &&
+               error !== null &&
+               "isRedirect" in error)
+         ) {
+            throw error;
+         }
+         throw redirect({ to: "/auth/sign-in" });
+      }
+   },
    component: RouteComponent,
-   wrapInSuspense: true,
    staticData: {
       breadcrumb: "Dashboard Layout",
    },
+   wrapInSuspense: true,
 });
 
 function RouteComponent() {
