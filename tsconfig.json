@@ -36,6 +36,9 @@
     },
     {
       "path": "./packages/brasil-api"
+    },
+    {
+      "path": "./packages/ofx"
     }
   ]
 }
