@@ -5,10 +5,13 @@
          "delete-selected": "Excluir selecionados"
       }
    },
+   "copy": {
+      "tooltip": "Copiar informações"
+   },
    "features": {
       "complete-bill": {
-         "title": "Concluir Conta",
-         "description": "Marque a conta como paga ou recebida"
+         "description": "Marque a conta como paga ou recebida",
+         "title": "Concluir Conta"
       },
       "create-bill": {
          "creating": "Criando...",
@@ -62,6 +65,9 @@
          "updating": "Atualizando..."
       }
    },
+   "filter": {
+      "tooltip": "Filtrar contas"
+   },
    "list-section": {
       "actions": {
          "cancel": "Cancelar",
@@ -85,21 +91,63 @@
       },
       "title": "Contas a Pagar e Receber"
    },
+
+   "stats": {
+      "description": "Resumo das suas contas",
+
+      "error": {
+         "description": "Erro ao carregar estatísticas",
+         "title": "Erro ao carregar estatísticas"
+      },
+
+      "overdue": {
+         "description": "Total de contas a pagar vencidas",
+         "title": "Vencidas"
+      },
+
+      "overduePayables": {
+         "count": "0",
+         "description": "Total de contas a pagar vencidas",
+         "title": "Vencidas"
+      },
+
+      "overdueReceivables": {
+         "description": "Total de contas a receber vencidas",
+         "title": "Vencidas"
+      },
+
+      "pendingReceivables": {
+         "description": "Total de contas a receber pendentes",
+         "title": "A Receber"
+      },
+
+      "title": "Estatísticas",
+
+      "totalPayables": {
+         "description": "Total de contas a pagar",
+         "title": "A Pagar"
+      },
+      "totalReceivables": {
+         "description": "Total de contas a receber",
+         "title": "A Receber"
+      }
+   },
    "views": {
+      "allBills": {
+         "description": "Gerencie suas contas a pagar e a receber",
+         "title": "Contas a Pagar e Receber"
+      },
       "payables": {
          "description": "Gerencie suas despesas futuras",
+         "emptyState": {
+            "description": "Crie sua primeira conta usando a barra de ações rápidas acima para começar a gerenciar suas contas.",
+            "title": "Nenhuma conta encontrada"
+         },
          "title": "Contas a Pagar"
       },
       "receivables": {
          "description": "Gerencie suas receitas futuras",
          "title": "Contas a Receber"
       }
-   },
-   "stats": {
-      "description": "Resumo das suas contas",
-      "overdue": "Vencidas",
-      "pendingPayables": "A Pagar",
-      "pendingReceivables": "A Receber",
-      "title": "Estatísticas"
    }
 }
