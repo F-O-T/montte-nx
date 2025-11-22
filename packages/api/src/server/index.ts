@@ -6,11 +6,11 @@ import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
 import { categoryRouter } from "./routers/categories";
+import { notificationRouter } from "./routers/notifications";
+import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
-import { notificationRouter } from "./routers/notifications";
-import { onboardingRouter } from "./routers/onboarding";
 import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
 import { transactionRouter } from "./routers/transactions";
@@ -21,11 +21,11 @@ export const appRouter = router({
    bills: billRouter,
    brasilApi: brasilApiRouter,
    categories: categoryRouter,
+   notifications: notificationRouter,
+   onboarding: onboardingRouter,
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
-   notifications: notificationRouter,
-   onboarding: onboardingRouter,
    reports: reportRouter,
    session: sessionRouter,
    transactions: transactionRouter,

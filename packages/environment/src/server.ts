@@ -6,7 +6,6 @@ const EnvSchema = z.object({
    BETTER_AUTH_GOOGLE_CLIENT_SECRET: z.string(),
    BETTER_AUTH_SECRET: z.string(),
    BETTER_AUTH_TRUSTED_ORIGINS: z.string(),
-   CONTENTAGEN_API_KEY: z.string(),
    DATABASE_URL: z.string(),
    MINIO_ACCESS_KEY: z.string(),
    MINIO_BUCKET: z.string().default("content-writer"),
