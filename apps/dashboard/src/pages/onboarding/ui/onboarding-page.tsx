@@ -47,6 +47,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTRPC } from "@/integrations/clients";
+import { useRouter } from "@tanstack/react-router";
 
 const steps = [
    {
@@ -162,7 +163,7 @@ export function OnboardingPage() {
          },
       }),
    );
-
+   const router = useRouter();
    const createCategory = useMutation(
       trpc.categories.create.mutationOptions({
          onError: (error) => {
@@ -204,9 +205,11 @@ export function OnboardingPage() {
          await queryClient.invalidateQueries({
             queryKey: trpc.onboarding.getOnboardingStatus.queryKey(),
          });
-         window.location.href = "/home";
 
          formApi.reset();
+         router.navigate({
+            to: "/home",
+         });
       },
       validators: {
          onBlur: schema,
