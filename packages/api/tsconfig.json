@@ -40,9 +40,6 @@
       "path": "../database"
     },
     {
-      "path": "../contenta-sdk"
-    },
-    {
       "path": "../brasil-api"
     }
   ]

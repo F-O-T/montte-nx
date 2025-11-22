@@ -29,9 +29,6 @@
       "path": "./packages/utils"
     },
     {
-      "path": "./packages/contenta-sdk"
-    },
-    {
       "path": "./packages/brasil-api"
     },
     {

@@ -207,18 +207,6 @@
         "typescript": "catalog:development",
       },
     },
-    "packages/contenta-sdk": {
-      "name": "@packages/contenta-sdk",
-      "version": "0.3.0",
-      "dependencies": {
-        "@contentagen/sdk": "0.16.0",
-        "@packages/environment": "workspace:*",
-      },
-      "devDependencies": {
-        "@tooling/typescript": "workspace:*",
-        "typescript": "catalog:development",
-      },
-    },
     "packages/database": {
       "name": "@packages/database",
       "version": "0.12.1",
@@ -1111,8 +1099,6 @@
     "@packages/authentication": ["@packages/authentication@workspace:packages/authentication"],
 
     "@packages/brasil-api": ["@packages/brasil-api@workspace:packages/brasil-api"],
-
-    "@packages/contenta-sdk": ["@packages/contenta-sdk@workspace:packages/contenta-sdk"],
 
     "@packages/database": ["@packages/database@workspace:packages/database"],
 
