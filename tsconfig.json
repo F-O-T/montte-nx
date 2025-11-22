@@ -11,9 +11,6 @@
       "path": "./packages/database"
     },
     {
-      "path": "./packages/payment"
-    },
-    {
       "path": "./packages/posthog"
     },
     {

@@ -145,7 +145,6 @@
         "@packages/database": "workspace:*",
         "@packages/environment": "workspace:*",
         "@packages/files": "workspace:*",
-        "@packages/payment": "workspace:*",
         "@packages/posthog": "workspace:*",
         "@packages/transactional": "workspace:*",
         "@packages/utils": "workspace:*",
@@ -170,7 +169,6 @@
         "@packages/files": "workspace:*",
         "@packages/localization": "workspace:*",
         "@packages/ofx": "workspace:*",
-        "@packages/payment": "workspace:*",
         "@packages/posthog": "workspace:*",
         "@packages/utils": "workspace:*",
         "@polar-sh/sdk": "catalog:payment",
@@ -193,7 +191,6 @@
       "dependencies": {
         "@packages/database": "workspace:*",
         "@packages/environment": "workspace:*",
-        "@packages/payment": "workspace:*",
         "@packages/transactional": "workspace:*",
         "@polar-sh/better-auth": "catalog:auth",
         "better-auth": "catalog:auth",
@@ -289,19 +286,6 @@
       "version": "0.3.0",
       "dependencies": {
         "ofx-data-extractor": "^1.4.8",
-      },
-      "devDependencies": {
-        "@tooling/typescript": "workspace:*",
-        "typescript": "catalog:development",
-      },
-    },
-    "packages/payment": {
-      "name": "@packages/payment",
-      "version": "0.8.1",
-      "dependencies": {
-        "@packages/environment": "workspace:*",
-        "@packages/utils": "workspace:*",
-        "@polar-sh/sdk": "catalog:payment",
       },
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
@@ -1142,8 +1126,6 @@
     "@packages/localization": ["@packages/localization@workspace:packages/localization"],
 
     "@packages/ofx": ["@packages/ofx@workspace:packages/ofx"],
-
-    "@packages/payment": ["@packages/payment@workspace:packages/payment"],
 
     "@packages/posthog": ["@packages/posthog@workspace:packages/posthog"],
 

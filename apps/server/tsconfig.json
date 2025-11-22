@@ -24,9 +24,6 @@
       "path": "../../packages/posthog"
     },
     {
-      "path": "../../packages/payment"
-    },
-    {
       "path": "../../packages/files"
     },
     {
