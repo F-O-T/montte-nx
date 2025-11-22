@@ -2,7 +2,6 @@
    "dependencies": {
       "@packages/authentication": "workspace:*",
       "@packages/brasil-api": "workspace:*",
-      "@packages/contenta-sdk": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",
@@ -41,7 +40,8 @@
    "scripts": {
       "build": "tsc --build",
       "check": "biome check --write ./src",
-      "typecheck": "tsc "
+      "typecheck": "tsc ",
+      "dev": "tsc --build --watch"
    },
    "type": "module",
    "version": "0.9.1"
