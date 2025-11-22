@@ -6,7 +6,6 @@
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",
-      "@packages/payment": "workspace:*",
       "@packages/posthog": "workspace:*",
       "@packages/utils": "workspace:*",
       "@packages/ofx": "workspace:*",

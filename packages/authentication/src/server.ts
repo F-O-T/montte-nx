@@ -2,15 +2,12 @@ import type { DatabaseInstance } from "@packages/database/client";
 import { findMemberByUserId } from "@packages/database/repositories/auth-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
-import type { PaymentClient } from "@packages/payment/client";
-import { POLAR_PLAN_SLUGS, POLAR_PLANS } from "@packages/payment/plans";
 import {
    type ResendClient,
    type SendEmailOTPOptions,
    sendEmailOTP,
    sendOrganizationInvitation,
 } from "@packages/transactional/client";
-import { checkout, polar, portal, usage } from "@polar-sh/better-auth";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import {
@@ -22,7 +19,6 @@ import {
 } from "better-auth/plugins";
 export interface AuthOptions {
    db: DatabaseInstance;
-   polarClient: PaymentClient;
    resendClient: ResendClient;
 }
 
@@ -31,7 +27,6 @@ export const ORGANIZATION_LIMIT = 3;
 export const getAuthOptions = (
    db: DatabaseInstance,
    resendClient: ResendClient,
-   polarClient: PaymentClient,
 ) =>
    ({
       advanced: {
@@ -89,22 +84,6 @@ export const getAuthOptions = (
       },
       plugins: [
          admin(),
-         polar({
-            client: polarClient,
-            createCustomerOnSignUp: true,
-            use: [
-               portal(),
-               checkout({
-                  authenticatedUsersOnly: true,
-                  products: [
-                     POLAR_PLANS[POLAR_PLAN_SLUGS.BASIC],
-                     POLAR_PLANS[POLAR_PLAN_SLUGS.HOBBY],
-                  ],
-                  successUrl: `${getDomain()}/profile`,
-               }),
-               usage(),
-            ],
-         }),
          emailOTP({
             expiresIn: 60 * 10,
             otpLength: 6,
@@ -189,11 +168,7 @@ export const getAuthOptions = (
    }) satisfies BetterAuthOptions;
 
 export const createAuth = (options: AuthOptions) => {
-   const authOptions = getAuthOptions(
-      options.db,
-      options.resendClient,
-      options.polarClient,
-   );
+   const authOptions = getAuthOptions(options.db, options.resendClient);
    return betterAuth(authOptions);
 };
 export type AuthInstance = ReturnType<typeof createAuth>;
