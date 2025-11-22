@@ -26,6 +26,7 @@ function AuthLayout() {
             >
                <header className="flex flex-col justify-center items-center space-y-2 text-center">
                   <div className="flex gap-2 justify-center items-center">
+                     <img src="/favicon.svg" alt="alou" className="w-12" />
                      <h1 className="font-bold tracking-tight text-primary text-2xl">
                         {translate("common.brand.name")}
                      </h1>
