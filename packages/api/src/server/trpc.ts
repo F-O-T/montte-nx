@@ -8,6 +8,7 @@ import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { initTRPC, TRPCError } from "@trpc/server";
 import SuperJSON from "superjson";
+
 export const createTRPCContext = async ({
    auth,
    db,
@@ -37,9 +38,11 @@ export const createTRPCContext = async ({
    });
 
    const language = headers.get("x-locale") as SupportedLng;
+
    if (language) {
       changeLanguage(language);
    }
+
    return {
       auth,
       db,
@@ -263,6 +266,7 @@ export const hasGenerationCredits = t.middleware(async ({ ctx, next }) => {
 export const publicProcedure = t.procedure
    .use(loggerMiddleware)
    .use(timingMiddleware);
+
 export const protectedProcedure = publicProcedure.use(isAuthed);
 export const sdkProcedure = publicProcedure.use(sdkAuth);
 

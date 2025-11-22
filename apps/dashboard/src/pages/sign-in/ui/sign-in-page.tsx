@@ -1,3 +1,4 @@
+import { useTRPC } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -23,8 +24,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { type FormEvent, useCallback } from "react";
+import { toast } from "sonner";
 import { z } from "zod";
-import { useTRPC } from "@/integrations/clients";
 
 export function SignInPage() {
    const schema = z.object({
@@ -38,6 +39,7 @@ export function SignInPage() {
    });
    const trpc = useTRPC();
    const router = useRouter();
+
    const googleSignInMutation = useMutation(
       trpc.auth.googleSignIn.mutationOptions({
          onSuccess: async (data) => {
@@ -51,6 +53,10 @@ export function SignInPage() {
    );
    const signInMutation = useMutation(
       trpc.auth.signIn.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to sign in:", error);
+            toast.error(error.message);
+         },
          onSuccess: async () => {
             await router.navigate({ to: "/home" });
          },
@@ -70,6 +76,7 @@ export function SignInPage() {
          onBlur: schema,
       },
    });
+
    const handleSubmit = useCallback(
       (e: FormEvent) => {
          e.preventDefault();
@@ -140,7 +147,7 @@ export function SignInPage() {
                   </span>
                </Button>
                <Separator />
-               <form className="space-y-4 " onSubmit={(e) => handleSubmit(e)}>
+               <form className="space-y-4 " onSubmit={handleSubmit}>
                   <FieldGroup>
                      <form.Field name="email">
                         {(field) => {
