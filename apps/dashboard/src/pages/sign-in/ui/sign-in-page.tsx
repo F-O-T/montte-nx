@@ -54,7 +54,6 @@ export function SignInPage() {
    const signInMutation = useMutation(
       trpc.auth.signIn.mutationOptions({
          onError: (error) => {
-            console.error("Failed to sign in:", error);
             toast.error(error.message);
          },
          onSuccess: async () => {

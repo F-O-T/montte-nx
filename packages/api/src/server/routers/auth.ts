@@ -180,6 +180,7 @@ export const authRouter = router({
                returnHeaders: true,
             })
             .catch((error: BetterAuthAPIError) => {
+               // TODO: move to the auth package the function to handle the error codes and get the message
                if (error.body?.code === "INVALID_EMAIL_OR_PASSWORD") {
                   throw APIError.unauthorized(
                      translate("server.auth.errors.invalid-email-or-password"),
