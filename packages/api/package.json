@@ -9,10 +9,10 @@
       "@packages/payment": "workspace:*",
       "@packages/posthog": "workspace:*",
       "@packages/utils": "workspace:*",
+      "@packages/ofx": "workspace:*",
       "@polar-sh/sdk": "catalog:payment",
       "@trpc/client": "catalog:trpc",
       "@trpc/server": "catalog:trpc",
-      "ofx-data-extractor": "^1.4.8",
       "superjson": "catalog:trpc",
       "url-join": "catalog:trpc",
       "zod": "catalog:validation"

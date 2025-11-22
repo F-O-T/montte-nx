@@ -1,57 +1,11 @@
-import * as OFX from "ofx-data-extractor";
+import { Ofx } from "ofx-data-extractor";
 
-export interface OfxTransaction {
-   fitid: string;
-   date: Date;
-   amount: number;
-   description: string;
-   type: "income" | "expense";
-}
-
-interface RawOfxTransaction {
-   TRNAMT: string | number;
-   DTPOSTED: string;
-   FITID: string;
-   MEMO?: string;
-   NAME?: string;
-}
-
-interface OfxStructure {
-   OFX?: {
-      BANKMSGSRSV1?: {
-         STMTTRNRS?: {
-            STMTRS?: {
-               BANKTRANLIST?: {
-                  STMTTRN?: RawOfxTransaction | RawOfxTransaction[];
-               };
-            };
-         };
-      };
-      CREDITCARDMSGSRSV1?: {
-         CCSTMTTRNRS?: {
-            CCSTMTRS?: {
-               BANKTRANLIST?: {
-                  STMTTRN?: RawOfxTransaction | RawOfxTransaction[];
-               };
-            };
-         };
-      };
-   };
-}
-
-interface OfxParserInstance {
-   getBankTransferList?: () => Promise<RawOfxTransaction[]>;
-   getContent: () => Promise<OfxStructure>;
-}
-
-export async function parseOfxContent(
-   content: string,
-): Promise<OfxTransaction[]> {
+export async function parseOfxContent(content: string) {
    try {
-      const parser = new OFX.Ofx(content) as unknown as OfxParserInstance;
+      const parser = new Ofx(content);
 
       if (typeof parser.getBankTransferList === "function") {
-         const transfers = await parser.getBankTransferList();
+         const transfers = parser.getBankTransferList();
 
          if (transfers && Array.isArray(transfers)) {
             return transfers.map((trn) => {
@@ -59,12 +13,18 @@ export async function parseOfxContent(
                   typeof trn.TRNAMT === "string"
                      ? parseFloat(trn.TRNAMT)
                      : (trn.TRNAMT as number);
-               const dateParts = trn.DTPOSTED.split("-");
-               const date = new Date(
-                  parseInt(dateParts[0], 10),
-                  parseInt(dateParts[1], 10) - 1,
-                  parseInt(dateParts[2], 10),
-               );
+               const dateString = trn.DTPOSTED;
+
+               if (!dateString) {
+                  throw new Error("Missing DTPOSTED in OFX transfer");
+               }
+
+               const [yearStr, monthStr, dayStr] = dateString.split("-");
+
+               const year = parseInt(yearStr ?? "0", 10);
+               const month = parseInt(monthStr ?? "1", 10) - 1;
+               const day = parseInt(dayStr ?? "1", 10);
+               const date = new Date(year, month, day);
 
                return {
                   amount: Math.abs(amount),
@@ -77,7 +37,7 @@ export async function parseOfxContent(
          }
       }
 
-      const result = await parser.getContent();
+      const result = parser.getContent();
 
       const bankMsgs =
          result.OFX?.BANKMSGSRSV1 || result.OFX?.CREDITCARDMSGSRSV1;
@@ -98,6 +58,10 @@ export async function parseOfxContent(
                ? parseFloat(trn.TRNAMT)
                : (trn.TRNAMT as number);
          const dateString = trn.DTPOSTED;
+
+         if (!dateString) {
+            throw new Error("Missing DTPOSTED in OFX transaction");
+         }
 
          const year = parseInt(dateString.substring(0, 4), 10);
          const month = parseInt(dateString.substring(4, 6), 10) - 1;

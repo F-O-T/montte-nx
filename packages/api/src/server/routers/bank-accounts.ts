@@ -10,7 +10,7 @@ import {
    findTransactionsByBankAccountIdPaginated,
 } from "@packages/database/repositories/transaction-repository";
 import { z } from "zod";
-import { parseOfxContent } from "../services/ofx-parser";
+import { parseOfxContent } from "@packages/ofx";
 import { protectedProcedure, router } from "../trpc";
 
 const createBankAccountSchema = z.object({

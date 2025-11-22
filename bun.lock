@@ -169,13 +169,13 @@
         "@packages/database": "workspace:*",
         "@packages/files": "workspace:*",
         "@packages/localization": "workspace:*",
+        "@packages/ofx": "workspace:*",
         "@packages/payment": "workspace:*",
         "@packages/posthog": "workspace:*",
         "@packages/utils": "workspace:*",
         "@polar-sh/sdk": "catalog:payment",
         "@trpc/client": "catalog:trpc",
         "@trpc/server": "catalog:trpc",
-        "ofx-data-extractor": "^1.4.8",
         "superjson": "catalog:trpc",
         "url-join": "catalog:trpc",
         "zod": "catalog:validation",
@@ -282,6 +282,17 @@
         "@tooling/typescript": "workspace:*",
         "typescript": "catalog:development",
         "vitest": "catalog:testing",
+      },
+    },
+    "packages/ofx": {
+      "name": "@packages/ofx",
+      "version": "0.3.0",
+      "dependencies": {
+        "ofx-data-extractor": "^1.4.8",
+      },
+      "devDependencies": {
+        "@tooling/typescript": "workspace:*",
+        "typescript": "catalog:development",
       },
     },
     "packages/payment": {
@@ -1129,6 +1140,8 @@
     "@packages/files": ["@packages/files@workspace:packages/files"],
 
     "@packages/localization": ["@packages/localization@workspace:packages/localization"],
+
+    "@packages/ofx": ["@packages/ofx@workspace:packages/ofx"],
 
     "@packages/payment": ["@packages/payment@workspace:packages/payment"],
 
