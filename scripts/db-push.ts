@@ -17,15 +17,10 @@ const colors = {
 };
 
 // Database packages
-const DATABASE_PACKAGES = ["database", "rag"];
+const DATABASE_PACKAGES = ["database"];
 
 function getEnvFilePath(packageDir: string, env: string): string {
-   const possibleFiles = [
-      `.env.${env}.local`,
-      `.env.${env}`,
-      `.env.local`,
-      `.env`,
-   ];
+   const possibleFiles = [`.env.${env}`, `.env.${env}`, `.env.local`, `.env`];
 
    for (const file of possibleFiles) {
       const filePath = path.join(packageDir, file);

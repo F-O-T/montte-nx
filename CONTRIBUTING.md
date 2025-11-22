@@ -1,10 +1,10 @@
-# Contributing to Quoto
+# Contributing to Montte
 
 ## Quick Start
 
-1. **Clone & install:** `git clone https://github.com/F-O-T/finance-nx.git && cd finance-nx && bun install`
-2. **Set up env:** Run `bun run env-setup` to configure your environment files
-3. **Database:** Run `bun run db:push:local` to set up the database schema
+1. **Clone & install:** `git clone https://github.com/F-O-T/montte-nx.git && cd montte-nx && bun install`
+2. **Set up env:** Run `bun run scripts/env-setup setup` to configure your environment files
+3. **Database:** Run `bun run scripts/db-push push` to set up the database schema
 4. **Start dev:** `bun run dev:all` (or `bun run dev:dashboard`, `bun run dev:blog`)
 
 ## How to Contribute
