@@ -68,7 +68,7 @@ function HomeBankAccountsContent() {
 
    return (
       <>
-         <div className="grid gap-4 grid-cols-3">
+         <div className="grid gap-4 md:grid-cols-3">
             {visibleAccounts.map((account) => (
                <BankAccountItem account={account} key={account.id} solid />
             ))}

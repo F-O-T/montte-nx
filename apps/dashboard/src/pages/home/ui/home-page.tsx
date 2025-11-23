@@ -57,24 +57,24 @@ function HomePageSkeleton() {
 
 function HomePageContent() {
    return (
-      <main className="flex flex-col gap-6">
+      <main className="flex flex-col gap-4">
          <DefaultHeader
             description={translate("dashboard.routes.home.description")}
             title={translate("dashboard.routes.home.title")}
          />
 
-         <section className="grid items-start gap-4 xl:grid-cols-3">
-            <div className="space-y-4 xl:col-span-3">
+         <section className="grid grid-cols-1  gap-4 md:grid-cols-3">
+            <div className="col-span-1 md:col-span-3">
                <HomeBankAccountsSection />
             </div>
-            <div className="grid h-full col-span-2 gap-4">
+            <div className=" h-full md:col-span-2 gap-4">
                <HomeRecentTransactionsSection />
             </div>
 
-            <div className="space-y-4">
+            <div className="col-span-1">
                <HomeQuickAccessCards />
             </div>
-            <div className="space-y-4 xl:col-span-3">
+            <div className="col-span-1 md:col-span-3 space-y-4">
                <HomeStatsSection />
                <HomeChartsSection />
             </div>

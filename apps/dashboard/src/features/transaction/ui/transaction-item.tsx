@@ -1,5 +1,6 @@
 import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -49,6 +50,7 @@ export function TransactionItem({
    const isPositive =
       transaction.type === "income" ||
       (transaction.type === "transfer" && amount > 0);
+   const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
    return (
       <Item>
@@ -70,8 +72,8 @@ export function TransactionItem({
          </ItemContent>
          <ItemActions>
             <Badge variant={isPositive ? "default" : "destructive"}>
-               {isPositive ? "+" : "-"}R$
-               {Math.abs(amount)}
+               {isPositive ? "+" : "-"}
+               {formattedAmount}
             </Badge>
             <DropdownMenu>
                <DropdownMenuTrigger asChild>

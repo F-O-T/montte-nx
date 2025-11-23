@@ -23,7 +23,7 @@ function HomeStatsSectionErrorFallback(props: FallbackProps) {
 
 function HomeStatsSectionSkeleton() {
    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 ">
          {[1, 2, 3, 4].map((index) => (
             <Skeleton
                className="h-24 w-full"
@@ -59,7 +59,7 @@ function HomeStatsSectionContent() {
    );
 
    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 ">
          <StatsCard
             description={translate(
                "dashboard.routes.home.financial-summary.total-income.description",

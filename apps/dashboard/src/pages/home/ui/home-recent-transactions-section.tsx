@@ -15,7 +15,7 @@ import { trpc } from "@/integrations/clients";
 
 function HomeRecentTransactionsErrorFallback() {
    return (
-      <Card className="w-full">
+      <Card>
          <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>Your latest account activity</CardDescription>
@@ -74,7 +74,7 @@ function HomeRecentTransactionsContent() {
    );
 
    return (
-      <Card className="w-full">
+      <Card className="w-full h-full">
          <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
             <CardDescription>Your latest account activity</CardDescription>

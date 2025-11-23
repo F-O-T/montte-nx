@@ -102,7 +102,7 @@ function HomeQuickAccessCardsContent() {
 
    return (
       <div className="grid gap-4">
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid md:grid-cols-2 gap-4">
             <StatsCard
                description={translate(
                   "dashboard.routes.home.financial-summary.total-income.description",
@@ -123,7 +123,7 @@ function HomeQuickAccessCardsContent() {
             />
          </div>
 
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid md:grid-cols-2 gap-4">
             {quickAccessItems.map((item, index) => (
                <QuickAccessCard
                   description={item.description}

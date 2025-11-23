@@ -3,6 +3,7 @@
 import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import {
+   CardAction,
    Card,
    CardContent,
    CardDescription,
@@ -62,11 +63,7 @@ function HomeChartsSectionContent() {
       }),
    );
 
-   return (
-      <div className="grid gap-4">
-         <HomeCashFlowChart data={cashFlow} />
-      </div>
-   );
+   return <HomeCashFlowChart data={cashFlow} />;
 }
 
 interface HomeCashFlowChartProps {
@@ -97,24 +94,24 @@ function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
 
    return (
       <Card>
-         <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <div>
-               <CardTitle>
-                  {translate(
-                     "dashboard.routes.home.charts.financial-evolution.title",
-                  )}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.home.charts.financial-evolution.description",
-                  )}
-               </CardDescription>
-            </div>
-            <Badge variant="outline">Current month</Badge>
+         <CardHeader>
+            <CardTitle>
+               {translate(
+                  "dashboard.routes.home.charts.financial-evolution.title",
+               )}
+            </CardTitle>
+            <CardDescription>
+               {translate(
+                  "dashboard.routes.home.charts.financial-evolution.description",
+               )}
+            </CardDescription>
+            <CardAction>
+               <Badge variant="outline">Current month</Badge>
+            </CardAction>
          </CardHeader>
          <CardContent>
             <ChartContainer
-               className="h-[350px] w-full"
+               className="h-72 w-full"
                config={homeCashFlowChartConfig}
             >
                <AreaChart accessibilityLayer data={chartData}>
