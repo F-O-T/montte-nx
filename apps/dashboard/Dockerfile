@@ -25,7 +25,7 @@ COPY packages/utils/package.json ./packages/utils/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN bun install 
 
 # Copy source code
 COPY . .
