@@ -31,7 +31,7 @@ export const getAuthOptions = (
    ({
       advanced: {
          crossSubDomainCookies: {
-            domain: ".contentagen.com",
+            domain: ".montte.co",
             enabled: isProduction,
          },
 
