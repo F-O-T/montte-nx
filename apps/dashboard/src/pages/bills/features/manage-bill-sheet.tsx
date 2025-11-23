@@ -191,7 +191,7 @@ export function ManageBillSheet({
                   data: {
                      amount: parseFloat(value.amount),
                      bankAccountId: value.bankAccountId,
-                     category: value.category,
+                     categoryId: value.category,
                      counterparty: value.counterparty,
                      description: value.description,
                      dueDate: value.dueDate.toISOString().split("T")[0],
@@ -210,7 +210,7 @@ export function ManageBillSheet({
                await createBillMutation.mutateAsync({
                   amount: parseFloat(value.amount),
                   bankAccountId: value.bankAccountId || undefined,
-                  category: value.category as string,
+                  categoryId: value.category as string,
                   counterparty: value.counterparty || undefined,
                   description: value.description,
                   dueDate: value.dueDate.toISOString().split("T")[0],
@@ -395,7 +395,7 @@ export function ManageBillSheet({
                               !field.state.meta.isValid;
 
                            const selectedCategory = categories.find(
-                              (category) => category.name === field.state.value,
+                              (category) => category.id === field.state.value,
                            );
 
                            return (
@@ -457,10 +457,10 @@ export function ManageBillSheet({
                                                       key={category.id}
                                                       onSelect={() => {
                                                          field.handleChange(
-                                                            category.name ===
+                                                            category.id ===
                                                                field.state.value
                                                                ? ""
-                                                               : category.name,
+                                                               : category.id,
                                                          );
                                                          setCategoryComboboxOpen(
                                                             false,
@@ -480,7 +480,7 @@ export function ManageBillSheet({
                                                          </span>
                                                       </div>
                                                       {field.state.value ===
-                                                         category.name && (
+                                                         category.id && (
                                                          <CheckIcon className="ml-2 h-4 w-4" />
                                                       )}
                                                    </CommandItem>
