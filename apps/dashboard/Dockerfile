@@ -12,6 +12,7 @@ COPY package.json ./
 COPY apps/dashboard/package.json ./apps/dashboard/
 COPY packages/localization/package.json ./packages/localization/
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/ofx/package.json ./packages/ofx/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/api/package.json ./packages/api/

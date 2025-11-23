@@ -36,6 +36,8 @@ COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
+COPY packages/ofx/package.json ./packages/ofx/
+
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
@@ -74,6 +76,8 @@ COPY packages/environment/package.json ./packages/environment/
 COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
+COPY packages/ofx/package.json ./packages/ofx/
+
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
 # Install only production dependencies.
