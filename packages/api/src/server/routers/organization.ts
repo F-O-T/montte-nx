@@ -18,6 +18,7 @@ export const organizationRouter = router({
    createOrganization: protectedProcedure
       .input(
          z.object({
+            description: z.string().optional(),
             name: z.string().min(1, "Organization name is required"),
             slug: z.string().min(1, "Organization slug is required"),
          }),
@@ -28,6 +29,7 @@ export const organizationRouter = router({
          try {
             const organization = await resolvedCtx.auth.api.createOrganization({
                body: {
+                  description: input.description,
                   name: input.name,
                   slug: input.slug,
                },
