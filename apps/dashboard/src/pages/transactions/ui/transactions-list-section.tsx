@@ -137,6 +137,8 @@ function TransactionsListContent() {
    const [searchTerm, setSearchTerm] = useState("");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const [pageSize, setPageSize] = useState(5);
+   const [startDate, setStartDate] = useState<Date | undefined>();
+   const [endDate, setEndDate] = useState<Date | undefined>();
 
    const {
       categoryFilter,
@@ -163,9 +165,11 @@ function TransactionsListContent() {
                bankAccountId:
                   bankAccountFilter === "all" ? undefined : bankAccountFilter,
                category: categoryFilter === "all" ? undefined : categoryFilter,
+               endDate: endDate?.toISOString(),
                limit: pageSize,
                page: currentPage,
                search: debouncedSearchTerm || undefined,
+               startDate: startDate?.toISOString(),
                type:
                   typeFilter === "all"
                      ? undefined
@@ -188,7 +192,9 @@ function TransactionsListContent() {
    const hasActiveFilters =
       categoryFilter !== "all" ||
       typeFilter !== "all" ||
-      bankAccountFilter !== "all";
+      bankAccountFilter !== "all" ||
+      startDate !== undefined ||
+      endDate !== undefined;
 
    return (
       <>
@@ -380,24 +386,6 @@ function TransactionsListContent() {
                      Mostrando {transactions.length} de {pagination.totalCount} transações
                   </div>
                   <div className="flex items-center space-x-6 lg:space-x-8">
-                     <div className="flex items-center space-x-2">
-                        <p className="text-sm font-medium">Linhas por página</p>
-                        <select
-                           value={pageSize}
-                           onChange={(e) => {
-                              const newPageSize = Number(e.target.value);
-                              setPageSize(newPageSize);
-                              setCurrentPage(1);
-                           }}
-                           className="h-8 w-[70px] rounded-md border border-input bg-background px-2 text-sm"
-                        >
-                           {[5, 10, 20, 30, 50].map((size) => (
-                              <option key={size} value={size}>
-                                 {size}
-                              </option>
-                           ))}
-                        </select>
-                     </div>
                      <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                         Página {currentPage} de {totalPages}
                      </div>
@@ -448,6 +436,7 @@ function TransactionsListContent() {
             bankAccounts={bankAccounts}
             categories={categories}
             categoryFilter={categoryFilter}
+            endDate={endDate}
             isOpen={isFilterSheetOpen}
             onBankAccountFilterChange={(value) => {
                setBankAccountFilter(value);
@@ -457,11 +446,25 @@ function TransactionsListContent() {
                setCategoryFilter(value);
                handleFilterChange();
             }}
+            onEndDateChange={(date) => {
+               setEndDate(date);
+               handleFilterChange();
+            }}
             onOpenChange={setIsFilterSheetOpen}
+            onPageSizeChange={(size) => {
+               setPageSize(size);
+               setCurrentPage(1);
+            }}
+            onStartDateChange={(date) => {
+               setStartDate(date);
+               handleFilterChange();
+            }}
             onTypeFilterChange={(value) => {
                setTypeFilter(value);
                handleFilterChange();
             }}
+            pageSize={pageSize}
+            startDate={startDate}
             typeFilter={typeFilter}
          />
       </>

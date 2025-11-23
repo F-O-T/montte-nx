@@ -19,10 +19,21 @@
             "clear-filters": "Limpar Filtros"
          },
          "description": "Refine a lista de transações com base em critérios específicos.",
+         "end-date": {
+            "label": "Data Final",
+            "placeholder": "Selecione a data final"
+         },
          "items": {
             "all-accounts": "Todas as Contas",
             "all-categories": "Todas as Categorias",
             "all-types": "Todos os Tipos"
+         },
+         "page-size": {
+            "label": "Itens por Página"
+         },
+         "start-date": {
+            "label": "Data Inicial",
+            "placeholder": "Selecione a data inicial"
          },
          "title": "Filtrar Transações"
       }

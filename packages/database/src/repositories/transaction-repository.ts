@@ -93,6 +93,8 @@ export async function findTransactionsByUserIdPaginated(
       search?: string;
       orderBy?: "date" | "amount";
       orderDirection?: "asc" | "desc";
+      startDate?: Date;
+      endDate?: Date;
    } = {},
 ) {
    const {
@@ -104,6 +106,8 @@ export async function findTransactionsByUserIdPaginated(
       search,
       orderBy = "date",
       orderDirection = "desc",
+      startDate,
+      endDate,
    } = options;
 
    const offset = (page - 1) * limit;
@@ -131,6 +135,14 @@ export async function findTransactionsByUserIdPaginated(
 
          if (search) {
             conditions.push(ilike(transaction.description, `%${search}%`));
+         }
+
+         if (startDate) {
+            conditions.push(gte(transaction.date, startDate));
+         }
+
+         if (endDate) {
+            conditions.push(lte(transaction.date, endDate));
          }
 
          return and(...conditions);
