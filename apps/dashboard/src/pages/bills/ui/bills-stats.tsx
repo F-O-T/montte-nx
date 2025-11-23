@@ -1,4 +1,6 @@
 import { translate } from "@packages/localization";
+
+import { formatDecimalCurrency } from "@packages/utils/money";
 import {
    Card,
    CardContent,
@@ -70,8 +72,9 @@ function BillsStatsContent({ type }: BillsStatsProps) {
                title={translate(
                   "dashboard.routes.bills.stats.totalPayables.title",
                )}
-               value={`R$ ${stats?.totalPendingPayables?.toFixed(2) || "0.00"}`}
+               value={formatDecimalCurrency(stats?.totalPendingPayables ?? 0)}
             />
+
             <StatsCard
                description={translate(
                   "dashboard.routes.bills.stats.description",
@@ -120,7 +123,7 @@ function BillsStatsContent({ type }: BillsStatsProps) {
             title={translate(
                "dashboard.routes.bills.stats.totalPayables.title",
             )}
-            value={`R$ ${stats?.totalPendingPayables?.toFixed(2) || "0.00"}`}
+            value={formatDecimalCurrency(stats?.totalPendingPayables ?? 0)}
          />
          <StatsCard
             description={translate(
@@ -129,7 +132,7 @@ function BillsStatsContent({ type }: BillsStatsProps) {
             title={translate(
                "dashboard.routes.bills.stats.totalReceivables.title",
             )}
-            value={`R$ ${stats?.totalPendingReceivables?.toFixed(2) || "0.00"}`}
+            value={formatDecimalCurrency(stats?.totalPendingReceivables ?? 0)}
          />
          <StatsCard
             description={translate("dashboard.routes.bills.stats.totalOverdue")}

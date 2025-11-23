@@ -14,6 +14,7 @@ import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
 import { useTransactionList } from "../features/transaction-list-context";
+import { formatDecimalCurrency } from "@packages/utils/money";
 
 function TransactionsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -90,7 +91,7 @@ function TransactionsStatsContent() {
             title={translate(
                "dashboard.routes.transactions.stats-section.expense.title",
             )}
-            value={`R$ ${stats.totalExpenses}`}
+            value={formatDecimalCurrency(stats.totalExpenses)}
          />
          <StatsCard
             description={translate(
@@ -99,7 +100,7 @@ function TransactionsStatsContent() {
             title={translate(
                "dashboard.routes.transactions.stats-section.transfer.title",
             )}
-            value={`R$ ${stats.totalTransfers}`}
+            value={formatDecimalCurrency(stats.totalTransfers)}
          />
       </div>
    );
