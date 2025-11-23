@@ -1,68 +1,46 @@
 {
    "actions": {
       "complete": "Concluir Onboarding",
-      "next": "Próximo Passo"
-   },
-   "bank-account": {
-      "description": "Vamos começar configurando sua conta bancária principal.",
-      "form": {
-         "bank": {
-            "label": "Nome do Banco",
-            "placeholder": "ex: Nubank, Itaú"
-         },
-         "name": {
-            "label": "Nome da Conta",
-            "placeholder": "ex: Conta Principal"
-         },
-         "type": {
-            "label": "Tipo de Conta",
-            "options": {
-               "checking": "Corrente",
-               "investment": "Investimento",
-               "savings": "Poupança"
-            },
-            "placeholder": "Selecione o tipo de conta"
-         }
-      },
-      "title": "Criar Conta Bancária",
-      "toast": {
-         "success": "Conta bancária criada com sucesso"
-      }
-   },
-   "category": {
-      "description": "Crie sua primeira categoria para organizar suas despesas.",
-      "form": {
-         "budget": {
-            "label": "Orçamento Mensal (Opcional)"
-         },
-         "color": {
-            "label": "Cor"
-         },
-         "name": {
-            "label": "Nome da Categoria",
-            "placeholder": "ex: Mercado"
-         }
-      },
-      "title": "Criar Categoria",
-      "toast": {
-         "success": "Categoria criada com sucesso"
-      }
+      "next": "Próximo Passo",
+      "previous": "Passo Anterior"
    },
    "steps": {
       "bank-account": {
-         "description": "Adicione sua primeira conta bancária",
-         "title": "Conta Bancária"
+         "description": "Vamos começar configurando sua conta bancária principal.",
+         "form": {
+            "type": {
+               "options": {
+                  "checking": "Corrente",
+                  "investment": "Investimento",
+                  "savings": "Poupança"
+               },
+               "placeholder": "Selecione o tipo de conta"
+            }
+         },
+         "title": "Criar Conta Bancária",
+         "toast": {
+            "success": "Conta bancária criada com sucesso"
+         }
       },
       "category": {
-         "description": "Crie sua primeira categoria",
-         "title": "Categoria"
+         "description": "Selecione algumas categorias padrão para começar.",
+         "form": {
+            "defaults": {
+               "label": "Categorias sugeridas"
+            }
+         },
+         "title": "Categorias iniciais",
+         "toast": {
+            "success": "Categorias criadas com sucesso"
+         },
+         "defaults": {
+            "food": "Alimentação",
+            "health": "Saúde",
+            "housing": "Moradia",
+            "leisure": "Lazer",
+            "shopping": "Compras gerais",
+            "transport": "Transporte"
+         }
       }
-   },
-   "validation": {
-      "account-name-required": "Nome da conta é obrigatório",
-      "account-type-required": "Tipo de conta é obrigatório",
-      "bank-required": "Nome do banco é obrigatório",
-      "category-name-required": "Nome da categoria é obrigatório",
-      "color-required": "Cor é obrigatória"
    }
 }
