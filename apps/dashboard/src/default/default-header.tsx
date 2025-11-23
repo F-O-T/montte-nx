@@ -5,11 +5,13 @@ interface DefaultHeaderProps {
 
 export function DefaultHeader({ title, description }: DefaultHeaderProps) {
    return (
-      <div className="flex flex-col gap-2">
-         <h1 className="text-3xl font-bold tracking-tight font-sans">
+      <div className="flex flex-col gap-2 ">
+         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-serif leading-tight">
             {title}
          </h1>
-         <h4 className="text-muted-foreground font-serif">{description}</h4>
+         <p className="text-base sm:text-lg text-muted-foreground font-sans leading-relaxed max-w-3xl">
+            {description}
+         </p>
       </div>
    );
 }

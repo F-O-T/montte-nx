@@ -1,4 +1,6 @@
 import { translate } from "@packages/localization";
+import { DefaultHeader } from "@/default/default-header";
+
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
@@ -9,7 +11,6 @@ import { useRouter } from "@tanstack/react-router";
 import { ArrowDownCircle, ArrowUpCircle, Repeat, Upload } from "lucide-react";
 import { trpc } from "@/integrations/clients";
 import { HomeChartsSection } from "./home-charts-section";
-import { HomeHeaderSection } from "./home-header-section";
 import { HomeQuickAccessCards } from "./home-quick-access-cards";
 import { HomeRecentTransactionsSection } from "./home-recent-transactions-section";
 import { HomeStatsSection } from "./home-stats-section";
@@ -93,7 +94,7 @@ function HomeQuickNavigation() {
    ];
 
    return (
-      <div className="grid gap-4">
+      <div className="grid gap-4 grid-cols-2">
          {quickAccessItems.map((item, index) => (
             <QuickAccessCard
                description={item.description}
@@ -141,26 +142,30 @@ function HomePageContent() {
 
    return (
       <main className="flex flex-col gap-6">
-         <HomeHeaderSection />
+         <DefaultHeader
+            description={translate("dashboard.routes.home.description")}
+            title={translate("dashboard.routes.home.title")}
+         />
 
          <section className="grid items-start gap-4 xl:grid-cols-3">
-            <div className="space-y-4 xl:col-span-2">
-               <HomeStatsSection performance={performance} summary={summary} />
+            <div className="grid h-full col-span-2 gap-4">
+               <HomeRecentTransactionsSection />
             </div>
-            <HomeRecentTransactionsSection />
-         </section>
-
-         <section className="grid items-start gap-4 xl:grid-cols-3">
-            <div className="space-y-4 xl:col-span-2">
+            <div className="flex flex-col gap-4">
+               <HomeQuickAccessCards summary={summary} />
+               <HomeQuickNavigation />
+            </div>
+            <div className="space-y-4 xl:col-span-3">
+               <HomeStatsSection performance={performance} summary={summary} />
                <HomeChartsSection
                   cashFlow={cashFlow}
                   plannedVsActual={plannedVsActual}
                />
             </div>
-            <div className="space-y-4">
-               <HomeQuickAccessCards summary={summary} />
-               <HomeQuickNavigation />
-            </div>
+         </section>
+
+         <section className="grid items-start gap-4 xl:grid-cols-3">
+            <div className="space-y-4 xl:col-span-2"></div>
          </section>
       </main>
    );
