@@ -34,9 +34,7 @@ COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
-COPY packages/contenta-sdk/package.json ./packages/contenta-sdk/
 COPY packages/files/package.json ./packages/files/
-COPY packages/payment/package.json ./packages/payment/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
@@ -73,9 +71,7 @@ COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
-COPY packages/contenta-sdk/package.json ./packages/contenta-sdk/
 COPY packages/files/package.json ./packages/files/
-COPY packages/payment/package.json ./packages/payment/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
