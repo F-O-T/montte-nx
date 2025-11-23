@@ -1,5 +1,3 @@
-import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
-import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Dropzone,
@@ -23,6 +21,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
+import { useTRPC } from "@/integrations/clients";
 
 type Organization = {
    description?: string | null;

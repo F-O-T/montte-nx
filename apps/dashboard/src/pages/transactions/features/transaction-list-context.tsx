@@ -61,18 +61,18 @@ export function TransactionListProvider({
    }, []);
 
    const value = {
+      bankAccountFilter,
+      categoryFilter,
       clearSelection,
       handleSelectionChange,
       selectAll,
       selectedCount: selectedItems.size,
       selectedItems,
-      toggleAll,
-      bankAccountFilter,
       setBankAccountFilter,
-      categoryFilter,
       setCategoryFilter,
-      typeFilter,
       setTypeFilter,
+      toggleAll,
+      typeFilter,
    };
 
    return (

@@ -14,7 +14,7 @@ import { Button } from "@packages/ui/components/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { trpc } from "@/integrations/clients";
-import type { Transaction } from "../ui/transactions-list-section";
+import type { Transaction } from "../ui/transaction-item";
 
 interface DeleteTransactionProps {
    transaction: Transaction;

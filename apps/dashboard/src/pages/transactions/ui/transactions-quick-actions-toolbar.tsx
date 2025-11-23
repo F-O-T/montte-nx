@@ -14,7 +14,7 @@ import {
 } from "@packages/ui/components/tooltip";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
+import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
 
 export function TransactionsQuickActionsToolbar() {
    const [open, setOpen] = useState(false);
@@ -58,4 +58,3 @@ export function TransactionsQuickActionsToolbar() {
       </>
    );
 }
-
