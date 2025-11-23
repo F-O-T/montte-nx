@@ -1,7 +1,6 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
-import { Combobox } from "@packages/ui/components/combobox";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
    Field,
@@ -26,17 +25,12 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
-import { Suspense, useMemo, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { useMemo, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
+import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 
 type ManageBankAccountSheetProps = {
    onOpen?: boolean;
@@ -44,56 +38,6 @@ type ManageBankAccountSheetProps = {
    bankAccount?: BankAccount; // If provided, edit mode. If not, create mode
    asChild?: boolean;
 };
-
-interface BankComboboxProps {
-   value?: string;
-   onValueChange?: (value: string) => void;
-}
-
-function BankComboboxContent({ value, onValueChange }: BankComboboxProps) {
-   const trpc = useTRPC();
-   const { data: banks = [] } = useSuspenseQuery(
-      trpc.brasilApi.banks.getAll.queryOptions(),
-   );
-
-   const formattedBanks = banks.map((bank) => ({
-      label: bank.fullName,
-      value: bank.fullName,
-   }));
-
-   return (
-      <Combobox
-         emptyMessage={translate("common.form.search.no-results")}
-         onValueChange={onValueChange}
-         options={formattedBanks}
-         placeholder={translate("common.form.bank.placeholder")}
-         searchPlaceholder={translate("common.form.search.placeholder")}
-         value={value}
-      />
-   );
-}
-
-function ErrorFallback({ error }: { error: Error }) {
-   return (
-      <div className="text-sm text-red-600 p-2 border rounded-md">
-         {error.message}
-      </div>
-   );
-}
-
-function LoadingFallback() {
-   return <Skeleton className="h-10 w-full" />;
-}
-
-function BankCombobox(props: BankComboboxProps) {
-   return (
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-         <Suspense fallback={<LoadingFallback />}>
-            <BankComboboxContent {...props} />
-         </Suspense>
-      </ErrorBoundary>
-   );
-}
 
 export function ManageBankAccountSheet({
    onOpen,
@@ -280,7 +224,8 @@ export function ManageBankAccountSheet({
                                  <FieldLabel>
                                     {translate("common.form.bank.label")}
                                  </FieldLabel>
-                                 <BankCombobox
+                                 <BankAccountCombobox
+                                    onBlur={field.handleBlur}
                                     onValueChange={field.handleChange}
                                     value={field.state.value}
                                  />

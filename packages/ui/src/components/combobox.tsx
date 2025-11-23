@@ -32,6 +32,7 @@ interface ComboboxProps {
    emptyMessage?: string;
    className?: string;
    disabled?: boolean;
+   onBlur?: React.FocusEventHandler<HTMLButtonElement>;
 }
 
 export function Combobox({
@@ -43,6 +44,7 @@ export function Combobox({
    emptyMessage = "No option found.",
    className,
    disabled = false,
+   onBlur,
 }: ComboboxProps) {
    const [open, setOpen] = React.useState(false);
 
@@ -55,6 +57,7 @@ export function Combobox({
                aria-expanded={open}
                className={cn("flex items-center gap-2", className)}
                disabled={disabled}
+               onBlur={onBlur}
                role="combobox"
                variant="outline"
             >

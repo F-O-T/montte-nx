@@ -14,7 +14,6 @@ import {
    ColorPickerHue,
    ColorPickerSelection,
 } from "@packages/ui/components/color-picker";
-import { Combobox } from "@packages/ui/components/combobox";
 import {
    Field,
    FieldError,
@@ -36,15 +35,11 @@ import {
 } from "@packages/ui/components/select";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import Color from "color";
-import { type FormEvent, Suspense, useCallback } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTRPC } from "@/integrations/clients";
@@ -59,56 +54,6 @@ const steps = [
 ] as const;
 
 const { Stepper } = defineStepper(...steps);
-
-interface BankComboboxProps {
-   value?: string;
-   onValueChange?: (value: string) => void;
-}
-
-function BankComboboxContent({ value, onValueChange }: BankComboboxProps) {
-   const trpc = useTRPC();
-   const { data: banks = [] } = useSuspenseQuery(
-      trpc.brasilApi.banks.getAll.queryOptions(),
-   );
-
-   const formattedBanks = banks.map((bank) => ({
-      label: bank.fullName,
-      value: bank.fullName,
-   }));
-
-   return (
-      <Combobox
-         emptyMessage={translate("common.form.search.no-results")}
-         onValueChange={onValueChange}
-         options={formattedBanks}
-         placeholder={translate("common.form.bank.placeholder")}
-         searchPlaceholder={translate("common.form.search.placeholder")}
-         value={value}
-      />
-   );
-}
-
-function ErrorFallback({ error }: { error: Error }) {
-   return (
-      <div className="text-sm text-red-600 p-2 border rounded-md">
-         {error.message}
-      </div>
-   );
-}
-
-function LoadingFallback() {
-   return <div className="h-10 w-full bg-gray-100 animate-pulse rounded-md" />;
-}
-
-function BankCombobox(props: BankComboboxProps) {
-   return (
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-         <Suspense fallback={<LoadingFallback />}>
-            <BankComboboxContent {...props} />
-         </Suspense>
-      </ErrorBoundary>
-   );
-}
 
 const schema = z.object({
    bank: z
@@ -273,7 +218,8 @@ export function OnboardingPage() {
                                  "dashboard.routes.onboarding.bank-account.form.bank.label",
                               )}
                            </FieldLabel>
-                           <BankCombobox
+                           <BankAccountCombobox
+                              onBlur={field.handleBlur}
                               onValueChange={field.handleChange}
                               value={field.state.value}
                            />
