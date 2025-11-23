@@ -5,6 +5,7 @@ import {
    pgTable,
    text,
    timestamp,
+   uuid,
 } from "drizzle-orm/pg-core";
 import { bankAccount } from "./bank-accounts";
 import { transaction } from "./transactions";
@@ -34,7 +35,7 @@ export const bill = pgTable("bill", {
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-   userId: text("user_id").notNull(),
+   userId: uuid("user_id").notNull(),
 });
 
 export const billRelations = relations(bill, ({ one }) => ({

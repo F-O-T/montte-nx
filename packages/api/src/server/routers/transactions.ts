@@ -317,7 +317,7 @@ export const transactionRouter = router({
          const updateData: {
             amount?: string;
             bankAccountId?: string;
-            category?: string[];
+            categoryIds?: string[];
             date?: Date;
             description?: string;
             type?: "income" | "expense" | "transfer";

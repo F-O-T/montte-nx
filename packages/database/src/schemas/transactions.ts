@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { decimal, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { decimal, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { bankAccount } from "./bank-accounts";
 
 export const transaction = pgTable("transaction", {
@@ -18,7 +18,7 @@ export const transaction = pgTable("transaction", {
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-   userId: text("user_id").notNull(),
+   userId: uuid("user_id").notNull(),
 });
 
 export const transactionRelations = relations(transaction, ({ one }) => ({

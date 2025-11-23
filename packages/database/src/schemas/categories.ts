@@ -1,4 +1,4 @@
-import { decimal, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { decimal, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
 export const category = pgTable("category", {
@@ -11,7 +11,7 @@ export const category = pgTable("category", {
    updatedAt: timestamp("updated_at")
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
-   userId: text("user_id")
+   userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
 });

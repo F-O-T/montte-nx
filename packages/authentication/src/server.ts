@@ -8,8 +8,8 @@ import {
    sendEmailOTP,
    sendOrganizationInvitation,
 } from "@packages/transactional/client";
-import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { type BetterAuthOptions, betterAuth } from "better-auth/minimal";
 import {
    admin,
    apiKey,
@@ -34,6 +34,8 @@ export const getAuthOptions = (
             domain: ".contentagen.com",
             enabled: isProduction,
          },
+
+         database: { generateId: "uuid" },
       },
       database: drizzleAdapter(db, {
          provider: "pg",
@@ -81,6 +83,9 @@ export const getAuthOptions = (
       emailVerification: {
          autoSignInAfterVerification: true,
          sendOnSignUp: true,
+      },
+      experimental: {
+         joins: true,
       },
       plugins: [
          admin(),
