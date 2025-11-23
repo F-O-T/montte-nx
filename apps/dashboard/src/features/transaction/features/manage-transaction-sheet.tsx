@@ -144,6 +144,7 @@ export function ManageTransactionSheet({
          onError: (error) => {
             console.error("Failed to create transfer:", error);
          },
+
          onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
