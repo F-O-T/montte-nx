@@ -11,7 +11,6 @@ COPY bun.lock ./
 COPY package.json ./
 COPY apps/dashboard/package.json ./apps/dashboard/
 COPY packages/localization/package.json ./packages/localization/
-COPY packages/contenta-sdk/package.json ./packages/contenta-sdk/
 COPY packages/ui/package.json ./packages/ui/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/posthog/package.json ./packages/posthog/
@@ -20,7 +19,6 @@ COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/database/package.json ./packages/database/
 COPY packages/files/package.json ./packages/files/
-COPY packages/payment/package.json ./packages/payment/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
