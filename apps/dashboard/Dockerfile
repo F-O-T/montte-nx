@@ -1,5 +1,5 @@
 # apps/dashboard/Dockerfile
-FROM node:22-alpine AS base
+FROM oven/bun:alpine AS base
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ COPY packages/utils/package.json ./packages/utils/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
 # Install dependencies
-RUN npm install -g bun && bun install --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 # Copy source code
 COPY . .
