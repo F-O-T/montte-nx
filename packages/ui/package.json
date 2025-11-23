@@ -24,6 +24,7 @@
       "@radix-ui/react-tooltip": "^1.2.7",
       "@stepperize/react": "^5.1.6",
       "@tanstack/react-form": "^1.23.8",
+      "@tanstack/react-table": "^8.21.3",
       "@tiptap/pm": "^3.0.7",
       "@tiptap/react": "^3.0.7",
       "@tiptap/starter-kit": "^3.0.7",

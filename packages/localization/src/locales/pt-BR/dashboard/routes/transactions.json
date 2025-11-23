@@ -63,5 +63,13 @@
          "description": "Veja o total acumulado de todas as suas transferências.",
          "title": "Total de Transferências"
       }
+   },
+   "table": {
+      "columns": {
+         "amount": "Valor",
+         "date": "Data",
+         "description": "Descrição",
+         "type": "Tipo"
+      }
    }
 }
