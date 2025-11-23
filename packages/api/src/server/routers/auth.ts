@@ -51,7 +51,7 @@ export const authRouter = router({
 
       const googleSignInResponse = await resolvedCtx.auth.api.signInSocial({
          body: {
-            callbackURL: `${getDomain()}/profile`,
+            callbackURL: `${getDomain()}/home`,
             provider: "google",
          },
 
