@@ -49,16 +49,21 @@ export const authRouter = router({
    googleSignIn: publicProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
-      const googleSignInResponse = await resolvedCtx.auth.api.signInSocial({
+      const resp = await resolvedCtx.auth.api.signInSocial({
          body: {
             callbackURL: `${getDomain()}/home`,
             provider: "google",
          },
-
+         returnHeaders: true,
          headers: resolvedCtx.headers,
       });
 
-      return googleSignInResponse;
+      if (resp.headers) {
+         resp.headers.forEach((value, key) => {
+            resolvedCtx.responseHeaders.append(key, value);
+         });
+      }
+      return resp.response;
    }),
    logout: protectedProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;

@@ -34,6 +34,7 @@ const app = new Elysia({
             "sdk-api-key",
             "Accept-Language",
             "X-Locale",
+            "user-agent",
          ],
          credentials: true,
          methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],

@@ -25,7 +25,7 @@ import { ArrowRight } from "lucide-react";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 export function SignInPage() {
    const schema = z.object({
@@ -40,17 +40,16 @@ export function SignInPage() {
    const trpc = useTRPC();
    const router = useRouter();
 
-   const googleSignInMutation = useMutation(
-      trpc.auth.googleSignIn.mutationOptions({
-         onSuccess: async (data) => {
-            if (!data.url) {
-               console.error("No URL returned from Google Sign-In.");
-               return;
-            }
-            window.location.replace(data.url);
-         },
-      }),
-   );
+   const handleGoogleSignIn = useCallback(async () => {
+      try {
+         await betterAuthClient.signIn.social({
+            callbackURL: `${window.location.origin}/home`,
+            provider: "google",
+         });
+      } catch (error) {
+         console.error("Google sign-in failed:", error);
+      }
+   }, []);
    const signInMutation = useMutation(
       trpc.auth.signIn.mutationOptions({
          onError: (error) => {
@@ -129,7 +128,7 @@ export function SignInPage() {
             <CardContent className="space-y-4">
                <Button
                   className="w-full"
-                  onClick={() => googleSignInMutation.mutate()}
+                  onClick={handleGoogleSignIn}
                   variant="outline"
                >
                   <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
