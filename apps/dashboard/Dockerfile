@@ -31,22 +31,29 @@ RUN bun install
 COPY . .
 
 # Build the dashboard application
+ENV NODE_ENV=production
 ARG VITE_SERVER_URL
-ENV VITE_SERVER_URL=${VITE_SERVER_URL}
-
 RUN bun run --filter=dashboard build
 
 # Production stage
-FROM nginx:stable-alpine AS production
+FROM nginx:alpine AS runner
 
-WORKDIR /app
-
-COPY apps/dashboard/nginx.conf /etc/nginx/nginx.conf
+# Copy the built static files from the builder stage
 COPY --from=base /app/apps/dashboard/dist /usr/share/nginx/html
 
+# Copy custom nginx configuration and entrypoint script
+COPY apps/dashboard/nginx.conf /etc/nginx/nginx.conf
+COPY apps/dashboard/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Set and expose the port. Default to 3000 if not provided.
+ARG PORT
+ENV PORT=${PORT:-3000}
+EXPOSE ${PORT}
+
+# Healthcheck using the dynamic port
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl --fail --silent http://0.0.0.0:80/healthcheck || exit 1
+  CMD curl --fail --silent http://0.0.0.0:${PORT}/healthcheck || exit 1
 
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx with entrypoint script
+CMD ["/entrypoint.sh"]
