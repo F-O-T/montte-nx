@@ -19,8 +19,9 @@ import { CategoryStats } from "./category-stats";
 import { CategoryTransactions } from "./category-transactions-section";
 
 function CategoryContent() {
-   const params = useParams({ strict: false });
-   const slug = (params as any).slug as string;
+   const { slug } = useParams({
+      from: "/_dashboard/categories/$slug",
+   });
    const trpc = useTRPC();
 
    const { data: category } = useSuspenseQuery(
