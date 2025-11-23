@@ -1,18 +1,13 @@
-import { translate } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { ArrowRightIcon } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { CashFlowChart } from "@/components/charts/cash-flow-chart";
-import { FinancialSummaryChart } from "@/components/charts/financial-summary-chart";
-import { PlannedVsActualChart } from "@/components/charts/planned-vs-actual-chart";
-import { PeriodFilter } from "@/components/period-filter";
 import { trpc } from "@/integrations/clients";
+import { HomeChartsSection } from "./home-charts-section";
+import { HomeFilterSheet } from "./home-filter-sheet";
+import { HomeQuickAccessCards } from "./home-quick-access-cards";
+import { HomeQuickActionsToolbar } from "./home-quick-actions-toolbar";
 
 function HomePageErrorFallback(props: FallbackProps) {
    return createErrorFallback({
@@ -25,18 +20,23 @@ function HomePageErrorFallback(props: FallbackProps) {
 
 function HomePageSkeleton() {
    return (
-      <div className="space-y-6">
-         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-               <Skeleton className="h-32" key={i} />
-            ))}
+      <main className="grid md:grid-cols-3 gap-4">
+         <div className="h-min col-span-1 md:col-span-2 grid gap-4">
+            <Skeleton className="h-16 w-full" />
+            <div className="grid grid-cols-2 gap-4">
+               {[1, 2].map((i) => (
+                  <Skeleton className="h-32" key={i} />
+               ))}
+            </div>
          </div>
-         <Skeleton className="h-[400px]" />
-         <div className="grid gap-4 md:grid-cols-2">
+         <div className="grid gap-4">
             <Skeleton className="h-[400px]" />
-            <Skeleton className="h-[400px]" />
+            <div className="grid gap-4 md:grid-cols-2">
+               <Skeleton className="h-[400px]" />
+               <Skeleton className="h-[400px]" />
+            </div>
          </div>
-      </div>
+      </main>
    );
 }
 
@@ -51,10 +51,15 @@ function HomePageContent() {
    const initialDates = getCurrentMonthDates();
    const [startDate, setStartDate] = useState<Date>(initialDates.start);
    const [endDate, setEndDate] = useState<Date>(initialDates.end);
+   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handlePeriodChange = (start: Date, end: Date) => {
       setStartDate(start);
       setEndDate(end);
+   };
+
+   const handleFilterClick = () => {
+      setIsFilterSheetOpen(true);
    };
 
    const { data: summary } = useSuspenseQuery(
@@ -79,100 +84,24 @@ function HomePageContent() {
       }),
    );
 
-   const { data: performance } = useSuspenseQuery(
-      trpc.reports.getPaymentPerformance.queryOptions({
-         endDate: endDate.toISOString(),
-         startDate: startDate.toISOString(),
-      }),
-   );
-
    return (
-      <div className="space-y-6">
-         <div className="flex items-center justify-between">
-            <div>
-               <h2 className="text-3xl font-bold tracking-tight">
-                  {translate("dashboard.routes.home.title")}
-               </h2>
-               <p className="text-muted-foreground">
-                  {translate("dashboard.routes.home.description")}
-               </p>
+      <>
+         <main className="grid md:grid-cols-3 gap-4">
+            <div className="h-min col-span-1 md:col-span-3 grid gap-4">
+               <HomeQuickActionsToolbar onFilterClick={handleFilterClick} />
+               <HomeQuickAccessCards summary={summary} />
+               <HomeChartsSection
+                  cashFlow={cashFlow}
+                  plannedVsActual={plannedVsActual}
+               />
             </div>
-            <Button asChild>
-               <Link to="/reports">
-                  {translate("dashboard.routes.home.view-detailed-reports")}
-                  <ArrowRightIcon className="ml-2 h-4 w-4" />
-               </Link>
-            </Button>
-         </div>
-
-         <PeriodFilter onPeriodChange={handlePeriodChange} />
-
-         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatsCard
-               description={translate(
-                  "dashboard.routes.home.financial-summary.total-income.description",
-               )}
-               title={translate(
-                  "dashboard.routes.home.financial-summary.total-income.title",
-               )}
-               value={`R$ ${summary.totalIncome.toFixed(2)}`}
-            />
-            <StatsCard
-               description={translate(
-                  "dashboard.routes.home.financial-summary.total-expenses.description",
-               )}
-               title={translate(
-                  "dashboard.routes.home.financial-summary.total-expenses.title",
-               )}
-               value={`R$ ${summary.totalExpenses.toFixed(2)}`}
-            />
-            <StatsCard
-               description={translate(
-                  "dashboard.routes.home.financial-summary.net-balance.description",
-               )}
-               title={translate(
-                  "dashboard.routes.home.financial-summary.net-balance.title",
-               )}
-               value={`R$ ${summary.netBalance.toFixed(2)}`}
-            />
-            <StatsCard
-               description={`${performance.paidOnTime + performance.paidLate} ${translate("dashboard.routes.home.financial-summary.payment-rate.description")} ${performance.totalBills} ${translate("dashboard.routes.home.financial-summary.payment-rate.bills-paid")}`}
-               title={translate(
-                  "dashboard.routes.home.financial-summary.payment-rate.title",
-               )}
-               value={`${performance.paymentRate.toFixed(1)}%`}
-            />
-         </div>
-
-         <FinancialSummaryChart
-            data={cashFlow}
-            description={translate(
-               "dashboard.routes.home.charts.financial-evolution.description",
-            )}
-            title={translate(
-               "dashboard.routes.home.charts.financial-evolution.title",
-            )}
+         </main>
+         <HomeFilterSheet
+            isOpen={isFilterSheetOpen}
+            onOpenChange={setIsFilterSheetOpen}
+            onPeriodChange={handlePeriodChange}
          />
-
-         <div className="grid gap-4 md:grid-cols-2">
-            <CashFlowChart
-               data={cashFlow}
-               description={translate(
-                  "dashboard.routes.home.charts.cash-flow.description",
-               )}
-               title={translate("dashboard.routes.home.charts.cash-flow.title")}
-            />
-            <PlannedVsActualChart
-               data={plannedVsActual}
-               description={translate(
-                  "dashboard.routes.home.charts.planned-vs-actual.description",
-               )}
-               title={translate(
-                  "dashboard.routes.home.charts.planned-vs-actual.title",
-               )}
-            />
-         </div>
-      </div>
+      </>
    );
 }
 

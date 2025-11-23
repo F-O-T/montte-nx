@@ -6,7 +6,7 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@packages/ui/components/select";
-import { CalendarIcon } from "@radix-ui/react-icons";
+import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 
 export type PeriodPreset =

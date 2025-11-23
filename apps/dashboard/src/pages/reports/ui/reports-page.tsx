@@ -18,11 +18,11 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { CashFlowChart } from "@/components/charts/cash-flow-chart";
-import { CategoryBreakdownChart } from "@/components/charts/category-breakdown-chart";
-import { FinancialSummaryChart } from "@/components/charts/financial-summary-chart";
-import { PlannedVsActualChart } from "@/components/charts/planned-vs-actual-chart";
-import { PeriodFilter } from "@/components/period-filter";
+import { CashFlowChart } from "@/features/reports/ui/cash-flow-chart";
+import { CategoryBreakdownChart } from "@/features/reports/ui/category-breakdown-chart";
+import { FinancialSummaryChart } from "@/features/reports/ui/financial-summary-chart";
+import { PeriodFilter } from "@/features/reports/ui/period-filter";
+import { PlannedVsActualChart } from "@/features/reports/ui/planned-vs-actual-chart";
 import { trpc } from "@/integrations/clients";
 
 function ReportsPageErrorFallback(props: FallbackProps) {
