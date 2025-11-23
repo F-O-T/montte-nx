@@ -1,5 +1,5 @@
-import { AvatarFallback, Avatar } from "@packages/ui/components/avatar";
-import { getInitials } from "@packages/utils/text";
+import { Avatar, AvatarFallback } from "@packages/ui/components/avatar";
+import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
    CardContent,
@@ -18,12 +18,12 @@ import {
    ItemTitle,
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { getInitials } from "@packages/utils/text";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
-import { Badge } from "@packages/ui/components/badge";
 
 function MembersListContent() {
    const trpc = useTRPC();
@@ -142,4 +142,3 @@ export function MembersListSection() {
       </ErrorBoundary>
    );
 }
-

@@ -150,12 +150,14 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
             ) : (
                <ItemGroup>
                   {transactions.map((transaction: any, index: number) => {
-                     const transactionCategories = Array.isArray(transaction.category)
+                     const transactionCategories = Array.isArray(
+                        transaction.category,
+                     )
                         ? transaction.category
                         : [transaction.category];
-                     
+
                      const primaryCategoryName = transactionCategories[0];
-                     
+
                      const categoryDetails = categories.find(
                         (cat: any) => cat.name === primaryCategoryName,
                      );
@@ -196,8 +198,8 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
                                  >
                                     {transaction.type === "income" ? "+" : "-"}
                                     {new Intl.NumberFormat("pt-BR", {
-                                       style: "currency",
                                        currency: "BRL",
+                                       style: "currency",
                                     }).format(
                                        Math.abs(parseFloat(transaction.amount)),
                                     )}
@@ -284,11 +286,7 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
    );
 }
 
-export function CategoryTransactions({
-   categoryId,
-}: {
-   categoryId: string;
-}) {
+export function CategoryTransactions({ categoryId }: { categoryId: string }) {
    return (
       <ErrorBoundary FallbackComponent={TransactionsErrorFallback}>
          <Suspense fallback={<TransactionsSkeleton />}>

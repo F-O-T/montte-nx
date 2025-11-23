@@ -1,89 +1,90 @@
 ---
-   import { Check } from "@lucide/astro";
-   import type { SupportedLng } from "@packages/localization";
-   import { Button } from "@packages/ui/components/button";
-   import {
-      Card,
-      CardDescription,
-      CardHeader,
-      CardTitle,
-   } from "@packages/ui/components/card";
-   import { useTranslations } from "../i18n/utils";
+import { Check } from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import {
+   Card,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { useTranslations } from "../i18n/utils";
 
-   interface Props {
-      lang?: SupportedLng;
-   }
+interface Props {
+   lang?: SupportedLng;
+}
 
-   const { lang = "en" } = Astro.props;
-   const t = useTranslations(lang);
+const { lang = "en" } = Astro.props;
+const t = useTranslations(lang);
 
-   type ButtonVariant =
-      | "outline"
-      | "default"
-      | "destructive"
-      | "ghost"
-      | "link"
-      | "secondary";
+type ButtonVariant =
+   | "outline"
+   | "default"
+   | "destructive"
+   | "ghost"
+   | "link"
+   | "secondary";
 
-   interface PricingPlan {
-      name: string;
-      price: string;
-      period: string;
-      description: string;
-      variant: ButtonVariant;
-      popular?: boolean;
-      features: string[];
-   }
+interface PricingPlan {
+   name: string;
+   price: string;
+   period: string;
+   description: string;
+   variant: ButtonVariant;
+   popular?: boolean;
+   features: string[];
+}
 
-   const pricingPlans: PricingPlan[] = [
-      {
-         description: t("pages.landing.pricing.plans.free.description"),
-         features: [
-            t("pages.landing.pricing.plans.free.features.credit"),
-            t("pages.landing.pricing.plans.free.features.organization"),
-            t("pages.landing.pricing.plans.free.features.api"),
-            t("pages.landing.pricing.plans.free.features.support"),
-            t("pages.landing.pricing.plans.free.features.noCard"),
-            t("pages.landing.pricing.plans.free.features.coreFeatures"),
-         ],
-         name: t("pages.landing.pricing.plans.free.name"),
-         period: t("pages.landing.pricing.plans.free.period"),
-         price: t("pages.landing.pricing.plans.free.price"),
-         variant: "outline",
-      },
-      {
-         description: t("pages.landing.pricing.plans.basic.description"),
-         features: [
-            t("pages.landing.pricing.plans.basic.features.credit"),
-            t("pages.landing.pricing.plans.basic.features.payAsGo"),
-            t("pages.landing.pricing.plans.basic.features.organization"),
-            t("pages.landing.pricing.plans.basic.features.api"),
-            t("pages.landing.pricing.plans.basic.features.support"),
-            t("pages.landing.pricing.plans.basic.features.coreFeatures"),
-         ],
-         name: t("pages.landing.pricing.plans.basic.name"),
-         period: t("pages.landing.pricing.plans.basic.period"),
-         popular: true,
-         price: t("pages.landing.pricing.plans.basic.price"),
-         variant: "default",
-      },
-      {
-         description: t("pages.landing.pricing.plans.supporter.description"),
-         features: [
-            t("pages.landing.pricing.plans.supporter.features.credit"),
-            t("pages.landing.pricing.plans.supporter.features.featureRequest"),
-            t("pages.landing.pricing.plans.supporter.features.organization"),
-            t("pages.landing.pricing.plans.supporter.features.api"),
-            t("pages.landing.pricing.plans.supporter.features.support"),
-            t("pages.landing.pricing.plans.supporter.features.coreFeatures"),
-         ],
-         name: t("pages.landing.pricing.plans.supporter.name"),
-         period: t("pages.landing.pricing.plans.supporter.period"),
-         price: t("pages.landing.pricing.plans.supporter.price"),
-         variant: "outline",
-      },
-   ];
+const pricingPlans: PricingPlan[] = [
+   {
+      description: t("pages.landing.pricing.plans.free.description"),
+      features: [
+         t("pages.landing.pricing.plans.free.features.credit"),
+         t("pages.landing.pricing.plans.free.features.organization"),
+         t("pages.landing.pricing.plans.free.features.api"),
+         t("pages.landing.pricing.plans.free.features.support"),
+         t("pages.landing.pricing.plans.free.features.noCard"),
+         t("pages.landing.pricing.plans.free.features.coreFeatures"),
+      ],
+      name: t("pages.landing.pricing.plans.free.name"),
+      period: t("pages.landing.pricing.plans.free.period"),
+      price: t("pages.landing.pricing.plans.free.price"),
+      variant: "outline",
+   },
+   {
+      description: t("pages.landing.pricing.plans.basic.description"),
+      features: [
+         t("pages.landing.pricing.plans.basic.features.credit"),
+         t("pages.landing.pricing.plans.basic.features.payAsGo"),
+         t("pages.landing.pricing.plans.basic.features.organization"),
+         t("pages.landing.pricing.plans.basic.features.api"),
+         t("pages.landing.pricing.plans.basic.features.support"),
+         t("pages.landing.pricing.plans.basic.features.coreFeatures"),
+      ],
+      name: t("pages.landing.pricing.plans.basic.name"),
+      period: t("pages.landing.pricing.plans.basic.period"),
+      popular: true,
+      price: t("pages.landing.pricing.plans.basic.price"),
+      variant: "default",
+   },
+   {
+      description: t("pages.landing.pricing.plans.supporter.description"),
+      features: [
+         t("pages.landing.pricing.plans.supporter.features.credit"),
+         t("pages.landing.pricing.plans.supporter.features.featureRequest"),
+         t("pages.landing.pricing.plans.supporter.features.organization"),
+         t("pages.landing.pricing.plans.supporter.features.api"),
+         t("pages.landing.pricing.plans.supporter.features.support"),
+         t("pages.landing.pricing.plans.supporter.features.coreFeatures"),
+      ],
+      name: t("pages.landing.pricing.plans.supporter.name"),
+      period: t("pages.landing.pricing.plans.supporter.period"),
+      price: t("pages.landing.pricing.plans.supporter.price"),
+      variant: "outline",
+   },
+];
 ---
+
 <section id="pricing" class="min-h-screen relative py-16 md:py-24">
    <div class="mx-auto max-w-6xl px-6">
       <div class="mx-auto max-w-2xl text-center">

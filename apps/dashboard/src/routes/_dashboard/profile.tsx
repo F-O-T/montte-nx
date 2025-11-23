@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { translate } from "@packages/localization";
+import { createFileRoute } from "@tanstack/react-router";
 import { ProfilePage } from "@/pages/profile/ui/profile-page";
 
 export const Route = createFileRoute("/_dashboard/profile")({

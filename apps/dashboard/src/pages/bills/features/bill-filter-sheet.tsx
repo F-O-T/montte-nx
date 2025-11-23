@@ -151,8 +151,8 @@ export function BillFilterSheet({
    };
 
    return (
-      <Sheet open={isFilterSheetOpen} onOpenChange={handleOpenChange}>
-         <SheetContent side="right" className="">
+      <Sheet onOpenChange={handleOpenChange} open={isFilterSheetOpen}>
+         <SheetContent className="" side="right">
             <SheetHeader>
                <SheetTitle>
                   {translate("dashboard.routes.bills.features.filter.title")}
@@ -167,8 +167,8 @@ export function BillFilterSheet({
                {hasActiveFilters && (
                   <div className="flex justify-end">
                      <Button
-                        onClick={clearFilters}
                         className="w-full flex items-center justify-center gap-2 "
+                        onClick={clearFilters}
                      >
                         <X className="size-4" />
                         {translate(
@@ -280,4 +280,3 @@ export function BillFilterSheet({
       </Sheet>
    );
 }
-

@@ -18,8 +18,8 @@ import {
    ItemTitle,
 } from "@packages/ui/components/item";
 import { Globe, Moon } from "lucide-react";
-import { ThemeSwitcher } from "@/layout/theme-provider";
 import { LanguageCommand } from "@/layout/language-command";
+import { ThemeSwitcher } from "@/layout/theme-provider";
 
 export function PreferencesSection() {
    return (

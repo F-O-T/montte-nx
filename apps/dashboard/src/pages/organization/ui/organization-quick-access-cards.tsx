@@ -1,5 +1,5 @@
-import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { translate } from "@packages/localization";
+import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { useRouter } from "@tanstack/react-router";
 import { Building2, Mail, Palette, Users } from "lucide-react";
 

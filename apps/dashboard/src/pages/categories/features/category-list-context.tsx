@@ -16,9 +16,9 @@ interface CategoryListContextType {
    setOrderDirection: (value: "asc" | "desc") => void;
 }
 
-const CategoryListContext = createContext<
-   CategoryListContextType | undefined
->(undefined);
+const CategoryListContext = createContext<CategoryListContextType | undefined>(
+   undefined,
+);
 
 export function CategoryListProvider({
    children,
@@ -27,7 +27,9 @@ export function CategoryListProvider({
 }) {
    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
    const [nameFilter, setNameFilter] = useState("");
-   const [orderBy, setOrderBy] = useState<"name" | "createdAt" | "updatedAt">("name");
+   const [orderBy, setOrderBy] = useState<"name" | "createdAt" | "updatedAt">(
+      "name",
+   );
    const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
 
    const handleSelectionChange = useCallback(
@@ -63,16 +65,16 @@ export function CategoryListProvider({
    const value = {
       clearSelection,
       handleSelectionChange,
+      nameFilter,
+      orderBy,
+      orderDirection,
       selectAll,
       selectedCount: selectedItems.size,
       selectedItems,
-      toggleAll,
-      nameFilter,
       setNameFilter,
-      orderBy,
       setOrderBy,
-      orderDirection,
       setOrderDirection,
+      toggleAll,
    };
 
    return (

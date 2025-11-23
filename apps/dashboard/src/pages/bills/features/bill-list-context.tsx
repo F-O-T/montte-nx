@@ -27,15 +27,15 @@ interface BillListContextType {
    setIsFilterSheetOpen: (open: boolean) => void;
 }
 
-const BillListContext = createContext<BillListContextType | undefined>(undefined);
+const BillListContext = createContext<BillListContextType | undefined>(
+   undefined,
+);
 
-export function BillListProvider({
-   children,
-}: {
-   children: React.ReactNode;
-}) {
+export function BillListProvider({ children }: { children: React.ReactNode }) {
    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-   const [currentFilterType, setCurrentFilterType] = useState<"payable" | "receivable" | undefined>();
+   const [currentFilterType, setCurrentFilterType] = useState<
+      "payable" | "receivable" | undefined
+   >();
 
    // Filter state
    const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
@@ -77,29 +77,29 @@ export function BillListProvider({
    }, []);
 
    const value = {
+      categoryFilter,
       clearSelection,
+      currentFilterType,
+      currentPage,
       handleSelectionChange,
+      isFilterSheetOpen,
+      searchTerm,
       selectAll,
       selectedCount: selectedItems.size,
       selectedItems,
-      toggleAll,
-      currentFilterType,
-      setCurrentFilterType,
       // Filter state
       selectedMonth,
-      setSelectedMonth,
-      currentPage,
-      setCurrentPage,
-      searchTerm,
-      setSearchTerm,
-      categoryFilter,
       setCategoryFilter,
-      statusFilter,
-      setStatusFilter,
-      typeFilter,
-      setTypeFilter,
-      isFilterSheetOpen,
+      setCurrentFilterType,
+      setCurrentPage,
       setIsFilterSheetOpen,
+      setSearchTerm,
+      setSelectedMonth,
+      setStatusFilter,
+      setTypeFilter,
+      statusFilter,
+      toggleAll,
+      typeFilter,
    };
 
    return (
@@ -112,9 +112,7 @@ export function BillListProvider({
 export function useBillList() {
    const context = useContext(BillListContext);
    if (context === undefined) {
-      throw new Error(
-         "useBillList must be used within a BillListProvider",
-      );
+      throw new Error("useBillList must be used within a BillListProvider");
    }
    return context;
 }

@@ -14,26 +14,26 @@
    },
    "extends": "@tooling/typescript/base.json",
    "references": [
-    {
-      "path": "../../packages/utils"
-    },
-    {
-      "path": "../../packages/transactional"
-    },
-    {
-      "path": "../../packages/posthog"
-    },
-    {
-      "path": "../../packages/files"
-    },
-    {
-      "path": "../../packages/environment"
-    },
-    {
-      "path": "../../packages/database"
-    },
-    {
-      "path": "../../packages/api"
-    }
-  ]
+      {
+         "path": "../../packages/utils"
+      },
+      {
+         "path": "../../packages/transactional"
+      },
+      {
+         "path": "../../packages/posthog"
+      },
+      {
+         "path": "../../packages/files"
+      },
+      {
+         "path": "../../packages/environment"
+      },
+      {
+         "path": "../../packages/database"
+      },
+      {
+         "path": "../../packages/api"
+      }
+   ]
 }

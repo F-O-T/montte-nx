@@ -1,5 +1,3 @@
-import { useTRPC } from "@/integrations/clients";
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
 import {
    Avatar,
    AvatarFallback,
@@ -38,6 +36,8 @@ import { Link } from "@tanstack/react-router";
 import { Building, ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
    return (
@@ -145,13 +145,13 @@ function OrganizationDropdownContent() {
 
          {organizations?.map((organization) => (
             <DropdownMenuItem
-               onClick={() => handleSetActiveOrganization(organization.id)}
+               className="gap-2 p-2"
                disabled={
                   setActiveOrganization.isPending ||
                   organization.id === activeOrganization?.id
                }
-               className="gap-2 p-2"
                key={organization.id}
+               onClick={() => handleSetActiveOrganization(organization.id)}
             >
                <div className="flex-1 text-sm">{organization.name}</div>
             </DropdownMenuItem>

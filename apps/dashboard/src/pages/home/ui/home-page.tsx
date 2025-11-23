@@ -1,18 +1,18 @@
-import { trpc } from "@/integrations/clients";
+import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { StatsCard } from "@packages/ui/components/stats-card";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { ArrowRightIcon } from "lucide-react";
+import { Suspense, useState } from "react";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { CashFlowChart } from "@/components/charts/cash-flow-chart";
 import { FinancialSummaryChart } from "@/components/charts/financial-summary-chart";
 import { PlannedVsActualChart } from "@/components/charts/planned-vs-actual-chart";
 import { PeriodFilter } from "@/components/period-filter";
-import { translate } from "@packages/localization";
-import { StatsCard } from "@packages/ui/components/stats-card";
-import { Skeleton } from "@packages/ui/components/skeleton";
-import { createErrorFallback } from "@packages/ui/components/error-fallback";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { Suspense, useState } from "react";
-import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { ArrowRightIcon } from "lucide-react";
-import { Button } from "@packages/ui/components/button";
+import { trpc } from "@/integrations/clients";
 
 function HomePageErrorFallback(props: FallbackProps) {
    return createErrorFallback({
@@ -28,7 +28,7 @@ function HomePageSkeleton() {
       <div className="space-y-6">
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-               <Skeleton key={i} className="h-32" />
+               <Skeleton className="h-32" key={i} />
             ))}
          </div>
          <Skeleton className="h-[400px]" />
@@ -44,7 +44,7 @@ function getCurrentMonthDates() {
    const now = new Date();
    const start = new Date(now.getFullYear(), now.getMonth(), 1);
    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-   return { start, end };
+   return { end, start };
 }
 
 function HomePageContent() {
@@ -59,30 +59,30 @@ function HomePageContent() {
 
    const { data: summary } = useSuspenseQuery(
       trpc.reports.getFinancialSummary.queryOptions({
-         startDate: startDate.toISOString(),
          endDate: endDate.toISOString(),
+         startDate: startDate.toISOString(),
       }),
    );
 
    const { data: cashFlow } = useSuspenseQuery(
       trpc.reports.getCashFlow.queryOptions({
-         startDate: startDate.toISOString(),
          endDate: endDate.toISOString(),
          groupBy: "day",
+         startDate: startDate.toISOString(),
       }),
    );
 
    const { data: plannedVsActual } = useSuspenseQuery(
       trpc.reports.getPlannedVsActual.queryOptions({
-         startDate: startDate.toISOString(),
          endDate: endDate.toISOString(),
+         startDate: startDate.toISOString(),
       }),
    );
 
    const { data: performance } = useSuspenseQuery(
       trpc.reports.getPaymentPerformance.queryOptions({
-         startDate: startDate.toISOString(),
          endDate: endDate.toISOString(),
+         startDate: startDate.toISOString(),
       }),
    );
 
@@ -109,66 +109,66 @@ function HomePageContent() {
 
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatsCard
+               description={translate(
+                  "dashboard.routes.home.financial-summary.total-income.description",
+               )}
                title={translate(
                   "dashboard.routes.home.financial-summary.total-income.title",
                )}
                value={`R$ ${summary.totalIncome.toFixed(2)}`}
-               description={translate(
-                  "dashboard.routes.home.financial-summary.total-income.description",
-               )}
             />
             <StatsCard
+               description={translate(
+                  "dashboard.routes.home.financial-summary.total-expenses.description",
+               )}
                title={translate(
                   "dashboard.routes.home.financial-summary.total-expenses.title",
                )}
                value={`R$ ${summary.totalExpenses.toFixed(2)}`}
-               description={translate(
-                  "dashboard.routes.home.financial-summary.total-expenses.description",
-               )}
             />
             <StatsCard
+               description={translate(
+                  "dashboard.routes.home.financial-summary.net-balance.description",
+               )}
                title={translate(
                   "dashboard.routes.home.financial-summary.net-balance.title",
                )}
                value={`R$ ${summary.netBalance.toFixed(2)}`}
-               description={translate(
-                  "dashboard.routes.home.financial-summary.net-balance.description",
-               )}
             />
             <StatsCard
+               description={`${performance.paidOnTime + performance.paidLate} ${translate("dashboard.routes.home.financial-summary.payment-rate.description")} ${performance.totalBills} ${translate("dashboard.routes.home.financial-summary.payment-rate.bills-paid")}`}
                title={translate(
                   "dashboard.routes.home.financial-summary.payment-rate.title",
                )}
                value={`${performance.paymentRate.toFixed(1)}%`}
-               description={`${performance.paidOnTime + performance.paidLate} ${translate("dashboard.routes.home.financial-summary.payment-rate.description")} ${performance.totalBills} ${translate("dashboard.routes.home.financial-summary.payment-rate.bills-paid")}`}
             />
          </div>
 
          <FinancialSummaryChart
             data={cashFlow}
-            title={translate(
-               "dashboard.routes.home.charts.financial-evolution.title",
-            )}
             description={translate(
                "dashboard.routes.home.charts.financial-evolution.description",
+            )}
+            title={translate(
+               "dashboard.routes.home.charts.financial-evolution.title",
             )}
          />
 
          <div className="grid gap-4 md:grid-cols-2">
             <CashFlowChart
                data={cashFlow}
-               title={translate("dashboard.routes.home.charts.cash-flow.title")}
                description={translate(
                   "dashboard.routes.home.charts.cash-flow.description",
                )}
+               title={translate("dashboard.routes.home.charts.cash-flow.title")}
             />
             <PlannedVsActualChart
                data={plannedVsActual}
-               title={translate(
-                  "dashboard.routes.home.charts.planned-vs-actual.title",
-               )}
                description={translate(
                   "dashboard.routes.home.charts.planned-vs-actual.description",
+               )}
+               title={translate(
+                  "dashboard.routes.home.charts.planned-vs-actual.title",
                )}
             />
          </div>

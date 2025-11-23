@@ -41,13 +41,13 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import Color from "color";
 import { type FormEvent, Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTRPC } from "@/integrations/clients";
-import { useRouter } from "@tanstack/react-router";
 
 const steps = [
    {

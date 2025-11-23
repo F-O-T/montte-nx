@@ -87,13 +87,13 @@ function CategoryBudgetContent({ categoryId }: { categoryId: string }) {
    const isExceeded = spent > budget;
 
    const formattedSpent = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
+      style: "currency",
    }).format(spent);
 
    const formattedBudget = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
+      style: "currency",
    }).format(budget);
 
    return (
@@ -138,8 +138,8 @@ function CategoryBudgetContent({ categoryId }: { categoryId: string }) {
                        ) +
                        ": " +
                        new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
                           currency: "BRL",
+                          style: "currency",
                        }).format(budget - spent)}
                </span>
             </div>

@@ -10,6 +10,7 @@ import {
    AlertDialogTitle,
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
+import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Item,
@@ -30,20 +31,19 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
+import { toast } from "@packages/ui/components/sonner";
 import {
    Tooltip,
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { toast } from "@packages/ui/components/sonner";
 import { formatDate } from "@packages/utils/date";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CheckCircle2, Info, Monitor, Trash2 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import type { Session } from "@/integrations/clients";
 import { useTRPC } from "@/integrations/clients";
-import { Badge } from "@packages/ui/components/badge";
 
 interface SessionDetailsSheetProps {
    session: Session["session"];

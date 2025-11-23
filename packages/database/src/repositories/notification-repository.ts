@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { desc, eq, and } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { notification } from "../schemas/notifications";
 
@@ -11,7 +11,10 @@ export async function createNotification(
    data: NewNotification,
 ) {
    try {
-      const result = await dbClient.insert(notification).values(data).returning();
+      const result = await dbClient
+         .insert(notification)
+         .values(data)
+         .returning();
       return result[0];
    } catch (err) {
       propagateError(err);
@@ -27,8 +30,8 @@ export async function findNotificationsByUserId(
 ) {
    try {
       const result = await dbClient.query.notification.findMany({
-         where: (notification, { eq }) => eq(notification.userId, userId),
          orderBy: (notification, { desc }) => desc(notification.createdAt),
+         where: (notification, { eq }) => eq(notification.userId, userId),
       });
       return result;
    } catch (err) {
@@ -45,11 +48,12 @@ export async function findUnreadNotificationsByUserId(
 ) {
    try {
       const result = await dbClient.query.notification.findMany({
-         where: (notification, { eq, and }) => and(
-            eq(notification.userId, userId),
-            eq(notification.isRead, false)
-         ),
          orderBy: (notification, { desc }) => desc(notification.createdAt),
+         where: (notification, { eq, and }) =>
+            and(
+               eq(notification.userId, userId),
+               eq(notification.isRead, false),
+            ),
       });
       return result;
    } catch (err) {
@@ -70,7 +74,7 @@ export async function markNotificationAsRead(
          .set({ isRead: true })
          .where(eq(notification.id, notificationId))
          .returning();
-         
+
       if (!result.length) {
          throw AppError.database("Notification not found");
       }

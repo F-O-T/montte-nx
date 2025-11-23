@@ -1,5 +1,5 @@
-import { publicProcedure } from "../trpc";
 import { getAllBrazilianBanks } from "@packages/brasil-api";
+import { publicProcedure } from "../trpc";
 
 export const brasilApiRouter = {
    banks: {

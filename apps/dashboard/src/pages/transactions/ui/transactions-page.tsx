@@ -1,7 +1,7 @@
-import { TransactionsQuickActionsToolbar } from "./transactions-quick-actions-toolbar";
-import { TransactionsListSection } from "./transactions-list-section";
-import { TransactionsStats } from "./transactions-stats";
 import { TransactionListProvider } from "../features/transaction-list-context";
+import { TransactionsListSection } from "./transactions-list-section";
+import { TransactionsQuickActionsToolbar } from "./transactions-quick-actions-toolbar";
+import { TransactionsStats } from "./transactions-stats";
 
 export function TransactionsPage() {
    return (
@@ -16,4 +16,3 @@ export function TransactionsPage() {
       </TransactionListProvider>
    );
 }
-

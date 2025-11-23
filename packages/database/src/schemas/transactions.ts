@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { decimal, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { bankAccount } from "./bank-accounts";
 import { user } from "./auth";
+import { bankAccount } from "./bank-accounts";
 
 export const transaction = pgTable("transaction", {
    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),

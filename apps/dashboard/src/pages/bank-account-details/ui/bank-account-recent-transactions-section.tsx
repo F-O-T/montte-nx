@@ -29,10 +29,10 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { useTRPC } from "@/integrations/clients";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
 
 function RecentTransactionsErrorFallback() {
    return (
@@ -99,8 +99,8 @@ function RecentTransactionsContent({
       trpc.bankAccounts.getTransactions.queryOptions(
          {
             id: bankAccountId,
-            page: currentPage,
             limit: pageSize,
+            page: currentPage,
          },
          {
             placeholderData: keepPreviousData,
@@ -133,8 +133,8 @@ function RecentTransactionsContent({
                   {transactions.map((transaction: any, index: number) => (
                      <Fragment key={transaction.id}>
                         <TransactionItem
-                           transaction={transaction}
                            categories={categories}
+                           transaction={transaction}
                         />
                         {index !== transactions.length - 1 && <ItemSeparator />}
                      </Fragment>

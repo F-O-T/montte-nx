@@ -149,11 +149,11 @@ export function ManageCategorySheet({
 
    const TriggerComponent = (
       <DropdownMenuItem
+         className="flex items-center gap-2"
          onSelect={(e) => {
             e.preventDefault();
             setIsOpen?.(true);
          }}
-         className="flex items-center gap-2"
       >
          {isEditMode ? (
             <>

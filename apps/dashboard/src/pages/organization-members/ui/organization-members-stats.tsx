@@ -8,7 +8,7 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Users, UserPlus, UserCheck, Shield } from "lucide-react";
+import { Shield, UserCheck, UserPlus, Users } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
@@ -21,10 +21,10 @@ function MembersStatsContent() {
    );
 
    const stats = {
-      total: membersData.length,
       active: membersData.filter((member) => member.createdAt).length,
-      members: membersData.filter((member) => member.role === "member").length,
       admins: membersData.filter((member) => member.role === "admin").length,
+      members: membersData.filter((member) => member.role === "member").length,
+      total: membersData.length,
    };
 
    const statCards = [
@@ -127,4 +127,3 @@ export function MembersStats() {
       </ErrorBoundary>
    );
 }
-

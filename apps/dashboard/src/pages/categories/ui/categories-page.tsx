@@ -1,8 +1,8 @@
 import type { RouterOutput } from "@packages/api/client";
+import { CategoryListProvider } from "../features/category-list-context";
 import { CategoriesListSection } from "./categories-list-section";
 import { CategoriesQuickActionsToolbar } from "./categories-quick-actions-toolbar";
 import { CategoriesStats } from "./categories-stats";
-import { CategoryListProvider } from "../features/category-list-context";
 export type Category =
    RouterOutput["categories"]["getAllPaginated"]["categories"][0];
 export function CategoriesPage() {

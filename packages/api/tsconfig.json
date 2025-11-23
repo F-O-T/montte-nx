@@ -1,46 +1,36 @@
 {
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "ES2022"
-    ],
-    "types": [
-      "vite/client"
-    ]
-  },
-  "exclude": [
-    "node_modules"
-  ],
-  "extends": "@tooling/typescript/internal-package.json",
-  "include": [
-    "src",
-    "__tests__/*.test.ts"
-  ],
-  "references": [
-    {
-      "path": "../environment"
-    },
-    {
-      "path": "../ofx"
-    },
-    {
-      "path": "../utils"
-    },
-    {
-      "path": "../posthog"
-    },
-    {
-      "path": "../localization"
-    },
-    {
-      "path": "../files"
-    },
-    {
-      "path": "../database"
-    },
-    {
-      "path": "../brasil-api"
-    }
-  ]
+   "compilerOptions": {
+      "jsx": "react-jsx",
+      "lib": ["dom", "ES2022"],
+      "types": ["vite/client"]
+   },
+   "exclude": ["node_modules"],
+   "extends": "@tooling/typescript/internal-package.json",
+   "include": ["src", "__tests__/*.test.ts"],
+   "references": [
+      {
+         "path": "../environment"
+      },
+      {
+         "path": "../ofx"
+      },
+      {
+         "path": "../utils"
+      },
+      {
+         "path": "../posthog"
+      },
+      {
+         "path": "../localization"
+      },
+      {
+         "path": "../files"
+      },
+      {
+         "path": "../database"
+      },
+      {
+         "path": "../brasil-api"
+      }
+   ]
 }

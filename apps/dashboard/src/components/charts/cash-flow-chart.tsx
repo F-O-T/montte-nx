@@ -1,96 +1,104 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@packages/ui/components/card";
-import {
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-	ChartLegend,
-	ChartLegendContent,
-	type ChartConfig,
-} from "@packages/ui/components/chart";
 import { translate } from "@packages/localization";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import {
+   type ChartConfig,
+   ChartContainer,
+   ChartLegend,
+   ChartLegendContent,
+   ChartTooltip,
+   ChartTooltipContent,
+} from "@packages/ui/components/chart";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 interface CashFlowData {
-	date: string;
-	plannedIncome: number;
-	plannedExpenses: number;
-	actualIncome: number;
-	actualExpenses: number;
+   date: string;
+   plannedIncome: number;
+   plannedExpenses: number;
+   actualIncome: number;
+   actualExpenses: number;
 }
 
 interface CashFlowChartProps {
-	data: CashFlowData[];
-	title?: string;
-	description?: string;
+   data: CashFlowData[];
+   title?: string;
+   description?: string;
 }
 
 const getChartConfig = (): ChartConfig => ({
-	plannedNet: {
-		label: translate("common.charts.labels.planned-net"),
-		color: "#3b82f6",
-	},
-	actualNet: {
-		label: translate("common.charts.labels.actual-net"),
-		color: "#10b981",
-	},
+   actualNet: {
+      color: "#10b981",
+      label: translate("common.charts.labels.actual-net"),
+   },
+   plannedNet: {
+      color: "#3b82f6",
+      label: translate("common.charts.labels.planned-net"),
+   },
 });
 
 export function CashFlowChart({
-	data,
-	title = "Cash Flow",
-	description = "Projected vs actual cash flow",
+   data,
+   title = "Cash Flow",
+   description = "Projected vs actual cash flow",
 }: CashFlowChartProps) {
-	const chartConfig = getChartConfig();
+   const chartConfig = getChartConfig();
 
-	const chartData = data.map((item) => ({
-		...item,
-		plannedNet: item.plannedIncome - item.plannedExpenses,
-		actualNet: item.actualIncome - item.actualExpenses,
-	}));
+   const chartData = data.map((item) => ({
+      ...item,
+      actualNet: item.actualIncome - item.actualExpenses,
+      plannedNet: item.plannedIncome - item.plannedExpenses,
+   }));
 
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>{title}</CardTitle>
-				<CardDescription>{description}</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<ChartContainer config={chartConfig} className="h-[350px] w-full">
-					<LineChart accessibilityLayer data={chartData}>
-						<CartesianGrid vertical={false} />
-						<XAxis
-							dataKey="date"
-							tickLine={false}
-							axisLine={false}
-							tickMargin={8}
-						/>
-						<YAxis tickLine={false} axisLine={false} tickMargin={8} />
-						<ChartTooltip
-							content={
-								<ChartTooltipContent
-									formatter={(value: number) => `R$ ${value.toFixed(2)}`}
-								/>
-							}
-						/>
-						<ChartLegend content={<ChartLegendContent />} />
-						<Line
-							type="monotone"
-							dataKey="plannedNet"
-							stroke="var(--color-plannedNet)"
-							strokeDasharray="5 5"
-							strokeWidth={2}
-							dot={false}
-						/>
-						<Line
-							type="monotone"
-							dataKey="actualNet"
-							stroke="var(--color-actualNet)"
-							strokeWidth={2}
-							dot={false}
-						/>
-					</LineChart>
-				</ChartContainer>
-			</CardContent>
-		</Card>
-	);
+   return (
+      <Card>
+         <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+         </CardHeader>
+         <CardContent>
+            <ChartContainer className="h-[350px] w-full" config={chartConfig}>
+               <LineChart accessibilityLayer data={chartData}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                     axisLine={false}
+                     dataKey="date"
+                     tickLine={false}
+                     tickMargin={8}
+                  />
+                  <YAxis axisLine={false} tickLine={false} tickMargin={8} />
+                  <ChartTooltip
+                     content={
+                        <ChartTooltipContent
+                           formatter={(value: number) =>
+                              `R$ ${value.toFixed(2)}`
+                           }
+                        />
+                     }
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                  <Line
+                     dataKey="plannedNet"
+                     dot={false}
+                     stroke="var(--color-plannedNet)"
+                     strokeDasharray="5 5"
+                     strokeWidth={2}
+                     type="monotone"
+                  />
+                  <Line
+                     dataKey="actualNet"
+                     dot={false}
+                     stroke="var(--color-actualNet)"
+                     strokeWidth={2}
+                     type="monotone"
+                  />
+               </LineChart>
+            </ChartContainer>
+         </CardContent>
+      </Card>
+   );
 }

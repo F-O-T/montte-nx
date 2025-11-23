@@ -1,56 +1,53 @@
 ---
-   export const prerender = true;
+export const prerender = true;
 
-   import { Image } from "astro:assets";
-   import { Button } from "@packages/ui/components/button";
-   import BaseHead from "../components/BaseHead.astro";
-   import Footer from "../components/Footer.astro";
-   import FormattedDate from "../components/FormattedDate.astro";
-   import Navbar from "../components/Navbar.astro";
-   import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-   import { agentId, sdk } from "../contentagen";
+import { Image } from "astro:assets";
+import { Button } from "@packages/ui/components/button";
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import FormattedDate from "../components/FormattedDate.astro";
+import Navbar from "../components/Navbar.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import { agentId, sdk } from "../contentagen";
 
-   const postsPerPage = 5;
+const postsPerPage = 5;
 
-   // Get first page data for the index
-   const response = await sdk.listContentByAgent({
-      agentId: agentId,
-      limit: postsPerPage,
-      page: 1,
-      status: ["approved"],
-   });
-   const posts = response.posts.sort(
-      (a, b) =>
-         new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf(),
-   );
-   const totalPosts = response.total;
-   const totalPages = Math.ceil(totalPosts / postsPerPage);
-   const currentPage = 1;
+// Get first page data for the index
+const response = await sdk.listContentByAgent({
+   agentId: agentId,
+   limit: postsPerPage,
+   page: 1,
+   status: ["approved"],
+});
+const posts = response.posts.sort(
+   (a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf(),
+);
+const totalPosts = response.total;
+const totalPages = Math.ceil(totalPosts / postsPerPage);
+const currentPage = 1;
 
-   // Fetch images for posts that have them
-   const postsWithImages = await Promise.all(
-      posts.map(async (post) => {
-         if (post.image) {
-            return post; // Already has image data
+// Fetch images for posts that have them
+const postsWithImages = await Promise.all(
+   posts.map(async (post) => {
+      if (post.image) {
+         return post; // Already has image data
+      }
+      if (post.imageUrl) {
+         try {
+            const imageData = await sdk.getContentImage({
+               contentId: post.id,
+            });
+            return { ...post, image: imageData };
+         } catch (error) {
+            console.error(`Error fetching image for post ${post.id}:`, error);
+            return post;
          }
-         if (post.imageUrl) {
-            try {
-               const imageData = await sdk.getContentImage({
-                  contentId: post.id,
-               });
-               return { ...post, image: imageData };
-            } catch (error) {
-               console.error(
-                  `Error fetching image for post ${post.id}:`,
-                  error,
-               );
-               return post;
-            }
-         }
-         return post;
-      }),
-   );
+      }
+      return post;
+   }),
+);
 ---
+
 <!doctype html>
 <html lang="en">
    <head>

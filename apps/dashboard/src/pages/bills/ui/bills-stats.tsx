@@ -1,4 +1,3 @@
-import { trpc } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import {
    Card,
@@ -13,6 +12,7 @@ import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { trpc } from "@/integrations/clients";
 
 type BillsStatsProps = {
    type?: "payable" | "receivable";

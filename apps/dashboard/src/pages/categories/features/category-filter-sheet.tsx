@@ -68,8 +68,8 @@ export function CategoryFilterSheet({
    };
 
    return (
-      <Sheet open={isOpen} onOpenChange={onOpenChange}>
-         <SheetContent side="right" className="">
+      <Sheet onOpenChange={onOpenChange} open={isOpen}>
+         <SheetContent className="" side="right">
             <SheetHeader>
                <SheetTitle>
                   {translate(
@@ -86,8 +86,8 @@ export function CategoryFilterSheet({
                {hasActiveFilters && (
                   <div className="flex justify-end">
                      <Button
-                        onClick={clearFilters}
                         className="w-full flex items-center justify-center gap-2 "
+                        onClick={clearFilters}
                      >
                         <X className="size-4" />
                         {translate(
@@ -102,9 +102,9 @@ export function CategoryFilterSheet({
                         {translate("common.form.sort-by.label")}
                      </FieldLabel>
                      <Select
-                        onValueChange={(value: "name" | "createdAt" | "updatedAt") =>
-                           onOrderByChange(value)
-                        }
+                        onValueChange={(
+                           value: "name" | "createdAt" | "updatedAt",
+                        ) => onOrderByChange(value)}
                         value={orderBy}
                      >
                         <SelectTrigger>

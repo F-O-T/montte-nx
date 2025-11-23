@@ -27,6 +27,7 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
+import { toast } from "@packages/ui/components/sonner";
 import { Textarea } from "@packages/ui/components/textarea";
 import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
@@ -35,7 +36,6 @@ import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
-import { toast } from "@packages/ui/components/sonner";
 
 type ManageTransactionSheetProps = {
    onOpen?: boolean;
@@ -162,10 +162,10 @@ export function ManageTransactionSheet({
             ? Math.round(Number(transaction.amount) * 100)
             : 0, // Store as cents
          bankAccountId: transaction?.bankAccountId || "",
-         toBankAccountId: "",
          categoryIds: transaction?.categoryIds || [],
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
+         toBankAccountId: "",
          type:
             transaction?.type ||
             ("expense" as "expense" | "income" | "transfer"),
@@ -203,10 +203,10 @@ export function ManageTransactionSheet({
                   if (!value.toBankAccountId || !value.bankAccountId) return;
                   await transferTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
-                     fromBankAccountId: value.bankAccountId,
-                     toBankAccountId: value.toBankAccountId,
                      date: value.date.toISOString().split("T")[0],
                      description: value.description,
+                     fromBankAccountId: value.bankAccountId,
+                     toBankAccountId: value.toBankAccountId,
                   });
                } else {
                   if (!value.categoryIds || value.categoryIds.length === 0)
@@ -315,12 +315,12 @@ export function ManageTransactionSheet({
                                     {translate("common.form.amount.label")}
                                  </FieldLabel>
                                  <MoneyInput
-                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
                                     onChange={(value) => {
                                        field.handleChange(value || 0);
                                     }}
-                                    onBlur={field.handleBlur}
                                     placeholder="0,00"
+                                    value={field.state.value}
                                     valueInCents={true}
                                  />
                                  {isInvalid && (
@@ -429,14 +429,14 @@ export function ManageTransactionSheet({
                                                    {activeBankAccounts.map(
                                                       (account) => (
                                                          <SelectItem
-                                                            key={account.id}
-                                                            value={account.id}
                                                             disabled={
                                                                account.id ===
                                                                form.getFieldValue(
                                                                   "bankAccountId",
                                                                )
                                                             }
+                                                            key={account.id}
+                                                            value={account.id}
                                                          >
                                                             {account.name} -{" "}
                                                             {account.bank}
@@ -469,14 +469,14 @@ export function ManageTransactionSheet({
 
                                        const categoryOptions = categories.map(
                                           (category) => ({
-                                             label: category.name,
-                                             value: category.id,
                                              icon: (
                                                 <IconDisplay
                                                    iconName={category.icon}
                                                    size={16}
                                                 />
                                              ),
+                                             label: category.name,
+                                             value: category.id,
                                           }),
                                        );
 

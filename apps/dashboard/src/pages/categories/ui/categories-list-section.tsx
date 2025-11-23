@@ -53,7 +53,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useSuspenseQuery, keepPreviousData } from "@tanstack/react-query";
+import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, Filter, Inbox, MoreVertical, Search } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
@@ -62,9 +62,9 @@ import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 import { CategoryFilterSheet } from "../features/category-filter-sheet";
+import { useCategoryList } from "../features/category-list-context";
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
-import { useCategoryList } from "../features/category-list-context";
 import type { Category } from "../ui/categories-page";
 
 function CategoriesCardHeader() {
@@ -208,10 +208,10 @@ function CategoriesListContent() {
       trpc.categories.getAllPaginated.queryOptions(
          {
             limit: pageSize,
-            page: currentPage,
-            search: debouncedSearchTerm || undefined,
             orderBy,
             orderDirection,
+            page: currentPage,
+            search: debouncedSearchTerm || undefined,
          },
          {
             placeholderData: keepPreviousData,
@@ -404,16 +404,16 @@ function CategoriesListContent() {
          <CategoryFilterSheet
             isOpen={isFilterSheetOpen}
             onOpenChange={setIsFilterSheetOpen}
-            orderBy={orderBy}
             onOrderByChange={(value) => {
                setOrderBy(value);
                handleFilterChange();
             }}
-            orderDirection={orderDirection}
             onOrderDirectionChange={(value) => {
                setOrderDirection(value);
                handleFilterChange();
             }}
+            orderBy={orderBy}
+            orderDirection={orderDirection}
          />
       </>
    );

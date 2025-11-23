@@ -37,20 +37,20 @@ import {
    PaginationNext,
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
+import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Filter, Search, Wallet } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { trpc } from "@/integrations/clients";
 import { FilterSheet } from "../features/filter-sheet";
 import { useTransactionList } from "../features/transaction-list-context";
-import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 
 function TransactionsListErrorFallback(props: FallbackProps) {
    return (
@@ -157,9 +157,9 @@ function TransactionsListContent() {
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions(
          {
-            category: categoryFilter === "all" ? undefined : categoryFilter,
             bankAccountId:
                bankAccountFilter === "all" ? undefined : bankAccountFilter,
+            category: categoryFilter === "all" ? undefined : categoryFilter,
             limit: pageSize,
             page: currentPage,
             search: debouncedSearchTerm || undefined,
@@ -346,15 +346,15 @@ function TransactionsListContent() {
             )}
          </Card>
          <FilterSheet
-            bankAccounts={bankAccounts}
             bankAccountFilter={bankAccountFilter}
+            bankAccounts={bankAccounts}
+            categories={categories}
+            categoryFilter={categoryFilter}
+            isOpen={isFilterSheetOpen}
             onBankAccountFilterChange={(value) => {
                setBankAccountFilter(value);
                handleFilterChange();
             }}
-            categories={categories}
-            categoryFilter={categoryFilter}
-            isOpen={isFilterSheetOpen}
             onCategoryFilterChange={(value) => {
                setCategoryFilter(value);
                handleFilterChange();

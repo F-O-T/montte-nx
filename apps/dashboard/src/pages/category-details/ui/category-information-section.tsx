@@ -66,12 +66,17 @@ function CategoryContent({ categoryId }: { categoryId: string }) {
             }}
             variant="icon"
          >
-            <IconDisplay iconName={(data.icon || "Tag") as IconName} size={20} />
+            <IconDisplay
+               iconName={(data.icon || "Tag") as IconName}
+               size={20}
+            />
          </ItemMedia>
          <ItemContent>
             <ItemTitle>{data.name}</ItemTitle>
             <ItemDescription>
-               {translate("dashboard.routes.categories.details-section.description")}
+               {translate(
+                  "dashboard.routes.categories.details-section.description",
+               )}
             </ItemDescription>
          </ItemContent>
          <ItemActions>

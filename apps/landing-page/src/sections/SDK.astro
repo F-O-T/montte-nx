@@ -1,35 +1,35 @@
 ---
-   import { BookOpen, Check, Copy, Cpu, Lock, Zap } from "@lucide/astro";
-   import type { SupportedLng } from "@packages/localization";
-   import { Button } from "@packages/ui/components/button";
-   import { useTranslations } from "../i18n/utils";
+import { BookOpen, Check, Copy, Cpu, Lock, Zap } from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import { useTranslations } from "../i18n/utils";
 
-   interface Props {
-      lang?: SupportedLng;
-   }
+interface Props {
+   lang?: SupportedLng;
+}
 
-   const { lang = "en" } = Astro.props;
-   const t = useTranslations(lang);
+const { lang = "en" } = Astro.props;
+const t = useTranslations(lang);
 
-   const benefits = [
-      {
-         description: t("pages.landing.sdk.benefits.typeSafety.description"),
-         icon: Zap,
-         title: t("pages.landing.sdk.benefits.typeSafety.title"),
-      },
-      {
-         description: t("pages.landing.sdk.benefits.modern.description"),
-         icon: Cpu,
-         title: t("pages.landing.sdk.benefits.modern.title"),
-      },
-      {
-         description: t("pages.landing.sdk.benefits.secure.description"),
-         icon: Lock,
-         title: t("pages.landing.sdk.benefits.secure.title"),
-      },
-   ];
+const benefits = [
+   {
+      description: t("pages.landing.sdk.benefits.typeSafety.description"),
+      icon: Zap,
+      title: t("pages.landing.sdk.benefits.typeSafety.title"),
+   },
+   {
+      description: t("pages.landing.sdk.benefits.modern.description"),
+      icon: Cpu,
+      title: t("pages.landing.sdk.benefits.modern.title"),
+   },
+   {
+      description: t("pages.landing.sdk.benefits.secure.description"),
+      icon: Lock,
+      title: t("pages.landing.sdk.benefits.secure.title"),
+   },
+];
 
-   const codeSnippet = `
+const codeSnippet = `
 import { createSdk } from "@contentagen/sdk";
 
 // Initialize the SDK with your API key
@@ -48,6 +48,7 @@ posts.forEach(post => {
 });
 `;
 ---
+
 <section id="sdk" class="bg-muted py-16 md:py-32">
    <div class="mx-auto max-w-6xl px-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

@@ -1,7 +1,3 @@
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
-import type { Category } from "@/pages/categories/ui/categories-page";
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
@@ -76,6 +72,10 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { trpc } from "@/integrations/clients";
+import type { Category } from "@/pages/categories/ui/categories-page";
 import { BillFilterSheet } from "../features/bill-filter-sheet";
 import { useBillList } from "../features/bill-list-context";
 import { CompleteBillDialog } from "../features/complete-bill-dialog";

@@ -124,13 +124,13 @@ export async function findTransactionsByUserIdPaginated(
          }
 
          if (category && category !== "all") {
-            conditions.push(sql`${transaction.categoryIds} @> ARRAY[${category}]::text[]`);
+            conditions.push(
+               sql`${transaction.categoryIds} @> ARRAY[${category}]::text[]`,
+            );
          }
 
          if (search) {
-            conditions.push(
-               ilike(transaction.description, `%${search}%`)
-            );
+            conditions.push(ilike(transaction.description, `%${search}%`));
          }
 
          return and(...conditions);

@@ -9,8 +9,8 @@ import {
    createTransaction,
    findTransactionsByBankAccountIdPaginated,
 } from "@packages/database/repositories/transaction-repository";
-import { z } from "zod";
 import { parseOfxContent } from "@packages/ofx";
+import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 const createBankAccountSchema = z.object({

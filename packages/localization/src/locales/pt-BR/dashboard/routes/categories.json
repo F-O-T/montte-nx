@@ -6,14 +6,14 @@
       }
    },
    "details-section": {
-      "description": "Detalhes da categoria",
       "budget": {
-         "title": "Meta de Gastos",
-         "remaining": "Restante",
          "exceeded": "Excedido",
+         "not-set": "Nenhuma meta definida",
+         "remaining": "Restante",
          "spent": "Gasto",
-         "not-set": "Nenhuma meta definida"
+         "title": "Meta de Gastos"
       },
+      "description": "Detalhes da categoria",
       "transactions": {
          "description": "Todas as transações desta categoria",
          "title": "Transações"
@@ -54,6 +54,18 @@
       "title": "Suas categorias"
    },
    "stats": {
+      "breakdown": {
+         "description": "Despesas mensais por categoria",
+         "state": {
+            "no-data": "Nenhuma despesa disponível para este mês"
+         },
+         "text": {
+            "categories-count": "{count} categorias este mês",
+            "showing-expenses": "Mostrando total de despesas para {month}",
+            "total-expenses": "Total de Despesas"
+         },
+         "title": "Análise por Categoria"
+      },
       "most-spending": {
          "description": "A categoria onde você mais gastou dinheiro este mês.",
          "title": "Categoria com maiores gastos"
@@ -61,18 +73,6 @@
       "total-categories": {
          "description": "Número total de categorias que você criou.",
          "title": "Total de categorias"
-      },
-      "breakdown": {
-         "title": "Análise por Categoria",
-         "description": "Despesas mensais por categoria",
-         "state": {
-            "no-data": "Nenhuma despesa disponível para este mês"
-         },
-         "text": {
-            "total-expenses": "Total de Despesas",
-            "categories-count": "{count} categorias este mês",
-            "showing-expenses": "Mostrando total de despesas para {month}"
-         }
       }
    }
 }

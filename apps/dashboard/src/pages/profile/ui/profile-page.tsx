@@ -12,9 +12,9 @@ import { useRouter } from "@tanstack/react-router";
 import { AlertCircle, Building2, FolderOpen } from "lucide-react";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { BankAccountsSection } from "./profile-page-bank-accounts-section";
 import { ProfilePageBilling } from "./profile-page-billing";
 import { ProfileInformation } from "./profile-page-informations-section";
-import { BankAccountsSection } from "./profile-page-bank-accounts-section";
 import { PreferencesSection } from "./profile-page-preferences-sections";
 import { ProfilePageSessionsSection } from "./profile-page-sessions-section";
 

@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { ScrollArea } from "@packages/ui/components/scroll-area";
 import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
@@ -18,6 +17,7 @@ import {
    ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
+import { ScrollArea } from "@packages/ui/components/scroll-area";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";

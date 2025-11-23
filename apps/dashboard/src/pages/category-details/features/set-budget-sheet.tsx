@@ -1,11 +1,7 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
-import {
-   Field,
-   FieldGroup,
-   FieldLabel,
-} from "@packages/ui/components/field";
+import { Field, FieldGroup, FieldLabel } from "@packages/ui/components/field";
 import { MoneyInput } from "@packages/ui/components/money-input";
 import {
    Sheet,
@@ -62,10 +58,10 @@ export function SetBudgetSheet({
          try {
             const budgetInDecimal = centsToReais(value.budget);
             await updateCategoryMutation.mutateAsync({
-               id: categoryId,
                data: {
                   budget: budgetInDecimal,
                },
+               id: categoryId,
             });
          } catch (error) {
             console.error("Failed to set budget:", error);

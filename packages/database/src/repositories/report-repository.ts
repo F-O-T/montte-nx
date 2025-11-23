@@ -132,9 +132,9 @@ export async function getCategoryBreakdownByPeriod(
       // First, get all transactions for the period
       const transactions = await dbClient
          .select({
+            amount: transaction.amount,
             categoryIds: transaction.categoryIds,
             type: transaction.type,
-            amount: transaction.amount,
          })
          .from(transaction)
          .where(
@@ -148,49 +148,55 @@ export async function getCategoryBreakdownByPeriod(
       // Get all user categories
       const categories = await dbClient
          .select({
+            color: category.color,
             id: category.id,
             name: category.name,
-            color: category.color,
          })
          .from(category)
          .where(eq(category.userId, userId));
 
       // Create a map of category ID to category info
       const categoryMap = new Map(
-         categories.map((cat) => [cat.id, { name: cat.name, color: cat.color }]),
+         categories.map((cat) => [
+            cat.id,
+            { color: cat.color, name: cat.name },
+         ]),
       );
 
       // Process the transactions to get category breakdown
-      const categoryStats = new Map<string, {
-         expenses: number;
-         income: number;
-         transactionCount: number;
-         categoryName: string;
-         categoryColor: string;
-      }>();
+      const categoryStats = new Map<
+         string,
+         {
+            expenses: number;
+            income: number;
+            transactionCount: number;
+            categoryName: string;
+            categoryColor: string;
+         }
+      >();
 
       for (const tx of transactions) {
          for (const categoryId of tx.categoryIds) {
             const categoryInfo = categoryMap.get(categoryId);
-            const categoryName = categoryInfo?.name || 'Unknown Category';
-            const categoryColor = categoryInfo?.color || '#8884d8';
+            const categoryName = categoryInfo?.name || "Unknown Category";
+            const categoryColor = categoryInfo?.color || "#8884d8";
 
             if (!categoryStats.has(categoryId)) {
                categoryStats.set(categoryId, {
+                  categoryColor,
+                  categoryName,
                   expenses: 0,
                   income: 0,
                   transactionCount: 0,
-                  categoryName,
-                  categoryColor,
                });
             }
 
             const stats = categoryStats.get(categoryId)!;
             stats.transactionCount++;
 
-            if (tx.type === 'expense') {
+            if (tx.type === "expense") {
                stats.expenses += Number(tx.amount);
-            } else if (tx.type === 'income') {
+            } else if (tx.type === "income") {
                stats.income += Number(tx.amount);
             }
          }
@@ -199,8 +205,8 @@ export async function getCategoryBreakdownByPeriod(
       // Convert to the expected format
       return Array.from(categoryStats.entries()).map(([categoryId, stats]) => ({
          category: categoryId,
-         categoryName: stats.categoryName,
          categoryColor: stats.categoryColor,
+         categoryName: stats.categoryName,
          expenses: stats.expenses,
          income: stats.income,
          total: stats.income - stats.expenses,

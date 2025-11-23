@@ -1,4 +1,3 @@
-import { useTRPC } from "@/integrations/clients";
 import {
    AlertDialog,
    AlertDialogAction,
@@ -10,9 +9,14 @@ import {
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
+import { useTRPC } from "@/integrations/clients";
 
 interface DeleteOrganizationDialogProps {
    open: boolean;
@@ -56,8 +60,7 @@ export function DeleteOrganizationDialog({
             });
 
             const wasActiveOrganization = !!activeOrganization;
-            if (!wasActiveOrganization)
-               return;
+            if (!wasActiveOrganization) return;
 
             const updatedOrganizations = await queryClient.fetchQuery(
                trpc.organization.getOrganizations.queryOptions(),

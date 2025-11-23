@@ -1,4 +1,3 @@
-import { useTRPC } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -26,6 +25,7 @@ import { ArrowRight } from "lucide-react";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useTRPC } from "@/integrations/clients";
 
 export function SignInPage() {
    const schema = z.object({

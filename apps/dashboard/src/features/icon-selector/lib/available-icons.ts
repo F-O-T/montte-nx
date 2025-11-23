@@ -75,6 +75,8 @@ export const getIconComponent = (iconName: IconName) => {
 export const ICON_NAMES = Object.keys(AVAILABLE_ICONS) as IconName[];
 
 export const ICON_CATEGORIES = {
+   Education: ["BookOpen", "GraduationCap", "Pencil"],
+   Entertainment: ["Film", "Gamepad", "Music", "Star"],
    Finance: [
       "Banknote",
       "Coins",
@@ -85,23 +87,9 @@ export const ICON_CATEGORIES = {
       "TrendingUp",
       "Wallet",
    ],
-   Transport: ["Bike", "Bus", "Car", "Fuel", "Plane", "Train"],
-   Food: [
-      "Coffee",
-      "IceCream",
-      "Pizza",
-      "UtensilsCrossed",
-      "Wine",
-      "Apple",
-   ],
-   Shopping: ["ShoppingBag", "ShoppingCart", "Store", "Tag", "Gift", "Package"],
+   Food: ["Coffee", "IceCream", "Pizza", "UtensilsCrossed", "Wine", "Apple"],
    Health: ["Heart", "Pill", "Stethoscope", "Dumbbell", "Activity"],
-   Education: ["BookOpen", "GraduationCap", "Pencil"],
-   Technology: ["Laptop", "Phone", "Wifi", "Camera", "Tv", "Zap"],
-   Entertainment: ["Film", "Gamepad", "Music", "Star"],
    Home: ["Home", "Lightbulb", "Settings", "Wrench"],
-   Work: ["Briefcase", "Calendar", "Clock", "FileText", "Mail"],
-   People: ["User", "Users", "MessageSquare"],
    Other: [
       "Archive",
       "Droplet",
@@ -111,6 +99,11 @@ export const ICON_CATEGORIES = {
       "Scissors",
       "Shirt",
    ],
+   People: ["User", "Users", "MessageSquare"],
+   Shopping: ["ShoppingBag", "ShoppingCart", "Store", "Tag", "Gift", "Package"],
+   Technology: ["Laptop", "Phone", "Wifi", "Camera", "Tv", "Zap"],
+   Transport: ["Bike", "Bus", "Car", "Fuel", "Plane", "Train"],
+   Work: ["Briefcase", "Calendar", "Clock", "FileText", "Mail"],
 } as const;
 
 export type IconCategory = keyof typeof ICON_CATEGORIES;

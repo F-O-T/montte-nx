@@ -5,9 +5,9 @@
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",
+      "@packages/ofx": "workspace:*",
       "@packages/posthog": "workspace:*",
       "@packages/utils": "workspace:*",
-      "@packages/ofx": "workspace:*",
       "@trpc/client": "catalog:trpc",
       "@trpc/server": "catalog:trpc",
       "superjson": "catalog:trpc",
@@ -39,8 +39,8 @@
    "scripts": {
       "build": "tsc --build",
       "check": "biome check --write ./src",
-      "typecheck": "tsc ",
-      "dev": "tsc --build --watch"
+      "dev": "tsc --build --watch",
+      "typecheck": "tsc "
    },
    "type": "module",
    "version": "0.9.1"

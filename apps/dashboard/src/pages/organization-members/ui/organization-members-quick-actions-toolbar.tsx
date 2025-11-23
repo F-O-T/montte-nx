@@ -16,7 +16,8 @@ import { useState } from "react";
 import { InviteMemberSheet } from "../features/invite-member-sheet";
 
 export function MembersQuickActionsToolbar() {
-   const [isInviteMemberSheetOpen, setIsInviteMemberSheetOpen] = useState(false);
+   const [isInviteMemberSheetOpen, setIsInviteMemberSheetOpen] =
+      useState(false);
 
    const quickActions = [
       {

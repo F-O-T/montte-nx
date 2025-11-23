@@ -3,6 +3,13 @@ import { Button } from "@packages/ui/components/button";
 import { Field, FieldError, FieldLabel } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
 import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "@packages/ui/components/select";
+import {
    Sheet,
    SheetContent,
    SheetDescription,
@@ -11,13 +18,6 @@ import {
    SheetTitle,
 } from "@packages/ui/components/sheet";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
-} from "@packages/ui/components/select";
 import { useForm } from "@tanstack/react-form";
 import {
    useMutation,
@@ -98,7 +98,8 @@ const InviteMemberSheetContent = () => {
          onSuccess: async (_, variables) => {
             toast.success(`Invitation sent to ${variables.email}`);
             await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganizationMembers.queryKey(),
+               queryKey:
+                  trpc.organization.getActiveOrganizationMembers.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.organizationInvites.listInvitations.queryKey(),
@@ -149,7 +150,9 @@ const InviteMemberSheetContent = () => {
 
                   return (
                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Email Address</FieldLabel>
+                        <FieldLabel htmlFor={field.name}>
+                           Email Address
+                        </FieldLabel>
                         <Input
                            aria-invalid={isInvalid}
                            id={field.name}
@@ -178,8 +181,10 @@ const InviteMemberSheetContent = () => {
                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>Role</FieldLabel>
                         <Select
+                           onValueChange={(value) =>
+                              field.handleChange(value as "member" | "admin")
+                           }
                            value={field.state.value}
-                           onValueChange={(value) => field.handleChange(value as "member" | "admin")}
                         >
                            <SelectTrigger>
                               <SelectValue placeholder="Select a role" />

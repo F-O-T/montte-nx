@@ -117,8 +117,8 @@ export function FilterSheet({
    };
 
    return (
-      <Sheet open={isOpen} onOpenChange={onOpenChange}>
-         <SheetContent side="right" className="">
+      <Sheet onOpenChange={onOpenChange} open={isOpen}>
+         <SheetContent className="" side="right">
             <SheetHeader>
                <SheetTitle>
                   {translate(
@@ -135,8 +135,8 @@ export function FilterSheet({
                {hasActiveFilters && (
                   <div className="flex justify-end">
                      <Button
-                        onClick={clearFilters}
                         className="w-full flex items-center justify-center gap-2 "
+                        onClick={clearFilters}
                      >
                         <X className="size-4" />
                         {translate(
@@ -231,4 +231,3 @@ export function FilterSheet({
       </Sheet>
    );
 }
-

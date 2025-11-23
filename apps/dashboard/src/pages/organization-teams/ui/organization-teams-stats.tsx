@@ -8,7 +8,7 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Users, UserPlus, Activity, Settings } from "lucide-react";
+import { Activity, Settings, UserPlus, Users } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
@@ -120,4 +120,3 @@ export function TeamsStats() {
       </ErrorBoundary>
    );
 }
-

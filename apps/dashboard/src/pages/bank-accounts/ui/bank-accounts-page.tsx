@@ -20,8 +20,8 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { Building, Building2, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
+import { useTRPC } from "@/integrations/clients";
 
 function BankAccountsListContent() {
    const trpc = useTRPC();
@@ -64,10 +64,10 @@ function BankAccountsListContent() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
          {bankAccounts.map((account) => (
             <Link
-               key={account.id}
-               to="/bank-accounts/$bankAccountId"
-               params={{ bankAccountId: account.id }}
                className="block"
+               key={account.id}
+               params={{ bankAccountId: account.id }}
+               to="/bank-accounts/$bankAccountId"
             >
                <Item
                   className="cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
@@ -117,7 +117,7 @@ function BankAccountsListSkeleton() {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" key={i} />
          ))}
       </div>
    );
@@ -133,9 +133,9 @@ function BankAccountsListError({ error, resetErrorBoundary }: FallbackProps) {
             <EmptyTitle>Failed to load bank accounts</EmptyTitle>
             <EmptyDescription>{error?.message}</EmptyDescription>
             <Button
+               className="mt-4"
                onClick={resetErrorBoundary}
                variant="outline"
-               className="mt-4"
             >
                Try Again
             </Button>

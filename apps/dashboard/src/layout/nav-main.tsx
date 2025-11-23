@@ -32,8 +32,8 @@ export function NavMain() {
       if (!url) return false;
 
       // Handle query parameter URLs for bills
-      if (url.includes('/bills?')) {
-         const [path, params] = url.split('?');
+      if (url.includes("/bills?")) {
+         const [path, params] = url.split("?");
          return pathname === path && searchStr === params;
       }
 

@@ -99,7 +99,7 @@ export function ManageBillSheet({
          onError: (error) => {
             toast.error(
                error.message ||
-               translate("dashboard.routes.bills.create.error"),
+                  translate("dashboard.routes.bills.create.error"),
             );
          },
          onSuccess: async () => {
@@ -152,8 +152,8 @@ export function ManageBillSheet({
          type: (currentFilterType === "payable"
             ? "expense"
             : currentFilterType === "receivable"
-               ? "income"
-               : "expense") as "expense" | "income",
+              ? "income"
+              : "expense") as "expense" | "income",
       }),
       [currentFilterType],
    );
@@ -161,20 +161,20 @@ export function ManageBillSheet({
    // Values for edit mode - convert from Bill data
    const editValues = bill
       ? {
-         amount: bill.amount,
-         bankAccountId: bill.bankAccountId || undefined,
-         category: bill.category,
-         counterparty: bill.counterparty || "",
-         description: bill.description,
-         dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
-         isRecurring: bill.isRecurring,
-         issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
-         notes: bill.notes || "",
-         recurrencePattern: bill.recurrencePattern as
-            | RecurrencePattern
-            | undefined,
-         type: bill.type as "expense" | "income",
-      }
+           amount: bill.amount,
+           bankAccountId: bill.bankAccountId || undefined,
+           category: bill.category,
+           counterparty: bill.counterparty || "",
+           description: bill.description,
+           dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
+           isRecurring: bill.isRecurring,
+           issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
+           notes: bill.notes || "",
+           recurrencePattern: bill.recurrencePattern as
+              | RecurrencePattern
+              | undefined,
+           type: bill.type as "expense" | "income",
+        }
       : defaultValues;
 
    const form = useForm({
@@ -481,8 +481,8 @@ export function ManageBillSheet({
                                                       </div>
                                                       {field.state.value ===
                                                          category.name && (
-                                                            <CheckIcon className="ml-2 h-4 w-4" />
-                                                         )}
+                                                         <CheckIcon className="ml-2 h-4 w-4" />
+                                                      )}
                                                    </CommandItem>
                                                 ))}
                                              </CommandGroup>
