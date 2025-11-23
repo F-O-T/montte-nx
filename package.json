@@ -81,7 +81,6 @@
             "astro": "5.13.0"
          },
          "auth": {
-            "@polar-sh/better-auth": "1.1.9",
             "better-auth": "1.4"
          },
          "database": {
@@ -106,9 +105,6 @@
          "openrouter": {
             "@openrouter/ai-sdk-provider": "1.1.2",
             "ai": "5.0.5"
-         },
-         "payment": {
-            "@polar-sh/sdk": "0.36.1"
          },
          "react": {
             "@types/react": "19.2.0",

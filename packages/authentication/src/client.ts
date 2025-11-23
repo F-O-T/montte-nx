@@ -1,4 +1,3 @@
-import { polarClient } from "@polar-sh/better-auth";
 import {
    adminClient,
    apiKeyClient,
@@ -17,7 +16,6 @@ export const createAuthClient = ({ apiBaseUrl }: AuthClientOptions) =>
       plugins: [
          emailOTPClient(),
          apiKeyClient(),
-         polarClient(),
          adminClient(),
          organizationClient({
             teams: {
