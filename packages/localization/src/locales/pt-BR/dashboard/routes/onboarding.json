@@ -4,43 +4,65 @@
       "next": "Próximo Passo",
       "previous": "Passo Anterior"
    },
-   "steps": {
-      "bank-account": {
-         "description": "Vamos começar configurando sua conta bancária principal.",
-         "form": {
-            "type": {
-               "options": {
-                  "checking": "Corrente",
-                  "investment": "Investimento",
-                  "savings": "Poupança"
-               },
-               "placeholder": "Selecione o tipo de conta"
-            }
+   "bank-account": {
+      "description": "Vamos começar configurando sua conta bancária principal.",
+      "form": {
+         "bank": {
+            "label": "Banco"
          },
-         "title": "Criar Conta Bancária",
-         "toast": {
-            "success": "Conta bancária criada com sucesso"
+         "name": {
+            "label": "Nome da Conta",
+            "placeholder": "Ex: Conta Principal"
+         },
+         "type": {
+            "label": "Tipo de Conta",
+            "options": {
+               "checking": "Corrente",
+               "investment": "Investimento",
+               "savings": "Poupança"
+            },
+            "placeholder": "Selecione o tipo de conta"
          }
       },
-      "category": {
-         "description": "Selecione algumas categorias padrão para começar.",
-         "form": {
-            "defaults": {
-               "label": "Categorias sugeridas"
-            }
+      "title": "Criar Conta Bancária",
+      "toast": {
+         "success": "Conta bancária criada com sucesso"
+      }
+   },
+   "category": {
+      "description": "Selecione algumas categorias padrão para começar.",
+      "form": {
+         "budget": {
+            "label": "Orçamento Mensal"
          },
-         "title": "Categorias iniciais",
-         "toast": {
-            "success": "Categorias criadas com sucesso"
+         "color": {
+            "label": "Cor"
          },
          "defaults": {
-            "food": "Alimentação",
-            "health": "Saúde",
-            "housing": "Moradia",
-            "leisure": "Lazer",
-            "shopping": "Compras gerais",
-            "transport": "Transporte"
+            "label": "Categorias sugeridas"
+         },
+         "name": {
+            "label": "Nome da Categoria",
+            "placeholder": "Ex: Alimentação"
          }
+      },
+      "title": "Categorias iniciais",
+      "toast": {
+         "success": "Categorias criadas com sucesso"
+      },
+      "defaults": {
+         "food": "Alimentação",
+         "health": "Saúde",
+         "housing": "Moradia",
+         "leisure": "Lazer",
+         "shopping": "Compras gerais",
+         "transport": "Transporte"
       }
+   },
+   "validation": {
+      "account-name-required": "Nome da conta é obrigatório",
+      "account-type-required": "Tipo de conta é obrigatório",
+      "bank-required": "Banco é obrigatório",
+      "category-name-required": "Nome da categoria é obrigatório"
    }
 }
