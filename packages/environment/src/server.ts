@@ -11,9 +11,6 @@ const EnvSchema = z.object({
    MINIO_BUCKET: z.string().default("content-writer"),
    MINIO_ENDPOINT: z.string(),
    MINIO_SECRET_KEY: z.string(),
-   POLAR_ACCESS_TOKEN: z.string(),
-   POLAR_FREE_PLAN_ID: z.string(),
-   POLAR_PAID_PLAN_ID: z.string(),
    RESEND_API_KEY: z.string(),
 });
 export type ServerEnv = z.infer<typeof EnvSchema>;
