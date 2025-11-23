@@ -1,3 +1,5 @@
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -17,8 +19,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
-import { useTRPC } from "@/integrations/clients";
 import { OrganizationInfo } from "./organization-information-section";
 import { QuickAccessCards } from "./organization-quick-access-cards";
 import { QuickActionsToolbar } from "./organization-quick-actions-toolbar";
@@ -29,9 +29,6 @@ import { OrganizationStats } from "./organization-stats";
 function OrganizationContent() {
    const trpc = useTRPC();
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-   const { data: activeOrganization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
    );
@@ -42,7 +39,7 @@ function OrganizationContent() {
    const hasReachedLimit =
       (organizations?.length ?? 0) >= (organizationLimit ?? 3);
 
-   if (!activeOrganization) {
+   if (!organizations?.length) {
       return (
          <main className="flex flex-col h-full w-full">
             <div className="flex-1 flex items-center justify-center">

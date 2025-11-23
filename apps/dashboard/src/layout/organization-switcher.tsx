@@ -1,3 +1,5 @@
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 import {
    Avatar,
    AvatarFallback,
@@ -36,8 +38,6 @@ import { Link } from "@tanstack/react-router";
 import { Building, ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
-import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
    return (
@@ -210,7 +210,6 @@ function OrganizationSwitcherContent() {
                <DropdownMenuTrigger asChild>
                   <SidebarMenuButton
                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground data-[disabled]:cursor-not-allowed"
-                     disabled={!organizationData.hasOrganization}
                      size="lg"
                   >
                      <Item className="p-0 w-full">
