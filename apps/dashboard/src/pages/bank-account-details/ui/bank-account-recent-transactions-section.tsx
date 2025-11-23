@@ -30,6 +30,7 @@ import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { useTRPC } from "@/integrations/clients";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 
@@ -129,61 +130,15 @@ function RecentTransactionsContent({
                </div>
             ) : (
                <ItemGroup>
-                  {transactions.map((transaction: any, index: number) => {
-                     const categoryDetails = categories.find(
-                        (cat: any) => cat.name === transaction.category,
-                     );
-                     const categoryColor = categoryDetails?.color || "#6b7280";
-                     const categoryIcon = categoryDetails?.icon || "Wallet";
-
-                     return (
-                        <Fragment key={transaction.id}>
-                           <Item>
-                              <ItemMedia
-                                 variant="icon"
-                                 style={{
-                                    backgroundColor: categoryColor,
-                                 }}
-                              >
-                                 <IconDisplay
-                                    iconName={categoryIcon as IconName}
-                                    size={16}
-                                 />
-                              </ItemMedia>
-                              <ItemContent>
-                                 <ItemTitle className="truncate">
-                                    {transaction.description}
-                                 </ItemTitle>
-                                 <ItemDescription>
-                                    {new Date(
-                                       transaction.date,
-                                    ).toLocaleDateString()}
-                                 </ItemDescription>
-                              </ItemContent>
-                              <ItemActions>
-                                 <Badge
-                                    variant={
-                                       transaction.type === "income"
-                                          ? "default"
-                                          : "destructive"
-                                    }
-                                 >
-                                    {transaction.type === "income" ? "+" : "-"}
-                                    {new Intl.NumberFormat("pt-BR", {
-                                       style: "currency",
-                                       currency: "BRL",
-                                    }).format(
-                                       Math.abs(parseFloat(transaction.amount)),
-                                    )}
-                                 </Badge>
-                              </ItemActions>
-                           </Item>
-                           {index !== transactions.length - 1 && (
-                              <ItemSeparator />
-                           )}
-                        </Fragment>
-                     );
-                  })}
+                  {transactions.map((transaction: any, index: number) => (
+                     <Fragment key={transaction.id}>
+                        <TransactionItem
+                           transaction={transaction}
+                           categories={categories}
+                        />
+                        {index !== transactions.length - 1 && <ItemSeparator />}
+                     </Fragment>
+                  ))}
                </ItemGroup>
             )}
          </CardContent>
