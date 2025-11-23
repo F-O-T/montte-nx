@@ -4,7 +4,6 @@ import {
    findCategoriesByUserId,
    findCategoriesByUserIdPaginated,
    findCategoryById,
-   findCategoryBySlug,
    getCategoryWithMostTransactions,
    getTotalCategoriesByUserId,
    updateCategory,
@@ -118,29 +117,6 @@ export const categoryRouter = router({
          const category = await findCategoryById(resolvedCtx.db, input.id);
 
          if (!category || category.userId !== userId) {
-            throw new Error("Category not found");
-         }
-
-         return category;
-      }),
-
-   getBySlug: protectedProcedure
-      .input(z.object({ slug: z.string() }))
-      .query(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
-
-         const category = await findCategoryBySlug(
-            resolvedCtx.db,
-            userId,
-            input.slug,
-         );
-
-         if (!category) {
             throw new Error("Category not found");
          }
 
