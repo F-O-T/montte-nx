@@ -198,11 +198,11 @@ function OrganizationSwitcherContent() {
                         className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         size="lg"
                      >
-                        <div className=" text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                        <div className="rounded-md border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                            {logo?.data ? (
                               <img
                                  alt={organizationData.name}
-                                 className="size-8 rounded"
+                                 className="size-6 rounded"
                                  src={logo.data}
                               />
                            ) : (
