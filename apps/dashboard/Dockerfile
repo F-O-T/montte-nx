@@ -4,7 +4,7 @@ FROM oven/bun:alpine AS base
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV TURBO_TELEMETRY_DISABLED=1
+
 
 # Copy package files
 COPY bun.lock ./
