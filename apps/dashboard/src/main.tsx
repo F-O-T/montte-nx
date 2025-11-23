@@ -28,6 +28,7 @@ function App() {
    return <RouterProvider router={router} />;
 }
 
+// biome-ignore lint/style/noNonNullAssertion: <comes like this>
 const rootElement = document.getElementById("root")!;
 
 if (!rootElement.innerHTML) {

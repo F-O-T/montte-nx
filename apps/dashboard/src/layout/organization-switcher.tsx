@@ -1,9 +1,4 @@
 import {
-   Avatar,
-   AvatarFallback,
-   AvatarImage,
-} from "@packages/ui/components/avatar";
-import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
@@ -11,14 +6,6 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
-import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemMedia,
-   ItemTitle,
-} from "@packages/ui/components/item";
 import {
    SidebarMenu,
    SidebarMenuButton,
@@ -32,8 +19,8 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { Building, ChevronsUpDown, Plus } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
+import { ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
@@ -104,6 +91,7 @@ export function OrganizationSwitcher() {
 
 function OrganizationDropdownContent() {
    const trpc = useTRPC();
+   const router = useRouter();
 
    const { data: activeOrganization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
@@ -111,6 +99,10 @@ function OrganizationDropdownContent() {
 
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
+   );
+
+   const { data: logo } = useSuspenseQuery(
+      trpc.organization.getLogo.queryOptions(),
    );
 
    const queryClient = useQueryClient();
@@ -125,8 +117,9 @@ function OrganizationDropdownContent() {
       }),
    );
 
-   function handleSetActiveOrganization(organizationId: string) {
-      setActiveOrganization.mutateAsync({ organizationId });
+   async function handleOrganizationClick(organizationId: string) {
+      await setActiveOrganization.mutateAsync({ organizationId });
+      router.navigate({ to: "/organization" });
    }
 
    return (
@@ -134,26 +127,30 @@ function OrganizationDropdownContent() {
          <DropdownMenuLabel className="text-muted-foreground text-xs">
             Organizations
          </DropdownMenuLabel>
-
-         {organizations?.length === 0 && (
-            <DropdownMenuItem disabled>
-               <div className="p-2 text-muted-foreground text-sm w-full text-center">
-                  No organizations available
-               </div>
-            </DropdownMenuItem>
-         )}
-
-         {organizations?.map((organization) => (
+         {organizations?.map((organization, index) => (
             <DropdownMenuItem
                className="gap-2 p-2"
                disabled={
                   setActiveOrganization.isPending ||
                   organization.id === activeOrganization?.id
                }
-               key={organization.id}
-               onClick={() => handleSetActiveOrganization(organization.id)}
+               key={organization.name}
+               onClick={() => handleOrganizationClick(organization.id)}
             >
-               <div className="flex-1 text-sm">{organization.name}</div>
+               <div className="flex size-6 items-center justify-center rounded-md border">
+                  {logo?.data ? (
+                     <img
+                        alt={organization.name}
+                        className="size-3.5 shrink-0 rounded"
+                        src={logo.data}
+                     />
+                  ) : (
+                     <div className="size-3.5 shrink-0 flex items-center justify-center text-xs bg-muted rounded">
+                        {getInitials(organization.name)}
+                     </div>
+                  )}
+               </div>
+               {organization.name}
             </DropdownMenuItem>
          ))}
       </>
@@ -191,17 +188,9 @@ function OrganizationSwitcherContent() {
       };
    }, [activeOrganization]);
 
-   const menuActions = useMemo(
-      () => [
-         {
-            icon: Building,
-            key: "view-organization",
-            label: "View Organization details",
-            to: "/organization",
-         },
-      ],
-      [],
-   );
+   if (!organizationData.hasOrganization) {
+      return null;
+   }
 
    return (
       <SidebarMenu>
@@ -209,82 +198,66 @@ function OrganizationSwitcherContent() {
             <DropdownMenu>
                <DropdownMenuTrigger asChild>
                   <SidebarMenuButton
-                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground data-[disabled]:cursor-not-allowed"
-                     disabled={!organizationData.hasOrganization}
+                     className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                      size="lg"
                   >
-                     <Item className="p-0 w-full">
-                        <ItemMedia>
-                           <Avatar className=" rounded-lg">
-                              <AvatarImage
-                                 alt={organizationData.name}
-                                 src={logo?.data ?? ""}
-                              />
-                              <AvatarFallback className="rounded-lg">
-                                 {getInitials(organizationData.name)}
-                              </AvatarFallback>
-                           </Avatar>
-                        </ItemMedia>
-                        <ItemContent className="min-w-0">
-                           <ItemTitle className="truncate w-full">
-                              {organizationData.name}
-                           </ItemTitle>
-                           <ItemDescription className="text-xs line-clamp-1">
-                              {organizationData.description}
-                           </ItemDescription>
-                        </ItemContent>
-                        {organizationData.hasOrganization && (
-                           <ItemActions>
-                              <ChevronsUpDown className="size-4" />
-                           </ItemActions>
+                     <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                        {logo?.data ? (
+                           <img
+                              alt={organizationData.name}
+                              className="size-8 rounded"
+                              src={logo.data}
+                           />
+                        ) : (
+                           <span className="text-xs font-medium">
+                              {getInitials(organizationData.name)}
+                           </span>
                         )}
-                     </Item>
+                     </div>
+                     <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-medium">
+                           {organizationData.name}
+                        </span>
+                        <span className="truncate text-xs">
+                           {organizationData.description}
+                        </span>
+                     </div>
+                     <ChevronsUpDown className="ml-auto" />
                   </SidebarMenuButton>
                </DropdownMenuTrigger>
-               {organizationData.hasOrganization && (
-                  <DropdownMenuContent
-                     align="start"
-                     side={isMobile ? "bottom" : "right"}
-                     sideOffset={4}
+               <DropdownMenuContent
+                  align="start"
+                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                  side={isMobile ? "bottom" : "right"}
+                  sideOffset={4}
+               >
+                  <ErrorBoundary
+                     FallbackComponent={OrganizationDropdownErrorFallback}
                   >
-                     <DropdownMenuLabel>Current Organization</DropdownMenuLabel>
+                     <Suspense fallback={<OrganizationDropdownSkeleton />}>
+                        <OrganizationDropdownContent />
+                     </Suspense>
+                  </ErrorBoundary>
 
-                     {activeOrganization &&
-                        menuActions.map(({ key, to, icon: Icon, label }) => (
-                           <DropdownMenuItem asChild key={key}>
-                              <Link className="w-full flex gap-2" to={to}>
-                                 <Icon className="size-4" />
-                                 {label}
-                              </Link>
-                           </DropdownMenuItem>
-                        ))}
+                  <DropdownMenuSeparator />
 
-                     <DropdownMenuSeparator />
-
-                     <ErrorBoundary
-                        FallbackComponent={OrganizationDropdownErrorFallback}
-                     >
-                        <Suspense fallback={<OrganizationDropdownSkeleton />}>
-                           <OrganizationDropdownContent />
-                        </Suspense>
-                     </ErrorBoundary>
-
-                     <DropdownMenuSeparator />
-
-                     <DropdownMenuItem
-                        disabled={hasReachedLimit}
-                        onClick={() => setIsCreateSheetOpen(true)}
-                        title={
-                           hasReachedLimit
-                              ? "Você não pode criar mais organizações"
-                              : undefined
-                        }
-                     >
+                  <DropdownMenuItem
+                     disabled={hasReachedLimit}
+                     onClick={() => setIsCreateSheetOpen(true)}
+                     title={
+                        hasReachedLimit
+                           ? "Você não pode criar mais organizações"
+                           : undefined
+                     }
+                  >
+                     <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                         <Plus className="size-4" />
-                        Create Organization
-                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-               )}
+                     </div>
+                     <div className="text-muted-foreground font-medium">
+                        Add organization
+                     </div>
+                  </DropdownMenuItem>
+               </DropdownMenuContent>
             </DropdownMenu>
          </SidebarMenuItem>
 

@@ -1,13 +1,18 @@
+import { translate } from "@packages/localization";
+import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useRouter } from "@tanstack/react-router";
+import { ArrowDownCircle, ArrowUpCircle, Repeat, Upload } from "lucide-react";
 import { trpc } from "@/integrations/clients";
 import { HomeChartsSection } from "./home-charts-section";
-import { HomeFilterSheet } from "./home-filter-sheet";
+import { HomeHeaderSection } from "./home-header-section";
 import { HomeQuickAccessCards } from "./home-quick-access-cards";
-import { HomeQuickActionsToolbar } from "./home-quick-actions-toolbar";
+import { HomeRecentTransactionsSection } from "./home-recent-transactions-section";
+import { HomeStatsSection } from "./home-stats-section";
 
 function HomePageErrorFallback(props: FallbackProps) {
    return createErrorFallback({
@@ -20,22 +25,32 @@ function HomePageErrorFallback(props: FallbackProps) {
 
 function HomePageSkeleton() {
    return (
-      <main className="grid md:grid-cols-3 gap-4">
-         <div className="h-min col-span-1 md:col-span-2 grid gap-4">
-            <Skeleton className="h-16 w-full" />
-            <div className="grid grid-cols-2 gap-4">
-               {[1, 2].map((i) => (
-                  <Skeleton className="h-32" key={i} />
-               ))}
-            </div>
+      <main className="flex flex-col gap-6">
+         <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-48" />
          </div>
-         <div className="grid gap-4">
-            <Skeleton className="h-[400px]" />
-            <div className="grid gap-4 md:grid-cols-2">
-               <Skeleton className="h-[400px]" />
-               <Skeleton className="h-[400px]" />
-            </div>
+
+         <Skeleton className="h-20 w-full" />
+
+         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+               <Skeleton className="h-32" key={i} />
+            ))}
          </div>
+
+         <section className="grid items-start gap-4 xl:grid-cols-3">
+            <div className="space-y-4 xl:col-span-2">
+               <Skeleton className="h-[300px] w-full" />
+               <div className="grid gap-4 md:grid-cols-2">
+                  <Skeleton className="h-[260px]" />
+                  <Skeleton className="h-[260px]" />
+               </div>
+            </div>
+            <div className="space-y-4">
+               <Skeleton className="h-32 w-full" />
+               <Skeleton className="h-32 w-full" />
+            </div>
+         </section>
       </main>
    );
 }
@@ -47,20 +62,53 @@ function getCurrentMonthDates() {
    return { end, start };
 }
 
+function HomeQuickNavigation() {
+   const router = useRouter();
+
+   const quickAccessItems = [
+      {
+         description: translate("dashboard.routes.transactions.description"),
+         icon: <ArrowDownCircle className="size-5 text-red-500" />,
+         onClick: () => router.navigate({ to: "/transactions" }),
+         title: translate("dashboard.routes.transactions.title"),
+      },
+      {
+         description: translate("dashboard.routes.transactions.description"),
+         icon: <ArrowUpCircle className="size-5 text-emerald-500" />,
+         onClick: () => router.navigate({ to: "/transactions" }),
+         title: translate("dashboard.routes.transactions.title"),
+      },
+      {
+         description: translate("dashboard.routes.transactions.description"),
+         icon: <Repeat className="size-5 text-blue-500" />,
+         onClick: () => router.navigate({ to: "/transactions" }),
+         title: translate("dashboard.routes.transactions.title"),
+      },
+      {
+         description: translate("dashboard.routes.bank-accounts.description"),
+         icon: <Upload className="size-5 text-primary" />,
+         onClick: () => router.navigate({ to: "/bank-accounts" }),
+         title: translate("dashboard.routes.bank-accounts.title"),
+      },
+   ];
+
+   return (
+      <div className="grid gap-4">
+         {quickAccessItems.map((item, index) => (
+            <QuickAccessCard
+               description={item.description}
+               icon={item.icon}
+               key={`home-quick-access-${index + 1}`}
+               onClick={item.onClick}
+               title={item.title}
+            />
+         ))}
+      </div>
+   );
+}
+
 function HomePageContent() {
-   const initialDates = getCurrentMonthDates();
-   const [startDate, setStartDate] = useState<Date>(initialDates.start);
-   const [endDate, setEndDate] = useState<Date>(initialDates.end);
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-
-   const handlePeriodChange = (start: Date, end: Date) => {
-      setStartDate(start);
-      setEndDate(end);
-   };
-
-   const handleFilterClick = () => {
-      setIsFilterSheetOpen(true);
-   };
+   const { end: endDate, start: startDate } = getCurrentMonthDates();
 
    const { data: summary } = useSuspenseQuery(
       trpc.reports.getFinancialSummary.queryOptions({
@@ -84,24 +132,37 @@ function HomePageContent() {
       }),
    );
 
+   const { data: performance } = useSuspenseQuery(
+      trpc.reports.getPaymentPerformance.queryOptions({
+         endDate: endDate.toISOString(),
+         startDate: startDate.toISOString(),
+      }),
+   );
+
    return (
-      <>
-         <main className="grid md:grid-cols-3 gap-4">
-            <div className="h-min col-span-1 md:col-span-3 grid gap-4">
-               <HomeQuickActionsToolbar onFilterClick={handleFilterClick} />
-               <HomeQuickAccessCards summary={summary} />
+      <main className="flex flex-col gap-6">
+         <HomeHeaderSection />
+
+         <section className="grid items-start gap-4 xl:grid-cols-3">
+            <div className="space-y-4 xl:col-span-2">
+               <HomeStatsSection performance={performance} summary={summary} />
+            </div>
+            <HomeRecentTransactionsSection />
+         </section>
+
+         <section className="grid items-start gap-4 xl:grid-cols-3">
+            <div className="space-y-4 xl:col-span-2">
                <HomeChartsSection
                   cashFlow={cashFlow}
                   plannedVsActual={plannedVsActual}
                />
             </div>
-         </main>
-         <HomeFilterSheet
-            isOpen={isFilterSheetOpen}
-            onOpenChange={setIsFilterSheetOpen}
-            onPeriodChange={handlePeriodChange}
-         />
-      </>
+            <div className="space-y-4">
+               <HomeQuickAccessCards summary={summary} />
+               <HomeQuickNavigation />
+            </div>
+         </section>
+      </main>
    );
 }
 

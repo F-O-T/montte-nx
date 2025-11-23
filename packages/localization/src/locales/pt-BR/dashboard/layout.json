@@ -12,11 +12,11 @@
    "nav-main": {
       "finance": {
          "categories": "Categorias",
-         "label": "Finanças",
-         "overview": "Visão geral",
+         "title": "Suas finanças",
+         "overview": "Fluxo de caixa",
          "payables": "Contas a pagar",
          "receivables": "Contas a receber",
-         "title": "Suas finanças"
+         "reports": "Relatórios"
       }
    },
    "nav-user": {
