@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { decimal, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { bankAccount } from "./bank-accounts";
+import { user } from "./auth";
 
 export const transaction = pgTable("transaction", {
    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
@@ -18,7 +19,9 @@ export const transaction = pgTable("transaction", {
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-   userId: uuid("user_id").notNull(),
+   userId: uuid("user_id")
+      .references(() => user.id, { onDelete: "cascade" })
+      .notNull(),
 });
 
 export const transactionRelations = relations(transaction, ({ one }) => ({
