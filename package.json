@@ -39,7 +39,7 @@
       "dev:all": "nx run-many -t dev --parallel=6",
       "dev:blog": "nx run-many -t dev --parallel=1 -p  blog ",
       "dev:content-apps": "nx run-many -t dev --parallel=3 -p  landing-page blog docs",
-      "dev:dashboard": "nx run-many -t dev --parallel=3 -p server dashboard api",
+      "dev:dashboard": "nx run-many -t dev --parallel=3 -p server dashboard ",
       "dev:dashboard-only": "nx run-many -t dev --parallel=1 -p dashboard",
       "dev:docs": "nx run-many -t dev --parallel=1 -p  docs",
       "dev:landing-page": "nx run-many -t dev --parallel=1 -p  landing-page ",

@@ -72,6 +72,20 @@ export function ManageOrganizationSheet({
       maxSize: 5 * 1024 * 1024,
    });
 
+   const setActiveOrganizationMutation = useMutation(
+      trpc.organization.setActiveOrganization.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to set active organization:", error);
+            toast.error("Failed to set active organization");
+         },
+         onSuccess: async () => {
+            toast.success("Active organization set successfully");
+            await queryClient.invalidateQueries({
+               queryKey: trpc.organization.getActiveOrganization.queryKey(),
+            });
+         },
+      }),
+   );
    const editOrganizationMutation = useMutation(
       trpc.organization.editOrganization.mutationOptions({
          onError: (error) => {
@@ -95,8 +109,13 @@ export function ManageOrganizationSheet({
             console.error("Create organization error:", error);
             toast.error("Failed to create organization");
          },
-         onSuccess: async () => {
+         onSuccess: async (data) => {
             toast.success("Organization created successfully");
+            if (!data?.id) {
+               await setActiveOrganizationMutation.mutateAsync({
+                  organizationId: data?.id,
+               });
+            }
             await queryClient.invalidateQueries({
                queryKey: trpc.organization.getActiveOrganization.queryKey(),
             });
