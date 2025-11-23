@@ -67,7 +67,7 @@ function HomeRecentTransactionsContent() {
       }),
    );
 
-   const { transactions } = data as { transactions: any[] };
+   const { transactions } = data;
 
    const { data: categories = [] } = useSuspenseQuery(
       trpc.categories.getAll.queryOptions(),

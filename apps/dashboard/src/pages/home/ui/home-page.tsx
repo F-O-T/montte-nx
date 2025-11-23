@@ -1,15 +1,10 @@
 import { translate } from "@packages/localization";
-import { DefaultHeader } from "@/default/default-header";
-
-import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useRouter } from "@tanstack/react-router";
-import { ArrowDownCircle, ArrowUpCircle, Repeat, Upload } from "lucide-react";
-import { trpc } from "@/integrations/clients";
+import { DefaultHeader } from "@/default/default-header";
+import { HomeBankAccountsSection } from "./home-bank-accounts-section";
 import { HomeChartsSection } from "./home-charts-section";
 import { HomeQuickAccessCards } from "./home-quick-access-cards";
 import { HomeRecentTransactionsSection } from "./home-recent-transactions-section";
@@ -20,7 +15,7 @@ function HomePageErrorFallback(props: FallbackProps) {
       errorDescription:
          "Failed to load financial overview. Please try again later.",
       errorTitle: "Error loading overview",
-      retryText: "Retry",
+      retryText: translate("common.actions.retry"),
    })(props);
 }
 
@@ -40,106 +35,27 @@ function HomePageSkeleton() {
          </div>
 
          <section className="grid items-start gap-4 xl:grid-cols-3">
-            <div className="space-y-4 xl:col-span-2">
-               <Skeleton className="h-[300px] w-full" />
-               <div className="grid gap-4 md:grid-cols-2">
-                  <Skeleton className="h-[260px]" />
-                  <Skeleton className="h-[260px]" />
-               </div>
+            <div className="space-y-4 xl:col-span-3">
+               <Skeleton className="h-[120px] w-full" />
             </div>
+            <div className="grid h-full col-span-2 gap-4">
+               <Skeleton className="h-[260px]" />
+            </div>
+
             <div className="space-y-4">
                <Skeleton className="h-32 w-full" />
                <Skeleton className="h-32 w-full" />
+            </div>
+            <div className="space-y-4 xl:col-span-3">
+               <Skeleton className="h-[260px] w-full" />
+               <Skeleton className="h-[260px] w-full" />
             </div>
          </section>
       </main>
    );
 }
 
-function getCurrentMonthDates() {
-   const now = new Date();
-   const start = new Date(now.getFullYear(), now.getMonth(), 1);
-   const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-   return { end, start };
-}
-
-function HomeQuickNavigation() {
-   const router = useRouter();
-
-   const quickAccessItems = [
-      {
-         description: translate("dashboard.routes.transactions.description"),
-         icon: <ArrowDownCircle className="size-5 text-red-500" />,
-         onClick: () => router.navigate({ to: "/transactions" }),
-         title: translate("dashboard.routes.transactions.title"),
-      },
-      {
-         description: translate("dashboard.routes.transactions.description"),
-         icon: <ArrowUpCircle className="size-5 text-emerald-500" />,
-         onClick: () => router.navigate({ to: "/transactions" }),
-         title: translate("dashboard.routes.transactions.title"),
-      },
-      {
-         description: translate("dashboard.routes.transactions.description"),
-         icon: <Repeat className="size-5 text-blue-500" />,
-         onClick: () => router.navigate({ to: "/transactions" }),
-         title: translate("dashboard.routes.transactions.title"),
-      },
-      {
-         description: translate("dashboard.routes.bank-accounts.description"),
-         icon: <Upload className="size-5 text-primary" />,
-         onClick: () => router.navigate({ to: "/bank-accounts" }),
-         title: translate("dashboard.routes.bank-accounts.title"),
-      },
-   ];
-
-   return (
-      <div className="grid gap-4 grid-cols-2">
-         {quickAccessItems.map((item, index) => (
-            <QuickAccessCard
-               description={item.description}
-               icon={item.icon}
-               key={`home-quick-access-${index + 1}`}
-               onClick={item.onClick}
-               title={item.title}
-            />
-         ))}
-      </div>
-   );
-}
-
 function HomePageContent() {
-   const { end: endDate, start: startDate } = getCurrentMonthDates();
-
-   const { data: summary } = useSuspenseQuery(
-      trpc.reports.getFinancialSummary.queryOptions({
-         endDate: endDate.toISOString(),
-         startDate: startDate.toISOString(),
-      }),
-   );
-
-   const { data: cashFlow } = useSuspenseQuery(
-      trpc.reports.getCashFlow.queryOptions({
-         endDate: endDate.toISOString(),
-         groupBy: "day",
-         startDate: startDate.toISOString(),
-      }),
-   );
-
-   const { data: plannedVsActual } = useSuspenseQuery(
-      trpc.reports.getPlannedVsActual.queryOptions({
-         endDate: endDate.toISOString(),
-         startDate: startDate.toISOString(),
-      }),
-   );
-
-   const { data: performance } = useSuspenseQuery(
-      trpc.reports.getPaymentPerformance.queryOptions({
-         endDate: endDate.toISOString(),
-         startDate: startDate.toISOString(),
-      }),
-   );
-
    return (
       <main className="flex flex-col gap-6">
          <DefaultHeader
@@ -148,24 +64,20 @@ function HomePageContent() {
          />
 
          <section className="grid items-start gap-4 xl:grid-cols-3">
+            <div className="space-y-4 xl:col-span-3">
+               <HomeBankAccountsSection />
+            </div>
             <div className="grid h-full col-span-2 gap-4">
                <HomeRecentTransactionsSection />
             </div>
-            <div className="flex flex-col gap-4">
-               <HomeQuickAccessCards summary={summary} />
-               <HomeQuickNavigation />
+
+            <div className="space-y-4">
+               <HomeQuickAccessCards />
             </div>
             <div className="space-y-4 xl:col-span-3">
-               <HomeStatsSection performance={performance} summary={summary} />
-               <HomeChartsSection
-                  cashFlow={cashFlow}
-                  plannedVsActual={plannedVsActual}
-               />
+               <HomeStatsSection />
+               <HomeChartsSection />
             </div>
-         </section>
-
-         <section className="grid items-start gap-4 xl:grid-cols-3">
-            <div className="space-y-4 xl:col-span-2"></div>
          </section>
       </main>
    );
