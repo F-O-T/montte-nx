@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { Skeleton } from "@packages/ui/components/skeleton";
@@ -109,7 +110,7 @@ function HomeQuickAccessCardsContent() {
                title={translate(
                   "dashboard.routes.home.financial-summary.total-income.title",
                )}
-               value={`R$ ${summary.totalIncome.toFixed(2)}`}
+               value={formatDecimalCurrency(summary.totalIncome)}
             />
             <StatsCard
                description={translate(
@@ -118,7 +119,7 @@ function HomeQuickAccessCardsContent() {
                title={translate(
                   "dashboard.routes.home.financial-summary.total-expenses.title",
                )}
-               value={`R$ ${summary.totalExpenses.toFixed(2)}`}
+               value={formatDecimalCurrency(summary.totalExpenses)}
             />
          </div>
 

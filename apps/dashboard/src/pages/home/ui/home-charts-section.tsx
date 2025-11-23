@@ -82,22 +82,18 @@ interface HomeCashFlowChartProps {
 }
 
 const homeCashFlowChartConfig: ChartConfig = {
-   actualNet: {
+   actualIncome: {
       color: "var(--primary)",
-      label: translate("common.charts.labels.actual-net"),
+      label: translate("common.charts.labels.income"),
    },
-   plannedNet: {
+   actualExpenses: {
       color: "var(--secondary)",
-      label: translate("common.charts.labels.planned-net"),
+      label: translate("common.charts.labels.expenses"),
    },
 };
 
 function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
-   const chartData = (data ?? []).map((item) => ({
-      ...item,
-      actualNet: item.actualIncome - item.actualExpenses,
-      plannedNet: item.plannedIncome - item.plannedExpenses,
-   }));
+   const chartData = data ?? [];
 
    return (
       <Card>
@@ -132,17 +128,17 @@ function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
                   <YAxis axisLine={false} tickLine={false} tickMargin={8} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Area
-                     dataKey="plannedNet"
-                     fill="var(--color-plannedNet)"
+                     dataKey="actualIncome"
+                     fill="var(--color-actualIncome)"
                      fillOpacity={0.6}
-                     stroke="var(--color-plannedNet)"
+                     stroke="var(--color-actualIncome)"
                      type="monotone"
                   />
                   <Area
-                     dataKey="actualNet"
-                     fill="var(--color-actualNet)"
+                     dataKey="actualExpenses"
+                     fill="var(--color-actualExpenses)"
                      fillOpacity={0.6}
-                     stroke="var(--color-actualNet)"
+                     stroke="var(--color-actualExpenses)"
                      type="monotone"
                   />
                </AreaChart>

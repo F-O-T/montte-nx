@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
@@ -66,7 +67,7 @@ function HomeStatsSectionContent() {
             title={translate(
                "dashboard.routes.home.financial-summary.total-income.title",
             )}
-            value={`R$ ${summary.totalIncome.toFixed(2)}`}
+            value={formatDecimalCurrency(summary.totalIncome)}
          />
          <StatsCard
             description={translate(
@@ -75,7 +76,7 @@ function HomeStatsSectionContent() {
             title={translate(
                "dashboard.routes.home.financial-summary.total-expenses.title",
             )}
-            value={`R$ ${summary.totalExpenses.toFixed(2)}`}
+            value={formatDecimalCurrency(summary.totalExpenses)}
          />
          <StatsCard
             description={translate(
@@ -84,8 +85,9 @@ function HomeStatsSectionContent() {
             title={translate(
                "dashboard.routes.home.financial-summary.net-balance.title",
             )}
-            value={`R$ ${summary.netBalance.toFixed(2)}`}
+            value={formatDecimalCurrency(summary.netBalance)}
          />
+
          <StatsCard
             description={`${performance.paidOnTime + performance.paidLate} ${translate("dashboard.routes.home.financial-summary.payment-rate.description")} ${performance.totalBills} ${translate("dashboard.routes.home.financial-summary.payment-rate.bills-paid")}`}
             title={translate(
