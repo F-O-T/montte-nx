@@ -1,4 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
+import { createSlug } from "@packages/utils/text";
 import { and, count, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
@@ -35,6 +36,29 @@ export async function findCategoryById(
       propagateError(err);
       throw AppError.database(
          `Failed to find category by id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findCategoryBySlug(
+   dbClient: DatabaseInstance,
+   userId: string,
+   slug: string,
+) {
+   try {
+      const categories = await dbClient.query.category.findMany({
+         where: (category, { eq }) => eq(category.userId, userId),
+      });
+
+      const category = categories.find(
+         (cat) => createSlug(cat.name) === slug,
+      );
+
+      return category || null;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find category by slug: ${(err as Error).message}`,
       );
    }
 }
