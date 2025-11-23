@@ -1,3 +1,5 @@
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -23,8 +25,6 @@ import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
-import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
    return (

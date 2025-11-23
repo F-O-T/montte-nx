@@ -1,3 +1,4 @@
+import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -12,24 +13,24 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Home, Tag } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 import { CategoryBudget } from "./category-budget";
 import { CategoryInfo } from "./category-information-section";
 import { CategoryStats } from "./category-stats";
 import { CategoryTransactions } from "./category-transactions-section";
 
 function CategoryContent() {
-   const params = useParams({ strict: false });
-   const categoryId = (params as any).categoryId as string;
+   const { slug } = useParams({
+      from: "/_dashboard/categories/$slug",
+   });
    const trpc = useTRPC();
 
    const { data: category } = useSuspenseQuery(
-      trpc.categories.getById.queryOptions({ id: categoryId }),
+      trpc.categories.getBySlug.queryOptions({ slug }),
    );
-   if (!categoryId) {
+   if (!slug) {
       return (
          <CategoryPageError
-            error={new Error("Invalid category ID")}
+            error={new Error("Invalid category slug")}
             resetErrorBoundary={() => {}}
          />
       );
@@ -38,6 +39,8 @@ function CategoryContent() {
    if (!category) {
       return null;
    }
+
+   const categoryId = category.id;
 
    return (
       <main className="flex flex-col h-full w-full gap-4">

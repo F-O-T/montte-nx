@@ -1,3 +1,6 @@
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { trpc } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -53,14 +56,12 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { createSlug } from "@packages/utils/text";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, Filter, Inbox, MoreVertical, Search } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
 import { CategoryFilterSheet } from "../features/category-filter-sheet";
 import { useCategoryList } from "../features/category-list-context";
 import { DeleteCategory } from "../features/delete-category";
@@ -118,7 +119,7 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
             <DropdownMenuItem
                className="flex items-center gap-2"
                onClick={() => {
-                  navigate({ to: `/categories/${category.id}` });
+                  navigate({ to: `/categories/${createSlug(category.name)}` });
                }}
             >
                <Eye className="size-4" />
