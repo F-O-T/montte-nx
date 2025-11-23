@@ -27,6 +27,7 @@ COPY packages/brasil-api/package.json ./packages/brasil-api/
 # Install dependencies
 RUN bun install 
 
+
 # Copy source code
 COPY . .
 
