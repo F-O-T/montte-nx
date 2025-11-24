@@ -144,7 +144,6 @@ function RecentTransactionsContent({
                      </ItemGroup>
                   </div>
 
-                  {/* Desktop View */}
                   <div className="hidden md:block">
                      <DataTable
                         columns={createTransactionColumns(categories)}
@@ -155,7 +154,6 @@ function RecentTransactionsContent({
             )}
          </CardContent>
 
-         {/* Paginação Mobile */}
          {totalPages > 1 && (
             <CardFooter className="block md:hidden">
                <Pagination>

@@ -507,7 +507,6 @@ function BillsListContent({ type }: BillsListSectionProps) {
                   )}
                </div>
 
-               {/* Desktop View */}
                <div className="hidden md:block">
                   {filteredBills.length === 0 ? (
                      <Empty>

@@ -322,7 +322,6 @@ function TransactionsListContent() {
                   )}
                </div>
             </CardContent>
-            {/* Paginação Mobile */}
             {totalPages > 1 && (
                <CardFooter className="block md:hidden">
                   <Pagination>

@@ -218,7 +218,6 @@ function BankAccountsListContent() {
                   </ItemGroup>
                </div>
 
-               {/* Desktop View */}
                <div className="hidden md:block">
                   <DataTable
                      columns={createBankAccountColumns()}
