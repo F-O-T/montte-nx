@@ -49,8 +49,8 @@ import { useSuspenseQueries } from "@tanstack/react-query";
 import { Filter, Plus, Search, Wallet } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
+import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { trpc } from "@/integrations/clients";
 import { FilterSheet } from "../features/filter-sheet";
 import { useTransactionList } from "../features/transaction-list-context";
@@ -406,10 +406,10 @@ function TransactionsListContent() {
                      </div>
                      <div className="flex items-center space-x-2">
                         <Button
-                           variant="outline"
                            className="hidden h-8 w-8 p-0 lg:flex"
-                           onClick={() => setCurrentPage(1)}
                            disabled={currentPage === 1}
+                           onClick={() => setCurrentPage(1)}
+                           variant="outline"
                         >
                            <span className="sr-only">
                               Ir para primeira página
@@ -417,34 +417,34 @@ function TransactionsListContent() {
                            {"<<"}
                         </Button>
                         <Button
-                           variant="outline"
                            className="h-8 w-8 p-0"
+                           disabled={currentPage === 1}
                            onClick={() =>
                               setCurrentPage((prev) => Math.max(1, prev - 1))
                            }
-                           disabled={currentPage === 1}
+                           variant="outline"
                         >
                            <span className="sr-only">Página anterior</span>
                            {"<"}
                         </Button>
                         <Button
-                           variant="outline"
                            className="h-8 w-8 p-0"
+                           disabled={currentPage === totalPages}
                            onClick={() =>
                               setCurrentPage((prev) =>
                                  Math.min(totalPages, prev + 1),
                               )
                            }
-                           disabled={currentPage === totalPages}
+                           variant="outline"
                         >
                            <span className="sr-only">Próxima página</span>
                            {">"}
                         </Button>
                         <Button
-                           variant="outline"
                            className="hidden h-8 w-8 p-0 lg:flex"
-                           onClick={() => setCurrentPage(totalPages)}
                            disabled={currentPage === totalPages}
+                           onClick={() => setCurrentPage(totalPages)}
+                           variant="outline"
                         >
                            <span className="sr-only">
                               Ir para última página

@@ -29,8 +29,8 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useTRPC } from "@/integrations/clients";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
+import { useTRPC } from "@/integrations/clients";
 
 type ManageBankAccountSheetProps = {
    onOpen?: boolean;

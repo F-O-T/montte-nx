@@ -3,6 +3,7 @@ import {
    deleteBankAccount,
    findBankAccountById,
    findBankAccountsByUserId,
+   getBankAccountStats,
    updateBankAccount,
 } from "@packages/database/repositories/bank-account-repository";
 import {
@@ -100,6 +101,17 @@ export const bankAccountRouter = router({
 
          return bankAccount;
       }),
+
+   getStats: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+
+      return getBankAccountStats(resolvedCtx.db, userId);
+   }),
 
    getTransactions: protectedProcedure
       .input(

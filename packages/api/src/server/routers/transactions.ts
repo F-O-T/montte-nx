@@ -163,15 +163,11 @@ export const transactionRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return findTransactionsByUserIdPaginated(
-            resolvedCtx.db,
-            userId,
-            {
-               ...input,
-               endDate: input.endDate ? new Date(input.endDate) : undefined,
-               startDate: input.startDate ? new Date(input.startDate) : undefined,
-            },
-         );
+         return findTransactionsByUserIdPaginated(resolvedCtx.db, userId, {
+            ...input,
+            endDate: input.endDate ? new Date(input.endDate) : undefined,
+            startDate: input.startDate ? new Date(input.startDate) : undefined,
+         });
       }),
 
    getById: protectedProcedure

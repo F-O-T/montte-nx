@@ -65,8 +65,8 @@ export function Combobox({
 
    const virtualizer = useVirtualizer({
       count: filteredOptions.length,
-      getScrollElement: () => parentNode,
       estimateSize: () => 35,
+      getScrollElement: () => parentNode,
    });
 
    const virtualItems = virtualizer.getVirtualItems();
@@ -95,9 +95,9 @@ export function Combobox({
          <PopoverContent className=" p-0">
             <Command>
                <CommandInput
+                  onValueChange={setSearch}
                   placeholder={searchPlaceholder}
                   value={search}
-                  onValueChange={setSearch}
                />
                <CommandList ref={refCallback}>
                   <CommandEmpty>{emptyMessage}</CommandEmpty>
@@ -105,18 +105,18 @@ export function Combobox({
                      <div
                         style={{
                            height: virtualizer.getTotalSize(),
-                           width: "100%",
                            position: "relative",
+                           width: "100%",
                         }}
                      >
                         {virtualItems.length > 0 ? (
                            <div
                               style={{
+                                 left: 0,
                                  position: "absolute",
                                  top: 0,
-                                 left: 0,
-                                 width: "100%",
                                  transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
+                                 width: "100%",
                               }}
                            >
                               {virtualItems.map((virtualRow) => {
@@ -128,7 +128,6 @@ export function Combobox({
                                  return (
                                     <CommandItem
                                        key={option.value}
-                                       ref={virtualizer.measureElement}
                                        onSelect={(currentValue) => {
                                           onValueChange?.(
                                              currentValue === value
@@ -137,6 +136,7 @@ export function Combobox({
                                           );
                                           setOpen(false);
                                        }}
+                                       ref={virtualizer.measureElement}
                                        value={option.value}
                                     >
                                        <CheckIcon

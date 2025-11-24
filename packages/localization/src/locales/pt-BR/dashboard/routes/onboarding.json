@@ -30,6 +30,14 @@
       }
    },
    "category": {
+      "defaults": {
+         "food": "Alimentação",
+         "health": "Saúde",
+         "housing": "Moradia",
+         "leisure": "Lazer",
+         "shopping": "Compras gerais",
+         "transport": "Transporte"
+      },
       "description": "Selecione algumas categorias padrão para começar.",
       "form": {
          "budget": {
@@ -49,14 +57,6 @@
       "title": "Categorias iniciais",
       "toast": {
          "success": "Categorias criadas com sucesso"
-      },
-      "defaults": {
-         "food": "Alimentação",
-         "health": "Saúde",
-         "housing": "Moradia",
-         "leisure": "Lazer",
-         "shopping": "Compras gerais",
-         "transport": "Transporte"
       }
    },
    "validation": {

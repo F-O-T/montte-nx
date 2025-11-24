@@ -166,10 +166,14 @@ export function CategoryFilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.page-size.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.page-size.label",
+                        )}
                      </FieldLabel>
                      <Select
-                        onValueChange={(value) => onPageSizeChange?.(Number(value))}
+                        onValueChange={(value) =>
+                           onPageSizeChange?.(Number(value))
+                        }
                         value={pageSize?.toString()}
                      >
                         <SelectTrigger>

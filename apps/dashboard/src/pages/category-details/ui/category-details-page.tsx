@@ -1,4 +1,3 @@
-import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -13,6 +12,7 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Home, Tag } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useTRPC } from "@/integrations/clients";
 import { CategoryBudget } from "./category-budget";
 import { CategoryInfo } from "./category-information-section";
 import { CategoryStats } from "./category-stats";

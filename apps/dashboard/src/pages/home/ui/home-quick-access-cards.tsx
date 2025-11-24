@@ -1,9 +1,9 @@
 import { translate } from "@packages/localization";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import {

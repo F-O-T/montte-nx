@@ -280,7 +280,9 @@ export function BillFilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.start-date.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.start-date.label",
+                        )}
                      </FieldLabel>
                      <DatePicker
                         date={startDate}
@@ -295,7 +297,9 @@ export function BillFilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.end-date.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.end-date.label",
+                        )}
                      </FieldLabel>
                      <DatePicker
                         date={endDate}
@@ -310,10 +314,14 @@ export function BillFilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.page-size.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.page-size.label",
+                        )}
                      </FieldLabel>
                      <Select
-                        onValueChange={(value) => handlePageSizeChange(Number(value))}
+                        onValueChange={(value) =>
+                           handlePageSizeChange(Number(value))
+                        }
                         value={pageSize.toString()}
                      >
                         <SelectTrigger>

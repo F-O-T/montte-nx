@@ -1,5 +1,5 @@
-import { PostHogWrapper } from "@packages/posthog/client";
 import { translate } from "@packages/localization";
+import { PostHogWrapper } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
 import {
    createRootRoute,

@@ -8,13 +8,13 @@ import {
 import { DataTable } from "@packages/ui/components/data-table";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { trpc } from "@/integrations/clients";
 import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 
 function HomeRecentTransactionsErrorFallback() {
    return (

@@ -1,24 +1,24 @@
 "use client";
 
 import { translate } from "@packages/localization";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { Badge } from "@packages/ui/components/badge";
 import {
-   CardAction,
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import { createErrorFallback } from "@packages/ui/components/error-fallback";
-import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    type ChartConfig,
    ChartContainer,
    ChartTooltip,
    ChartTooltipContent,
 } from "@packages/ui/components/chart";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -80,13 +80,13 @@ interface HomeCashFlowChartProps {
 }
 
 const homeCashFlowChartConfig: ChartConfig = {
-   actualIncome: {
-      color: "var(--primary)",
-      label: translate("common.charts.labels.income"),
-   },
    actualExpenses: {
       color: "var(--secondary)",
       label: translate("common.charts.labels.expenses"),
+   },
+   actualIncome: {
+      color: "var(--primary)",
+      label: translate("common.charts.labels.income"),
    },
 };
 

@@ -15,19 +15,19 @@ export function BillsPage() {
    const getHeaderContent = () => {
       if (billType === "payable") {
          return {
-            title: "Contas a Pagar",
             description: "Gerencie suas despesas futuras",
+            title: "Contas a Pagar",
          };
       }
       if (billType === "receivable") {
          return {
-            title: "Contas a Receber",
             description: "Gerencie suas receitas futuras",
+            title: "Contas a Receber",
          };
       }
       return {
-         title: "Contas a Pagar e Receber",
          description: "Gerencie suas contas a pagar e receber",
+         title: "Contas a Pagar e Receber",
       };
    };
 

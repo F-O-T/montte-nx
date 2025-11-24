@@ -1,14 +1,14 @@
-import { cn } from "@packages/ui/lib/utils";
 import { translate } from "@packages/localization";
 import {
    Item,
    ItemActions,
-   ItemMedia,
    ItemContent,
-   ItemTitle,
    ItemDescription,
+   ItemMedia,
+   ItemTitle,
 } from "@packages/ui/components/item";
-import { Plus, ArrowRight } from "lucide-react";
+import { cn } from "@packages/ui/lib/utils";
+import { ArrowRight, Plus } from "lucide-react";
 
 interface CreateBankAccountItemProps {
    onCreateAccount: () => void;
@@ -23,8 +23,8 @@ export function CreateBankAccountItem({
          className={cn("cursor-pointer hover:bg-muted/50 transition-colors", {
             "bg-card": solid,
          })}
-         variant={solid ? "outline" : "default"}
          onClick={onCreateAccount}
+         variant={solid ? "outline" : "default"}
       >
          <ItemMedia variant="icon">
             <Plus className="size-4 " />

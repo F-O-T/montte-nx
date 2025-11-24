@@ -73,23 +73,23 @@ export function CategoryListProvider({
 
    const value = {
       clearSelection,
+      currentPage,
       handleSelectionChange,
+      isFilterSheetOpen,
       nameFilter,
       orderBy,
       orderDirection,
+      pageSize,
       selectAll,
       selectedCount: selectedItems.size,
       selectedItems,
+      setCurrentPage,
+      setIsFilterSheetOpen,
       setNameFilter,
       setOrderBy,
       setOrderDirection,
-      toggleAll,
-      currentPage,
-      setCurrentPage,
-      pageSize,
       setPageSize,
-      isFilterSheetOpen,
-      setIsFilterSheetOpen,
+      toggleAll,
    };
 
    return (

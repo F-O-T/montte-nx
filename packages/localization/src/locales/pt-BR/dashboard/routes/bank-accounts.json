@@ -1,0 +1,47 @@
+{
+   "list-section": {
+      "actions": {
+         "label": "Gerencie sua conta bancária"
+      },
+      "description": "Veja todas as suas contas bancárias aqui.",
+      "state": {
+         "empty": {
+            "description": "Tente ajustar seus filtros ou adicionar uma nova conta bancária.",
+            "title": "Nenhuma Conta Bancária Encontrada"
+         }
+      },
+      "title": "Contas Bancárias"
+   },
+   "stats-section": {
+      "active-accounts": {
+         "description": "Contas bancárias ativas",
+         "title": "Contas Ativas"
+      },
+      "total-accounts": {
+         "description": "Número total de contas bancárias",
+         "title": "Total de Contas"
+      },
+      "total-balance": {
+         "description": "Saldo total em todas as contas",
+         "title": "Saldo Total"
+      }
+   },
+   "status": {
+      "active": "Ativa",
+      "inactive": "Inativa"
+   },
+   "table": {
+      "columns": {
+         "bank": "Banco",
+         "createdAt": "Criado em",
+         "name": "Nome",
+         "status": "Status",
+         "type": "Tipo"
+      }
+   },
+   "types": {
+      "checking": "Conta corrente",
+      "investment": "Conta de investimento",
+      "savings": "Conta poupança"
+   }
+}

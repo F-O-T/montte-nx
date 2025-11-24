@@ -348,19 +348,19 @@ function BillsListContent({ type }: BillsListSectionProps) {
    const [billsQuery, categoriesQuery] = useSuspenseQueries({
       queries: [
          trpc.bills.getAllPaginated.queryOptions({
+            endDate: endDate?.toISOString(),
             limit: pageSize,
+            month: undefined, // We use startDate/endDate now
+            orderBy: "dueDate",
+            orderDirection: "asc",
             page: currentPage,
+            search: debouncedSearchTerm || undefined,
+            startDate: startDate?.toISOString(),
             type:
                billType ??
                (typeFilter !== "all"
                   ? (typeFilter as "income" | "expense")
                   : undefined),
-            month: undefined, // We use startDate/endDate now
-            startDate: startDate?.toISOString(),
-            endDate: endDate?.toISOString(),
-            search: debouncedSearchTerm || undefined,
-            orderBy: "dueDate",
-            orderDirection: "asc",
          }),
          trpc.categories.getAll.queryOptions(),
       ],
@@ -618,10 +618,10 @@ function BillsListContent({ type }: BillsListSectionProps) {
                      </div>
                      <div className="flex items-center space-x-2">
                         <Button
-                           variant="outline"
                            className="hidden h-8 w-8 p-0 lg:flex"
-                           onClick={() => setCurrentPage(1)}
                            disabled={currentPage === 1}
+                           onClick={() => setCurrentPage(1)}
+                           variant="outline"
                         >
                            <span className="sr-only">
                               Ir para primeira página
@@ -629,34 +629,34 @@ function BillsListContent({ type }: BillsListSectionProps) {
                            {"<<"}
                         </Button>
                         <Button
-                           variant="outline"
                            className="h-8 w-8 p-0"
+                           disabled={currentPage === 1}
                            onClick={() =>
                               setCurrentPage((prev) => Math.max(1, prev - 1))
                            }
-                           disabled={currentPage === 1}
+                           variant="outline"
                         >
                            <span className="sr-only">Página anterior</span>
                            {"<"}
                         </Button>
                         <Button
-                           variant="outline"
                            className="h-8 w-8 p-0"
+                           disabled={currentPage === totalPages}
                            onClick={() =>
                               setCurrentPage((prev) =>
                                  Math.min(totalPages, prev + 1),
                               )
                            }
-                           disabled={currentPage === totalPages}
+                           variant="outline"
                         >
                            <span className="sr-only">Próxima página</span>
                            {">"}
                         </Button>
                         <Button
-                           variant="outline"
                            className="hidden h-8 w-8 p-0 lg:flex"
-                           onClick={() => setCurrentPage(totalPages)}
                            disabled={currentPage === totalPages}
+                           onClick={() => setCurrentPage(totalPages)}
+                           variant="outline"
                         >
                            <span className="sr-only">
                               Ir para última página
