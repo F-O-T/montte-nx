@@ -1,7 +1,7 @@
 {
    "actions-toolbar": {
       "actions": {
-         "add-new": "Adicionar nova transação",
+         "add-new": "Nova transação",
          "delete-selected": "Excluir selecionados"
       }
    },
