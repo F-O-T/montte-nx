@@ -203,18 +203,16 @@ function TransactionsListContent() {
       <>
          <Card>
             <CardHeader>
-               <div>
-                  <CardTitle>
-                     {translate(
-                        "dashboard.routes.transactions.list-section.title",
-                     )}
-                  </CardTitle>
-                  <CardDescription>
-                     {translate(
-                        "dashboard.routes.transactions.list-section.description",
-                     )}
-                  </CardDescription>
-               </div>
+               <CardTitle>
+                  {translate(
+                     "dashboard.routes.transactions.list-section.title",
+                  )}
+               </CardTitle>
+               <CardDescription>
+                  {translate(
+                     "dashboard.routes.transactions.list-section.description",
+                  )}
+               </CardDescription>
                <CardAction className="hidden md:flex">
                   <Button
                      onClick={() => setIsTransactionSheetOpen(true)}
