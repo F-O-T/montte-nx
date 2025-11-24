@@ -4,6 +4,7 @@ import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardFooter,
@@ -66,6 +67,7 @@ import {
    Filter,
    MoreVertical,
    Pencil,
+   Plus,
    Receipt,
    Search,
    Trash2,
@@ -132,7 +134,10 @@ function BillItem({ bill, categories }: BillItemProps) {
                      </Badge>
                   )}
                   {isOverdue && (
-                     <Badge className="text-[10px] h-5 px-1" variant="destructive">
+                     <Badge
+                        className="text-[10px] h-5 px-1"
+                        variant="destructive"
+                     >
                         {translate("dashboard.routes.bills.overdue")}
                      </Badge>
                   )}
@@ -303,6 +308,7 @@ function BillsListSkeleton() {
 }
 
 function BillsListContent({ type }: BillsListSectionProps) {
+   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const {
       setCurrentFilterType,
       currentPage,
@@ -315,7 +321,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
       setIsFilterSheetOpen,
       startDate,
       endDate,
-      pageSize
+      pageSize,
    } = useBillList();
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -338,19 +344,23 @@ function BillsListContent({ type }: BillsListSectionProps) {
          : type === "receivable"
            ? "income"
            : undefined;
-   
+
    const [billsQuery, categoriesQuery] = useSuspenseQueries({
       queries: [
          trpc.bills.getAllPaginated.queryOptions({
             limit: pageSize,
             page: currentPage,
-            type: billType ?? (typeFilter !== "all" ? (typeFilter as "income" | "expense") : undefined),
+            type:
+               billType ??
+               (typeFilter !== "all"
+                  ? (typeFilter as "income" | "expense")
+                  : undefined),
             month: undefined, // We use startDate/endDate now
             startDate: startDate?.toISOString(),
             endDate: endDate?.toISOString(),
             search: debouncedSearchTerm || undefined,
             orderBy: "dueDate",
-            orderDirection: "asc"
+            orderDirection: "asc",
          }),
          trpc.categories.getAll.queryOptions(),
       ],
@@ -378,7 +388,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
       } else if (statusFilter === "completed") {
          matchesStatus = !!bill.completionDate;
       }
-      
+
       return matchesCategory && matchesStatus;
    });
 
@@ -408,7 +418,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
          title: translate("dashboard.routes.bills.views.allBills.title"),
       };
    })();
-   
+
    const hasActiveFilters =
       categoryFilter !== "all" ||
       statusFilter !== "all" ||
@@ -416,13 +426,20 @@ function BillsListContent({ type }: BillsListSectionProps) {
       startDate !== undefined ||
       endDate !== undefined;
 
-
    return (
       <>
          <Card>
             <CardHeader>
                <CardTitle>{title}</CardTitle>
                <CardDescription>{description}</CardDescription>
+               <CardAction className="hidden md:flex">
+                  <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
+                     <Plus className="size-4 mr-2" />
+                     {translate(
+                        "dashboard.routes.bills.actions-toolbar.actions.add-new",
+                     )}
+                  </Button>
+               </CardAction>
             </CardHeader>
             <CardContent className="grid gap-2">
                <div className="flex items-center justify-between gap-8">
@@ -492,7 +509,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
 
                {/* Desktop View */}
                <div className="hidden md:block">
-                   {filteredBills.length === 0 ? (
+                  {filteredBills.length === 0 ? (
                      <Empty>
                         <EmptyContent>
                            <EmptyMedia variant="icon">
@@ -518,7 +535,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
                   )}
                </div>
             </CardContent>
-            
+
             {/* Pagination Mobile */}
             {totalPages > 1 && (
                <CardFooter className="block md:hidden">
@@ -577,7 +594,9 @@ function BillsListContent({ type }: BillsListSectionProps) {
                               href="#"
                               onClick={(e) => {
                                  e.preventDefault();
-                                 setCurrentPage(Math.min(totalPages, currentPage + 1));
+                                 setCurrentPage(
+                                    Math.min(totalPages, currentPage + 1),
+                                 );
                               }}
                            />
                         </PaginationItem>
@@ -585,12 +604,13 @@ function BillsListContent({ type }: BillsListSectionProps) {
                   </Pagination>
                </CardFooter>
             )}
-            
+
             {/* Pagination Desktop */}
-             {totalPages > 1 && (
+            {totalPages > 1 && (
                <CardFooter className="hidden md:flex md:items-center md:justify-between">
                   <div className="text-sm text-muted-foreground">
-                     Mostrando {filteredBills.length} de {pagination.totalCount} contas
+                     Mostrando {filteredBills.length} de {pagination.totalCount}{" "}
+                     contas
                   </div>
                   <div className="flex items-center space-x-6 lg:space-x-8">
                      <div className="flex w-[100px] items-center justify-center text-sm font-medium">
@@ -603,13 +623,17 @@ function BillsListContent({ type }: BillsListSectionProps) {
                            onClick={() => setCurrentPage(1)}
                            disabled={currentPage === 1}
                         >
-                           <span className="sr-only">Ir para primeira página</span>
+                           <span className="sr-only">
+                              Ir para primeira página
+                           </span>
                            {"<<"}
                         </Button>
                         <Button
                            variant="outline"
                            className="h-8 w-8 p-0"
-                           onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                           onClick={() =>
+                              setCurrentPage((prev) => Math.max(1, prev - 1))
+                           }
                            disabled={currentPage === 1}
                         >
                            <span className="sr-only">Página anterior</span>
@@ -618,7 +642,11 @@ function BillsListContent({ type }: BillsListSectionProps) {
                         <Button
                            variant="outline"
                            className="h-8 w-8 p-0"
-                           onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                           onClick={() =>
+                              setCurrentPage((prev) =>
+                                 Math.min(totalPages, prev + 1),
+                              )
+                           }
                            disabled={currentPage === totalPages}
                         >
                            <span className="sr-only">Próxima página</span>
@@ -630,7 +658,9 @@ function BillsListContent({ type }: BillsListSectionProps) {
                            onClick={() => setCurrentPage(totalPages)}
                            disabled={currentPage === totalPages}
                         >
-                           <span className="sr-only">Ir para última página</span>
+                           <span className="sr-only">
+                              Ir para última página
+                           </span>
                            {">>"}
                         </Button>
                      </div>
@@ -639,6 +669,20 @@ function BillsListContent({ type }: BillsListSectionProps) {
             )}
          </Card>
          <BillFilterSheet categories={categories} />
+
+         {/* Mobile Floating Action Button */}
+         <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
+            onClick={() => setIsCreateSheetOpen(true)}
+            size="icon"
+         >
+            <Plus className="size-6" />
+         </Button>
+
+         <ManageBillSheet
+            onOpen={isCreateSheetOpen}
+            onOpenChange={setIsCreateSheetOpen}
+         />
       </>
    );
 }

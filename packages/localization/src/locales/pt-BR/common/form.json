@@ -47,6 +47,10 @@
       "label": "Nome",
       "placeholder": "Digite seu nome completo"
    },
+   "notes": {
+      "label": "Observações",
+      "placeholder": "Digite suas observações"
+   },
    "otp": {
       "label": "Código OTP",
       "placeholder": "Digite o código OTP"
