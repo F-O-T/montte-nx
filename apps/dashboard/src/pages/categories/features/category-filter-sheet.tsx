@@ -20,8 +20,10 @@ import { X } from "lucide-react";
 type CategoryFilterSheetProps = {
    orderBy: "name" | "createdAt" | "updatedAt";
    orderDirection: "asc" | "desc";
+   pageSize?: number;
    onOrderByChange: (value: "name" | "createdAt" | "updatedAt") => void;
    onOrderDirectionChange: (value: "asc" | "desc") => void;
+   onPageSizeChange?: (value: number) => void;
    isOpen: boolean;
    onOpenChange: (open: boolean) => void;
 };
@@ -29,8 +31,10 @@ type CategoryFilterSheetProps = {
 export function CategoryFilterSheet({
    orderBy,
    orderDirection,
+   pageSize,
    onOrderByChange,
    onOrderDirectionChange,
+   onPageSizeChange,
    isOpen,
    onOpenChange,
 }: CategoryFilterSheetProps) {
@@ -153,6 +157,28 @@ export function CategoryFilterSheet({
                                  value={option.value}
                               >
                                  {option.label}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                  </Field>
+               </FieldGroup>
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate("dashboard.routes.transactions.features.filter.page-size.label")}
+                     </FieldLabel>
+                     <Select
+                        onValueChange={(value) => onPageSizeChange?.(Number(value))}
+                        value={pageSize?.toString()}
+                     >
+                        <SelectTrigger>
+                           <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {[5, 10, 20, 30, 50].map((size) => (
+                              <SelectItem key={size} value={size.toString()}>
+                                 {size}
                               </SelectItem>
                            ))}
                         </SelectContent>

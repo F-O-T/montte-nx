@@ -74,7 +74,7 @@ export function FilterSheet({
       },
       ...categories.map((category) => ({
          label: category.name,
-         value: category.name,
+         value: category.id,
       })),
    ];
 
@@ -247,7 +247,9 @@ export function FilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.start-date.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.start-date.label",
+                        )}
                      </FieldLabel>
                      <DatePicker
                         date={startDate}
@@ -262,7 +264,9 @@ export function FilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.end-date.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.end-date.label",
+                        )}
                      </FieldLabel>
                      <DatePicker
                         date={endDate}
@@ -277,10 +281,14 @@ export function FilterSheet({
                <FieldGroup>
                   <Field>
                      <FieldLabel>
-                        {translate("dashboard.routes.transactions.features.filter.page-size.label")}
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.page-size.label",
+                        )}
                      </FieldLabel>
                      <Select
-                        onValueChange={(value) => onPageSizeChange(Number(value))}
+                        onValueChange={(value) =>
+                           onPageSizeChange(Number(value))
+                        }
                         value={pageSize.toString()}
                      >
                         <SelectTrigger>
