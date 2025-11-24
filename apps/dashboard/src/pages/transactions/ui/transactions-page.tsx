@@ -6,7 +6,7 @@ import { TransactionsStats } from "./transactions-stats";
 export function TransactionsPage() {
    return (
       <TransactionListProvider>
-         <main className="grid  gap-4">
+         <main className="space-y-4">
             <DefaultHeader
                description="Visao geral de todas as entradas e saidas"
                title="Fluxo de caixa"

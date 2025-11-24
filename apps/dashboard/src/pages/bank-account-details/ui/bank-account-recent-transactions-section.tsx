@@ -130,7 +130,7 @@ function RecentTransactionsContent({
                </div>
             ) : (
                <ItemGroup>
-                  {transactions.map((transaction: any, index: number) => (
+                  {transactions.map((transaction, index: number) => (
                      <Fragment key={transaction.id}>
                         <TransactionItem
                            categories={categories}
