@@ -21,11 +21,13 @@ import {
    InputGroupAddon,
    InputGroupInput,
 } from "@packages/ui/components/input-group";
+import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus, Search } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
 import { trpc } from "@/integrations/clients";
 import { createBankAccountColumns } from "./bank-accounts-table-columns";
@@ -175,10 +177,26 @@ function BankAccountsListContent() {
                   </InputGroup>
                </div>
 
-               <DataTable
-                  columns={createBankAccountColumns()}
-                  data={filteredAccounts}
-               />
+               <div className="block md:hidden">
+                  <ItemGroup>
+                     {filteredAccounts.map((account, index) => (
+                        <Fragment key={account.id}>
+                           <BankAccountItem account={account} />
+                           {index !== filteredAccounts.length - 1 && (
+                              <ItemSeparator />
+                           )}
+                        </Fragment>
+                     ))}
+                  </ItemGroup>
+               </div>
+
+               {/* Desktop View */}
+               <div className="hidden md:block">
+                  <DataTable
+                     columns={createBankAccountColumns()}
+                     data={filteredAccounts}
+                  />
+               </div>
             </CardContent>
          </Card>
 
