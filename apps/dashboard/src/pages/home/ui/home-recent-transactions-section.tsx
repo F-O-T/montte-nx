@@ -5,6 +5,7 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { DataTable } from "@packages/ui/components/data-table";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -12,6 +13,8 @@ import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { trpc } from "@/integrations/clients";
+import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 
 function HomeRecentTransactionsErrorFallback() {
    return (
@@ -58,6 +61,8 @@ function HomeRecentTransactionsSkeleton() {
 }
 
 function HomeRecentTransactionsContent() {
+   const isMobile = useIsMobile();
+
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
          limit: 5,
@@ -84,7 +89,7 @@ function HomeRecentTransactionsContent() {
                <div className="py-8 text-center text-muted-foreground">
                   No transactions yet for your account.
                </div>
-            ) : (
+            ) : isMobile ? (
                <ItemGroup>
                   {transactions.map((transaction, index) => (
                      <Fragment key={transaction.id}>
@@ -96,6 +101,11 @@ function HomeRecentTransactionsContent() {
                      </Fragment>
                   ))}
                </ItemGroup>
+            ) : (
+               <DataTable
+                  columns={createTransactionColumns(categories)}
+                  data={transactions}
+               />
             )}
          </CardContent>
       </Card>

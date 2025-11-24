@@ -1,6 +1,7 @@
 "use client";
 
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { Badge } from "@packages/ui/components/badge";
 import {
    CardAction,
@@ -92,6 +93,11 @@ const homeCashFlowChartConfig: ChartConfig = {
 function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
    const chartData = data ?? [];
 
+   const currencyFormatter = (value: any) => {
+      if (typeof value !== "number") return value;
+      return formatDecimalCurrency(value);
+   };
+
    return (
       <Card>
          <CardHeader>
@@ -123,7 +129,10 @@ function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
                      tickMargin={8}
                   />
                   <YAxis axisLine={false} tickLine={false} tickMargin={8} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip
+                     content={<ChartTooltipContent />}
+                     formatter={currencyFormatter}
+                  />
                   <Area
                      dataKey="actualIncome"
                      fill="var(--color-actualIncome)"
