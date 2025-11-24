@@ -1,7 +1,11 @@
 {
    "cancel": "Cancelar",
+   "first-page": "Primeira página",
+   "last-page": "Última página",
    "next": "Próximo",
+   "next-page": "Próxima página",
    "previous": "Voltar",
+   "previous-page": "Página anterior",
    "retry": "Tentar novamente",
    "submit": "Enviar"
 }

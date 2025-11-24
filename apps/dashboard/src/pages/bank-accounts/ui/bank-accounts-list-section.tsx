@@ -5,6 +5,7 @@ import {
    CardAction,
    CardContent,
    CardDescription,
+   CardFooter,
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
@@ -23,8 +24,16 @@ import {
    InputGroupInput,
 } from "@packages/ui/components/input-group";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
+import {
+   Pagination,
+   PaginationContent,
+   PaginationItem,
+   PaginationLink,
+   PaginationNext,
+   PaginationPrevious,
+} from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus, Search } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -88,28 +97,32 @@ function BankAccountsListContent() {
    const [searchTerm, setSearchTerm] = useState("");
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [currentPage, setCurrentPage] = useState(1);
+   const pageSize = 10;
 
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
+         setCurrentPage(1);
       }, 300);
       return () => clearTimeout(timer);
    }, [searchTerm]);
 
-   const { data: bankAccounts } = useSuspenseQuery(
-      trpc.bankAccounts.getAll.queryOptions(),
+   const { data: paginatedData } = useSuspenseQuery(
+      trpc.bankAccounts.getAllPaginated.queryOptions(
+         {
+            limit: pageSize,
+            page: currentPage,
+            search: debouncedSearchTerm || undefined,
+         },
+         {
+            placeholderData: keepPreviousData,
+         },
+      ),
    );
 
-   const filteredAccounts = bankAccounts.filter(
-      (account) =>
-         account.name
-            .toLowerCase()
-            .includes(debouncedSearchTerm.toLowerCase()) ||
-         account.bank
-            .toLowerCase()
-            .includes(debouncedSearchTerm.toLowerCase()) ||
-         account.type.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
-   );
+   const { bankAccounts, pagination } = paginatedData;
+   const { totalPages, totalCount } = pagination;
 
    if (bankAccounts.length === 0) {
       return (
@@ -207,10 +220,10 @@ function BankAccountsListContent() {
 
                <div className="block md:hidden">
                   <ItemGroup>
-                     {filteredAccounts.map((account, index) => (
+                     {bankAccounts.map((account, index) => (
                         <Fragment key={account.id}>
                            <BankAccountItem account={account} />
-                           {index !== filteredAccounts.length - 1 && (
+                           {index !== bankAccounts.length - 1 && (
                               <ItemSeparator />
                            )}
                         </Fragment>
@@ -218,13 +231,106 @@ function BankAccountsListContent() {
                   </ItemGroup>
                </div>
 
+               {/* Desktop View */}
                <div className="hidden md:block">
                   <DataTable
                      columns={createBankAccountColumns()}
-                     data={filteredAccounts}
+                     data={bankAccounts}
                   />
                </div>
             </CardContent>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+               <CardFooter className="flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground hidden md:block">
+                     {translate(
+                        "dashboard.routes.transactions.list-section.showing",
+                        {
+                           count: bankAccounts.length,
+                           total: totalCount,
+                        },
+                     )}
+                  </div>
+                  <div className="flex-1 flex items-center justify-center md:justify-end space-x-6 lg:space-x-8">
+                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                        {translate(
+                           "dashboard.routes.transactions.list-section.page",
+                           {
+                              current: currentPage,
+                              total: totalPages,
+                           },
+                        )}
+                     </div>
+                     <Pagination className="w-auto">
+                        <PaginationContent>
+                           <PaginationItem>
+                              <PaginationPrevious
+                                 className={
+                                    currentPage === 1
+                                       ? "pointer-events-none opacity-50"
+                                       : ""
+                                 }
+                                 href="#"
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage((prev) =>
+                                       Math.max(1, prev - 1),
+                                    );
+                                 }}
+                              />
+                           </PaginationItem>
+                           
+                           {/* Mobile Pagination Items */}
+                           {Array.from(
+                              { length: Math.min(5, totalPages) },
+                              (_, i: number): number => {
+                                 if (totalPages <= 5) {
+                                    return i + 1;
+                                 } else if (currentPage <= 3) {
+                                    return i + 1;
+                                 } else if (currentPage >= totalPages - 2) {
+                                    return totalPages - 4 + i;
+                                 } else {
+                                    return currentPage - 2 + i;
+                                 }
+                              },
+                           ).map((pageNum) => (
+                              <PaginationItem key={pageNum}>
+                                 <PaginationLink
+                                    href="#"
+                                    isActive={pageNum === currentPage}
+                                    onClick={(e) => {
+                                       e.preventDefault();
+                                       setCurrentPage(pageNum);
+                                    }}
+                                 >
+                                    {pageNum}
+                                 </PaginationLink>
+                              </PaginationItem>
+                           ))}
+
+                           <PaginationItem>
+                              <PaginationNext
+                                 className={
+                                    currentPage === totalPages
+                                       ? "pointer-events-none opacity-50"
+                                       : ""
+                                 }
+                                 href="#"
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage((prev) =>
+                                       Math.min(totalPages, prev + 1),
+                                    );
+                                 }}
+                              />
+                           </PaginationItem>
+                        </PaginationContent>
+                     </Pagination>
+                  </div>
+               </CardFooter>
+            )}
          </Card>
 
          {/* Mobile Floating Action Button */}

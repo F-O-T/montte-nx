@@ -10,7 +10,11 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
-import { Item, ItemGroup, ItemSeparator } from "@packages/ui/components/item";
+import {
+   Item,
+   ItemGroup,
+   ItemSeparator,
+} from "@packages/ui/components/item";
 import {
    Pagination,
    PaginationContent,
@@ -23,7 +27,7 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { TransactionItem } from "@/features/transaction/ui/transaction-item";
+import { TransactionItem, type Transaction } from "@/features/transaction/ui/transaction-item";
 import { useTRPC } from "@/integrations/clients";
 import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
 
@@ -130,7 +134,7 @@ function RecentTransactionsContent({
                   {/* Mobile View */}
                   <div className="block md:hidden">
                      <ItemGroup>
-                        {transactions.map((transaction: any, index: number) => (
+                        {transactions.map((transaction: Transaction, index: number) => (
                            <Fragment key={transaction.id}>
                               <TransactionItem
                                  categories={categories}
@@ -144,6 +148,7 @@ function RecentTransactionsContent({
                      </ItemGroup>
                   </div>
 
+                  {/* Desktop View */}
                   <div className="hidden md:block">
                      <DataTable
                         columns={createTransactionColumns(categories)}
@@ -153,7 +158,8 @@ function RecentTransactionsContent({
                </>
             )}
          </CardContent>
-
+         
+         {/* Paginação Mobile */}
          {totalPages > 1 && (
             <CardFooter className="block md:hidden">
                <Pagination>
