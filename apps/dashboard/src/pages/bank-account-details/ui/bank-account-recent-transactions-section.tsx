@@ -227,7 +227,6 @@ function RecentTransactionsContent({
             </CardFooter>
          )}
 
-         {/* Paginação Desktop */}
          {totalPages > 1 && (
             <CardFooter className="hidden md:flex md:items-center md:justify-between">
                <div className="text-sm text-muted-foreground">

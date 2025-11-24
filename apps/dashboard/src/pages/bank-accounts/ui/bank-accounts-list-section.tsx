@@ -231,7 +231,6 @@ function BankAccountsListContent() {
                   </ItemGroup>
                </div>
 
-               {/* Desktop View */}
                <div className="hidden md:block">
                   <DataTable
                      columns={createBankAccountColumns()}
@@ -330,7 +329,6 @@ function BankAccountsListContent() {
                </CardFooter>
             )}
          </Card>
-
 
          <Button
             className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
