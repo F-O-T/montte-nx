@@ -7,6 +7,7 @@ import commonLanguagesPtBr from "./common/languages.json";
 import commonThemesPtBr from "./common/themes.json";
 import commonValidationPtBr from "./common/validation.json";
 import layoutPtBr from "./dashboard/layout.json";
+import bankAccountsPtBr from "./dashboard/routes/bank-accounts.json";
 import billsPtBr from "./dashboard/routes/bills.json";
 import categoriesPtBr from "./dashboard/routes/categories.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
@@ -36,6 +37,7 @@ const resources = {
       dashboard: {
          layout: layoutPtBr,
          routes: {
+            "bank-accounts": bankAccountsPtBr,
             bills: billsPtBr,
             categories: categoriesPtBr,
             "email-verification": emailVerificationPtBr,

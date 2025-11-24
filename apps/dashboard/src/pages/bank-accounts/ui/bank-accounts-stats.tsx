@@ -58,7 +58,7 @@ function BankAccountsStatsContent() {
    );
 
    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 h-min">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-min">
          <StatsCard
             description="Saldo total em todas as contas"
             title="Saldo Total"
