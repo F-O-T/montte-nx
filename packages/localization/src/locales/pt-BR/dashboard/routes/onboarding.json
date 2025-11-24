@@ -1,18 +1,18 @@
 {
    "actions": {
       "complete": "Concluir Onboarding",
-      "next": "Próximo Passo"
+      "next": "Próximo Passo",
+      "previous": "Passo Anterior"
    },
    "bank-account": {
       "description": "Vamos começar configurando sua conta bancária principal.",
       "form": {
          "bank": {
-            "label": "Nome do Banco",
-            "placeholder": "ex: Nubank, Itaú"
+            "label": "Banco"
          },
          "name": {
             "label": "Nome da Conta",
-            "placeholder": "ex: Conta Principal"
+            "placeholder": "Ex: Conta Principal"
          },
          "type": {
             "label": "Tipo de Conta",
@@ -30,39 +30,39 @@
       }
    },
    "category": {
-      "description": "Crie sua primeira categoria para organizar suas despesas.",
+      "description": "Selecione algumas categorias padrão para começar.",
       "form": {
          "budget": {
-            "label": "Orçamento Mensal (Opcional)"
+            "label": "Orçamento Mensal"
          },
          "color": {
             "label": "Cor"
          },
+         "defaults": {
+            "label": "Categorias sugeridas"
+         },
          "name": {
             "label": "Nome da Categoria",
-            "placeholder": "ex: Mercado"
+            "placeholder": "Ex: Alimentação"
          }
       },
-      "title": "Criar Categoria",
+      "title": "Categorias iniciais",
       "toast": {
-         "success": "Categoria criada com sucesso"
-      }
-   },
-   "steps": {
-      "bank-account": {
-         "description": "Adicione sua primeira conta bancária",
-         "title": "Conta Bancária"
+         "success": "Categorias criadas com sucesso"
       },
-      "category": {
-         "description": "Crie sua primeira categoria",
-         "title": "Categoria"
+      "defaults": {
+         "food": "Alimentação",
+         "health": "Saúde",
+         "housing": "Moradia",
+         "leisure": "Lazer",
+         "shopping": "Compras gerais",
+         "transport": "Transporte"
       }
    },
    "validation": {
       "account-name-required": "Nome da conta é obrigatório",
       "account-type-required": "Tipo de conta é obrigatório",
-      "bank-required": "Nome do banco é obrigatório",
-      "category-name-required": "Nome da categoria é obrigatório",
-      "color-required": "Cor é obrigatória"
+      "bank-required": "Banco é obrigatório",
+      "category-name-required": "Nome da categoria é obrigatório"
    }
 }

@@ -1,5 +1,4 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { createSlug } from "@packages/utils/text";
 import { and, count, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
@@ -8,81 +7,26 @@ import { transaction } from "../schemas/transactions";
 export type Category = typeof category.$inferSelect;
 export type NewCategory = typeof category.$inferInsert;
 
-async function generateUniqueSlug(
-   dbClient: DatabaseInstance,
-   userId: string,
-   baseName: string,
-): Promise<string> {
-   const baseSlug = createSlug(baseName);
-   let slug = baseSlug;
-   let counter = 1;
-   const maxAttempts = 100;
-
-   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const existing = await dbClient.query.category.findFirst({
-         where: (category, { eq, and }) =>
-            and(eq(category.userId, userId), eq(category.slug, slug)),
-      });
-
-      if (!existing) {
-         return slug;
-      }
-
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-   }
-
-   throw AppError.database(
-      `Failed to generate unique slug after ${maxAttempts} attempts`,
-   );
-}
-
 export async function createCategory(
    dbClient: DatabaseInstance,
    data: NewCategory,
 ) {
    try {
-      if (!data.slug && data.name) {
-         data.slug = await generateUniqueSlug(dbClient, data.userId, data.name);
-      }
-
       const result = await dbClient.insert(category).values(data).returning();
       return result[0];
    } catch (err: unknown) {
       const error = err as Error & { code?: string };
-      
+
       if (error.code === "23505") {
-         if (data.name && !data.slug) {
-            data.slug = await generateUniqueSlug(
-               dbClient,
-               data.userId,
-               data.name,
-            );
-            try {
-               const result = await dbClient
-                  .insert(category)
-                  .values(data)
-                  .returning();
-               return result[0];
-            } catch (retryErr) {
-               propagateError(retryErr);
-               throw AppError.conflict(
-                  `Category with slug "${data.slug}" already exists for this user`,
-                  { cause: retryErr },
-               );
-            }
-         }
-         throw AppError.conflict(
-            `Category with slug "${data.slug}" already exists for this user`,
-            { cause: err },
-         );
+         throw AppError.conflict(`Category already exists for this user`, {
+            cause: err,
+         });
       }
 
       propagateError(err);
-      throw AppError.database(
-         `Failed to create category: ${error.message}`,
-         { cause: err },
-      );
+      throw AppError.database(`Failed to create category: ${error.message}`, {
+         cause: err,
+      });
    }
 }
 
@@ -99,25 +43,6 @@ export async function findCategoryById(
       propagateError(err);
       throw AppError.database(
          `Failed to find category by id: ${(err as Error).message}`,
-      );
-   }
-}
-
-export async function findCategoryBySlug(
-   dbClient: DatabaseInstance,
-   userId: string,
-   slug: string,
-) {
-   try {
-      const result = await dbClient.query.category.findFirst({
-         where: (category, { eq, and }) =>
-            and(eq(category.userId, userId), eq(category.slug, slug)),
-      });
-      return result || null;
-   } catch (err) {
-      propagateError(err);
-      throw AppError.database(
-         `Failed to find category by slug: ${(err as Error).message}`,
       );
    }
 }
@@ -219,14 +144,6 @@ export async function updateCategory(
 
       const updateData: Partial<NewCategory> = { ...data };
 
-      if (data.name && data.name !== existingCategory.name) {
-         updateData.slug = await generateUniqueSlug(
-            dbClient,
-            existingCategory.userId,
-            data.name,
-         );
-      }
-
       const result = await dbClient
          .update(category)
          .set(updateData)
@@ -242,10 +159,9 @@ export async function updateCategory(
       const error = err as Error & { code?: string };
 
       if (error.code === "23505") {
-         throw AppError.conflict(
-            `Category with slug "${data.slug}" already exists for this user`,
-            { cause: err },
-         );
+         throw AppError.conflict(`Category already exists for this user`, {
+            cause: err,
+         });
       }
 
       if (err instanceof AppError) {
@@ -253,10 +169,9 @@ export async function updateCategory(
       }
 
       propagateError(err);
-      throw AppError.database(
-         `Failed to update category: ${error.message}`,
-         { cause: err },
-      );
+      throw AppError.database(`Failed to update category: ${error.message}`, {
+         cause: err,
+      });
    }
 }
 

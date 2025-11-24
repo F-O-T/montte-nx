@@ -15,6 +15,7 @@ import {
    PopoverTrigger,
 } from "@packages/ui/components/popover";
 import { cn } from "@packages/ui/lib/utils";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
 import * as React from "react";
 
@@ -47,15 +48,41 @@ export function Combobox({
    onBlur,
 }: ComboboxProps) {
    const [open, setOpen] = React.useState(false);
+   const [search, setSearch] = React.useState("");
+   const [parentNode, setParentNode] = React.useState<HTMLDivElement | null>(
+      null,
+   );
 
    const selectedOption = options.find((option) => option.value === value);
+
+   const filteredOptions = React.useMemo(() => {
+      const searchTerm = search.trim().toLowerCase();
+      if (!searchTerm) return options;
+      return options.filter((option) => {
+         return option.label.toLowerCase().includes(searchTerm);
+      });
+   }, [options, search]);
+
+   const virtualizer = useVirtualizer({
+      count: filteredOptions.length,
+      getScrollElement: () => parentNode,
+      estimateSize: () => 35,
+   });
+
+   const virtualItems = virtualizer.getVirtualItems();
+
+   const refCallback = React.useCallback((node: HTMLDivElement | null) => {
+      if (node) {
+         setParentNode(node);
+      }
+   }, []);
 
    return (
       <Popover onOpenChange={setOpen} open={open}>
          <PopoverTrigger asChild>
             <Button
                aria-expanded={open}
-               className={cn("flex items-center gap-2", className)}
+               className={cn("flex truncate items-center gap-2", className)}
                disabled={disabled}
                onBlur={onBlur}
                role="combobox"
@@ -67,32 +94,66 @@ export function Combobox({
          </PopoverTrigger>
          <PopoverContent className=" p-0">
             <Command>
-               <CommandInput placeholder={searchPlaceholder} />
-               <CommandList>
+               <CommandInput
+                  placeholder={searchPlaceholder}
+                  value={search}
+                  onValueChange={setSearch}
+               />
+               <CommandList ref={refCallback}>
                   <CommandEmpty>{emptyMessage}</CommandEmpty>
                   <CommandGroup>
-                     {options.map((option) => (
-                        <CommandItem
-                           key={option.value}
-                           onSelect={(currentValue) => {
-                              onValueChange?.(
-                                 currentValue === value ? "" : currentValue,
-                              );
-                              setOpen(false);
-                           }}
-                           value={option.value}
-                        >
-                           <CheckIcon
-                              className={cn(
-                                 "mr-2 h-4 w-4",
-                                 value === option.value
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                              )}
-                           />
-                           {option.label}
-                        </CommandItem>
-                     ))}
+                     <div
+                        style={{
+                           height: virtualizer.getTotalSize(),
+                           width: "100%",
+                           position: "relative",
+                        }}
+                     >
+                        {virtualItems.length > 0 ? (
+                           <div
+                              style={{
+                                 position: "absolute",
+                                 top: 0,
+                                 left: 0,
+                                 width: "100%",
+                                 transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
+                              }}
+                           >
+                              {virtualItems.map((virtualRow) => {
+                                 const option =
+                                    filteredOptions[virtualRow.index];
+
+                                 if (!option) return null;
+
+                                 return (
+                                    <CommandItem
+                                       key={option.value}
+                                       ref={virtualizer.measureElement}
+                                       onSelect={(currentValue) => {
+                                          onValueChange?.(
+                                             currentValue === value
+                                                ? ""
+                                                : currentValue,
+                                          );
+                                          setOpen(false);
+                                       }}
+                                       value={option.value}
+                                    >
+                                       <CheckIcon
+                                          className={cn(
+                                             "mr-2 h-4 w-4",
+                                             value === option.value
+                                                ? "opacity-100"
+                                                : "opacity-0",
+                                          )}
+                                       />
+                                       {option.label}
+                                    </CommandItem>
+                                 );
+                              })}
+                           </div>
+                        ) : null}
+                     </div>
                   </CommandGroup>
                </CommandList>
             </Command>

@@ -9,26 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
-import { Route as DashboardBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/bank-accounts.$bankAccountId'
-import { Route as DashboardBankAccountsIndexRouteImport } from './routes/_dashboard/bank-accounts.index'
-import { Route as DashboardBillsIndexRouteImport } from './routes/_dashboard/bills/index'
-import { Route as DashboardCategoriesSlugRouteImport } from './routes/_dashboard/categories.$slug'
-import { Route as DashboardCategoriesIndexRouteImport } from './routes/_dashboard/categories.index'
+import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as AuthOnboardingRouteImport } from './routes/auth/onboarding'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
+import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
+import { Route as DashboardReportsRouteImport } from './routes/_dashboard/reports'
+import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
 import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
 import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
-import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
-import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
+import { Route as DashboardCategoriesIndexRouteImport } from './routes/_dashboard/categories.index'
+import { Route as DashboardBillsIndexRouteImport } from './routes/_dashboard/bills/index'
+import { Route as DashboardBankAccountsIndexRouteImport } from './routes/_dashboard/bank-accounts.index'
 import { Route as DashboardOrganizationTeamsRouteImport } from './routes/_dashboard/organization/teams'
-import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
-import { Route as DashboardReportsRouteImport } from './routes/_dashboard/reports'
-import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
-import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
-import { Route as AuthOnboardingRouteImport } from './routes/auth/onboarding'
-import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
-import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
+import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
+import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
+import { Route as DashboardBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/bank-accounts.$bankAccountId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -125,12 +124,6 @@ const DashboardOrganizationInvitesRoute =
     path: '/organization/invites',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardCategoriesSlugRoute =
-  DashboardCategoriesSlugRouteImport.update({
-    id: '/categories/$slug',
-    path: '/categories/$slug',
-    getParentRoute: () => DashboardRoute,
-  } as any)
 const DashboardBankAccountsBankAccountIdRoute =
   DashboardBankAccountsBankAccountIdRouteImport.update({
     id: '/bank-accounts/$bankAccountId',
@@ -150,7 +143,6 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
-  '/categories/$slug': typeof DashboardCategoriesSlugRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
@@ -171,7 +163,6 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
-  '/categories/$slug': typeof DashboardCategoriesSlugRoute
   '/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/organization/members': typeof DashboardOrganizationMembersRoute
   '/organization/teams': typeof DashboardOrganizationTeamsRoute
@@ -194,7 +185,6 @@ export interface FileRoutesById {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/_dashboard/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
-  '/_dashboard/categories/$slug': typeof DashboardCategoriesSlugRoute
   '/_dashboard/organization/invites': typeof DashboardOrganizationInvitesRoute
   '/_dashboard/organization/members': typeof DashboardOrganizationMembersRoute
   '/_dashboard/organization/teams': typeof DashboardOrganizationTeamsRoute
@@ -217,7 +207,6 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/bank-accounts/$bankAccountId'
-    | '/categories/$slug'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
@@ -238,7 +227,6 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/bank-accounts/$bankAccountId'
-    | '/categories/$slug'
     | '/organization/invites'
     | '/organization/members'
     | '/organization/teams'
@@ -260,7 +248,6 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/_dashboard/bank-accounts/$bankAccountId'
-    | '/_dashboard/categories/$slug'
     | '/_dashboard/organization/invites'
     | '/_dashboard/organization/members'
     | '/_dashboard/organization/teams'
@@ -403,13 +390,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardOrganizationInvitesRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/_dashboard/categories/$slug': {
-      id: '/_dashboard/categories/$slug'
-      path: '/categories/$slug'
-      fullPath: '/categories/$slug'
-      preLoaderRoute: typeof DashboardCategoriesSlugRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/_dashboard/bank-accounts/$bankAccountId': {
       id: '/_dashboard/bank-accounts/$bankAccountId'
       path: '/bank-accounts/$bankAccountId'
@@ -426,7 +406,6 @@ interface DashboardRouteChildren {
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardTransactionsRoute: typeof DashboardTransactionsRoute
   DashboardBankAccountsBankAccountIdRoute: typeof DashboardBankAccountsBankAccountIdRoute
-  DashboardCategoriesSlugRoute: typeof DashboardCategoriesSlugRoute
   DashboardOrganizationInvitesRoute: typeof DashboardOrganizationInvitesRoute
   DashboardOrganizationMembersRoute: typeof DashboardOrganizationMembersRoute
   DashboardOrganizationTeamsRoute: typeof DashboardOrganizationTeamsRoute
@@ -443,7 +422,6 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardTransactionsRoute: DashboardTransactionsRoute,
   DashboardBankAccountsBankAccountIdRoute:
     DashboardBankAccountsBankAccountIdRoute,
-  DashboardCategoriesSlugRoute: DashboardCategoriesSlugRoute,
   DashboardOrganizationInvitesRoute: DashboardOrganizationInvitesRoute,
   DashboardOrganizationMembersRoute: DashboardOrganizationMembersRoute,
   DashboardOrganizationTeamsRoute: DashboardOrganizationTeamsRoute,
