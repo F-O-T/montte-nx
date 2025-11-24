@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import {
    Card,
    CardContent,
@@ -18,14 +19,20 @@ function HomeBankAccountsErrorFallback() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Bank Accounts</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.bank-accounts.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Manage your connected bank accounts
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
             <div className="py-4 text-center text-muted-foreground">
-               Failed to load bank accounts
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.state.empty.title",
+               )}
             </div>
          </CardContent>
       </Card>

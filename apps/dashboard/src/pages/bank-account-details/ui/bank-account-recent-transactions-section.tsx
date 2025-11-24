@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -30,14 +31,20 @@ function RecentTransactionsErrorFallback() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Latest transactions for this account
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
             <div className="text-center py-4 text-muted-foreground">
-               Failed to load transactions
+               {translate(
+                  "dashboard.routes.transactions.list-section.state.empty.title",
+               )}
             </div>
          </CardContent>
       </Card>
@@ -48,9 +55,13 @@ function RecentTransactionsSkeleton() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Latest transactions for this account
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -98,15 +109,21 @@ function RecentTransactionsContent({
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Latest transactions for this account
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
             {!hasTransactions ? (
                <div className="text-center py-8 text-muted-foreground">
-                  No transactions found for this account.
+                  {translate(
+                     "dashboard.routes.transactions.list-section.state.empty.title",
+                  )}
                </div>
             ) : (
                <>
@@ -211,12 +228,23 @@ function RecentTransactionsContent({
          {totalPages > 1 && (
             <CardFooter className="hidden md:flex md:items-center md:justify-between">
                <div className="text-sm text-muted-foreground">
-                  Mostrando {transactions.length} de {pagination.totalCount}{" "}
-                  transações
+                  {translate(
+                     "dashboard.routes.transactions.list-section.showing",
+                     {
+                        count: transactions.length,
+                        total: pagination.totalCount,
+                     },
+                  )}
                </div>
                <div className="flex items-center space-x-6 lg:space-x-8">
                   <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                     Página {currentPage} de {totalPages}
+                     {translate(
+                        "dashboard.routes.transactions.list-section.page",
+                        {
+                           current: currentPage,
+                           total: totalPages,
+                        },
+                     )}
                   </div>
                   <div className="flex items-center space-x-2">
                      <Button
@@ -225,7 +253,9 @@ function RecentTransactionsContent({
                         onClick={() => setCurrentPage(1)}
                         variant="outline"
                      >
-                        <span className="sr-only">Ir para primeira página</span>
+                        <span className="sr-only">
+                           {translate("common.actions.first-page")}
+                        </span>
                         {"<<"}
                      </Button>
                      <Button
@@ -236,7 +266,9 @@ function RecentTransactionsContent({
                         }
                         variant="outline"
                      >
-                        <span className="sr-only">Página anterior</span>
+                        <span className="sr-only">
+                           {translate("common.actions.previous-page")}
+                        </span>
                         {"<"}
                      </Button>
                      <Button
@@ -249,7 +281,9 @@ function RecentTransactionsContent({
                         }
                         variant="outline"
                      >
-                        <span className="sr-only">Próxima página</span>
+                        <span className="sr-only">
+                           {translate("common.actions.next-page")}
+                        </span>
                         {">"}
                      </Button>
                      <Button
@@ -258,7 +292,9 @@ function RecentTransactionsContent({
                         onClick={() => setCurrentPage(totalPages)}
                         variant="outline"
                      >
-                        <span className="sr-only">Ir para última página</span>
+                        <span className="sr-only">
+                           {translate("common.actions.last-page")}
+                        </span>
                         {">>"}
                      </Button>
                   </div>

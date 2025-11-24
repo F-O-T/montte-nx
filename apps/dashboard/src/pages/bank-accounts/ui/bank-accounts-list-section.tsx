@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -36,9 +37,13 @@ function BankAccountsListErrorFallback(props: FallbackProps) {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Contas Bancárias</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.bank-accounts.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Gerencie suas contas bancárias conectadas
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -57,9 +62,13 @@ function BankAccountsListSkeleton() {
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Contas Bancárias</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.bank-accounts.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Gerencie suas contas bancárias conectadas
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.description",
+               )}
             </CardDescription>
             <div className="flex items-center gap-3 pt-4">
                <div className="relative flex-1 max-w-md">
@@ -106,9 +115,15 @@ function BankAccountsListContent() {
       return (
          <Card>
             <CardHeader>
-               <CardTitle>Contas Bancárias</CardTitle>
+               <CardTitle>
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.title",
+                  )}
+               </CardTitle>
                <CardDescription>
-                  Gerencie suas contas bancárias conectadas
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.description",
+                  )}
                </CardDescription>
                <CardAction className="hidden md:flex">
                   <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
@@ -123,10 +138,15 @@ function BankAccountsListContent() {
                      <EmptyMedia variant="icon">
                         <Building className="size-12 text-muted-foreground" />
                      </EmptyMedia>
-                     <EmptyTitle>Nenhuma conta bancária</EmptyTitle>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                        )}
+                     </EmptyTitle>
                      <EmptyDescription>
-                        Crie sua primeira conta bancária para começar a
-                        controlar suas finanças.
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.state.empty.description",
+                        )}
                      </EmptyDescription>
                      <div className="mt-6">
                         <Button
@@ -152,9 +172,15 @@ function BankAccountsListContent() {
       <>
          <Card>
             <CardHeader>
-               <CardTitle>Contas Bancárias</CardTitle>
+               <CardTitle>
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.title",
+                  )}
+               </CardTitle>
                <CardDescription>
-                  Gerencie suas contas bancárias conectadas
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.description",
+                  )}
                </CardDescription>
                <CardAction className="hidden md:flex">
                   <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
@@ -168,7 +194,9 @@ function BankAccountsListContent() {
                   <InputGroup className="flex-1 max-w-md">
                      <InputGroupInput
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Buscar contas bancárias..."
+                        placeholder={translate(
+                           "common.form.search.placeholder",
+                        )}
                         value={searchTerm}
                      />
                      <InputGroupAddon>

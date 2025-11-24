@@ -24,6 +24,18 @@
       "total-balance": {
          "description": "Saldo total em todas as contas",
          "title": "Saldo Total"
+      },
+      "current-balance": {
+         "description": "Saldo calculado atual",
+         "title": "Saldo"
+      },
+      "total-income": {
+         "description": "Receita total",
+         "title": "Receita"
+      },
+      "total-expenses": {
+         "description": "Despesas totais",
+         "title": "Despesas"
       }
    },
    "status": {
