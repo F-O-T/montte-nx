@@ -72,6 +72,9 @@ const paginationSchema = z.object({
    orderDirection: z.enum(["asc", "desc"]).default("desc"),
    page: z.coerce.number().min(1).default(1),
    type: z.enum(["income", "expense"]).optional(),
+   startDate: z.string().optional(),
+   endDate: z.string().optional(),
+   search: z.string().optional(),
 });
 
 const filterSchema = z.object({
@@ -294,7 +297,11 @@ export const billRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return findBillsByUserIdPaginated(resolvedCtx.db, userId, input);
+         return findBillsByUserIdPaginated(resolvedCtx.db, userId, {
+            ...input,
+            endDate: input.endDate ? new Date(input.endDate) : undefined,
+            startDate: input.startDate ? new Date(input.startDate) : undefined,
+         });
       }),
 
    getById: protectedProcedure

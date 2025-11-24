@@ -10,6 +10,7 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { DataTable } from "@packages/ui/components/data-table";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -59,7 +60,7 @@ import {
    getRecurrenceLabel,
    type RecurrencePattern,
 } from "@packages/utils/recurrence";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
    Filter,
@@ -81,6 +82,7 @@ import { useBillList } from "../features/bill-list-context";
 import { CompleteBillDialog } from "../features/complete-bill-dialog";
 import { DeleteBillDialog } from "../features/delete-bill-dialog";
 import { ManageBillSheet } from "../features/manage-bill-sheet";
+import { createBillColumns } from "./bills-table-columns";
 
 type BillsListSectionProps = {
    type?: "payable" | "receivable";
@@ -104,7 +106,7 @@ function BillItem({ bill, categories }: BillItemProps) {
         ? "secondary"
         : "default";
 
-   const categoryDetails = categories.find((cat) => cat.name === bill.category);
+   const categoryDetails = categories.find((cat) => cat.id === bill.categoryId);
    const categoryColor = categoryDetails?.color || "#6b7280";
    const categoryIcon = categoryDetails?.icon || "Wallet";
 
@@ -123,14 +125,14 @@ function BillItem({ bill, categories }: BillItemProps) {
                <ItemTitle className="truncate flex items-center gap-2">
                   {bill.description}
                   {bill.isRecurring && bill.recurrencePattern && (
-                     <Badge className="text-xs" variant="outline">
+                     <Badge className="text-[10px] h-5 px-1" variant="outline">
                         {getRecurrenceLabel(
                            bill.recurrencePattern as RecurrencePattern,
                         )}
                      </Badge>
                   )}
                   {isOverdue && (
-                     <Badge className="text-xs" variant="destructive">
+                     <Badge className="text-[10px] h-5 px-1" variant="destructive">
                         {translate("dashboard.routes.bills.overdue")}
                      </Badge>
                   )}
@@ -154,7 +156,8 @@ function BillItem({ bill, categories }: BillItemProps) {
                   className={bill.completionDate ? "opacity-60" : ""}
                   variant={statusColor}
                >
-                  R$ {parseFloat(bill.amount).toFixed(2)}
+                  {bill.type === "expense" ? "-" : "+"}
+                  {parseFloat(bill.amount).toFixed(2)}
                </Badge>
                <DropdownMenu>
                   <Tooltip>
@@ -302,8 +305,6 @@ function BillsListSkeleton() {
 function BillsListContent({ type }: BillsListSectionProps) {
    const {
       setCurrentFilterType,
-      selectedMonth,
-      setSelectedMonth,
       currentPage,
       setCurrentPage,
       searchTerm,
@@ -312,41 +313,56 @@ function BillsListContent({ type }: BillsListSectionProps) {
       statusFilter,
       typeFilter,
       setIsFilterSheetOpen,
+      startDate,
+      endDate,
+      pageSize
    } = useBillList();
-   const pageSize = 5;
 
-   const formattedMonth = `${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, "0")}`;
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setDebouncedSearchTerm(searchTerm);
+         setCurrentPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+   }, [searchTerm]);
 
    // Set the context filter type based on the component prop
    useEffect(() => {
       setCurrentFilterType(type);
    }, [type, setCurrentFilterType]);
 
-   // Get bills data with server-side filtering
    const billType =
       type === "payable"
          ? "expense"
          : type === "receivable"
            ? "income"
            : undefined;
-   const { data: allBills = [] } = useSuspenseQuery(
-      trpc.bills.getAll.queryOptions({
-         month: formattedMonth,
-         type: billType,
-      }),
-   );
+   
+   const [billsQuery, categoriesQuery] = useSuspenseQueries({
+      queries: [
+         trpc.bills.getAllPaginated.queryOptions({
+            limit: pageSize,
+            page: currentPage,
+            type: billType ?? (typeFilter !== "all" ? (typeFilter as "income" | "expense") : undefined),
+            month: undefined, // We use startDate/endDate now
+            startDate: startDate?.toISOString(),
+            endDate: endDate?.toISOString(),
+            search: debouncedSearchTerm || undefined,
+            orderBy: "dueDate",
+            orderDirection: "asc"
+         }),
+         trpc.categories.getAll.queryOptions(),
+      ],
+   });
 
-   const { data: categories = [] } = useSuspenseQuery(
-      trpc.categories.getAll.queryOptions(),
-   );
+   const { bills, pagination } = billsQuery.data;
+   const { totalPages } = pagination;
+   const categories = categoriesQuery.data ?? [];
 
-   // Apply filters like transactions
-   const filteredBills = allBills.filter((bill) => {
-      const matchesSearch =
-         bill.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         bill.category.toLowerCase().includes(searchTerm.toLowerCase());
+   const filteredBills = bills.filter((bill) => {
       const matchesCategory =
-         categoryFilter === "all" || bill.category === categoryFilter;
+         categoryFilter === "all" || bill.categoryId === categoryFilter;
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -362,32 +378,9 @@ function BillsListContent({ type }: BillsListSectionProps) {
       } else if (statusFilter === "completed") {
          matchesStatus = !!bill.completionDate;
       }
-
-      const matchesType =
-         typeFilter === "all" ||
-         (typeFilter === "payable" && bill.type === "expense") ||
-         (typeFilter === "receivable" && bill.type === "income");
-
-      return matchesSearch && matchesCategory && matchesStatus && matchesType;
+      
+      return matchesCategory && matchesStatus;
    });
-
-   // Pagination logic
-   const totalPages = Math.ceil(filteredBills.length / pageSize);
-   const startIndex = (currentPage - 1) * pageSize;
-   const paginatedBills = filteredBills.slice(
-      startIndex,
-      startIndex + pageSize,
-   );
-
-   // Reset to first page when filters change
-   const handleFilterChange = () => {
-      setCurrentPage(1);
-   };
-
-   const hasActiveFilters =
-      categoryFilter !== "all" ||
-      statusFilter !== "all" ||
-      typeFilter !== "all";
 
    const { title, description } = (() => {
       if (type === "payable") {
@@ -415,6 +408,14 @@ function BillsListContent({ type }: BillsListSectionProps) {
          title: translate("dashboard.routes.bills.views.allBills.title"),
       };
    })();
+   
+   const hasActiveFilters =
+      categoryFilter !== "all" ||
+      statusFilter !== "all" ||
+      typeFilter !== "all" ||
+      startDate !== undefined ||
+      endDate !== undefined;
+
 
    return (
       <>
@@ -429,7 +430,6 @@ function BillsListContent({ type }: BillsListSectionProps) {
                      <InputGroupInput
                         onChange={(e) => {
                            setSearchTerm(e.target.value);
-                           handleFilterChange();
                         }}
                         placeholder={translate(
                            "common.form.search.placeholder",
@@ -456,39 +456,72 @@ function BillsListContent({ type }: BillsListSectionProps) {
                   </Tooltip>
                </div>
 
-               {paginatedBills.length === 0 ? (
-                  <Empty>
-                     <EmptyContent>
-                        <EmptyMedia variant="icon">
-                           <Receipt />
-                        </EmptyMedia>
-                        <EmptyTitle>
-                           {translate(
-                              "dashboard.routes.bills.list-section.state.empty.title",
-                           )}
-                        </EmptyTitle>
-                        <EmptyDescription>
-                           {translate(
-                              "dashboard.routes.bills.list-section.state.empty.description",
-                           )}
-                        </EmptyDescription>
-                     </EmptyContent>
-                  </Empty>
-               ) : (
-                  <ItemGroup>
-                     {paginatedBills.map((bill, index) => (
-                        <Fragment key={bill.id}>
-                           <BillItem bill={bill} categories={categories} />
-                           {index !== paginatedBills.length - 1 && (
-                              <ItemSeparator />
-                           )}
-                        </Fragment>
-                     ))}
-                  </ItemGroup>
-               )}
+               {/* Mobile View */}
+               <div className="block md:hidden">
+                  {filteredBills.length === 0 ? (
+                     <Empty>
+                        <EmptyContent>
+                           <EmptyMedia variant="icon">
+                              <Receipt />
+                           </EmptyMedia>
+                           <EmptyTitle>
+                              {translate(
+                                 "dashboard.routes.bills.list-section.state.empty.title",
+                              )}
+                           </EmptyTitle>
+                           <EmptyDescription>
+                              {translate(
+                                 "dashboard.routes.bills.list-section.state.empty.description",
+                              )}
+                           </EmptyDescription>
+                        </EmptyContent>
+                     </Empty>
+                  ) : (
+                     <ItemGroup>
+                        {filteredBills.map((bill, index) => (
+                           <Fragment key={bill.id}>
+                              <BillItem bill={bill} categories={categories} />
+                              {index !== filteredBills.length - 1 && (
+                                 <ItemSeparator />
+                              )}
+                           </Fragment>
+                        ))}
+                     </ItemGroup>
+                  )}
+               </div>
+
+               {/* Desktop View */}
+               <div className="hidden md:block">
+                   {filteredBills.length === 0 ? (
+                     <Empty>
+                        <EmptyContent>
+                           <EmptyMedia variant="icon">
+                              <Receipt />
+                           </EmptyMedia>
+                           <EmptyTitle>
+                              {translate(
+                                 "dashboard.routes.bills.list-section.state.empty.title",
+                              )}
+                           </EmptyTitle>
+                           <EmptyDescription>
+                              {translate(
+                                 "dashboard.routes.bills.list-section.state.empty.description",
+                              )}
+                           </EmptyDescription>
+                        </EmptyContent>
+                     </Empty>
+                  ) : (
+                     <DataTable
+                        columns={createBillColumns(categories)}
+                        data={filteredBills}
+                     />
+                  )}
+               </div>
             </CardContent>
+            
+            {/* Pagination Mobile */}
             {totalPages > 1 && (
-               <CardFooter>
+               <CardFooter className="block md:hidden">
                   <Pagination>
                      <PaginationContent>
                         <PaginationItem>
@@ -499,12 +532,10 @@ function BillsListContent({ type }: BillsListSectionProps) {
                                     : ""
                               }
                               href="#"
-                              onClick={() =>
-                                 setCurrentPage((prev) => {
-                                    const newPage = prev - 1;
-                                    return newPage >= 1 ? newPage : prev;
-                                 })
-                              }
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 setCurrentPage(Math.max(1, currentPage - 1));
+                              }}
                            />
                         </PaginationItem>
 
@@ -526,7 +557,10 @@ function BillsListContent({ type }: BillsListSectionProps) {
                               <PaginationLink
                                  href="#"
                                  isActive={pageNum === currentPage}
-                                 onClick={() => setCurrentPage(pageNum)}
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(pageNum);
+                                 }}
                               >
                                  {pageNum}
                               </PaginationLink>
@@ -541,18 +575,66 @@ function BillsListContent({ type }: BillsListSectionProps) {
                                     : ""
                               }
                               href="#"
-                              onClick={() =>
-                                 setCurrentPage((prev) => {
-                                    const newPage = prev + 1;
-                                    return newPage <= totalPages
-                                       ? newPage
-                                       : prev;
-                                 })
-                              }
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 setCurrentPage(Math.min(totalPages, currentPage + 1));
+                              }}
                            />
                         </PaginationItem>
                      </PaginationContent>
                   </Pagination>
+               </CardFooter>
+            )}
+            
+            {/* Pagination Desktop */}
+             {totalPages > 1 && (
+               <CardFooter className="hidden md:flex md:items-center md:justify-between">
+                  <div className="text-sm text-muted-foreground">
+                     Mostrando {filteredBills.length} de {pagination.totalCount} contas
+                  </div>
+                  <div className="flex items-center space-x-6 lg:space-x-8">
+                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                        Página {currentPage} de {totalPages}
+                     </div>
+                     <div className="flex items-center space-x-2">
+                        <Button
+                           variant="outline"
+                           className="hidden h-8 w-8 p-0 lg:flex"
+                           onClick={() => setCurrentPage(1)}
+                           disabled={currentPage === 1}
+                        >
+                           <span className="sr-only">Ir para primeira página</span>
+                           {"<<"}
+                        </Button>
+                        <Button
+                           variant="outline"
+                           className="h-8 w-8 p-0"
+                           onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                           disabled={currentPage === 1}
+                        >
+                           <span className="sr-only">Página anterior</span>
+                           {"<"}
+                        </Button>
+                        <Button
+                           variant="outline"
+                           className="h-8 w-8 p-0"
+                           onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                           disabled={currentPage === totalPages}
+                        >
+                           <span className="sr-only">Próxima página</span>
+                           {">"}
+                        </Button>
+                        <Button
+                           variant="outline"
+                           className="hidden h-8 w-8 p-0 lg:flex"
+                           onClick={() => setCurrentPage(totalPages)}
+                           disabled={currentPage === totalPages}
+                        >
+                           <span className="sr-only">Ir para última página</span>
+                           {">>"}
+                        </Button>
+                     </div>
+                  </div>
                </CardFooter>
             )}
          </Card>

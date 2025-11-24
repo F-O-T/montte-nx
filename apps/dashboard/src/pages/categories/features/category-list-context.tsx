@@ -14,6 +14,12 @@ interface CategoryListContextType {
    setOrderBy: (value: "name" | "createdAt" | "updatedAt") => void;
    orderDirection: "asc" | "desc";
    setOrderDirection: (value: "asc" | "desc") => void;
+   currentPage: number;
+   setCurrentPage: (page: number) => void;
+   pageSize: number;
+   setPageSize: (size: number) => void;
+   isFilterSheetOpen: boolean;
+   setIsFilterSheetOpen: (open: boolean) => void;
 }
 
 const CategoryListContext = createContext<CategoryListContextType | undefined>(
@@ -31,6 +37,9 @@ export function CategoryListProvider({
       "name",
    );
    const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
+   const [currentPage, setCurrentPage] = useState(1);
+   const [pageSize, setPageSize] = useState(5);
+   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -75,6 +84,12 @@ export function CategoryListProvider({
       setOrderBy,
       setOrderDirection,
       toggleAll,
+      currentPage,
+      setCurrentPage,
+      pageSize,
+      setPageSize,
+      isFilterSheetOpen,
+      setIsFilterSheetOpen,
    };
 
    return (
