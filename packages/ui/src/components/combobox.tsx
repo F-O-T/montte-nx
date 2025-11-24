@@ -82,7 +82,7 @@ export function Combobox({
          <PopoverTrigger asChild>
             <Button
                aria-expanded={open}
-               className={cn("flex items-center gap-2", className)}
+               className={cn("flex truncate items-center gap-2", className)}
                disabled={disabled}
                onBlur={onBlur}
                role="combobox"
