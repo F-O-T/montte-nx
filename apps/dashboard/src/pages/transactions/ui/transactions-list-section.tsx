@@ -2,6 +2,7 @@ import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardFooter,
@@ -45,10 +46,11 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { Filter, Search, Wallet } from "lucide-react";
+import { Filter, Plus, Search, Wallet } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
+import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
 import { trpc } from "@/integrations/clients";
 import { FilterSheet } from "../features/filter-sheet";
 import { useTransactionList } from "../features/transaction-list-context";
@@ -136,6 +138,7 @@ function TransactionsListContent() {
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+   const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
    const [pageSize, setPageSize] = useState(5);
    const [startDate, setStartDate] = useState<Date | undefined>();
    const [endDate, setEndDate] = useState<Date | undefined>();
@@ -200,16 +203,29 @@ function TransactionsListContent() {
       <>
          <Card>
             <CardHeader>
-               <CardTitle>
-                  {translate(
-                     "dashboard.routes.transactions.list-section.title",
-                  )}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.transactions.list-section.description",
-                  )}
-               </CardDescription>
+               <div>
+                  <CardTitle>
+                     {translate(
+                        "dashboard.routes.transactions.list-section.title",
+                     )}
+                  </CardTitle>
+                  <CardDescription>
+                     {translate(
+                        "dashboard.routes.transactions.list-section.description",
+                     )}
+                  </CardDescription>
+               </div>
+               <CardAction className="hidden md:flex">
+                  <Button
+                     onClick={() => setIsTransactionSheetOpen(true)}
+                     size="sm"
+                  >
+                     <Plus className="size-4 mr-2" />
+                     {translate(
+                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                     )}
+                  </Button>
+               </CardAction>
             </CardHeader>
             <CardContent className="grid gap-2">
                <div className="flex items-center justify-between gap-8">
@@ -383,7 +399,8 @@ function TransactionsListContent() {
             {totalPages > 1 && (
                <CardFooter className="hidden md:flex md:items-center md:justify-between">
                   <div className="text-sm text-muted-foreground">
-                     Mostrando {transactions.length} de {pagination.totalCount} transações
+                     Mostrando {transactions.length} de {pagination.totalCount}{" "}
+                     transações
                   </div>
                   <div className="flex items-center space-x-6 lg:space-x-8">
                      <div className="flex w-[100px] items-center justify-center text-sm font-medium">
@@ -396,13 +413,17 @@ function TransactionsListContent() {
                            onClick={() => setCurrentPage(1)}
                            disabled={currentPage === 1}
                         >
-                           <span className="sr-only">Ir para primeira página</span>
+                           <span className="sr-only">
+                              Ir para primeira página
+                           </span>
                            {"<<"}
                         </Button>
                         <Button
                            variant="outline"
                            className="h-8 w-8 p-0"
-                           onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                           onClick={() =>
+                              setCurrentPage((prev) => Math.max(1, prev - 1))
+                           }
                            disabled={currentPage === 1}
                         >
                            <span className="sr-only">Página anterior</span>
@@ -411,7 +432,11 @@ function TransactionsListContent() {
                         <Button
                            variant="outline"
                            className="h-8 w-8 p-0"
-                           onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                           onClick={() =>
+                              setCurrentPage((prev) =>
+                                 Math.min(totalPages, prev + 1),
+                              )
+                           }
                            disabled={currentPage === totalPages}
                         >
                            <span className="sr-only">Próxima página</span>
@@ -423,7 +448,9 @@ function TransactionsListContent() {
                            onClick={() => setCurrentPage(totalPages)}
                            disabled={currentPage === totalPages}
                         >
-                           <span className="sr-only">Ir para última página</span>
+                           <span className="sr-only">
+                              Ir para última página
+                           </span>
                            {">>"}
                         </Button>
                      </div>
@@ -431,6 +458,21 @@ function TransactionsListContent() {
                </CardFooter>
             )}
          </Card>
+
+         {/* Mobile Floating Action Button */}
+         <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
+            onClick={() => setIsTransactionSheetOpen(true)}
+            size="icon"
+         >
+            <Plus className="size-6" />
+         </Button>
+
+         <ManageTransactionSheet
+            onOpen={isTransactionSheetOpen}
+            onOpenChange={setIsTransactionSheetOpen}
+         />
+
          <FilterSheet
             bankAccountFilter={bankAccountFilter}
             bankAccounts={bankAccounts}

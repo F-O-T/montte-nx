@@ -21,11 +21,9 @@ export function StatsCard({
    return (
       <Card className={className ?? "col-span-1 h-full w-full"}>
          <CardHeader>
-            <CardDescription className="text-base">{title}</CardDescription>
-            <CardTitle className="text-xl">{value}</CardTitle>
-            <CardDescription className="text-base">
-               {description}
-            </CardDescription>
+            <CardDescription>{title}</CardDescription>
+            <CardTitle>{value}</CardTitle>
+            <CardDescription>{description}</CardDescription>
          </CardHeader>
       </Card>
    );
