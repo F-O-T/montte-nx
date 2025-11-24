@@ -58,9 +58,9 @@ function BankAccountsListErrorFallback(props: FallbackProps) {
          <CardContent>
             {createErrorFallback({
                errorDescription:
-                  "Falha ao carregar contas bancárias. Tente novamente.",
-               errorTitle: "Erro ao carregar contas bancárias",
-               retryText: "Tentar novamente",
+                  "Failed to load bank accounts. Please try again later.",
+               errorTitle: "Error loading bank accounts",
+               retryText: "Retry",
             })(props)}
          </CardContent>
       </Card>
@@ -87,17 +87,34 @@ function BankAccountsListSkeleton() {
             </div>
          </CardHeader>
          <CardContent>
-            <Skeleton className="h-96 w-full" />
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((_, index) => (
+                  <Fragment key={`bank-account-skeleton-${index + 1}`}>
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
+               ))}
+            </ItemGroup>
          </CardContent>
+         <CardFooter>
+            <Skeleton className="h-10 w-full" />
+         </CardFooter>
       </Card>
    );
 }
 
 function BankAccountsListContent() {
-   const [searchTerm, setSearchTerm] = useState("");
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [currentPage, setCurrentPage] = useState(1);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const pageSize = 10;
 
    useEffect(() => {
@@ -124,7 +141,7 @@ function BankAccountsListContent() {
    const { bankAccounts, pagination } = paginatedData;
    const { totalPages, totalCount } = pagination;
 
-   if (bankAccounts.length === 0) {
+   if (bankAccounts.length === 0 && !debouncedSearchTerm) {
       return (
          <Card>
             <CardHeader>
@@ -141,7 +158,9 @@ function BankAccountsListContent() {
                <CardAction className="hidden md:flex">
                   <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
                      <Plus className="size-4 mr-2" />
-                     Adicionar Conta Bancária
+                     {translate(
+                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                     )}
                   </Button>
                </CardAction>
             </CardHeader>
@@ -167,7 +186,9 @@ function BankAccountsListContent() {
                            size="default"
                         >
                            <Plus className="size-4 mr-2" />
-                           Criar Conta Bancária
+                           {translate(
+                              "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                           )}
                         </Button>
                      </div>
                   </EmptyContent>
@@ -198,11 +219,13 @@ function BankAccountsListContent() {
                <CardAction className="hidden md:flex">
                   <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
                      <Plus className="size-4 mr-2" />
-                     Adicionar Conta Bancária
+                     {translate(
+                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                     )}
                   </Button>
                </CardAction>
             </CardHeader>
-            <CardContent className="grid gap-4">
+            <CardContent className="grid gap-2">
                <div className="flex items-center gap-3">
                   <InputGroup className="flex-1 max-w-md">
                      <InputGroupInput
@@ -219,23 +242,39 @@ function BankAccountsListContent() {
                </div>
 
                <div className="block md:hidden">
-                  <ItemGroup>
-                     {bankAccounts.map((account, index) => (
-                        <Fragment key={account.id}>
-                           <BankAccountItem account={account} />
-                           {index !== bankAccounts.length - 1 && (
-                              <ItemSeparator />
-                           )}
-                        </Fragment>
-                     ))}
-                  </ItemGroup>
+                  {bankAccounts.length === 0 ? (
+                     <div className="py-8 text-center text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                        )}
+                     </div>
+                  ) : (
+                     <ItemGroup>
+                        {bankAccounts.map((account, index) => (
+                           <Fragment key={account.id}>
+                              <BankAccountItem account={account} />
+                              {index !== bankAccounts.length - 1 && (
+                                 <ItemSeparator />
+                              )}
+                           </Fragment>
+                        ))}
+                     </ItemGroup>
+                  )}
                </div>
 
                <div className="hidden md:block">
-                  <DataTable
-                     columns={createBankAccountColumns()}
-                     data={bankAccounts}
-                  />
+                  {bankAccounts.length === 0 ? (
+                     <div className="py-8 text-center text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                        )}
+                     </div>
+                  ) : (
+                     <DataTable
+                        columns={createBankAccountColumns()}
+                        data={bankAccounts}
+                     />
+                  )}
                </div>
             </CardContent>
 

@@ -5,7 +5,7 @@ import { BankAccountsStats } from "./bank-accounts-stats";
 
 export function BankAccountsPage() {
    return (
-      <main className="grid gap-4">
+      <main className=" space-y-4">
          <DefaultHeader
             description={translate(
                "dashboard.routes.bank-accounts.list-section.description",
