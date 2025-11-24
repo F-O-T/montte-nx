@@ -360,9 +360,6 @@ function BillsListContent({ type }: BillsListSectionProps) {
    const { totalPages } = pagination;
    const categories = categoriesQuery.data ?? [];
 
-   // Client-side filtering for things not supported by backend if any?
-   // Currently backend supports start/end date, type, and search (description).
-   
    const filteredBills = bills.filter((bill) => {
       const matchesCategory =
          categoryFilter === "all" || bill.categoryId === categoryFilter;

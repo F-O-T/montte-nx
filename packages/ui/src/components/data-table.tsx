@@ -129,7 +129,6 @@ export function DataTable<TData, TValue>({
 				</Table>
 			</div>
 
-			{/* Paginação removida - gerenciada externamente no componente pai */}
 		</div>
 	);
 }
