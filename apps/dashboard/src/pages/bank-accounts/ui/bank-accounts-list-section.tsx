@@ -240,7 +240,6 @@ function BankAccountsListContent() {
                </div>
             </CardContent>
 
-            {/* Pagination */}
             {totalPages > 1 && (
                <CardFooter className="flex items-center justify-between">
                   <div className="text-sm text-muted-foreground hidden md:block">
@@ -280,8 +279,7 @@ function BankAccountsListContent() {
                                  }}
                               />
                            </PaginationItem>
-                           
-                           {/* Mobile Pagination Items */}
+
                            {Array.from(
                               { length: Math.min(5, totalPages) },
                               (_, i: number): number => {
@@ -333,7 +331,7 @@ function BankAccountsListContent() {
             )}
          </Card>
 
-         {/* Mobile Floating Action Button */}
+
          <Button
             className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
             onClick={() => setIsCreateSheetOpen(true)}
