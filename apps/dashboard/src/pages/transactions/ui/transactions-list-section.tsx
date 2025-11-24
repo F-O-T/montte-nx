@@ -45,6 +45,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { Filter, Plus, Search, Wallet } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
@@ -135,6 +136,7 @@ function TransactionsListSkeleton() {
 }
 
 function TransactionsListContent() {
+   const isMobile = useIsMobile();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -213,19 +215,21 @@ function TransactionsListContent() {
                      "dashboard.routes.transactions.list-section.description",
                   )}
                </CardDescription>
-               <CardAction className="hidden md:flex">
-                  <Button
-                     onClick={() => setIsTransactionSheetOpen(true)}
-                     size="sm"
-                  >
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>
+               {!isMobile && (
+                  <CardAction>
+                     <Button
+                        onClick={() => setIsTransactionSheetOpen(true)}
+                        size="sm"
+                     >
+                        <Plus className="size-4 mr-2" />
+                        {translate(
+                           "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                        )}
+                     </Button>
+                  </CardAction>
+               )}
             </CardHeader>
-            <CardContent className="grid gap-2">
+            <CardContent>
                <div className="flex items-center justify-between gap-8">
                   <InputGroup>
                      <InputGroupInput
@@ -257,9 +261,8 @@ function TransactionsListContent() {
                   </Tooltip>
                </div>
 
-               {/* Mobile View - menor que md */}
-               <div className="block md:hidden">
-                  {transactions.length === 0 ? (
+               {isMobile ? (
+                  transactions.length === 0 ? (
                      <Empty>
                         <EmptyContent>
                            <EmptyMedia variant="icon">
@@ -291,36 +294,31 @@ function TransactionsListContent() {
                            </Fragment>
                         ))}
                      </ItemGroup>
-                  )}
-               </div>
-
-               {/* Desktop View - md ou maior */}
-               <div className="hidden md:block">
-                  {transactions.length === 0 ? (
-                     <Empty>
-                        <EmptyContent>
-                           <EmptyMedia variant="icon">
-                              <Wallet />
-                           </EmptyMedia>
-                           <EmptyTitle>
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.state.empty.title",
-                              )}
-                           </EmptyTitle>
-                           <EmptyDescription>
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.state.empty.description",
-                              )}
-                           </EmptyDescription>
-                        </EmptyContent>
-                     </Empty>
-                  ) : (
-                     <DataTable
-                        columns={createTransactionColumns(categories)}
-                        data={transactions}
-                     />
-                  )}
-               </div>
+                  )
+               ) : transactions.length === 0 ? (
+                  <Empty>
+                     <EmptyContent>
+                        <EmptyMedia variant="icon">
+                           <Wallet />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                           {translate(
+                              "dashboard.routes.transactions.list-section.state.empty.title",
+                           )}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                           {translate(
+                              "dashboard.routes.transactions.list-section.state.empty.description",
+                           )}
+                        </EmptyDescription>
+                     </EmptyContent>
+                  </Empty>
+               ) : (
+                  <DataTable
+                     columns={createTransactionColumns(categories)}
+                     data={transactions}
+                  />
+               )}
             </CardContent>
             {totalPages > 1 && (
                <CardFooter className="block md:hidden">

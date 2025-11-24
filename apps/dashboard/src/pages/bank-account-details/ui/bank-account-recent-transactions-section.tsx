@@ -20,6 +20,7 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -83,6 +84,7 @@ function RecentTransactionsContent({
 }: {
    bankAccountId: string;
 }) {
+   const isMobile = useIsMobile();
    const [currentPage, setCurrentPage] = useState(1);
    const pageSize = 10;
 
@@ -128,34 +130,23 @@ function RecentTransactionsContent({
                      "dashboard.routes.transactions.list-section.state.empty.title",
                   )}
                </div>
+            ) : isMobile ? (
+               <ItemGroup>
+                  {transactions.map((transaction: Transaction, index: number) => (
+                     <Fragment key={transaction.id}>
+                        <TransactionItem
+                           categories={categories}
+                           transaction={transaction}
+                        />
+                        {index !== transactions.length - 1 && <ItemSeparator />}
+                     </Fragment>
+                  ))}
+               </ItemGroup>
             ) : (
-               <>
-                  {/* Mobile View */}
-                  <div className="block md:hidden">
-                     <ItemGroup>
-                        {transactions.map(
-                           (transaction: Transaction, index: number) => (
-                              <Fragment key={transaction.id}>
-                                 <TransactionItem
-                                    categories={categories}
-                                    transaction={transaction}
-                                 />
-                                 {index !== transactions.length - 1 && (
-                                    <ItemSeparator />
-                                 )}
-                              </Fragment>
-                           ),
-                        )}
-                     </ItemGroup>
-                  </div>
-
-                  <div className="hidden md:block">
-                     <DataTable
-                        columns={createTransactionColumns(categories)}
-                        data={transactions}
-                     />
-                  </div>
-               </>
+               <DataTable
+                  columns={createTransactionColumns(categories)}
+                  data={transactions}
+               />
             )}
          </CardContent>
 
