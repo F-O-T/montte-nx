@@ -1,5 +1,8 @@
 import type { DatabaseInstance } from "@packages/database/client";
-import { createDefaultOrganization, findMemberByUserId } from "@packages/database/repositories/auth-repository";
+import {
+   createDefaultOrganization,
+   findMemberByUserId,
+} from "@packages/database/repositories/auth-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
 import {
@@ -184,6 +187,16 @@ export const getAuthOptions = (
          },
       },
       trustedOrigins: serverEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
+      user: {
+         additionalFields: {
+            telemetryConsent: {
+               defaultValue: true,
+               input: true,
+               required: true,
+               type: "boolean",
+            },
+         },
+      },
    }) satisfies BetterAuthOptions;
 
 export const createAuth = (options: AuthOptions) => {

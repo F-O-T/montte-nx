@@ -1,5 +1,5 @@
+import { trpc } from "@/integrations/clients";
 import { translate } from "@packages/localization";
-
 import {
    Card,
    CardContent,
@@ -17,14 +17,41 @@ import {
    ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
-import { Globe, Moon } from "lucide-react";
+import { Switch } from "@packages/ui/components/switch";
+import {
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
+import { Activity, Globe, Moon } from "lucide-react";
 import { LanguageCommand } from "@/layout/language-command";
 import { ThemeSwitcher } from "@/layout/theme-provider";
 
 export function PreferencesSection() {
+   const queryClient = useQueryClient();
+   const { data: session } = useSuspenseQuery(
+      trpc.session.getSession.queryOptions(),
+   );
+
+   const updateConsentMutation = useMutation(
+      trpc.session.updateTelemetryConsent.mutationOptions({
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.session.getTelemetryConsent.queryKey(),
+            });
+
+            await queryClient.invalidateQueries({
+               queryKey: trpc.session.getSession.queryKey(),
+            });
+         },
+      }),
+   );
+
+   const hasConsent = session?.user?.telemetryConsent ?? true;
+
    return (
-      <Card className="flex flex-col h-[300px]">
-         <CardHeader className="flex-shrink-0">
+      <Card>
+         <CardHeader>
             <CardTitle>
                {translate("dashboard.routes.profile.preferences.title")}
             </CardTitle>
@@ -77,6 +104,36 @@ export function PreferencesSection() {
                   </ItemContent>
                   <ItemActions>
                      <LanguageCommand />
+                  </ItemActions>
+               </Item>
+
+               <ItemSeparator />
+
+               {/* Telemetry Consent */}
+               <Item>
+                  <ItemMedia variant="icon">
+                     <Activity className="size-4" />
+                  </ItemMedia>
+                  <ItemContent className="truncate">
+                     <ItemTitle>
+                        {translate(
+                           "dashboard.routes.profile.preferences.items.telemetry.title",
+                        )}
+                     </ItemTitle>
+                     <ItemDescription>
+                        {translate(
+                           "dashboard.routes.profile.preferences.items.telemetry.description",
+                        )}
+                     </ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                     <Switch
+                        checked={hasConsent}
+                        disabled={updateConsentMutation.isPending}
+                        onCheckedChange={(checked) => {
+                           updateConsentMutation.mutate({ consent: checked });
+                        }}
+                     />
                   </ItemActions>
                </Item>
             </ItemGroup>

@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
    CardContent,
@@ -20,12 +19,11 @@ import {
 import { ScrollArea } from "@packages/ui/components/scroll-area";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { Building2, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
-import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 
 interface CreateBankAccountItemProps {
@@ -113,22 +111,10 @@ function BankAccountsSkeleton() {
 }
 
 function BankAccountsContent() {
-   const { activeOrganization } = useActiveOrganization();
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const { data: bankAccounts } = useSuspenseQuery(
       trpc.bankAccounts.getAll.queryOptions(),
    );
-
-   const getAccountTypeLabel = (type: string) => {
-      const typeMap: Record<string, string> = {
-         checking: "Conta Corrente",
-         credit: "Cartão de Crédito",
-         investment: "Conta Investimento",
-         loan: "Empréstimo",
-         savings: "Conta Poupança",
-      };
-      return typeMap[type] || type;
-   };
 
    return (
       <Card>
@@ -146,41 +132,7 @@ function BankAccountsContent() {
                <ItemGroup>
                   {bankAccounts.map((account, index) => (
                      <>
-                        <Link
-                           className="block"
-                           key={account.id}
-                           params={{
-                              bankAccountId: account.id,
-                              slug: activeOrganization.slug,
-                           }}
-                           to="/$slug/bank-accounts/$bankAccountId"
-                        >
-                           <Item className="cursor-pointer hover:bg-muted/50 transition-colors">
-                              <ItemMedia variant="icon">
-                                 <Building2 className="size-4" />
-                              </ItemMedia>
-                              <ItemContent>
-                                 <ItemTitle className="flex items-center gap-2">
-                                    {account.name}
-                                    <Badge
-                                       variant={
-                                          account.status === "active"
-                                             ? "default"
-                                             : "secondary"
-                                       }
-                                    >
-                                       {account.status === "active"
-                                          ? "Ativa"
-                                          : "Inativa"}
-                                    </Badge>
-                                 </ItemTitle>
-                                 <ItemDescription>
-                                    {account.bank} •{" "}
-                                    {getAccountTypeLabel(account.type)}
-                                 </ItemDescription>
-                              </ItemContent>
-                           </Item>
-                        </Link>
+                        <BankAccountItem account={account} key={account.id} />
                         {index < bankAccounts.length - 1 && <ItemSeparator />}
                      </>
                   ))}
