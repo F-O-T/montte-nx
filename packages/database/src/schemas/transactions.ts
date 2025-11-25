@@ -1,19 +1,19 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { decimal, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { bankAccount } from "./bank-accounts";
 
 export const transaction = pgTable("transaction", {
    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
-   bankAccountId: text("bank_account_id").references(() => bankAccount.id, {
+   bankAccountId: uuid("bank_account_id").references(() => bankAccount.id, {
       onDelete: "cascade",
    }),
-   categoryIds: text("category_ids").array().notNull(),
+   categoryIds: uuid("category_ids").array().notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    date: timestamp("date").notNull(),
    description: text("description").notNull(),
    externalId: text("external_id"),
-   id: text("id").primaryKey(),
+   id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    type: text("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
