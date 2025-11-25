@@ -7,6 +7,7 @@ import {
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
 export const createTRPCContext = async ({
@@ -15,12 +16,14 @@ export const createTRPCContext = async ({
    headers,
    minioClient,
    minioBucket,
+   posthog,
    responseHeaders,
 }: {
    auth: AuthInstance;
    db: DatabaseInstance;
    minioClient: MinioClient;
    minioBucket: string;
+   posthog: PostHog;
    headers: Headers;
    responseHeaders: Headers;
 }): Promise<{
@@ -29,6 +32,7 @@ export const createTRPCContext = async ({
    minioClient: MinioClient;
    auth: AuthInstance;
    headers: Headers;
+   posthog: PostHog;
    session: AuthInstance["$Infer"]["Session"] | null;
    language: SupportedLng;
    responseHeaders: Headers;
@@ -50,6 +54,7 @@ export const createTRPCContext = async ({
       language,
       minioBucket,
       minioClient,
+      posthog,
       responseHeaders,
       session,
    };
@@ -137,6 +142,168 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
    return result;
 });
+
+function sanitizeData<T>(data: T): T {
+   if (!data || typeof data !== "object") {
+      return data;
+   }
+
+   const SENSITIVE_KEYS = [
+      "password",
+      "confirmpassword",
+      "token",
+      "accesstoken",
+      "refreshtoken",
+      "apiKey",
+      "apikey",
+      "secret",
+      "api_key",
+      "auth",
+      "authorization",
+      "ssn",
+      "email",
+      "phone",
+   ].map((s) => s.toLowerCase());
+
+   const SENSITIVE_SUBSTRINGS = [
+      "password",
+      "secret",
+      "token",
+      "api_key",
+      "api",
+      "auth",
+      "authorization",
+      "ssn",
+      "email",
+      "phone",
+   ];
+
+   const MASK = "********";
+
+   function maskString(value: string): string {
+      return MASK;
+   }
+
+   function isLikelyEmail(value: string): boolean {
+      // Simple email heuristic
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+   }
+
+   function isLikelyPhone(value: string): boolean {
+      // Phone-like if contains only phone chars and at least 7 digits
+      const digits = value.replace(/\D/g, "");
+      return digits.length >= 7 && /^[\d\s()+\-\.]+$/.test(value);
+   }
+
+   function isLikelySecret(value: string): boolean {
+      // Long tokens (base64/hex/etc) -- conservative: length >= 20 and mostly URL-safe/base64/hex
+      if (value.length < 20) return false;
+      return /^[A-Za-z0-9_\-+/=]+$/.test(value);
+   }
+
+   function shouldMaskKey(key: string): boolean {
+      const lower = key.toLowerCase();
+      if (SENSITIVE_KEYS.includes(lower)) return true;
+      return SENSITIVE_SUBSTRINGS.some((sub) => lower.includes(sub));
+   }
+
+   function cloneAndSanitize(value: unknown): unknown {
+      if (value === null || value === undefined) return value;
+
+      if (Array.isArray(value)) {
+         return value.map(cloneAndSanitize);
+      }
+
+      if (typeof value === "object") {
+         const obj = value as Record<string, unknown>;
+         const out: Record<string, unknown> = {};
+         for (const [k, v] of Object.entries(obj)) {
+            try {
+               if (shouldMaskKey(k)) {
+                  out[k] = MASK;
+               } else {
+                  out[k] = cloneAndSanitize(v);
+               }
+            } catch (e) {
+               // In case of unexpected values, fallback to masking that field
+               out[k] = MASK;
+            }
+         }
+         return out;
+      }
+
+      if (typeof value === "string") {
+         if (
+            isLikelyEmail(value) ||
+            isLikelyPhone(value) ||
+            isLikelySecret(value)
+         ) {
+            return maskString(value);
+         }
+         return value;
+      }
+
+      // primitives (number, boolean, symbol, bigint, function)
+      return value;
+   }
+
+   // Work on a shallow clone of the top-level to avoid mutating input
+   if (Array.isArray(data)) {
+      return cloneAndSanitize(data) as unknown as T;
+   }
+
+   const topObj = { ...(data as Record<string, unknown>) };
+
+   const sanitized = cloneAndSanitize(topObj) as T;
+
+   return sanitized;
+}
+
+const telemetryMiddleware = t.middleware(
+   async ({ ctx, path, type, meta, getRawInput, next }) => {
+      const startDate = new Date();
+      const result = await next();
+
+      try {
+         if (type === "mutation") {
+            const resolvedCtx = await ctx;
+            const posthog = resolvedCtx.posthog;
+            const userId = resolvedCtx.session?.user?.id;
+
+            if (userId) {
+               const rootPath = path.split(".")[0];
+               const rawInput = await getRawInput();
+
+               posthog.capture({
+                  distinctId: userId,
+                  event: "trpc_mutation",
+                  properties: {
+                     durationMs: Date.now() - startDate.getTime(),
+                     endAt: new Date().toISOString(),
+                     input: sanitizeData(rawInput),
+                     meta: meta || {},
+                     path,
+                     rootPath,
+                     startAt: startDate.toISOString(),
+                     success: result.ok,
+                     ...(result.ok
+                        ? {}
+                        : {
+                             errorCode: result.error.code,
+                             errorMessage: result.error.message,
+                             errorName: result.error.name,
+                          }),
+                  },
+               });
+            }
+         }
+      } catch (err) {
+         console.error(`Error on telemetry capture ${path}`, err);
+      }
+
+      return result;
+   },
+);
 
 const hasOrganizationAccess = t.middleware(async ({ ctx, next }) => {
    const resolvedCtx = await ctx;
@@ -267,7 +434,9 @@ export const publicProcedure = t.procedure
    .use(loggerMiddleware)
    .use(timingMiddleware);
 
-export const protectedProcedure = publicProcedure.use(isAuthed);
+export const protectedProcedure = publicProcedure
+   .use(isAuthed)
+   .use(telemetryMiddleware);
 export const sdkProcedure = publicProcedure.use(sdkAuth);
 
 // Organization-specific procedures

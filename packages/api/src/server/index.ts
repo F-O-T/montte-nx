@@ -1,6 +1,7 @@
 import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
+import type { PostHog } from "posthog-node";
 import { authRouter } from "./routers/auth";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
@@ -35,11 +36,13 @@ export const createApi = ({
    db,
    minioClient,
    minioBucket,
+   posthog,
 }: {
    minioBucket: string;
    auth: AuthInstance;
    db: DatabaseInstance;
    minioClient: MinioClient;
+   posthog: PostHog;
 }) => {
    return {
       createTRPCContext: async ({
@@ -55,6 +58,7 @@ export const createApi = ({
             headers,
             minioBucket,
             minioClient,
+            posthog,
             responseHeaders,
          }),
       trpcRouter: appRouter,

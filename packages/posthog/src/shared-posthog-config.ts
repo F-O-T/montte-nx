@@ -1,3 +1,3 @@
 export const posthogPublicKey =
-   "phc_KVPKLlfKKnWzmyqkFDReuDsh7CeoyXeJO7mJ0zcCVV8";
+   "phc_VIYSnRSd8sjXhcSB8YFr8mv9H8c7nrvMn3g05co4sQq";
 export const posthogHost = "https://us.i.posthog.com";
