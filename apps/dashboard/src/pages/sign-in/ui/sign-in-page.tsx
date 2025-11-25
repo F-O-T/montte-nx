@@ -43,7 +43,7 @@ export function SignInPage() {
    const handleGoogleSignIn = useCallback(async () => {
       try {
          await betterAuthClient.signIn.social({
-            callbackURL: `${window.location.origin}/home`,
+            callbackURL: `${window.location.origin}/auth/sign-in`,
             provider: "google",
          });
       } catch (error) {
