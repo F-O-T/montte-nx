@@ -8,24 +8,12 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import {
-   ColorPicker,
-   ColorPickerAlpha,
-   ColorPickerEyeDropper,
-   ColorPickerHue,
-   ColorPickerSelection,
-} from "@packages/ui/components/color-picker";
-import {
    Field,
    FieldError,
    FieldGroup,
    FieldLabel,
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
-import {
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-} from "@packages/ui/components/popover";
 import {
    Select,
    SelectContent,
@@ -34,13 +22,17 @@ import {
    SelectValue,
 } from "@packages/ui/components/select";
 import { defineStepper } from "@packages/ui/components/stepper";
+import { Toggle } from "@packages/ui/components/toggle";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import Color from "color";
-import { type FormEvent, useCallback } from "react";
+import { type FormEvent, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+   type IconName,
+   getIconComponent,
+} from "@/features/icon-selector/lib/available-icons";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 import { useTRPC } from "@/integrations/clients";
 
@@ -78,21 +70,57 @@ const schema = z.object({
             "dashboard.routes.onboarding.validation.account-type-required",
          ),
       ),
-   categoryBudget: z.number().min(0),
-   categoryColor: z.string().min(1),
-   categoryName: z
-      .string()
-      .min(
-         1,
-         translate(
-            "dashboard.routes.onboarding.validation.category-name-required",
-         ),
-      ),
 });
+
+const defaultCategoryKeys = [
+   "food",
+   "health",
+   "housing",
+   "leisure",
+   "shopping",
+   "transport",
+] as const;
+
+type DefaultCategoryKey = (typeof defaultCategoryKeys)[number];
+
+const defaultCategoriesConfig: Record<
+   DefaultCategoryKey,
+   { color: string; icon: IconName }
+> = {
+   food: {
+      color: "#f97316",
+      icon: "UtensilsCrossed",
+   },
+   health: {
+      color: "#ef4444",
+      icon: "Heart",
+   },
+   housing: {
+      color: "#3b82f6",
+      icon: "Home",
+   },
+   leisure: {
+      color: "#8b5cf6",
+      icon: "Gamepad",
+   },
+   shopping: {
+      color: "#22c55e",
+      icon: "ShoppingBag",
+   },
+   transport: {
+      color: "#0ea5e9",
+      icon: "Car",
+   },
+};
 
 export function OnboardingPage() {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
+   const router = useRouter();
+
+   const [selectedDefaultCategories, setSelectedDefaultCategories] = useState<
+      DefaultCategoryKey[]
+   >([]);
 
    const createBankAccount = useMutation(
       trpc.bankAccounts.create.mutationOptions({
@@ -108,7 +136,7 @@ export function OnboardingPage() {
          },
       }),
    );
-   const router = useRouter();
+
    const createCategory = useMutation(
       trpc.categories.create.mutationOptions({
          onError: (error) => {
@@ -122,39 +150,47 @@ export function OnboardingPage() {
       }),
    );
 
+   const createSelectedCategories = useCallback(async () => {
+      await Promise.all(
+         selectedDefaultCategories.map((key) => {
+            const label = translate(
+               `dashboard.routes.onboarding.category.defaults.${key}`,
+            );
+            const config = defaultCategoriesConfig[key];
+
+            return createCategory.mutateAsync({
+               color: config.color,
+               icon: config.icon,
+               name: label,
+            });
+         }),
+      );
+   }, [selectedDefaultCategories, createCategory]);
+
+   const completeOnboarding = useCallback(async () => {
+      await queryClient.invalidateQueries({
+         queryKey: trpc.onboarding.getOnboardingStatus.queryKey(),
+      });
+      router.navigate({ to: "/home" });
+   }, [queryClient, trpc, router]);
+
    const form = useForm({
       defaultValues: {
          bank: "",
          bankAccountName: "",
          bankAccountType: "checking",
-         categoryBudget: 0,
-         categoryColor: "#000000",
-         categoryName: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         // Create bank account first
          await createBankAccount.mutateAsync({
             bank: value.bank,
             name: value.bankAccountName,
             type: value.bankAccountType,
          });
 
-         // Then create category
-         await createCategory.mutateAsync({
-            budget: value.categoryBudget,
-            color: value.categoryColor,
-            name: value.categoryName,
-         });
-
-         // Complete onboarding
-         await queryClient.invalidateQueries({
-            queryKey: trpc.onboarding.getOnboardingStatus.queryKey(),
-         });
+         await createSelectedCategories();
+         await completeOnboarding();
 
          formApi.reset();
-         router.navigate({
-            to: "/home",
-         });
       },
       validators: {
          onBlur: schema,
@@ -280,130 +316,61 @@ export function OnboardingPage() {
       return (
          <>
             <FieldGroup>
-               <form.Field name="categoryName">
-                  {(field) => {
-                     const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
-                     return (
-                        <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
-                              {translate(
-                                 "dashboard.routes.onboarding.category.form.name.label",
-                              )}
-                           </FieldLabel>
-                           <Input
-                              aria-invalid={isInvalid}
-                              id={field.name}
-                              name={field.name}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                 field.handleChange(e.target.value)
-                              }
-                              placeholder={translate(
-                                 "dashboard.routes.onboarding.category.form.name.placeholder",
-                              )}
-                              value={field.state.value}
-                           />
-                           {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
-                           )}
-                        </Field>
-                     );
-                  }}
-               </form.Field>
-            </FieldGroup>
-            <FieldGroup>
-               <form.Field name="categoryBudget">
-                  {(field) => {
-                     const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
-                     return (
-                        <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
-                              {translate(
-                                 "dashboard.routes.onboarding.category.form.budget.label",
-                              )}
-                           </FieldLabel>
-                           <Input
-                              aria-invalid={isInvalid}
-                              id={field.name}
-                              name={field.name}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                 field.handleChange(Number(e.target.value))
-                              }
-                              placeholder="0.00"
-                              type="number"
-                              value={field.state.value}
-                           />
-                           {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
-                           )}
-                        </Field>
-                     );
-                  }}
-               </form.Field>
-            </FieldGroup>
-            <FieldGroup>
-               <form.Field name="categoryColor">
-                  {(field) => (
-                     <Field>
-                        <FieldLabel>
-                           {translate(
-                              "dashboard.routes.onboarding.category.form.color.label",
-                           )}
-                        </FieldLabel>
-                        <Popover>
-                           <PopoverTrigger asChild>
-                              <Button
-                                 className="w-full justify-start"
-                                 variant="outline"
-                              >
-                                 <div
-                                    className="size-4 rounded-full border"
-                                    style={{
-                                       backgroundColor: field.state.value,
-                                    }}
-                                 />
-                                 {field.state.value}
-                              </Button>
-                           </PopoverTrigger>
-                           <PopoverContent
-                              align="start"
-                              className="h-full rounded-md border bg-background "
-                           >
-                              <ColorPicker
-                                 className="size-full flex flex-col gap-4"
-                                 onChange={(rgba) => {
-                                    if (Array.isArray(rgba)) {
-                                       field.handleChange(
-                                          Color.rgb(
-                                             rgba[0],
-                                             rgba[1],
-                                             rgba[2],
-                                          ).hex(),
-                                       );
-                                    }
-                                 }}
-                                 value={field.state.value || "#000000"}
-                              >
-                                 <div className="h-24">
-                                    <ColorPickerSelection />
-                                 </div>
+               <Field>
+                  <FieldLabel>
+                     {translate(
+                        "dashboard.routes.onboarding.category.form.defaults.label",
+                     )}
+                  </FieldLabel>
+                  <div className="flex flex-wrap gap-2">
+                     {defaultCategoryKeys.map((key) => {
+                        const isSelected =
+                           selectedDefaultCategories.includes(key);
+                        const label = translate(
+                           `dashboard.routes.onboarding.category.defaults.${key}`,
+                        );
+                        const config = defaultCategoriesConfig[key];
+                        const Icon = getIconComponent(config.icon);
 
-                                 <div className="flex items-center gap-4">
-                                    <ColorPickerEyeDropper />
-                                    <div className="grid w-full gap-1">
-                                       <ColorPickerHue />
-                                       <ColorPickerAlpha />
-                                    </div>
-                                 </div>
-                              </ColorPicker>
-                           </PopoverContent>
-                        </Popover>
-                     </Field>
-                  )}
-               </form.Field>
+                        return (
+                           <Toggle
+                              aria-pressed={isSelected}
+                              className="gap-2 px-3"
+                              key={key}
+                              pressed={isSelected}
+                              size="sm"
+                              type="button"
+                              variant="outline"
+                              onPressedChange={(pressed) => {
+                                 setSelectedDefaultCategories((prev) => {
+                                    if (pressed) {
+                                       return prev.includes(key)
+                                          ? prev
+                                          : [...prev, key];
+                                    }
+
+                                    return prev.filter((item) => item !== key);
+                                 });
+                              }}
+                              style={{
+                                 borderColor: isSelected
+                                    ? config.color
+                                    : undefined,
+                                 backgroundColor: isSelected
+                                    ? `${config.color}15`
+                                    : undefined,
+                              }}
+                           >
+                              <Icon
+                                 className="size-4"
+                                 style={{ color: config.color }}
+                              />
+                              {label}
+                           </Toggle>
+                        );
+                     })}
+                  </div>
+               </Field>
             </FieldGroup>
          </>
       );
@@ -452,7 +419,10 @@ export function OnboardingPage() {
                      <Stepper.Controls className="flex w-full justify-between">
                         <Button
                            disabled={methods.isFirst}
-                           onClick={methods.prev}
+                           onClick={(e) => {
+                              e.preventDefault();
+                              methods.prev();
+                           }}
                            type="button"
                            variant="outline"
                         >
@@ -472,9 +442,7 @@ export function OnboardingPage() {
                                     type="submit"
                                     variant="default"
                                  >
-                                    {translate(
-                                       "dashboard.routes.onboarding.actions.complete",
-                                    )}
+                                    {translate("common.actions.submit")}
                                  </Button>
                               )}
                            </form.Subscribe>
@@ -499,7 +467,10 @@ export function OnboardingPage() {
                                        !bankAccountNameValid ||
                                        !bankAccountTypeValid
                                     }
-                                    onClick={methods.next}
+                                    onClick={(e) => {
+                                       e.preventDefault();
+                                       methods.next();
+                                    }}
                                     type="button"
                                  >
                                     {translate("common.actions.next")}
