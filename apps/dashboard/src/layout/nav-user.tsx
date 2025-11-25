@@ -1,3 +1,5 @@
+import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import {
    Avatar,
@@ -30,7 +32,6 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { LogOutIcon, UserCircleIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 import { LanguageCommand } from "./language-command";
 import { ThemeSwitcher } from "./theme-provider";
 
@@ -94,6 +95,7 @@ function NavUserSkeleton() {
 
 // Extracted content with Suspense logic
 function NavUserContent() {
+   const { activeOrganization } = useActiveOrganization();
    const { setOpenMobile } = useSidebar();
    const router = useRouter();
    const trpc = useTRPC();
@@ -163,7 +165,10 @@ function NavUserContent() {
                            onClick={() => setOpenMobile(false)}
                            variant="ghost"
                         >
-                           <Link to="/profile">
+                           <Link
+                              params={{ slug: activeOrganization.slug }}
+                              to="/$slug/profile"
+                           >
                               <UserCircleIcon />
                               {translate(
                                  "dashboard.layout.nav-user.main.account",

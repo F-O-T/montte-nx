@@ -1,3 +1,5 @@
+import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -12,7 +14,6 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Building, Home } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useTRPC } from "@/integrations/clients";
 import { BankAccountInfo } from "./bank-account-information-section";
 import { BankAccountQuickActionsToolbar } from "./bank-account-quick-actions-toolbar";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
@@ -73,6 +74,7 @@ function BankAccountPageSkeleton() {
 }
 
 function BankAccountPageError({ error, resetErrorBoundary }: FallbackProps) {
+   const { activeOrganization } = useActiveOrganization();
    const router = useRouter();
    return (
       <main className="flex flex-col h-full w-full">
@@ -86,7 +88,12 @@ function BankAccountPageError({ error, resetErrorBoundary }: FallbackProps) {
                   <EmptyDescription>{error?.message}</EmptyDescription>
                   <div className="mt-6 flex gap-2 justify-center">
                      <Button
-                        onClick={() => router.navigate({ to: "/profile" })}
+                        onClick={() =>
+                           router.navigate({
+                              params: { slug: activeOrganization.slug },
+                              to: "/$slug/profile",
+                           })
+                        }
                         size="default"
                         variant="outline"
                      >

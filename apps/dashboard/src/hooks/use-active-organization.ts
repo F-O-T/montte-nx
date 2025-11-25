@@ -15,7 +15,18 @@ export function useActiveOrganization() {
 
    const activeOrganization =
       organizations?.find((organization) => organization.slug === slug) ??
-      organizations[0];
+      (organizations[0] || defaultOrg);
 
-   return activeOrganization;
+   return { activeOrganization };
 }
+
+const defaultOrg = {
+   createdAt: new Date(),
+   description: "Personal account",
+   id: "personal",
+   logo: null,
+   members: [],
+   name: "Personal",
+   slug: "personal",
+   updatedAt: new Date(),
+};
