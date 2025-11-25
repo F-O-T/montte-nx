@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tw-animate-css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
@@ -42,8 +42,8 @@
   --sidebar-accent-foreground: oklch(0.3729 0.0306 259.7328);
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
   --sidebar-ring: oklch(0.7227 0.1920 149.5793);
-  --font-sans: "Libre Baskerville", ui-serif, serif, Georgia, "Times New Roman", Times, serif;
-  --font-serif: "Libre Baskerville", ui-serif, serif, Georgia, "Times New Roman", Times, serif;
+  --font-sans: Montserrat, ui-sans-serif, sans-serif, system-ui;
+  --font-serif: Lora, ui-serif, serif;
   --font-mono: IBM Plex Mono, monospace;
   --radius: 0.5rem;
   --shadow-x: 0px;
@@ -97,8 +97,8 @@
   --sidebar-accent-foreground: oklch(0.7118 0.0129 286.0665);
   --sidebar-border: oklch(0.4461 0.0263 256.8018);
   --sidebar-ring: oklch(0.7729 0.1535 163.2231);
-  --font-sans: "Libre Baskerville", ui-serif, serif, Georgia, "Times New Roman", Times, serif;
-  --font-serif: "Libre Baskerville", ui-serif, serif, Georgia, "Times New Roman", Times, serif;
+  --font-sans: Montserrat, ui-sans-serif, sans-serif, system-ui;
+  --font-serif: Lora, ui-serif, serif;
   --font-mono: IBM Plex Mono, monospace;
   --radius: 0.5rem;
   --shadow-x: 0px;
