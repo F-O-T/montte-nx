@@ -7,10 +7,11 @@ import {
    uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
+import { sql } from "drizzle-orm";
 
 export const notification = pgTable("notification", {
    createdAt: timestamp("created_at").defaultNow().notNull(),
-   id: text("id").primaryKey(),
+   id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    isRead: boolean("is_read").default(false).notNull(),
    message: text("message").notNull(),
    metadata: json("metadata"), // e.g. { categoryId: '...', spent: 100, budget: 100 }

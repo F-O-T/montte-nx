@@ -1,14 +1,17 @@
-import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-
+export const bankAccountTypes = pgEnum("bank_account_type", [
+   "checking",
+   "savings",
+   "investment",
+]);
 export const bankAccount = pgTable("bank_account", {
    bank: text("bank").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
-   id: text("id").primaryKey(),
-   name: text("name").notNull(),
-   status: text("status").notNull().default("active"),
-   type: text("type").notNull(),
+   id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+   name: text("name"),
+   type: bankAccountTypes("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())

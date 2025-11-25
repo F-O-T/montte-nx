@@ -102,7 +102,6 @@ export function ManageBankAccountSheet({
       defaultValues: {
          bank: bankAccount?.bank || "",
          name: bankAccount?.name || "",
-         status: bankAccount?.status || ("active" as "active" | "inactive"),
          type: bankAccount?.type || "",
       },
       onSubmit: async ({ value }) => {
@@ -115,7 +114,6 @@ export function ManageBankAccountSheet({
                   data: {
                      bank: value.bank,
                      name: value.name,
-                     status: value.status,
                      type: value.type,
                   },
                   id: bankAccount.id,
@@ -124,7 +122,6 @@ export function ManageBankAccountSheet({
                await createBankAccountMutation.mutateAsync({
                   bank: value.bank,
                   name: value.name,
-                  status: value.status,
                   type: value.type,
                });
             }
@@ -278,52 +275,6 @@ export function ManageBankAccountSheet({
                                        <SelectItem value="investment">
                                           {translate(
                                              "dashboard.routes.profile.bank-accounts.types.investment",
-                                          )}
-                                       </SelectItem>
-                                    </SelectContent>
-                                 </Select>
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
-                     <form.Field name="status">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate("common.form.status.label")}
-                                 </FieldLabel>
-                                 <Select
-                                    onValueChange={field.handleChange}
-                                    value={field.state.value}
-                                 >
-                                    <SelectTrigger>
-                                       <SelectValue
-                                          placeholder={translate(
-                                             "common.form.status.placeholder",
-                                          )}
-                                       />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                       <SelectItem value="active">
-                                          {translate(
-                                             "dashboard.routes.profile.bank-accounts.status.active",
-                                          )}
-                                       </SelectItem>
-                                       <SelectItem value="inactive">
-                                          {translate(
-                                             "dashboard.routes.profile.bank-accounts.status.inactive",
                                           )}
                                        </SelectItem>
                                     </SelectContent>
