@@ -18,13 +18,20 @@ defaults: '2025-05-24'
 `;
 }
 
-export function PostHogWrapper({ children }: { children: React.ReactNode }) {
+export function PostHogWrapper({
+   children,
+   hasConsent = true,
+}: {
+   children: React.ReactNode;
+   hasConsent?: boolean;
+}) {
    return (
       <PostHogProvider
          apiKey={posthogPublicKey}
          options={{
             ...getReactPosthogConfig(),
             disable_session_recording: !isClientProduction,
+            opt_out_capturing_by_default: !hasConsent,
          }}
       >
          {children}

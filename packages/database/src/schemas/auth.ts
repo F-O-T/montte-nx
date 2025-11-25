@@ -20,6 +20,7 @@ export const user = pgTable("user", {
    image: text("image"),
    name: text("name").notNull(),
    role: text("role"),
+   telemetryConsent: boolean("telemetry_consent").default(true),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())

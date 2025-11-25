@@ -269,8 +269,9 @@ const telemetryMiddleware = t.middleware(
             const resolvedCtx = await ctx;
             const posthog = resolvedCtx.posthog;
             const userId = resolvedCtx.session?.user?.id;
+            const hasConsent = resolvedCtx.session?.user?.telemetryConsent;
 
-            if (userId) {
+            if (userId && hasConsent) {
                const rootPath = path.split(".")[0];
                const rawInput = await getRawInput();
 

@@ -1,5 +1,8 @@
 import type { DatabaseInstance } from "@packages/database/client";
-import { createDefaultOrganization, findMemberByUserId } from "@packages/database/repositories/auth-repository";
+import {
+   createDefaultOrganization,
+   findMemberByUserId,
+} from "@packages/database/repositories/auth-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
 import {
@@ -40,6 +43,16 @@ export const getAuthOptions = (
       database: drizzleAdapter(db, {
          provider: "pg",
       }),
+      user: {
+         additionalFields: {
+            telemetryConsent: {
+               defaultValue: true,
+               input: true,
+               required: false,
+               type: "boolean",
+            },
+         },
+      },
       databaseHooks: {
          session: {
             create: {
