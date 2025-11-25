@@ -1,5 +1,6 @@
 "use client";
 
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Input } from "@packages/ui/components/input";
 import { Separator } from "@packages/ui/components/separator";
@@ -272,6 +273,10 @@ function SidebarTrigger({
 }: React.ComponentProps<typeof Button>) {
    const { toggleSidebar, state } = useSidebar();
 
+   const tooltipText = state === "expanded"
+   ? translate("dashboard.layout.sidebar.collapse")
+   : translate("dashboard.layout.sidebar.expand");
+
    const button = (
       <Button
          className={cn("size-7", className)}
@@ -294,7 +299,7 @@ function SidebarTrigger({
       <Tooltip>
          <TooltipTrigger asChild>{button}</TooltipTrigger>
          <TooltipContent>
-            {state === "expanded" ? "Colapsar Sidebar" : "Abrir Sidebar"}
+            {tooltipText}
          </TooltipContent>
       </Tooltip>
    );

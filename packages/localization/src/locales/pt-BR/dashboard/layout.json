@@ -31,5 +31,9 @@
          "language": "Idioma",
          "theme": "Tema"
       }
+   },
+   "sidebar": {
+      "collapse": "Colapsar Sidebar",
+      "expand": "Abrir Sidebar"
    }
 }
