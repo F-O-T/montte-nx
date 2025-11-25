@@ -273,9 +273,10 @@ function SidebarTrigger({
 }: React.ComponentProps<typeof Button>) {
    const { toggleSidebar, state } = useSidebar();
 
-   const tooltipText = state === "expanded"
-   ? translate("dashboard.layout.sidebar.collapse")
-   : translate("dashboard.layout.sidebar.expand");
+   const tooltipText =
+      state === "expanded"
+         ? translate("dashboard.layout.sidebar.collapse")
+         : translate("dashboard.layout.sidebar.expand");
 
    const button = (
       <Button
@@ -298,9 +299,7 @@ function SidebarTrigger({
    return (
       <Tooltip>
          <TooltipTrigger asChild>{button}</TooltipTrigger>
-         <TooltipContent>
-            {tooltipText}
-         </TooltipContent>
+         <TooltipContent>{tooltipText}</TooltipContent>
       </Tooltip>
    );
 }
