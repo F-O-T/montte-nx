@@ -6,7 +6,7 @@
   "scripts": {
     "check": "bunx --bun biome check --write .",
     "typecheck": "tsc",
-    "dev": "vite dev",
+    "dev": "vite dev && tsr watch",
     "build": "vite build",
     "preview": "vite preview"
   },
