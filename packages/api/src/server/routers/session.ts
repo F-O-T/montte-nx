@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router, publicProcedure } from "../trpc";
 
 export const sessionRouter = router({
-   getSession: protectedProcedure.query(async ({ ctx }) => {
+   getSession: publicProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       return resolvedCtx.session;
    }),
