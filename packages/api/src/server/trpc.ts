@@ -7,6 +7,7 @@ import {
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
 export const createTRPCContext = async ({
@@ -15,12 +16,14 @@ export const createTRPCContext = async ({
    headers,
    minioClient,
    minioBucket,
+   posthog,
    responseHeaders,
 }: {
    auth: AuthInstance;
    db: DatabaseInstance;
    minioClient: MinioClient;
    minioBucket: string;
+   posthog: PostHog;
    headers: Headers;
    responseHeaders: Headers;
 }): Promise<{
@@ -29,6 +32,7 @@ export const createTRPCContext = async ({
    minioClient: MinioClient;
    auth: AuthInstance;
    headers: Headers;
+   posthog: PostHog;
    session: AuthInstance["$Infer"]["Session"] | null;
    language: SupportedLng;
    responseHeaders: Headers;
@@ -50,6 +54,7 @@ export const createTRPCContext = async ({
       language,
       minioBucket,
       minioClient,
+      posthog,
       responseHeaders,
       session,
    };
@@ -137,6 +142,70 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
    return result;
 });
+
+function sanitizeData<T>(data: T): T {
+   if (!data || typeof data !== "object" || data === null) {
+      return data;
+   }
+
+   const sanitized = { ...data } as Record<string, unknown>;
+
+   if ("password" in sanitized) {
+      sanitized.password = "********";
+   }
+
+   if ("confirmPassword" in sanitized) {
+      sanitized.confirmPassword = "********";
+   }
+
+   return sanitized as T;
+}
+
+const telemetryMiddleware = t.middleware(
+   async ({ ctx, path, type, meta, getRawInput, next }) => {
+      const startDate = new Date();
+      const result = await next();
+
+      try {
+         if (type === "mutation") {
+            const resolvedCtx = await ctx;
+            const posthog = resolvedCtx.posthog;
+            const userId = resolvedCtx.session?.user?.id;
+
+            if (userId) {
+               const rootPath = path.split(".")[0];
+               const rawInput = await getRawInput();
+
+               posthog.capture({
+                  distinctId: userId,
+                  event: "trpc_mutation",
+                  properties: {
+                     durationMs: Date.now() - startDate.getTime(),
+                     endAt: new Date().toISOString(),
+                     input: sanitizeData(rawInput),
+                     meta: meta || {},
+                     path,
+                     rootPath,
+                     startAt: startDate.toISOString(),
+                     success: result.ok,
+                     ...(result.ok
+                        ? {}
+                        : {
+                             errorCode: result.error.code,
+                             errorMessage: result.error.message,
+                             errorName: result.error.name,
+                          }),
+                  },
+               });
+            }
+         }
+      } catch (err) {
+         console.error(`Error on telemetry capture ${path}`, err);
+      }
+
+      return result;
+   },
+);
 
 const hasOrganizationAccess = t.middleware(async ({ ctx, next }) => {
    const resolvedCtx = await ctx;
@@ -267,7 +336,9 @@ export const publicProcedure = t.procedure
    .use(loggerMiddleware)
    .use(timingMiddleware);
 
-export const protectedProcedure = publicProcedure.use(isAuthed);
+export const protectedProcedure = publicProcedure
+   .use(isAuthed)
+   .use(telemetryMiddleware);
 export const sdkProcedure = publicProcedure.use(sdkAuth);
 
 // Organization-specific procedures

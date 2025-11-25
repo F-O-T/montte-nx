@@ -1,6 +1,5 @@
 import cors from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
-
 import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
@@ -8,13 +7,14 @@ import { Elysia } from "elysia";
 import { auth, OpenAPI } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
-import { posthogPlugin } from "./integrations/posthog";
+import { posthog, posthogPlugin } from "./integrations/posthog";
 
 const trpcApi = createApi({
    auth,
    db,
    minioBucket: env.MINIO_BUCKET,
    minioClient,
+   posthog,
 });
 const app = new Elysia({
    serve: {

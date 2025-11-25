@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "contentagen-nx",
@@ -287,6 +288,14 @@
         "posthog-js": "^1.259.0",
         "posthog-node": "^5.5.0",
       },
+      "devDependencies": {
+        "@tooling/typescript": "workspace:*",
+        "typescript": "catalog:development",
+      },
+    },
+    "packages/telemetry": {
+      "name": "@packages/telemetry",
+      "version": "0.3.0",
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
         "typescript": "catalog:development",
@@ -1109,6 +1118,8 @@
     "@packages/ofx": ["@packages/ofx@workspace:packages/ofx"],
 
     "@packages/posthog": ["@packages/posthog@workspace:packages/posthog"],
+
+    "@packages/telemetry": ["@packages/telemetry@workspace:packages/telemetry"],
 
     "@packages/transactional": ["@packages/transactional@workspace:packages/transactional"],
 
