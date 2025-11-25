@@ -19,21 +19,6 @@
       "lineEnding": "lf",
       "lineWidth": 80
    },
-   "html": {
-      "experimentalFullSupportEnabled": true,
-      "formatter": {
-         "enabled": true,
-         "indentScriptAndStyle": true
-      }
-   },
-   "javascript": {
-      "assist": {
-         "enabled": true
-      },
-      "formatter": {
-         "quoteStyle": "double"
-      }
-   },
    "json": {
       "assist": {
          "enabled": true
