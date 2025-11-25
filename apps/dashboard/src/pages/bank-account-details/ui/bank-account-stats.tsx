@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Card,
@@ -61,8 +62,12 @@ function AccountBalanceStat({ bankAccountId }: { bankAccountId: string }) {
 
    return (
       <StatsCard
-         description="Current calculated balance"
-         title="Balance"
+         description={translate(
+            "dashboard.routes.bank-accounts.stats-section.current-balance.description",
+         )}
+         title={translate(
+            "dashboard.routes.bank-accounts.stats-section.current-balance.title",
+         )}
          value={new Intl.NumberFormat("pt-BR", {
             currency: "BRL",
             style: "currency",
@@ -91,8 +96,12 @@ function AccountIncomeStat({ bankAccountId }: { bankAccountId: string }) {
 
    return (
       <StatsCard
-         description="Total income"
-         title="Income"
+         description={translate(
+            "dashboard.routes.bank-accounts.stats-section.total-income.description",
+         )}
+         title={translate(
+            "dashboard.routes.bank-accounts.stats-section.total-income.title",
+         )}
          value={new Intl.NumberFormat("pt-BR", {
             currency: "BRL",
             style: "currency",
@@ -121,8 +130,12 @@ function AccountExpenseStat({ bankAccountId }: { bankAccountId: string }) {
 
    return (
       <StatsCard
-         description="Total expenses"
-         title="Expenses"
+         description={translate(
+            "dashboard.routes.bank-accounts.stats-section.total-expenses.description",
+         )}
+         title={translate(
+            "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+         )}
          value={new Intl.NumberFormat("pt-BR", {
             currency: "BRL",
             style: "currency",

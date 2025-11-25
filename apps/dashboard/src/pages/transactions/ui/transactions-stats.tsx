@@ -9,12 +9,12 @@ import {
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
 import { useTransactionList } from "../features/transaction-list-context";
-import { formatDecimalCurrency } from "@packages/utils/money";
 
 function TransactionsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -65,7 +65,7 @@ function TransactionsStatsContent() {
    );
 
    return (
-      <div className="grid grid-cols-2 gap-4 h-min">
+      <div className="grid grid-cols-2  md:grid-cols-4 gap-4 h-min">
          <StatsCard
             description={translate(
                "dashboard.routes.transactions.stats-section.total.description",

@@ -11,11 +11,12 @@ import {
 } from "@packages/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-   TrendingUp,
    ArrowDownRight,
    ArrowUpRight,
-   FileText,
    BarChart3,
+   Building2,
+   FileText,
+   TrendingUp,
 } from "lucide-react";
 
 export function NavMain() {
@@ -35,29 +36,34 @@ export function NavMain() {
 
    const items = [
       {
+         icon: TrendingUp,
          title: translate("dashboard.layout.nav-main.finance.overview"),
          url: "/transactions",
-         icon: TrendingUp,
       },
       {
+         icon: Building2,
+         title: translate("dashboard.routes.bank-accounts.list-section.title"),
+         url: "/bank-accounts",
+      },
+      {
+         icon: ArrowDownRight,
          title: translate("dashboard.layout.nav-main.finance.payables"),
          url: "/bills?type=payable",
-         icon: ArrowDownRight,
       },
       {
+         icon: ArrowUpRight,
          title: translate("dashboard.layout.nav-main.finance.receivables"),
          url: "/bills?type=receivable",
-         icon: ArrowUpRight,
       },
       {
+         icon: FileText,
          title: translate("dashboard.layout.nav-main.finance.categories"),
          url: "/categories",
-         icon: FileText,
       },
       {
+         icon: BarChart3,
          title: translate("dashboard.layout.nav-main.finance.reports"),
          url: "/reports",
-         icon: BarChart3,
       },
    ];
 
@@ -78,7 +84,7 @@ export function NavMain() {
                      }
                      tooltip={item.title}
                   >
-                     <Link to={item.url} onClick={() => setOpenMobile(false)}>
+                     <Link onClick={() => setOpenMobile(false)} to={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
                      </Link>

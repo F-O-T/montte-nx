@@ -54,8 +54,8 @@ export const authRouter = router({
             callbackURL: `${getDomain()}/home`,
             provider: "google",
          },
-         returnHeaders: true,
          headers: resolvedCtx.headers,
+         returnHeaders: true,
       });
 
       if (resp.headers) {

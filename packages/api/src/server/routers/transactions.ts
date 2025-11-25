@@ -44,11 +44,13 @@ const updateTransactionSchema = z.object({
 const paginationSchema = z.object({
    bankAccountId: z.string().optional(),
    category: z.string().optional(),
+   endDate: z.string().optional(),
    limit: z.coerce.number().min(1).max(100).default(5),
    orderBy: z.enum(["date", "amount"]).default("date"),
    orderDirection: z.enum(["asc", "desc"]).default("desc"),
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
+   startDate: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
@@ -161,11 +163,11 @@ export const transactionRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return findTransactionsByUserIdPaginated(
-            resolvedCtx.db,
-            userId,
-            input,
-         );
+         return findTransactionsByUserIdPaginated(resolvedCtx.db, userId, {
+            ...input,
+            endDate: input.endDate ? new Date(input.endDate) : undefined,
+            startDate: input.startDate ? new Date(input.startDate) : undefined,
+         });
       }),
 
    getById: protectedProcedure

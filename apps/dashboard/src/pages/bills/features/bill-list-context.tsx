@@ -13,8 +13,14 @@ interface BillListContextType {
    // Filter state
    selectedMonth: Date;
    setSelectedMonth: (date: Date) => void;
+   startDate?: Date;
+   setStartDate: (date?: Date) => void;
+   endDate?: Date;
+   setEndDate: (date?: Date) => void;
    currentPage: number;
    setCurrentPage: (page: number) => void;
+   pageSize: number;
+   setPageSize: (size: number) => void;
    searchTerm: string;
    setSearchTerm: (term: string) => void;
    categoryFilter: string;
@@ -39,7 +45,10 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
 
    // Filter state
    const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+   const [startDate, setStartDate] = useState<Date | undefined>();
+   const [endDate, setEndDate] = useState<Date | undefined>();
    const [currentPage, setCurrentPage] = useState(1);
+   const [pageSize, setPageSize] = useState(5);
    const [searchTerm, setSearchTerm] = useState("");
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [statusFilter, setStatusFilter] = useState("all");
@@ -81,8 +90,10 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
       clearSelection,
       currentFilterType,
       currentPage,
+      endDate,
       handleSelectionChange,
       isFilterSheetOpen,
+      pageSize,
       searchTerm,
       selectAll,
       selectedCount: selectedItems.size,
@@ -92,11 +103,15 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
       setCategoryFilter,
       setCurrentFilterType,
       setCurrentPage,
+      setEndDate,
       setIsFilterSheetOpen,
+      setPageSize,
       setSearchTerm,
       setSelectedMonth,
+      setStartDate,
       setStatusFilter,
       setTypeFilter,
+      startDate,
       statusFilter,
       toggleAll,
       typeFilter,

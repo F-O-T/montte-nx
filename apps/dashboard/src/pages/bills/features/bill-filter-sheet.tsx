@@ -40,11 +40,15 @@ export function BillFilterSheet({
       categoryFilter,
       statusFilter,
       typeFilter,
-      selectedMonth,
+      startDate,
+      endDate,
+      pageSize,
       setCategoryFilter,
       setStatusFilter,
       setTypeFilter,
-      setSelectedMonth,
+      setStartDate,
+      setEndDate,
+      setPageSize,
       setCurrentPage,
       isFilterSheetOpen,
       setIsFilterSheetOpen,
@@ -69,9 +73,19 @@ export function BillFilterSheet({
       handleFilterChange();
    };
 
-   const handleMonthChange = (date: Date | undefined) => {
-      setSelectedMonth(date || new Date());
+   const handleStartDateChange = (date: Date | undefined) => {
+      setStartDate(date);
       handleFilterChange();
+   };
+
+   const handleEndDateChange = (date: Date | undefined) => {
+      setEndDate(date);
+      handleFilterChange();
+   };
+
+   const handlePageSizeChange = (size: number) => {
+      setPageSize(size);
+      setCurrentPage(1);
    };
 
    const handleOpenChange = (open: boolean) => {
@@ -142,12 +156,16 @@ export function BillFilterSheet({
    const hasActiveFilters =
       categoryFilter !== "all" ||
       statusFilter !== "all" ||
-      typeFilter !== "all";
+      typeFilter !== "all" ||
+      startDate !== undefined ||
+      endDate !== undefined;
 
    const clearFilters = () => {
       handleCategoryFilterChange("all");
       handleStatusFilterChange("all");
       handleTypeFilterChange("all");
+      handleStartDateChange(undefined);
+      handleEndDateChange(undefined);
    };
 
    return (
@@ -263,16 +281,60 @@ export function BillFilterSheet({
                   <Field>
                      <FieldLabel>
                         {translate(
-                           "dashboard.routes.bills.features.filter.month.label",
+                           "dashboard.routes.transactions.features.filter.start-date.label",
                         )}
                      </FieldLabel>
                      <DatePicker
-                        date={selectedMonth}
-                        onSelect={handleMonthChange}
+                        date={startDate}
+                        onSelect={handleStartDateChange}
                         placeholder={translate(
-                           "dashboard.routes.bills.features.filter.month.placeholder",
+                           "dashboard.routes.transactions.features.filter.start-date.placeholder",
                         )}
                      />
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.end-date.label",
+                        )}
+                     </FieldLabel>
+                     <DatePicker
+                        date={endDate}
+                        onSelect={handleEndDateChange}
+                        placeholder={translate(
+                           "dashboard.routes.transactions.features.filter.end-date.placeholder",
+                        )}
+                     />
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.page-size.label",
+                        )}
+                     </FieldLabel>
+                     <Select
+                        onValueChange={(value) =>
+                           handlePageSizeChange(Number(value))
+                        }
+                        value={pageSize.toString()}
+                     >
+                        <SelectTrigger>
+                           <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {[5, 10, 20, 30, 50].map((size) => (
+                              <SelectItem key={size} value={size.toString()}>
+                                 {size}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
                   </Field>
                </FieldGroup>
             </div>

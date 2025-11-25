@@ -1,6 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -19,6 +18,7 @@ import {
    ItemMedia,
    ItemTitle,
 } from "@packages/ui/components/item";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { MoreVertical } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";

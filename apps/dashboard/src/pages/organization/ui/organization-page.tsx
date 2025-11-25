@@ -1,5 +1,3 @@
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
-import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -19,6 +17,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 import { OrganizationInfo } from "./organization-information-section";
 import { QuickAccessCards } from "./organization-quick-access-cards";
 import { QuickActionsToolbar } from "./organization-quick-actions-toolbar";

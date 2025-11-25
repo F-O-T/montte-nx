@@ -1,8 +1,8 @@
-import type React from "react";
 import { translate } from "@packages/localization";
 import { Combobox } from "@packages/ui/components/combobox";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import type React from "react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";

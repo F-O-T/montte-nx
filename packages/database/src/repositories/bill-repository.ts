@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { bill } from "../schemas/bills";
 
@@ -143,6 +143,9 @@ export async function findBillsByUserIdPaginated(
       limit?: number;
       type?: "income" | "expense";
       month?: string;
+      startDate?: Date;
+      endDate?: Date;
+      search?: string;
       orderBy?: "dueDate" | "issueDate" | "amount" | "createdAt";
       orderDirection?: "asc" | "desc";
    } = {},
@@ -152,6 +155,9 @@ export async function findBillsByUserIdPaginated(
       limit = 10,
       type,
       month,
+      startDate,
+      endDate,
+      search,
       orderBy = "dueDate",
       orderDirection = "desc",
    } = options;
@@ -166,7 +172,19 @@ export async function findBillsByUserIdPaginated(
             conditions.push(eq(bill.type, type));
          }
 
-         if (month) {
+         if (search) {
+            conditions.push(ilike(bill.description, `%${search}%`));
+         }
+
+         if (startDate) {
+            conditions.push(gte(bill.dueDate, startDate));
+         }
+
+         if (endDate) {
+            conditions.push(lte(bill.dueDate, endDate));
+         }
+
+         if (month && !startDate && !endDate) {
             const [year, monthNum] = month.split("-").map(Number);
             if (year && monthNum) {
                const monthStart = new Date(year, monthNum - 1, 1);

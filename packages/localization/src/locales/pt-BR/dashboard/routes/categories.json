@@ -28,6 +28,13 @@
          "description": "Atualize os detalhes da sua categoria.",
          "title": "Editar Categoria"
       },
+      "filter": {
+         "actions": {
+            "clear-filters": "Limpar Filtros"
+         },
+         "description": "Refine a lista de categorias com base em critérios específicos.",
+         "title": "Filtrar Categorias"
+      },
       "set-budget": {
          "description": "Defina uma meta de gastos mensal para esta categoria.",
          "title": "Definir Meta"
@@ -35,8 +42,7 @@
    },
    "list-section": {
       "actions": {
-         "delete-category": "Excluir categoria",
-         "edit-category": "Editar categoria",
+         "delete": "Excluir categoria",
          "label": "Gerencie sua categoria",
          "view-details": "Ver detalhes"
       },
@@ -73,6 +79,12 @@
       "total-categories": {
          "description": "Número total de categorias que você criou.",
          "title": "Total de categorias"
+      }
+   },
+   "table": {
+      "columns": {
+         "budget": "Orçamento",
+         "name": "Nome"
       }
    }
 }

@@ -3,21 +3,22 @@
 import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import {
-   CardAction,
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import { createErrorFallback } from "@packages/ui/components/error-fallback";
-import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    type ChartConfig,
    ChartContainer,
    ChartTooltip,
    ChartTooltipContent,
 } from "@packages/ui/components/chart";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -79,18 +80,23 @@ interface HomeCashFlowChartProps {
 }
 
 const homeCashFlowChartConfig: ChartConfig = {
-   actualIncome: {
-      color: "var(--primary)",
-      label: translate("common.charts.labels.income"),
-   },
    actualExpenses: {
       color: "var(--secondary)",
       label: translate("common.charts.labels.expenses"),
+   },
+   actualIncome: {
+      color: "var(--primary)",
+      label: translate("common.charts.labels.income"),
    },
 };
 
 function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
    const chartData = data ?? [];
+
+   const currencyFormatter = (value: any) => {
+      if (typeof value !== "number") return value;
+      return formatDecimalCurrency(value);
+   };
 
    return (
       <Card>
@@ -123,7 +129,10 @@ function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
                      tickMargin={8}
                   />
                   <YAxis axisLine={false} tickLine={false} tickMargin={8} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartTooltip
+                     content={<ChartTooltipContent />}
+                     formatter={currencyFormatter}
+                  />
                   <Area
                      dataKey="actualIncome"
                      fill="var(--color-actualIncome)"

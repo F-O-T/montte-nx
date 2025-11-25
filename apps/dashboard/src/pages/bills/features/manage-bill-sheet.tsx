@@ -23,6 +23,7 @@ import {
    FieldLabel,
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
+import { MoneyInput } from "@packages/ui/components/money-input";
 import {
    Popover,
    PopoverContent,
@@ -96,12 +97,6 @@ export function ManageBillSheet({
 
    const createBillMutation = useMutation(
       trpc.bills.create.mutationOptions({
-         onError: (error) => {
-            toast.error(
-               error.message ||
-                  translate("dashboard.routes.bills.create.error"),
-            );
-         },
          onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.bills.getAll.queryKey(),
@@ -109,7 +104,6 @@ export function ManageBillSheet({
             await queryClient.invalidateQueries({
                queryKey: trpc.bills.getStats.queryKey(),
             });
-            toast.success(translate("dashboard.routes.bills.create.success"));
             form.reset();
             onOpenChange?.(false);
          },
@@ -118,11 +112,6 @@ export function ManageBillSheet({
 
    const updateBillMutation = useMutation(
       trpc.bills.update.mutationOptions({
-         onError: (error) => {
-            toast.error(
-               error.message || translate("dashboard.routes.bills.edit.error"),
-            );
-         },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.bills.getAll.queryKey(),
@@ -130,7 +119,6 @@ export function ManageBillSheet({
             queryClient.invalidateQueries({
                queryKey: trpc.bills.getStats.queryKey(),
             });
-            toast.success(translate("dashboard.routes.bills.edit.success"));
             onOpenChange?.(false);
          },
       }),
@@ -139,7 +127,7 @@ export function ManageBillSheet({
    // Default values for create mode
    const defaultValues = useMemo(
       () => ({
-         amount: "",
+         amount: 0,
          bankAccountId: undefined as string | undefined,
          category: "",
          counterparty: "",
@@ -180,7 +168,12 @@ export function ManageBillSheet({
    const form = useForm({
       defaultValues: editValues,
       onSubmit: async ({ value }) => {
-         if (!value.amount || !value.category || !value.description) {
+         if (
+            value.amount === undefined ||
+            value.amount <= 0 ||
+            !value.category ||
+            !value.description
+         ) {
             return;
          }
 
@@ -189,9 +182,9 @@ export function ManageBillSheet({
                // Update existing bill
                await updateBillMutation.mutateAsync({
                   data: {
-                     amount: parseFloat(value.amount),
+                     amount: value.amount,
                      bankAccountId: value.bankAccountId,
-                     category: value.category,
+                     categoryId: value.category,
                      counterparty: value.counterparty,
                      description: value.description,
                      dueDate: value.dueDate.toISOString().split("T")[0],
@@ -210,7 +203,7 @@ export function ManageBillSheet({
                await createBillMutation.mutateAsync({
                   amount: parseFloat(value.amount),
                   bankAccountId: value.bankAccountId || undefined,
-                  category: value.category as string,
+                  categoryId: value.category as string,
                   counterparty: value.counterparty || undefined,
                   description: value.description,
                   dueDate: value.dueDate.toISOString().split("T")[0],
@@ -235,20 +228,20 @@ export function ManageBillSheet({
    });
 
    const title = isEditMode
-      ? translate("dashboard.routes.bills.edit.title")
-      : translate("dashboard.routes.bills.create.title");
+      ? translate("dashboard.routes.bills.features.edit-bill.title")
+      : translate("dashboard.routes.bills.features.create-bill.title");
 
    const description = isEditMode
-      ? translate("dashboard.routes.bills.edit.description")
-      : translate("dashboard.routes.bills.create.description");
+      ? translate("dashboard.routes.bills.features.edit-bill.description")
+      : translate("dashboard.routes.bills.features.create-bill.description");
 
    const submitText = isEditMode
-      ? translate("dashboard.routes.bills.edit.submit")
-      : translate("dashboard.routes.bills.create.submit");
+      ? translate("dashboard.routes.bills.features.edit-bill.submit")
+      : translate("dashboard.routes.bills.features.create-bill.submit");
 
    const submittingText = isEditMode
-      ? translate("dashboard.routes.bills.edit.updating")
-      : translate("dashboard.routes.bills.create.creating");
+      ? translate("dashboard.routes.bills.features.edit-bill.updating")
+      : translate("dashboard.routes.bills.features.create-bill.creating");
 
    const isPending =
       createBillMutation.isPending || updateBillMutation.isPending;
@@ -280,9 +273,7 @@ export function ManageBillSheet({
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.type",
-                                    )}
+                                    {translate("common.form.type.label")}
                                  </FieldLabel>
                                  <Select
                                     onValueChange={(value) =>
@@ -293,17 +284,21 @@ export function ManageBillSheet({
                                     value={field.state.value}
                                  >
                                     <SelectTrigger>
-                                       <SelectValue />
+                                       <SelectValue
+                                          placeholder={translate(
+                                             "common.form.type.placeholder",
+                                          )}
+                                       />
                                     </SelectTrigger>
                                     <SelectContent>
                                        <SelectItem value="expense">
                                           {translate(
-                                             "dashboard.routes.bills.create.types.expense",
+                                             "dashboard.routes.bills.features.create-bill.types.expense",
                                           )}
                                        </SelectItem>
                                        <SelectItem value="income">
                                           {translate(
-                                             "dashboard.routes.bills.create.types.income",
+                                             "dashboard.routes.bills.features.create-bill.types.income",
                                           )}
                                        </SelectItem>
                                     </SelectContent>
@@ -328,17 +323,15 @@ export function ManageBillSheet({
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.description",
-                                    )}
+                                    {translate("common.form.notes.label")}
                                  </FieldLabel>
-                                 <Input
+                                 <Textarea
                                     onBlur={field.handleBlur}
                                     onChange={(e) =>
                                        field.handleChange(e.target.value)
                                     }
                                     placeholder={translate(
-                                       "dashboard.routes.bills.create.placeholders.description",
+                                       "common.form.notes.placeholder",
                                     )}
                                     value={field.state.value}
                                  />
@@ -362,19 +355,16 @@ export function ManageBillSheet({
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.amount",
-                                    )}
+                                    {translate("common.form.amount.label")}
                                  </FieldLabel>
-                                 <Input
+                                 <MoneyInput
                                     onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder="0.00"
-                                    step="0.01"
-                                    type="number"
+                                    onChange={(value) => {
+                                       field.handleChange(value || 0);
+                                    }}
+                                    placeholder="0,00"
                                     value={field.state.value}
+                                    valueInCents={true}
                                  />
                                  {isInvalid && (
                                     <FieldError
@@ -395,15 +385,13 @@ export function ManageBillSheet({
                               !field.state.meta.isValid;
 
                            const selectedCategory = categories.find(
-                              (category) => category.name === field.state.value,
+                              (category) => category.id === field.state.value,
                            );
 
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.bills.create.fields.category",
-                                    )}
+                                    {translate("common.form.category.label")}
                                  </FieldLabel>
                                  <Popover
                                     onOpenChange={setCategoryComboboxOpen}
@@ -431,7 +419,7 @@ export function ManageBillSheet({
                                           ) : (
                                              <span className="text-muted-foreground">
                                                 {translate(
-                                                   "dashboard.routes.bills.create.placeholders.category",
+                                                   "common.form.category.placeholder",
                                                 )}
                                              </span>
                                           )}
@@ -442,13 +430,13 @@ export function ManageBillSheet({
                                        <Command>
                                           <CommandInput
                                              placeholder={translate(
-                                                "dashboard.routes.bills.create.placeholders.searchCategory",
+                                                "common.form.search.placeholder",
                                              )}
                                           />
                                           <CommandList>
                                              <CommandEmpty>
                                                 {translate(
-                                                   "dashboard.routes.bills.create.noCategoryFound",
+                                                   "common.form.search.no-results",
                                                 )}
                                              </CommandEmpty>
                                              <CommandGroup>
@@ -457,10 +445,10 @@ export function ManageBillSheet({
                                                       key={category.id}
                                                       onSelect={() => {
                                                          field.handleChange(
-                                                            category.name ===
+                                                            category.id ===
                                                                field.state.value
                                                                ? ""
-                                                               : category.name,
+                                                               : category.id,
                                                          );
                                                          setCategoryComboboxOpen(
                                                             false,
@@ -480,7 +468,7 @@ export function ManageBillSheet({
                                                          </span>
                                                       </div>
                                                       {field.state.value ===
-                                                         category.name && (
+                                                         category.id && (
                                                          <CheckIcon className="ml-2 h-4 w-4" />
                                                       )}
                                                    </CommandItem>
@@ -511,7 +499,7 @@ export function ManageBillSheet({
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel>
                                     {translate(
-                                       "dashboard.routes.bills.create.fields.dueDate",
+                                       "dashboard.routes.bills.features.create-bill.fields.dueDate",
                                     )}
                                  </FieldLabel>
                                  <DatePicker
@@ -519,9 +507,6 @@ export function ManageBillSheet({
                                     onSelect={(date) =>
                                        field.handleChange(date || new Date())
                                     }
-                                    placeholder={translate(
-                                       "dashboard.routes.bills.create.placeholders.dueDate",
-                                    )}
                                  />
                                  {isInvalid && (
                                     <FieldError
@@ -647,7 +632,7 @@ export function ManageBillSheet({
                                  <Field data-invalid={isInvalid}>
                                     <FieldLabel>
                                        {translate(
-                                          "dashboard.routes.bills.create.fields.issueDate",
+                                          "dashboard.routes.bills.features.create-bill.fields.issueDate",
                                        )}
                                     </FieldLabel>
                                     <DatePicker
@@ -655,9 +640,6 @@ export function ManageBillSheet({
                                        onSelect={(date) =>
                                           field.handleChange(date)
                                        }
-                                       placeholder={translate(
-                                          "dashboard.routes.bills.create.placeholders.issueDate",
-                                       )}
                                     />
                                     {isInvalid && (
                                        <FieldError
@@ -679,9 +661,7 @@ export function ManageBillSheet({
                               return (
                                  <Field data-invalid={isInvalid}>
                                     <FieldLabel>
-                                       {translate(
-                                          "dashboard.routes.bills.create.fields.counterparty",
-                                       )}
+                                       {translate("common.form.name.label")}
                                     </FieldLabel>
                                     <Input
                                        onBlur={field.handleBlur}
@@ -689,7 +669,7 @@ export function ManageBillSheet({
                                           field.handleChange(e.target.value)
                                        }
                                        placeholder={translate(
-                                          "dashboard.routes.bills.create.placeholders.counterparty",
+                                          "common.form.name.placeholder",
                                        )}
                                        value={field.state.value}
                                     />
@@ -714,7 +694,7 @@ export function ManageBillSheet({
                                  <Field data-invalid={isInvalid}>
                                     <FieldLabel>
                                        {translate(
-                                          "dashboard.routes.bills.create.fields.bankAccount",
+                                          "common.form.from-account.label",
                                        )}
                                     </FieldLabel>
                                     <Select
@@ -726,7 +706,7 @@ export function ManageBillSheet({
                                        <SelectTrigger>
                                           <SelectValue
                                              placeholder={translate(
-                                                "dashboard.routes.bills.create.placeholders.bankAccount",
+                                                "common.form.from-account.placeholder",
                                              )}
                                           />
                                        </SelectTrigger>
@@ -762,7 +742,7 @@ export function ManageBillSheet({
                                  <Field data-invalid={isInvalid}>
                                     <FieldLabel>
                                        {translate(
-                                          "dashboard.routes.bills.create.fields.notes",
+                                          "common.form.description.label",
                                        )}
                                     </FieldLabel>
                                     <Textarea
@@ -771,7 +751,7 @@ export function ManageBillSheet({
                                           field.handleChange(e.target.value)
                                        }
                                        placeholder={translate(
-                                          "dashboard.routes.bills.create.placeholders.notes",
+                                          "common.form.description.placeholder",
                                        )}
                                        value={field.state.value}
                                     />

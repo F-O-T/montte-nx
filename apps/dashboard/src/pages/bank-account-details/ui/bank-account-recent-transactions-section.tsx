@@ -1,4 +1,6 @@
+import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
 import {
    Card,
    CardContent,
@@ -7,16 +9,8 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemGroup,
-   ItemMedia,
-   ItemSeparator,
-   ItemTitle,
-} from "@packages/ui/components/item";
+import { DataTable } from "@packages/ui/components/data-table";
+import { Item, ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
    Pagination,
    PaginationContent,
@@ -26,26 +20,35 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { TransactionItem } from "@/features/transaction/ui/transaction-item";
+import {
+   type Transaction,
+   TransactionItem,
+} from "@/features/transaction/ui/transaction-item";
 import { useTRPC } from "@/integrations/clients";
+import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
 
 function RecentTransactionsErrorFallback() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Latest transactions for this account
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
             <div className="text-center py-4 text-muted-foreground">
-               Failed to load transactions
+               {translate(
+                  "dashboard.routes.transactions.list-section.state.empty.title",
+               )}
             </div>
          </CardContent>
       </Card>
@@ -56,31 +59,21 @@ function RecentTransactionsSkeleton() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Latest transactions for this account
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
-            <ItemGroup>
-               {[1, 2, 3].map((index) => (
-                  <Fragment key={index}>
-                     <Item>
-                        <ItemMedia variant="icon">
-                           <Skeleton className="size-8 rounded-sm" />
-                        </ItemMedia>
-                        <ItemContent className="gap-1">
-                           <Skeleton className="h-4 w-48" />
-                           <Skeleton className="h-3 w-32 mt-1" />
-                        </ItemContent>
-                        <ItemActions>
-                           <Skeleton className="h-6 w-16" />
-                        </ItemActions>
-                     </Item>
-                     {index !== 3 && <ItemSeparator />}
-                  </Fragment>
-               ))}
-            </ItemGroup>
+            <div className="space-y-4">
+               <Skeleton className="h-12 w-full" />
+               <Skeleton className="h-12 w-full" />
+               <Skeleton className="h-12 w-full" />
+            </div>
          </CardContent>
       </Card>
    );
@@ -91,6 +84,7 @@ function RecentTransactionsContent({
 }: {
    bankAccountId: string;
 }) {
+   const isMobile = useIsMobile();
    const [currentPage, setCurrentPage] = useState(1);
    const pageSize = 10;
 
@@ -115,22 +109,30 @@ function RecentTransactionsContent({
       trpc.categories.getAll.queryOptions(),
    );
 
+   const hasTransactions = transactions.length > 0;
+
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>
+               {translate("dashboard.routes.transactions.list-section.title")}
+            </CardTitle>
             <CardDescription>
-               Latest transactions for this account
+               {translate(
+                  "dashboard.routes.transactions.list-section.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
-            {transactions.length === 0 ? (
+            {!hasTransactions ? (
                <div className="text-center py-8 text-muted-foreground">
-                  No transactions found for this account.
+                  {translate(
+                     "dashboard.routes.transactions.list-section.state.empty.title",
+                  )}
                </div>
-            ) : (
+            ) : isMobile ? (
                <ItemGroup>
-                  {transactions.map((transaction: any, index: number) => (
+                  {transactions.map((transaction: Transaction, index: number) => (
                      <Fragment key={transaction.id}>
                         <TransactionItem
                            categories={categories}
@@ -140,10 +142,16 @@ function RecentTransactionsContent({
                      </Fragment>
                   ))}
                </ItemGroup>
+            ) : (
+               <DataTable
+                  columns={createTransactionColumns(categories)}
+                  data={transactions}
+               />
             )}
          </CardContent>
+
          {totalPages > 1 && (
-            <CardFooter>
+            <CardFooter className="block md:hidden">
                <Pagination>
                   <PaginationContent>
                      <PaginationItem>
@@ -207,6 +215,83 @@ function RecentTransactionsContent({
                      </PaginationItem>
                   </PaginationContent>
                </Pagination>
+            </CardFooter>
+         )}
+
+         {totalPages > 1 && (
+            <CardFooter className="hidden md:flex md:items-center md:justify-between">
+               <div className="text-sm text-muted-foreground">
+                  {translate(
+                     "dashboard.routes.transactions.list-section.showing",
+                     {
+                        count: transactions.length,
+                        total: pagination.totalCount,
+                     },
+                  )}
+               </div>
+               <div className="flex items-center space-x-6 lg:space-x-8">
+                  <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                     {translate(
+                        "dashboard.routes.transactions.list-section.page",
+                        {
+                           current: currentPage,
+                           total: totalPages,
+                        },
+                     )}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                     <Button
+                        className="hidden h-8 w-8 p-0 lg:flex"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(1)}
+                        variant="outline"
+                     >
+                        <span className="sr-only">
+                           {translate("common.actions.first-page")}
+                        </span>
+                        {"<<"}
+                     </Button>
+                     <Button
+                        className="h-8 w-8 p-0"
+                        disabled={currentPage === 1}
+                        onClick={() =>
+                           setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
+                        variant="outline"
+                     >
+                        <span className="sr-only">
+                           {translate("common.actions.previous-page")}
+                        </span>
+                        {"<"}
+                     </Button>
+                     <Button
+                        className="h-8 w-8 p-0"
+                        disabled={currentPage === totalPages}
+                        onClick={() =>
+                           setCurrentPage((prev) =>
+                              Math.min(totalPages, prev + 1),
+                           )
+                        }
+                        variant="outline"
+                     >
+                        <span className="sr-only">
+                           {translate("common.actions.next-page")}
+                        </span>
+                        {">"}
+                     </Button>
+                     <Button
+                        className="hidden h-8 w-8 p-0 lg:flex"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(totalPages)}
+                        variant="outline"
+                     >
+                        <span className="sr-only">
+                           {translate("common.actions.last-page")}
+                        </span>
+                        {">>"}
+                     </Button>
+                  </div>
+               </div>
             </CardFooter>
          )}
       </Card>

@@ -1,6 +1,3 @@
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -11,6 +8,7 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { DataTable } from "@packages/ui/components/data-table";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -59,14 +57,18 @@ import {
 import { createSlug } from "@packages/utils/text";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Eye, Filter, Inbox, MoreVertical, Search } from "lucide-react";
+import { Eye, Filter, Inbox, MoreVertical, Search, Trash2 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { trpc } from "@/integrations/clients";
 import { CategoryFilterSheet } from "../features/category-filter-sheet";
 import { useCategoryList } from "../features/category-list-context";
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 import type { Category } from "../ui/categories-page";
+import { createCategoryColumns } from "./categories-table-columns";
 
 function CategoriesCardHeader() {
    return (
@@ -128,7 +130,17 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
                )}
             </DropdownMenuItem>
             <ManageCategorySheet asChild category={category} />
-            <DeleteCategory category={category} />
+            <DeleteCategory category={category}>
+               <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onSelect={(e) => e.preventDefault()}
+               >
+                  <Trash2 className="size-4 mr-2" />
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.delete",
+                  )}
+               </DropdownMenuItem>
+            </DeleteCategory>
          </DropdownMenuContent>
       </DropdownMenu>
    );
@@ -188,22 +200,28 @@ function CategoriesListSkeleton() {
 }
 
 function CategoriesListContent() {
-   const [currentPage, setCurrentPage] = useState(1);
+   const {
+      orderBy,
+      setOrderBy,
+      orderDirection,
+      setOrderDirection,
+      currentPage,
+      setCurrentPage,
+      pageSize,
+      setIsFilterSheetOpen,
+      isFilterSheetOpen,
+   } = useCategoryList();
+
    const [searchTerm, setSearchTerm] = useState("");
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-   const pageSize = 5;
-
-   const { orderBy, setOrderBy, orderDirection, setOrderDirection } =
-      useCategoryList();
-
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
          setCurrentPage(1);
       }, 300);
       return () => clearTimeout(timer);
-   }, [searchTerm]);
+   }, [searchTerm, setCurrentPage]);
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.categories.getAllPaginated.queryOptions(
@@ -221,6 +239,7 @@ function CategoriesListContent() {
    );
 
    const { categories, pagination } = paginatedData;
+   const { totalPages } = pagination;
 
    const handleFilterChange = () => {
       setCurrentPage(1);
@@ -264,76 +283,109 @@ function CategoriesListContent() {
                   </Tooltip>
                </div>
 
-               {categories.length === 0 && pagination.totalCount === 0 ? (
-                  <Empty>
-                     <EmptyContent>
-                        <EmptyMedia variant="icon">
-                           <Inbox className="size-6" />
-                        </EmptyMedia>
-                        <EmptyTitle>
-                           {translate(
-                              "dashboard.routes.categories.list-section.state.empty.title",
-                           )}
-                        </EmptyTitle>
-                        <EmptyDescription>
-                           {translate(
-                              "dashboard.routes.categories.list-section.state.empty.description",
-                           )}
-                        </EmptyDescription>
-                     </EmptyContent>
-                  </Empty>
-               ) : (
-                  <ItemGroup>
-                     {categories.map((category, index) => (
-                        <Fragment key={category.id}>
-                           <Item>
-                              <ItemMedia variant="icon">
-                                 <div
-                                    className="size-8 rounded-sm border flex items-center justify-center"
-                                    style={{
-                                       backgroundColor: category.color,
-                                    }}
-                                 >
-                                    <IconDisplay
-                                       className="text-white"
-                                       iconName={
-                                          (category.icon ||
-                                             "Wallet") as IconName
-                                       }
-                                       size={16}
-                                    />
-                                 </div>
-                              </ItemMedia>
-                              <ItemContent>
-                                 <ItemTitle>{category.name}</ItemTitle>
-                                 <ItemDescription>
-                                    <div className="flex items-center gap-1">
-                                       <div
-                                          className="w-3 h-3 rounded-full border"
-                                          style={{
-                                             backgroundColor: category.color,
-                                          }}
+               <div className="block md:hidden">
+                  {categories.length === 0 && pagination.totalCount === 0 ? (
+                     <Empty>
+                        <EmptyContent>
+                           <EmptyMedia variant="icon">
+                              <Inbox className="size-6" />
+                           </EmptyMedia>
+                           <EmptyTitle>
+                              {translate(
+                                 "dashboard.routes.categories.list-section.state.empty.title",
+                              )}
+                           </EmptyTitle>
+                           <EmptyDescription>
+                              {translate(
+                                 "dashboard.routes.categories.list-section.state.empty.description",
+                              )}
+                           </EmptyDescription>
+                        </EmptyContent>
+                     </Empty>
+                  ) : (
+                     <ItemGroup>
+                        {categories.map((category, index) => (
+                           <Fragment key={category.id}>
+                              <Item>
+                                 <ItemMedia variant="icon">
+                                    <div
+                                       className="size-8 rounded-sm border flex items-center justify-center"
+                                       style={{
+                                          backgroundColor: category.color,
+                                       }}
+                                    >
+                                       <IconDisplay
+                                          className="text-white"
+                                          iconName={
+                                             (category.icon ||
+                                                "Wallet") as IconName
+                                          }
+                                          size={16}
                                        />
-                                       <span className="text-xs text-muted-foreground">
-                                          {category.color}
-                                       </span>
                                     </div>
-                                 </ItemDescription>
-                              </ItemContent>
-                              <ItemActions>
-                                 <CategoryActionsDropdown category={category} />
-                              </ItemActions>
-                           </Item>
-                           {index !== categories.length - 1 && (
-                              <ItemSeparator />
-                           )}
-                        </Fragment>
-                     ))}
-                  </ItemGroup>
-               )}
+                                 </ItemMedia>
+                                 <ItemContent>
+                                    <ItemTitle>{category.name}</ItemTitle>
+                                    <ItemDescription>
+                                       <div className="flex items-center gap-1">
+                                          <div
+                                             className="w-3 h-3 rounded-full border"
+                                             style={{
+                                                backgroundColor: category.color,
+                                             }}
+                                          />
+                                          <span className="text-xs text-muted-foreground">
+                                             {category.color}
+                                          </span>
+                                       </div>
+                                    </ItemDescription>
+                                 </ItemContent>
+                                 <ItemActions>
+                                    <CategoryActionsDropdown
+                                       category={category}
+                                    />
+                                 </ItemActions>
+                              </Item>
+                              {index !== categories.length - 1 && (
+                                 <ItemSeparator />
+                              )}
+                           </Fragment>
+                        ))}
+                     </ItemGroup>
+                  )}
+               </div>
+
+               <div className="hidden md:block">
+                  {categories.length === 0 && pagination.totalCount === 0 ? (
+                     <Empty>
+                        <EmptyContent>
+                           <EmptyMedia variant="icon">
+                              <Inbox className="size-6" />
+                           </EmptyMedia>
+                           <EmptyTitle>
+                              {translate(
+                                 "dashboard.routes.categories.list-section.state.empty.title",
+                              )}
+                           </EmptyTitle>
+                           <EmptyDescription>
+                              {translate(
+                                 "dashboard.routes.categories.list-section.state.empty.description",
+                              )}
+                           </EmptyDescription>
+                        </EmptyContent>
+                     </Empty>
+                  ) : (
+                     <DataTable
+                        columns={createCategoryColumns()}
+                        data={categories}
+                     />
+                  )}
+               </div>
             </CardContent>
+
+            {/* Pagination Mobile */}
             {pagination.totalPages > 1 && (
-               <CardFooter>
+               <CardFooter className="block md:hidden">
                   <Pagination>
                      <PaginationContent>
                         <PaginationItem>
@@ -345,10 +397,7 @@ function CategoriesListContent() {
                               }
                               href="#"
                               onClick={() =>
-                                 setCurrentPage((prev) => {
-                                    const newPage = prev - 1;
-                                    return newPage >= 1 ? newPage : prev;
-                                 })
+                                 setCurrentPage(Math.max(1, currentPage - 1))
                               }
                            />
                         </PaginationItem>
@@ -388,17 +437,80 @@ function CategoriesListContent() {
                                     : ""
                               }
                               onClick={() =>
-                                 setCurrentPage((prev) => {
-                                    const newPage = prev + 1;
-                                    return newPage <= pagination.totalPages
-                                       ? newPage
-                                       : prev;
-                                 })
+                                 setCurrentPage(
+                                    Math.min(
+                                       pagination.totalPages,
+                                       currentPage + 1,
+                                    ),
+                                 )
                               }
                            />
                         </PaginationItem>
                      </PaginationContent>
                   </Pagination>
+               </CardFooter>
+            )}
+
+            {/* Pagination Desktop */}
+            {pagination.totalPages > 1 && (
+               <CardFooter className="hidden md:flex md:items-center md:justify-between">
+                  <div className="text-sm text-muted-foreground">
+                     Mostrando {categories.length} de {pagination.totalCount}{" "}
+                     categorias
+                  </div>
+                  <div className="flex items-center space-x-6 lg:space-x-8">
+                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                        Página {currentPage} de {totalPages}
+                     </div>
+                     <div className="flex items-center space-x-2">
+                        <Button
+                           className="hidden h-8 w-8 p-0 lg:flex"
+                           disabled={currentPage === 1}
+                           onClick={() => setCurrentPage(1)}
+                           variant="outline"
+                        >
+                           <span className="sr-only">
+                              Ir para primeira página
+                           </span>
+                           {"<<"}
+                        </Button>
+                        <Button
+                           className="h-8 w-8 p-0"
+                           disabled={currentPage === 1}
+                           onClick={() =>
+                              setCurrentPage((prev) => Math.max(1, prev - 1))
+                           }
+                           variant="outline"
+                        >
+                           <span className="sr-only">Página anterior</span>
+                           {"<"}
+                        </Button>
+                        <Button
+                           className="h-8 w-8 p-0"
+                           disabled={currentPage === totalPages}
+                           onClick={() =>
+                              setCurrentPage((prev) =>
+                                 Math.min(totalPages, prev + 1),
+                              )
+                           }
+                           variant="outline"
+                        >
+                           <span className="sr-only">Próxima página</span>
+                           {">"}
+                        </Button>
+                        <Button
+                           className="hidden h-8 w-8 p-0 lg:flex"
+                           disabled={currentPage === totalPages}
+                           onClick={() => setCurrentPage(totalPages)}
+                           variant="outline"
+                        >
+                           <span className="sr-only">
+                              Ir para última página
+                           </span>
+                           {">>"}
+                        </Button>
+                     </div>
+                  </div>
                </CardFooter>
             )}
          </Card>
@@ -413,8 +525,13 @@ function CategoriesListContent() {
                setOrderDirection(value);
                handleFilterChange();
             }}
+            onPageSizeChange={(value) => {
+               setPageSize(value);
+               handleFilterChange();
+            }}
             orderBy={orderBy}
             orderDirection={orderDirection}
+            pageSize={pageSize}
          />
       </>
    );

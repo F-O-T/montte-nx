@@ -190,7 +190,7 @@ function NavUserContent() {
                         </div>
                      </div>
                      <div className="px-2 py-1">
-                        <div className="flex items-center gap-8">
+                        <div className="flex items-center justify-between gap-8">
                            <span className="text-sm font-medium">
                               {translate(
                                  "dashboard.layout.nav-user.preferences.language",

@@ -64,6 +64,7 @@ const completeBillSchema = z.object({
 });
 
 const paginationSchema = z.object({
+   endDate: z.string().optional(),
    limit: z.coerce.number().min(1).max(100).default(5),
    month: z.string().optional(),
    orderBy: z
@@ -71,6 +72,8 @@ const paginationSchema = z.object({
       .default("dueDate"),
    orderDirection: z.enum(["asc", "desc"]).default("desc"),
    page: z.coerce.number().min(1).default(1),
+   search: z.string().optional(),
+   startDate: z.string().optional(),
    type: z.enum(["income", "expense"]).optional(),
 });
 
@@ -294,7 +297,11 @@ export const billRouter = router({
 
          const userId = resolvedCtx.session.user.id;
 
-         return findBillsByUserIdPaginated(resolvedCtx.db, userId, input);
+         return findBillsByUserIdPaginated(resolvedCtx.db, userId, {
+            ...input,
+            endDate: input.endDate ? new Date(input.endDate) : undefined,
+            startDate: input.startDate ? new Date(input.startDate) : undefined,
+         });
       }),
 
    getById: protectedProcedure

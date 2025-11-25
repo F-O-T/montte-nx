@@ -1,7 +1,7 @@
 {
    "actions-toolbar": {
       "actions": {
-         "add-new": "Adicionar nova transação",
+         "add-new": "Nova transação",
          "delete-selected": "Excluir selecionados"
       }
    },
@@ -19,10 +19,21 @@
             "clear-filters": "Limpar Filtros"
          },
          "description": "Refine a lista de transações com base em critérios específicos.",
+         "end-date": {
+            "label": "Data Final",
+            "placeholder": "Selecione a data final"
+         },
          "items": {
             "all-accounts": "Todas as Contas",
             "all-categories": "Todas as Categorias",
             "all-types": "Todos os Tipos"
+         },
+         "page-size": {
+            "label": "Itens por Página"
+         },
+         "start-date": {
+            "label": "Data Inicial",
+            "placeholder": "Selecione a data inicial"
          },
          "title": "Filtrar Transações"
       }
@@ -39,6 +50,8 @@
             "title": "Nenhuma Transação Encontrada"
          }
       },
+      "showing": "Mostrando {{count}} de {{total}} transações",
+      "page": "Página {{current}} de {{total}}",
       "title": "Lista de Transações",
       "types": {
          "expense": "Despesa",
@@ -62,6 +75,14 @@
       "transfer": {
          "description": "Veja o total acumulado de todas as suas transferências.",
          "title": "Total de Transferências"
+      }
+   },
+   "table": {
+      "columns": {
+         "amount": "Valor",
+         "date": "Data",
+         "description": "Descrição",
+         "type": "Tipo"
       }
    }
 }

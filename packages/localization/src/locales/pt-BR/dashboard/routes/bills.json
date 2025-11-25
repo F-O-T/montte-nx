@@ -63,6 +63,27 @@
          "success": "Conta atualizada com sucesso",
          "title": "Editar Conta",
          "updating": "Atualizando..."
+      },
+      "filter": {
+         "actions": {
+            "clear-filters": "Limpar Filtros"
+         },
+         "description": "Refine a lista de contas com base em critérios específicos.",
+         "items": {
+            "all-categories": "Todas as Categorias",
+            "all-statuses": "Todos os Status",
+            "all-types": "Todos os Tipos",
+            "status-completed": "Concluída",
+            "status-overdue": "Vencida",
+            "status-pending": "Pendente",
+            "type-payable": "A Pagar",
+            "type-receivable": "A Receber"
+         },
+         "month": {
+            "label": "Mês",
+            "placeholder": "Selecione o mês"
+         },
+         "title": "Filtrar Contas"
       }
    },
    "filter": {
@@ -73,6 +94,7 @@
          "cancel": "Cancelar",
          "delete": "Excluir",
          "edit": "Editar",
+         "label": "Gerencie sua conta",
          "markAsPaid": "Marcar como Paga",
          "markAsReceived": "Marcar como Recebida",
          "pay": "Pagar",
@@ -91,38 +113,30 @@
       },
       "title": "Contas a Pagar e Receber"
    },
-
    "stats": {
       "description": "Resumo das suas contas",
-
       "error": {
          "description": "Erro ao carregar estatísticas",
          "title": "Erro ao carregar estatísticas"
       },
-
       "overdue": {
          "description": "Total de contas a pagar vencidas",
          "title": "Vencidas"
       },
-
       "overduePayables": {
          "count": "0",
          "description": "Total de contas a pagar vencidas",
          "title": "Vencidas"
       },
-
       "overdueReceivables": {
          "description": "Total de contas a receber vencidas",
          "title": "Vencidas"
       },
-
       "pendingReceivables": {
          "description": "Total de contas a receber pendentes",
          "title": "A Receber"
       },
-
       "title": "Estatísticas",
-
       "totalPayables": {
          "description": "Total de contas a pagar",
          "title": "A Pagar"
@@ -131,6 +145,24 @@
          "description": "Total de contas a receber",
          "title": "A Receber"
       }
+   },
+   "status": {
+      "overdue": "Vencida",
+      "paid": "Paga",
+      "pending": "Pendente"
+   },
+   "table": {
+      "columns": {
+         "amount": "Valor",
+         "description": "Descrição",
+         "dueDate": "Vencimento",
+         "status": "Status",
+         "type": "Tipo"
+      }
+   },
+   "type": {
+      "payable": "Despesa",
+      "receivable": "Receita"
    },
    "views": {
       "allBills": {

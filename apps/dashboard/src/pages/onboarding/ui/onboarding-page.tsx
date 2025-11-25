@@ -35,13 +35,13 @@ import {
 } from "@packages/ui/components/select";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
-import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import Color from "color";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 import { useTRPC } from "@/integrations/clients";
 
 const steps = [

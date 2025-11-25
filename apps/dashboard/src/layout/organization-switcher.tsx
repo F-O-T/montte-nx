@@ -1,5 +1,3 @@
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
-import { useTRPC } from "@/integrations/clients";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -25,6 +23,8 @@ import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
    return (
@@ -65,7 +65,7 @@ function OrganizationDropdownSkeleton() {
    return (
       <>
          <DropdownMenuLabel className="text-muted-foreground text-xs">
-            Teams
+            Organizations
          </DropdownMenuLabel>
          <DropdownMenuItem disabled>
             <div className="gap-2 p-2 w-full flex items-center">
@@ -198,11 +198,11 @@ function OrganizationSwitcherContent() {
                         className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         size="lg"
                      >
-                        <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                        <div className="rounded-md border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                            {logo?.data ? (
                               <img
                                  alt={organizationData.name}
-                                 className="size-8 rounded"
+                                 className="size-6 rounded"
                                  src={logo.data}
                               />
                            ) : (
@@ -257,7 +257,7 @@ function OrganizationSwitcherContent() {
                   </DropdownMenuContent>
                </DropdownMenu>
             ) : (
-               <SidebarMenuButton size="lg" disabled>
+               <SidebarMenuButton disabled size="lg">
                   <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                      <span className="text-xs font-medium">P</span>
                   </div>

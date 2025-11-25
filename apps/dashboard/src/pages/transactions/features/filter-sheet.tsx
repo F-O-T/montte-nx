@@ -1,6 +1,7 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Combobox } from "@packages/ui/components/combobox";
+import { DatePicker } from "@packages/ui/components/date-picker";
 import { Field, FieldGroup, FieldLabel } from "@packages/ui/components/field";
 import {
    Select,
@@ -22,9 +23,15 @@ type FilterSheetProps = {
    categoryFilter: string;
    typeFilter: string;
    bankAccountFilter: string;
+   pageSize: number;
+   startDate?: Date;
+   endDate?: Date;
    onCategoryFilterChange: (value: string) => void;
    onTypeFilterChange: (value: string) => void;
    onBankAccountFilterChange: (value: string) => void;
+   onPageSizeChange: (value: number) => void;
+   onStartDateChange: (date: Date | undefined) => void;
+   onEndDateChange: (date: Date | undefined) => void;
    categories: Array<{
       id: string;
       name: string;
@@ -44,9 +51,15 @@ export function FilterSheet({
    categoryFilter,
    typeFilter,
    bankAccountFilter,
+   pageSize,
+   startDate,
+   endDate,
    onCategoryFilterChange,
    onTypeFilterChange,
    onBankAccountFilterChange,
+   onPageSizeChange,
+   onStartDateChange,
+   onEndDateChange,
    categories,
    bankAccounts,
    isOpen,
@@ -61,7 +74,7 @@ export function FilterSheet({
       },
       ...categories.map((category) => ({
          label: category.name,
-         value: category.name,
+         value: category.id,
       })),
    ];
 
@@ -108,12 +121,16 @@ export function FilterSheet({
    const hasActiveFilters =
       categoryFilter !== "all" ||
       typeFilter !== "all" ||
-      bankAccountFilter !== "all";
+      bankAccountFilter !== "all" ||
+      startDate !== undefined ||
+      endDate !== undefined;
 
    const clearFilters = () => {
       onCategoryFilterChange("all");
       onTypeFilterChange("all");
       onBankAccountFilterChange("all");
+      onStartDateChange(undefined);
+      onEndDateChange(undefined);
    };
 
    return (
@@ -220,6 +237,67 @@ export function FilterSheet({
                                  value={option.value}
                               >
                                  {option.label}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.start-date.label",
+                        )}
+                     </FieldLabel>
+                     <DatePicker
+                        date={startDate}
+                        onSelect={onStartDateChange}
+                        placeholder={translate(
+                           "dashboard.routes.transactions.features.filter.start-date.placeholder",
+                        )}
+                     />
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.end-date.label",
+                        )}
+                     </FieldLabel>
+                     <DatePicker
+                        date={endDate}
+                        onSelect={onEndDateChange}
+                        placeholder={translate(
+                           "dashboard.routes.transactions.features.filter.end-date.placeholder",
+                        )}
+                     />
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           "dashboard.routes.transactions.features.filter.page-size.label",
+                        )}
+                     </FieldLabel>
+                     <Select
+                        onValueChange={(value) =>
+                           onPageSizeChange(Number(value))
+                        }
+                        value={pageSize.toString()}
+                     >
+                        <SelectTrigger>
+                           <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {[5, 10, 20, 30, 50].map((size) => (
+                              <SelectItem key={size} value={size.toString()}>
+                                 {size}
                               </SelectItem>
                            ))}
                         </SelectContent>
