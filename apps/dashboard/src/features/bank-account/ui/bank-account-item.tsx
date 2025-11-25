@@ -33,7 +33,7 @@ export function BankAccountItem({ account, solid }: BankAccountItemProps) {
       >
          <Item
             className={cn(
-               "cursor-pointer hover:bg-muted/50 transition-colors",
+               "cursor-pointer h-full hover:bg-muted/50 transition-colors",
                {
                   "bg-card": solid,
                },
