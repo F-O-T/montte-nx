@@ -23,6 +23,7 @@ function RouteComponent() {
          queryClient
             .fetchQuery(trpc.organization.getOrganizations.queryOptions())
             .then((organization) => {
+               console.log("organization", organization);
                // TODO > move to a const the defualt
                router.navigate({
                   params: { slug: organization[0]?.slug ?? "" },

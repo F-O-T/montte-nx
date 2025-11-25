@@ -1,11 +1,11 @@
-import { getQueryClient, trpc } from "@/integrations/clients";
-import { DashboardLayout } from "@/layout/dashboard-layout";
 import {
    createFileRoute,
    Outlet,
    redirect,
    useLocation,
 } from "@tanstack/react-router";
+import { getQueryClient, trpc } from "@/integrations/clients";
+import { DashboardLayout } from "@/layout/dashboard-layout";
 
 export const Route = createFileRoute("/_dashboard")({
    beforeLoad: async ({ location }) => {
