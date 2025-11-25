@@ -1,5 +1,3 @@
-import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useTRPC } from "@/integrations/clients";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -14,6 +12,8 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Building, Home } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 import { BankAccountInfo } from "./bank-account-information-section";
 import { BankAccountQuickActionsToolbar } from "./bank-account-quick-actions-toolbar";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
