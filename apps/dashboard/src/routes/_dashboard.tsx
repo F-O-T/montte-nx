@@ -1,28 +1,33 @@
-import { getQueryClient, trpc, useTRPC } from "@/integrations/clients";
+import { getQueryClient, trpc } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import {
    createFileRoute,
    Outlet,
    redirect,
    useLocation,
-   useRouter,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_dashboard")({
    beforeLoad: async () => {
       const queryClient = getQueryClient();
       try {
-         const [status] = await Promise.all([
+         const [status, session] = await Promise.all([
             queryClient.fetchQuery(
                trpc.onboarding.getOnboardingStatus.queryOptions(),
             ),
+            queryClient.fetchQuery(trpc.session.getSession.queryOptions()),
             queryClient.fetchQuery(
                trpc.organization.getOrganizations.queryOptions(),
             ),
          ]);
+
+         if (!session) {
+            throw redirect({
+               replace: true,
+               search: location.search,
+               to: "/auth/sign-in",
+            });
+         }
 
          if (status.needsOnboarding) {
             throw redirect({ to: "/auth/onboarding" });
@@ -36,43 +41,17 @@ export const Route = createFileRoute("/_dashboard")({
          ) {
             throw error;
          }
+
          throw redirect({ to: "/auth/sign-in" });
       }
    },
    component: RouteComponent,
-   staticData: {
-      breadcrumb: "Dashboard Layout",
-   },
+   staticData: { breadcrumb: "Dashboard Layout" },
    wrapInSuspense: true,
 });
 
 function RouteComponent() {
    const location = useLocation();
-   const trpc = useTRPC();
-   const { data: session, error } = useSuspenseQuery(
-      trpc.session.getSession.queryOptions(),
-   );
-   const router = useRouter();
-
-   useEffect(() => {
-      if (error) {
-         toast.error("Failed to fetch session data.");
-         router.navigate({
-            replace: true,
-            search: location.search,
-            to: "/auth/sign-in",
-         });
-         return;
-      }
-      if (!session) {
-         toast.error("You must be logged in to access this page.");
-         router.navigate({
-            replace: true,
-            search: location.search,
-            to: "/auth/sign-in",
-         });
-      }
-   }, [session, location, router, error]);
 
    return (
       <DashboardLayout>
