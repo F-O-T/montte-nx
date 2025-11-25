@@ -42,7 +42,7 @@ export function NavMain() {
       },
       {
          icon: Building2,
-         title: "Bank Accounts",
+         title: translate("dashboard.routes.bank-accounts.list-section.title"),
          url: "/bank-accounts",
       },
       {

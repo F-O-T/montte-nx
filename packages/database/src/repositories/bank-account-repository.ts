@@ -61,6 +61,68 @@ export async function findBankAccountsByUserId(
    }
 }
 
+export async function findBankAccountsByUserIdPaginated(
+   dbClient: DatabaseInstance,
+   userId: string,
+   params: {
+      page: number;
+      limit: number;
+      search?: string;
+      orderBy?: "name" | "bank" | "createdAt" | "updatedAt" | "status";
+      orderDirection?: "asc" | "desc";
+   },
+) {
+   try {
+      const {
+         page,
+         limit,
+         search,
+         orderBy = "name",
+         orderDirection = "asc",
+      } = params;
+      const offset = (page - 1) * limit;
+
+      const whereClause = and(
+         eq(bankAccount.userId, userId),
+         search ? sql`${bankAccount.name} ILIKE ${`%${search}%`}` : undefined,
+      );
+
+      const [data, totalCountResult] = await Promise.all([
+         dbClient.query.bankAccount.findMany({
+            limit,
+            offset,
+            orderBy: (bankAccount, { asc, desc }) => {
+               const column = bankAccount[orderBy as keyof typeof bankAccount];
+               return orderDirection === "asc" ? asc(column) : desc(column);
+            },
+            where: whereClause,
+         }),
+         dbClient
+            .select({ count: sql<number>`count(*)` })
+            .from(bankAccount)
+            .where(whereClause),
+      ]);
+
+      const totalCount = totalCountResult[0]?.count || 0;
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         bankAccounts: data,
+         pagination: {
+            currentPage: page,
+            pageSize: limit,
+            totalCount,
+            totalPages,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find paginated bank accounts by user id: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function updateBankAccount(
    dbClient: DatabaseInstance,
    bankAccountId: string,

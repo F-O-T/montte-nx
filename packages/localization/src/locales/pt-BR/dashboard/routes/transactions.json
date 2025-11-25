@@ -50,6 +50,8 @@
             "title": "Nenhuma Transação Encontrada"
          }
       },
+      "showing": "Mostrando {{count}} de {{total}} transações",
+      "page": "Página {{current}} de {{total}}",
       "title": "Lista de Transações",
       "types": {
          "expense": "Despesa",
