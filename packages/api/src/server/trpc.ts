@@ -144,21 +144,119 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 function sanitizeData<T>(data: T): T {
-   if (!data || typeof data !== "object" || data === null) {
+   if (!data || typeof data !== "object") {
       return data;
    }
 
-   const sanitized = { ...data } as Record<string, unknown>;
+   const SENSITIVE_KEYS = [
+      "password",
+      "confirmpassword",
+      "token",
+      "accesstoken",
+      "refreshtoken",
+      "apiKey",
+      "apikey",
+      "secret",
+      "api_key",
+      "auth",
+      "authorization",
+      "ssn",
+      "email",
+      "phone",
+   ].map((s) => s.toLowerCase());
 
-   if ("password" in sanitized) {
-      sanitized.password = "********";
+   const SENSITIVE_SUBSTRINGS = [
+      "password",
+      "secret",
+      "token",
+      "api_key",
+      "api",
+      "auth",
+      "authorization",
+      "ssn",
+      "email",
+      "phone",
+   ];
+
+   const MASK = "********";
+
+   function maskString(value: string): string {
+      return MASK;
    }
 
-   if ("confirmPassword" in sanitized) {
-      sanitized.confirmPassword = "********";
+   function isLikelyEmail(value: string): boolean {
+      // Simple email heuristic
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
    }
 
-   return sanitized as T;
+   function isLikelyPhone(value: string): boolean {
+      // Phone-like if contains only phone chars and at least 7 digits
+      const digits = value.replace(/\D/g, "");
+      return digits.length >= 7 && /^[\d\s()+\-\.]+$/.test(value);
+   }
+
+   function isLikelySecret(value: string): boolean {
+      // Long tokens (base64/hex/etc) -- conservative: length >= 20 and mostly URL-safe/base64/hex
+      if (value.length < 20) return false;
+      return /^[A-Za-z0-9_\-+/=]+$/.test(value);
+   }
+
+   function shouldMaskKey(key: string): boolean {
+      const lower = key.toLowerCase();
+      if (SENSITIVE_KEYS.includes(lower)) return true;
+      return SENSITIVE_SUBSTRINGS.some((sub) => lower.includes(sub));
+   }
+
+   function cloneAndSanitize(value: unknown): unknown {
+      if (value === null || value === undefined) return value;
+
+      if (Array.isArray(value)) {
+         return value.map(cloneAndSanitize);
+      }
+
+      if (typeof value === "object") {
+         const obj = value as Record<string, unknown>;
+         const out: Record<string, unknown> = {};
+         for (const [k, v] of Object.entries(obj)) {
+            try {
+               if (shouldMaskKey(k)) {
+                  out[k] = MASK;
+               } else {
+                  out[k] = cloneAndSanitize(v);
+               }
+            } catch (e) {
+               // In case of unexpected values, fallback to masking that field
+               out[k] = MASK;
+            }
+         }
+         return out;
+      }
+
+      if (typeof value === "string") {
+         if (
+            isLikelyEmail(value) ||
+            isLikelyPhone(value) ||
+            isLikelySecret(value)
+         ) {
+            return maskString(value);
+         }
+         return value;
+      }
+
+      // primitives (number, boolean, symbol, bigint, function)
+      return value;
+   }
+
+   // Work on a shallow clone of the top-level to avoid mutating input
+   if (Array.isArray(data)) {
+      return cloneAndSanitize(data) as unknown as T;
+   }
+
+   const topObj = { ...(data as Record<string, unknown>) };
+
+   const sanitized = cloneAndSanitize(topObj) as T;
+
+   return sanitized;
 }
 
 const telemetryMiddleware = t.middleware(
