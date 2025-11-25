@@ -20,7 +20,7 @@ import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
-import { type FormEvent, useCallback, useMemo } from "react";
+import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { useTRPC } from "@/integrations/clients";

@@ -16,18 +16,19 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthOnboardingRouteImport } from './routes/auth/onboarding'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
-import { Route as DashboardTransactionsRouteImport } from './routes/_dashboard/transactions'
-import { Route as DashboardReportsRouteImport } from './routes/_dashboard/reports'
-import { Route as DashboardProfileRouteImport } from './routes/_dashboard/profile'
-import { Route as DashboardHomeRouteImport } from './routes/_dashboard/home'
-import { Route as DashboardOrganizationIndexRouteImport } from './routes/_dashboard/organization/index'
-import { Route as DashboardCategoriesIndexRouteImport } from './routes/_dashboard/categories.index'
-import { Route as DashboardBillsIndexRouteImport } from './routes/_dashboard/bills/index'
-import { Route as DashboardBankAccountsIndexRouteImport } from './routes/_dashboard/bank-accounts.index'
-import { Route as DashboardOrganizationTeamsRouteImport } from './routes/_dashboard/organization/teams'
-import { Route as DashboardOrganizationMembersRouteImport } from './routes/_dashboard/organization/members'
-import { Route as DashboardOrganizationInvitesRouteImport } from './routes/_dashboard/organization/invites'
-import { Route as DashboardBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/bank-accounts.$bankAccountId'
+import { Route as DashboardSlugRouteImport } from './routes/_dashboard/$slug'
+import { Route as DashboardSlugTransactionsRouteImport } from './routes/_dashboard/$slug/transactions'
+import { Route as DashboardSlugReportsRouteImport } from './routes/_dashboard/$slug/reports'
+import { Route as DashboardSlugProfileRouteImport } from './routes/_dashboard/$slug/profile'
+import { Route as DashboardSlugHomeRouteImport } from './routes/_dashboard/$slug/home'
+import { Route as DashboardSlugOrganizationIndexRouteImport } from './routes/_dashboard/$slug/organization/index'
+import { Route as DashboardSlugCategoriesIndexRouteImport } from './routes/_dashboard/$slug/categories.index'
+import { Route as DashboardSlugBillsIndexRouteImport } from './routes/_dashboard/$slug/bills/index'
+import { Route as DashboardSlugBankAccountsIndexRouteImport } from './routes/_dashboard/$slug/bank-accounts.index'
+import { Route as DashboardSlugOrganizationTeamsRouteImport } from './routes/_dashboard/$slug/organization/teams'
+import { Route as DashboardSlugOrganizationMembersRouteImport } from './routes/_dashboard/$slug/organization/members'
+import { Route as DashboardSlugOrganizationInvitesRouteImport } from './routes/_dashboard/$slug/organization/invites'
+import { Route as DashboardSlugBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/$slug/bank-accounts.$bankAccountId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -63,198 +64,210 @@ const AuthEmailVerificationRoute = AuthEmailVerificationRouteImport.update({
   path: '/email-verification',
   getParentRoute: () => AuthRoute,
 } as any)
-const DashboardTransactionsRoute = DashboardTransactionsRouteImport.update({
-  id: '/transactions',
-  path: '/transactions',
+const DashboardSlugRoute = DashboardSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardReportsRoute = DashboardReportsRouteImport.update({
+const DashboardSlugTransactionsRoute =
+  DashboardSlugTransactionsRouteImport.update({
+    id: '/transactions',
+    path: '/transactions',
+    getParentRoute: () => DashboardSlugRoute,
+  } as any)
+const DashboardSlugReportsRoute = DashboardSlugReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
-  getParentRoute: () => DashboardRoute,
+  getParentRoute: () => DashboardSlugRoute,
 } as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
+const DashboardSlugProfileRoute = DashboardSlugProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => DashboardRoute,
+  getParentRoute: () => DashboardSlugRoute,
 } as any)
-const DashboardHomeRoute = DashboardHomeRouteImport.update({
+const DashboardSlugHomeRoute = DashboardSlugHomeRouteImport.update({
   id: '/home',
   path: '/home',
-  getParentRoute: () => DashboardRoute,
+  getParentRoute: () => DashboardSlugRoute,
 } as any)
-const DashboardOrganizationIndexRoute =
-  DashboardOrganizationIndexRouteImport.update({
+const DashboardSlugOrganizationIndexRoute =
+  DashboardSlugOrganizationIndexRouteImport.update({
     id: '/organization/',
     path: '/organization/',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
-const DashboardCategoriesIndexRoute =
-  DashboardCategoriesIndexRouteImport.update({
+const DashboardSlugCategoriesIndexRoute =
+  DashboardSlugCategoriesIndexRouteImport.update({
     id: '/categories/',
     path: '/categories/',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
-const DashboardBillsIndexRoute = DashboardBillsIndexRouteImport.update({
+const DashboardSlugBillsIndexRoute = DashboardSlugBillsIndexRouteImport.update({
   id: '/bills/',
   path: '/bills/',
-  getParentRoute: () => DashboardRoute,
+  getParentRoute: () => DashboardSlugRoute,
 } as any)
-const DashboardBankAccountsIndexRoute =
-  DashboardBankAccountsIndexRouteImport.update({
+const DashboardSlugBankAccountsIndexRoute =
+  DashboardSlugBankAccountsIndexRouteImport.update({
     id: '/bank-accounts/',
     path: '/bank-accounts/',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
-const DashboardOrganizationTeamsRoute =
-  DashboardOrganizationTeamsRouteImport.update({
+const DashboardSlugOrganizationTeamsRoute =
+  DashboardSlugOrganizationTeamsRouteImport.update({
     id: '/organization/teams',
     path: '/organization/teams',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
-const DashboardOrganizationMembersRoute =
-  DashboardOrganizationMembersRouteImport.update({
+const DashboardSlugOrganizationMembersRoute =
+  DashboardSlugOrganizationMembersRouteImport.update({
     id: '/organization/members',
     path: '/organization/members',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
-const DashboardOrganizationInvitesRoute =
-  DashboardOrganizationInvitesRouteImport.update({
+const DashboardSlugOrganizationInvitesRoute =
+  DashboardSlugOrganizationInvitesRouteImport.update({
     id: '/organization/invites',
     path: '/organization/invites',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
-const DashboardBankAccountsBankAccountIdRoute =
-  DashboardBankAccountsBankAccountIdRouteImport.update({
+const DashboardSlugBankAccountsBankAccountIdRoute =
+  DashboardSlugBankAccountsBankAccountIdRouteImport.update({
     id: '/bank-accounts/$bankAccountId',
     path: '/bank-accounts/$bankAccountId',
-    getParentRoute: () => DashboardRoute,
+    getParentRoute: () => DashboardSlugRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/auth': typeof AuthRouteWithChildren
-  '/home': typeof DashboardHomeRoute
-  '/profile': typeof DashboardProfileRoute
-  '/reports': typeof DashboardReportsRoute
-  '/transactions': typeof DashboardTransactionsRoute
+  '/$slug': typeof DashboardSlugRouteWithChildren
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
-  '/organization/invites': typeof DashboardOrganizationInvitesRoute
-  '/organization/members': typeof DashboardOrganizationMembersRoute
-  '/organization/teams': typeof DashboardOrganizationTeamsRoute
-  '/bank-accounts': typeof DashboardBankAccountsIndexRoute
-  '/bills': typeof DashboardBillsIndexRoute
-  '/categories': typeof DashboardCategoriesIndexRoute
-  '/organization': typeof DashboardOrganizationIndexRoute
+  '/$slug/home': typeof DashboardSlugHomeRoute
+  '/$slug/profile': typeof DashboardSlugProfileRoute
+  '/$slug/reports': typeof DashboardSlugReportsRoute
+  '/$slug/transactions': typeof DashboardSlugTransactionsRoute
+  '/$slug/bank-accounts/$bankAccountId': typeof DashboardSlugBankAccountsBankAccountIdRoute
+  '/$slug/organization/invites': typeof DashboardSlugOrganizationInvitesRoute
+  '/$slug/organization/members': typeof DashboardSlugOrganizationMembersRoute
+  '/$slug/organization/teams': typeof DashboardSlugOrganizationTeamsRoute
+  '/$slug/bank-accounts': typeof DashboardSlugBankAccountsIndexRoute
+  '/$slug/bills': typeof DashboardSlugBillsIndexRoute
+  '/$slug/categories': typeof DashboardSlugCategoriesIndexRoute
+  '/$slug/organization': typeof DashboardSlugOrganizationIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRouteWithChildren
-  '/home': typeof DashboardHomeRoute
-  '/profile': typeof DashboardProfileRoute
-  '/reports': typeof DashboardReportsRoute
-  '/transactions': typeof DashboardTransactionsRoute
+  '/$slug': typeof DashboardSlugRouteWithChildren
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
-  '/organization/invites': typeof DashboardOrganizationInvitesRoute
-  '/organization/members': typeof DashboardOrganizationMembersRoute
-  '/organization/teams': typeof DashboardOrganizationTeamsRoute
-  '/bank-accounts': typeof DashboardBankAccountsIndexRoute
-  '/bills': typeof DashboardBillsIndexRoute
-  '/categories': typeof DashboardCategoriesIndexRoute
-  '/organization': typeof DashboardOrganizationIndexRoute
+  '/$slug/home': typeof DashboardSlugHomeRoute
+  '/$slug/profile': typeof DashboardSlugProfileRoute
+  '/$slug/reports': typeof DashboardSlugReportsRoute
+  '/$slug/transactions': typeof DashboardSlugTransactionsRoute
+  '/$slug/bank-accounts/$bankAccountId': typeof DashboardSlugBankAccountsBankAccountIdRoute
+  '/$slug/organization/invites': typeof DashboardSlugOrganizationInvitesRoute
+  '/$slug/organization/members': typeof DashboardSlugOrganizationMembersRoute
+  '/$slug/organization/teams': typeof DashboardSlugOrganizationTeamsRoute
+  '/$slug/bank-accounts': typeof DashboardSlugBankAccountsIndexRoute
+  '/$slug/bills': typeof DashboardSlugBillsIndexRoute
+  '/$slug/categories': typeof DashboardSlugCategoriesIndexRoute
+  '/$slug/organization': typeof DashboardSlugOrganizationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/_dashboard/home': typeof DashboardHomeRoute
-  '/_dashboard/profile': typeof DashboardProfileRoute
-  '/_dashboard/reports': typeof DashboardReportsRoute
-  '/_dashboard/transactions': typeof DashboardTransactionsRoute
+  '/_dashboard/$slug': typeof DashboardSlugRouteWithChildren
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/_dashboard/bank-accounts/$bankAccountId': typeof DashboardBankAccountsBankAccountIdRoute
-  '/_dashboard/organization/invites': typeof DashboardOrganizationInvitesRoute
-  '/_dashboard/organization/members': typeof DashboardOrganizationMembersRoute
-  '/_dashboard/organization/teams': typeof DashboardOrganizationTeamsRoute
-  '/_dashboard/bank-accounts/': typeof DashboardBankAccountsIndexRoute
-  '/_dashboard/bills/': typeof DashboardBillsIndexRoute
-  '/_dashboard/categories/': typeof DashboardCategoriesIndexRoute
-  '/_dashboard/organization/': typeof DashboardOrganizationIndexRoute
+  '/_dashboard/$slug/home': typeof DashboardSlugHomeRoute
+  '/_dashboard/$slug/profile': typeof DashboardSlugProfileRoute
+  '/_dashboard/$slug/reports': typeof DashboardSlugReportsRoute
+  '/_dashboard/$slug/transactions': typeof DashboardSlugTransactionsRoute
+  '/_dashboard/$slug/bank-accounts/$bankAccountId': typeof DashboardSlugBankAccountsBankAccountIdRoute
+  '/_dashboard/$slug/organization/invites': typeof DashboardSlugOrganizationInvitesRoute
+  '/_dashboard/$slug/organization/members': typeof DashboardSlugOrganizationMembersRoute
+  '/_dashboard/$slug/organization/teams': typeof DashboardSlugOrganizationTeamsRoute
+  '/_dashboard/$slug/bank-accounts/': typeof DashboardSlugBankAccountsIndexRoute
+  '/_dashboard/$slug/bills/': typeof DashboardSlugBillsIndexRoute
+  '/_dashboard/$slug/categories/': typeof DashboardSlugCategoriesIndexRoute
+  '/_dashboard/$slug/organization/': typeof DashboardSlugOrganizationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/auth'
-    | '/home'
-    | '/profile'
-    | '/reports'
-    | '/transactions'
+    | '/$slug'
     | '/auth/email-verification'
     | '/auth/forgot-password'
     | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/bank-accounts/$bankAccountId'
-    | '/organization/invites'
-    | '/organization/members'
-    | '/organization/teams'
-    | '/bank-accounts'
-    | '/bills'
-    | '/categories'
-    | '/organization'
+    | '/$slug/home'
+    | '/$slug/profile'
+    | '/$slug/reports'
+    | '/$slug/transactions'
+    | '/$slug/bank-accounts/$bankAccountId'
+    | '/$slug/organization/invites'
+    | '/$slug/organization/members'
+    | '/$slug/organization/teams'
+    | '/$slug/bank-accounts'
+    | '/$slug/bills'
+    | '/$slug/categories'
+    | '/$slug/organization'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
-    | '/home'
-    | '/profile'
-    | '/reports'
-    | '/transactions'
+    | '/$slug'
     | '/auth/email-verification'
     | '/auth/forgot-password'
     | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/bank-accounts/$bankAccountId'
-    | '/organization/invites'
-    | '/organization/members'
-    | '/organization/teams'
-    | '/bank-accounts'
-    | '/bills'
-    | '/categories'
-    | '/organization'
+    | '/$slug/home'
+    | '/$slug/profile'
+    | '/$slug/reports'
+    | '/$slug/transactions'
+    | '/$slug/bank-accounts/$bankAccountId'
+    | '/$slug/organization/invites'
+    | '/$slug/organization/members'
+    | '/$slug/organization/teams'
+    | '/$slug/bank-accounts'
+    | '/$slug/bills'
+    | '/$slug/categories'
+    | '/$slug/organization'
   id:
     | '__root__'
     | '/_dashboard'
     | '/auth'
-    | '/_dashboard/home'
-    | '/_dashboard/profile'
-    | '/_dashboard/reports'
-    | '/_dashboard/transactions'
+    | '/_dashboard/$slug'
     | '/auth/email-verification'
     | '/auth/forgot-password'
     | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/_dashboard/bank-accounts/$bankAccountId'
-    | '/_dashboard/organization/invites'
-    | '/_dashboard/organization/members'
-    | '/_dashboard/organization/teams'
-    | '/_dashboard/bank-accounts/'
-    | '/_dashboard/bills/'
-    | '/_dashboard/categories/'
-    | '/_dashboard/organization/'
+    | '/_dashboard/$slug/home'
+    | '/_dashboard/$slug/profile'
+    | '/_dashboard/$slug/reports'
+    | '/_dashboard/$slug/transactions'
+    | '/_dashboard/$slug/bank-accounts/$bankAccountId'
+    | '/_dashboard/$slug/organization/invites'
+    | '/_dashboard/$slug/organization/members'
+    | '/_dashboard/$slug/organization/teams'
+    | '/_dashboard/$slug/bank-accounts/'
+    | '/_dashboard/$slug/bills/'
+    | '/_dashboard/$slug/categories/'
+    | '/_dashboard/$slug/organization/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -313,122 +326,141 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmailVerificationRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_dashboard/transactions': {
-      id: '/_dashboard/transactions'
+    '/_dashboard/$slug': {
+      id: '/_dashboard/$slug'
+      path: '/$slug'
+      fullPath: '/$slug'
+      preLoaderRoute: typeof DashboardSlugRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/_dashboard/$slug/transactions': {
+      id: '/_dashboard/$slug/transactions'
       path: '/transactions'
-      fullPath: '/transactions'
-      preLoaderRoute: typeof DashboardTransactionsRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/transactions'
+      preLoaderRoute: typeof DashboardSlugTransactionsRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/reports': {
-      id: '/_dashboard/reports'
+    '/_dashboard/$slug/reports': {
+      id: '/_dashboard/$slug/reports'
       path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof DashboardReportsRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/reports'
+      preLoaderRoute: typeof DashboardSlugReportsRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/profile': {
-      id: '/_dashboard/profile'
+    '/_dashboard/$slug/profile': {
+      id: '/_dashboard/$slug/profile'
       path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/profile'
+      preLoaderRoute: typeof DashboardSlugProfileRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/home': {
-      id: '/_dashboard/home'
+    '/_dashboard/$slug/home': {
+      id: '/_dashboard/$slug/home'
       path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof DashboardHomeRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/home'
+      preLoaderRoute: typeof DashboardSlugHomeRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/organization/': {
-      id: '/_dashboard/organization/'
+    '/_dashboard/$slug/organization/': {
+      id: '/_dashboard/$slug/organization/'
       path: '/organization'
-      fullPath: '/organization'
-      preLoaderRoute: typeof DashboardOrganizationIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/organization'
+      preLoaderRoute: typeof DashboardSlugOrganizationIndexRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/categories/': {
-      id: '/_dashboard/categories/'
+    '/_dashboard/$slug/categories/': {
+      id: '/_dashboard/$slug/categories/'
       path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof DashboardCategoriesIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/categories'
+      preLoaderRoute: typeof DashboardSlugCategoriesIndexRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/bills/': {
-      id: '/_dashboard/bills/'
+    '/_dashboard/$slug/bills/': {
+      id: '/_dashboard/$slug/bills/'
       path: '/bills'
-      fullPath: '/bills'
-      preLoaderRoute: typeof DashboardBillsIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/bills'
+      preLoaderRoute: typeof DashboardSlugBillsIndexRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/bank-accounts/': {
-      id: '/_dashboard/bank-accounts/'
+    '/_dashboard/$slug/bank-accounts/': {
+      id: '/_dashboard/$slug/bank-accounts/'
       path: '/bank-accounts'
-      fullPath: '/bank-accounts'
-      preLoaderRoute: typeof DashboardBankAccountsIndexRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/bank-accounts'
+      preLoaderRoute: typeof DashboardSlugBankAccountsIndexRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/organization/teams': {
-      id: '/_dashboard/organization/teams'
+    '/_dashboard/$slug/organization/teams': {
+      id: '/_dashboard/$slug/organization/teams'
       path: '/organization/teams'
-      fullPath: '/organization/teams'
-      preLoaderRoute: typeof DashboardOrganizationTeamsRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/organization/teams'
+      preLoaderRoute: typeof DashboardSlugOrganizationTeamsRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/organization/members': {
-      id: '/_dashboard/organization/members'
+    '/_dashboard/$slug/organization/members': {
+      id: '/_dashboard/$slug/organization/members'
       path: '/organization/members'
-      fullPath: '/organization/members'
-      preLoaderRoute: typeof DashboardOrganizationMembersRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/organization/members'
+      preLoaderRoute: typeof DashboardSlugOrganizationMembersRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/organization/invites': {
-      id: '/_dashboard/organization/invites'
+    '/_dashboard/$slug/organization/invites': {
+      id: '/_dashboard/$slug/organization/invites'
       path: '/organization/invites'
-      fullPath: '/organization/invites'
-      preLoaderRoute: typeof DashboardOrganizationInvitesRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/organization/invites'
+      preLoaderRoute: typeof DashboardSlugOrganizationInvitesRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
-    '/_dashboard/bank-accounts/$bankAccountId': {
-      id: '/_dashboard/bank-accounts/$bankAccountId'
+    '/_dashboard/$slug/bank-accounts/$bankAccountId': {
+      id: '/_dashboard/$slug/bank-accounts/$bankAccountId'
       path: '/bank-accounts/$bankAccountId'
-      fullPath: '/bank-accounts/$bankAccountId'
-      preLoaderRoute: typeof DashboardBankAccountsBankAccountIdRouteImport
-      parentRoute: typeof DashboardRoute
+      fullPath: '/$slug/bank-accounts/$bankAccountId'
+      preLoaderRoute: typeof DashboardSlugBankAccountsBankAccountIdRouteImport
+      parentRoute: typeof DashboardSlugRoute
     }
   }
 }
 
+interface DashboardSlugRouteChildren {
+  DashboardSlugHomeRoute: typeof DashboardSlugHomeRoute
+  DashboardSlugProfileRoute: typeof DashboardSlugProfileRoute
+  DashboardSlugReportsRoute: typeof DashboardSlugReportsRoute
+  DashboardSlugTransactionsRoute: typeof DashboardSlugTransactionsRoute
+  DashboardSlugBankAccountsBankAccountIdRoute: typeof DashboardSlugBankAccountsBankAccountIdRoute
+  DashboardSlugOrganizationInvitesRoute: typeof DashboardSlugOrganizationInvitesRoute
+  DashboardSlugOrganizationMembersRoute: typeof DashboardSlugOrganizationMembersRoute
+  DashboardSlugOrganizationTeamsRoute: typeof DashboardSlugOrganizationTeamsRoute
+  DashboardSlugBankAccountsIndexRoute: typeof DashboardSlugBankAccountsIndexRoute
+  DashboardSlugBillsIndexRoute: typeof DashboardSlugBillsIndexRoute
+  DashboardSlugCategoriesIndexRoute: typeof DashboardSlugCategoriesIndexRoute
+  DashboardSlugOrganizationIndexRoute: typeof DashboardSlugOrganizationIndexRoute
+}
+
+const DashboardSlugRouteChildren: DashboardSlugRouteChildren = {
+  DashboardSlugHomeRoute: DashboardSlugHomeRoute,
+  DashboardSlugProfileRoute: DashboardSlugProfileRoute,
+  DashboardSlugReportsRoute: DashboardSlugReportsRoute,
+  DashboardSlugTransactionsRoute: DashboardSlugTransactionsRoute,
+  DashboardSlugBankAccountsBankAccountIdRoute:
+    DashboardSlugBankAccountsBankAccountIdRoute,
+  DashboardSlugOrganizationInvitesRoute: DashboardSlugOrganizationInvitesRoute,
+  DashboardSlugOrganizationMembersRoute: DashboardSlugOrganizationMembersRoute,
+  DashboardSlugOrganizationTeamsRoute: DashboardSlugOrganizationTeamsRoute,
+  DashboardSlugBankAccountsIndexRoute: DashboardSlugBankAccountsIndexRoute,
+  DashboardSlugBillsIndexRoute: DashboardSlugBillsIndexRoute,
+  DashboardSlugCategoriesIndexRoute: DashboardSlugCategoriesIndexRoute,
+  DashboardSlugOrganizationIndexRoute: DashboardSlugOrganizationIndexRoute,
+}
+
+const DashboardSlugRouteWithChildren = DashboardSlugRoute._addFileChildren(
+  DashboardSlugRouteChildren,
+)
+
 interface DashboardRouteChildren {
-  DashboardHomeRoute: typeof DashboardHomeRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardReportsRoute: typeof DashboardReportsRoute
-  DashboardTransactionsRoute: typeof DashboardTransactionsRoute
-  DashboardBankAccountsBankAccountIdRoute: typeof DashboardBankAccountsBankAccountIdRoute
-  DashboardOrganizationInvitesRoute: typeof DashboardOrganizationInvitesRoute
-  DashboardOrganizationMembersRoute: typeof DashboardOrganizationMembersRoute
-  DashboardOrganizationTeamsRoute: typeof DashboardOrganizationTeamsRoute
-  DashboardBankAccountsIndexRoute: typeof DashboardBankAccountsIndexRoute
-  DashboardBillsIndexRoute: typeof DashboardBillsIndexRoute
-  DashboardCategoriesIndexRoute: typeof DashboardCategoriesIndexRoute
-  DashboardOrganizationIndexRoute: typeof DashboardOrganizationIndexRoute
+  DashboardSlugRoute: typeof DashboardSlugRouteWithChildren
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardHomeRoute: DashboardHomeRoute,
-  DashboardProfileRoute: DashboardProfileRoute,
-  DashboardReportsRoute: DashboardReportsRoute,
-  DashboardTransactionsRoute: DashboardTransactionsRoute,
-  DashboardBankAccountsBankAccountIdRoute:
-    DashboardBankAccountsBankAccountIdRoute,
-  DashboardOrganizationInvitesRoute: DashboardOrganizationInvitesRoute,
-  DashboardOrganizationMembersRoute: DashboardOrganizationMembersRoute,
-  DashboardOrganizationTeamsRoute: DashboardOrganizationTeamsRoute,
-  DashboardBankAccountsIndexRoute: DashboardBankAccountsIndexRoute,
-  DashboardBillsIndexRoute: DashboardBillsIndexRoute,
-  DashboardCategoriesIndexRoute: DashboardCategoriesIndexRoute,
-  DashboardOrganizationIndexRoute: DashboardOrganizationIndexRoute,
+  DashboardSlugRoute: DashboardSlugRouteWithChildren,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

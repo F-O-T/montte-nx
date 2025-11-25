@@ -43,7 +43,7 @@ export function SignInPage() {
    const handleGoogleSignIn = useCallback(async () => {
       try {
          await betterAuthClient.signIn.social({
-            callbackURL: `${window.location.origin}/home`,
+            callbackURL: `${window.location.origin}/auth/sign-in`,
             provider: "google",
          });
       } catch (error) {
@@ -56,7 +56,7 @@ export function SignInPage() {
             toast.error(error.message);
          },
          onSuccess: async () => {
-            await router.navigate({ to: "/home" });
+            await router.navigate({ params: { slug: "" }, to: "/$slug/home" });
          },
       }),
    );

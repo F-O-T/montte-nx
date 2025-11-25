@@ -21,9 +21,10 @@ import {
 } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Plus } from "lucide-react";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
@@ -92,10 +93,7 @@ export function OrganizationSwitcher() {
 function OrganizationDropdownContent() {
    const trpc = useTRPC();
    const router = useRouter();
-
-   const { data: activeOrganization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const { activeOrganization } = useActiveOrganization();
 
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
@@ -117,9 +115,11 @@ function OrganizationDropdownContent() {
       }),
    );
 
-   async function handleOrganizationClick(organizationId: string) {
-      await setActiveOrganization.mutateAsync({ organizationId });
-      router.navigate({ to: "/organization" });
+   async function handleOrganizationClick(organizationSlug: string) {
+      router.navigate({
+         params: { slug: organizationSlug },
+         to: "/$slug/home",
+      });
    }
 
    return (
@@ -135,7 +135,7 @@ function OrganizationDropdownContent() {
                   organization.id === activeOrganization?.id
                }
                key={organization.name}
-               onClick={() => handleOrganizationClick(organization.id)}
+               onClick={() => handleOrganizationClick(organization.slug)}
             >
                <div className="flex size-6 items-center justify-center rounded-md border">
                   {logo?.data ? (
@@ -163,12 +163,12 @@ function OrganizationSwitcherContent() {
 
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
 
-   const { data: activeOrganization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const { activeOrganization } = useActiveOrganization();
+
    const { data: logo } = useSuspenseQuery(
       trpc.organization.getLogo.queryOptions(),
    );
+
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
    );
@@ -179,94 +179,73 @@ function OrganizationSwitcherContent() {
    const hasReachedLimit =
       (organizations?.length ?? 0) >= (organizationLimit ?? 3);
 
-   const organizationData = useMemo(() => {
-      const hasOrg = !!activeOrganization;
-      return {
-         description: activeOrganization?.description || "Personal Account",
-         hasOrganization: hasOrg,
-         name: activeOrganization?.name || "Personal",
-      };
-   }, [activeOrganization]);
-
    return (
       <SidebarMenu>
          <SidebarMenuItem>
-            {organizationData.hasOrganization ? (
-               <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                     <SidebarMenuButton
-                        className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                        size="lg"
-                     >
-                        <div className="rounded-md border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                           {logo?.data ? (
-                              <img
-                                 alt={organizationData.name}
-                                 className="size-6 rounded"
-                                 src={logo.data}
-                              />
-                           ) : (
-                              <span className="text-xs font-medium">
-                                 {getInitials(organizationData.name)}
-                              </span>
-                           )}
-                        </div>
-                        <div className="grid flex-1 text-left text-sm leading-tight">
-                           <span className="truncate font-medium">
-                              {organizationData.name}
-                           </span>
-                           <span className="truncate text-xs">
-                              {organizationData.description}
-                           </span>
-                        </div>
-                        <ChevronsUpDown className="ml-auto" />
-                     </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                     align="start"
-                     className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-                     side={isMobile ? "bottom" : "right"}
-                     sideOffset={4}
+            <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                     className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                     size="lg"
                   >
-                     <ErrorBoundary
-                        FallbackComponent={OrganizationDropdownErrorFallback}
-                     >
-                        <Suspense fallback={<OrganizationDropdownSkeleton />}>
-                           <OrganizationDropdownContent />
-                        </Suspense>
-                     </ErrorBoundary>
+                     <div className="rounded-md border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                        {logo?.data ? (
+                           <img
+                              alt={activeOrganization.name}
+                              className="size-6 rounded"
+                              src={logo.data}
+                           />
+                        ) : (
+                           <span className="text-xs font-medium">
+                              {getInitials(activeOrganization.name)}
+                           </span>
+                        )}
+                     </div>
+                     <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-medium">
+                           {activeOrganization.name}
+                        </span>
+                        <span className="truncate text-xs">
+                           {activeOrganization.description}
+                        </span>
+                     </div>
+                     <ChevronsUpDown className="ml-auto" />
+                  </SidebarMenuButton>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent
+                  align="start"
+                  className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                  side={isMobile ? "bottom" : "right"}
+                  sideOffset={4}
+               >
+                  <ErrorBoundary
+                     FallbackComponent={OrganizationDropdownErrorFallback}
+                  >
+                     <Suspense fallback={<OrganizationDropdownSkeleton />}>
+                        <OrganizationDropdownContent />
+                     </Suspense>
+                  </ErrorBoundary>
 
-                     <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
 
-                     <DropdownMenuItem
-                        disabled={hasReachedLimit}
-                        onClick={() => setIsCreateSheetOpen(true)}
-                        title={
-                           hasReachedLimit
-                              ? "Você não pode criar mais organizações"
-                              : undefined
-                        }
-                     >
-                        <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                           <Plus className="size-4" />
-                        </div>
-                        <div className="text-muted-foreground font-medium">
-                           Add organization
-                        </div>
-                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-               </DropdownMenu>
-            ) : (
-               <SidebarMenuButton disabled size="lg">
-                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                     <span className="text-xs font-medium">P</span>
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                     <span className="truncate font-medium">Personal</span>
-                     <span className="truncate text-xs">Personal Account</span>
-                  </div>
-               </SidebarMenuButton>
-            )}
+                  <DropdownMenuItem
+                     disabled={hasReachedLimit}
+                     onClick={() => setIsCreateSheetOpen(true)}
+                     title={
+                        hasReachedLimit
+                           ? "Você não pode criar mais organizações"
+                           : undefined
+                     }
+                  >
+                     <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                        <Plus className="size-4" />
+                     </div>
+                     <div className="text-muted-foreground font-medium">
+                        Add organization
+                     </div>
+                  </DropdownMenuItem>
+               </DropdownMenuContent>
+            </DropdownMenu>
          </SidebarMenuItem>
 
          <ManageOrganizationSheet

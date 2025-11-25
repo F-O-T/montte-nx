@@ -72,7 +72,8 @@ export function EmailVerificationPage() {
          },
          onSuccess: async () => {
             router.navigate({
-               to: "/home",
+               params: { slug: "" },
+               to: "/$slug/home",
             });
          },
       }),

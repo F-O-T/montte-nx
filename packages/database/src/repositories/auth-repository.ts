@@ -1,7 +1,8 @@
 import { AppError, propagateError } from "@packages/utils/errors";
+import { createSlug, generateRandomSuffix } from "@packages/utils/text";
 import { eq } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { organization } from "../schemas/auth";
+import { member, organization } from "../schemas/auth";
 
 export async function findMemberByUserId(
    dbClient: DatabaseInstance,
@@ -75,6 +76,51 @@ export async function getOrganizationMembers(
    } catch (err) {
       throw AppError.database(
          `Failed to get organization members: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function createDefaultOrganization(
+   dbClient: DatabaseInstance,
+   userId: string,
+   userName: string,
+) {
+   try {
+      const suffix = generateRandomSuffix();
+      const orgName = `${userName} ${suffix}`;
+      const orgSlug = `${createSlug(userName)}-${suffix}`;
+      const now = new Date();
+
+      const [createdOrganization] = await dbClient
+         .insert(organization)
+         .values({
+            createdAt: now,
+            description: orgName,
+            name: orgName,
+            slug: orgSlug,
+         })
+         .returning();
+
+      if (!createdOrganization) {
+         throw AppError.database("Failed to create organization");
+      }
+
+      await dbClient.insert(member).values({
+         createdAt: now,
+         organizationId: createdOrganization.id,
+         role: "owner",
+         userId,
+      });
+
+      console.log(
+         `Created organization "${orgName}" (${createdOrganization.id}) for user ${userId}`,
+      );
+
+      return createdOrganization;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create default organization: ${(err as Error).message}`,
       );
    }
 }

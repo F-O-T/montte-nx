@@ -10,8 +10,9 @@ import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useRouter } from "@tanstack/react-router";
 import { AlertCircle, Building2, FolderOpen } from "lucide-react";
-import { Suspense, useMemo } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { BankAccountsSection } from "./profile-page-bank-accounts-section";
 import { ProfilePageBilling } from "./profile-page-billing";
 import { ProfileInformation } from "./profile-page-informations-section";
@@ -84,36 +85,41 @@ function QuickAccessCardsSkeleton() {
 }
 
 function QuickAccessCards() {
+   const { activeOrganization } = useActiveOrganization();
    const router = useRouter();
 
-   // Memoize quick access cards
-   const quickAccessCards = useMemo(
-      () => [
-         {
-            description: translate(
-               "dashboard.routes.profile.quick-access.categories.description",
-            ),
-            disabled: false,
-            icon: <FolderOpen className="size-4 text-primary" />,
-            onClick: () => router.navigate({ to: "/categories" }),
-            title: translate(
-               "dashboard.routes.profile.quick-access.categories.title",
-            ),
-         },
-         {
-            description: translate(
-               "dashboard.routes.profile.quick-access.organization.description",
-            ),
-            disabled: false,
-            icon: <Building2 className="size-4 text-primary" />,
-            onClick: () => router.navigate({ to: "/organization" }),
-            title: translate(
-               "dashboard.routes.profile.quick-access.organization.title",
-            ),
-         },
-      ],
-      [router],
-   );
+   const quickAccessCards = [
+      {
+         description: translate(
+            "dashboard.routes.profile.quick-access.categories.description",
+         ),
+         disabled: false,
+         icon: <FolderOpen className="size-4 text-primary" />,
+         onClick: () =>
+            router.navigate({
+               params: { slug: activeOrganization.slug },
+               to: "/$slug/categories",
+            }),
+         title: translate(
+            "dashboard.routes.profile.quick-access.categories.title",
+         ),
+      },
+      {
+         description: translate(
+            "dashboard.routes.profile.quick-access.organization.description",
+         ),
+         disabled: false,
+         icon: <Building2 className="size-4 text-primary" />,
+         onClick: () =>
+            router.navigate({
+               params: { slug: activeOrganization.slug },
+               to: "/$slug/organization",
+            }),
+         title: translate(
+            "dashboard.routes.profile.quick-access.organization.title",
+         ),
+      },
+   ];
 
    return (
       <div className=" grid gap-4">

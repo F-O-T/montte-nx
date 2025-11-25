@@ -9,7 +9,9 @@ type BillsSearch = {
 };
 
 export function BillsPage() {
-   const search = useSearch({ from: "/_dashboard/bills/" }) as BillsSearch;
+   const search = useSearch({
+      from: "/_dashboard/$slug/bills/",
+   }) as BillsSearch;
    const billType = search.type;
 
    const getHeaderContent = () => {

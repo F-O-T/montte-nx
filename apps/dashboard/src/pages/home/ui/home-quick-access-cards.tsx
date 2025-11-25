@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 
 function HomeQuickAccessCardsErrorFallback(props: FallbackProps) {
@@ -52,6 +53,7 @@ function getCurrentMonthDates() {
 function HomeQuickAccessCardsContent() {
    const router = useRouter();
    const { end: endDate, start: startDate } = getCurrentMonthDates();
+   const { activeOrganization } = useActiveOrganization();
 
    const { data: summary } = useSuspenseQuery(
       trpc.reports.getFinancialSummary.queryOptions({
@@ -66,7 +68,11 @@ function HomeQuickAccessCardsContent() {
             "dashboard.routes.transactions.list-section.description",
          ),
          icon: <TrendingUp className="size-4" />,
-         onClick: () => router.navigate({ to: "/transactions" }),
+         onClick: () =>
+            router.navigate({
+               params: { slug: activeOrganization.slug },
+               to: "/$slug/transactions",
+            }),
          title: translate("dashboard.layout.nav-main.finance.overview"),
       },
       {
@@ -77,9 +83,10 @@ function HomeQuickAccessCardsContent() {
          onClick: () =>
             router.navigate({
                params: {
+                  slug: activeOrganization.slug,
                   type: "payable",
                },
-               to: "/bills",
+               to: "/$slug/bills",
             }),
          title: translate("dashboard.layout.nav-main.finance.payables"),
       },
@@ -89,13 +96,20 @@ function HomeQuickAccessCardsContent() {
          ),
          icon: <ArrowUpRight className="size-4" />,
          onClick: () =>
-            router.navigate({ params: { type: "receivable" }, to: "/bills" }),
+            router.navigate({
+               params: { slug: activeOrganization.slug, type: "receivable" },
+               to: "/$slug/bills",
+            }),
          title: translate("dashboard.layout.nav-main.finance.receivables"),
       },
       {
          description: translate("dashboard.routes.reports.description"),
          icon: <BarChart3 className="size-4" />,
-         onClick: () => router.navigate({ to: "/reports" }),
+         onClick: () =>
+            router.navigate({
+               params: { slug: activeOrganization.slug },
+               to: "/$slug/reports",
+            }),
          title: translate("dashboard.layout.nav-main.finance.reports"),
       },
    ];

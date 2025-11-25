@@ -62,6 +62,7 @@ import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { CategoryFilterSheet } from "../features/category-filter-sheet";
 import { useCategoryList } from "../features/category-list-context";
@@ -85,6 +86,7 @@ function CategoriesCardHeader() {
 
 function CategoryActionsDropdown({ category }: { category: Category }) {
    const [isOpen, setIsOpen] = useState(false);
+   const { activeOrganization } = useActiveOrganization();
    const navigate = useNavigate();
 
    return (
@@ -121,7 +123,10 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
             <DropdownMenuItem
                className="flex items-center gap-2"
                onClick={() => {
-                  navigate({ to: `/categories/${createSlug(category.name)}` });
+                  navigate({
+                     params: { slug: activeOrganization.slug },
+                     to: `/$slug/categories/${createSlug(category.name)}`,
+                  });
                }}
             >
                <Eye className="size-4" />

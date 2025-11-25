@@ -5,6 +5,7 @@ import { CategoriesQuickActionsToolbar } from "./categories-quick-actions-toolba
 import { CategoriesStats } from "./categories-stats";
 export type Category =
    RouterOutput["categories"]["getAllPaginated"]["categories"][0];
+
 export function CategoriesPage() {
    return (
       <CategoryListProvider>
