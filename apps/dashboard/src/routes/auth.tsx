@@ -1,5 +1,13 @@
+import { useTRPC } from "@/integrations/clients";
 import { translate } from "@packages/localization";
-import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+   createFileRoute,
+   Outlet,
+   useLocation,
+   useRouter,
+} from "@tanstack/react-router";
+import { useIsomorphicLayoutEffect } from "@packages/ui/hooks/use-isomorphic-layout-effect";
 export const Route = createFileRoute("/auth")({
    component: AuthLayout,
    staticData: {
@@ -9,6 +17,21 @@ export const Route = createFileRoute("/auth")({
 
 function AuthLayout() {
    const location = useLocation();
+   const trpc = useTRPC();
+   const router = useRouter();
+   const { data: session } = useSuspenseQuery(
+      trpc.session.getSession.queryOptions(),
+   );
+   useIsomorphicLayoutEffect(() => {
+      if (session) {
+         router.navigate({
+            replace: true,
+            search: location.search,
+            to: "/home",
+         });
+      }
+   }, [session, location]);
+
    return (
       <div className="overflow-hidden relative w-full min-h-screen bg-background">
          <div
