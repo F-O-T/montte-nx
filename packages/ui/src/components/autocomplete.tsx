@@ -8,9 +8,16 @@ import {
 } from "@packages/ui/components/command";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { cn } from "@packages/ui/lib/utils";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Command as CommandPrimitive } from "cmdk";
 import { Check } from "lucide-react";
-import { type KeyboardEvent, useCallback, useRef, useState } from "react";
+import {
+   type KeyboardEvent,
+   useCallback,
+   useMemo,
+   useRef,
+   useState,
+} from "react";
 
 export type AutocompleteOption = Record<"value" | "label", string> &
    Record<string, string>;
@@ -38,6 +45,7 @@ export function Autocomplete({
 }: AutocompleteProps) {
    const inputRef = useRef<HTMLInputElement>(null);
    const listRef = useRef<HTMLDivElement>(null);
+   const [parentNode, setParentNode] = useState<HTMLDivElement | null>(null);
 
    const [isOpen, setOpen] = useState(false);
    const [selected, setSelected] = useState<AutocompleteOption | undefined>(
@@ -45,12 +53,38 @@ export function Autocomplete({
    );
    const [inputValue, setInputValue] = useState<string>(value?.label || "");
 
-   const handleInputValueChange = useCallback((newValue: string) => {
-      setInputValue(newValue);
-      if (listRef.current) {
-         listRef.current.scrollTop = 0;
+   const filteredOptions = useMemo(() => {
+      const searchTerm = inputValue.trim().toLowerCase();
+      if (!searchTerm) return options;
+      return options.filter((option) =>
+         option.label.toLowerCase().includes(searchTerm),
+      );
+   }, [options, inputValue]);
+
+   const virtualizer = useVirtualizer({
+      count: filteredOptions.length,
+      estimateSize: () => 50,
+      getScrollElement: () => parentNode,
+      overscan: 5,
+   });
+
+   const virtualItems = virtualizer.getVirtualItems();
+
+   const refCallback = useCallback((node: HTMLDivElement | null) => {
+      if (node) {
+         setParentNode(node);
       }
    }, []);
+
+   const handleInputValueChange = useCallback(
+      (newValue: string) => {
+         setInputValue(newValue);
+         if (parentNode) {
+            parentNode.scrollTop = 0;
+         }
+      },
+      [parentNode],
+   );
 
    const handleKeyDown = useCallback(
       (event: KeyboardEvent<HTMLDivElement>) => {
@@ -64,7 +98,7 @@ export function Autocomplete({
          }
 
          if (event.key === "Enter" && input.value !== "") {
-            const optionToSelect = options.find(
+            const optionToSelect = filteredOptions.find(
                (option) => option.label === input.value,
             );
             if (optionToSelect) {
@@ -77,7 +111,7 @@ export function Autocomplete({
             input.blur();
          }
       },
-      [isOpen, options, onValueChange],
+      [isOpen, filteredOptions, onValueChange],
    );
 
    const handleBlur = useCallback(() => {
@@ -121,7 +155,7 @@ export function Autocomplete({
                   isOpen ? "block" : "hidden",
                )}
             >
-               <CommandList className="rounded-lg" ref={listRef}>
+               <CommandList className="rounded-lg" ref={refCallback}>
                   {isLoading ? (
                      <CommandPrimitive.Loading>
                         <div className="p-1">
@@ -129,32 +163,66 @@ export function Autocomplete({
                         </div>
                      </CommandPrimitive.Loading>
                   ) : null}
-                  {options.length > 0 && !isLoading ? (
+                  {filteredOptions.length > 0 && !isLoading ? (
                      <CommandGroup>
-                        {options.map((option) => {
-                           const isSelected = selected?.value === option.value;
-                           return (
-                              <CommandItem
-                                 className={cn(
-                                    "flex w-full items-center gap-2",
-                                    !isSelected ? "pl-8" : null,
-                                 )}
-                                 key={option.value}
-                                 onMouseDown={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
+                        <div
+                           style={{
+                              height: virtualizer.getTotalSize(),
+                              position: "relative",
+                              width: "100%",
+                           }}
+                        >
+                           {virtualItems.length > 0 ? (
+                              <div
+                                 style={{
+                                    left: 0,
+                                    position: "absolute",
+                                    top: 0,
+                                    transform: `translateY(${virtualItems[0]?.start ?? 0}px)`,
+                                    width: "100%",
                                  }}
-                                 onSelect={() => handleSelectOption(option)}
-                                 value={option.label}
                               >
-                                 {isSelected ? <Check className="w-4" /> : null}
-                                 {option.label}
-                              </CommandItem>
-                           );
-                        })}
+                                 {virtualItems.map((virtualRow) => {
+                                    const option =
+                                       filteredOptions[virtualRow.index];
+
+                                    if (!option) return null;
+
+                                    const isSelected =
+                                       selected?.value === option.value;
+
+                                    return (
+                                       <CommandItem
+                                          className={cn(
+                                             "flex w-full items-start gap-2 py-1",
+                                             !isSelected ? "pl-8" : null,
+                                          )}
+                                          key={option.value}
+                                          onMouseDown={(event) => {
+                                             event.preventDefault();
+                                             event.stopPropagation();
+                                          }}
+                                          onSelect={() =>
+                                             handleSelectOption(option)
+                                          }
+                                          ref={virtualizer.measureElement}
+                                          value={option.label}
+                                       >
+                                          {isSelected ? (
+                                             <Check className="w-4 shrink-0 mt-0.5" />
+                                          ) : null}
+                                          <span className="break-words">
+                                             {option.label}
+                                          </span>
+                                       </CommandItem>
+                                    );
+                                 })}
+                              </div>
+                           ) : null}
+                        </div>
                      </CommandGroup>
                   ) : null}
-                  {!isLoading ? (
+                  {!isLoading && filteredOptions.length === 0 ? (
                      <CommandPrimitive.Empty className="select-none rounded-sm px-2 py-3 text-center text-sm">
                         {emptyMessage}
                      </CommandPrimitive.Empty>
