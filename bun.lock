@@ -293,14 +293,6 @@
         "typescript": "catalog:development",
       },
     },
-    "packages/telemetry": {
-      "name": "@packages/telemetry",
-      "version": "0.3.0",
-      "devDependencies": {
-        "@tooling/typescript": "workspace:*",
-        "typescript": "catalog:development",
-      },
-    },
     "packages/transactional": {
       "name": "@packages/transactional",
       "version": "0.8.1",
@@ -1118,8 +1110,6 @@
     "@packages/ofx": ["@packages/ofx@workspace:packages/ofx"],
 
     "@packages/posthog": ["@packages/posthog@workspace:packages/posthog"],
-
-    "@packages/telemetry": ["@packages/telemetry@workspace:packages/telemetry"],
 
     "@packages/transactional": ["@packages/transactional@workspace:packages/transactional"],
 
