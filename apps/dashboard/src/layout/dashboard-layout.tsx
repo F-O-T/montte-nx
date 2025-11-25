@@ -5,7 +5,7 @@ import { SiteHeader } from "./site-header";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
    return (
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
          <AppSidebar variant="inset" />
          <SidebarInset>
             <SiteHeader />
