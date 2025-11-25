@@ -67,6 +67,12 @@ export function createSlug(name: string): string {
    return slugfy(name, { lower: true, strict: true });
 }
 
+export function generateRandomSuffix(length = 6): string {
+   return Math.random()
+      .toString(36)
+      .slice(2, 2 + length);
+}
+
 export function countWords(text: string) {
    return text
       .trim()

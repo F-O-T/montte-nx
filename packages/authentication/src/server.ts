@@ -1,5 +1,5 @@
 import type { DatabaseInstance } from "@packages/database/client";
-import { findMemberByUserId } from "@packages/database/repositories/auth-repository";
+import { createDefaultOrganization, findMemberByUserId } from "@packages/database/repositories/auth-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
 import {
@@ -71,6 +71,20 @@ export const getAuthOptions = (
                            ...session,
                         },
                      };
+                  }
+               },
+            },
+         },
+         user: {
+            create: {
+               after: async (user) => {
+                  try {
+                     await createDefaultOrganization(db, user.id, user.name);
+                  } catch (error) {
+                     console.error(
+                        "Error creating default organization for user:",
+                        error,
+                     );
                   }
                },
             },
