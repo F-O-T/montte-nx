@@ -1,9 +1,12 @@
 import { translate } from "@packages/localization";
-import { Combobox } from "@packages/ui/components/combobox";
+import {
+   Autocomplete,
+   type AutocompleteOption,
+} from "@packages/ui/components/autocomplete";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type React from "react";
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
@@ -23,20 +26,35 @@ function BankAccountComboboxContent({
       trpc.brasilApi.banks.getAll.queryOptions(),
    );
 
-   const formattedBanks = banks.map((bank) => ({
+   const formattedBanks: AutocompleteOption[] = banks.map((bank) => ({
       label: bank.fullName,
       value: bank.fullName,
    }));
 
+   const selectedOption = useMemo(
+      () => formattedBanks.find((bank) => bank.value === value),
+      [formattedBanks, value],
+   );
+
+   const handleValueChange = (option: AutocompleteOption) => {
+      onValueChange?.(option.value);
+   };
+
+   const handleBlur = () => {
+      if (onBlur) {
+         const mockEvent = {} as React.FocusEvent<HTMLButtonElement>;
+         onBlur(mockEvent);
+      }
+   };
+
    return (
-      <Combobox
+      <Autocomplete
          emptyMessage={translate("common.form.search.no-results")}
-         onBlur={onBlur}
-         onValueChange={onValueChange}
+         onBlur={handleBlur}
+         onValueChange={handleValueChange}
          options={formattedBanks}
          placeholder={translate("common.form.bank.placeholder")}
-         searchPlaceholder={translate("common.form.search.placeholder")}
-         value={value}
+         value={selectedOption}
       />
    );
 }
