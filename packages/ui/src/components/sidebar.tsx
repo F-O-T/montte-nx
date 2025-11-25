@@ -21,7 +21,7 @@ import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { cn } from "@packages/ui/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -270,9 +270,9 @@ function SidebarTrigger({
    onClick,
    ...props
 }: React.ComponentProps<typeof Button>) {
-   const { toggleSidebar } = useSidebar();
+   const { toggleSidebar, state } = useSidebar();
 
-   return (
+   const button = (
       <Button
          className={cn("size-7", className)}
          data-sidebar="trigger"
@@ -285,9 +285,18 @@ function SidebarTrigger({
          variant="ghost"
          {...props}
       >
-         <PanelLeftIcon />
+         {state === "expanded" ? <ChevronLeft /> : <ChevronRight />}
          <span className="sr-only">Toggle Sidebar</span>
       </Button>
+   );
+
+   return (
+      <Tooltip>
+         <TooltipTrigger asChild>{button}</TooltipTrigger>
+         <TooltipContent>
+            {state === "expanded" ? "Colapsar Sidebar" : "Abrir Sidebar"}
+         </TooltipContent>
+      </Tooltip>
    );
 }
 
