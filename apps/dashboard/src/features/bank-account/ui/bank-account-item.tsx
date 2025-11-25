@@ -10,6 +10,7 @@ import {
 import { cn } from "@packages/ui/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Building2 } from "lucide-react";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 
 interface BankAccountItemProps {
    account: {
@@ -23,11 +24,12 @@ interface BankAccountItemProps {
 }
 
 export function BankAccountItem({ account, solid }: BankAccountItemProps) {
+   const { activeOrganization } = useActiveOrganization();
    return (
       <Link
          className="block"
-         params={{ bankAccountId: account.id }}
-         to="/bank-accounts/$bankAccountId"
+         params={{ bankAccountId: account.id, slug: activeOrganization.slug }}
+         to="/$slug/bank-accounts/$bankAccountId"
       >
          <Item
             className={cn(

@@ -1,6 +1,4 @@
-import type { Category } from "@packages/api/src/server/routers/categories";
 import { translate } from "@packages/localization";
-import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    DropdownMenu,
@@ -11,13 +9,13 @@ import {
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import { createSlug } from "@packages/utils/text";
-import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import type { Category } from "@/pages/categories/ui/categories-page";
+
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 
@@ -84,17 +82,7 @@ export function createCategoryColumns(): ColumnDef<Category>[] {
                            )}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                           <Link
-                              className="flex items-center gap-2 w-full"
-                              to={`/categories/${createSlug(category.name)}`}
-                           >
-                              <Eye className="size-4 mr-2" />
-                              {translate(
-                                 "dashboard.routes.categories.list-section.actions.view-details",
-                              )}
-                           </Link>
-                        </DropdownMenuItem>
+
                         <Suspense
                            fallback={
                               <DropdownMenuItem disabled>

@@ -18,9 +18,10 @@ import type { Category } from "../ui/categories-page";
 
 interface DeleteCategoryProps {
    category: Category;
+   children: React.ReactNode;
 }
 
-export function DeleteCategory({ category }: DeleteCategoryProps) {
+export function DeleteCategory({ category, children }: DeleteCategoryProps) {
    const queryClient = useQueryClient();
 
    const deleteCategoryMutation = useMutation(

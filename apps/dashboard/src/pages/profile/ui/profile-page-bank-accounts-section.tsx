@@ -25,6 +25,7 @@ import { Building2, Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 
 interface CreateBankAccountItemProps {
@@ -112,6 +113,7 @@ function BankAccountsSkeleton() {
 }
 
 function BankAccountsContent() {
+   const { activeOrganization } = useActiveOrganization();
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const { data: bankAccounts } = useSuspenseQuery(
       trpc.bankAccounts.getAll.queryOptions(),
@@ -147,8 +149,11 @@ function BankAccountsContent() {
                         <Link
                            className="block"
                            key={account.id}
-                           params={{ bankAccountId: account.id }}
-                           to="/bank-accounts/$bankAccountId"
+                           params={{
+                              bankAccountId: account.id,
+                              slug: activeOrganization.slug,
+                           }}
+                           to="/$slug/bank-accounts/$bankAccountId"
                         >
                            <Item className="cursor-pointer hover:bg-muted/50 transition-colors">
                               <ItemMedia variant="icon">
