@@ -1,19 +1,25 @@
+import { getQueryClient, trpc } from "@/integrations/clients";
+import { DashboardLayout } from "@/layout/dashboard-layout";
 import {
    createFileRoute,
    Outlet,
    redirect,
    useLocation,
 } from "@tanstack/react-router";
-import { getQueryClient, trpc } from "@/integrations/clients";
-import { DashboardLayout } from "@/layout/dashboard-layout";
 
 export const Route = createFileRoute("/_dashboard")({
    beforeLoad: async () => {
       const queryClient = getQueryClient();
       try {
-         const status = await queryClient.fetchQuery(
-            trpc.onboarding.getOnboardingStatus.queryOptions(),
-         );
+         const [status] = await Promise.all([
+            queryClient.fetchQuery(
+               trpc.onboarding.getOnboardingStatus.queryOptions(),
+            ),
+            queryClient.fetchQuery(
+               trpc.organization.getOrganizations.queryOptions(),
+            ),
+         ]);
+
          if (status.needsOnboarding) {
             throw redirect({ to: "/auth/onboarding" });
          }

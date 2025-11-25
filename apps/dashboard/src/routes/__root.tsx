@@ -1,3 +1,7 @@
+import { NotFoundComponent } from "@/default/not-found";
+import { QueryProvider } from "@/integrations/clients";
+import { ThemeProvider } from "@/layout/theme-provider";
+import "@packages/localization";
 import { translate } from "@packages/localization";
 import { PostHogWrapper } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
@@ -8,10 +12,6 @@ import {
    redirect,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { ThemeProvider } from "@/layout/theme-provider";
-import "@packages/localization";
-import { NotFoundComponent } from "@/default/not-found";
-import { QueryProvider } from "@/integrations/clients";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {

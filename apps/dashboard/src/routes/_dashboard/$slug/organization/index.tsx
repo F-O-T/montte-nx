@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { OrganizationPage } from "@/pages/organization/ui/organization-page";
 
-export const Route = createFileRoute("/_dashboard/organization/")({
+export const Route = createFileRoute("/_dashboard/$slug/organization/")({
    component: RouteComponent,
    staticData: {
       breadcrumb: "Organization",

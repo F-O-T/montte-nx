@@ -38,32 +38,32 @@ export function NavMain() {
       {
          icon: TrendingUp,
          title: translate("dashboard.layout.nav-main.finance.overview"),
-         url: "/transactions",
+         url: "/$slug/transactions",
       },
       {
          icon: Building2,
          title: translate("dashboard.routes.bank-accounts.list-section.title"),
-         url: "/bank-accounts",
+         url: "/$slug/bank-accounts",
       },
       {
          icon: ArrowDownRight,
          title: translate("dashboard.layout.nav-main.finance.payables"),
-         url: "/bills?type=payable",
+         url: "/$slug/bills?type=payable",
       },
       {
          icon: ArrowUpRight,
          title: translate("dashboard.layout.nav-main.finance.receivables"),
-         url: "/bills?type=receivable",
+         url: "/$slug/bills?type=receivable",
       },
       {
          icon: FileText,
          title: translate("dashboard.layout.nav-main.finance.categories"),
-         url: "/categories",
+         url: "/$slug/categories",
       },
       {
          icon: BarChart3,
          title: translate("dashboard.layout.nav-main.finance.reports"),
-         url: "/reports",
+         url: "/$slug/reports",
       },
    ];
 
@@ -84,7 +84,11 @@ export function NavMain() {
                      }
                      tooltip={item.title}
                   >
-                     <Link onClick={() => setOpenMobile(false)} to={item.url}>
+                     <Link
+                        onClick={() => setOpenMobile(false)}
+                        params={{}}
+                        to={item.url}
+                     >
                         <item.icon />
                         <span>{item.title}</span>
                      </Link>

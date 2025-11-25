@@ -1,3 +1,6 @@
+import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -23,8 +26,6 @@ import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Plus } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
-import { useTRPC } from "@/integrations/clients";
 
 function OrganizationSwitcherErrorFallback() {
    return (
@@ -92,10 +93,7 @@ export function OrganizationSwitcher() {
 function OrganizationDropdownContent() {
    const trpc = useTRPC();
    const router = useRouter();
-
-   const { data: activeOrganization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const activeOrganization = useActiveOrganization();
 
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
@@ -118,8 +116,9 @@ function OrganizationDropdownContent() {
    );
 
    async function handleOrganizationClick(organizationId: string) {
-      await setActiveOrganization.mutateAsync({ organizationId });
-      router.navigate({ to: "/organization" });
+      // await setActiveOrganization.mutateAsync({ organizationId });
+      console.log("organizationId", organizationId);
+      router.navigate({ params: { slug: organizationId }, to: "/$slug/home" });
    }
 
    return (
@@ -135,7 +134,7 @@ function OrganizationDropdownContent() {
                   organization.id === activeOrganization?.id
                }
                key={organization.name}
-               onClick={() => handleOrganizationClick(organization.id)}
+               onClick={() => handleOrganizationClick(organization.slug)}
             >
                <div className="flex size-6 items-center justify-center rounded-md border">
                   {logo?.data ? (
@@ -163,12 +162,12 @@ function OrganizationSwitcherContent() {
 
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
 
-   const { data: activeOrganization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const activeOrganization = useActiveOrganization();
+
    const { data: logo } = useSuspenseQuery(
       trpc.organization.getLogo.queryOptions(),
    );
+
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
    );
