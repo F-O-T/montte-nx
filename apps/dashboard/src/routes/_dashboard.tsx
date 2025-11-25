@@ -8,10 +8,10 @@ import {
 } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_dashboard")({
-   beforeLoad: async () => {
+   beforeLoad: async ({ location }) => {
       const queryClient = getQueryClient();
       try {
-         const [status, session] = await Promise.all([
+         const [status, session, organizations] = await Promise.all([
             queryClient.fetchQuery(
                trpc.onboarding.getOnboardingStatus.queryOptions(),
             ),
@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_dashboard")({
                trpc.organization.getOrganizations.queryOptions(),
             ),
          ]);
+
+         console.log("organizations", organizations);
 
          if (!session) {
             throw redirect({

@@ -1,5 +1,6 @@
-import { useTRPC } from "@/integrations/clients";
+import { getQueryClient, useTRPC } from "@/integrations/clients";
 import { translate } from "@packages/localization";
+import { useIsomorphicLayoutEffect } from "@packages/ui/hooks/use-isomorphic-layout-effect";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
    createFileRoute,
@@ -7,7 +8,7 @@ import {
    useLocation,
    useRouter,
 } from "@tanstack/react-router";
-import { useIsomorphicLayoutEffect } from "@packages/ui/hooks/use-isomorphic-layout-effect";
+
 export const Route = createFileRoute("/auth")({
    component: AuthLayout,
    staticData: {
@@ -19,16 +20,26 @@ function AuthLayout() {
    const location = useLocation();
    const trpc = useTRPC();
    const router = useRouter();
+
    const { data: session } = useSuspenseQuery(
       trpc.session.getSession.queryOptions(),
    );
+
    useIsomorphicLayoutEffect(() => {
       if (session) {
-         router.navigate({
-            replace: true,
-            search: location.search,
-            to: "/home",
-         });
+         const queryClient = getQueryClient();
+
+         queryClient
+            .fetchQuery(trpc.organization.getOrganizations.queryOptions())
+            .then((organization) => {
+               // TODO > move to a const the defualt
+               router.navigate({
+                  params: { slug: organization[0]?.slug ?? "personal" },
+                  replace: true,
+                  search: location.search,
+                  to: "/$slug/home",
+               });
+            });
       }
    }, [session, location]);
 
