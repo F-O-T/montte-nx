@@ -192,7 +192,7 @@ export const getAuthOptions = (
             telemetryConsent: {
                defaultValue: true,
                input: true,
-               required: false,
+               required: true,
                type: "boolean",
             },
          },

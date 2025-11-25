@@ -26,7 +26,7 @@ export const user = pgTable("user", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
-  telemetryConsent: boolean("telemetry_consent").default(true),
+  telemetryConsent: boolean("telemetry_consent").default(true).notNull(),
 });
 
 export const session = pgTable(

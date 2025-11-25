@@ -52,6 +52,7 @@ export const Route = createRootRoute({
    staticData: {
       breadcrumb: "Home",
    },
+   wrapInSuspense: true,
 });
 
 function TelemetryAwarePostHogWrapper({
@@ -72,13 +73,11 @@ function RootComponent() {
          <HeadContent />
          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <QueryProvider>
-               <Suspense fallback={null}>
-                  <TelemetryAwarePostHogWrapper>
-                     <Toaster />
-                     <Outlet />
-                     <TanStackRouterDevtools position="bottom-left" />
-                  </TelemetryAwarePostHogWrapper>
-               </Suspense>
+               <TelemetryAwarePostHogWrapper>
+                  <Toaster />
+                  <Outlet />
+                  <TanStackRouterDevtools position="bottom-left" />
+               </TelemetryAwarePostHogWrapper>
             </QueryProvider>
          </ThemeProvider>
       </>

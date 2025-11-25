@@ -1,6 +1,6 @@
 import { enableTelemetryConsent } from "@packages/database/repositories/auth-repository";
 import { z } from "zod";
-import { protectedProcedure, router, publicProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const sessionRouter = router({
    getSession: publicProcedure.query(async ({ ctx }) => {

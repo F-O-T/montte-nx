@@ -35,8 +35,12 @@ export function PreferencesSection() {
 
    const updateConsentMutation = useMutation(
       trpc.session.updateTelemetryConsent.mutationOptions({
-         onSuccess: () => {
-            queryClient.invalidateQueries({
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.session.getTelemetryConsent.queryKey(),
+            });
+
+            await queryClient.invalidateQueries({
                queryKey: trpc.session.getSession.queryKey(),
             });
          },
