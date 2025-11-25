@@ -29,11 +29,11 @@ import { useRouter } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import {
-   type IconName,
-   getIconComponent,
-} from "@/features/icon-selector/lib/available-icons";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
+import {
+   getIconComponent,
+   type IconName,
+} from "@/features/icon-selector/lib/available-icons";
 import { useTRPC } from "@/integrations/clients";
 
 const steps = [
@@ -171,7 +171,7 @@ export function OnboardingPage() {
       await queryClient.invalidateQueries({
          queryKey: trpc.onboarding.getOnboardingStatus.queryKey(),
       });
-      router.navigate({ to: "/home" });
+      router.navigate({ params: { slug: "" }, to: "/$slug/home" });
    }, [queryClient, trpc, router]);
 
    const form = useForm({
@@ -337,10 +337,6 @@ export function OnboardingPage() {
                               aria-pressed={isSelected}
                               className="gap-2 px-3"
                               key={key}
-                              pressed={isSelected}
-                              size="sm"
-                              type="button"
-                              variant="outline"
                               onPressedChange={(pressed) => {
                                  setSelectedDefaultCategories((prev) => {
                                     if (pressed) {
@@ -352,14 +348,18 @@ export function OnboardingPage() {
                                     return prev.filter((item) => item !== key);
                                  });
                               }}
+                              pressed={isSelected}
+                              size="sm"
                               style={{
-                                 borderColor: isSelected
-                                    ? config.color
-                                    : undefined,
                                  backgroundColor: isSelected
                                     ? `${config.color}15`
                                     : undefined,
+                                 borderColor: isSelected
+                                    ? config.color
+                                    : undefined,
                               }}
+                              type="button"
+                              variant="outline"
                            >
                               <Icon
                                  className="size-4"

@@ -56,7 +56,7 @@ export function SignInPage() {
             toast.error(error.message);
          },
          onSuccess: async () => {
-            await router.navigate({ to: "/home" });
+            await router.navigate({ params: { slug: "" }, to: "/$slug/home" });
          },
       }),
    );
