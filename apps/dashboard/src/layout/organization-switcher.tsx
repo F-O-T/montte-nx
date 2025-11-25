@@ -116,8 +116,6 @@ function OrganizationDropdownContent() {
    );
 
    async function handleOrganizationClick(organizationId: string) {
-      // await setActiveOrganization.mutateAsync({ organizationId });
-      console.log("organizationId", organizationId);
       router.navigate({ params: { slug: organizationId }, to: "/$slug/home" });
    }
 
