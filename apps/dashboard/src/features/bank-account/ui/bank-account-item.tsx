@@ -17,7 +17,6 @@ interface BankAccountItemProps {
       id: string;
       name: string;
       bank: string;
-      status: "active" | "inactive" | string;
       type?: string;
    };
    solid?: boolean;
@@ -46,13 +45,6 @@ export function BankAccountItem({ account, solid }: BankAccountItemProps) {
             <ItemContent>
                <ItemTitle className="flex items-center gap-2">
                   {account.name}
-                  <Badge
-                     variant={
-                        account.status === "active" ? "default" : "secondary"
-                     }
-                  >
-                     {account.status === "active" ? "Ativa" : "Inativa"}
-                  </Badge>
                </ItemTitle>
                <ItemDescription>
                   {account.bank}

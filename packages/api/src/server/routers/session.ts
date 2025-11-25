@@ -1,3 +1,4 @@
+import { enableTelemetryConsent } from "@packages/database/repositories/auth-repository";
 import { z } from "zod";
 import { protectedProcedure, router, publicProcedure } from "../trpc";
 
@@ -5,6 +6,10 @@ export const sessionRouter = router({
    getSession: publicProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       return resolvedCtx.session;
+   }),
+   getTelemetryConsent: publicProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      return resolvedCtx.session?.user?.telemetryConsent ?? true;
    }),
    listAllSessions: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
@@ -46,4 +51,18 @@ export const sessionRouter = router({
          headers: resolvedCtx.headers,
       });
    }),
+   updateTelemetryConsent: protectedProcedure
+      .input(
+         z.object({
+            consent: z.boolean(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const userId = resolvedCtx.session?.user?.id;
+         if (!userId) {
+            throw new Error("User not found");
+         }
+         return enableTelemetryConsent(resolvedCtx.db, userId, input.consent);
+      }),
 });

@@ -43,16 +43,6 @@ export const getAuthOptions = (
       database: drizzleAdapter(db, {
          provider: "pg",
       }),
-      user: {
-         additionalFields: {
-            telemetryConsent: {
-               defaultValue: true,
-               input: true,
-               required: false,
-               type: "boolean",
-            },
-         },
-      },
       databaseHooks: {
          session: {
             create: {
@@ -197,6 +187,16 @@ export const getAuthOptions = (
          },
       },
       trustedOrigins: serverEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
+      user: {
+         additionalFields: {
+            telemetryConsent: {
+               defaultValue: true,
+               input: true,
+               required: false,
+               type: "boolean",
+            },
+         },
+      },
    }) satisfies BetterAuthOptions;
 
 export const createAuth = (options: AuthOptions) => {

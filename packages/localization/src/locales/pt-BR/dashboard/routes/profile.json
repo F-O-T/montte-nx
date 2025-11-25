@@ -84,6 +84,10 @@
             "description": "Selecione o idioma preferido para a interface.",
             "title": "Idioma"
          },
+         "telemetry": {
+            "description": "Permita a coleta de dados de uso para melhorar o produto.",
+            "title": "Telemetria"
+         },
          "theme": {
             "description": "Escolha entre o modo claro, escuro ou siga o do seu sistema.",
             "title": "Tema"

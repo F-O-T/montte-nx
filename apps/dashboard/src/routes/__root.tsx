@@ -1,10 +1,11 @@
 import { NotFoundComponent } from "@/default/not-found";
-import { QueryProvider } from "@/integrations/clients";
+import { QueryProvider, trpc } from "@/integrations/clients";
 import { ThemeProvider } from "@/layout/theme-provider";
 import "@packages/localization";
 import { translate } from "@packages/localization";
 import { PostHogWrapper } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
    createRootRoute,
    HeadContent,
@@ -12,6 +13,7 @@ import {
    redirect,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Suspense } from "react";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {
@@ -52,19 +54,33 @@ export const Route = createRootRoute({
    },
 });
 
+function TelemetryAwarePostHogWrapper({
+   children,
+}: {
+   children: React.ReactNode;
+}) {
+   const { data: hasConsent } = useSuspenseQuery(
+      trpc.session.getTelemetryConsent.queryOptions(),
+   );
+
+   return <PostHogWrapper hasConsent={hasConsent}>{children}</PostHogWrapper>;
+}
+
 function RootComponent() {
    return (
       <>
          <HeadContent />
-         <PostHogWrapper>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-               <QueryProvider>
-                  <Toaster />
-                  <Outlet />
-                  <TanStackRouterDevtools position="bottom-left" />
-               </QueryProvider>
-            </ThemeProvider>
-         </PostHogWrapper>
+         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <QueryProvider>
+               <Suspense fallback={null}>
+                  <TelemetryAwarePostHogWrapper>
+                     <Toaster />
+                     <Outlet />
+                     <TanStackRouterDevtools position="bottom-left" />
+                  </TelemetryAwarePostHogWrapper>
+               </Suspense>
+            </QueryProvider>
+         </ThemeProvider>
       </>
    );
 }
