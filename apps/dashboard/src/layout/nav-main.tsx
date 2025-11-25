@@ -1,8 +1,7 @@
-"use client";
-
 import { translate } from "@packages/localization";
 import {
    SidebarGroup,
+   SidebarGroupContent,
    SidebarGroupLabel,
    SidebarMenu,
    SidebarMenuButton,
@@ -15,13 +14,17 @@ import {
    ArrowUpRight,
    BarChart3,
    Building2,
+   CirclePlus,
    FileText,
    TrendingUp,
 } from "lucide-react";
+import { useState } from "react";
+import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
 
 export function NavMain() {
+   const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
    const { pathname, searchStr } = useLocation();
-   const { setOpenMobile } = useSidebar();
+   const { setOpenMobile, state } = useSidebar();
    const isActive = (url: string) => {
       if (!url) return false;
 
@@ -69,33 +72,57 @@ export function NavMain() {
 
    return (
       <SidebarGroup className="group-data-[collapsible=icon]">
-         <SidebarGroupLabel>
-            {translate("dashboard.layout.nav-main.finance.title")}
-         </SidebarGroupLabel>
-         <SidebarMenu>
-            {items.map((item) => (
-               <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                     asChild
-                     className={
-                        isActive(item.url)
-                           ? "bg-primary/10 text-primary rounded-lg"
-                           : ""
-                     }
-                     tooltip={item.title}
-                  >
-                     <Link
-                        onClick={() => setOpenMobile(false)}
-                        params={{}}
-                        to={item.url}
+         <SidebarGroupContent className="flex flex-col gap-2">
+            <SidebarMenu>
+               <SidebarMenuButton
+                  className="bg-primary text-primary-foreground cursor-pointer"
+                  onClick={() => setIsTransactionSheetOpen(true)}
+                  tooltip={translate(
+                     "dashboard.routes.transactions.features.add-new.title",
+                  )}
+               >
+                  <CirclePlus />
+                  <span>
+                     {translate(
+                        "dashboard.routes.transactions.features.add-new.title",
+                     )}
+                  </span>
+               </SidebarMenuButton>
+            </SidebarMenu>
+            {state === "expanded" && (
+               <SidebarGroupLabel>
+                  {translate("dashboard.layout.nav-main.finance.title")}
+               </SidebarGroupLabel>
+            )}
+            <SidebarMenu>
+               {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                     <SidebarMenuButton
+                        asChild
+                        className={
+                           isActive(item.url)
+                              ? "bg-primary/10 text-primary rounded-lg"
+                              : ""
+                        }
+                        tooltip={item.title}
                      >
-                        <item.icon />
-                        <span>{item.title}</span>
-                     </Link>
-                  </SidebarMenuButton>
-               </SidebarMenuItem>
-            ))}
-         </SidebarMenu>
+                        <Link
+                           onClick={() => setOpenMobile(false)}
+                           params={{}}
+                           to={item.url}
+                        >
+                           <item.icon />
+                           <span>{item.title}</span>
+                        </Link>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+               ))}
+            </SidebarMenu>
+         </SidebarGroupContent>
+         <ManageTransactionSheet
+            onOpen={isTransactionSheetOpen}
+            onOpenChange={setIsTransactionSheetOpen}
+         />
       </SidebarGroup>
    );
 }
