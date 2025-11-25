@@ -115,8 +115,11 @@ function OrganizationDropdownContent() {
       }),
    );
 
-   async function handleOrganizationClick(organizationId: string) {
-      router.navigate({ params: { slug: organizationId }, to: "/$slug/home" });
+   async function handleOrganizationClick(organizationSlug: string) {
+      router.navigate({
+         params: { slug: organizationSlug },
+         to: "/$slug/home",
+      });
    }
 
    return (
