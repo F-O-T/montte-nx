@@ -50,7 +50,7 @@ export function PreferencesSection() {
    const hasConsent = session?.user?.telemetryConsent ?? true;
 
    return (
-      <Card className="flex flex-col ">
+      <Card>
          <CardHeader>
             <CardTitle>
                {translate("dashboard.routes.profile.preferences.title")}
