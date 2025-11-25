@@ -171,29 +171,40 @@ export async function deleteBankAccount(
    }
 }
 
+export async function createDefaultWalletBankAccount(
+   dbClient: DatabaseInstance,
+   userId: string,
+) {
+   try {
+      const result = await dbClient
+         .insert(bankAccount)
+         .values({
+            bank: "Default",
+            name: "Wallet",
+            type: "checking",
+            userId,
+         })
+         .returning();
+      return result[0];
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create default wallet bank account: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function getBankAccountStats(
    dbClient: DatabaseInstance,
    userId: string,
 ) {
    try {
-      const [totalAccountsResult, activeAccountsResult] = await Promise.all([
-         dbClient
-            .select({ count: sql<number>`count(*)` })
-            .from(bankAccount)
-            .where(eq(bankAccount.userId, userId)),
-         dbClient
-            .select({ count: sql<number>`count(*)` })
-            .from(bankAccount)
-            .where(
-               and(
-                  eq(bankAccount.userId, userId),
-                  eq(bankAccount.status, "active"),
-               ),
-            ),
-      ]);
+      const totalAccountsResult = await dbClient
+         .select({ count: sql<number>`count(*)` })
+         .from(bankAccount)
+         .where(eq(bankAccount.userId, userId));
 
       const totalAccounts = totalAccountsResult[0]?.count || 0;
-      const activeAccounts = activeAccountsResult[0]?.count || 0;
 
       // Calculate total balance from transactions
       const balanceResult = await dbClient
@@ -216,7 +227,6 @@ export async function getBankAccountStats(
       const totalBalance = balanceResult[0]?.totalBalance || 0;
 
       return {
-         activeAccounts,
          totalAccounts,
          totalBalance,
       };
