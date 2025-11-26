@@ -319,32 +319,32 @@ const hasOrganizationAccess = t.middleware(async ({ ctx, next }) => {
    // Check if user is part of an organization
    const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
 
-   if (memberWithOrg) {
-      // Find the organization owner
-      const ownerMember = await resolvedCtx.db.query.member.findFirst({
-         where: (member, { eq, and }) =>
-            and(
-               eq(member.organizationId, memberWithOrg.organizationId),
-               eq(member.role, "owner"),
-            ),
+   if (!memberWithOrg) {
+      throw new TRPCError({
+         code: "FORBIDDEN",
+         message: "User is not part of any organization",
       });
+   }
 
-      if (!ownerMember) {
-         throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Organization has no owner",
-         });
-      }
+   // Find the organization owner
+   const ownerMember = await resolvedCtx.db.query.member.findFirst({
+      where: (member, { eq, and }) =>
+         and(
+            eq(member.organizationId, memberWithOrg.organizationId),
+            eq(member.role, "owner"),
+         ),
+   });
 
-      return next({
-         ctx: {
-            session: { ...resolvedCtx.session },
-         },
+   if (!ownerMember) {
+      throw new TRPCError({
+         code: "FORBIDDEN",
+         message: "Organization has no owner",
       });
    }
 
    return next({
       ctx: {
+         organizationId: memberWithOrg.organizationId,
          session: { ...resolvedCtx.session },
       },
    });
@@ -362,10 +362,9 @@ const hasOrganizationOwnerAccess = t.middleware(async ({ ctx, next }) => {
    const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
 
    if (!memberWithOrg) {
-      return next({
-         ctx: {
-            session: { ...resolvedCtx.session },
-         },
+      throw new TRPCError({
+         code: "FORBIDDEN",
+         message: "User is not part of any organization",
       });
    }
 
@@ -385,6 +384,7 @@ const hasOrganizationOwnerAccess = t.middleware(async ({ ctx, next }) => {
 
    return next({
       ctx: {
+         organizationId: memberWithOrg.organizationId,
          session: { ...resolvedCtx.session },
       },
    });
@@ -402,10 +402,9 @@ export const hasGenerationCredits = t.middleware(async ({ ctx, next }) => {
    const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
 
    if (!memberWithOrg) {
-      return next({
-         ctx: {
-            session: { ...resolvedCtx.session },
-         },
+      throw new TRPCError({
+         code: "FORBIDDEN",
+         message: "User is not part of any organization",
       });
    }
 
@@ -426,6 +425,7 @@ export const hasGenerationCredits = t.middleware(async ({ ctx, next }) => {
 
    return next({
       ctx: {
+         organizationId: memberWithOrg.organizationId,
          session: { ...resolvedCtx.session },
       },
    });
