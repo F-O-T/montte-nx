@@ -1,8 +1,12 @@
+import type { DatabaseInstance } from "@packages/database/client";
 import {
    findCategoryById,
    getCategorySpending,
 } from "@packages/database/repositories/category-repository";
-import { createNotification } from "@packages/database/repositories/notification-repository";
+import {
+   createNotification,
+   type Notification,
+} from "@packages/database/repositories/notification-repository";
 import {
    createTransaction,
    deleteTransaction,
@@ -16,14 +20,22 @@ import {
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import { category } from "@packages/database/schemas/categories";
+import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
+
+const categorySplitSchema = z.object({
+   categoryId: z.string().uuid(),
+   splitType: z.literal("amount"),
+   value: z.number().nonnegative(),
+});
 
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
    categoryIds: z.array(z.string()).min(1, "At least one category is required"),
+   categorySplits: z.array(categorySplitSchema).nullable().optional(),
    date: z.string(),
    description: z.string(),
    type: z.enum(["income", "expense", "transfer"]),
@@ -36,6 +48,7 @@ const updateTransactionSchema = z.object({
       .array(z.string())
       .min(1, "At least one category is required")
       .optional(),
+   categorySplits: z.array(categorySplitSchema).nullable().optional(),
    date: z.string().optional(),
    description: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
@@ -55,11 +68,11 @@ const paginationSchema = z.object({
 });
 
 async function checkBudgetAndNotify(
-   db: any,
+   db: DatabaseInstance,
    userId: string,
    categoryIds: string[],
-) {
-   const notifications = [];
+): Promise<Notification[]> {
+   const notifications: Notification[] = [];
    for (const categoryId of categoryIds) {
       const category = await findCategoryById(db, categoryId);
       if (!category || !category.budget || Number(category.budget) === 0)
@@ -100,12 +113,13 @@ export const transactionRouter = router({
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
+            categorySplits: input.categorySplits || null,
             date: new Date(input.date),
             id: crypto.randomUUID(),
             userId,
          });
 
-         let notifications: any[] = [];
+         let notifications: Notification[] = [];
          if (input.type === "expense") {
             notifications = await checkBudgetAndNotify(
                resolvedCtx.db,
@@ -320,6 +334,7 @@ export const transactionRouter = router({
             amount?: string;
             bankAccountId?: string;
             categoryIds?: string[];
+            categorySplits?: CategorySplit[] | null;
             date?: Date;
             description?: string;
             type?: "income" | "expense" | "transfer";
@@ -341,6 +356,10 @@ export const transactionRouter = router({
             updateData.categoryIds = input.data.categoryIds;
          }
 
+         if (input.data.categorySplits !== undefined) {
+            updateData.categorySplits = input.data.categorySplits;
+         }
+
          if (input.data.description !== undefined) {
             updateData.description = input.data.description;
          }
@@ -355,7 +374,7 @@ export const transactionRouter = router({
             updateData,
          );
 
-         let notifications: any[] = [];
+         let notifications: Notification[] = [];
          if (updatedTransaction.type === "expense") {
             const categoriesToCheck =
                updateData.categoryIds || existingTransaction.categoryIds;

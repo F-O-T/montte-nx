@@ -276,7 +276,20 @@ export async function getCategorySpending(
 
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`
+               sum(
+                  CASE WHEN ${transaction.type} = 'expense' THEN
+                     COALESCE(
+                        (
+                           SELECT (split->>'value')::numeric / 100
+                           FROM jsonb_array_elements(${transaction.categorySplits}) AS split
+                           WHERE split->>'categoryId' = ${categoryId}
+                        ),
+                        CAST(${transaction.amount} AS REAL)
+                     )
+                  ELSE 0 END
+               )
+            `,
          })
          .from(transaction)
          .where(

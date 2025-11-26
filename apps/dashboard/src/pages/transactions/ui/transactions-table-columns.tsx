@@ -9,9 +9,14 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Split } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -19,6 +24,12 @@ import { DeleteTransaction } from "@/features/transaction/features/delete-transa
 import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
 import type { Transaction } from "@/features/transaction/ui/transaction-item";
 import type { Category } from "@/pages/categories/ui/categories-page";
+
+type CategorySplit = {
+   categoryId: string;
+   value: number;
+   splitType: "amount";
+};
 
 export function createTransactionColumns(
    categories: Category[],
@@ -29,12 +40,41 @@ export function createTransactionColumns(
          cell: ({ row }) => {
             const transaction = row.original;
             const transactionCategoryIds = transaction.categoryIds;
+            const categorySplits = transaction.categorySplits as
+               | CategorySplit[]
+               | null;
+            const hasSplit = categorySplits && categorySplits.length > 0;
             const primaryCategoryId = transactionCategoryIds[0];
             const categoryDetails = categories.find(
                (cat) => cat.id === primaryCategoryId,
             );
             const categoryColor = categoryDetails?.color || "#6b7280";
             const categoryIcon = categoryDetails?.icon || "Wallet";
+
+            const getSplitTooltipContent = () => {
+               if (!hasSplit) return null;
+               return categorySplits.map((split) => {
+                  const cat = categories.find((c) => c.id === split.categoryId);
+                  if (!cat) return null;
+                  return (
+                     <div
+                        className="flex items-center justify-between gap-4"
+                        key={split.categoryId}
+                     >
+                        <div className="flex items-center gap-2">
+                           <div
+                              className="size-3 rounded-sm"
+                              style={{ backgroundColor: cat.color }}
+                           />
+                           <span>{cat.name}</span>
+                        </div>
+                        <span className="font-medium">
+                           {formatDecimalCurrency(split.value / 100)}
+                        </span>
+                     </div>
+                  );
+               });
+            };
 
             return (
                <div className="flex items-center gap-3">
@@ -50,9 +90,21 @@ export function createTransactionColumns(
                      />
                   </div>
                   <div className="flex flex-col">
-                     <span className="font-medium">
-                        {transaction.description}
-                     </span>
+                     <div className="flex items-center gap-1.5">
+                        <span className="font-medium">
+                           {transaction.description}
+                        </span>
+                        {hasSplit && (
+                           <Tooltip>
+                              <TooltipTrigger asChild>
+                                 <Split className="size-3.5 text-muted-foreground" />
+                              </TooltipTrigger>
+                              <TooltipContent className="space-y-1.5 p-3">
+                                 {getSplitTooltipContent()}
+                              </TooltipContent>
+                           </Tooltip>
+                        )}
+                     </div>
                      <span className="text-xs text-muted-foreground">
                         {categoryDetails?.name || "Sem categoria"}
                      </span>

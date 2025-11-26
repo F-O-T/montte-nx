@@ -36,6 +36,13 @@ import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
+import { CategorySplitInput } from "../ui/category-split-input";
+
+type CategorySplit = {
+   categoryId: string;
+   value: number;
+   splitType: "amount";
+};
 
 type ManageTransactionSheetProps = {
    onOpen?: boolean;
@@ -84,10 +91,6 @@ export function ManageTransactionSheet({
 
    const { data: bankAccounts = [] } = useQuery(
       trpc.bankAccounts.getAll.queryOptions(),
-   );
-
-   const activeBankAccounts = bankAccounts.filter(
-      (account) => account.status === "active",
    );
 
    const createTransactionMutation = useMutation(
@@ -157,13 +160,19 @@ export function ManageTransactionSheet({
       }),
    );
 
+   const [splitEnabled, setSplitEnabled] = useState(
+      !!transaction?.categorySplits?.length,
+   );
+
    const form = useForm({
       defaultValues: {
          amount: transaction?.amount
             ? Math.round(Number(transaction.amount) * 100)
-            : 0, // Store as cents
+            : 0,
          bankAccountId: transaction?.bankAccountId || "",
          categoryIds: transaction?.categoryIds || [],
+         categorySplits:
+            (transaction?.categorySplits as CategorySplit[] | null) || null,
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
          toBankAccountId: "",
@@ -183,8 +192,21 @@ export function ManageTransactionSheet({
             return;
          }
 
+         if (value.categorySplits && value.categorySplits.length > 0) {
+            const allocatedAmount = value.categorySplits.reduce(
+               (sum, split) => sum + split.value,
+               0,
+            );
+
+            if (Math.abs(value.amount - allocatedAmount) > 1) {
+               toast.error(
+                  "A soma dos valores divididos deve ser igual ao valor total",
+               );
+               return;
+            }
+         }
+
          try {
-            // Convert cents back to decimal for database
             const amountInDecimal = centsToReais(value.amount);
 
             if (isEditMode && transaction) {
@@ -193,6 +215,7 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: value.categoryIds || [],
+                     categorySplits: value.categorySplits,
                      date: value.date.toISOString().split("T")[0],
                      description: value.description,
                      type: value.type,
@@ -216,6 +239,7 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: (value.categoryIds || []) as string[],
+                     categorySplits: value.categorySplits,
                      date: value.date.toISOString().split("T")[0],
                      description: value.description,
                      type: value.type,
@@ -375,7 +399,7 @@ export function ManageTransactionSheet({
                                                 />
                                              </SelectTrigger>
                                              <SelectContent>
-                                                {activeBankAccounts.map(
+                                                {bankAccounts.map(
                                                    (account) => (
                                                       <SelectItem
                                                          key={account.id}
@@ -427,7 +451,7 @@ export function ManageTransactionSheet({
                                                    />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                   {activeBankAccounts.map(
+                                                   {bankAccounts.map(
                                                       (account) => (
                                                          <SelectItem
                                                             disabled={
@@ -521,6 +545,40 @@ export function ManageTransactionSheet({
                            )}
                         </>
                      )}
+                  </form.Subscribe>
+
+                  <form.Subscribe
+                     selector={(state) => ({
+                        amount: state.values.amount,
+                        categoryIds: state.values.categoryIds,
+                        type: state.values.type,
+                     })}
+                  >
+                     {({ categoryIds, amount, type }) =>
+                        type !== "transfer" &&
+                        categoryIds.length > 1 && (
+                           <form.Field name="categorySplits">
+                              {(field) => (
+                                 <CategorySplitInput
+                                    categories={categories}
+                                    enabled={splitEnabled}
+                                    onChange={(splits) =>
+                                       field.handleChange(splits)
+                                    }
+                                    onEnabledChange={(enabled) => {
+                                       setSplitEnabled(enabled);
+                                       if (!enabled) {
+                                          field.handleChange(null);
+                                       }
+                                    }}
+                                    selectedCategoryIds={categoryIds}
+                                    splits={field.state.value}
+                                    totalAmount={amount}
+                                 />
+                              )}
+                           </form.Field>
+                        )
+                     }
                   </form.Subscribe>
 
                   <FieldGroup>
