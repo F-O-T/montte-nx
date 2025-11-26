@@ -12,8 +12,6 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
 import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import type { Tag } from "@/pages/tags/ui/tags-page";
 
 import { DeleteTag } from "../features/delete-tag";
@@ -28,24 +26,17 @@ export function createTagColumns(slug: string): ColumnDef<Tag>[] {
             return (
                <div className="flex items-center gap-3">
                   <div
-                     className="size-8 rounded-sm flex items-center justify-center"
+                     className="size-8 rounded-sm shrink-0"
                      style={{
                         backgroundColor: tag.color,
                      }}
-                  >
-                     <IconDisplay
-                        className="text-white"
-                        iconName={(tag.icon || "Tag") as IconName}
-                        size={16}
-                     />
-                  </div>
+                  />
                   <div className="flex flex-col">
                      <span className="font-medium">{tag.name}</span>
                   </div>
                </div>
             );
          },
-         enableSorting: true,
          header: translate("dashboard.routes.tags.table.columns.name"),
       },
       {

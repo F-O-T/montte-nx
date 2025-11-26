@@ -9,9 +9,10 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import { ItemMedia } from "@packages/ui/components/item";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
+import type { ColumnDef } from "@tanstack/react-table";
 import { MoreVertical } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
@@ -21,53 +22,84 @@ import { ManageTransactionSheet } from "@/features/transaction/features/manage-t
 import type { Transaction } from "@/features/transaction/ui/transaction-item";
 import type { Category } from "@/pages/categories/ui/categories-page";
 
+function getCategoryDetails(transaction: Transaction, categories: Category[]) {
+   const transactionCategoryIds =
+      transaction.transactionCategories?.map((tc) => tc.category.id) || [];
+   const primaryCategoryId = transactionCategoryIds[0];
+   const categoryDetails = categories.find(
+      (cat) => cat.id === primaryCategoryId,
+   );
+   return {
+      color: categoryDetails?.color || "#6b7280",
+      icon: categoryDetails?.icon || "Wallet",
+      name: categoryDetails?.name || "Sem categoria",
+   };
+}
+
 export function createTransactionColumns(
    categories: Category[],
    slug: string,
 ): ColumnDef<Transaction>[] {
    return [
       {
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const category = getCategoryDetails(transaction, categories);
+
+            return (
+               <ItemMedia
+                  style={{ backgroundColor: category.color }}
+                  variant="icon"
+               >
+                  <IconDisplay iconName={category.icon as IconName} size={16} />
+               </ItemMedia>
+            );
+         },
+         header: "",
+         id: "icon",
+         size: 48,
+      },
+      {
          accessorKey: "description",
          cell: ({ row }) => {
             const transaction = row.original;
-            const transactionCategoryIds =
-               transaction.transactionCategories?.map((tc) => tc.category.id) ||
-               [];
-            const primaryCategoryId = transactionCategoryIds[0];
-            const categoryDetails = categories.find(
-               (cat) => cat.id === primaryCategoryId,
-            );
-            const categoryColor = categoryDetails?.color || "#6b7280";
-            const categoryIcon = categoryDetails?.icon || "Wallet";
-
             return (
-               <div className="flex items-center gap-3">
-                  <div
-                     className="size-8 rounded-sm flex items-center justify-center"
-                     style={{
-                        backgroundColor: categoryColor,
-                     }}
-                  >
-                     <IconDisplay
-                        iconName={categoryIcon as IconName}
-                        size={16}
-                     />
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="truncate font-medium w-28 ">
-                        {transaction.description}
-                     </span>
-                     <span className="text-xs text-muted-foreground">
-                        {categoryDetails?.name || "Sem categoria"}
-                     </span>
-                  </div>
-               </div>
+               <span className="font-medium block max-w-[200px] truncate">
+                  {transaction.description}
+               </span>
             );
          },
-         enableSorting: true,
+         enableSorting: false,
          header: translate(
             "dashboard.routes.transactions.table.columns.description",
          ),
+
+         maxSize: 200,
+      },
+      {
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const category = getCategoryDetails(transaction, categories);
+
+            return (
+               <Badge
+                  className="font-normal truncate max-w-[120px]"
+                  style={{
+                     backgroundColor: `${category.color}20`,
+                     color: category.color,
+                  }}
+                  variant="secondary"
+               >
+                  {category.name}
+               </Badge>
+            );
+         },
+         enableSorting: false,
+
+         header: translate(
+            "dashboard.routes.transactions.table.columns.category",
+         ),
+         id: "category",
       },
       {
          accessorKey: "date",
@@ -78,7 +110,8 @@ export function createTransactionColumns(
                year: "numeric",
             });
          },
-         enableSorting: true,
+         enableSorting: false,
+
          header: translate("dashboard.routes.transactions.table.columns.date"),
       },
       {
@@ -92,7 +125,8 @@ export function createTransactionColumns(
             };
             return <span>{typeMap[type as keyof typeof typeMap]}</span>;
          },
-         enableSorting: true,
+         enableSorting: false,
+
          header: translate("dashboard.routes.transactions.table.columns.type"),
       },
       {
@@ -153,6 +187,7 @@ export function createTransactionColumns(
                </div>
             );
          },
+         enableSorting: false,
          header: translate("dashboard.routes.transactions.table.columns.tags"),
       },
       {
