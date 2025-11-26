@@ -42,12 +42,14 @@
    },
    "organization-switcher": {
       "add-organization": "Adicionar organização",
+      "create-team": "Criar equipe",
       "error": {
          "failed-to-load-active": "Erro ao carregar organização ativa",
          "failed-to-load-teams": "Erro ao carregar equipes"
       },
       "label": "Organizações",
-      "limit-reached": "Você não pode criar mais organizações"
+      "limit-reached": "Você não pode criar mais organizações",
+      "no-teams": "Nenhuma equipe"
    },
    "sidebar": {
       "collapse": "Ocultar",
