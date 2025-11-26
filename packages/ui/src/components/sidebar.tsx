@@ -1,5 +1,6 @@
 "use client";
 
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Input } from "@packages/ui/components/input";
 import { Separator } from "@packages/ui/components/separator";
@@ -21,7 +22,7 @@ import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { cn } from "@packages/ui/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -270,10 +271,16 @@ function SidebarTrigger({
    onClick,
    ...props
 }: React.ComponentProps<typeof Button>) {
-   const { toggleSidebar } = useSidebar();
+   const { toggleSidebar, state } = useSidebar();
 
-   return (
+   const tooltipText =
+      state === "expanded"
+         ? translate("dashboard.layout.sidebar.collapse")
+         : translate("dashboard.layout.sidebar.expand");
+
+   const button = (
       <Button
+         aria-label={tooltipText}
          className={cn("size-7", className)}
          data-sidebar="trigger"
          data-slot="sidebar-trigger"
@@ -285,9 +292,15 @@ function SidebarTrigger({
          variant="ghost"
          {...props}
       >
-         <PanelLeftIcon />
-         <span className="sr-only">Toggle Sidebar</span>
+         {state === "expanded" ? <ChevronLeft /> : <ChevronRight />}
       </Button>
+   );
+
+   return (
+      <Tooltip>
+         <TooltipTrigger asChild>{button}</TooltipTrigger>
+         <TooltipContent>{tooltipText}</TooltipContent>
+      </Tooltip>
    );
 }
 
