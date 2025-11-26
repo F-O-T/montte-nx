@@ -185,7 +185,10 @@ function OrganizationDropdownContent({
                      <OrganizationTeamsList
                         onCreateTeamClick={onCreateTeamClick}
                         onViewDetailsClick={() => {
-                           handleOrganizationClick(organization.id, organization.slug);
+                           router.navigate({
+                              params: { slug: organization.slug },
+                              to: "/$slug/organization",
+                           });
                         }}
                         organizationSlug={organization.slug}
                      />
