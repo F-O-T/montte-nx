@@ -19,7 +19,7 @@ import {
 import { ScrollArea } from "@packages/ui/components/scroll-area";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Building2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";

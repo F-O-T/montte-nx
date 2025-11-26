@@ -31,5 +31,18 @@
          "language": "Idioma",
          "theme": "Tema"
       }
+   },
+   "organization-switcher": {
+      "add-organization": "Adicionar organização",
+      "error": {
+         "failed-to-load-active": "Erro ao carregar organização ativa",
+         "failed-to-load-teams": "Erro ao carregar equipes"
+      },
+      "label": "Organizações",
+      "limit-reached": "Você não pode criar mais organizações"
+   },
+   "sidebar": {
+      "collapse": "Ocultar",
+      "expand": "Abrir"
    }
 }

@@ -102,7 +102,11 @@ export function ManageBankAccountSheet({
       defaultValues: {
          bank: bankAccount?.bank || "",
          name: bankAccount?.name || "",
-         type: bankAccount?.type || "",
+         type: (bankAccount?.type || "") as
+            | "checking"
+            | "investment"
+            | "savings"
+            | "",
       },
       onSubmit: async ({ value }) => {
          if (!value.name || !value.type || !value.bank) {
@@ -114,7 +118,7 @@ export function ManageBankAccountSheet({
                   data: {
                      bank: value.bank,
                      name: value.name,
-                     type: value.type,
+                     type: value.type as "checking" | "investment" | "savings",
                   },
                   id: bankAccount.id,
                });
@@ -122,7 +126,7 @@ export function ManageBankAccountSheet({
                await createBankAccountMutation.mutateAsync({
                   bank: value.bank,
                   name: value.name,
-                  type: value.type,
+                  type: value.type as "checking" | "investment" | "savings",
                });
             }
          } catch (error) {
@@ -251,7 +255,15 @@ export function ManageBankAccountSheet({
                                     )}
                                  </FieldLabel>
                                  <Select
-                                    onValueChange={field.handleChange}
+                                    onValueChange={(value) =>
+                                       field.handleChange(
+                                          value as
+                                             | ""
+                                             | "checking"
+                                             | "savings"
+                                             | "investment",
+                                       )
+                                    }
                                     value={field.state.value}
                                  >
                                     <SelectTrigger>

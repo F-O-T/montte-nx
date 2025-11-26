@@ -51,15 +51,29 @@ export function OrganizationRoles() {
    function getLocalizedRoleData(roleId: string) {
       const roleKey = `dashboard.routes.organization.roles-section.roles.${roleId}`;
       return {
-         description: translate(`${roleKey}.description`),
+         description: translate(
+            `${roleKey}.description` as Parameters<typeof translate>[0],
+         ),
          permissions: [
-            translate(`${roleKey}.permissions.0`),
-            translate(`${roleKey}.permissions.1`),
-            translate(`${roleKey}.permissions.2`),
-            translate(`${roleKey}.permissions.3`),
-            translate(`${roleKey}.permissions.4`),
+            translate(
+               `${roleKey}.permissions.0` as Parameters<typeof translate>[0],
+            ),
+            translate(
+               `${roleKey}.permissions.1` as Parameters<typeof translate>[0],
+            ),
+            translate(
+               `${roleKey}.permissions.2` as Parameters<typeof translate>[0],
+            ),
+            translate(
+               `${roleKey}.permissions.3` as Parameters<typeof translate>[0],
+            ),
+            translate(
+               `${roleKey}.permissions.4` as Parameters<typeof translate>[0],
+            ),
          ].filter(Boolean),
-         title: translate(`${roleKey}.title`),
+         title: translate(
+            `${roleKey}.title` as Parameters<typeof translate>[0],
+         ),
       };
    }
 

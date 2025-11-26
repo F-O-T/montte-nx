@@ -48,7 +48,8 @@ export function TransactionItem({
    transaction,
    categories,
 }: TransactionItemProps) {
-   const transactionCategoryIds = transaction.categoryIds;
+   const transactionCategoryIds =
+      transaction.transactionCategories?.map((tc) => tc.category.id) || [];
    const categorySplits = transaction.categorySplits as CategorySplit[] | null;
    const hasSplit = categorySplits && categorySplits.length > 0;
 

@@ -1,10 +1,11 @@
-//TODO: Use this on the errors to track the errors
+import type { ServerEnv } from "@packages/environment/server";
 import { PostHog } from "posthog-node";
-import { posthogHost, posthogPublicKey } from "./shared-posthog-config";
 
-export function getElysiaPosthogConfig() {
-   const internalPosthog = new PostHog(posthogPublicKey, {
-      host: posthogHost,
+export function getElysiaPosthogConfig(
+   env: Pick<ServerEnv, "POSTHOG_HOST" | "POSTHOG_KEY">,
+) {
+   const internalPosthog = new PostHog(env.POSTHOG_KEY, {
+      host: env.POSTHOG_HOST,
    });
    return internalPosthog;
 }

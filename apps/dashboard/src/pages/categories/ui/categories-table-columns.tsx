@@ -8,7 +8,6 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
@@ -47,17 +46,6 @@ export function createCategoryColumns(): ColumnDef<Category>[] {
          },
          enableSorting: true,
          header: translate("dashboard.routes.categories.table.columns.name"),
-      },
-      {
-         accessorKey: "budget",
-         cell: ({ row }) => {
-            const budget = row.original.budget;
-            if (!budget)
-               return <span className="text-muted-foreground">-</span>;
-            return <span>{formatDecimalCurrency(Number(budget))}</span>;
-         },
-         enableSorting: true,
-         header: translate("dashboard.routes.categories.table.columns.budget"),
       },
       {
          cell: ({ row }) => {

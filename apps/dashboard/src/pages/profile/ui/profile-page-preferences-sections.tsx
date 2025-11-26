@@ -1,4 +1,3 @@
-import { trpc } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import {
    Card,
@@ -24,6 +23,7 @@ import {
    useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Activity, Globe, Moon } from "lucide-react";
+import { trpc } from "@/integrations/clients";
 import { LanguageCommand } from "@/layout/language-command";
 import { ThemeSwitcher } from "@/layout/theme-provider";
 

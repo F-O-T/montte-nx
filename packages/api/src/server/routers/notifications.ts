@@ -17,10 +17,11 @@ export const notificationRouter = router({
       )
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
+         const userId = resolvedCtx.session?.user.id;
+
+         if (!userId) {
             throw new Error("Unauthorized");
          }
-         const userId = resolvedCtx.session.user.id;
 
          if (input?.onlyUnread !== false) {
             return findUnreadNotificationsByUserId(resolvedCtx.db, userId);
@@ -32,9 +33,6 @@ export const notificationRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
 
          return markNotificationAsRead(resolvedCtx.db, input.id);
       }),

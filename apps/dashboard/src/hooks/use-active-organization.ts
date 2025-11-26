@@ -1,6 +1,6 @@
-import { useTRPC } from "@/integrations/clients";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
+import { useTRPC } from "@/integrations/clients";
 
 export function useActiveOrganization() {
    const trpc = useTRPC();

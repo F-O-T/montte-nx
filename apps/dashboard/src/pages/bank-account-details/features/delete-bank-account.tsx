@@ -9,16 +9,8 @@ import {
    AlertDialogFooter,
    AlertDialogHeader,
    AlertDialogTitle,
-   AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
-import { Button } from "@packages/ui/components/button";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/integrations/clients";
 
@@ -38,22 +30,13 @@ export function DeleteBankAccount({
    const deleteBankAccountMutation = useMutation(
       trpc.bankAccounts.delete.mutationOptions({
          onError: (error) => {
-            toast.error(
-               error.message ||
-                  translate(
-                     "dashboard.routes.profile.bank-accounts.delete.error",
-                  ),
-            );
+            toast.error(error.message || "Failed to delete bank account");
          },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getAll.queryKey(),
             });
-            toast.success(
-               translate(
-                  "dashboard.routes.profile.bank-accounts.delete.success",
-               ),
-            );
+            toast.success("Bank account deleted successfully");
          },
       }),
    );

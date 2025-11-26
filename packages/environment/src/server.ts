@@ -11,6 +11,8 @@ const EnvSchema = z.object({
    MINIO_BUCKET: z.string().default("content-writer"),
    MINIO_ENDPOINT: z.string(),
    MINIO_SECRET_KEY: z.string(),
+   POSTHOG_HOST: z.string(),
+   POSTHOG_KEY: z.string(),
    RESEND_API_KEY: z.string(),
 });
 export type ServerEnv = z.infer<typeof EnvSchema>;

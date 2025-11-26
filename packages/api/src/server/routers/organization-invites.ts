@@ -1,6 +1,6 @@
 import { APIError, propagateError } from "@packages/utils/errors";
 import { z } from "zod";
-import { organizationProcedure, protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 export const organizationInvitesRouter = router({
    acceptInvitation: protectedProcedure
@@ -110,7 +110,7 @@ export const organizationInvitesRouter = router({
          }
       }),
 
-   getInvitationStats: organizationProcedure.query(async ({ ctx }) => {
+   getInvitationStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
       const organizationId = resolvedCtx.session?.session.activeOrganizationId;
@@ -148,7 +148,7 @@ export const organizationInvitesRouter = router({
       }
    }),
 
-   listInvitations: organizationProcedure
+   listInvitations: protectedProcedure
       .input(
          z.object({
             limit: z.number().min(1).max(100).default(20),

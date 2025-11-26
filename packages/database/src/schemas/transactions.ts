@@ -7,8 +7,11 @@ import {
    timestamp,
    uuid,
 } from "drizzle-orm/pg-core";
-import { user } from "./auth";
+import { organization } from "./auth";
 import { bankAccount } from "./bank-accounts";
+import { transactionCategory } from "./categories";
+import { costCenter } from "./cost-centers";
+import { transactionTag } from "./tags";
 
 export type CategorySplit = {
    categoryId: string;
@@ -21,26 +24,38 @@ export const transaction = pgTable("transaction", {
    bankAccountId: uuid("bank_account_id").references(() => bankAccount.id, {
       onDelete: "cascade",
    }),
-   categoryIds: uuid("category_ids").array().notNull(),
    categorySplits: jsonb("category_splits").$type<CategorySplit[]>(),
+   costCenterId: uuid("cost_center_id").references(() => costCenter.id, {
+      onDelete: "set null",
+   }),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    date: timestamp("date").notNull(),
    description: text("description").notNull(),
    externalId: text("external_id"),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+   organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
    type: text("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-   userId: uuid("user_id")
-      .references(() => user.id, { onDelete: "cascade" })
-      .notNull(),
 });
 
-export const transactionRelations = relations(transaction, ({ one }) => ({
+export const transactionRelations = relations(transaction, ({ one, many }) => ({
    bankAccount: one(bankAccount, {
       fields: [transaction.bankAccountId],
       references: [bankAccount.id],
    }),
+   costCenter: one(costCenter, {
+      fields: [transaction.costCenterId],
+      references: [costCenter.id],
+   }),
+   organization: one(organization, {
+      fields: [transaction.organizationId],
+      references: [organization.id],
+   }),
+   transactionCategories: many(transactionCategory),
+   transactionTags: many(transactionTag),
 }));

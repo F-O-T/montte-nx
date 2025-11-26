@@ -54,8 +54,6 @@ function getLastYearDates() {
 export function PeriodFilter({
    onPeriodChange,
    defaultPreset = "current_month",
-   initialStartDate,
-   initialEndDate,
 }: PeriodFilterProps) {
    const [preset, setPreset] = useState<PeriodPreset>(defaultPreset);
    const [customStartDate, setCustomStartDate] = useState<string>("");
@@ -63,7 +61,7 @@ export function PeriodFilter({
 
    const handlePresetChange = (value: PeriodPreset) => {
       setPreset(value);
-      let dates;
+      let dates: { start: Date; end: Date } | undefined;
 
       switch (value) {
          case "current_month":

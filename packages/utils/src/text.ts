@@ -159,3 +159,51 @@ export function getInitials(name: string, email?: string) {
    }
    return email ? email.slice(0, 2).toUpperCase() : "?";
 }
+
+export function createCodeFromName(name: string): string {
+   if (!name || !name.trim()) return "";
+
+   const normalized = name
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+   const words = normalized.split(" ").filter(Boolean);
+
+   if (words.length === 0) return "";
+
+   if (words.length === 1) {
+      const word = words[0];
+      if (!word) return "";
+
+      const w = word.toUpperCase();
+      if (w.length <= 3) return w;
+
+      const letters = w.replace(/[^A-Z0-9]/g, "");
+      const consonants = letters.replace(/[AEIOU]/g, "").split("");
+
+      if (consonants.length >= 3) {
+         return consonants.slice(0, 3).join("");
+      }
+
+      return (consonants.join("") + letters).slice(0, 3);
+   }
+
+   if (words.length === 2) {
+      return words
+         .map((w) => w.charAt(0))
+         .join("")
+         .toUpperCase()
+         .slice(0, 2);
+   }
+
+   // For 3+ words: use initials of first three words
+   return words
+      .map((w) => w.charAt(0))
+      .slice(0, 3)
+      .join("")
+      .toUpperCase();
+}

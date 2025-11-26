@@ -6,8 +6,7 @@
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
-      "typescript": "catalog:development",
-      "vitest": "catalog:testing"
+      "typescript": "catalog:development"
    },
    "exports": {
       "./array": {
@@ -49,6 +48,10 @@
       "./text": {
          "default": "./src/text.ts",
          "types": "./dist/src/text.d.ts"
+      },
+      "./sanitization": {
+         "default": "./src/sanitization.ts",
+         "types": "./dist/src/sanitization.d.ts"
       }
    },
    "files": [

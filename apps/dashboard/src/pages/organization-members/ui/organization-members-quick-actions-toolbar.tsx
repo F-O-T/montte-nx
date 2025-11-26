@@ -11,7 +11,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { Plus, Users } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { InviteMemberSheet } from "../features/invite-member-sheet";
 

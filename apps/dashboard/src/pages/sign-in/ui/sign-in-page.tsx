@@ -94,7 +94,7 @@ export function SignInPage() {
             <span>{text[0]}</span>
             <a
                className="underline text-muted-foreground hover:text-primary"
-               href="https://contentagen.com/terms-of-service"
+               href="https://montte.co/terms-of-service"
                rel="noopener noreferrer"
                target="_blank"
             >
@@ -103,7 +103,7 @@ export function SignInPage() {
             <span>{text[1]}</span>
             <a
                className="underline text-muted-foreground hover:text-primary"
-               href="https://contentagen.com/privacy-policy"
+               href="https://montte.co/privacy-policy"
                rel="noopener noreferrer"
                target="_blank"
             >

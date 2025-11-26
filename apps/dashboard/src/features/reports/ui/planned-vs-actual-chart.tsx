@@ -96,8 +96,8 @@ export function PlannedVsActualChart({
                   <ChartTooltip
                      content={
                         <ChartTooltipContent
-                           formatter={(value: number) =>
-                              `R$ ${value.toFixed(2)}`
+                           formatter={(value) =>
+                              `R$ ${Number(value).toFixed(2)}`
                            }
                         />
                      }

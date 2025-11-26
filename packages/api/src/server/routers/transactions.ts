@@ -2,6 +2,7 @@ import type { DatabaseInstance } from "@packages/database/client";
 import {
    findCategoryById,
    getCategorySpending,
+   setTransactionCategories,
 } from "@packages/database/repositories/category-repository";
 import {
    createNotification,
@@ -9,17 +10,17 @@ import {
 } from "@packages/database/repositories/notification-repository";
 import {
    createTransaction,
+   createTransfer,
    deleteTransaction,
    findTransactionById,
-   findTransactionsByUserId,
-   findTransactionsByUserIdPaginated,
-   getTotalExpensesByUserId,
-   getTotalIncomeByUserId,
-   getTotalTransactionsByUserId,
-   getTotalTransfersByUserId,
+   findTransactionsByOrganizationId,
+   findTransactionsByOrganizationIdPaginated,
+   getTotalExpensesByOrganizationId,
+   getTotalIncomeByOrganizationId,
+   getTotalTransactionsByOrganizationId,
+   getTotalTransfersByOrganizationId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
-import { category } from "@packages/database/schemas/categories";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { z } from "zod";
@@ -104,33 +105,41 @@ export const transactionRouter = router({
       .input(createTransactionSchema)
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-         console.log("Creating transaction with input:", input);
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
             categorySplits: input.categorySplits || null,
             date: new Date(input.date),
             id: crypto.randomUUID(),
-            userId,
+            organizationId,
          });
+
+         if (input.categoryIds.length > 0) {
+            await setTransactionCategories(
+               resolvedCtx.db,
+               transaction.id,
+               input.categoryIds,
+            );
+         }
 
          let notifications: Notification[] = [];
          if (input.type === "expense") {
             notifications = await checkBudgetAndNotify(
                resolvedCtx.db,
-               userId,
+               resolvedCtx.userId,
                input.categoryIds,
             );
          }
 
+         const createdTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transaction.id,
+         );
+
          return {
-            notifications,
-            transaction,
+            transaction: createdTransaction,
          };
       }),
 
@@ -138,18 +147,17 @@ export const transactionRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingTransaction = await findTransactionById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!existingTransaction || existingTransaction.userId !== userId) {
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
             throw new Error("Transaction not found");
          }
 
@@ -158,48 +166,42 @@ export const transactionRouter = router({
 
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return findTransactionsByUserId(resolvedCtx.db, userId);
+      return findTransactionsByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
    getAllPaginated: protectedProcedure
       .input(paginationSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return findTransactionsByUserIdPaginated(resolvedCtx.db, userId, {
-            ...input,
-            endDate: input.endDate ? new Date(input.endDate) : undefined,
-            startDate: input.startDate ? new Date(input.startDate) : undefined,
-         });
+         return findTransactionsByOrganizationIdPaginated(
+            resolvedCtx.db,
+            organizationId,
+            {
+               ...input,
+               endDate: input.endDate ? new Date(input.endDate) : undefined,
+               startDate: input.startDate
+                  ? new Date(input.startDate)
+                  : undefined,
+            },
+         );
       }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const transaction = await findTransactionById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!transaction || transaction.userId !== userId) {
+         if (!transaction || transaction.organizationId !== organizationId) {
             throw new Error("Transaction not found");
          }
 
@@ -216,23 +218,31 @@ export const transactionRouter = router({
       )
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
          const bankAccountId = input?.bankAccountId;
 
          const [totalTransactions, totalIncome, totalExpenses, totalTransfers] =
             await Promise.all([
-               getTotalTransactionsByUserId(
+               getTotalTransactionsByOrganizationId(
                   resolvedCtx.db,
-                  userId,
+                  organizationId,
                   bankAccountId,
                ),
-               getTotalIncomeByUserId(resolvedCtx.db, userId, bankAccountId),
-               getTotalExpensesByUserId(resolvedCtx.db, userId, bankAccountId),
-               getTotalTransfersByUserId(resolvedCtx.db, userId, bankAccountId),
+               getTotalIncomeByOrganizationId(
+                  resolvedCtx.db,
+                  organizationId,
+                  bankAccountId,
+               ),
+               getTotalExpensesByOrganizationId(
+                  resolvedCtx.db,
+                  organizationId,
+                  bankAccountId,
+               ),
+               getTotalTransfersByOrganizationId(
+                  resolvedCtx.db,
+                  organizationId,
+                  bankAccountId,
+               ),
             ]);
 
          return {
@@ -255,54 +265,15 @@ export const transactionRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return resolvedCtx.db.transaction(async (tx) => {
-            const transferCategory = await tx.query.category.findFirst({
-               where: (cat, { eq, and }) =>
-                  and(eq(cat.userId, userId), eq(cat.name, "Transfer")),
-            });
-
-            const transferCategoryId =
-               transferCategory?.id || crypto.randomUUID();
-
-            if (!transferCategory) {
-               await tx.insert(category).values({
-                  color: "#6b7280",
-                  icon: "ArrowLeftRight",
-                  id: transferCategoryId,
-                  name: "Transfer",
-                  userId,
-               });
-            }
-
-            const fromTransaction = await createTransaction(tx, {
-               amount: (-input.amount).toString(),
-               bankAccountId: input.fromBankAccountId,
-               categoryIds: [transferCategoryId],
-               date: new Date(input.date),
-               description: input.description,
-               id: crypto.randomUUID(),
-               type: "transfer",
-               userId,
-            });
-
-            const toTransaction = await createTransaction(tx, {
-               amount: input.amount.toString(),
-               bankAccountId: input.toBankAccountId,
-               categoryIds: [transferCategoryId],
-               date: new Date(input.date),
-               description: input.description,
-               id: crypto.randomUUID(),
-               type: "transfer",
-               userId,
-            });
-
-            return [fromTransaction, toTransaction];
+         return createTransfer(resolvedCtx.db, {
+            amount: input.amount,
+            date: new Date(input.date),
+            description: input.description,
+            fromBankAccountId: input.fromBankAccountId,
+            organizationId,
+            toBankAccountId: input.toBankAccountId,
          });
       }),
 
@@ -315,25 +286,23 @@ export const transactionRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingTransaction = await findTransactionById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!existingTransaction || existingTransaction.userId !== userId) {
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
             throw new Error("Transaction not found");
          }
 
          const updateData: {
             amount?: string;
             bankAccountId?: string;
-            categoryIds?: string[];
             categorySplits?: CategorySplit[] | null;
             date?: Date;
             description?: string;
@@ -350,10 +319,6 @@ export const transactionRouter = router({
 
          if (input.data.bankAccountId !== undefined) {
             updateData.bankAccountId = input.data.bankAccountId;
-         }
-
-         if (input.data.categoryIds !== undefined) {
-            updateData.categoryIds = input.data.categoryIds;
          }
 
          if (input.data.categorySplits !== undefined) {
@@ -374,14 +339,20 @@ export const transactionRouter = router({
             updateData,
          );
 
+         if (input.data.categoryIds !== undefined) {
+            await setTransactionCategories(
+               resolvedCtx.db,
+               input.id,
+               input.data.categoryIds,
+            );
+         }
+
          let notifications: Notification[] = [];
-         if (updatedTransaction.type === "expense") {
-            const categoriesToCheck =
-               updateData.categoryIds || existingTransaction.categoryIds;
+         if (updatedTransaction.type === "expense" && input.data.categoryIds) {
             notifications = await checkBudgetAndNotify(
                resolvedCtx.db,
-               userId,
-               categoriesToCheck,
+               resolvedCtx.userId,
+               input.data.categoryIds,
             );
          }
 

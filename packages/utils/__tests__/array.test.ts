@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { shuffleArray } from "../src/array";
 
 describe("array utilities", () => {
