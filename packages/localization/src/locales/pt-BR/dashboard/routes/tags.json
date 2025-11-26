@@ -1,0 +1,65 @@
+{
+   "actions": {
+      "add-tag": "Adicionar Tag"
+   },
+   "actions-toolbar": {
+      "actions": {
+         "add-new": "Adicionar nova tag",
+         "delete-selected": "Excluir selecionadas"
+      }
+   },
+   "features": {
+      "create-tag": {
+         "description": "Adicione uma nova tag para organizar suas transações.",
+         "title": "Criar Nova Tag"
+      },
+      "edit-tag": {
+         "description": "Atualize os detalhes da sua tag.",
+         "title": "Editar Tag"
+      },
+      "filter": {
+         "actions": {
+            "clear-filters": "Limpar Filtros"
+         },
+         "description": "Refine a lista de tags com base em critérios específicos.",
+         "title": "Filtrar Tags"
+      }
+   },
+   "list-section": {
+      "actions": {
+         "delete": "Excluir tag",
+         "delete-tag": "Excluir tag",
+         "edit-tag": "Editar tag",
+         "label": "Gerencie sua tag",
+         "view-details": "Ver detalhes"
+      },
+      "description": "Visualize e gerencie suas tags aqui.",
+      "state": {
+         "empty": {
+            "description": "Crie sua primeira tag usando a barra de ações rápidas acima para começar a organizar suas transações.",
+            "title": "Nenhuma tag ainda"
+         },
+         "error": {
+            "description": "Falha ao carregar tags. Tente novamente mais tarde.",
+            "title": "Erro ao carregar tags"
+         }
+      },
+      "title": "Suas tags"
+   },
+   "stats": {
+      "most-used": {
+         "description": "A tag com mais transações este mês.",
+         "title": "Tag mais utilizada"
+      },
+      "total-tags": {
+         "description": "Número total de tags que você criou.",
+         "title": "Total de tags"
+      }
+   },
+   "table": {
+      "columns": {
+         "color": "Cor",
+         "name": "Nome"
+      }
+   }
+}

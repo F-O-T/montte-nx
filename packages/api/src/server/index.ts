@@ -7,6 +7,7 @@ import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
 import { categoryRouter } from "./routers/categories";
+import { costCenterRouter } from "./routers/cost-centers";
 import { notificationRouter } from "./routers/notifications";
 import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
@@ -14,6 +15,7 @@ import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
 import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
+import { tagRouter } from "./routers/tags";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 export const appRouter = router({
@@ -22,6 +24,7 @@ export const appRouter = router({
    bills: billRouter,
    brasilApi: brasilApiRouter,
    categories: categoryRouter,
+   costCenters: costCenterRouter,
    notifications: notificationRouter,
    onboarding: onboardingRouter,
    organization: organizationRouter,
@@ -29,6 +32,7 @@ export const appRouter = router({
    organizationTeams: organizationTeamsRouter,
    reports: reportRouter,
    session: sessionRouter,
+   tags: tagRouter,
    transactions: transactionRouter,
 });
 export const createApi = ({

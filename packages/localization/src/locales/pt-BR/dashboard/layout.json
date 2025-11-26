@@ -2,7 +2,9 @@
    "breadcrumbs": {
       "bills": "Contas a Pagar",
       "categories": "Categorias",
+      "cost-centers": "Centros de Custo",
       "profile": "Perfil",
+      "tags": "Tags",
       "transactions": "Transações"
    },
    "language-command": {
@@ -10,6 +12,12 @@
       "search": "Pesquisar idiomas..."
    },
    "nav-main": {
+      "categorization": {
+         "categories": "Categorias",
+         "cost-centers": "Centros de Custo",
+         "tags": "Tags",
+         "title": "Categorização"
+      },
       "finance": {
          "categories": "Categorias",
          "overview": "Fluxo de caixa",
