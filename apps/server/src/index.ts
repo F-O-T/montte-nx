@@ -1,4 +1,5 @@
 import cors from "@elysiajs/cors";
+
 import { openapi } from "@elysiajs/openapi";
 import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
