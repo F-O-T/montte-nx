@@ -9,16 +9,8 @@ import {
    AlertDialogFooter,
    AlertDialogHeader,
    AlertDialogTitle,
-   AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
-import { Button } from "@packages/ui/components/button";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/integrations/clients";
 
@@ -47,7 +39,7 @@ export function DeleteBankAccount({
          },
          onSuccess: () => {
             queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getAll.queryKey(),
+               queryKey: ["bankAccounts"],
             });
             toast.success(
                translate(

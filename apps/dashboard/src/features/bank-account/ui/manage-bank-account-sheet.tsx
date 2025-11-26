@@ -80,7 +80,7 @@ export function ManageBankAccountSheet({
       trpc.bankAccounts.create.mutationOptions({
          onSuccess: () => {
             queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getAll.queryKey(),
+               queryKey: ["bankAccounts"],
             });
             setIsOpen?.(false);
          },
@@ -91,7 +91,7 @@ export function ManageBankAccountSheet({
       trpc.bankAccounts.update.mutationOptions({
          onSuccess: () => {
             queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getAll.queryKey(),
+               queryKey: ["bankAccounts"],
             });
             setIsOpen?.(false);
          },

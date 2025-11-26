@@ -109,15 +109,12 @@
       "title": "Adicionar Outra Conta Bancária"
    },
    "organization-setup": {
+      "account-creation-failed": "Falha ao criar conta padrão",
       "description": "Configure sua organização empresarial.",
       "form": {
          "name": {
-            "label": "Nome da Organização",
+            "label": "Nome da Empresa",
             "placeholder": "Ex: Minha Empresa"
-         },
-         "slug": {
-            "label": "Slug",
-            "placeholder": "minha-empresa"
          }
       },
       "limit-reached": {
@@ -131,7 +128,6 @@
       "account-type-required": "Tipo de conta é obrigatório",
       "bank-required": "Banco é obrigatório",
       "category-name-required": "Nome da categoria é obrigatório",
-      "organization-name-required": "Nome da organização é obrigatório",
-      "organization-slug-required": "Slug da organização é obrigatório"
+      "organization-name-required": "Nome da empresa é obrigatório"
    }
 }

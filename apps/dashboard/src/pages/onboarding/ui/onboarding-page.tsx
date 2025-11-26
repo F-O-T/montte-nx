@@ -121,14 +121,6 @@ const organizationSchema = z.object({
             "dashboard.routes.onboarding.validation.organization-name-required",
          ),
       ),
-   slug: z
-      .string()
-      .min(
-         1,
-         translate(
-            "dashboard.routes.onboarding.validation.organization-slug-required",
-         ),
-      ),
 });
 
 export function OnboardingPage() {
@@ -187,11 +179,7 @@ export function OnboardingPage() {
    );
 
    const createDefaultBusinessAccount = useMutation(
-      trpc.bankAccounts.createDefaultBusiness.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message);
-         },
-      }),
+      trpc.bankAccounts.createDefaultBusiness.mutationOptions(),
    );
 
    const createOrganization = useMutation(
@@ -201,10 +189,44 @@ export function OnboardingPage() {
          },
          onSuccess: async (data) => {
             if (data?.id) {
-               await setActiveOrganization.mutateAsync({
-                  organizationId: data.id,
-               });
-               await createDefaultBusinessAccount.mutateAsync();
+               let organizationSetAsActive = false;
+
+               try {
+                  await setActiveOrganization.mutateAsync({
+                     organizationId: data.id,
+                  });
+                  organizationSetAsActive = true;
+
+                  await createDefaultBusinessAccount.mutateAsync();
+               } catch (error) {
+                  const errorMessage =
+                     error instanceof Error ? error.message : "Unknown error";
+
+                  if (organizationSetAsActive) {
+                     // Organization was created and set as active, but default account creation failed
+                     console.error(
+                        `Failed to create default business account for organization ${data.id}:`,
+                        error,
+                     );
+
+                     toast.error(
+                        `${translate("dashboard.routes.onboarding.organization-setup.title")}: ${translate("dashboard.routes.onboarding.organization-setup.account-creation-failed") || "Failed to create default account"} - ${errorMessage}`,
+                     );
+                  } else {
+                     // Failed to set organization as active
+                     console.error(
+                        `Failed to set organization ${data.id} as active:`,
+                        error,
+                     );
+
+                     toast.error(
+                        `${translate("dashboard.routes.onboarding.organization-setup.title")}: Failed to activate organization - ${errorMessage}`,
+                     );
+                  }
+
+                  // Re-throw to prevent wizard progression
+                  throw error;
+               }
             }
          },
       }),
@@ -212,9 +234,6 @@ export function OnboardingPage() {
 
    const setActiveOrganization = useMutation(
       trpc.organization.setActiveOrganization.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message);
-         },
          onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.organization.getActiveOrganization.queryKey(),
@@ -229,6 +248,9 @@ export function OnboardingPage() {
             toast.error(error.message);
          },
          onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: ["bankAccounts"],
+            });
             toast.success(
                translate(
                   "dashboard.routes.onboarding.bank-account.toast.success",
@@ -318,7 +340,6 @@ export function OnboardingPage() {
    const organizationForm = useForm({
       defaultValues: {
          name: "",
-         slug: "",
       },
       onSubmit: async ({ value }) => {
          if (hasReachedOrgLimit) {
@@ -330,23 +351,16 @@ export function OnboardingPage() {
             return;
          }
 
+         const slug = createSlug(value.name);
          await createOrganization.mutateAsync({
             name: value.name,
-            slug: value.slug,
+            slug,
          });
       },
       validators: {
          onBlur: organizationSchema,
       },
    });
-
-   useEffect(() => {
-      if (organizationForm.state.values.name) {
-         const slug = createSlug(organizationForm.state.values.name);
-         organizationForm.setFieldValue("slug", slug);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [organizationForm.state.values.name]);
 
    function ContextSelectionStep() {
       return (
@@ -444,39 +458,6 @@ export function OnboardingPage() {
                               }
                               placeholder={translate(
                                  "dashboard.routes.onboarding.organization-setup.form.name.placeholder",
-                              )}
-                              value={field.state.value}
-                           />
-                           {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
-                           )}
-                        </Field>
-                     );
-                  }}
-               </organizationForm.Field>
-            </FieldGroup>
-            <FieldGroup>
-               <organizationForm.Field name="slug">
-                  {(field) => {
-                     const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
-                     return (
-                        <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
-                              {translate(
-                                 "dashboard.routes.onboarding.organization-setup.form.slug.label",
-                              )}
-                           </FieldLabel>
-                           <Input
-                              aria-invalid={isInvalid}
-                              id={field.name}
-                              name={field.name}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                 field.handleChange(e.target.value)
-                              }
-                              placeholder={translate(
-                                 "dashboard.routes.onboarding.organization-setup.form.slug.placeholder",
                               )}
                               value={field.state.value}
                            />
