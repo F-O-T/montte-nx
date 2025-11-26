@@ -1,75 +1,67 @@
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { category, transactionCategory } from "../schemas/categories";
+import { tag, transactionTag } from "../schemas/tags";
 import { transaction } from "../schemas/transactions";
 
-export type Category = typeof category.$inferSelect;
-export type NewCategory = typeof category.$inferInsert;
-export type TransactionCategory = typeof transactionCategory.$inferSelect;
-export type NewTransactionCategory = typeof transactionCategory.$inferInsert;
+export type Tag = typeof tag.$inferSelect;
+export type NewTag = typeof tag.$inferInsert;
+export type TransactionTag = typeof transactionTag.$inferSelect;
+export type NewTransactionTag = typeof transactionTag.$inferInsert;
 
-export async function createCategory(
-   dbClient: DatabaseInstance,
-   data: NewCategory,
-) {
+export async function createTag(dbClient: DatabaseInstance, data: NewTag) {
    try {
-      const result = await dbClient.insert(category).values(data).returning();
+      const result = await dbClient.insert(tag).values(data).returning();
       return result[0];
    } catch (err: unknown) {
       const error = err as Error & { code?: string };
 
       if (error.code === "23505") {
-         throw AppError.conflict(
-            "Category already exists for this organization",
-            { cause: err },
-         );
+         throw AppError.conflict("Tag already exists for this organization", {
+            cause: err,
+         });
       }
 
       propagateError(err);
-      throw AppError.database(`Failed to create category: ${error.message}`, {
+      throw AppError.database(`Failed to create tag: ${error.message}`, {
          cause: err,
       });
    }
 }
 
-export async function findCategoryById(
-   dbClient: DatabaseInstance,
-   categoryId: string,
-) {
+export async function findTagById(dbClient: DatabaseInstance, tagId: string) {
    try {
-      const result = await dbClient.query.category.findFirst({
-         where: (category, { eq }) => eq(category.id, categoryId),
+      const result = await dbClient.query.tag.findFirst({
+         where: (tag, { eq }) => eq(tag.id, tagId),
       });
       return result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find category by id: ${(err as Error).message}`,
+         `Failed to find tag by id: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findCategoriesByOrganizationId(
+export async function findTagsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
 ) {
    try {
-      const result = await dbClient.query.category.findMany({
-         orderBy: (category, { asc }) => asc(category.name),
-         where: (category, { eq }) =>
-            eq(category.organizationId, organizationId),
+      const result = await dbClient.query.tag.findMany({
+         orderBy: (tag, { asc }) => asc(tag.name),
+         where: (tag, { eq }) => eq(tag.organizationId, organizationId),
       });
       return result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find categories by organization id: ${(err as Error).message}`,
+         `Failed to find tags by organization id: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findCategoriesByOrganizationIdPaginated(
+export async function findTagsByOrganizationIdPaginated(
    dbClient: DatabaseInstance,
    organizationId: string,
    options: {
@@ -91,22 +83,22 @@ export async function findCategoriesByOrganizationIdPaginated(
    const offset = (page - 1) * limit;
 
    try {
-      const baseWhereCondition = eq(category.organizationId, organizationId);
+      const baseWhereCondition = eq(tag.organizationId, organizationId);
       const whereCondition = search
-         ? and(baseWhereCondition, ilike(category.name, `%${search}%`))
+         ? and(baseWhereCondition, ilike(tag.name, `%${search}%`))
          : baseWhereCondition;
 
-      const [categories, totalCount] = await Promise.all([
-         dbClient.query.category.findMany({
+      const [tags, totalCount] = await Promise.all([
+         dbClient.query.tag.findMany({
             limit,
             offset,
-            orderBy: (category, { asc, desc }) => {
-               const column = category[orderBy as keyof typeof category];
+            orderBy: (tag, { asc, desc }) => {
+               const column = tag[orderBy as keyof typeof tag];
                return orderDirection === "asc" ? asc(column) : desc(column);
             },
             where: whereCondition,
          }),
-         dbClient.query.category
+         dbClient.query.tag
             .findMany({
                where: whereCondition,
             })
@@ -116,7 +108,6 @@ export async function findCategoriesByOrganizationIdPaginated(
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         categories,
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
@@ -125,34 +116,35 @@ export async function findCategoriesByOrganizationIdPaginated(
             totalCount,
             totalPages,
          },
+         tags,
       };
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find categories by organization id paginated: ${(err as Error).message}`,
+         `Failed to find tags by organization id paginated: ${(err as Error).message}`,
       );
    }
 }
 
-export async function updateCategory(
+export async function updateTag(
    dbClient: DatabaseInstance,
-   categoryId: string,
-   data: Partial<NewCategory>,
+   tagId: string,
+   data: Partial<NewTag>,
 ) {
    try {
-      const existingCategory = await findCategoryById(dbClient, categoryId);
-      if (!existingCategory) {
-         throw AppError.notFound("Category not found");
+      const existingTag = await findTagById(dbClient, tagId);
+      if (!existingTag) {
+         throw AppError.notFound("Tag not found");
       }
 
       const result = await dbClient
-         .update(category)
+         .update(tag)
          .set(data)
-         .where(eq(category.id, categoryId))
+         .where(eq(tag.id, tagId))
          .returning();
 
       if (!result.length) {
-         throw AppError.database("Category not found");
+         throw AppError.database("Tag not found");
       }
 
       return result[0];
@@ -160,10 +152,9 @@ export async function updateCategory(
       const error = err as Error & { code?: string };
 
       if (error.code === "23505") {
-         throw AppError.conflict(
-            "Category already exists for this organization",
-            { cause: err },
-         );
+         throw AppError.conflict("Tag already exists for this organization", {
+            cause: err,
+         });
       }
 
       if (err instanceof AppError) {
@@ -171,55 +162,52 @@ export async function updateCategory(
       }
 
       propagateError(err);
-      throw AppError.database(`Failed to update category: ${error.message}`, {
+      throw AppError.database(`Failed to update tag: ${error.message}`, {
          cause: err,
       });
    }
 }
 
-export async function deleteCategory(
-   dbClient: DatabaseInstance,
-   categoryId: string,
-) {
+export async function deleteTag(dbClient: DatabaseInstance, tagId: string) {
    try {
       const result = await dbClient
-         .delete(category)
-         .where(eq(category.id, categoryId))
+         .delete(tag)
+         .where(eq(tag.id, tagId))
          .returning();
 
       if (!result.length) {
-         throw AppError.database("Category not found");
+         throw AppError.database("Tag not found");
       }
 
       return result[0];
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to delete category: ${(err as Error).message}`,
+         `Failed to delete tag: ${(err as Error).message}`,
       );
    }
 }
 
-export async function getTotalCategoriesByOrganizationId(
+export async function getTotalTagsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
 ) {
    try {
       const result = await dbClient
          .select({ count: count() })
-         .from(category)
-         .where(eq(category.organizationId, organizationId));
+         .from(tag)
+         .where(eq(tag.organizationId, organizationId));
 
       return result[0]?.count || 0;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to get total categories: ${(err as Error).message}`,
+         `Failed to get total tags: ${(err as Error).message}`,
       );
    }
 }
 
-export async function searchCategories(
+export async function searchTags(
    dbClient: DatabaseInstance,
    organizationId: string,
    query: string,
@@ -243,15 +231,15 @@ export async function searchCategories(
             transactionCount: string;
          }>(sql`
             SELECT
-               c.*,
-               COUNT(tc.transaction_id) as "transactionCount"
-            FROM ${category} c
-            LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
+               t.*,
+               COUNT(tt.transaction_id) as "transactionCount"
+            FROM ${tag} t
+            LEFT JOIN ${transactionTag} tt ON t.id = tt.tag_id
             WHERE
-               c.organization_id = ${organizationId}
-               AND c.name ILIKE ${"%" + query + "%"}
-            GROUP BY c.id
-            ORDER BY c.name ASC
+               t.organization_id = ${organizationId}
+               AND t.name ILIKE ${"%" + query + "%"}
+            GROUP BY t.id
+            ORDER BY t.name ASC
             LIMIT ${limit}
          `);
 
@@ -261,12 +249,12 @@ export async function searchCategories(
          }));
       }
 
-      const result = await dbClient.query.category.findMany({
+      const result = await dbClient.query.tag.findMany({
          limit,
-         orderBy: (category, { asc }) => asc(category.name),
+         orderBy: (tag, { asc }) => asc(tag.name),
          where: and(
-            eq(category.organizationId, organizationId),
-            ilike(category.name, `%${query}%`),
+            eq(tag.organizationId, organizationId),
+            ilike(tag.name, `%${query}%`),
          ),
       });
 
@@ -274,20 +262,20 @@ export async function searchCategories(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to search categories: ${(err as Error).message}`,
+         `Failed to search tags: ${(err as Error).message}`,
       );
    }
 }
 
-export async function addCategoryToTransaction(
+export async function addTagToTransaction(
    dbClient: DatabaseInstance,
    transactionId: string,
-   categoryId: string,
+   tagId: string,
 ) {
    try {
       const result = await dbClient
-         .insert(transactionCategory)
-         .values({ categoryId, transactionId })
+         .insert(transactionTag)
+         .values({ tagId, transactionId })
          .returning();
 
       return result[0];
@@ -295,38 +283,37 @@ export async function addCategoryToTransaction(
       const error = err as Error & { code?: string };
 
       if (error.code === "23505") {
-         throw AppError.conflict(
-            "Category already linked to this transaction",
-            { cause: err },
-         );
+         throw AppError.conflict("Tag already linked to this transaction", {
+            cause: err,
+         });
       }
 
       propagateError(err);
       throw AppError.database(
-         `Failed to add category to transaction: ${error.message}`,
+         `Failed to add tag to transaction: ${error.message}`,
          { cause: err },
       );
    }
 }
 
-export async function removeCategoryFromTransaction(
+export async function removeTagFromTransaction(
    dbClient: DatabaseInstance,
    transactionId: string,
-   categoryId: string,
+   tagId: string,
 ) {
    try {
       const result = await dbClient
-         .delete(transactionCategory)
+         .delete(transactionTag)
          .where(
             and(
-               eq(transactionCategory.transactionId, transactionId),
-               eq(transactionCategory.categoryId, categoryId),
+               eq(transactionTag.transactionId, transactionId),
+               eq(transactionTag.tagId, tagId),
             ),
          )
          .returning();
 
       if (!result.length) {
-         throw AppError.notFound("Category not linked to this transaction");
+         throw AppError.notFound("Tag not linked to this transaction");
       }
 
       return result[0];
@@ -336,73 +323,71 @@ export async function removeCategoryFromTransaction(
       }
       propagateError(err);
       throw AppError.database(
-         `Failed to remove category from transaction: ${(err as Error).message}`,
+         `Failed to remove tag from transaction: ${(err as Error).message}`,
       );
    }
 }
 
-export async function setTransactionCategories(
+export async function setTransactionTags(
    dbClient: DatabaseInstance,
    transactionId: string,
-   categoryIds: string[],
+   tagIds: string[],
 ) {
    try {
       await dbClient
-         .delete(transactionCategory)
-         .where(eq(transactionCategory.transactionId, transactionId));
+         .delete(transactionTag)
+         .where(eq(transactionTag.transactionId, transactionId));
 
-      if (categoryIds.length === 0) {
+      if (tagIds.length === 0) {
          return [];
       }
 
       const result = await dbClient
-         .insert(transactionCategory)
-         .values(
-            categoryIds.map((categoryId) => ({ categoryId, transactionId })),
-         )
+         .insert(transactionTag)
+         .values(tagIds.map((tagId) => ({ tagId, transactionId })))
          .returning();
 
       return result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to set transaction categories: ${(err as Error).message}`,
+         `Failed to set transaction tags: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findCategoriesByTransactionId(
+export async function findTagsByTransactionId(
    dbClient: DatabaseInstance,
    transactionId: string,
 ) {
    try {
       const result = await dbClient
          .select({
-            color: category.color,
-            createdAt: category.createdAt,
-            icon: category.icon,
-            id: category.id,
-            name: category.name,
-            organizationId: category.organizationId,
-            updatedAt: category.updatedAt,
+            color: tag.color,
+            createdAt: tag.createdAt,
+            icon: tag.icon,
+            id: tag.id,
+            name: tag.name,
+            organizationId: tag.organizationId,
+            updatedAt: tag.updatedAt,
          })
-         .from(transactionCategory)
-         .innerJoin(category, eq(transactionCategory.categoryId, category.id))
-         .where(eq(transactionCategory.transactionId, transactionId))
-         .orderBy(category.name);
+         .from(transactionTag)
+         .innerJoin(tag, eq(transactionTag.tagId, tag.id))
+         .where(eq(transactionTag.transactionId, transactionId))
+         .orderBy(tag.name);
 
       return result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find categories by transaction id: ${(err as Error).message}`,
+         `Failed to find tags by transaction id: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findTransactionsByCategoryId(
+export async function findTransactionsByTagId(
    dbClient: DatabaseInstance,
-   categoryId: string,
+   tagId: string,
    options: {
       page?: number;
       limit?: number;
@@ -426,19 +411,19 @@ export async function findTransactionsByCategoryId(
                type: transaction.type,
                updatedAt: transaction.updatedAt,
             })
-            .from(transactionCategory)
+            .from(transactionTag)
             .innerJoin(
                transaction,
-               eq(transactionCategory.transactionId, transaction.id),
+               eq(transactionTag.transactionId, transaction.id),
             )
-            .where(eq(transactionCategory.categoryId, categoryId))
+            .where(eq(transactionTag.tagId, tagId))
             .orderBy(transaction.date)
             .limit(limit)
             .offset(offset),
          dbClient
             .select({ count: count() })
-            .from(transactionCategory)
-            .where(eq(transactionCategory.categoryId, categoryId))
+            .from(transactionTag)
+            .where(eq(transactionTag.tagId, tagId))
             .then((result) => result[0]?.count || 0),
       ]);
 
@@ -458,29 +443,29 @@ export async function findTransactionsByCategoryId(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find transactions by category id: ${(err as Error).message}`,
+         `Failed to find transactions by tag id: ${(err as Error).message}`,
       );
    }
 }
 
-export async function getCategoryWithMostTransactions(
+export async function getTagWithMostTransactions(
    dbClient: DatabaseInstance,
    organizationId: string,
 ) {
    try {
       const result = await dbClient.execute<{
-         categoryId: string;
-         categoryName: string;
+         tagId: string;
+         tagName: string;
          transactionCount: string;
       }>(sql`
          SELECT
-            c.id as "categoryId",
-            c.name as "categoryName",
-            COUNT(tc.transaction_id) as "transactionCount"
-         FROM ${category} c
-         LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
-         WHERE c.organization_id = ${organizationId}
-         GROUP BY c.id, c.name
+            t.id as "tagId",
+            t.name as "tagName",
+            COUNT(tt.transaction_id) as "transactionCount"
+         FROM ${tag} t
+         LEFT JOIN ${transactionTag} tt ON t.id = tt.tag_id
+         WHERE t.organization_id = ${organizationId}
+         GROUP BY t.id, t.name
          ORDER BY "transactionCount" DESC
          LIMIT 1
       `);
@@ -489,35 +474,35 @@ export async function getCategoryWithMostTransactions(
       if (!rows || rows.length === 0) return null;
 
       return {
-         categoryId: rows[0]?.categoryId,
-         categoryName: rows[0]?.categoryName,
+         tagId: rows[0]?.tagId,
+         tagName: rows[0]?.tagName,
          transactionCount: parseInt(rows[0]?.transactionCount ?? "", 10),
       };
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to get category with most transactions: ${(err as Error).message}`,
+         `Failed to get tag with most transactions: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findCategoriesByIds(
+export async function findTagsByIds(
    dbClient: DatabaseInstance,
-   categoryIds: string[],
+   tagIds: string[],
 ) {
-   if (categoryIds.length === 0) {
+   if (tagIds.length === 0) {
       return [];
    }
 
    try {
-      const result = await dbClient.query.category.findMany({
-         where: inArray(category.id, categoryIds),
+      const result = await dbClient.query.tag.findMany({
+         where: inArray(tag.id, tagIds),
       });
       return result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find categories by ids: ${(err as Error).message}`,
+         `Failed to find tags by ids: ${(err as Error).message}`,
       );
    }
 }

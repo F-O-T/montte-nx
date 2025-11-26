@@ -2,7 +2,7 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { bill } from "../schemas/bills";
-import { category } from "../schemas/categories";
+import { category, transactionCategory } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
 
 export interface PeriodFilter {
@@ -66,7 +66,7 @@ export interface PaymentPerformance {
 
 export async function getFinancialSummaryByPeriod(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    period: PeriodFilter,
 ) {
    try {
@@ -99,7 +99,7 @@ export async function getFinancialSummaryByPeriod(
          .from(transaction)
          .where(
             and(
-               eq(transaction.userId, userId),
+               eq(transaction.organizationId, organizationId),
                gte(transaction.date, period.startDate),
                lte(transaction.date, period.endDate),
             ),
@@ -125,43 +125,32 @@ export async function getFinancialSummaryByPeriod(
 
 export async function getCategoryBreakdownByPeriod(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    period: PeriodFilter,
 ) {
    try {
-      // First, get all transactions for the period
-      const transactions = await dbClient
+      // Get all transactions for the period with their categories via junction table
+      const transactionsWithCategories = await dbClient
          .select({
             amount: transaction.amount,
-            categoryIds: transaction.categoryIds,
+            categoryColor: category.color,
+            categoryId: category.id,
+            categoryName: category.name,
             type: transaction.type,
          })
          .from(transaction)
+         .innerJoin(
+            transactionCategory,
+            eq(transaction.id, transactionCategory.transactionId),
+         )
+         .innerJoin(category, eq(transactionCategory.categoryId, category.id))
          .where(
             and(
-               eq(transaction.userId, userId),
+               eq(transaction.organizationId, organizationId),
                gte(transaction.date, period.startDate),
                lte(transaction.date, period.endDate),
             ),
          );
-
-      // Get all user categories
-      const categories = await dbClient
-         .select({
-            color: category.color,
-            id: category.id,
-            name: category.name,
-         })
-         .from(category)
-         .where(eq(category.userId, userId));
-
-      // Create a map of category ID to category info
-      const categoryMap = new Map(
-         categories.map((cat) => [
-            cat.id,
-            { color: cat.color, name: cat.name },
-         ]),
-      );
 
       // Process the transactions to get category breakdown
       const categoryStats = new Map<
@@ -175,30 +164,28 @@ export async function getCategoryBreakdownByPeriod(
          }
       >();
 
-      for (const tx of transactions) {
-         for (const categoryId of tx.categoryIds) {
-            const categoryInfo = categoryMap.get(categoryId);
-            const categoryName = categoryInfo?.name || "Unknown Category";
-            const categoryColor = categoryInfo?.color || "#8884d8";
+      for (const tx of transactionsWithCategories) {
+         const categoryId = tx.categoryId;
+         const categoryName = tx.categoryName || "Unknown Category";
+         const categoryColor = tx.categoryColor || "#8884d8";
 
-            if (!categoryStats.has(categoryId)) {
-               categoryStats.set(categoryId, {
-                  categoryColor,
-                  categoryName,
-                  expenses: 0,
-                  income: 0,
-                  transactionCount: 0,
-               });
-            }
+         if (!categoryStats.has(categoryId)) {
+            categoryStats.set(categoryId, {
+               categoryColor,
+               categoryName,
+               expenses: 0,
+               income: 0,
+               transactionCount: 0,
+            });
+         }
 
-            const stats = categoryStats.get(categoryId)!;
-            stats.transactionCount++;
+         const stats = categoryStats.get(categoryId)!;
+         stats.transactionCount++;
 
-            if (tx.type === "expense") {
-               stats.expenses += Number(tx.amount);
-            } else if (tx.type === "income") {
-               stats.income += Number(tx.amount);
-            }
+         if (tx.type === "expense") {
+            stats.expenses += Number(tx.amount);
+         } else if (tx.type === "income") {
+            stats.income += Number(tx.amount);
          }
       }
 
@@ -222,7 +209,7 @@ export async function getCategoryBreakdownByPeriod(
 
 export async function getPlannedVsActualByPeriod(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    period: PeriodFilter,
 ) {
    try {
@@ -255,7 +242,7 @@ export async function getPlannedVsActualByPeriod(
          .from(bill)
          .where(
             and(
-               eq(bill.userId, userId),
+               eq(bill.userId, organizationId),
                gte(bill.dueDate, period.startDate),
                lte(bill.dueDate, period.endDate),
             ),
@@ -290,7 +277,7 @@ export async function getPlannedVsActualByPeriod(
          .from(transaction)
          .where(
             and(
-               eq(transaction.userId, userId),
+               eq(transaction.organizationId, organizationId),
                gte(transaction.date, period.startDate),
                lte(transaction.date, period.endDate),
             ),
@@ -334,7 +321,7 @@ export async function getPlannedVsActualByPeriod(
 
 export async function getCashFlowByPeriod(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    period: PeriodFilter,
    groupBy: "day" | "week" | "month" = "day",
 ) {
@@ -343,8 +330,8 @@ export async function getCashFlowByPeriod(
          groupBy === "day"
             ? "YYYY-MM-DD"
             : groupBy === "week"
-              ? "YYYY-IW"
-              : "YYYY-MM";
+               ? "YYYY-IW"
+               : "YYYY-MM";
 
       // Get planned cash flow from bills
       const plannedResult = await dbClient
@@ -376,7 +363,7 @@ export async function getCashFlowByPeriod(
          .from(bill)
          .where(
             and(
-               eq(bill.userId, userId),
+               eq(bill.userId, organizationId),
                gte(bill.dueDate, period.startDate),
                lte(bill.dueDate, period.endDate),
             ),
@@ -413,7 +400,7 @@ export async function getCashFlowByPeriod(
          .from(transaction)
          .where(
             and(
-               eq(transaction.userId, userId),
+               eq(transaction.organizationId, organizationId),
                gte(transaction.date, period.startDate),
                lte(transaction.date, period.endDate),
             ),
@@ -464,7 +451,7 @@ export async function getCashFlowByPeriod(
 
 export async function getPaymentPerformanceByPeriod(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    period: PeriodFilter,
 ) {
    try {
@@ -472,7 +459,7 @@ export async function getPaymentPerformanceByPeriod(
       const billsResult = await dbClient.query.bill.findMany({
          where: (bill, { eq, and, gte, lte }) =>
             and(
-               eq(bill.userId, userId),
+               eq(bill.userId, organizationId),
                gte(bill.dueDate, period.startDate),
                lte(bill.dueDate, period.endDate),
             ),
@@ -493,7 +480,7 @@ export async function getPaymentPerformanceByPeriod(
             // Bill is paid
             const delayDays = Math.floor(
                (b.completionDate.getTime() - b.dueDate.getTime()) /
-                  (1000 * 60 * 60 * 24),
+               (1000 * 60 * 60 * 24),
             );
 
             if (delayDays <= 0) {

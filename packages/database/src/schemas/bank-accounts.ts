@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { user } from "./auth";
+import { organization } from "./auth";
 export const bankAccountTypes = pgEnum("bank_account_type", [
    "checking",
    "savings",
@@ -11,19 +11,19 @@ export const bankAccount = pgTable("bank_account", {
    createdAt: timestamp("created_at").defaultNow().notNull(),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    name: text("name"),
+   organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
    type: bankAccountTypes("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
-   userId: uuid("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const bankAccountRelations = relations(bankAccount, ({ one }) => ({
-   user: one(user, {
-      fields: [bankAccount.userId],
-      references: [user.id],
+   organization: one(organization, {
+      fields: [bankAccount.organizationId],
+      references: [organization.id],
    }),
 }));

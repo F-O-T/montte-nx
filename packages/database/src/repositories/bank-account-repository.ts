@@ -42,33 +42,34 @@ export async function findBankAccountById(
    }
 }
 
-export async function findBankAccountsByUserId(
+export async function findBankAccountsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient.query.bankAccount.findMany({
          limit: 100,
          orderBy: (bankAccount, { asc }) => asc(bankAccount.name),
-         where: (bankAccount, { eq }) => eq(bankAccount.userId, userId),
+         where: (bankAccount, { eq }) =>
+            eq(bankAccount.organizationId, organizationId),
       });
       return result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find bank accounts by user id: ${(err as Error).message}`,
+         `Failed to find bank accounts by organization id: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findBankAccountsByUserIdPaginated(
+export async function findBankAccountsByOrganizationIdPaginated(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    params: {
       page: number;
       limit: number;
       search?: string;
-      orderBy?: "name" | "bank" | "createdAt" | "updatedAt" | "status";
+      orderBy?: "name" | "bank" | "createdAt" | "updatedAt";
       orderDirection?: "asc" | "desc";
    },
 ) {
@@ -83,7 +84,7 @@ export async function findBankAccountsByUserIdPaginated(
       const offset = (page - 1) * limit;
 
       const whereClause = and(
-         eq(bankAccount.userId, userId),
+         eq(bankAccount.organizationId, organizationId),
          search ? sql`${bankAccount.name} ILIKE ${`%${search}%`}` : undefined,
       );
 
@@ -118,7 +119,7 @@ export async function findBankAccountsByUserIdPaginated(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find paginated bank accounts by user id: ${(err as Error).message}`,
+         `Failed to find paginated bank accounts by organization id: ${(err as Error).message}`,
       );
    }
 }
@@ -173,7 +174,7 @@ export async function deleteBankAccount(
 
 export async function createDefaultWalletBankAccount(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient
@@ -181,8 +182,8 @@ export async function createDefaultWalletBankAccount(
          .values({
             bank: "Default",
             name: "Wallet",
+            organizationId,
             type: "checking",
-            userId,
          })
          .returning();
       return result[0];
@@ -196,17 +197,16 @@ export async function createDefaultWalletBankAccount(
 
 export async function getBankAccountStats(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const totalAccountsResult = await dbClient
          .select({ count: sql<number>`count(*)` })
          .from(bankAccount)
-         .where(eq(bankAccount.userId, userId));
+         .where(eq(bankAccount.organizationId, organizationId));
 
       const totalAccounts = totalAccountsResult[0]?.count || 0;
 
-      // Calculate total balance from transactions
       const balanceResult = await dbClient
          .select({
             totalBalance: sql<number>`
@@ -222,7 +222,7 @@ export async function getBankAccountStats(
          })
          .from(bankAccount)
          .leftJoin(transaction, eq(transaction.bankAccountId, bankAccount.id))
-         .where(eq(bankAccount.userId, userId));
+         .where(eq(bankAccount.organizationId, organizationId));
 
       const totalBalance = balanceResult[0]?.totalBalance || 0;
 
