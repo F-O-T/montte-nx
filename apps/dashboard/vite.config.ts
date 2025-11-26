@@ -30,10 +30,6 @@ export default defineConfig({
         icons: [
           { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' },
         ],
-        shortcuts: [
-          { name: 'Nova transação', url: '/app/transactions/new' },
-          { name: 'Dashboard', url: '/app' },
-        ],
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
