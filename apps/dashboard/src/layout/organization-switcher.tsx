@@ -140,7 +140,7 @@ function OrganizationDropdownContent() {
                key={organization.name}
                onClick={() => handleOrganizationClick(organization.slug)}
             >
-               <div className="flex size-6 items-center justify-center rounded-md border">
+               <div className="flex p-1 size-6 items-center justify-center rounded-md border">
                   {logo?.data ? (
                      <img
                         alt={organization.name}
@@ -148,12 +148,12 @@ function OrganizationDropdownContent() {
                         src={logo.data}
                      />
                   ) : (
-                     <div className="size-3.5 shrink-0 flex items-center justify-center text-xs bg-secondary rounded">
+                     <div className="size-4 shrink-0 flex items-center justify-center text-xs bg-secondary rounded">
                         {getInitials(organization.name)}
                      </div>
                   )}
                </div>
-               {organization.name}
+               <span className="truncate">{organization.name}</span>
             </DropdownMenuItem>
          ))}
       </>
