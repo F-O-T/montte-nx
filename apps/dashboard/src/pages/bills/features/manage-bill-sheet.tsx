@@ -57,7 +57,6 @@ import {
    Plus,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 import { useBillList } from "./bill-list-context";
@@ -88,9 +87,7 @@ export function ManageBillSheet({
       trpc.bankAccounts.getAll.queryOptions(),
    );
 
-   const activeBankAccounts = bankAccounts.filter(
-      (account) => account.status === "active",
-   );
+   const activeBankAccounts = bankAccounts;
 
    const isEditMode = !!bill;
    const isOpen = onOpen ?? false;
@@ -149,9 +146,9 @@ export function ManageBillSheet({
    // Values for edit mode - convert from Bill data
    const editValues = bill
       ? {
-           amount: bill.amount,
+           amount: Number(bill.amount),
            bankAccountId: bill.bankAccountId || undefined,
-           category: bill.category,
+           category: bill.categoryId,
            counterparty: bill.counterparty || "",
            description: bill.description,
            dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
@@ -168,9 +165,10 @@ export function ManageBillSheet({
    const form = useForm({
       defaultValues: editValues,
       onSubmit: async ({ value }) => {
+         const amount = Number(value.amount);
          if (
             value.amount === undefined ||
-            value.amount <= 0 ||
+            amount <= 0 ||
             !value.category ||
             !value.description
          ) {
@@ -182,15 +180,15 @@ export function ManageBillSheet({
                // Update existing bill
                await updateBillMutation.mutateAsync({
                   data: {
-                     amount: value.amount,
+                     amount: amount,
                      bankAccountId: value.bankAccountId,
                      categoryId: value.category,
                      counterparty: value.counterparty,
                      description: value.description,
-                     dueDate: value.dueDate.toISOString().split("T")[0],
+                     dueDate: value.dueDate.toISOString().split("T")[0]!,
                      isRecurring: value.isRecurring,
                      issueDate: value.issueDate
-                        ? value.issueDate.toISOString().split("T")[0]
+                        ? value.issueDate.toISOString().split("T")[0]!
                         : undefined,
                      notes: value.notes,
                      recurrencePattern: value.recurrencePattern,
@@ -201,21 +199,21 @@ export function ManageBillSheet({
             } else {
                // Create new bill
                await createBillMutation.mutateAsync({
-                  amount: parseFloat(value.amount),
+                  amount: amount,
                   bankAccountId: value.bankAccountId || undefined,
-                  categoryId: value.category as string,
+                  categoryId: value.category,
                   counterparty: value.counterparty || undefined,
-                  description: value.description,
-                  dueDate: value.dueDate.toISOString().split("T")[0],
+                  description: value.description!,
+                  dueDate: value.dueDate.toISOString().split("T")[0]!,
                   isRecurring: value.isRecurring,
                   issueDate: value.issueDate
-                     ? value.issueDate.toISOString().split("T")[0]
+                     ? value.issueDate.toISOString().split("T")[0]!
                      : undefined,
                   notes: value.notes || undefined,
                   recurrencePattern: value.isRecurring
                      ? value.recurrencePattern
                      : undefined,
-                  type: value.type,
+                  type: value.type!,
                });
             }
          } catch (error) {

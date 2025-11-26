@@ -17,7 +17,7 @@ import { cn } from "@packages/ui/lib/utils";
 import { Check } from "lucide-react";
 import { useState } from "react";
 import type { IconName } from "./lib/available-icons";
-import { ICON_CATEGORIES, ICON_NAMES } from "./lib/available-icons";
+import { ICON_CATEGORIES } from "./lib/available-icons";
 import { IconDisplay } from "./ui/icon-display";
 
 interface IconSelectorProps {

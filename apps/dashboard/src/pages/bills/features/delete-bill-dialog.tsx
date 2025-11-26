@@ -29,7 +29,9 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
          onError: (error) => {
             toast.error(
                error.message ||
-                  translate("dashboard.routes.bills.delete.error"),
+                  translate(
+                     "dashboard.routes.bills.features.delete-bill.error",
+                  ),
             );
          },
          onSuccess: () => {
@@ -39,7 +41,9 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
             queryClient.invalidateQueries({
                queryKey: trpc.bills.getStats.queryKey(),
             });
-            toast.success(translate("dashboard.routes.bills.delete.success"));
+            toast.success(
+               translate("dashboard.routes.bills.features.delete-bill.success"),
+            );
             setIsOpen(false);
          },
       }),
@@ -61,18 +65,25 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>
-                  {translate("dashboard.routes.bills.delete.title")}
+                  {translate(
+                     "dashboard.routes.bills.features.delete-bill.title",
+                  )}
                </AlertDialogTitle>
                <AlertDialogDescription>
-                  {translate("dashboard.routes.bills.delete.description", {
-                     description: bill.description,
-                  })}
+                  {translate(
+                     "dashboard.routes.bills.features.delete-bill.description",
+                     {
+                        description: bill.description,
+                     },
+                  )}
                </AlertDialogDescription>
             </AlertDialogHeader>
 
             <AlertDialogFooter>
                <AlertDialogCancel>
-                  {translate("dashboard.routes.bills.delete.cancel")}
+                  {translate(
+                     "dashboard.routes.bills.features.delete-bill.cancel",
+                  )}
                </AlertDialogCancel>
                <AlertDialogAction
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -83,8 +94,12 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
                   }}
                >
                   {deleteBillMutation.isPending
-                     ? translate("dashboard.routes.bills.delete.deleting")
-                     : translate("dashboard.routes.bills.delete.confirm")}
+                     ? translate(
+                          "dashboard.routes.bills.features.delete-bill.deleting",
+                       )
+                     : translate(
+                          "dashboard.routes.bills.features.delete-bill.confirm",
+                       )}
                </AlertDialogAction>
             </AlertDialogFooter>
          </AlertDialogContent>

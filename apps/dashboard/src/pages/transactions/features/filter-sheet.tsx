@@ -40,7 +40,7 @@ type FilterSheetProps = {
    }>;
    bankAccounts: Array<{
       id: string;
-      name: string;
+      name: string | null;
       bank: string;
    }>;
    isOpen: boolean;
@@ -86,7 +86,7 @@ export function FilterSheet({
          value: "all",
       },
       ...bankAccounts.map((account) => ({
-         label: `${account.name} - ${account.bank}`,
+         label: `${account.name ?? "Unnamed Account"} - ${account.bank}`,
          value: account.id,
       })),
    ];

@@ -56,7 +56,7 @@ function CategoryBudgetContent({ categoryId }: { categoryId: string }) {
       }),
    );
 
-   const budget = Number(category.budget || 0);
+   const budget = 0; // Budget not yet supported in schema
 
    if (budget === 0) {
       return (

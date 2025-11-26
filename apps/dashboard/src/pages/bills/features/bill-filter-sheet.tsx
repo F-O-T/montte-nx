@@ -33,7 +33,6 @@ type BillFilterSheetProps = {
 
 export function BillFilterSheet({
    categories,
-   isOpen,
    onOpenChange,
 }: BillFilterSheetProps) {
    const {

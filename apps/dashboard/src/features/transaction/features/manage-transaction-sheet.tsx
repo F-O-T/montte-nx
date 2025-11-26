@@ -1,4 +1,7 @@
-import type { Transaction } from "@packages/database/repositories/transaction-repository";
+import type { RouterOutput } from "@packages/api/client";
+
+type Transaction =
+   RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { DatePicker } from "@packages/ui/components/date-picker";
@@ -27,13 +30,14 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import { toast } from "@packages/ui/components/sonner";
+
 import { Textarea } from "@packages/ui/components/textarea";
 import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 
@@ -86,27 +90,17 @@ export function ManageTransactionSheet({
       trpc.bankAccounts.getAll.queryOptions(),
    );
 
-   const activeBankAccounts = bankAccounts.filter(
-      (account) => account.status === "active",
-   );
+   const activeBankAccounts = bankAccounts;
 
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
-         onSuccess: async (data) => {
+         onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
-
-            if (data.notifications && data.notifications.length > 0) {
-               data.notifications.forEach((notification) => {
-                  toast.error(notification.title, {
-                     description: notification.message,
-                  });
-               });
-            }
 
             setIsOpen?.(false);
          },
@@ -118,21 +112,13 @@ export function ManageTransactionSheet({
          onError: (error) => {
             console.error("Failed to update transaction:", error);
          },
-         onSuccess: async (data) => {
+         onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
-
-            if (data.notifications && data.notifications.length > 0) {
-               data.notifications.forEach((notification) => {
-                  toast.error(notification.title, {
-                     description: notification.message,
-                  });
-               });
-            }
 
             setIsOpen?.(false);
          },
@@ -163,13 +149,16 @@ export function ManageTransactionSheet({
             ? Math.round(Number(transaction.amount) * 100)
             : 0, // Store as cents
          bankAccountId: transaction?.bankAccountId || "",
-         categoryIds: transaction?.categoryIds || [],
+         categoryIds:
+            transaction?.transactionCategories?.map((tc) => tc.category.id) ||
+            [],
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
          toBankAccountId: "",
-         type:
-            transaction?.type ||
-            ("expense" as "expense" | "income" | "transfer"),
+         type: (transaction?.type || "expense") as
+            | "expense"
+            | "income"
+            | "transfer",
       },
       onSubmit: async ({ value }) => {
          if (!value.amount || !value.description) {
@@ -193,9 +182,9 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: value.categoryIds || [],
-                     date: value.date.toISOString().split("T")[0],
+                     date: value.date.toISOString().split("T")[0]!,
                      description: value.description,
-                     type: value.type,
+                     type: value.type as "income" | "expense" | "transfer",
                   },
                   id: transaction.id,
                });
@@ -204,7 +193,7 @@ export function ManageTransactionSheet({
                   if (!value.toBankAccountId || !value.bankAccountId) return;
                   await transferTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
-                     date: value.date.toISOString().split("T")[0],
+                     date: value.date.toISOString().split("T")[0]!,
                      description: value.description,
                      fromBankAccountId: value.bankAccountId,
                      toBankAccountId: value.toBankAccountId,
@@ -216,9 +205,9 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: (value.categoryIds || []) as string[],
-                     date: value.date.toISOString().split("T")[0],
+                     date: value.date.toISOString().split("T")[0]!,
                      description: value.description,
-                     type: value.type,
+                     type: value.type as "income" | "expense",
                   });
                }
             }
@@ -469,16 +458,20 @@ export function ManageTransactionSheet({
                                           !field.state.meta.isValid;
 
                                        const categoryOptions = categories.map(
-                                          (category) => ({
-                                             icon: (
-                                                <IconDisplay
-                                                   iconName={category.icon}
-                                                   size={16}
-                                                />
-                                             ),
-                                             label: category.name,
-                                             value: category.id,
-                                          }),
+                                          (category) => {
+                                             const iconName = (category.icon ||
+                                                "Wallet") as IconName;
+                                             return {
+                                                icon: (
+                                                   <IconDisplay
+                                                      iconName={iconName}
+                                                      size={16}
+                                                   />
+                                                ),
+                                                label: category.name,
+                                                value: category.id,
+                                             };
+                                          },
                                        );
 
                                        return (

@@ -23,6 +23,9 @@
       "label": "Confirmar Senha",
       "placeholder": "Confirme sua senha"
    },
+   "created-at": {
+      "label": "Data de Criação"
+   },
    "date": {
       "label": "Data",
       "placeholder": "Selecione uma data"
@@ -51,6 +54,10 @@
       "label": "Observações",
       "placeholder": "Digite suas observações"
    },
+   "order-direction": {
+      "label": "Direção da Ordenação",
+      "placeholder": "Selecione a direção"
+   },
    "otp": {
       "label": "Código OTP",
       "placeholder": "Digite o código OTP"
@@ -64,6 +71,16 @@
       "no-results": "Nenhum resultado encontrado",
       "placeholder": "Digite para pesquisar"
    },
+   "sort-ascending": {
+      "label": "Crescente"
+   },
+   "sort-by": {
+      "label": "Ordenar por",
+      "placeholder": "Selecione o campo"
+   },
+   "sort-descending": {
+      "label": "Decrescente"
+   },
    "status": {
       "label": "Status",
       "placeholder": "Selecione o status"
@@ -75,5 +92,8 @@
    "type": {
       "label": "Tipo",
       "placeholder": "Selecione o tipo"
+   },
+   "updated-at": {
+      "label": "Data de Atualização"
    }
 }

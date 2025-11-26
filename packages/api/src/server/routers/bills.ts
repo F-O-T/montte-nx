@@ -34,7 +34,7 @@ const createBillSchema = z.object({
    description: z.string(),
    dueDate: z.string(),
    isRecurring: z.boolean().optional().default(false),
-   issueDate: z.string(),
+   issueDate: z.string().optional(),
    notes: z.string().optional(),
    recurrencePattern: z
       .enum(["monthly", "quarterly", "semiannual", "annual"])
@@ -140,7 +140,7 @@ export const billRouter = router({
             dueDate: new Date(input.dueDate),
             id: crypto.randomUUID(),
             isRecurring: input.isRecurring ?? false,
-            issueDate: new Date(input.issueDate),
+            issueDate: input.issueDate ? new Date(input.issueDate) : null,
             recurrencePattern: input.recurrencePattern,
             userId: organizationId,
          });
@@ -150,10 +150,12 @@ export const billRouter = router({
                new Date(input.dueDate),
                input.recurrencePattern,
             );
-            const futureIssueDates = generateFutureDates(
-               new Date(input.issueDate),
-               input.recurrencePattern,
-            );
+            const futureIssueDates = input.issueDate
+               ? generateFutureDates(
+                    new Date(input.issueDate),
+                    input.recurrencePattern,
+                 )
+               : [];
 
             const futureBillsPromises = futureDueDates.map((dueDate, index) => {
                return createBill(resolvedCtx.db, {
@@ -165,7 +167,7 @@ export const billRouter = router({
                   dueDate,
                   id: crypto.randomUUID(),
                   isRecurring: true,
-                  issueDate: futureIssueDates[index],
+                  issueDate: futureIssueDates[index] ?? null,
                   notes: input.notes,
                   parentBillId: firstBill.id,
                   recurrencePattern: input.recurrencePattern,

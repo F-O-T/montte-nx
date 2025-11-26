@@ -21,7 +21,10 @@ interface DeleteCategoryProps {
    children: React.ReactNode;
 }
 
-export function DeleteCategory({ category, children }: DeleteCategoryProps) {
+export function DeleteCategory({
+   category,
+   children: _children,
+}: DeleteCategoryProps) {
    const queryClient = useQueryClient();
 
    const deleteCategoryMutation = useMutation(

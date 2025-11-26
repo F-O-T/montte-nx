@@ -213,6 +213,7 @@ function CategoriesListContent() {
       currentPage,
       setCurrentPage,
       pageSize,
+      setPageSize,
       setIsFilterSheetOpen,
       isFilterSheetOpen,
    } = useCategoryList();
@@ -483,7 +484,7 @@ function CategoriesListContent() {
                            className="h-8 w-8 p-0"
                            disabled={currentPage === 1}
                            onClick={() =>
-                              setCurrentPage((prev) => Math.max(1, prev - 1))
+                              setCurrentPage(Math.max(1, currentPage - 1))
                            }
                            variant="outline"
                         >
@@ -494,8 +495,8 @@ function CategoriesListContent() {
                            className="h-8 w-8 p-0"
                            disabled={currentPage === totalPages}
                            onClick={() =>
-                              setCurrentPage((prev) =>
-                                 Math.min(totalPages, prev + 1),
+                              setCurrentPage(
+                                 Math.min(totalPages, currentPage + 1),
                               )
                            }
                            variant="outline"

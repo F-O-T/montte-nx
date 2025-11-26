@@ -178,7 +178,6 @@ const SendInvitationSheetContent = () => {
             <form.Field name="teamId">
                {(field) => {
                   const teamOptions = teams.map((team) => ({
-                     description: `Team ID: ${team.id}`,
                      label: team.name,
                      value: team.id,
                   }));
@@ -187,7 +186,6 @@ const SendInvitationSheetContent = () => {
                      <Field data-invalid={false}>
                         <FieldLabel>Team (Optional)</FieldLabel>
                         <Combobox
-                           allowClear={true}
                            className="w-full"
                            emptyMessage={
                               teams.length === 0

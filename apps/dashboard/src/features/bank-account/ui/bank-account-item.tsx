@@ -1,4 +1,3 @@
-import { Badge } from "@packages/ui/components/badge";
 import {
    Item,
    ItemActions,
@@ -15,7 +14,7 @@ import { useActiveOrganization } from "@/hooks/use-active-organization";
 interface BankAccountItemProps {
    account: {
       id: string;
-      name: string;
+      name: string | null;
       bank: string;
       type?: string;
    };
@@ -44,7 +43,7 @@ export function BankAccountItem({ account, solid }: BankAccountItemProps) {
             </ItemMedia>
             <ItemContent>
                <ItemTitle className="flex items-center gap-2">
-                  {account.name}
+                  {account.name || "Unnamed Account"}
                </ItemTitle>
                <ItemDescription>
                   {account.bank}

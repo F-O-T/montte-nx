@@ -10,7 +10,6 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { Button } from "@packages/ui/components/button";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import {
    Select,
@@ -44,16 +43,16 @@ export function CompleteBillDialog({
       trpc.bankAccounts.getAll.queryOptions(),
    );
 
-   const activeBankAccounts = bankAccounts.filter(
-      (account) => account.status === "active",
-   );
+   const activeBankAccounts = bankAccounts;
 
    const completeBillMutation = useMutation(
       trpc.bills.complete.mutationOptions({
          onError: (error) => {
             toast.error(
                error.message ||
-                  translate("dashboard.routes.bills.complete.error"),
+                  translate(
+                     "dashboard.routes.bills.features.create-bill.error",
+                  ),
             );
          },
          onSuccess: () => {
@@ -66,7 +65,9 @@ export function CompleteBillDialog({
             queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAll.queryKey(),
             });
-            toast.success(translate("dashboard.routes.bills.complete.success"));
+            toast.success(
+               translate("dashboard.routes.bills.features.create-bill.success"),
+            );
             setIsOpen(false);
          },
       }),
@@ -77,7 +78,7 @@ export function CompleteBillDialog({
          await completeBillMutation.mutateAsync({
             data: {
                bankAccountId,
-               completionDate: completionDate.toISOString().split("T")[0],
+               completionDate: completionDate.toISOString().split("T")[0]!,
             },
             id: bill.id,
          });
@@ -86,23 +87,20 @@ export function CompleteBillDialog({
       }
    };
 
-   const actionText =
-      bill.type === "expense"
-         ? translate("dashboard.routes.bills.actions.markAsPaid")
-         : translate("dashboard.routes.bills.actions.markAsReceived");
-
    return (
       <AlertDialog onOpenChange={setIsOpen} open={isOpen}>
          <div onClick={() => setIsOpen(true)}>{children}</div>
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>
-                  {translate("dashboard.routes.bills.complete.title")}
+                  {translate(
+                     "dashboard.routes.bills.features.complete-bill.title",
+                  )}
                </AlertDialogTitle>
                <AlertDialogDescription>
-                  {translate("dashboard.routes.bills.complete.description", {
-                     description: bill.description,
-                  })}
+                  {translate(
+                     "dashboard.routes.bills.features.complete-bill.description",
+                  )}
                </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -110,14 +108,14 @@ export function CompleteBillDialog({
                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                      {translate(
-                        "dashboard.routes.bills.complete.fields.completionDate",
+                        "dashboard.routes.bills.features.create-bill.fields.dueDate",
                      )}
                   </label>
                   <DatePicker
                      date={completionDate}
                      onSelect={(date) => setCompletionDate(date || new Date())}
                      placeholder={translate(
-                        "dashboard.routes.bills.complete.placeholders.completionDate",
+                        "dashboard.routes.bills.features.create-bill.placeholders.dueDate",
                      )}
                   />
                </div>
@@ -125,7 +123,7 @@ export function CompleteBillDialog({
                <div className="grid gap-2">
                   <label className="text-sm font-medium">
                      {translate(
-                        "dashboard.routes.bills.complete.fields.bankAccount",
+                        "dashboard.routes.bills.features.create-bill.fields.bankAccount",
                      )}
                   </label>
                   <Select
@@ -135,7 +133,7 @@ export function CompleteBillDialog({
                      <SelectTrigger>
                         <SelectValue
                            placeholder={translate(
-                              "dashboard.routes.bills.complete.placeholders.bankAccount",
+                              "dashboard.routes.bills.features.create-bill.placeholders.bankAccount",
                            )}
                         />
                      </SelectTrigger>
@@ -148,15 +146,11 @@ export function CompleteBillDialog({
                      </SelectContent>
                   </Select>
                </div>
-
-               <p className="text-sm text-muted-foreground">
-                  {translate("dashboard.routes.bills.complete.info")}
-               </p>
             </div>
 
             <AlertDialogFooter>
                <AlertDialogCancel>
-                  {translate("dashboard.routes.bills.complete.cancel")}
+                  {translate("common.actions.cancel")}
                </AlertDialogCancel>
                <AlertDialogAction
                   disabled={completeBillMutation.isPending}
@@ -166,8 +160,12 @@ export function CompleteBillDialog({
                   }}
                >
                   {completeBillMutation.isPending
-                     ? translate("dashboard.routes.bills.complete.completing")
-                     : translate("dashboard.routes.bills.complete.confirm")}
+                     ? translate(
+                          "dashboard.routes.bills.features.create-bill.creating",
+                       )
+                     : translate(
+                          "dashboard.routes.bills.features.create-bill.submit",
+                       )}
                </AlertDialogAction>
             </AlertDialogFooter>
          </AlertDialogContent>

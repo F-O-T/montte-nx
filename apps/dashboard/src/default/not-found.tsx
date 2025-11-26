@@ -25,7 +25,7 @@ export function NotFoundComponent() {
             <p className="text-muted-foreground">
                The page you're looking for doesn't exist or has been moved.
             </p>
-            <Button onClick={() => navigate({ to: "/home" })}>
+            <Button onClick={() => navigate({ to: "/auth/sign-in" })}>
                <Search className="mr-2 h-4 w-4" />
                Go to Dashboard
             </Button>
