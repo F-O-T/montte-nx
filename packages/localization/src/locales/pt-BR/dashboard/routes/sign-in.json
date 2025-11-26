@@ -5,14 +5,15 @@
       "sign-up": "Registre-se aqui"
    },
    "description": "Digite seus dados para acessar sua conta.",
-   "error-codes": {
-      "INVALID_EMAIL_OR_PASSWORD": "Email ou senha inválidos."
-   },
    "texts": {
       "no-account": "Não tem uma conta? ",
       "privacy-policy": "Política de Privacidade",
       "terms-and-privacy": "Ao clicar em enviar, você concorda com nossos {split} e {split}.",
       "terms-of-service": "Termos de Serviço"
+   },
+   "messages": {
+      "requesting": "Solicitando acesso à sua conta...",
+      "success": "Bem vindo ao Montte!"
    },
    "title": "Entrar"
 }
