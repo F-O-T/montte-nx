@@ -6,11 +6,16 @@ export const bankAccountTypes = pgEnum("bank_account_type", [
    "savings",
    "investment",
 ]);
+export const bankAccountStatus = pgEnum("bank_account_status", [
+   "active",
+   "inactive",
+]);
 export const bankAccount = pgTable("bank_account", {
    bank: text("bank").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
-   name: text("name"),
+   name: text("name").notNull(),
+   status: bankAccountStatus("status").default("active").notNull(),
    type: bankAccountTypes("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
