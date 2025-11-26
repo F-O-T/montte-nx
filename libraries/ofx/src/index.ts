@@ -426,15 +426,15 @@ function normalizeTransactions(
          if (key === "STMTTRN") {
             processed[key] = Array.isArray(value)
                ? value.map((v) =>
-                    typeof v === "object" && v !== null
-                       ? processObject(v as Record<string, unknown>)
-                       : v,
-                 )
+                  typeof v === "object" && v !== null
+                     ? processObject(v as Record<string, unknown>)
+                     : v,
+               )
                : [
-                    typeof value === "object" && value !== null
-                       ? processObject(value as Record<string, unknown>)
-                       : value,
-                 ];
+                  typeof value === "object" && value !== null
+                     ? processObject(value as Record<string, unknown>)
+                     : value,
+               ];
          } else if (
             value &&
             typeof value === "object" &&
