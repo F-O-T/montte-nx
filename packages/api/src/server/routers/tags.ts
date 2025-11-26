@@ -4,6 +4,7 @@ import {
    findTagById,
    findTagsByOrganizationId,
    findTagsByOrganizationIdPaginated,
+   findTransactionsByTagId,
    getTagWithMostTransactions,
    getTotalTagsByOrganizationId,
    updateTag,
@@ -115,6 +116,30 @@ export const tagRouter = router({
          totalTags,
       };
    }),
+
+   getTransactions: protectedProcedure
+      .input(
+         z.object({
+            id: z.string(),
+            limit: z.coerce.number().min(1).max(100).default(10),
+            page: z.coerce.number().min(1).default(1),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const tag = await findTagById(resolvedCtx.db, input.id);
+
+         if (!tag || tag.organizationId !== organizationId) {
+            throw new Error("Tag not found");
+         }
+
+         return findTransactionsByTagId(resolvedCtx.db, input.id, {
+            limit: input.limit,
+            page: input.page,
+         });
+      }),
 
    update: protectedProcedure
       .input(

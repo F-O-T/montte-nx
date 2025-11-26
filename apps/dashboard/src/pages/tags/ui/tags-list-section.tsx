@@ -60,6 +60,7 @@ import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { DeleteTag } from "../features/delete-tag";
 import { ManageTagSheet } from "../features/manage-tag-sheet";
@@ -195,6 +196,7 @@ function TagsListContent() {
       isFilterSheetOpen,
    } = useTagList();
 
+   const { activeOrganization } = useActiveOrganization();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -353,7 +355,10 @@ function TagsListContent() {
                         </EmptyContent>
                      </Empty>
                   ) : (
-                     <DataTable columns={createTagColumns()} data={tags} />
+                     <DataTable
+                        columns={createTagColumns(activeOrganization.slug)}
+                        data={tags}
+                     />
                   )}
                </div>
             </CardContent>

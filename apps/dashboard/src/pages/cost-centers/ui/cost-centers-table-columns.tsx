@@ -9,14 +9,15 @@ import {
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
 import type { CostCenter } from "@/pages/cost-centers/ui/cost-centers-page";
 
 import { DeleteCostCenter } from "../features/delete-cost-center";
 import { ManageCostCenterSheet } from "../features/manage-cost-center-sheet";
 
-export function createCostCenterColumns(): ColumnDef<CostCenter>[] {
+export function createCostCenterColumns(slug: string): ColumnDef<CostCenter>[] {
    return [
       {
          accessorKey: "name",
@@ -74,6 +75,18 @@ export function createCostCenterColumns(): ColumnDef<CostCenter>[] {
                            )}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+
+                        <DropdownMenuItem asChild>
+                           <Link
+                              params={{ costCenterId: costCenter.id, slug }}
+                              to="/$slug/cost-centers/$costCenterId"
+                           >
+                              <Eye className="size-4 mr-2" />
+                              {translate(
+                                 "dashboard.routes.cost-centers.list-section.actions.view-details",
+                              )}
+                           </Link>
+                        </DropdownMenuItem>
 
                         <Suspense
                            fallback={

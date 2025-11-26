@@ -24,6 +24,7 @@ import { Fragment, Suspense } from "react";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
 
@@ -86,6 +87,7 @@ function HomeRecentTransactionsSkeleton() {
 
 function HomeRecentTransactionsContent() {
    const isMobile = useIsMobile();
+   const { activeOrganization } = useActiveOrganization();
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
@@ -138,7 +140,10 @@ function HomeRecentTransactionsContent() {
                </ItemGroup>
             ) : (
                <DataTable
-                  columns={createTransactionColumns(categories)}
+                  columns={createTransactionColumns(
+                     categories,
+                     activeOrganization.slug,
+                  )}
                   data={transactions}
                />
             )}

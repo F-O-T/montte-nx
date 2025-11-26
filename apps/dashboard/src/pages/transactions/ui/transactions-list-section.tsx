@@ -52,6 +52,7 @@ import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { FilterSheet } from "../features/filter-sheet";
 import { useTransactionList } from "../features/transaction-list-context";
@@ -137,6 +138,7 @@ function TransactionsListSkeleton() {
 
 function TransactionsListContent() {
    const isMobile = useIsMobile();
+   const { activeOrganization } = useActiveOrganization();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -315,7 +317,10 @@ function TransactionsListContent() {
                   </Empty>
                ) : (
                   <DataTable
-                     columns={createTransactionColumns(categories)}
+                     columns={createTransactionColumns(
+                        categories,
+                        activeOrganization.slug,
+                     )}
                      data={transactions}
                   />
                )}
