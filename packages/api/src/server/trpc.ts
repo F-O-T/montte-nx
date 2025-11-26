@@ -2,8 +2,9 @@ import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
+import { APIError } from "@packages/utils/errors";
 import { sanitizeData } from "@packages/utils/sanitization";
-import { initTRPC, TRPCError } from "@trpc/server";
+import { initTRPC } from "@trpc/server";
 import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
@@ -81,13 +82,10 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    const apikey = resolvedCtx.headers.get("sdk-api-key");
 
    if (apikey) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message: "This endpoint does not accept API Key authentication.",
-      });
+      throw APIError.forbidden("This endpoint does not accept API Key authentication.");
    }
    if (!resolvedCtx.session?.user) {
-      throw new TRPCError({ code: "FORBIDDEN" });
+      throw APIError.forbidden("Access denied.");
    }
    const organizationId = resolvedCtx.session.session.activeOrganizationId;
    return next({
@@ -103,10 +101,7 @@ const sdkAuth = t.middleware(async ({ ctx, next }) => {
    // 1. Get the Authorization header from the incoming request.
    const authHeader = resolvedCtx.headers.get("sdk-api-key");
    if (!authHeader) {
-      throw new TRPCError({
-         code: "UNAUTHORIZED",
-         message: "Missing API Key.",
-      });
+      throw APIError.unauthorized("Missing API Key.");
    }
 
    const apiKeyData = await resolvedCtx.auth.api.verifyApiKey({
@@ -115,10 +110,7 @@ const sdkAuth = t.middleware(async ({ ctx, next }) => {
    });
 
    if (!apiKeyData.valid) {
-      throw new TRPCError({
-         code: "UNAUTHORIZED",
-         message: "Invalid API Key.",
-      });
+      throw APIError.unauthorized("Invalid API Key.");
    }
    const session = await resolvedCtx.auth.api.getSession({
       headers: new Headers({
