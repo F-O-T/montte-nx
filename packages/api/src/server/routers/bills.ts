@@ -96,15 +96,11 @@ export const billRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== userId) {
+         if (!existingBill || existingBill.userId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -118,12 +114,11 @@ export const billRouter = router({
                input.data.bankAccountId ||
                existingBill.bankAccountId ||
                undefined,
-            categoryIds: [existingBill.categoryId],
             date: new Date(input.data.completionDate),
             description: existingBill.description,
             id: crypto.randomUUID(),
+            organizationId,
             type: existingBill.type as "income" | "expense",
-            userId,
          });
 
          const updatedBill = await updateBill(resolvedCtx.db, input.id, {
@@ -137,11 +132,7 @@ export const billRouter = router({
       .input(createBillSchema)
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const firstBill = await createBill(resolvedCtx.db, {
             ...input,
@@ -151,7 +142,7 @@ export const billRouter = router({
             isRecurring: input.isRecurring ?? false,
             issueDate: new Date(input.issueDate),
             recurrencePattern: input.recurrencePattern,
-            userId,
+            userId: organizationId,
          });
 
          if (input.isRecurring && input.recurrencePattern) {
@@ -179,7 +170,7 @@ export const billRouter = router({
                   parentBillId: firstBill.id,
                   recurrencePattern: input.recurrencePattern,
                   type: input.type,
-                  userId,
+                  userId: organizationId,
                });
             });
 
@@ -193,15 +184,11 @@ export const billRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== userId) {
+         if (!existingBill || existingBill.userId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -218,15 +205,11 @@ export const billRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== userId) {
+         if (!existingBill || existingBill.userId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -243,14 +226,16 @@ export const billRouter = router({
                | "annual",
          );
 
-         const nextIssueDate = getNextDueDate(
-            existingBill.issueDate,
-            existingBill.recurrencePattern as
-               | "monthly"
-               | "quarterly"
-               | "semiannual"
-               | "annual",
-         );
+         const nextIssueDate = existingBill.issueDate
+            ? getNextDueDate(
+                 existingBill.issueDate,
+                 existingBill.recurrencePattern as
+                    | "monthly"
+                    | "quarterly"
+                    | "semiannual"
+                    | "annual",
+              )
+            : nextDueDate;
 
          return createBill(resolvedCtx.db, {
             amount: existingBill.amount,
@@ -266,7 +251,7 @@ export const billRouter = router({
             parentBillId: existingBill.id,
             recurrencePattern: existingBill.recurrencePattern,
             type: existingBill.type,
-            userId,
+            userId: organizationId,
          });
       }),
 
@@ -274,30 +259,26 @@ export const billRouter = router({
       .input(filterSchema.optional())
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          if (input && (input.month || input.type)) {
-            return findBillsByUserIdFiltered(resolvedCtx.db, userId, input);
+            return findBillsByUserIdFiltered(
+               resolvedCtx.db,
+               organizationId,
+               input,
+            );
          }
 
-         return findBillsByUserId(resolvedCtx.db, userId);
+         return findBillsByUserId(resolvedCtx.db, organizationId);
       }),
 
    getAllPaginated: protectedProcedure
       .input(paginationSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return findBillsByUserIdPaginated(resolvedCtx.db, userId, {
+         return findBillsByUserIdPaginated(resolvedCtx.db, organizationId, {
             ...input,
             endDate: input.endDate ? new Date(input.endDate) : undefined,
             startDate: input.startDate ? new Date(input.startDate) : undefined,
@@ -308,15 +289,11 @@ export const billRouter = router({
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const billData = await findBillById(resolvedCtx.db, input.id);
 
-         if (!billData || billData.userId !== userId) {
+         if (!billData || billData.userId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -327,55 +304,39 @@ export const billRouter = router({
       .input(z.object({ type: z.enum(["income", "expense"]) }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return findBillsByUserIdAndType(resolvedCtx.db, userId, input.type);
+         return findBillsByUserIdAndType(
+            resolvedCtx.db,
+            organizationId,
+            input.type,
+         );
       }),
 
    getCompleted: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return findCompletedBillsByUserId(resolvedCtx.db, userId);
+      return findCompletedBillsByUserId(resolvedCtx.db, organizationId);
    }),
 
    getOverdue: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return findOverdueBillsByUserId(resolvedCtx.db, userId);
+      return findOverdueBillsByUserId(resolvedCtx.db, organizationId);
    }),
 
    getPending: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return findPendingBillsByUserId(resolvedCtx.db, userId);
+      return findPendingBillsByUserId(resolvedCtx.db, organizationId);
    }),
 
    getStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
-
-      const userId = resolvedCtx.session.user.id;
+      const organizationId = resolvedCtx.organizationId;
 
       const [
          totalBills,
@@ -385,12 +346,12 @@ export const billRouter = router({
          totalOverduePayables,
          totalOverdueReceivables,
       ] = await Promise.all([
-         getTotalBillsByUserId(resolvedCtx.db, userId),
-         getTotalPendingPayablesByUserId(resolvedCtx.db, userId),
-         getTotalPendingReceivablesByUserId(resolvedCtx.db, userId),
-         getTotalOverdueBillsByUserId(resolvedCtx.db, userId),
-         getTotalOverduePayablesByUserId(resolvedCtx.db, userId),
-         getTotalOverdueReceivablesByUserId(resolvedCtx.db, userId),
+         getTotalBillsByUserId(resolvedCtx.db, organizationId),
+         getTotalPendingPayablesByUserId(resolvedCtx.db, organizationId),
+         getTotalPendingReceivablesByUserId(resolvedCtx.db, organizationId),
+         getTotalOverdueBillsByUserId(resolvedCtx.db, organizationId),
+         getTotalOverduePayablesByUserId(resolvedCtx.db, organizationId),
+         getTotalOverdueReceivablesByUserId(resolvedCtx.db, organizationId),
       ]);
 
       return {
@@ -412,15 +373,11 @@ export const billRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== userId) {
+         if (!existingBill || existingBill.userId !== organizationId) {
             throw new Error("Bill not found");
          }
 
