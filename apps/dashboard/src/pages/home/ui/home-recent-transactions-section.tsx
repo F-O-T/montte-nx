@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import {
    Card,
    CardContent,
@@ -6,27 +7,53 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
+import {
+   Empty,
+   EmptyContent,
+   EmptyDescription,
+   EmptyMedia,
+   EmptyTitle,
+} from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Wallet } from "lucide-react";
 import { Fragment, Suspense } from "react";
+import type { FallbackProps } from "react-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransactionItem } from "@/features/transaction/ui/transaction-item";
 import { trpc } from "@/integrations/clients";
 import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
 
-function HomeRecentTransactionsErrorFallback() {
+function RecentTransactionsCardHeader() {
+   return (
+      <CardHeader>
+         <CardTitle>
+            {translate("dashboard.routes.home.recent-transactions.title")}
+         </CardTitle>
+         <CardDescription>
+            {translate("dashboard.routes.home.recent-transactions.description")}
+         </CardDescription>
+      </CardHeader>
+   );
+}
+
+function HomeRecentTransactionsErrorFallback(props: FallbackProps) {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest account activity</CardDescription>
-         </CardHeader>
+         <RecentTransactionsCardHeader />
          <CardContent>
-            <div className="py-4 text-center text-muted-foreground">
-               Failed to load transactions
-            </div>
+            {createErrorFallback({
+               errorDescription: translate(
+                  "dashboard.routes.home.recent-transactions.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.home.recent-transactions.state.error.title",
+               ),
+               retryText: translate("common.actions.retry"),
+            })(props)}
          </CardContent>
       </Card>
    );
@@ -35,10 +62,7 @@ function HomeRecentTransactionsErrorFallback() {
 function HomeRecentTransactionsSkeleton() {
    return (
       <Card className="w-full">
-         <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest account activity</CardDescription>
-         </CardHeader>
+         <RecentTransactionsCardHeader />
          <CardContent>
             <ItemGroup>
                {[1, 2, 3].map((index) => (
@@ -80,15 +104,26 @@ function HomeRecentTransactionsContent() {
 
    return (
       <Card className="w-full h-full">
-         <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Your latest account activity</CardDescription>
-         </CardHeader>
+         <RecentTransactionsCardHeader />
          <CardContent>
             {transactions.length === 0 ? (
-               <div className="py-8 text-center text-muted-foreground">
-                  No transactions yet for your account.
-               </div>
+               <Empty>
+                  <EmptyContent>
+                     <EmptyMedia variant="icon">
+                        <Wallet />
+                     </EmptyMedia>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.home.recent-transactions.state.empty.title",
+                        )}
+                     </EmptyTitle>
+                     <EmptyDescription>
+                        {translate(
+                           "dashboard.routes.home.recent-transactions.state.empty.description",
+                        )}
+                     </EmptyDescription>
+                  </EmptyContent>
+               </Empty>
             ) : isMobile ? (
                <ItemGroup>
                   {transactions.map((transaction, index) => (

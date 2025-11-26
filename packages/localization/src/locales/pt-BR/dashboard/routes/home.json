@@ -1,4 +1,18 @@
 {
+   "recent-transactions": {
+      "description": "Sua atividade recente na conta",
+      "state": {
+         "empty": {
+            "description": "Comece adicionando sua primeira transação.",
+            "title": "Nenhuma transação ainda"
+         },
+         "error": {
+            "description": "Não foi possível carregar suas transações recentes.",
+            "title": "Erro ao carregar transações"
+         }
+      },
+      "title": "Transações Recentes"
+   },
    "charts": {
       "cash-flow": {
          "description": "Fluxo de caixa líquido ao longo do tempo",
