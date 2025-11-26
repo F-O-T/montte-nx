@@ -1,34 +1,11 @@
 {
-   "name": "@fot/ofx",
-   "version": "0.1.0",
-   "description": "Typesafe ofx handling",
-   "homepage": "https://github.com/F-O-T/montte-nx#readme",
    "bugs": {
       "url": "https://github.com/F-O-T/montte-nx/issues"
-   },
-   "license": "MIT",
-   "files": [
-      "dist"
-   ],
-   "repository": {
-      "type": "git",
-      "url": "https://github.com/F-O-T/montte-nx.git"
-   },
-   "scripts": {
-      "build": "bunup",
-      "dev": "bunup --watch",
-      "postinstall": "bun simple-git-hooks",
-      "lint": "biome check .",
-      "lint:fix": "biome check --write .",
-      "release": "bumpp --commit --push --tag",
-      "test": "bun test",
-      "test:coverage": "bun test --coverage",
-      "test:watch": "bun test --watch",
-      "type-check": "tsc --noEmit"
    },
    "dependencies": {
       "zod": "4.1.13"
    },
+   "description": "Typesafe ofx handling",
    "devDependencies": {
       "@biomejs/biome": "^2.3.7",
       "@types/bun": "1.3.3",
@@ -37,6 +14,22 @@
       "simple-git-hooks": "2.13.1",
       "typescript": "5.9.3"
    },
+   "exports": {
+      ".": {
+         "import": {
+            "default": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+         }
+      },
+      "./package.json": "./package.json"
+   },
+   "files": [
+      "dist"
+   ],
+   "homepage": "https://github.com/F-O-T/montte-nx#readme",
+   "license": "MIT",
+   "module": "./dist/index.js",
+   "name": "@fot/ofx",
    "peerDependencies": {
       "typescript": ">=4.5.0"
    },
@@ -45,19 +38,26 @@
          "optional": true
       }
    },
-   "type": "module",
-   "exports": {
-      ".": {
-         "import": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-         }
-      },
-      "./package.json": "./package.json"
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/F-O-T/montte-nx.git"
    },
-   "module": "./dist/index.js",
+   "scripts": {
+      "build": "bunup",
+      "dev": "bunup --watch",
+      "lint": "biome check .",
+      "lint:fix": "biome check --write .",
+      "postinstall": "bun simple-git-hooks",
+      "release": "bumpp --commit --push --tag",
+      "test": "bun test",
+      "test:coverage": "bun test --coverage",
+      "test:watch": "bun test --watch",
+      "type-check": "tsc --noEmit"
+   },
    "simple-git-hooks": {
       "pre-commit": "bun run lint && bun run type-check"
    },
-   "types": "./dist/index.d.ts"
+   "type": "module",
+   "types": "./dist/index.d.ts",
+   "version": "1.0.0"
 }
