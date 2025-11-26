@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const toInt = (val: string): number => Number.parseInt(val, 10);
+const toFloat = (val: string): number => Number.parseFloat(val);
+const toArray = <T>(value: T | T[]): T[] =>
+   Array.isArray(value) ? value : [value];
+
 interface OFXDateValue {
    raw: string;
    year: number;
@@ -12,40 +17,55 @@ interface OFXDateValue {
    toDate: () => Date;
 }
 
-const ofxDateSchema = z.string().transform((val): OFXDateValue => {
-   const year = val.substring(0, 4);
-   const month = val.substring(4, 6);
-   const day = val.substring(6, 8);
-   const hour = val.substring(8, 10) || "00";
-   const minute = val.substring(10, 12) || "00";
-   const second = val.substring(12, 14) || "00";
+interface DateComponents {
+   year: number;
+   month: number;
+   day: number;
+   hour: number;
+   minute: number;
+   second: number;
+}
 
-   const tzMatch = val.match(/\[([+-]?\d+):(\w+)\]/);
-   const tzOffset = tzMatch ? Number.parseInt(tzMatch[1] ?? "0", 10) : 0;
-   const tzName = tzMatch?.[2] ?? "UTC";
+function parseDateComponents(val: string): DateComponents {
+   return {
+      year: toInt(val.substring(0, 4)),
+      month: toInt(val.substring(4, 6)),
+      day: toInt(val.substring(6, 8)),
+      hour: toInt(val.substring(8, 10) || "0"),
+      minute: toInt(val.substring(10, 12) || "0"),
+      second: toInt(val.substring(12, 14) || "0"),
+   };
+}
+
+function parseTimezone(val: string): { offset: number; name: string } {
+   const match = val.match(/\[([+-]?\d+):(\w+)\]/);
+   return {
+      offset: match ? toInt(match[1] ?? "0") : 0,
+      name: match?.[2] ?? "UTC",
+   };
+}
+
+const ofxDateSchema = z.string().transform((val): OFXDateValue => {
+   const components = parseDateComponents(val);
+   const timezone = parseTimezone(val);
 
    return {
-      day: Number.parseInt(day, 10),
-      hour: Number.parseInt(hour, 10),
-      minute: Number.parseInt(minute, 10),
-      month: Number.parseInt(month, 10),
+      ...components,
       raw: val,
-      second: Number.parseInt(second, 10),
-      timezone: { name: tzName, offset: tzOffset },
+      timezone,
       toDate(): Date {
-         const offsetMs = tzOffset * 60 * 60 * 1000;
+         const offsetMs = timezone.offset * 60 * 60 * 1000;
          return new Date(
             Date.UTC(
-               Number.parseInt(year, 10),
-               Number.parseInt(month, 10) - 1,
-               Number.parseInt(day, 10),
-               Number.parseInt(hour, 10),
-               Number.parseInt(minute, 10),
-               Number.parseInt(second, 10),
+               components.year,
+               components.month - 1,
+               components.day,
+               components.hour,
+               components.minute,
+               components.second,
             ) - offsetMs,
          );
       },
-      year: Number.parseInt(year, 10),
    };
 });
 
@@ -106,7 +126,7 @@ const transactionSchema = z.object({
    REFNUM: z.string().optional(),
    SIC: z.string().optional(),
    SRVRTID: z.string().optional(),
-   TRNAMT: z.string().transform((val) => Number.parseFloat(val)),
+   TRNAMT: z.string().transform(toFloat),
    TRNTYPE: transactionTypeSchema,
 });
 
@@ -140,7 +160,7 @@ const creditCardAccountSchema = z.object({
 export type OFXCreditCardAccount = z.infer<typeof creditCardAccountSchema>;
 
 const balanceSchema = z.object({
-   BALAMT: z.string().transform((val) => Number.parseFloat(val)),
+   BALAMT: z.string().transform(toFloat),
    DTASOF: ofxDateSchema,
 });
 
@@ -211,13 +231,11 @@ export type OFXCreditCardStatementTransactionResponse = z.infer<
    typeof creditCardStatementTransactionResponseSchema
 >;
 
+const singleOrArray = <T extends z.ZodTypeAny>(schema: T) =>
+   z.union([schema, z.array(schema)]).optional();
+
 const bankMessageSetResponseSchema = z.object({
-   STMTTRNRS: z
-      .union([
-         bankStatementTransactionResponseSchema,
-         z.array(bankStatementTransactionResponseSchema),
-      ])
-      .optional(),
+   STMTTRNRS: singleOrArray(bankStatementTransactionResponseSchema),
 });
 
 export type OFXBankMessageSetResponse = z.infer<
@@ -225,12 +243,7 @@ export type OFXBankMessageSetResponse = z.infer<
 >;
 
 const creditCardMessageSetResponseSchema = z.object({
-   CCSTMTTRNRS: z
-      .union([
-         creditCardStatementTransactionResponseSchema,
-         z.array(creditCardStatementTransactionResponseSchema),
-      ])
-      .optional(),
+   CCSTMTTRNRS: singleOrArray(creditCardStatementTransactionResponseSchema),
 });
 
 export type OFXCreditCardMessageSetResponse = z.infer<
@@ -274,29 +287,7 @@ const ofxDocumentSchema = z.object({
 
 export type OFXDocument = z.infer<typeof ofxDocumentSchema>;
 
-export const schemas: {
-   accountType: typeof accountTypeSchema;
-   balance: typeof balanceSchema;
-   bankAccount: typeof bankAccountSchema;
-   bankMessageSetResponse: typeof bankMessageSetResponseSchema;
-   bankStatementResponse: typeof bankStatementResponseSchema;
-   bankStatementTransactionResponse: typeof bankStatementTransactionResponseSchema;
-   creditCardAccount: typeof creditCardAccountSchema;
-   creditCardMessageSetResponse: typeof creditCardMessageSetResponseSchema;
-   creditCardStatementResponse: typeof creditCardStatementResponseSchema;
-   creditCardStatementTransactionResponse: typeof creditCardStatementTransactionResponseSchema;
-   financialInstitution: typeof financialInstitutionSchema;
-   ofxDate: typeof ofxDateSchema;
-   ofxDocument: typeof ofxDocumentSchema;
-   ofxHeader: typeof ofxHeaderSchema;
-   ofxResponse: typeof ofxResponseSchema;
-   signOnMessageSetResponse: typeof signOnMessageSetResponseSchema;
-   signOnResponse: typeof signOnResponseSchema;
-   status: typeof statusSchema;
-   transaction: typeof transactionSchema;
-   transactionList: typeof transactionListSchema;
-   transactionType: typeof transactionTypeSchema;
-} = {
+export const schemas = {
    accountType: accountTypeSchema,
    balance: balanceSchema,
    bankAccount: bankAccountSchema,
@@ -319,7 +310,7 @@ export const schemas: {
    transaction: transactionSchema,
    transactionList: transactionListSchema,
    transactionType: transactionTypeSchema,
-};
+} as const;
 
 interface TagStackItem {
    name: string;
@@ -354,6 +345,21 @@ function parseHeader(content: string): { header: OFXHeader; body: string } {
    return { body, header: ofxHeaderSchema.parse(header) };
 }
 
+function addToContent(
+   content: Record<string, unknown>,
+   key: string,
+   value: unknown,
+): void {
+   const existing = content[key];
+   if (existing !== undefined) {
+      content[key] = Array.isArray(existing)
+         ? [...existing, value]
+         : [existing, value];
+   } else {
+      content[key] = value;
+   }
+}
+
 function sgmlToObject(sgml: string): Record<string, unknown> {
    const result: Record<string, unknown> = {};
    const tagStack: TagStackItem[] = [{ content: result, name: "root" }];
@@ -371,40 +377,26 @@ function sgmlToObject(sgml: string): Record<string, unknown> {
       const tagName = match[2];
       const textContent = match[3]?.trim() ?? "";
 
-      if (!tagName) continue;
+      if (!tagName) {
+         match = tagRegex.exec(cleanSgml);
+         continue;
+      }
 
       const current = tagStack[tagStack.length - 1];
-      if (!current) continue;
+      if (!current) {
+         match = tagRegex.exec(cleanSgml);
+         continue;
+      }
 
       if (isClosing) {
          if (tagStack.length > 1) {
             tagStack.pop();
          }
       } else if (textContent) {
-         const existing = current.content[tagName];
-         if (existing !== undefined) {
-            if (Array.isArray(existing)) {
-               existing.push(textContent);
-            } else {
-               current.content[tagName] = [existing, textContent];
-            }
-         } else {
-            current.content[tagName] = textContent;
-         }
+         addToContent(current.content, tagName, textContent);
       } else {
          const newObj: Record<string, unknown> = {};
-         const existing = current.content[tagName];
-
-         if (existing !== undefined) {
-            if (Array.isArray(existing)) {
-               existing.push(newObj);
-            } else {
-               current.content[tagName] = [existing, newObj];
-            }
-         } else {
-            current.content[tagName] = newObj;
-         }
-
+         addToContent(current.content, tagName, newObj);
          tagStack.push({ content: newObj, name: tagName });
       }
 
@@ -414,41 +406,29 @@ function sgmlToObject(sgml: string): Record<string, unknown> {
    return result;
 }
 
+function processObject(obj: Record<string, unknown>): Record<string, unknown> {
+   const processed: Record<string, unknown> = {};
+
+   for (const [key, value] of Object.entries(obj)) {
+      if (key === "STMTTRN") {
+         processed[key] = toArray(value).map((v) =>
+            typeof v === "object" && v !== null
+               ? processObject(v as Record<string, unknown>)
+               : v,
+         );
+      } else if (value && typeof value === "object" && !Array.isArray(value)) {
+         processed[key] = processObject(value as Record<string, unknown>);
+      } else {
+         processed[key] = value;
+      }
+   }
+
+   return processed;
+}
+
 function normalizeTransactions(
    data: Record<string, unknown>,
 ): Record<string, unknown> {
-   function processObject(
-      obj: Record<string, unknown>,
-   ): Record<string, unknown> {
-      const processed: Record<string, unknown> = {};
-
-      for (const [key, value] of Object.entries(obj)) {
-         if (key === "STMTTRN") {
-            processed[key] = Array.isArray(value)
-               ? value.map((v) =>
-                  typeof v === "object" && v !== null
-                     ? processObject(v as Record<string, unknown>)
-                     : v,
-               )
-               : [
-                  typeof value === "object" && value !== null
-                     ? processObject(value as Record<string, unknown>)
-                     : value,
-               ];
-         } else if (
-            value &&
-            typeof value === "object" &&
-            !Array.isArray(value)
-         ) {
-            processed[key] = processObject(value as Record<string, unknown>);
-         } else {
-            processed[key] = value;
-         }
-      }
-
-      return processed;
-   }
-
    return processObject(data);
 }
 
@@ -469,10 +449,7 @@ export function parse(content: string): ParseResult<OFXDocument> {
       }
 
       return {
-         data: {
-            header,
-            OFX: parseResult.data,
-         },
+         data: { header, OFX: parseResult.data },
          success: true,
       };
    } catch (err) {
@@ -491,62 +468,68 @@ export function parseOrThrow(content: string): OFXDocument {
    return result.data;
 }
 
-export function getTransactions(document: OFXDocument): OFXTransaction[] {
-   const transactions: OFXTransaction[] = [];
-
+function extractFromBankResponses<TResult>(
+   document: OFXDocument,
+   extractor: (r: OFXBankStatementTransactionResponse) => TResult | undefined,
+): TResult[] {
    const bankResponse = document.OFX.BANKMSGSRSV1?.STMTTRNRS;
-   if (bankResponse) {
-      const responses = Array.isArray(bankResponse)
-         ? bankResponse
-         : [bankResponse];
-      for (const response of responses) {
-         if (response.STMTRS?.BANKTRANLIST?.STMTTRN) {
-            transactions.push(...response.STMTRS.BANKTRANLIST.STMTTRN);
-         }
+   if (!bankResponse) return [];
+
+   const results: TResult[] = [];
+   for (const response of toArray(bankResponse)) {
+      const result = extractor(response);
+      if (result !== undefined) {
+         results.push(result);
       }
    }
+   return results;
+}
 
+function extractFromCreditCardResponses<TResult>(
+   document: OFXDocument,
+   extractor: (
+      r: OFXCreditCardStatementTransactionResponse,
+   ) => TResult | undefined,
+): TResult[] {
    const ccResponse = document.OFX.CREDITCARDMSGSRSV1?.CCSTMTTRNRS;
-   if (ccResponse) {
-      const responses = Array.isArray(ccResponse) ? ccResponse : [ccResponse];
-      for (const response of responses) {
-         if (response.CCSTMTRS?.BANKTRANLIST?.STMTTRN) {
-            transactions.push(...response.CCSTMTRS.BANKTRANLIST.STMTTRN);
-         }
+   if (!ccResponse) return [];
+
+   const results: TResult[] = [];
+   for (const response of toArray(ccResponse)) {
+      const result = extractor(response);
+      if (result !== undefined) {
+         results.push(result);
       }
    }
+   return results;
+}
 
-   return transactions;
+export function getTransactions(document: OFXDocument): OFXTransaction[] {
+   const bankTransactions = extractFromBankResponses(
+      document,
+      (r) => r.STMTRS?.BANKTRANLIST?.STMTTRN,
+   );
+   const ccTransactions = extractFromCreditCardResponses(
+      document,
+      (r) => r.CCSTMTRS?.BANKTRANLIST?.STMTTRN,
+   );
+
+   return [...bankTransactions, ...ccTransactions].flat();
 }
 
 export function getAccountInfo(
    document: OFXDocument,
 ): (OFXBankAccount | OFXCreditCardAccount)[] {
-   const accounts: (OFXBankAccount | OFXCreditCardAccount)[] = [];
+   const bankAccounts = extractFromBankResponses(
+      document,
+      (r) => r.STMTRS?.BANKACCTFROM,
+   );
+   const ccAccounts = extractFromCreditCardResponses(
+      document,
+      (r) => r.CCSTMTRS?.CCACCTFROM,
+   );
 
-   const bankResponse = document.OFX.BANKMSGSRSV1?.STMTTRNRS;
-   if (bankResponse) {
-      const responses = Array.isArray(bankResponse)
-         ? bankResponse
-         : [bankResponse];
-      for (const response of responses) {
-         if (response.STMTRS?.BANKACCTFROM) {
-            accounts.push(response.STMTRS.BANKACCTFROM);
-         }
-      }
-   }
-
-   const ccResponse = document.OFX.CREDITCARDMSGSRSV1?.CCSTMTTRNRS;
-   if (ccResponse) {
-      const responses = Array.isArray(ccResponse) ? ccResponse : [ccResponse];
-      for (const response of responses) {
-         if (response.CCSTMTRS?.CCACCTFROM) {
-            accounts.push(response.CCSTMTRS.CCACCTFROM);
-         }
-      }
-   }
-
-   return accounts;
+   return [...bankAccounts, ...ccAccounts];
 }
 
 export interface BalanceInfo {
@@ -555,37 +538,18 @@ export interface BalanceInfo {
 }
 
 export function getBalance(document: OFXDocument): BalanceInfo[] {
-   const balances: BalanceInfo[] = [];
+   const bankBalances = extractFromBankResponses(document, (r) =>
+      r.STMTRS
+         ? { available: r.STMTRS.AVAILBAL, ledger: r.STMTRS.LEDGERBAL }
+         : undefined,
+   );
+   const ccBalances = extractFromCreditCardResponses(document, (r) =>
+      r.CCSTMTRS
+         ? { available: r.CCSTMTRS.AVAILBAL, ledger: r.CCSTMTRS.LEDGERBAL }
+         : undefined,
+   );
 
-   const bankResponse = document.OFX.BANKMSGSRSV1?.STMTTRNRS;
-   if (bankResponse) {
-      const responses = Array.isArray(bankResponse)
-         ? bankResponse
-         : [bankResponse];
-      for (const response of responses) {
-         if (response.STMTRS) {
-            balances.push({
-               available: response.STMTRS.AVAILBAL,
-               ledger: response.STMTRS.LEDGERBAL,
-            });
-         }
-      }
-   }
-
-   const ccResponse = document.OFX.CREDITCARDMSGSRSV1?.CCSTMTTRNRS;
-   if (ccResponse) {
-      const responses = Array.isArray(ccResponse) ? ccResponse : [ccResponse];
-      for (const response of responses) {
-         if (response.CCSTMTRS) {
-            balances.push({
-               available: response.CCSTMTRS.AVAILBAL,
-               ledger: response.CCSTMTRS.LEDGERBAL,
-            });
-         }
-      }
-   }
-
-   return balances;
+   return [...bankBalances, ...ccBalances];
 }
 
 export function getSignOnInfo(document: OFXDocument): OFXSignOnResponse {
