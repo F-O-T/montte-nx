@@ -24,12 +24,11 @@ import {
 import { PasswordInput } from "@packages/ui/components/password-input";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient } from "@/integrations/clients";
 
 const steps = [
    { id: "enter-email", title: "enter-email" },
@@ -41,8 +40,6 @@ const { Stepper } = defineStepper(...steps);
 
 export function ForgotPasswordPage() {
    const router = useRouter();
-   const trpc = useTRPC();
-   const [sendingOtp, setSendingOtp] = useState(false);
    const schema = z
       .object({
          confirmPassword: z.string(),
@@ -65,59 +62,69 @@ export function ForgotPasswordPage() {
          path: ["confirmPassword"],
       });
 
-   const sendOtpMutation = useMutation(
-      trpc.auth.sendVerificationOTP.mutationOptions({
-         onError: (error) => {
-            setSendingOtp(false);
-            toast.error(error.message, {
-               id: "send-otp-toast",
-            });
+   const handleSendOtp = useCallback(async (email: string) => {
+      await betterAuthClient.emailOtp.sendVerificationOtp(
+         {
+            email,
+            type: "forget-password",
          },
-         onSuccess: (_data) => {
-            setSendingOtp(false);
-            toast.success("OTP sent successfully", {
-               id: "send-otp-toast",
-            });
+         {
+            onError: ({ error }) => {
+               toast.error(error.message);
+            },
+            onRequest: () => {
+               toast.loading(
+                  translate(
+                     "dashboard.routes.forgot-password.messages.requesting",
+                  ),
+               );
+            },
+            onSuccess: () => {
+               toast.success(
+                  translate(
+                     "dashboard.routes.forgot-password.messages.send-success",
+                  ),
+               );
+            },
          },
-      }),
-   );
-
-   const resetPasswordMutation = useMutation(
-      trpc.auth.resetPassword.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message, {
-               id: "forgot-password-toast",
-            });
-         },
-         onSuccess: (data) => {
-            toast.success(data.message, {
-               id: "forgot-password-toast",
-            });
-            router.navigate({
-               to: "/auth/sign-in",
-            });
-         },
-      }),
-   );
+      );
+   }, []);
 
    const handleResetPassword = useCallback(
-      async ({
-         email,
-         otp,
-         password,
-      }: {
-         email: string;
-         otp: string;
-         password: string;
-      }) => {
-         await resetPasswordMutation.mutateAsync({
-            email,
-            otp,
-            password,
-         });
+      async (email: string, otp: string, password: string) => {
+         await betterAuthClient.emailOtp.resetPassword(
+            {
+               email,
+               otp,
+               password,
+            },
+            {
+               onError: ({ error }) => {
+                  toast.error(error.message);
+               },
+               onRequest: () => {
+                  toast.loading(
+                     translate(
+                        "dashboard.routes.forgot-password.messages.resetting",
+                     ),
+                  );
+               },
+               onSuccess: () => {
+                  toast.success(
+                     translate(
+                        "dashboard.routes.forgot-password.messages.reset-success",
+                     ),
+                  );
+                  router.navigate({
+                     to: "/auth/sign-in",
+                  });
+               },
+            },
+         );
       },
-      [resetPasswordMutation],
+      [router.navigate],
    );
+
    const form = useForm({
       defaultValues: {
          confirmPassword: "",
@@ -126,22 +133,13 @@ export function ForgotPasswordPage() {
          password: "",
       },
       onSubmit: async ({ value }) => {
-         await handleResetPassword(value);
+         await handleResetPassword(value.email, value.otp, value.password);
       },
       validators: {
          onBlur: schema,
       },
    });
 
-   const sendOtp = useCallback(
-      async (email: string) => {
-         await sendOtpMutation.mutateAsync({
-            email,
-            type: "forget-password",
-         });
-      },
-      [sendOtpMutation],
-   );
    const handleSubmit = useCallback(
       (e: React.FormEvent) => {
          e.preventDefault();
@@ -357,8 +355,7 @@ export function ForgotPasswordPage() {
                                     className="shadow-lg transition-all duration-300 group bg-primary shadow-primary/20 hover:bg-primary/90 flex gap-2 items-center justify-center"
                                     disabled={
                                        !formState.canSubmit ||
-                                       formState.isSubmitting ||
-                                       resetPasswordMutation.isPending
+                                       formState.isSubmitting
                                     }
                                     type="submit"
                                     variant="default"
@@ -378,9 +375,9 @@ export function ForgotPasswordPage() {
                            >
                               {({ emailValid, emailValue }) => (
                                  <Button
-                                    disabled={!emailValid || sendingOtp}
+                                    disabled={!emailValid}
                                     onClick={async () => {
-                                       await sendOtp(emailValue);
+                                       await handleSendOtp(emailValue);
                                        methods.next();
                                     }}
                                     type="button"

@@ -46,25 +46,6 @@ export const authRouter = router({
             );
          }
       }),
-   googleSignIn: publicProcedure.mutation(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-
-      const resp = await resolvedCtx.auth.api.signInSocial({
-         body: {
-            callbackURL: `${getDomain()}/home`,
-            provider: "google",
-         },
-         headers: resolvedCtx.headers,
-         returnHeaders: true,
-      });
-
-      if (resp.headers) {
-         resp.headers.forEach((value, key) => {
-            resolvedCtx.responseHeaders.append(key, value);
-         });
-      }
-      return resp.response;
-   }),
    logout: protectedProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
@@ -233,8 +214,7 @@ export const authRouter = router({
          } catch (error) {
             if (error instanceof BetterAuthAPIError) {
                const translatedMessage = translate(
-                  `dashboard.routes.sign-up.error-codes.${
-                     error.body?.code ?? ""
+                  `dashboard.routes.sign-up.error-codes.${error.body?.code ?? ""
                   }` as TranslationKey,
                );
                throw APIError.unprocessableContent(translatedMessage);

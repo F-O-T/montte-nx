@@ -19,13 +19,12 @@ import { Input } from "@packages/ui/components/input";
 import { PasswordInput } from "@packages/ui/components/password-input";
 import { Separator } from "@packages/ui/components/separator";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { betterAuthClient, useTRPC } from "@/integrations/clients";
+import { betterAuthClient } from "@/integrations/clients";
 
 export function SignInPage() {
    const schema = z.object({
@@ -37,7 +36,6 @@ export function SignInPage() {
             translate("common.validation.min-length").replace("{min}", "8"),
          ),
    });
-   const trpc = useTRPC();
    const router = useRouter();
 
    const handleGoogleSignIn = useCallback(async () => {
@@ -50,24 +48,41 @@ export function SignInPage() {
          console.error("Google sign-in failed:", error);
       }
    }, []);
-   const signInMutation = useMutation(
-      trpc.auth.signIn.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message);
-         },
-         onSuccess: async () => {
-            await router.navigate({ params: { slug: "" }, to: "/$slug/home" });
-         },
-      }),
+   const handleSignIn = useCallback(
+      async (email: string, password: string) => {
+         await betterAuthClient.signIn.email(
+            {
+               email,
+               password,
+            },
+            {
+               onError: ({ error }) => {
+                  toast.error(error.message);
+               },
+               onRequest: () => {
+                  toast.loading(
+                     translate("dashboard.routes.sign-in.messages.requesting"),
+                  );
+               },
+               onSuccess: () => {
+                  toast.success(
+                     translate("dashboard.routes.sign-in.messages.success"),
+                  );
+                  router.navigate({ params: { slug: "" }, to: "/$slug/home" });
+               },
+            },
+         );
+      },
+      [router.navigate],
    );
-
    const form = useForm({
       defaultValues: {
          email: "",
          password: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await signInMutation.mutateAsync(value);
+         const { email, password } = value;
+         await handleSignIn(email, password);
          formApi.reset();
       },
       validators: {
