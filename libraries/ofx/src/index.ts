@@ -28,20 +28,20 @@ interface DateComponents {
 
 function parseDateComponents(val: string): DateComponents {
    return {
-      year: toInt(val.substring(0, 4)),
-      month: toInt(val.substring(4, 6)),
       day: toInt(val.substring(6, 8)),
       hour: toInt(val.substring(8, 10) || "0"),
       minute: toInt(val.substring(10, 12) || "0"),
+      month: toInt(val.substring(4, 6)),
       second: toInt(val.substring(12, 14) || "0"),
+      year: toInt(val.substring(0, 4)),
    };
 }
 
 function parseTimezone(val: string): { offset: number; name: string } {
    const match = val.match(/\[([+-]?\d+):(\w+)\]/);
    return {
-      offset: match ? toInt(match[1] ?? "0") : 0,
       name: match?.[2] ?? "UTC",
+      offset: match ? toInt(match[1] ?? "0") : 0,
    };
 }
 
