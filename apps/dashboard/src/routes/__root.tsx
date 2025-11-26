@@ -13,7 +13,6 @@ import {
    redirect,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { Suspense } from "react";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {

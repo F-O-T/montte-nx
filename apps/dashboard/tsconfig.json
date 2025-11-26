@@ -48,8 +48,5 @@
     {
       "path": "../../packages/environment"
     },
-    {
-      "path": "../../packages/api"
-    }
   ]
 }
