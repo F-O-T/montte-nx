@@ -37,8 +37,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Color from "color";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { IconSelector } from "@/features/icon-selector/icon-selector";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { trpc } from "@/integrations/clients";
 
 type ManageTagSheetProps = {
@@ -107,7 +105,6 @@ export function ManageTagSheet({
    const form = useForm({
       defaultValues: {
          color: tag?.color || "#000000",
-         icon: tag?.icon as IconName | undefined,
          name: tag?.name || "",
       },
       onSubmit: async ({ value }) => {
@@ -120,7 +117,6 @@ export function ManageTagSheet({
                await updateTagMutation.mutateAsync({
                   data: {
                      color: value.color,
-                     icon: value.icon,
                      name: value.name,
                   },
                   id: tag.id,
@@ -128,7 +124,6 @@ export function ManageTagSheet({
             } else {
                await createTagMutation.mutateAsync({
                   color: value.color,
-                  icon: value.icon,
                   name: value.name,
                });
             }
@@ -283,32 +278,6 @@ export function ManageTagSheet({
                                     </PopoverContent>
                                  </Popover>
 
-                                 {isInvalid && (
-                                    <FieldError
-                                       errors={field.state.meta.errors}
-                                    />
-                                 )}
-                              </Field>
-                           );
-                        }}
-                     </form.Field>
-                  </FieldGroup>
-
-                  <FieldGroup>
-                     <form.Field name="icon">
-                        {(field) => {
-                           const isInvalid =
-                              field.state.meta.isTouched &&
-                              !field.state.meta.isValid;
-                           return (
-                              <Field data-invalid={isInvalid}>
-                                 <FieldLabel>
-                                    {translate("common.form.icon.label")}
-                                 </FieldLabel>
-                                 <IconSelector
-                                    onValueChange={field.handleChange}
-                                    value={field.state.value}
-                                 />
                                  {isInvalid && (
                                     <FieldError
                                        errors={field.state.meta.errors}

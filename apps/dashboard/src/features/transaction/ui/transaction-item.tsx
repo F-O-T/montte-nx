@@ -54,7 +54,7 @@ export function TransactionItem({
    const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
    return (
-      <Item>
+      <Item size="sm">
          <ItemMedia
             style={{
                backgroundColor: categoryColor,
@@ -63,15 +63,18 @@ export function TransactionItem({
          >
             <IconDisplay iconName={categoryIcon as IconName} size={16} />
          </ItemMedia>
-         <ItemContent className="max-w-1/12 ">
-            <ItemTitle className="max-w-1/12 truncate">
+         <ItemContent className="min-w-0 flex-1 overflow-hidden">
+            <ItemTitle className="truncate">
                {transaction.description}
             </ItemTitle>
             <ItemDescription>
-               {new Date(transaction.date).toLocaleDateString()}
+               {new Date(transaction.date).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "short",
+               })}
             </ItemDescription>
          </ItemContent>
-         <ItemActions>
+         <ItemActions className="ml-auto shrink-0">
             <Badge variant={isPositive ? "default" : "destructive"}>
                {isPositive ? "+" : "-"}
                {formattedAmount}
@@ -93,9 +96,13 @@ export function TransactionItem({
                      fallback={
                         <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
                      }
-                  ></Suspense>
-                  <ManageTransactionSheet asChild transaction={transaction} />
-                  <DeleteTransaction asChild transaction={transaction} />
+                  >
+                     <ManageTransactionSheet
+                        asChild
+                        transaction={transaction}
+                     />
+                     <DeleteTransaction asChild transaction={transaction} />
+                  </Suspense>
                </DropdownMenuContent>
             </DropdownMenu>
          </ItemActions>

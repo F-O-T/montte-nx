@@ -12,7 +12,6 @@ import { transaction } from "./transactions";
 export const tag = pgTable("tag", {
    color: text("color").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
-   icon: text("icon").default("Tag"),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    name: text("name").notNull(),
    organizationId: uuid("organization_id")

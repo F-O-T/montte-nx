@@ -36,7 +36,6 @@ import {
    ItemContent,
    ItemDescription,
    ItemGroup,
-   ItemMedia,
    ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
@@ -58,8 +57,6 @@ import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Filter, Inbox, MoreVertical, Search, Trash2 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { DeleteTag } from "../features/delete-tag";
@@ -292,22 +289,12 @@ function TagsListContent() {
                         {tags.map((tag, index) => (
                            <Fragment key={tag.id}>
                               <Item>
-                                 <ItemMedia variant="icon">
-                                    <div
-                                       className="size-8 rounded-sm border flex items-center justify-center"
-                                       style={{
-                                          backgroundColor: tag.color,
-                                       }}
-                                    >
-                                       <IconDisplay
-                                          className="text-white"
-                                          iconName={
-                                             (tag.icon || "Tag") as IconName
-                                          }
-                                          size={16}
-                                       />
-                                    </div>
-                                 </ItemMedia>
+                                 <div
+                                    className="size-8 rounded-sm shrink-0"
+                                    style={{
+                                       backgroundColor: tag.color,
+                                    }}
+                                 />
                                  <ItemContent>
                                     <ItemTitle>{tag.name}</ItemTitle>
                                     <ItemDescription>

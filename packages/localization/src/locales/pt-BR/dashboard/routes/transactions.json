@@ -80,6 +80,7 @@
    "table": {
       "columns": {
          "amount": "Valor",
+         "category": "Categoria",
          "date": "Data",
          "description": "Descrição",
          "tags": "Tags",

@@ -224,7 +224,6 @@ export async function searchTags(
             id: string;
             name: string;
             color: string;
-            icon: string | null;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
@@ -365,7 +364,6 @@ export async function findTagsByTransactionId(
          .select({
             color: tag.color,
             createdAt: tag.createdAt,
-            icon: tag.icon,
             id: tag.id,
             name: tag.name,
             organizationId: tag.organizationId,
