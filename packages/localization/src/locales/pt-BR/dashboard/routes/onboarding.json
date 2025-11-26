@@ -59,10 +59,75 @@
          "success": "Categorias criadas com sucesso"
       }
    },
+   "context-selection": {
+      "business": {
+         "description": "Gerencie as finanças do seu negócio com Caixa",
+         "title": "Finanças Empresariais"
+      },
+      "description": "Escolha o contexto financeiro que melhor descreve suas necessidades.",
+      "personal": {
+         "description": "Acompanhe suas finanças pessoais com Carteira",
+         "title": "Finanças Pessoais"
+      },
+      "title": "Escolha seu Contexto Financeiro"
+   },
+   "default-account-created": {
+      "business": {
+         "message": "A conta 'Caixa' foi criada automaticamente para você."
+      },
+      "description": "Sua conta padrão foi criada com sucesso.",
+      "personal": {
+         "message": "A conta 'Carteira' foi criada automaticamente para você."
+      },
+      "title": "Conta Criada"
+   },
+   "optional-bank-account": {
+      "description": "Você pode adicionar outra conta bancária agora ou pular esta etapa.",
+      "form": {
+         "bank": {
+            "label": "Banco"
+         },
+         "name": {
+            "label": "Nome da Conta",
+            "placeholder": "Ex: Conta Principal"
+         },
+         "type": {
+            "label": "Tipo de Conta",
+            "options": {
+               "checking": "Corrente",
+               "investment": "Investimento",
+               "savings": "Poupança"
+            },
+            "placeholder": "Selecione o tipo de conta"
+         }
+      },
+      "skip": "Pular",
+      "title": "Adicionar Outra Conta Bancária"
+   },
+   "organization-setup": {
+      "description": "Configure sua organização empresarial.",
+      "form": {
+         "name": {
+            "label": "Nome da Organização",
+            "placeholder": "Ex: Minha Empresa"
+         },
+         "slug": {
+            "label": "Slug",
+            "placeholder": "minha-empresa"
+         }
+      },
+      "limit-reached": {
+         "description": "Você atingiu o limite de organizações permitidas pelo seu plano.",
+         "title": "Limite Atingido"
+      },
+      "title": "Configurar Organização"
+   },
    "validation": {
       "account-name-required": "Nome da conta é obrigatório",
       "account-type-required": "Tipo de conta é obrigatório",
       "bank-required": "Banco é obrigatório",
-      "category-name-required": "Nome da categoria é obrigatório"
+      "category-name-required": "Nome da categoria é obrigatório",
+      "organization-name-required": "Nome da organização é obrigatório",
+      "organization-slug-required": "Slug da organização é obrigatório"
    }
 }

@@ -1,5 +1,7 @@
 import {
    createBankAccount,
+   createDefaultBusinessBankAccount,
+   createDefaultWalletBankAccount,
    deleteBankAccount,
    findBankAccountById,
    findBankAccountsByUserId,
@@ -54,9 +56,30 @@ export const bankAccountRouter = router({
             ...input,
             id: crypto.randomUUID(),
             status: input.status || "active",
+            type: input.type as "checking" | "savings" | "investment",
             userId,
          });
       }),
+
+   createDefaultBusiness: protectedProcedure.mutation(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+      return createDefaultBusinessBankAccount(resolvedCtx.db, userId);
+   }),
+
+   createDefaultPersonal: protectedProcedure.mutation(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      if (!resolvedCtx.session?.user) {
+         throw new Error("Unauthorized");
+      }
+
+      const userId = resolvedCtx.session.user.id;
+      return createDefaultWalletBankAccount(resolvedCtx.db, userId);
+   }),
 
    delete: protectedProcedure
       .input(z.object({ id: z.string() }))
@@ -244,6 +267,21 @@ export const bankAccountRouter = router({
             throw new Error("Bank account not found");
          }
 
-         return updateBankAccount(resolvedCtx.db, input.id, input.data);
+         const updateData: {
+            type?: "checking" | "savings" | "investment";
+            bank?: string;
+            name?: string;
+            status?: "active" | "inactive";
+         } = {};
+         if (input.data.bank) updateData.bank = input.data.bank;
+         if (input.data.name) updateData.name = input.data.name;
+         if (input.data.status) updateData.status = input.data.status;
+         if (input.data.type) {
+            updateData.type = input.data.type as
+               | "checking"
+               | "savings"
+               | "investment";
+         }
+         return updateBankAccount(resolvedCtx.db, input.id, updateData);
       }),
 });

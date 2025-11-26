@@ -23,10 +23,17 @@ import {
 } from "@packages/ui/components/select";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { Toggle } from "@packages/ui/components/toggle";
+import { createSlug } from "@packages/utils/text";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { type FormEvent, useCallback, useState } from "react";
+import {
+   type FormEvent,
+   useCallback,
+   useEffect,
+   useMemo,
+   useState,
+} from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
@@ -36,41 +43,7 @@ import {
 } from "@/features/icon-selector/lib/available-icons";
 import { useTRPC } from "@/integrations/clients";
 
-const steps = [
-   {
-      id: "bank-account",
-   },
-   {
-      id: "category",
-   },
-] as const;
-
-const { Stepper } = defineStepper(...steps);
-
-const schema = z.object({
-   bank: z
-      .string()
-      .min(
-         1,
-         translate("dashboard.routes.onboarding.validation.bank-required"),
-      ),
-   bankAccountName: z
-      .string()
-      .min(
-         1,
-         translate(
-            "dashboard.routes.onboarding.validation.account-name-required",
-         ),
-      ),
-   bankAccountType: z
-      .string()
-      .min(
-         1,
-         translate(
-            "dashboard.routes.onboarding.validation.account-type-required",
-         ),
-      ),
-});
+type OnboardingContext = "personal" | "business" | null;
 
 const defaultCategoryKeys = [
    "food",
@@ -113,14 +86,141 @@ const defaultCategoriesConfig: Record<
    },
 };
 
+const optionalBankAccountSchema = z.object({
+   bank: z
+      .string()
+      .min(
+         1,
+         translate("dashboard.routes.onboarding.validation.bank-required"),
+      ),
+   bankAccountName: z
+      .string()
+      .min(
+         1,
+         translate(
+            "dashboard.routes.onboarding.validation.account-name-required",
+         ),
+      ),
+   bankAccountType: z
+      .string()
+      .min(
+         1,
+         translate(
+            "dashboard.routes.onboarding.validation.account-type-required",
+         ),
+      ),
+});
+
+const organizationSchema = z.object({
+   name: z
+      .string()
+      .min(
+         1,
+         translate(
+            "dashboard.routes.onboarding.validation.organization-name-required",
+         ),
+      ),
+   slug: z
+      .string()
+      .min(
+         1,
+         translate(
+            "dashboard.routes.onboarding.validation.organization-slug-required",
+         ),
+      ),
+});
+
 export function OnboardingPage() {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const router = useRouter();
 
+   const [context, setContext] = useState<OnboardingContext>(null);
    const [selectedDefaultCategories, setSelectedDefaultCategories] = useState<
       DefaultCategoryKey[]
    >([]);
+
+   const { data: organizations } = useQuery(
+      trpc.organization.getOrganizations.queryOptions(),
+   );
+   const { data: organizationLimit } = useQuery(
+      trpc.organization.getOrganizationLimit.queryOptions(),
+   );
+
+   const hasReachedOrgLimit = useMemo(() => {
+      if (!organizations || !organizationLimit) return false;
+      return organizations.length >= organizationLimit;
+   }, [organizations, organizationLimit]);
+
+   const steps = useMemo(() => {
+      if (!context) {
+         return [{ id: "context-selection" }] as const;
+      }
+
+      if (context === "personal") {
+         return [
+            { id: "context-selection" },
+            { id: "default-account-created" },
+            { id: "optional-bank-account" },
+            { id: "category" },
+         ] as const;
+      }
+
+      return [
+         { id: "context-selection" },
+         { id: "organization-setup" },
+         { id: "default-account-created" },
+         { id: "optional-bank-account" },
+         { id: "category" },
+      ] as const;
+   }, [context]);
+
+   const { Stepper } = useMemo(() => defineStepper(...steps), [steps]);
+
+   const createDefaultPersonalAccount = useMutation(
+      trpc.bankAccounts.createDefaultPersonal.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message);
+         },
+      }),
+   );
+
+   const createDefaultBusinessAccount = useMutation(
+      trpc.bankAccounts.createDefaultBusiness.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message);
+         },
+      }),
+   );
+
+   const createOrganization = useMutation(
+      trpc.organization.createOrganization.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message);
+         },
+         onSuccess: async (data) => {
+            if (data?.id) {
+               await setActiveOrganization.mutateAsync({
+                  organizationId: data.id,
+               });
+               await createDefaultBusinessAccount.mutateAsync();
+            }
+         },
+      }),
+   );
+
+   const setActiveOrganization = useMutation(
+      trpc.organization.setActiveOrganization.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message);
+         },
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.organization.getActiveOrganization.queryKey(),
+            });
+         },
+      }),
+   );
 
    const createBankAccount = useMutation(
       trpc.bankAccounts.create.mutationOptions({
@@ -174,7 +274,7 @@ export function OnboardingPage() {
       router.navigate({ params: { slug: "" }, to: "/$slug/home" });
    }, [queryClient, trpc, router]);
 
-   const form = useForm({
+   const optionalBankAccountForm = useForm({
       defaultValues: {
          bank: "",
          bankAccountName: "",
@@ -193,24 +293,134 @@ export function OnboardingPage() {
          formApi.reset();
       },
       validators: {
-         onBlur: schema,
+         onBlur: ({ value }) => {
+            const result = optionalBankAccountSchema.safeParse(value);
+            if (!result.success) {
+               const errors: Record<string, string[]> = {};
+               result.error.issues.forEach((err) => {
+                  const path = err.path[0] as string;
+                  if (path) {
+                     if (!errors[path]) {
+                        errors[path] = [];
+                     }
+                     errors[path].push(err.message);
+                  }
+               });
+               return errors;
+            }
+         },
       },
    });
 
-   const handleSubmit = useCallback(
-      (e: FormEvent) => {
-         e.preventDefault();
-         e.stopPropagation();
-         form.handleSubmit();
+   const organizationForm = useForm({
+      defaultValues: {
+         name: "",
+         slug: "",
       },
-      [form],
-   );
+      onSubmit: async ({ value }) => {
+         if (hasReachedOrgLimit) {
+            toast.error(
+               translate(
+                  "dashboard.routes.onboarding.organization-setup.limit-reached.title",
+               ),
+            );
+            return;
+         }
 
-   function BankAccountStep() {
+         await createOrganization.mutateAsync({
+            name: value.name,
+            slug: value.slug,
+         });
+      },
+      validators: {
+         onBlur: organizationSchema,
+      },
+   });
+
+   useEffect(() => {
+      if (organizationForm.state.values.name) {
+         const slug = createSlug(organizationForm.state.values.name);
+         organizationForm.setFieldValue("slug", slug);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [organizationForm.state.values.name]);
+
+   function ContextSelectionStep() {
       return (
-         <>
+         <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <button
+                  className="p-6 border-2 rounded-lg hover:border-primary transition-colors text-left"
+                  onClick={() => setContext("personal")}
+                  type="button"
+               >
+                  <div className="flex items-center gap-3 mb-2">
+                     {(() => {
+                        const UserIcon = getIconComponent("User");
+                        return <UserIcon className="size-6" />;
+                     })()}
+                     <h3 className="text-lg font-semibold">
+                        {translate(
+                           "dashboard.routes.onboarding.context-selection.personal.title",
+                        )}
+                     </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.onboarding.context-selection.personal.description",
+                     )}
+                  </p>
+               </button>
+               <button
+                  className="p-6 border-2 rounded-lg hover:border-primary transition-colors text-left"
+                  onClick={() => setContext("business")}
+                  type="button"
+               >
+                  <div className="flex items-center gap-3 mb-2">
+                     {(() => {
+                        const BriefcaseIcon = getIconComponent("Briefcase");
+                        return <BriefcaseIcon className="size-6" />;
+                     })()}
+                     <h3 className="text-lg font-semibold">
+                        {translate(
+                           "dashboard.routes.onboarding.context-selection.business.title",
+                        )}
+                     </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.onboarding.context-selection.business.description",
+                     )}
+                  </p>
+               </button>
+            </div>
+         </div>
+      );
+   }
+
+   function OrganizationSetupStep() {
+      if (hasReachedOrgLimit) {
+         return (
+            <div className="space-y-4 text-center">
+               <p className="text-muted-foreground">
+                  {translate(
+                     "dashboard.routes.onboarding.organization-setup.limit-reached.description",
+                  )}
+               </p>
+            </div>
+         );
+      }
+
+      return (
+         <form
+            className="space-y-4"
+            onSubmit={(e) => {
+               e.preventDefault();
+               organizationForm.handleSubmit();
+            }}
+         >
             <FieldGroup>
-               <form.Field name="bankAccountName">
+               <organizationForm.Field name="name">
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -218,7 +428,7 @@ export function OnboardingPage() {
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
                               {translate(
-                                 "dashboard.routes.onboarding.bank-account.form.name.label",
+                                 "dashboard.routes.onboarding.organization-setup.form.name.label",
                               )}
                            </FieldLabel>
                            <Input
@@ -230,7 +440,7 @@ export function OnboardingPage() {
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "dashboard.routes.onboarding.bank-account.form.name.placeholder",
+                                 "dashboard.routes.onboarding.organization-setup.form.name.placeholder",
                               )}
                               value={field.state.value}
                            />
@@ -240,10 +450,10 @@ export function OnboardingPage() {
                         </Field>
                      );
                   }}
-               </form.Field>
+               </organizationForm.Field>
             </FieldGroup>
             <FieldGroup>
-               <form.Field name="bank">
+               <organizationForm.Field name="slug">
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -251,7 +461,99 @@ export function OnboardingPage() {
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
                               {translate(
-                                 "dashboard.routes.onboarding.bank-account.form.bank.label",
+                                 "dashboard.routes.onboarding.organization-setup.form.slug.label",
+                              )}
+                           </FieldLabel>
+                           <Input
+                              aria-invalid={isInvalid}
+                              id={field.name}
+                              name={field.name}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                 field.handleChange(e.target.value)
+                              }
+                              placeholder={translate(
+                                 "dashboard.routes.onboarding.organization-setup.form.slug.placeholder",
+                              )}
+                              value={field.state.value}
+                           />
+                           {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                           )}
+                        </Field>
+                     );
+                  }}
+               </organizationForm.Field>
+            </FieldGroup>
+         </form>
+      );
+   }
+
+   function DefaultAccountCreatedStep() {
+      const messageKey =
+         context === "personal"
+            ? "dashboard.routes.onboarding.default-account-created.personal.message"
+            : "dashboard.routes.onboarding.default-account-created.business.message";
+
+      return (
+         <div className="space-y-4 text-center">
+            <p className="text-muted-foreground">{translate(messageKey)}</p>
+         </div>
+      );
+   }
+
+   function OptionalBankAccountStep() {
+      return (
+         <form
+            className="space-y-4"
+            onSubmit={(e) => {
+               e.preventDefault();
+               optionalBankAccountForm.handleSubmit();
+            }}
+         >
+            <FieldGroup>
+               <optionalBankAccountForm.Field name="bankAccountName">
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                     return (
+                        <Field data-invalid={isInvalid}>
+                           <FieldLabel htmlFor={field.name}>
+                              {translate(
+                                 "dashboard.routes.onboarding.optional-bank-account.form.name.label",
+                              )}
+                           </FieldLabel>
+                           <Input
+                              aria-invalid={isInvalid}
+                              id={field.name}
+                              name={field.name}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                 field.handleChange(e.target.value)
+                              }
+                              placeholder={translate(
+                                 "dashboard.routes.onboarding.optional-bank-account.form.name.placeholder",
+                              )}
+                              value={field.state.value}
+                           />
+                           {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                           )}
+                        </Field>
+                     );
+                  }}
+               </optionalBankAccountForm.Field>
+            </FieldGroup>
+            <FieldGroup>
+               <optionalBankAccountForm.Field name="bank">
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                     return (
+                        <Field data-invalid={isInvalid}>
+                           <FieldLabel htmlFor={field.name}>
+                              {translate(
+                                 "dashboard.routes.onboarding.optional-bank-account.form.bank.label",
                               )}
                            </FieldLabel>
                            <BankAccountCombobox
@@ -265,15 +567,15 @@ export function OnboardingPage() {
                         </Field>
                      );
                   }}
-               </form.Field>
+               </optionalBankAccountForm.Field>
             </FieldGroup>
             <FieldGroup>
-               <form.Field name="bankAccountType">
+               <optionalBankAccountForm.Field name="bankAccountType">
                   {(field) => (
                      <Field>
                         <FieldLabel>
                            {translate(
-                              "dashboard.routes.onboarding.bank-account.form.type.label",
+                              "dashboard.routes.onboarding.optional-bank-account.form.type.label",
                            )}
                         </FieldLabel>
                         <Select
@@ -283,35 +585,36 @@ export function OnboardingPage() {
                            <SelectTrigger>
                               <SelectValue
                                  placeholder={translate(
-                                    "dashboard.routes.onboarding.bank-account.form.type.placeholder",
+                                    "dashboard.routes.onboarding.optional-bank-account.form.type.placeholder",
                                  )}
                               />
                            </SelectTrigger>
                            <SelectContent>
                               <SelectItem value="checking">
                                  {translate(
-                                    "dashboard.routes.onboarding.bank-account.form.type.options.checking",
+                                    "dashboard.routes.onboarding.optional-bank-account.form.type.options.checking",
                                  )}
                               </SelectItem>
                               <SelectItem value="savings">
                                  {translate(
-                                    "dashboard.routes.onboarding.bank-account.form.type.options.savings",
+                                    "dashboard.routes.onboarding.optional-bank-account.form.type.options.savings",
                                  )}
                               </SelectItem>
                               <SelectItem value="investment">
                                  {translate(
-                                    "dashboard.routes.onboarding.bank-account.form.type.options.investment",
+                                    "dashboard.routes.onboarding.optional-bank-account.form.type.options.investment",
                                  )}
                               </SelectItem>
                            </SelectContent>
                         </Select>
                      </Field>
                   )}
-               </form.Field>
+               </optionalBankAccountForm.Field>
             </FieldGroup>
-         </>
+         </form>
       );
    }
+
    function CategoryStep() {
       return (
          <>
@@ -375,114 +678,237 @@ export function OnboardingPage() {
          </>
       );
    }
+
    return (
       <Stepper.Provider>
-         {({ methods }) => (
-            <Card>
-               <CardHeader className="text-center">
-                  <CardTitle className="text-3xl">
-                     {methods.switch({
-                        "bank-account": () =>
-                           translate(
-                              "dashboard.routes.onboarding.bank-account.title",
+         {({ methods }) => {
+            const currentStepId = methods.current.id;
+
+            const handleNext = async () => {
+               if (currentStepId === "context-selection" && context) {
+                  try {
+                     if (context === "personal") {
+                        await createDefaultPersonalAccount.mutateAsync();
+                        methods.next();
+                     } else if (context === "business") {
+                        methods.next();
+                     }
+                  } catch (error) {
+                     // Error já tratado no onError da mutation
+                  }
+                  return;
+               }
+
+               if (currentStepId === "organization-setup") {
+                  try {
+                     await organizationForm.handleSubmit();
+                     if (organizationForm.state.isValid) {
+                        methods.next();
+                     }
+                  } catch (error) {
+                     // Error já tratado no onError da mutation
+                  }
+                  return;
+               }
+
+               if (currentStepId === "default-account-created") {
+                  methods.next();
+                  return;
+               }
+
+               if (currentStepId === "optional-bank-account") {
+                  methods.next();
+                  return;
+               }
+
+               methods.next();
+            };
+
+            const handleSkip = () => {
+               if (currentStepId === "optional-bank-account") {
+                  methods.next();
+               }
+            };
+
+            const handleSubmit = async (e: FormEvent) => {
+               e.preventDefault();
+               e.stopPropagation();
+
+               if (currentStepId === "category") {
+                  await createSelectedCategories();
+                  await completeOnboarding();
+               } else if (currentStepId === "optional-bank-account") {
+                  await optionalBankAccountForm.handleSubmit();
+               }
+            };
+
+            const getStepTitle = () => {
+               switch (currentStepId) {
+                  case "context-selection":
+                     return translate(
+                        "dashboard.routes.onboarding.context-selection.title",
+                     );
+                  case "organization-setup":
+                     return translate(
+                        "dashboard.routes.onboarding.organization-setup.title",
+                     );
+                  case "default-account-created":
+                     return translate(
+                        "dashboard.routes.onboarding.default-account-created.title",
+                     );
+                  case "optional-bank-account":
+                     return translate(
+                        "dashboard.routes.onboarding.optional-bank-account.title",
+                     );
+                  case "category":
+                     return translate(
+                        "dashboard.routes.onboarding.category.title",
+                     );
+                  default:
+                     return "";
+               }
+            };
+
+            const getStepDescription = () => {
+               switch (currentStepId) {
+                  case "context-selection":
+                     return translate(
+                        "dashboard.routes.onboarding.context-selection.description",
+                     );
+                  case "organization-setup":
+                     return translate(
+                        "dashboard.routes.onboarding.organization-setup.description",
+                     );
+                  case "default-account-created":
+                     return translate(
+                        "dashboard.routes.onboarding.default-account-created.description",
+                     );
+                  case "optional-bank-account":
+                     return translate(
+                        "dashboard.routes.onboarding.optional-bank-account.description",
+                     );
+                  case "category":
+                     return translate(
+                        "dashboard.routes.onboarding.category.description",
+                     );
+                  default:
+                     return "";
+               }
+            };
+
+            return (
+               <Card>
+                  <CardHeader className="text-center">
+                     <CardTitle className="text-3xl">
+                        {getStepTitle()}
+                     </CardTitle>
+                     <CardDescription>{getStepDescription()}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                     <Stepper.Navigation>
+                        {steps.map((step) => (
+                           <Stepper.Step
+                              key={step.id}
+                              of={step.id}
+                           ></Stepper.Step>
+                        ))}
+                     </Stepper.Navigation>
+                     <form className="space-y-4" onSubmit={handleSubmit}>
+                        {methods.switch({
+                           category: () => <CategoryStep />,
+                           "context-selection": () => <ContextSelectionStep />,
+                           "default-account-created": () => (
+                              <DefaultAccountCreatedStep />
                            ),
-                        category: () =>
-                           translate(
-                              "dashboard.routes.onboarding.category.title",
+                           "optional-bank-account": () => (
+                              <OptionalBankAccountStep />
                            ),
-                     })}
-                  </CardTitle>
-                  <CardDescription>
-                     {methods.switch({
-                        "bank-account": () =>
-                           translate(
-                              "dashboard.routes.onboarding.bank-account.description",
+                           "organization-setup": () => (
+                              <OrganizationSetupStep />
                            ),
-                        category: () =>
-                           translate(
-                              "dashboard.routes.onboarding.category.description",
-                           ),
-                     })}
-                  </CardDescription>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                  <Stepper.Navigation>
-                     {steps.map((step) => (
-                        <Stepper.Step key={step.id} of={step.id}></Stepper.Step>
-                     ))}
-                  </Stepper.Navigation>
-                  <form className="space-y-4" onSubmit={handleSubmit}>
-                     {methods.switch({
-                        "bank-account": () => <BankAccountStep />,
-                        category: () => <CategoryStep />,
-                     })}
-                     <Stepper.Controls className="flex w-full justify-between">
-                        <Button
-                           disabled={methods.isFirst}
-                           onClick={(e) => {
-                              e.preventDefault();
-                              methods.prev();
-                           }}
-                           type="button"
-                           variant="outline"
-                        >
-                           {translate("common.actions.previous")}
-                        </Button>
-                        {methods.isLast ? (
-                           <form.Subscribe>
-                              {(formState) => (
+                        })}
+                        <Stepper.Controls className="flex w-full justify-between">
+                           <Button
+                              disabled={methods.isFirst}
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 methods.prev();
+                              }}
+                              type="button"
+                              variant="outline"
+                           >
+                              {translate("common.actions.previous")}
+                           </Button>
+                           <div className="flex gap-2">
+                              {currentStepId === "optional-bank-account" && (
+                                 <Button
+                                    onClick={(e) => {
+                                       e.preventDefault();
+                                       handleSkip();
+                                    }}
+                                    type="button"
+                                    variant="outline"
+                                 >
+                                    {translate(
+                                       "dashboard.routes.onboarding.optional-bank-account.skip",
+                                    )}
+                                 </Button>
+                              )}
+                              {methods.isLast ? (
                                  <Button
                                     className="flex gap-2 items-center justify-center"
                                     disabled={
-                                       !formState.canSubmit ||
-                                       formState.isSubmitting ||
-                                       createBankAccount.isPending ||
-                                       createCategory.isPending
+                                       createCategory.isPending ||
+                                       createBankAccount.isPending
                                     }
                                     type="submit"
                                     variant="default"
                                  >
                                     {translate("common.actions.submit")}
                                  </Button>
+                              ) : (
+                                 <organizationForm.Subscribe>
+                                    {(orgFormState) => (
+                                       <optionalBankAccountForm.Subscribe>
+                                          {(optionalFormState) => (
+                                             <Button
+                                                disabled={
+                                                   (currentStepId ===
+                                                      "context-selection" &&
+                                                      !context) ||
+                                                   (currentStepId ===
+                                                      "organization-setup" &&
+                                                      (!orgFormState.canSubmit ||
+                                                         hasReachedOrgLimit ||
+                                                         createOrganization.isPending)) ||
+                                                   (currentStepId ===
+                                                      "optional-bank-account" &&
+                                                      !optionalFormState.canSubmit) ||
+                                                   createDefaultPersonalAccount.isPending ||
+                                                   createDefaultBusinessAccount.isPending
+                                                }
+                                                onClick={(e) => {
+                                                   e.preventDefault();
+                                                   handleNext();
+                                                }}
+                                                type="button"
+                                             >
+                                                {translate(
+                                                   "common.actions.next",
+                                                )}
+                                             </Button>
+                                          )}
+                                       </optionalBankAccountForm.Subscribe>
+                                    )}
+                                 </organizationForm.Subscribe>
                               )}
-                           </form.Subscribe>
-                        ) : (
-                           <form.Subscribe
-                              selector={(state) => ({
-                                 bankAccountNameValid:
-                                    state.fieldMeta.bankAccountName?.isValid,
-                                 bankAccountTypeValid:
-                                    state.fieldMeta.bankAccountType?.isValid,
-                                 bankValid: state.fieldMeta.bank?.isValid,
-                              })}
-                           >
-                              {({
-                                 bankValid,
-                                 bankAccountNameValid,
-                                 bankAccountTypeValid,
-                              }) => (
-                                 <Button
-                                    disabled={
-                                       !bankValid ||
-                                       !bankAccountNameValid ||
-                                       !bankAccountTypeValid
-                                    }
-                                    onClick={(e) => {
-                                       e.preventDefault();
-                                       methods.next();
-                                    }}
-                                    type="button"
-                                 >
-                                    {translate("common.actions.next")}
-                                 </Button>
-                              )}
-                           </form.Subscribe>
-                        )}
-                     </Stepper.Controls>
-                  </form>
-               </CardContent>
-            </Card>
-         )}
+                           </div>
+                        </Stepper.Controls>
+                     </form>
+                  </CardContent>
+               </Card>
+            );
+         }}
       </Stepper.Provider>
    );
 }
