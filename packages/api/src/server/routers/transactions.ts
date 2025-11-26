@@ -1,6 +1,7 @@
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import {
    createTransaction,
+   createTransfer,
    deleteTransaction,
    findTransactionById,
    findTransactionsByOrganizationId,
@@ -11,9 +12,8 @@ import {
    getTotalTransfersByOrganizationId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
-import { category } from "@packages/database/schemas/categories";
 import { z } from "zod";
-import { organizationProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 const createTransactionSchema = z.object({
    amount: z.number(),
@@ -50,11 +50,11 @@ const paginationSchema = z.object({
 });
 
 export const transactionRouter = router({
-   create: organizationProcedure
+   create: protectedProcedure
       .input(createTransactionSchema)
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
 
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
@@ -82,11 +82,11 @@ export const transactionRouter = router({
          };
       }),
 
-   delete: organizationProcedure
+   delete: protectedProcedure
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = (resolvedCtx as any).organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingTransaction = await findTransactionById(
             resolvedCtx.db,
@@ -103,18 +103,18 @@ export const transactionRouter = router({
          return deleteTransaction(resolvedCtx.db, input.id);
       }),
 
-   getAll: organizationProcedure.query(async ({ ctx }) => {
+   getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      const organizationId = (resolvedCtx as any).organizationId as string;
+      const organizationId = resolvedCtx.organizationId;
 
       return findTransactionsByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
-   getAllPaginated: organizationProcedure
+   getAllPaginated: protectedProcedure
       .input(paginationSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = (resolvedCtx as any).organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
 
          return findTransactionsByOrganizationIdPaginated(
             resolvedCtx.db,
@@ -129,11 +129,11 @@ export const transactionRouter = router({
          );
       }),
 
-   getById: organizationProcedure
+   getById: protectedProcedure
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = (resolvedCtx as any).organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
 
          const transaction = await findTransactionById(
             resolvedCtx.db,
@@ -147,7 +147,7 @@ export const transactionRouter = router({
          return transaction;
       }),
 
-   getStats: organizationProcedure
+   getStats: protectedProcedure
       .input(
          z
             .object({
@@ -157,7 +157,7 @@ export const transactionRouter = router({
       )
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = (resolvedCtx as any).organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
          const bankAccountId = input?.bankAccountId;
 
          const [totalTransactions, totalIncome, totalExpenses, totalTransfers] =
@@ -192,7 +192,7 @@ export const transactionRouter = router({
          };
       }),
 
-   transfer: organizationProcedure
+   transfer: protectedProcedure
       .input(
          z.object({
             amount: z.number().positive(),
@@ -204,63 +204,19 @@ export const transactionRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = (resolvedCtx as any).organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
 
-         return resolvedCtx.db.transaction(async (tx) => {
-            const transferCategory = await tx.query.category.findFirst({
-               where: (cat, { eq, and }) =>
-                  and(
-                     eq(cat.organizationId, organizationId),
-                     eq(cat.name, "Transfer"),
-                  ),
-            });
-
-            const transferCategoryId =
-               transferCategory?.id || crypto.randomUUID();
-
-            if (!transferCategory) {
-               await tx.insert(category).values({
-                  color: "#6b7280",
-                  icon: "ArrowLeftRight",
-                  id: transferCategoryId,
-                  name: "Transfer",
-                  organizationId,
-               });
-            }
-
-            const fromTransaction = await createTransaction(tx, {
-               amount: (-input.amount).toString(),
-               bankAccountId: input.fromBankAccountId,
-               date: new Date(input.date),
-               description: input.description,
-               id: crypto.randomUUID(),
-               organizationId,
-               type: "transfer",
-            });
-
-            await setTransactionCategories(tx, fromTransaction.id, [
-               transferCategoryId,
-            ]);
-
-            const toTransaction = await createTransaction(tx, {
-               amount: input.amount.toString(),
-               bankAccountId: input.toBankAccountId,
-               date: new Date(input.date),
-               description: input.description,
-               id: crypto.randomUUID(),
-               organizationId,
-               type: "transfer",
-            });
-
-            await setTransactionCategories(tx, toTransaction.id, [
-               transferCategoryId,
-            ]);
-
-            return [fromTransaction, toTransaction];
+         return createTransfer(resolvedCtx.db, {
+            amount: input.amount,
+            date: new Date(input.date),
+            description: input.description,
+            fromBankAccountId: input.fromBankAccountId,
+            organizationId,
+            toBankAccountId: input.toBankAccountId,
          });
       }),
 
-   update: organizationProcedure
+   update: protectedProcedure
       .input(
          z.object({
             data: updateTransactionSchema,
@@ -269,7 +225,7 @@ export const transactionRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = (resolvedCtx as any).organizationId as string;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingTransaction = await findTransactionById(
             resolvedCtx.db,
@@ -325,13 +281,8 @@ export const transactionRouter = router({
             );
          }
 
-         const finalTransaction = await findTransactionById(
-            resolvedCtx.db,
-            input.id,
-         );
-
          return {
-            transaction: finalTransaction,
+            transaction: updatedTransaction,
          };
       }),
 });

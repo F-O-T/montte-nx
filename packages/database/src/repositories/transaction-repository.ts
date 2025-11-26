@@ -1,7 +1,9 @@
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
+import { category } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
+import { setTransactionCategories } from "./category-repository";
 
 export type Transaction = typeof transaction.$inferSelect;
 export type NewTransaction = typeof transaction.$inferInsert;
@@ -540,6 +542,77 @@ export async function getTotalTransfersByOrganizationId(
       propagateError(err);
       throw AppError.database(
          `Failed to get total transfers: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function createTransfer(
+   dbClient: DatabaseInstance,
+   data: {
+      amount: number;
+      date: Date;
+      description: string;
+      fromBankAccountId: string;
+      toBankAccountId: string;
+      organizationId: string;
+   },
+) {
+   try {
+      return await dbClient.transaction(async (tx) => {
+         const transferCategory = await tx.query.category.findFirst({
+            where: (cat, { eq, and }) =>
+               and(
+                  eq(cat.organizationId, data.organizationId),
+                  eq(cat.name, "Transfer"),
+               ),
+         });
+
+         const transferCategoryId = transferCategory?.id || crypto.randomUUID();
+
+         if (!transferCategory) {
+            await tx.insert(category).values({
+               color: "#6b7280",
+               icon: "ArrowLeftRight",
+               id: transferCategoryId,
+               name: "Transfer",
+               organizationId: data.organizationId,
+            });
+         }
+
+         const fromTransaction = await createTransaction(tx, {
+            amount: (-data.amount).toString(),
+            bankAccountId: data.fromBankAccountId,
+            date: data.date,
+            description: data.description,
+            id: crypto.randomUUID(),
+            organizationId: data.organizationId,
+            type: "transfer",
+         });
+
+         await setTransactionCategories(tx, fromTransaction.id, [
+            transferCategoryId,
+         ]);
+
+         const toTransaction = await createTransaction(tx, {
+            amount: data.amount.toString(),
+            bankAccountId: data.toBankAccountId,
+            date: data.date,
+            description: data.description,
+            id: crypto.randomUUID(),
+            organizationId: data.organizationId,
+            type: "transfer",
+         });
+
+         await setTransactionCategories(tx, toTransaction.id, [
+            transferCategoryId,
+         ]);
+
+         return [fromTransaction, toTransaction];
+      });
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create transfer: ${(err as Error).message}`,
       );
    }
 }
