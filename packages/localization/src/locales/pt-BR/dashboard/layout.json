@@ -33,7 +33,7 @@
       }
    },
    "sidebar": {
-      "collapse": "Colapsar Sidebar",
-      "expand": "Abrir Sidebar"
+      "collapse": "Ocultar",
+      "expand": "Abrir"
    }
 }
