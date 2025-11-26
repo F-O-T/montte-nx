@@ -1,7 +1,7 @@
 import type { ServerEnv } from "@packages/environment/server";
 import { Client } from "minio";
 
-const parseEndpoint = (endpointUrl: string) => {
+export const parseEndpoint = (endpointUrl: string) => {
    // 1. Ensure the URL has a protocol so the URL constructor works correctly.
    const fullUrl = endpointUrl.startsWith("http")
       ? endpointUrl
