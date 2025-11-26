@@ -22,15 +22,11 @@ export const reportRouter = router({
       .input(cashFlowSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          return getCashFlowByPeriod(
             resolvedCtx.db,
-            userId,
+            organizationId,
             {
                endDate: new Date(input.endDate),
                startDate: new Date(input.startDate),
@@ -43,13 +39,9 @@ export const reportRouter = router({
       .input(periodSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return getCategoryBreakdownByPeriod(resolvedCtx.db, userId, {
+         return getCategoryBreakdownByPeriod(resolvedCtx.db, organizationId, {
             endDate: new Date(input.endDate),
             startDate: new Date(input.startDate),
          });
@@ -59,13 +51,9 @@ export const reportRouter = router({
       .input(periodSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return getFinancialSummaryByPeriod(resolvedCtx.db, userId, {
+         return getFinancialSummaryByPeriod(resolvedCtx.db, organizationId, {
             endDate: new Date(input.endDate),
             startDate: new Date(input.startDate),
          });
@@ -75,13 +63,9 @@ export const reportRouter = router({
       .input(periodSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return getPaymentPerformanceByPeriod(resolvedCtx.db, userId, {
+         return getPaymentPerformanceByPeriod(resolvedCtx.db, organizationId, {
             endDate: new Date(input.endDate),
             startDate: new Date(input.startDate),
          });
@@ -91,13 +75,9 @@ export const reportRouter = router({
       .input(periodSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return getPlannedVsActualByPeriod(resolvedCtx.db, userId, {
+         return getPlannedVsActualByPeriod(resolvedCtx.db, organizationId, {
             endDate: new Date(input.endDate),
             startDate: new Date(input.startDate),
          });

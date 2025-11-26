@@ -59,12 +59,12 @@ function BankAccountContent({ bankAccountId }: { bankAccountId: string }) {
    return (
       <Item className="w-full rounded-lg" variant="outline">
          <ItemMedia variant="image">
-            <BankAccountAvatar name={data.name} />
+            <BankAccountAvatar name={data.name || "Account"} />
          </ItemMedia>
          <ItemContent>
-            <ItemTitle>{data.name}</ItemTitle>
+            <ItemTitle>{data.name || "Unnamed Account"}</ItemTitle>
             <ItemDescription>
-               {data.bank} - {data.type} • {data.status}
+               {data.bank} - {data.type}
             </ItemDescription>
          </ItemContent>
       </Item>

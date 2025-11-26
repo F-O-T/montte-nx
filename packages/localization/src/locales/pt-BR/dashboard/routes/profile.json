@@ -1,4 +1,20 @@
 {
+   "account-configuration": {
+      "description": "Configure sua conta e preferências.",
+      "items": {
+         "currency": {
+            "description": "Selecione a moeda padrão para suas transações.",
+            "title": "Moeda"
+         }
+      },
+      "state": {
+         "error": {
+            "description": "Ocorreu um erro ao carregar suas configurações.",
+            "title": "Erro ao carregar"
+         }
+      },
+      "title": "Configurações da Conta"
+   },
    "bank-accounts": {
       "actions": {
          "add-account": {

@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -10,7 +9,7 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
-import { Item, ItemGroup, ItemSeparator } from "@packages/ui/components/item";
+import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
    Pagination,
    PaginationContent,
@@ -132,15 +131,19 @@ function RecentTransactionsContent({
                </div>
             ) : isMobile ? (
                <ItemGroup>
-                  {transactions.map((transaction: Transaction, index: number) => (
-                     <Fragment key={transaction.id}>
-                        <TransactionItem
-                           categories={categories}
-                           transaction={transaction}
-                        />
-                        {index !== transactions.length - 1 && <ItemSeparator />}
-                     </Fragment>
-                  ))}
+                  {transactions.map(
+                     (transaction: Transaction, index: number) => (
+                        <Fragment key={transaction.id}>
+                           <TransactionItem
+                              categories={categories}
+                              transaction={transaction}
+                           />
+                           {index !== transactions.length - 1 && (
+                              <ItemSeparator />
+                           )}
+                        </Fragment>
+                     ),
+                  )}
                </ItemGroup>
             ) : (
                <DataTable

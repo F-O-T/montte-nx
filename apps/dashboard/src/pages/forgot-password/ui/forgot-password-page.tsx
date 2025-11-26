@@ -73,9 +73,9 @@ export function ForgotPasswordPage() {
                id: "send-otp-toast",
             });
          },
-         onSuccess: (data) => {
+         onSuccess: (_data) => {
             setSendingOtp(false);
-            toast.success(data.message, {
+            toast.success("OTP sent successfully", {
                id: "send-otp-toast",
             });
          },

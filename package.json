@@ -172,6 +172,7 @@
       },
       "packages": [
          "tooling/*",
+         "libraries/*",
          "packages/*",
          "apps/*"
       ]

@@ -5,7 +5,7 @@ import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { Elysia } from "elysia";
-import { auth, OpenAPI } from "./integrations/auth";
+import { auth } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
 import { posthog, posthogPlugin } from "./integrations/posthog";
@@ -56,16 +56,6 @@ const app = new Elysia({
       }),
    )
    .use(posthogPlugin)
-   .use(
-      openapi({
-         documentation: {
-            components: await OpenAPI.components,
-
-            paths: await OpenAPI.getPaths(),
-         },
-         path: "/docs",
-      }),
-   )
    .mount(auth.handler)
    .all(
       "/trpc/*",

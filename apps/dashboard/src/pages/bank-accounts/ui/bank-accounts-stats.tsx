@@ -30,7 +30,7 @@ function BankAccountsStatsErrorFallback(props: FallbackProps) {
 function BankAccountsStatsSkeleton() {
    return (
       <div className="grid grid-cols-2 gap-4 h-min">
-         {[1, 2, 3].map((index) => (
+         {[1, 2].map((index) => (
             <Card
                className="col-span-1 h-full w-full"
                key={`stats-skeleton-card-${index + 1}`}
@@ -58,7 +58,7 @@ function BankAccountsStatsContent() {
    );
 
    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-min">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-min">
          <StatsCard
             description="Saldo total em todas as contas"
             title="Saldo Total"
@@ -68,11 +68,6 @@ function BankAccountsStatsContent() {
             description="Número total de contas bancárias"
             title="Total de Contas"
             value={stats.totalAccounts}
-         />
-         <StatsCard
-            description="Contas bancárias ativas"
-            title="Contas Ativas"
-            value={stats.activeAccounts}
          />
       </div>
    );

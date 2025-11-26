@@ -20,6 +20,7 @@ import {
    openAPI,
    organization,
 } from "better-auth/plugins";
+import { type BuiltInLocales, localization } from "better-auth-localization";
 export interface AuthOptions {
    db: DatabaseInstance;
    resendClient: ResendClient;
@@ -105,6 +106,22 @@ export const getAuthOptions = (
          joins: true,
       },
       plugins: [
+         localization({
+            defaultLocale: "pt-BR", // Use built-in Portuguese translations
+            fallbackLocale: "default", // Fallback to English,
+            getLocale: async (request) => {
+               try {
+                  const userLocale = request?.headers.get(
+                     "x-user-locale",
+                  ) as BuiltInLocales;
+
+                  return userLocale || "pt-BR";
+               } catch (error) {
+                  console.warn("Error detecting locale:", error);
+                  return "default"; // Safe fallback
+               }
+            },
+         }),
          admin(),
          emailOTP({
             expiresIn: 60 * 10,

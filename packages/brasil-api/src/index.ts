@@ -8,5 +8,5 @@ type Bank = {
 export async function getAllBrazilianBanks(): Promise<Bank[]> {
    const response = await fetch(`${url}/banks/v1`);
    const data = await response.json();
-   return data;
+   return data as Bank[];
 }

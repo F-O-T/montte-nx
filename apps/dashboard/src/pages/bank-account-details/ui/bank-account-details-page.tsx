@@ -21,7 +21,8 @@ import { BankAccountStats } from "./bank-account-stats";
 
 function BankAccountContent() {
    const params = useParams({ strict: false });
-   const bankAccountId = (params as any).bankAccountId as string;
+   const bankAccountId =
+      (params as { bankAccountId?: string }).bankAccountId ?? "";
    const trpc = useTRPC();
 
    const { data: bankAccount } = useSuspenseQuery(

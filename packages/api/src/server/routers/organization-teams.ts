@@ -1,9 +1,9 @@
 import { APIError, propagateError } from "@packages/utils/errors";
 import { z } from "zod";
-import { organizationProcedure, protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 export const organizationTeamsRouter = router({
-   addMemberToTeam: organizationProcedure
+   addMemberToTeam: protectedProcedure
       .input(
          z.object({
             teamId: z.string().min(1, "Team ID is required"),
@@ -29,7 +29,7 @@ export const organizationTeamsRouter = router({
             throw APIError.internal("Failed to add member to team");
          }
       }),
-   createTeam: organizationProcedure
+   createTeam: protectedProcedure
       .input(
          z.object({
             description: z
@@ -71,7 +71,7 @@ export const organizationTeamsRouter = router({
          }
       }),
 
-   deleteTeam: organizationProcedure
+   deleteTeam: protectedProcedure
       .input(
          z.object({
             teamId: z.string().min(1, "Team ID is required"),
@@ -96,7 +96,7 @@ export const organizationTeamsRouter = router({
          }
       }),
 
-   getTeamStats: organizationProcedure.query(async ({ ctx }) => {
+   getTeamStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.session?.session.activeOrganizationId;
 
@@ -170,7 +170,7 @@ export const organizationTeamsRouter = router({
       }
    }),
 
-   listTeamMembers: organizationProcedure
+   listTeamMembers: protectedProcedure
       .input(
          z.object({
             limit: z.number().min(1).max(100).default(20),
@@ -219,7 +219,7 @@ export const organizationTeamsRouter = router({
       }
    }),
 
-   removeMemberFromTeam: organizationProcedure
+   removeMemberFromTeam: protectedProcedure
       .input(
          z.object({
             teamId: z.string().min(1, "Team ID is required"),
@@ -246,7 +246,7 @@ export const organizationTeamsRouter = router({
          }
       }),
 
-   updateTeam: organizationProcedure
+   updateTeam: protectedProcedure
       .input(
          z.object({
             description: z

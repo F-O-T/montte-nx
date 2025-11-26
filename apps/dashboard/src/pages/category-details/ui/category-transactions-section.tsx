@@ -149,7 +149,7 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
                </div>
             ) : (
                <ItemGroup>
-                  {transactions.map((transaction: any, index: number) => {
+                  {transactions.map((transaction, index: number) => {
                      const transactionCategories = Array.isArray(
                         transaction.category,
                      )
@@ -159,7 +159,7 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
                      const primaryCategoryName = transactionCategories[0];
 
                      const categoryDetails = categories.find(
-                        (cat: any) => cat.name === primaryCategoryName,
+                        (cat) => cat.name === primaryCategoryName,
                      );
                      const categoryColor = categoryDetails?.color || "#6b7280";
                      const categoryIcon = categoryDetails?.icon || "Wallet";

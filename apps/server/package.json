@@ -16,8 +16,7 @@
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
       "@types/bun": "latest",
-      "typescript": "catalog:development",
-      "vitest": "catalog:testing"
+      "typescript": "catalog:development"
    },
    "license": "Apache-2.0",
    "name": "server",
@@ -29,7 +28,6 @@
       "dev": "bun run container-start && bun run --watch src/index.ts",
       "format": "biome format",
       "start": "./server",
-      "test": "bun  test",
       "typecheck": "bunx --bun tsc  "
    },
    "version": "0.8.1"

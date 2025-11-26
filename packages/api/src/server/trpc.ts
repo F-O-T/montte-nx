@@ -1,12 +1,10 @@
 import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
-import {
-   findMemberByUserId,
-   isOrganizationOwner,
-} from "@packages/database/repositories/auth-repository";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
-import { initTRPC, TRPCError } from "@trpc/server";
+import { APIError } from "@packages/utils/errors";
+import { sanitizeData } from "@packages/utils/sanitization";
+import { initTRPC } from "@trpc/server";
 import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
@@ -36,6 +34,7 @@ export const createTRPCContext = async ({
    session: AuthInstance["$Infer"]["Session"] | null;
    language: SupportedLng;
    responseHeaders: Headers;
+   organizationId: string;
 }> => {
    const session = await auth.api.getSession({
       headers,
@@ -46,7 +45,7 @@ export const createTRPCContext = async ({
    if (language) {
       changeLanguage(language);
    }
-
+   const organizationId = session?.session.activeOrganizationId || "";
    return {
       auth,
       db,
@@ -54,6 +53,7 @@ export const createTRPCContext = async ({
       language,
       minioBucket,
       minioClient,
+      organizationId,
       posthog,
       responseHeaders,
       session,
@@ -82,16 +82,17 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    const apikey = resolvedCtx.headers.get("sdk-api-key");
 
    if (apikey) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message: "This endpoint does not accept API Key authentication.",
-      });
+      throw APIError.forbidden(
+         "This endpoint does not accept API Key authentication.",
+      );
    }
    if (!resolvedCtx.session?.user) {
-      throw new TRPCError({ code: "FORBIDDEN" });
+      throw APIError.forbidden("Access denied.");
    }
+   const organizationId = resolvedCtx.session.session.activeOrganizationId;
    return next({
       ctx: {
+         organizationId,
          session: { ...resolvedCtx.session },
       },
    });
@@ -102,10 +103,7 @@ const sdkAuth = t.middleware(async ({ ctx, next }) => {
    // 1. Get the Authorization header from the incoming request.
    const authHeader = resolvedCtx.headers.get("sdk-api-key");
    if (!authHeader) {
-      throw new TRPCError({
-         code: "UNAUTHORIZED",
-         message: "Missing API Key.",
-      });
+      throw APIError.unauthorized("Missing API Key.");
    }
 
    const apiKeyData = await resolvedCtx.auth.api.verifyApiKey({
@@ -114,10 +112,7 @@ const sdkAuth = t.middleware(async ({ ctx, next }) => {
    });
 
    if (!apiKeyData.valid) {
-      throw new TRPCError({
-         code: "UNAUTHORIZED",
-         message: "Invalid API Key.",
-      });
+      throw APIError.unauthorized("Invalid API Key.");
    }
    const session = await resolvedCtx.auth.api.getSession({
       headers: new Headers({
@@ -142,122 +137,6 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
    return result;
 });
-
-function sanitizeData<T>(data: T): T {
-   if (!data || typeof data !== "object") {
-      return data;
-   }
-
-   const SENSITIVE_KEYS = [
-      "password",
-      "confirmpassword",
-      "token",
-      "accesstoken",
-      "refreshtoken",
-      "apiKey",
-      "apikey",
-      "secret",
-      "api_key",
-      "auth",
-      "authorization",
-      "ssn",
-      "email",
-      "phone",
-   ].map((s) => s.toLowerCase());
-
-   const SENSITIVE_SUBSTRINGS = [
-      "password",
-      "secret",
-      "token",
-      "api_key",
-      "api",
-      "auth",
-      "authorization",
-      "ssn",
-      "email",
-      "phone",
-   ];
-
-   const MASK = "********";
-
-   function maskString(value: string): string {
-      return MASK;
-   }
-
-   function isLikelyEmail(value: string): boolean {
-      // Simple email heuristic
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-   }
-
-   function isLikelyPhone(value: string): boolean {
-      // Phone-like if contains only phone chars and at least 7 digits
-      const digits = value.replace(/\D/g, "");
-      return digits.length >= 7 && /^[\d\s()+\-\.]+$/.test(value);
-   }
-
-   function isLikelySecret(value: string): boolean {
-      // Long tokens (base64/hex/etc) -- conservative: length >= 20 and mostly URL-safe/base64/hex
-      if (value.length < 20) return false;
-      return /^[A-Za-z0-9_\-+/=]+$/.test(value);
-   }
-
-   function shouldMaskKey(key: string): boolean {
-      const lower = key.toLowerCase();
-      if (SENSITIVE_KEYS.includes(lower)) return true;
-      return SENSITIVE_SUBSTRINGS.some((sub) => lower.includes(sub));
-   }
-
-   function cloneAndSanitize(value: unknown): unknown {
-      if (value === null || value === undefined) return value;
-
-      if (Array.isArray(value)) {
-         return value.map(cloneAndSanitize);
-      }
-
-      if (typeof value === "object") {
-         const obj = value as Record<string, unknown>;
-         const out: Record<string, unknown> = {};
-         for (const [k, v] of Object.entries(obj)) {
-            try {
-               if (shouldMaskKey(k)) {
-                  out[k] = MASK;
-               } else {
-                  out[k] = cloneAndSanitize(v);
-               }
-            } catch (e) {
-               // In case of unexpected values, fallback to masking that field
-               out[k] = MASK;
-            }
-         }
-         return out;
-      }
-
-      if (typeof value === "string") {
-         if (
-            isLikelyEmail(value) ||
-            isLikelyPhone(value) ||
-            isLikelySecret(value)
-         ) {
-            return maskString(value);
-         }
-         return value;
-      }
-
-      // primitives (number, boolean, symbol, bigint, function)
-      return value;
-   }
-
-   // Work on a shallow clone of the top-level to avoid mutating input
-   if (Array.isArray(data)) {
-      return cloneAndSanitize(data) as unknown as T;
-   }
-
-   const topObj = { ...(data as Record<string, unknown>) };
-
-   const sanitized = cloneAndSanitize(topObj) as T;
-
-   return sanitized;
-}
 
 const telemetryMiddleware = t.middleware(
    async ({ ctx, path, type, meta, getRawInput, next }) => {
@@ -306,131 +185,6 @@ const telemetryMiddleware = t.middleware(
    },
 );
 
-const hasOrganizationAccess = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-
-   // First ensure user is authenticated
-   if (!resolvedCtx.session?.user) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-   }
-
-   const userId = resolvedCtx.session.user.id;
-
-   // Check if user is part of an organization
-   const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
-
-   if (memberWithOrg) {
-      // Find the organization owner
-      const ownerMember = await resolvedCtx.db.query.member.findFirst({
-         where: (member, { eq, and }) =>
-            and(
-               eq(member.organizationId, memberWithOrg.organizationId),
-               eq(member.role, "owner"),
-            ),
-      });
-
-      if (!ownerMember) {
-         throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Organization has no owner",
-         });
-      }
-
-      return next({
-         ctx: {
-            session: { ...resolvedCtx.session },
-         },
-      });
-   }
-
-   return next({
-      ctx: {
-         session: { ...resolvedCtx.session },
-      },
-   });
-});
-
-const hasOrganizationOwnerAccess = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-
-   if (!resolvedCtx.session?.user) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-   }
-
-   const userId = resolvedCtx.session.user.id;
-
-   const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
-
-   if (!memberWithOrg) {
-      return next({
-         ctx: {
-            session: { ...resolvedCtx.session },
-         },
-      });
-   }
-
-   // Check if user is the owner of the organization
-   const isOwner = await isOrganizationOwner(
-      resolvedCtx.db,
-      userId,
-      memberWithOrg.organizationId,
-   );
-
-   if (!isOwner) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message: "User is not the owner of the organization",
-      });
-   }
-
-   return next({
-      ctx: {
-         session: { ...resolvedCtx.session },
-      },
-   });
-});
-
-export const hasGenerationCredits = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-
-   if (!resolvedCtx.session?.user) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-   }
-
-   const userId = resolvedCtx.session.user.id;
-
-   const memberWithOrg = await findMemberByUserId(resolvedCtx.db, userId);
-
-   if (!memberWithOrg) {
-      return next({
-         ctx: {
-            session: { ...resolvedCtx.session },
-         },
-      });
-   }
-
-   const ownerMember = await resolvedCtx.db.query.member.findFirst({
-      where: (member, { eq, and }) =>
-         and(
-            eq(member.organizationId, memberWithOrg.organizationId),
-            eq(member.role, "owner"),
-         ),
-   });
-
-   if (!ownerMember) {
-      throw new TRPCError({
-         code: "FORBIDDEN",
-         message: "Organization has no owner",
-      });
-   }
-
-   return next({
-      ctx: {
-         session: { ...resolvedCtx.session },
-      },
-   });
-});
-
 export const publicProcedure = t.procedure
    .use(loggerMiddleware)
    .use(timingMiddleware);
@@ -439,14 +193,3 @@ export const protectedProcedure = publicProcedure
    .use(isAuthed)
    .use(telemetryMiddleware);
 export const sdkProcedure = publicProcedure.use(sdkAuth);
-
-// Organization-specific procedures
-export const organizationProcedure = protectedProcedure.use(
-   hasOrganizationAccess,
-);
-export const organizationOwnerProcedure = protectedProcedure.use(
-   hasOrganizationOwnerAccess,
-);
-
-// Generation credits procedure
-export const generationProcedure = protectedProcedure.use(hasGenerationCredits);

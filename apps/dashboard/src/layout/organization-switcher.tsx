@@ -31,7 +31,9 @@ import { useTRPC } from "@/integrations/clients";
 function OrganizationSwitcherErrorFallback() {
    return (
       <div className=" text-center text-destructive">
-         {translate("dashboard.layout.organization-switcher.error.failed-to-load-active")}
+         {translate(
+            "dashboard.layout.organization-switcher.error.failed-to-load-active",
+         )}
       </div>
    );
 }
@@ -43,7 +45,9 @@ function OrganizationDropdownErrorFallback() {
             {translate("dashboard.layout.organization-switcher.label")}
          </DropdownMenuLabel>
          <DropdownMenuItem disabled>
-            {translate("dashboard.layout.organization-switcher.error.failed-to-load-teams")}
+            {translate(
+               "dashboard.layout.organization-switcher.error.failed-to-load-teams",
+            )}
          </DropdownMenuItem>
       </>
    );
@@ -136,7 +140,7 @@ function OrganizationDropdownContent() {
                key={organization.name}
                onClick={() => handleOrganizationClick(organization.slug)}
             >
-               <div className="flex size-6 items-center justify-center rounded-md border">
+               <div className="flex p-1 size-6 items-center justify-center rounded-md border">
                   {logo?.data ? (
                      <img
                         alt={organization.name}
@@ -144,12 +148,12 @@ function OrganizationDropdownContent() {
                         src={logo.data}
                      />
                   ) : (
-                     <div className="size-3.5 shrink-0 flex items-center justify-center text-xs bg-muted rounded">
+                     <div className="size-4 shrink-0 flex items-center justify-center text-xs bg-secondary rounded">
                         {getInitials(organization.name)}
                      </div>
                   )}
                </div>
-               {organization.name}
+               <span className="truncate">{organization.name}</span>
             </DropdownMenuItem>
          ))}
       </>
@@ -187,7 +191,7 @@ function OrganizationSwitcherContent() {
                      className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                      size="lg"
                   >
-                     <div className="rounded-md border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                     <div className="rounded-md border bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                         {logo?.data ? (
                            <img
                               alt={activeOrganization.name}
@@ -232,7 +236,9 @@ function OrganizationSwitcherContent() {
                      onClick={() => setIsCreateSheetOpen(true)}
                      title={
                         hasReachedLimit
-                           ? translate("dashboard.layout.organization-switcher.limit-reached")
+                           ? translate(
+                                "dashboard.layout.organization-switcher.limit-reached",
+                             )
                            : undefined
                      }
                   >
@@ -240,7 +246,9 @@ function OrganizationSwitcherContent() {
                         <Plus className="size-4" />
                      </div>
                      <div className="text-muted-foreground font-medium">
-                        {translate("dashboard.layout.organization-switcher.add-organization")}
+                        {translate(
+                           "dashboard.layout.organization-switcher.add-organization",
+                        )}
                      </div>
                   </DropdownMenuItem>
                </DropdownMenuContent>

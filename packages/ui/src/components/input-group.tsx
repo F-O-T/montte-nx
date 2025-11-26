@@ -29,7 +29,6 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
             className,
          )}
          data-slot="input-group"
-         role="group"
          {...props}
       />
    );
@@ -66,13 +65,6 @@ function InputGroupAddon({
          className={cn(inputGroupAddonVariants({ align }), className)}
          data-align={align}
          data-slot="input-group-addon"
-         onClick={(e) => {
-            if ((e.target as HTMLElement).closest("button")) {
-               return;
-            }
-            e.currentTarget.parentElement?.querySelector("input")?.focus();
-         }}
-         role="group"
          {...props}
       />
    );

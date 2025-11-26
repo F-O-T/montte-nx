@@ -1,3 +1,4 @@
+import { clientEnv } from "@packages/environment/client";
 import { NotFoundComponent } from "@/default/not-found";
 import { QueryProvider, trpc } from "@/integrations/clients";
 import { ThemeProvider } from "@/layout/theme-provider";
@@ -13,7 +14,6 @@ import {
    redirect,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { Suspense } from "react";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {
@@ -64,7 +64,11 @@ function TelemetryAwarePostHogWrapper({
       trpc.session.getTelemetryConsent.queryOptions(),
    );
 
-   return <PostHogWrapper hasConsent={hasConsent}>{children}</PostHogWrapper>;
+   return (
+      <PostHogWrapper env={clientEnv} hasConsent={hasConsent}>
+         {children}
+      </PostHogWrapper>
+   );
 }
 
 function RootComponent() {

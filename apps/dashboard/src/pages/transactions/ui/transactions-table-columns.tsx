@@ -28,7 +28,9 @@ export function createTransactionColumns(
          accessorKey: "description",
          cell: ({ row }) => {
             const transaction = row.original;
-            const transactionCategoryIds = transaction.categoryIds;
+            const transactionCategoryIds =
+               transaction.transactionCategories?.map((tc) => tc.category.id) ||
+               [];
             const primaryCategoryId = transactionCategoryIds[0];
             const categoryDetails = categories.find(
                (cat) => cat.id === primaryCategoryId,

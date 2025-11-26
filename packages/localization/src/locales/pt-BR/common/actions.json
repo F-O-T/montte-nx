@@ -1,5 +1,7 @@
 {
+   "add": "Adicionar",
    "cancel": "Cancelar",
+   "edit": "Editar",
    "first-page": "Primeira página",
    "last-page": "Última página",
    "next": "Próximo",
@@ -7,5 +9,6 @@
    "previous": "Voltar",
    "previous-page": "Página anterior",
    "retry": "Tentar novamente",
+   "save": "Salvar",
    "submit": "Enviar"
 }

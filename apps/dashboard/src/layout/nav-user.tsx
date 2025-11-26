@@ -1,5 +1,3 @@
-import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useTRPC } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import {
    Avatar,
@@ -32,6 +30,8 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { LogOutIcon, UserCircleIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 import { LanguageCommand } from "./language-command";
 import { ThemeSwitcher } from "./theme-provider";
 

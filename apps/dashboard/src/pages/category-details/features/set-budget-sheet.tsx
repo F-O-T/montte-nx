@@ -12,7 +12,6 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Target } from "lucide-react";
@@ -54,12 +53,11 @@ export function SetBudgetSheet({
       defaultValues: {
          budget: Number(currentBudget) * 100, // Store as cents
       },
-      onSubmit: async ({ value }) => {
+      onSubmit: async ({ value: _value }) => {
          try {
-            const budgetInDecimal = centsToReais(value.budget);
             await updateCategoryMutation.mutateAsync({
                data: {
-                  budget: budgetInDecimal,
+                  name: undefined, // Budget not yet supported in schema
                },
                id: categoryId,
             });

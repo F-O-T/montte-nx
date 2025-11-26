@@ -62,14 +62,7 @@ const schema = z.object({
             "dashboard.routes.onboarding.validation.account-name-required",
          ),
       ),
-   bankAccountType: z
-      .string()
-      .min(
-         1,
-         translate(
-            "dashboard.routes.onboarding.validation.account-type-required",
-         ),
-      ),
+   bankAccountType: z.enum(["checking", "savings", "investment"]),
 });
 
 const defaultCategoryKeys = [
@@ -184,7 +177,9 @@ export function OnboardingPage() {
          await createBankAccount.mutateAsync({
             bank: value.bank,
             name: value.bankAccountName,
-            type: value.bankAccountType,
+            type: value.bankAccountType as z.infer<
+               typeof schema
+            >["bankAccountType"],
          });
 
          await createSelectedCategories();
@@ -314,65 +309,62 @@ export function OnboardingPage() {
    }
    function CategoryStep() {
       return (
-         <>
-            <FieldGroup>
-               <Field>
-                  <FieldLabel>
-                     {translate(
-                        "dashboard.routes.onboarding.category.form.defaults.label",
-                     )}
-                  </FieldLabel>
-                  <div className="flex flex-wrap gap-2">
-                     {defaultCategoryKeys.map((key) => {
-                        const isSelected =
-                           selectedDefaultCategories.includes(key);
-                        const label = translate(
-                           `dashboard.routes.onboarding.category.defaults.${key}`,
-                        );
-                        const config = defaultCategoriesConfig[key];
-                        const Icon = getIconComponent(config.icon);
+         <FieldGroup>
+            <Field>
+               <FieldLabel>
+                  {translate(
+                     "dashboard.routes.onboarding.category.form.defaults.label",
+                  )}
+               </FieldLabel>
+               <div className="flex flex-wrap gap-2">
+                  {defaultCategoryKeys.map((key) => {
+                     const isSelected = selectedDefaultCategories.includes(key);
+                     const label = translate(
+                        `dashboard.routes.onboarding.category.defaults.${key}`,
+                     );
+                     const config = defaultCategoriesConfig[key];
+                     const Icon = getIconComponent(config.icon);
 
-                        return (
-                           <Toggle
-                              aria-pressed={isSelected}
-                              className="gap-2 px-3"
-                              key={key}
-                              onPressedChange={(pressed) => {
-                                 setSelectedDefaultCategories((prev) => {
-                                    if (pressed) {
-                                       return prev.includes(key)
-                                          ? prev
-                                          : [...prev, key];
-                                    }
+                     return (
+                        <Toggle
+                           aria-pressed={isSelected}
+                           className="gap-2 px-3"
+                           key={key}
+                           onPressedChange={(pressed) => {
+                              setSelectedDefaultCategories((prev) => {
+                                 if (pressed) {
+                                    return prev.includes(key)
+                                       ? prev
+                                       : [...prev, key];
+                                 }
 
-                                    return prev.filter((item) => item !== key);
-                                 });
-                              }}
-                              pressed={isSelected}
-                              size="sm"
-                              style={{
-                                 backgroundColor: isSelected
-                                    ? `${config.color}15`
-                                    : undefined,
-                                 borderColor: isSelected
-                                    ? config.color
-                                    : undefined,
-                              }}
-                              type="button"
-                              variant="outline"
-                           >
-                              <Icon
-                                 className="size-4"
-                                 style={{ color: config.color }}
-                              />
-                              {label}
-                           </Toggle>
-                        );
-                     })}
-                  </div>
-               </Field>
-            </FieldGroup>
-         </>
+                                 return prev.filter((item) => item !== key);
+                              });
+                           }}
+                           pressed={isSelected}
+                           size="sm"
+                           style={{
+                              backgroundColor: isSelected
+                                 ? `${config.color}15`
+                                 : undefined,
+                              borderColor: isSelected
+                                 ? config.color
+                                 : undefined,
+                           }}
+                           type="button"
+                           variant="outline"
+                        >
+                           <Icon
+                              className="size-4"
+                              style={{ color: config.color }}
+                           />
+                           {label}
+                        </Toggle>
+                     );
+                  })}
+               </div>
+            </Field>
+         </FieldGroup>
       );
    }
    return (
