@@ -259,14 +259,4 @@ export function formatAmountWithoutCurrency(
    }
 }
 
-/**
- * Legacy function for backward compatibility
- * @deprecated Use formatCurrency instead
- */
-export function formatNumberIntoCurrency(
-   amount: number,
-   currency: string,
-   locale: Intl.LocalesArgument,
-): string {
-   return formatCurrency(amount, currency, locale);
-}
+

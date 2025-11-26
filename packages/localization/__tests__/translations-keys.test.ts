@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 
-const LOCALES_DIR = join(__dirname, "../src/locales");
+const LOCALES_DIR = join(import.meta.dirname, "../src/locales");
 const SUPPORTED_LOCALES = ["pt-BR"];
 
 function getAllJsonFiles(dir: string): string[] {
@@ -59,6 +59,23 @@ function loadTranslationKeys(locale: string, filename: string): string[] {
    return getKeysFromObject(translations);
 }
 
+function loadCommonTranslationKeys(locale: string): string[] {
+   const commonDir = join(LOCALES_DIR, locale, "common");
+   const commonFiles = getAllJsonFiles(commonDir);
+   const allKeys: string[] = [];
+
+   for (const filename of commonFiles) {
+      const filePath = join(commonDir, filename);
+      const content = readFileSync(filePath, "utf-8");
+      const translations = JSON.parse(content);
+      const filePrefix = filename.replace(".json", "");
+      const keys = getKeysFromObject(translations, filePrefix);
+      allKeys.push(...keys);
+   }
+
+   return allKeys.sort();
+}
+
 describe("Translation Keys Consistency", () => {
    const jsonFiles = getAllJsonFiles(
       join(LOCALES_DIR, SUPPORTED_LOCALES[0] ?? "", "dashboard/routes"),
@@ -67,16 +84,20 @@ describe("Translation Keys Consistency", () => {
    describe("Duplicate Keys Detection", () => {
       it("should not have duplicate keys within any translation file", () => {
          for (const locale of SUPPORTED_LOCALES) {
-            const commonFilePath = join(LOCALES_DIR, locale, "common.json");
-            const commonContent = readFileSync(commonFilePath, "utf-8");
-            const commonTranslations = JSON.parse(commonContent);
+            const commonDir = join(LOCALES_DIR, locale, "common");
+            const commonFiles = getAllJsonFiles(commonDir);
 
-            const commonKeys = getKeysFromObject(commonTranslations);
-            const commonDuplicates = findDuplicates(commonKeys);
-            expect(
-               commonDuplicates,
-               `Duplicate keys found in ${locale}/common.json: ${commonDuplicates.join(", ")}`,
-            ).toHaveLength(0);
+            for (const filename of commonFiles) {
+               const filePath = join(commonDir, filename);
+               const content = readFileSync(filePath, "utf-8");
+               const translations = JSON.parse(content);
+               const keys = getKeysFromObject(translations);
+               const duplicates = findDuplicates(keys);
+               expect(
+                  duplicates,
+                  `Duplicate keys found in ${locale}/common/${filename}: ${duplicates.join(", ")}`,
+               ).toHaveLength(0);
+            }
 
             for (const filename of jsonFiles) {
                const keys = loadTranslationKeys(locale, filename);
@@ -93,11 +114,8 @@ describe("Translation Keys Consistency", () => {
          for (const locale of SUPPORTED_LOCALES) {
             const allKeys: string[] = [];
 
-            const commonFilePath = join(LOCALES_DIR, locale, "common.json");
-            const commonContent = readFileSync(commonFilePath, "utf-8");
-            const commonTranslations = JSON.parse(commonContent);
-            const commonKeys = getKeysFromObject(commonTranslations, "common");
-            allKeys.push(...commonKeys);
+            const commonKeys = loadCommonTranslationKeys(locale);
+            allKeys.push(...commonKeys.map((key) => `common.${key}`));
 
             for (const filename of jsonFiles) {
                const pageKeys = loadTranslationKeys(locale, filename);
@@ -120,19 +138,16 @@ describe("Translation Keys Consistency", () => {
       it(`should have matching keys between all locales for ${filename}`, () => {
          const keysByLocale: Record<string, string[]> = {};
 
-         // Load keys for each locale
          for (const locale of SUPPORTED_LOCALES) {
             keysByLocale[locale] = loadTranslationKeys(locale, filename);
          }
 
-         // Compare keys between locales
          const [baseLocale, ...otherLocales] = SUPPORTED_LOCALES;
          const baseKeys = keysByLocale[baseLocale ?? ""] ?? [];
 
          for (const locale of otherLocales) {
             const localeKeys = keysByLocale[locale] ?? [];
 
-            // Check for missing keys in current locale
             const missingKeys = baseKeys.filter(
                (key: string) => !localeKeys.includes(key),
             );

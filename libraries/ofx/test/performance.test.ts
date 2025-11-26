@@ -1,6 +1,7 @@
-import { expect, test, setDefaultTimeout } from "bun:test";
+import { expect, setDefaultTimeout, test } from "bun:test";
 
 setDefaultTimeout(120000);
+
 import {
    getAccountInfo,
    getBalance,
@@ -395,21 +396,26 @@ const BUSINESS_VENDORS = [
 ];
 
 const BUSINESS_TRANSACTION_PATTERNS = [
-   { type: "DEBIT", minAmount: 50, maxAmount: 500, frequency: 0.3 },
-   { type: "DEBIT", minAmount: 500, maxAmount: 5000, frequency: 0.25 },
-   { type: "DEBIT", minAmount: 5000, maxAmount: 50000, frequency: 0.15 },
-   { type: "DEBIT", minAmount: 50000, maxAmount: 500000, frequency: 0.05 },
-   { type: "CREDIT", minAmount: 1000, maxAmount: 100000, frequency: 0.1 },
-   { type: "CREDIT", minAmount: 100000, maxAmount: 5000000, frequency: 0.05 },
-   { type: "XFER", minAmount: 10000, maxAmount: 1000000, frequency: 0.05 },
-   { type: "FEE", minAmount: 10, maxAmount: 500, frequency: 0.03 },
-   { type: "INT", minAmount: 100, maxAmount: 10000, frequency: 0.02 },
+   { frequency: 0.3, maxAmount: 500, minAmount: 50, type: "DEBIT" },
+   { frequency: 0.25, maxAmount: 5000, minAmount: 500, type: "DEBIT" },
+   { frequency: 0.15, maxAmount: 50000, minAmount: 5000, type: "DEBIT" },
+   { frequency: 0.05, maxAmount: 500000, minAmount: 50000, type: "DEBIT" },
+   { frequency: 0.1, maxAmount: 100000, minAmount: 1000, type: "CREDIT" },
+   { frequency: 0.05, maxAmount: 5000000, minAmount: 100000, type: "CREDIT" },
+   { frequency: 0.05, maxAmount: 1000000, minAmount: 10000, type: "XFER" },
+   { frequency: 0.03, maxAmount: 500, minAmount: 10, type: "FEE" },
+   { frequency: 0.02, maxAmount: 10000, minAmount: 100, type: "INT" },
 ];
 
 function generateBusinessTransaction(index: number, date: Date): string {
    const rand = Math.random();
    let cumulative = 0;
-   let pattern = BUSINESS_TRANSACTION_PATTERNS[0]!;
+   let pattern = BUSINESS_TRANSACTION_PATTERNS[0] ?? {
+      frequency: 0.3,
+      maxAmount: 500,
+      minAmount: 50,
+      type: "DEBIT",
+   };
 
    for (const p of BUSINESS_TRANSACTION_PATTERNS) {
       cumulative += p.frequency;

@@ -6,8 +6,7 @@
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
-      "typescript": "catalog:development",
-      "vitest": "catalog:testing"
+      "typescript": "catalog:development"
    },
    "exports": {
       "./array": {
