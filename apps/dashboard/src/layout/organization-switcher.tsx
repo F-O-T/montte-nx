@@ -17,6 +17,7 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { toast } from "@packages/ui/components/sonner";
 import { getInitials } from "@packages/utils/text";
 import {
    useMutation,
@@ -24,7 +25,7 @@ import {
    useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { ChevronsUpDown, Plus, Users } from "lucide-react";
+import { ChevronsUpDown, Eye, Plus, Users } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
@@ -32,6 +33,7 @@ import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { CreateTeamSheet } from "@/pages/organization-teams/features/create-team-sheet";
 
+//TODO: Adicionar textos no Locale
 function OrganizationSwitcherErrorFallback() {
    return (
       <div className=" text-center text-destructive">
@@ -121,24 +123,18 @@ function OrganizationDropdownContent({
 
    const setActiveOrganization = useMutation(
       trpc.organization.setActiveOrganization.mutationOptions({
-         onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.organization.getOrganizations.queryKey(),
             });
+            toast.success("Organization set successfully");
          },
       }),
    );
 
-   async function handleOrganizationClick(
-      organizationId: string,
-      organizationSlug: string,
-   ) {
-      setActiveOrganization.mutate({
+   async function handleOrganizationClick(organizationId: string) {
+      await setActiveOrganization.mutateAsync({
          organizationId,
-      });
-      router.navigate({
-         params: { slug: organizationSlug },
-         to: "/$slug/organization",
       });
    }
 
@@ -153,7 +149,7 @@ function OrganizationDropdownContent({
                   className="gap-2 p-2"
                   disabled={setActiveOrganization.isPending}
                   onClick={() => {
-                     handleOrganizationClick(organization.id, organization.slug);
+                     handleOrganizationClick(organization.id);
                   }}
                >
                   <div className="flex p-1 size-6 items-center justify-center rounded-md border">
@@ -216,13 +212,18 @@ function OrganizationTeamsList({
       trpc.organization.listTeams.queryOptions(),
    );
 
+   //TODO: checar necessidade de repetir o dropdown menu label
    if (!teams || teams.length === 0) {
       return (
          <>
             <DropdownMenuLabel className="text-muted-foreground text-xs">
                Organização
             </DropdownMenuLabel>
-            <DropdownMenuItem onClick={onViewDetailsClick}>
+            <DropdownMenuItem
+               className="gap-2 flex items-center"
+               onClick={onViewDetailsClick}
+            >
+               <Eye className="size-4" />
                <span className="truncate">Ver detalhes</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -260,6 +261,7 @@ function OrganizationTeamsList({
             Organização
          </DropdownMenuLabel>
          <DropdownMenuItem onClick={onViewDetailsClick}>
+            <Eye className="size-4" />
             <span className="truncate">Ver detalhes</span>
          </DropdownMenuItem>
          <DropdownMenuSeparator />
@@ -288,9 +290,7 @@ function OrganizationTeamsList({
                <Plus className="size-4" />
             </div>
             <span className="truncate">
-               {translate(
-                  "dashboard.layout.organization-switcher.create-team",
-               )}
+               {translate("dashboard.layout.organization-switcher.create-team")}
             </span>
          </DropdownMenuItem>
       </>
@@ -364,7 +364,9 @@ function OrganizationSwitcherContent() {
                   >
                      <Suspense fallback={<OrganizationDropdownSkeleton />}>
                         <OrganizationDropdownContent
-                           onCreateTeamClick={() => setIsCreateTeamSheetOpen(true)}
+                           onCreateTeamClick={() =>
+                              setIsCreateTeamSheetOpen(true)
+                           }
                         />
                      </Suspense>
                   </ErrorBoundary>
