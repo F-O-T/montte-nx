@@ -22,7 +22,7 @@ import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { cn } from "@packages/ui/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, MenuIcon, ChevronRight } from "lucide-react";
 import * as React from "react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -271,7 +271,7 @@ function SidebarTrigger({
    onClick,
    ...props
 }: React.ComponentProps<typeof Button>) {
-   const { toggleSidebar, state } = useSidebar();
+   const { toggleSidebar, state, isMobile } = useSidebar();
 
    const tooltipText =
       state === "expanded"
@@ -292,7 +292,13 @@ function SidebarTrigger({
          variant="ghost"
          {...props}
       >
-         {state === "expanded" ? <ChevronLeft /> : <ChevronRight />}
+         {isMobile ? (
+            <MenuIcon />
+         ) : state === "expanded" ? (
+            <ChevronLeft />
+         ) : (
+            <ChevronRight />
+         )}
       </Button>
    );
 
@@ -593,7 +599,7 @@ function SidebarMenuAction({
             "peer-data-[size=lg]/menu-button:top-2.5",
             "group-data-[collapsible=icon]:hidden",
             showOnHover &&
-               "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
+            "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
             className,
          )}
          data-sidebar="menu-action"

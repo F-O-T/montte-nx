@@ -61,7 +61,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
    return (
       <QueryClientProvider client={queryClient}>
          <TRPCProvider queryClient={queryClient} trpcClient={trpcClient}>
-            <ReactQueryDevtools buttonPosition="top-left" />
+            <ReactQueryDevtools buttonPosition="bottom-left" />
             {children}
          </TRPCProvider>
       </QueryClientProvider>
