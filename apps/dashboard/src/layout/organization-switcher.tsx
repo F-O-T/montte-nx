@@ -129,7 +129,13 @@ function OrganizationDropdownContent({
       }),
    );
 
-   async function handleOrganizationClick(organizationSlug: string) {
+   async function handleOrganizationClick(
+      organizationId: string,
+      organizationSlug: string,
+   ) {
+      setActiveOrganization.mutate({
+         organizationId,
+      });
       router.navigate({
          params: { slug: organizationSlug },
          to: "/$slug/organization",
@@ -146,7 +152,9 @@ function OrganizationDropdownContent({
                <DropdownMenuSubTrigger
                   className="gap-2 p-2"
                   disabled={setActiveOrganization.isPending}
-                  onClick={() => handleOrganizationClick(organization.slug)}
+                  onClick={() => {
+                     handleOrganizationClick(organization.id, organization.slug);
+                  }}
                >
                   <div className="flex p-1 size-6 items-center justify-center rounded-md border">
                      {logo?.data ? (
@@ -176,6 +184,9 @@ function OrganizationDropdownContent({
                   >
                      <OrganizationTeamsList
                         onCreateTeamClick={onCreateTeamClick}
+                        onViewDetailsClick={() => {
+                           handleOrganizationClick(organization.id, organization.slug);
+                        }}
                         organizationSlug={organization.slug}
                      />
                   </Suspense>
@@ -189,9 +200,11 @@ function OrganizationDropdownContent({
 function OrganizationTeamsList({
    organizationSlug,
    onCreateTeamClick,
+   onViewDetailsClick,
 }: {
    organizationSlug: string;
    onCreateTeamClick: () => void;
+   onViewDetailsClick: () => void;
 }) {
    const trpc = useTRPC();
    const router = useRouter();
@@ -203,6 +216,16 @@ function OrganizationTeamsList({
    if (!teams || teams.length === 0) {
       return (
          <>
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+               Organização
+            </DropdownMenuLabel>
+            <DropdownMenuItem onClick={onViewDetailsClick}>
+               <span className="truncate">Ver detalhes</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+               Equipes
+            </DropdownMenuLabel>
             <DropdownMenuItem disabled>
                <div className="gap-2 p-2 w-full flex items-center">
                   <Users className="size-4" />
@@ -230,6 +253,16 @@ function OrganizationTeamsList({
 
    return (
       <>
+         <DropdownMenuLabel className="text-muted-foreground text-xs">
+            Organização
+         </DropdownMenuLabel>
+         <DropdownMenuItem onClick={onViewDetailsClick}>
+            <span className="truncate">Ver detalhes</span>
+         </DropdownMenuItem>
+         <DropdownMenuSeparator />
+         <DropdownMenuLabel className="text-muted-foreground text-xs">
+            Equipes
+         </DropdownMenuLabel>
          {teams.map((team) => (
             <DropdownMenuItem
                key={team.id}
