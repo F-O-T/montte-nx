@@ -258,5 +258,3 @@ export function formatAmountWithoutCurrency(
       return (amount / 100).toFixed(currencyInfo?.decimalDigits ?? 2);
    }
 }
-
-

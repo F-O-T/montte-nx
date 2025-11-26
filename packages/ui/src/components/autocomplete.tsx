@@ -44,7 +44,6 @@ export function Autocomplete({
    onBlur,
 }: AutocompleteProps) {
    const inputRef = useRef<HTMLInputElement>(null);
-   const listRef = useRef<HTMLDivElement>(null);
    const [parentNode, setParentNode] = useState<HTMLDivElement | null>(null);
 
    const [isOpen, setOpen] = useState(false);
