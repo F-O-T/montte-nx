@@ -97,6 +97,9 @@ const CreateTeamSheetContent = () => {
                queryKey: trpc.organizationTeams.listTeams.queryKey(),
             });
             await queryClient.invalidateQueries({
+               queryKey: trpc.organization.listTeams.queryKey(),
+            });
+            await queryClient.invalidateQueries({
                queryKey: trpc.organizationTeams.getTeamStats.queryKey(),
             });
             onOpenChange(false);
