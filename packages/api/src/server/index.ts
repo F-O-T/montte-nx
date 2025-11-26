@@ -2,7 +2,6 @@ import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
 import type { PostHog } from "posthog-node";
-import { authRouter } from "./routers/auth";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
@@ -19,7 +18,6 @@ import { tagRouter } from "./routers/tags";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 export const appRouter = router({
-   auth: authRouter,
    bankAccounts: bankAccountRouter,
    bills: billRouter,
    brasilApi: brasilApiRouter,

@@ -21,17 +21,14 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { LogOutIcon, UserCircleIcon } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 import { LanguageCommand } from "./language-command";
 import { ThemeSwitcher } from "./theme-provider";
 
@@ -104,27 +101,34 @@ function NavUserContent() {
       trpc.session.getSession.queryOptions(),
    );
 
-   const logoutMutation = useMutation(
-      trpc.auth.logout.mutationOptions({
-         onSuccess: async () => {
-            router.navigate({
-               to: "/auth/sign-in",
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.session.getSession.queryKey(),
-            });
-         },
-      }),
-   );
-
    const handleLogout = useCallback(async () => {
-      try {
-         await logoutMutation.mutateAsync();
-      } catch (error) {
-         console.error("Logout failed:", error);
-      }
+      await betterAuthClient.signOut({
+         fetchOptions: {
+            onError: ({ error }) => {
+               toast.error(error.message);
+            },
+            onRequest: () => {
+               toast.loading(
+                  translate("dashboard.layout.nav-user.messages.logging-out"),
+               );
+            },
+            onSuccess: async () => {
+               toast.success(
+                  translate(
+                     "dashboard.layout.nav-user.messages.logout-success",
+                  ),
+               );
+               await queryClient.invalidateQueries({
+                  queryKey: trpc.session.getSession.queryKey(),
+               });
+               router.navigate({
+                  to: "/auth/sign-in",
+               });
+            },
+         },
+      });
       setOpenMobile(false);
-   }, [logoutMutation, setOpenMobile]);
+   }, [queryClient, router.navigate, setOpenMobile, trpc.session.getSession]);
 
    return (
       <SidebarMenu>

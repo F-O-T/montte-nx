@@ -34,6 +34,10 @@
       "main": {
          "account": "Conta"
       },
+      "messages": {
+         "logging-out": "Saindo...",
+         "logout-success": "Você saiu com sucesso!"
+      },
       "preferences": {
          "label": "Preferencias",
          "language": "Idioma",
