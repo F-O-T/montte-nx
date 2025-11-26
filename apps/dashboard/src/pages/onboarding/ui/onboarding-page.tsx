@@ -109,6 +109,7 @@ const optionalBankAccountSchema = z.object({
             "dashboard.routes.onboarding.validation.account-type-required",
          ),
       ),
+   nickname: z.string().optional(),
 });
 
 const organizationSchema = z.object({
@@ -279,11 +280,13 @@ export function OnboardingPage() {
          bank: "",
          bankAccountName: "",
          bankAccountType: "checking",
+         nickname: "",
       },
       onSubmit: async ({ value, formApi }) => {
          await createBankAccount.mutateAsync({
             bank: value.bank,
             name: value.bankAccountName,
+            nickname: value.nickname || undefined,
             type: value.bankAccountType,
          });
 
@@ -607,6 +610,29 @@ export function OnboardingPage() {
                               </SelectItem>
                            </SelectContent>
                         </Select>
+                     </Field>
+                  )}
+               </optionalBankAccountForm.Field>
+            </FieldGroup>
+            <FieldGroup>
+               <optionalBankAccountForm.Field name="nickname">
+                  {(field) => (
+                     <Field>
+                        <FieldLabel htmlFor={field.name}>
+                           {translate(
+                              "dashboard.routes.onboarding.optional-bank-account.form.nickname.label",
+                           )}
+                        </FieldLabel>
+                        <Input
+                           id={field.name}
+                           name={field.name}
+                           onBlur={field.handleBlur}
+                           onChange={(e) => field.handleChange(e.target.value)}
+                           placeholder={translate(
+                              "dashboard.routes.onboarding.optional-bank-account.form.nickname.placeholder",
+                           )}
+                           value={field.state.value}
+                        />
                      </Field>
                   )}
                </optionalBankAccountForm.Field>

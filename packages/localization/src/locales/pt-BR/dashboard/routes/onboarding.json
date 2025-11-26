@@ -91,6 +91,10 @@
             "label": "Nome da Conta",
             "placeholder": "Ex: Conta Principal"
          },
+         "nickname": {
+            "label": "Apelido",
+            "placeholder": "Opcional"
+         },
          "type": {
             "label": "Tipo de Conta",
             "options": {

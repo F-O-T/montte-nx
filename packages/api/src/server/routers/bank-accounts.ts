@@ -20,6 +20,7 @@ import { protectedProcedure, router } from "../trpc";
 const createBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required"),
    name: z.string().min(1, "Name is required"),
+   nickname: z.string().optional(),
    status: z.enum(["active", "inactive"]).optional(),
    type: z.string().min(1, "Type is required"),
 });
@@ -27,6 +28,7 @@ const createBankAccountSchema = z.object({
 const updateBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required").optional(),
    name: z.string().min(1, "Name is required").optional(),
+   nickname: z.string().optional(),
    status: z.enum(["active", "inactive"]).optional(),
    type: z.string().min(1, "Type is required").optional(),
 });

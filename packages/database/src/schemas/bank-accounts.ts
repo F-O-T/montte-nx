@@ -15,6 +15,7 @@ export const bankAccount = pgTable("bank_account", {
    createdAt: timestamp("created_at").defaultNow().notNull(),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    name: text("name").notNull(),
+   nickname: text("nickname"),
    status: bankAccountStatus("status").default("active").notNull(),
    type: bankAccountTypes("type").notNull(),
    updatedAt: timestamp("updated_at")
