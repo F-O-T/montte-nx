@@ -93,7 +93,7 @@ const homeCashFlowChartConfig: ChartConfig = {
 function HomeCashFlowChart({ data }: HomeCashFlowChartProps) {
    const chartData = data ?? [];
 
-   const currencyFormatter = (value: any) => {
+   const currencyFormatter = (value: unknown) => {
       if (typeof value !== "number") return value;
       return formatDecimalCurrency(value);
    };

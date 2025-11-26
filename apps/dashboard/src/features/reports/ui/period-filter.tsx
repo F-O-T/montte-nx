@@ -61,7 +61,7 @@ export function PeriodFilter({
 
    const handlePresetChange = (value: PeriodPreset) => {
       setPreset(value);
-      let dates;
+      let dates: { start: Date; end: Date } | undefined;
 
       switch (value) {
          case "current_month":

@@ -237,8 +237,8 @@ function OrganizationSwitcherContent() {
                      title={
                         hasReachedLimit
                            ? translate(
-                              "dashboard.layout.organization-switcher.limit-reached",
-                           )
+                                "dashboard.layout.organization-switcher.limit-reached",
+                             )
                            : undefined
                      }
                   >

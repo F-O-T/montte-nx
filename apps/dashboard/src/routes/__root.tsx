@@ -1,7 +1,7 @@
+import { clientEnv } from "@packages/environment/client";
 import { NotFoundComponent } from "@/default/not-found";
 import { QueryProvider, trpc } from "@/integrations/clients";
 import { ThemeProvider } from "@/layout/theme-provider";
-import { clientEnv } from "@packages/environment/client";
 import "@packages/localization";
 import { translate } from "@packages/localization";
 import { PostHogWrapper } from "@packages/posthog/client";

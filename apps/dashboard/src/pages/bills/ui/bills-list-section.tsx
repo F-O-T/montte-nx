@@ -331,7 +331,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
          setCurrentPage(1);
       }, 300);
       return () => clearTimeout(timer);
-   }, [searchTerm]);
+   }, [searchTerm, setCurrentPage]);
 
    // Set the context filter type based on the component prop
    useEffect(() => {

@@ -2,6 +2,7 @@ import type { RouterOutput } from "@packages/api/client";
 
 type Transaction =
    RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
+
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { DatePicker } from "@packages/ui/components/date-picker";
@@ -182,7 +183,7 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: value.categoryIds || [],
-                     date: value.date.toISOString().split("T")[0]!,
+                     date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
                      type: value.type as "income" | "expense" | "transfer",
                   },
@@ -193,7 +194,7 @@ export function ManageTransactionSheet({
                   if (!value.toBankAccountId || !value.bankAccountId) return;
                   await transferTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
-                     date: value.date.toISOString().split("T")[0]!,
+                     date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
                      fromBankAccountId: value.bankAccountId,
                      toBankAccountId: value.toBankAccountId,
@@ -205,7 +206,7 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: (value.categoryIds || []) as string[],
-                     date: value.date.toISOString().split("T")[0]!,
+                     date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
                      type: value.type as "income" | "expense",
                   });

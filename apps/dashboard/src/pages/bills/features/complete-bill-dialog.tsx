@@ -78,7 +78,7 @@ export function CompleteBillDialog({
          await completeBillMutation.mutateAsync({
             data: {
                bankAccountId,
-               completionDate: completionDate.toISOString().split("T")[0]!,
+               completionDate: completionDate.toISOString().split("T")[0] ?? "",
             },
             id: bill.id,
          });

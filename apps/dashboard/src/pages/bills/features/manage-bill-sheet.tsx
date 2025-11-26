@@ -57,6 +57,7 @@ import {
    Plus,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 import { useBillList } from "./bill-list-context";
@@ -185,10 +186,10 @@ export function ManageBillSheet({
                      categoryId: value.category,
                      counterparty: value.counterparty,
                      description: value.description,
-                     dueDate: value.dueDate.toISOString().split("T")[0]!,
+                     dueDate: value.dueDate.toISOString().split("T")[0] ?? "",
                      isRecurring: value.isRecurring,
                      issueDate: value.issueDate
-                        ? value.issueDate.toISOString().split("T")[0]!
+                        ? (value.issueDate.toISOString().split("T")[0] ?? "")
                         : undefined,
                      notes: value.notes,
                      recurrencePattern: value.recurrencePattern,
@@ -203,17 +204,17 @@ export function ManageBillSheet({
                   bankAccountId: value.bankAccountId || undefined,
                   categoryId: value.category,
                   counterparty: value.counterparty || undefined,
-                  description: value.description!,
-                  dueDate: value.dueDate.toISOString().split("T")[0]!,
+                  description: value.description ?? "",
+                  dueDate: value.dueDate.toISOString().split("T")[0] ?? "",
                   isRecurring: value.isRecurring,
                   issueDate: value.issueDate
-                     ? value.issueDate.toISOString().split("T")[0]!
+                     ? (value.issueDate.toISOString().split("T")[0] ?? "")
                      : undefined,
                   notes: value.notes || undefined,
                   recurrencePattern: value.isRecurring
                      ? value.recurrencePattern
                      : undefined,
-                  type: value.type!,
+                  type: value.type ?? "expense",
                });
             }
          } catch (error) {
@@ -406,7 +407,7 @@ export function ManageBillSheet({
                                              <div className="flex items-center gap-2">
                                                 <IconDisplay
                                                    iconName={
-                                                      selectedCategory.icon as any
+                                                      selectedCategory.icon as IconName
                                                    }
                                                    size={16}
                                                 />
@@ -457,7 +458,7 @@ export function ManageBillSheet({
                                                       <div className="flex items-center gap-2 flex-1">
                                                          <IconDisplay
                                                             iconName={
-                                                               category.icon as any
+                                                               category.icon as IconName
                                                             }
                                                             size={16}
                                                          />
