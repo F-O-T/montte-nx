@@ -280,6 +280,7 @@ function SidebarTrigger({
 
    const button = (
       <Button
+         aria-label={tooltipText}
          className={cn("size-7", className)}
          data-sidebar="trigger"
          data-slot="sidebar-trigger"
@@ -292,7 +293,6 @@ function SidebarTrigger({
          {...props}
       >
          {state === "expanded" ? <ChevronLeft /> : <ChevronRight />}
-         <span className="sr-only">{tooltipText}</span>
       </Button>
    );
 
