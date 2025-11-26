@@ -63,8 +63,8 @@ export function TransactionItem({
          >
             <IconDisplay iconName={categoryIcon as IconName} size={16} />
          </ItemMedia>
-         <ItemContent>
-            <ItemTitle className="truncate">
+         <ItemContent className="max-w-1/12 ">
+            <ItemTitle className="max-w-1/12 truncate">
                {transaction.description}
             </ItemTitle>
             <ItemDescription>

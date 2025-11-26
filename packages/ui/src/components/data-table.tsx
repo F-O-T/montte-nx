@@ -80,10 +80,10 @@ export function DataTable<TData, TValue>({
                                           header.getContext(),
                                        )}
                                        {header.column.getIsSorted() ===
-                                       "asc" ? (
+                                          "asc" ? (
                                           <ArrowUp className="ml-2 size-4" />
                                        ) : header.column.getIsSorted() ===
-                                         "desc" ? (
+                                          "desc" ? (
                                           <ArrowDown className="ml-2 size-4" />
                                        ) : (
                                           <ArrowUpDown className="ml-2 size-4" />
@@ -109,7 +109,7 @@ export function DataTable<TData, TValue>({
                            key={row.id}
                         >
                            {row.getVisibleCells().map((cell) => (
-                              <TableCell key={cell.id}>
+                              <TableCell key={cell.id} className="truncate">
                                  {flexRender(
                                     cell.column.columnDef.cell,
                                     cell.getContext(),

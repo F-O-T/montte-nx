@@ -54,7 +54,7 @@ export function createTransactionColumns(
                      />
                   </div>
                   <div className="flex flex-col">
-                     <span className="font-medium">
+                     <span className="truncate font-medium w-28 ">
                         {transaction.description}
                      </span>
                      <span className="text-xs text-muted-foreground">
