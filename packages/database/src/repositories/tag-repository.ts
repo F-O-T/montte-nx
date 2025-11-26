@@ -397,34 +397,49 @@ export async function findTransactionsByTagId(
    const offset = (page - 1) * limit;
 
    try {
+      const transactionIds = await dbClient
+         .select({ transactionId: transactionTag.transactionId })
+         .from(transactionTag)
+         .where(eq(transactionTag.tagId, tagId));
+
+      const ids = transactionIds.map((t) => t.transactionId);
+
+      if (ids.length === 0) {
+         return {
+            pagination: {
+               currentPage: page,
+               hasNextPage: false,
+               hasPreviousPage: false,
+               limit,
+               totalCount: 0,
+               totalPages: 0,
+            },
+            transactions: [],
+         };
+      }
+
       const [transactions, totalCount] = await Promise.all([
-         dbClient
-            .select({
-               amount: transaction.amount,
-               bankAccountId: transaction.bankAccountId,
-               createdAt: transaction.createdAt,
-               date: transaction.date,
-               description: transaction.description,
-               externalId: transaction.externalId,
-               id: transaction.id,
-               organizationId: transaction.organizationId,
-               type: transaction.type,
-               updatedAt: transaction.updatedAt,
-            })
-            .from(transactionTag)
-            .innerJoin(
-               transaction,
-               eq(transactionTag.transactionId, transaction.id),
-            )
-            .where(eq(transactionTag.tagId, tagId))
-            .orderBy(transaction.date)
-            .limit(limit)
-            .offset(offset),
-         dbClient
-            .select({ count: count() })
-            .from(transactionTag)
-            .where(eq(transactionTag.tagId, tagId))
-            .then((result) => result[0]?.count || 0),
+         dbClient.query.transaction.findMany({
+            limit,
+            offset,
+            orderBy: (transaction, { desc }) => desc(transaction.date),
+            where: (transaction, { inArray }) => inArray(transaction.id, ids),
+            with: {
+               bankAccount: true,
+               costCenter: true,
+               transactionCategories: {
+                  with: {
+                     category: true,
+                  },
+               },
+               transactionTags: {
+                  with: {
+                     tag: true,
+                  },
+               },
+            },
+         }),
+         Promise.resolve(ids.length),
       ]);
 
       const totalPages = Math.ceil(totalCount / limit);

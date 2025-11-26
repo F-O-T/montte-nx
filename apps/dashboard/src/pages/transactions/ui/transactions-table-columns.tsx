@@ -11,6 +11,7 @@ import {
 } from "@packages/ui/components/dropdown-menu";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Link } from "@tanstack/react-router";
 import { MoreVertical } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
@@ -22,6 +23,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 
 export function createTransactionColumns(
    categories: Category[],
+   slug: string,
 ): ColumnDef<Transaction>[] {
    return [
       {
@@ -118,6 +120,40 @@ export function createTransactionColumns(
                {translate("dashboard.routes.transactions.table.columns.amount")}
             </div>
          ),
+      },
+      {
+         accessorKey: "transactionTags",
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const tags = transaction.transactionTags || [];
+
+            if (tags.length === 0) {
+               return <span className="text-muted-foreground text-sm">-</span>;
+            }
+
+            return (
+               <div className="flex flex-wrap gap-1">
+                  {tags.map((transactionTag) => (
+                     <Link
+                        key={transactionTag.tag.id}
+                        params={{ slug, tagId: transactionTag.tag.id }}
+                        to="/$slug/tags/$tagId"
+                     >
+                        <Badge
+                           className="cursor-pointer hover:opacity-80 transition-opacity"
+                           style={{
+                              backgroundColor: transactionTag.tag.color,
+                           }}
+                           variant="secondary"
+                        >
+                           {transactionTag.tag.name}
+                        </Badge>
+                     </Link>
+                  ))}
+               </div>
+            );
+         },
+         header: translate("dashboard.routes.transactions.table.columns.tags"),
       },
       {
          cell: ({ row }) => {

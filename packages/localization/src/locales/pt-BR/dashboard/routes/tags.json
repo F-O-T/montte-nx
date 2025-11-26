@@ -31,6 +31,7 @@
          "delete-tag": "Excluir tag",
          "edit-tag": "Editar tag",
          "label": "Gerencie sua tag",
+         "view": "Ver detalhes",
          "view-details": "Ver detalhes"
       },
       "description": "Visualize e gerencie suas tags aqui.",

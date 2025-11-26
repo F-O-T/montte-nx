@@ -89,8 +89,8 @@ export async function createDefaultOrganization(
       const suffix = generateRandomSuffix();
       const safeUserName = (userName ?? "Workspace").trim();
       const safeSuffix = String(suffix).trim();
-      const orgName = `${safeUserName}-workspace-${safeSuffix}`;
-      const orgSlug = `${createSlug(safeUserName)}-workspace-${safeSuffix}`;
+      const orgName = `${safeUserName}${safeSuffix}`;
+      const orgSlug = createSlug(orgName);
       const now = new Date();
 
       const [createdOrganization] = await dbClient

@@ -9,7 +9,8 @@ import {
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -18,7 +19,7 @@ import type { Tag } from "@/pages/tags/ui/tags-page";
 import { DeleteTag } from "../features/delete-tag";
 import { ManageTagSheet } from "../features/manage-tag-sheet";
 
-export function createTagColumns(): ColumnDef<Tag>[] {
+export function createTagColumns(slug: string): ColumnDef<Tag>[] {
    return [
       {
          accessorKey: "name",
@@ -70,6 +71,18 @@ export function createTagColumns(): ColumnDef<Tag>[] {
                            )}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+
+                        <DropdownMenuItem asChild>
+                           <Link
+                              params={{ slug, tagId: tag.id }}
+                              to="/$slug/tags/$tagId"
+                           >
+                              <Eye className="size-4 mr-2" />
+                              {translate(
+                                 "dashboard.routes.tags.list-section.actions.view-details",
+                              )}
+                           </Link>
+                        </DropdownMenuItem>
 
                         <Suspense
                            fallback={

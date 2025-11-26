@@ -9,7 +9,8 @@ import {
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -18,7 +19,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 
-export function createCategoryColumns(): ColumnDef<Category>[] {
+export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
    return [
       {
          accessorKey: "name",
@@ -70,6 +71,18 @@ export function createCategoryColumns(): ColumnDef<Category>[] {
                            )}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+
+                        <DropdownMenuItem asChild>
+                           <Link
+                              params={{ categoryId: category.id, slug }}
+                              to="/$slug/categories/$categoryId"
+                           >
+                              <Eye className="size-4 mr-2" />
+                              {translate(
+                                 "dashboard.routes.categories.list-section.actions.view-details",
+                              )}
+                           </Link>
+                        </DropdownMenuItem>
 
                         <Suspense
                            fallback={

@@ -54,7 +54,6 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { createSlug } from "@packages/utils/text";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, Filter, Inbox, MoreVertical, Search, Trash2 } from "lucide-react";
@@ -124,9 +123,12 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
                className="flex items-center gap-2"
                onClick={() => {
                   navigate({
-                     params: { slug: activeOrganization.slug },
-                     to: `/$slug/categories/${createSlug(category.name)}`,
-                  });
+                     params: {
+                        categoryId: category.id,
+                        slug: activeOrganization.slug,
+                     },
+                     to: "/$slug/categories/$categoryId" as const,
+                  } as never);
                }}
             >
                <Eye className="size-4" />
@@ -140,7 +142,7 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
                   className="text-destructive focus:text-destructive"
                   onSelect={(e) => e.preventDefault()}
                >
-                  <Trash2 className="size-4 mr-2" />
+                  <Trash2 className="size-4 " />
                   {translate(
                      "dashboard.routes.categories.list-section.actions.delete",
                   )}
@@ -218,6 +220,7 @@ function CategoriesListContent() {
       isFilterSheetOpen,
    } = useCategoryList();
 
+   const { activeOrganization } = useActiveOrganization();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -382,7 +385,7 @@ function CategoriesListContent() {
                      </Empty>
                   ) : (
                      <DataTable
-                        columns={createCategoryColumns()}
+                        columns={createCategoryColumns(activeOrganization.slug)}
                         data={categories}
                      />
                   )}

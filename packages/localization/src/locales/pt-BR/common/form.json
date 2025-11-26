@@ -3,6 +3,9 @@
       "label": "Tipo de Conta",
       "placeholder": "Selecione o tipo de conta"
    },
+   "advanced-options": {
+      "label": "Opções Avançadas"
+   },
    "amount": {
       "label": "Valor",
       "placeholder": "Digite o valor"
@@ -22,6 +25,11 @@
    "confirm-password": {
       "label": "Confirmar Senha",
       "placeholder": "Confirme sua senha"
+   },
+   "cost-center": {
+      "label": "Centro de Custo",
+      "none": "Nenhum",
+      "placeholder": "Selecione um centro de custo"
    },
    "created-at": {
       "label": "Data de Criação"
@@ -84,6 +92,10 @@
    "status": {
       "label": "Status",
       "placeholder": "Selecione o status"
+   },
+   "tags": {
+      "label": "Tags",
+      "placeholder": "Selecione as tags"
    },
    "to-account": {
       "label": "Conta de Destino",

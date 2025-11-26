@@ -82,6 +82,7 @@
          "amount": "Valor",
          "date": "Data",
          "description": "Descrição",
+         "tags": "Tags",
          "type": "Tipo"
       }
    }

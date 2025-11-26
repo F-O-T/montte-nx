@@ -65,6 +65,7 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { CostCenterFilterSheet } from "../features/cost-center-filter-sheet";
 import { useCostCenterList } from "../features/cost-center-list-context";
@@ -206,6 +207,7 @@ function CostCentersListContent() {
       isFilterSheetOpen,
    } = useCostCenterList();
 
+   const { activeOrganization } = useActiveOrganization();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
@@ -350,7 +352,9 @@ function CostCentersListContent() {
                      </Empty>
                   ) : (
                      <DataTable
-                        columns={createCostCenterColumns()}
+                        columns={createCostCenterColumns(
+                           activeOrganization.slug,
+                        )}
                         data={costCenters}
                      />
                   )}

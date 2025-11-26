@@ -429,7 +429,8 @@ export function OnboardingPage() {
                                        !formState.canSubmit ||
                                        formState.isSubmitting ||
                                        createBankAccount.isPending ||
-                                       createCategory.isPending
+                                       createCategory.isPending ||
+                                       selectedDefaultCategories.length === 0
                                     }
                                     type="submit"
                                     variant="default"

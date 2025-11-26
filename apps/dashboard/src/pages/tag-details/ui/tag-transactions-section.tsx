@@ -28,10 +28,9 @@ import {
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
+import { Tag } from "lucide-react";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useTRPC } from "@/integrations/clients";
 
 function TransactionsErrorFallback() {
@@ -40,12 +39,12 @@ function TransactionsErrorFallback() {
          <CardHeader>
             <CardTitle>
                {translate(
-                  "dashboard.routes.categories.details-section.transactions.title",
+                  "dashboard.routes.transactions.stats-section.total.title",
                )}
             </CardTitle>
             <CardDescription>
                {translate(
-                  "dashboard.routes.categories.details-section.transactions.description",
+                  "dashboard.routes.transactions.stats-section.total.description",
                )}
             </CardDescription>
          </CardHeader>
@@ -64,12 +63,12 @@ function TransactionsSkeleton() {
          <CardHeader>
             <CardTitle>
                {translate(
-                  "dashboard.routes.categories.details-section.transactions.title",
+                  "dashboard.routes.transactions.stats-section.total.title",
                )}
             </CardTitle>
             <CardDescription>
                {translate(
-                  "dashboard.routes.categories.details-section.transactions.description",
+                  "dashboard.routes.transactions.stats-section.total.description",
                )}
             </CardDescription>
          </CardHeader>
@@ -98,20 +97,20 @@ function TransactionsSkeleton() {
    );
 }
 
-function TransactionsContent({ categoryId }: { categoryId: string }) {
+function TransactionsContent({ tagId }: { tagId: string }) {
    const [currentPage, setCurrentPage] = useState(1);
    const pageSize = 5;
 
    const trpc = useTRPC();
 
-   const { data: category } = useSuspenseQuery(
-      trpc.categories.getById.queryOptions({ id: categoryId }),
+   const { data: tag } = useSuspenseQuery(
+      trpc.tags.getById.queryOptions({ id: tagId }),
    );
 
    const { data } = useSuspenseQuery(
-      trpc.transactions.getAllPaginated.queryOptions(
+      trpc.tags.getTransactions.queryOptions(
          {
-            category: category.name,
+            id: tagId,
             limit: pageSize,
             page: currentPage,
          },
@@ -129,43 +128,31 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
          <CardHeader>
             <CardTitle>
                {translate(
-                  "dashboard.routes.categories.details-section.transactions.title",
+                  "dashboard.routes.transactions.stats-section.total.title",
                )}
             </CardTitle>
             <CardDescription>
                {translate(
-                  "dashboard.routes.categories.details-section.transactions.description",
+                  "dashboard.routes.transactions.stats-section.total.description",
                )}
             </CardDescription>
          </CardHeader>
          <CardContent>
             {transactions.length === 0 ? (
                <div className="text-center py-8 text-muted-foreground">
-                  No transactions found for this category.
+                  No transactions found for this tag.
                </div>
             ) : (
                <ItemGroup>
                   {transactions.map((transaction, index: number) => {
-                     const transactionCategories =
-                        transaction.transactionCategories || [];
-
-                     const primaryCategory = transactionCategories[0]?.category;
-                     const categoryColor = primaryCategory?.color || "#6b7280";
-                     const categoryIcon = primaryCategory?.icon || "Wallet";
-
                      return (
                         <Fragment key={transaction.id}>
                            <Item>
                               <ItemMedia
-                                 style={{
-                                    backgroundColor: categoryColor,
-                                 }}
+                                 style={{ backgroundColor: tag.color }}
                                  variant="icon"
                               >
-                                 <IconDisplay
-                                    iconName={categoryIcon as IconName}
-                                    size={16}
-                                 />
+                                 <Tag className="size-4 text-white" />
                               </ItemMedia>
                               <ItemContent>
                                  <ItemTitle className="truncate">
@@ -275,11 +262,11 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
    );
 }
 
-export function CategoryTransactions({ categoryId }: { categoryId: string }) {
+export function TagTransactions({ tagId }: { tagId: string }) {
    return (
       <ErrorBoundary FallbackComponent={TransactionsErrorFallback}>
          <Suspense fallback={<TransactionsSkeleton />}>
-            <TransactionsContent categoryId={categoryId} />
+            <TransactionsContent tagId={tagId} />
          </Suspense>
       </ErrorBoundary>
    );

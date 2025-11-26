@@ -1,4 +1,5 @@
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
+import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
    createTransaction,
    createTransfer,
@@ -18,21 +19,22 @@ import { protectedProcedure, router } from "../trpc";
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
-   categoryIds: z.array(z.string()).min(1, "At least one category is required"),
+   categoryIds: z.array(z.string()).optional(),
+   costCenterId: z.string().optional(),
    date: z.string(),
    description: z.string(),
+   tagIds: z.array(z.string()).optional(),
    type: z.enum(["income", "expense", "transfer"]),
 });
 
 const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   categoryIds: z
-      .array(z.string())
-      .min(1, "At least one category is required")
-      .optional(),
+   categoryIds: z.array(z.string()).optional(),
+   costCenterId: z.string().nullable().optional(),
    date: z.string().optional(),
    description: z.string().optional(),
+   tagIds: z.array(z.string()).optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
@@ -46,6 +48,7 @@ const paginationSchema = z.object({
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
    startDate: z.string().optional(),
+   tagId: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
@@ -59,16 +62,25 @@ export const transactionRouter = router({
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
+            costCenterId: input.costCenterId || undefined,
             date: new Date(input.date),
             id: crypto.randomUUID(),
             organizationId,
          });
 
-         if (input.categoryIds.length > 0) {
+         if (input.categoryIds && input.categoryIds.length > 0) {
             await setTransactionCategories(
                resolvedCtx.db,
                transaction.id,
                input.categoryIds,
+            );
+         }
+
+         if (input.tagIds && input.tagIds.length > 0) {
+            await setTransactionTags(
+               resolvedCtx.db,
+               transaction.id,
+               input.tagIds,
             );
          }
 
@@ -242,6 +254,7 @@ export const transactionRouter = router({
          const updateData: {
             amount?: string;
             bankAccountId?: string;
+            costCenterId?: string | null;
             date?: Date;
             description?: string;
             type?: "income" | "expense" | "transfer";
@@ -257,6 +270,10 @@ export const transactionRouter = router({
 
          if (input.data.bankAccountId !== undefined) {
             updateData.bankAccountId = input.data.bankAccountId;
+         }
+
+         if (input.data.costCenterId !== undefined) {
+            updateData.costCenterId = input.data.costCenterId;
          }
 
          if (input.data.description !== undefined) {
@@ -278,6 +295,14 @@ export const transactionRouter = router({
                resolvedCtx.db,
                input.id,
                input.data.categoryIds,
+            );
+         }
+
+         if (input.data.tagIds !== undefined) {
+            await setTransactionTags(
+               resolvedCtx.db,
+               input.id,
+               input.data.tagIds,
             );
          }
 

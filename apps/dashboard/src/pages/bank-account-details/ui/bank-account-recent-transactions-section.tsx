@@ -27,6 +27,7 @@ import {
    type Transaction,
    TransactionItem,
 } from "@/features/transaction/ui/transaction-item";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
 
@@ -84,6 +85,7 @@ function RecentTransactionsContent({
    bankAccountId: string;
 }) {
    const isMobile = useIsMobile();
+   const { activeOrganization } = useActiveOrganization();
    const [currentPage, setCurrentPage] = useState(1);
    const pageSize = 10;
 
@@ -147,7 +149,10 @@ function RecentTransactionsContent({
                </ItemGroup>
             ) : (
                <DataTable
-                  columns={createTransactionColumns(categories)}
+                  columns={createTransactionColumns(
+                     categories,
+                     activeOrganization.slug,
+                  )}
                   data={transactions}
                />
             )}
