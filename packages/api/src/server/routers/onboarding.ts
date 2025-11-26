@@ -1,5 +1,3 @@
-import { findBankAccountsByUserId } from "@packages/database/repositories/bank-account-repository";
-import { getTotalCategoriesByUserId } from "@packages/database/repositories/category-repository";
 import { APIError } from "@packages/utils/errors";
 import { protectedProcedure, router } from "../trpc";
 export const onboardingRouter = router({
