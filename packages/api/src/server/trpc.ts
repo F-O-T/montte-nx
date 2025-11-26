@@ -82,7 +82,9 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    const apikey = resolvedCtx.headers.get("sdk-api-key");
 
    if (apikey) {
-      throw APIError.forbidden("This endpoint does not accept API Key authentication.");
+      throw APIError.forbidden(
+         "This endpoint does not accept API Key authentication.",
+      );
    }
    if (!resolvedCtx.session?.user) {
       throw APIError.forbidden("Access denied.");

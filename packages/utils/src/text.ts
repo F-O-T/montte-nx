@@ -171,7 +171,6 @@ export function createCodeFromName(name: string): string {
       .replace(/\s+/g, " ")
       .trim();
 
-   
    const words = normalized.split(" ").filter(Boolean);
 
    if (words.length === 0) return "";

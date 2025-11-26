@@ -512,7 +512,7 @@ export const DEFAULT_COST_CENTERS: Omit<
    { code: "RH", name: "Recursos Humanos" },
 ];
 
-export async function createDefaultCostCenters(   
+export async function createDefaultCostCenters(
    dbClient: DatabaseInstance,
    organizationId: string,
 ) {

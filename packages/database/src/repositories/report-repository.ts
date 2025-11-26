@@ -330,8 +330,8 @@ export async function getCashFlowByPeriod(
          groupBy === "day"
             ? "YYYY-MM-DD"
             : groupBy === "week"
-               ? "YYYY-IW"
-               : "YYYY-MM";
+              ? "YYYY-IW"
+              : "YYYY-MM";
 
       // Get planned cash flow from bills
       const plannedResult = await dbClient
@@ -480,7 +480,7 @@ export async function getPaymentPerformanceByPeriod(
             // Bill is paid
             const delayDays = Math.floor(
                (b.completionDate.getTime() - b.dueDate.getTime()) /
-               (1000 * 60 * 60 * 24),
+                  (1000 * 60 * 60 * 24),
             );
 
             if (delayDays <= 0) {

@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
    boolean,
    json,
@@ -7,7 +8,6 @@ import {
    uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { sql } from "drizzle-orm";
 
 export const notification = pgTable("notification", {
    createdAt: timestamp("created_at").defaultNow().notNull(),

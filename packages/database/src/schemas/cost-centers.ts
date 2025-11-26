@@ -4,13 +4,13 @@ import { organization } from "./auth";
 import { transaction } from "./transactions";
 
 export const costCenter = pgTable("cost_center", {
+   code: text("code"),
+   createdAt: timestamp("created_at").defaultNow().notNull(),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+   name: text("name").notNull(),
    organizationId: uuid("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
-   name: text("name").notNull(),
-   code: text("code"),
-   createdAt: timestamp("created_at").defaultNow().notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date())

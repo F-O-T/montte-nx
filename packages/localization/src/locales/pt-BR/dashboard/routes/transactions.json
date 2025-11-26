@@ -44,14 +44,14 @@
          "label": "Gerencie sua transação"
       },
       "description": "Veja todas as suas transações financeiras aqui.",
+      "page": "Página {{current}} de {{total}}",
+      "showing": "Mostrando {{count}} de {{total}} transações",
       "state": {
          "empty": {
             "description": "Tente ajustar seus filtros ou adicionar uma nova transação.",
             "title": "Nenhuma Transação Encontrada"
          }
       },
-      "showing": "Mostrando {{count}} de {{total}} transações",
-      "page": "Página {{current}} de {{total}}",
       "title": "Lista de Transações",
       "types": {
          "expense": "Despesa",
