@@ -292,7 +292,7 @@ function SidebarTrigger({
          {...props}
       >
          {state === "expanded" ? <ChevronLeft /> : <ChevronRight />}
-         <span className="sr-only">Toggle Sidebar</span>
+         <span className="sr-only">{tooltipText}</span>
       </Button>
    );
 
