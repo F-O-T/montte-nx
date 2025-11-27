@@ -90,6 +90,7 @@
    "table": {
       "columns": {
          "budget": "Orçamento",
+         "created-at": "Criado em",
          "name": "Nome"
       }
    }

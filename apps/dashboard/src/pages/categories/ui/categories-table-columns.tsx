@@ -8,6 +8,7 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import { formatDate } from "@packages/utils/date";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, MoreVertical, Trash2 } from "lucide-react";
@@ -47,6 +48,21 @@ export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
          },
          enableSorting: true,
          header: translate("dashboard.routes.categories.table.columns.name"),
+      },
+      {
+         accessorKey: "createdAt",
+         cell: ({ row }) => {
+            const category = row.original;
+            return (
+               <span className="text-muted-foreground">
+                  {formatDate(new Date(category.createdAt), "DD/MM/YYYY")}
+               </span>
+            );
+         },
+         enableSorting: true,
+         header: translate(
+            "dashboard.routes.categories.table.columns.created-at",
+         ),
       },
       {
          cell: ({ row }) => {
