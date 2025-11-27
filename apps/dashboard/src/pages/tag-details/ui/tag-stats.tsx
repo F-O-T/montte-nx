@@ -49,9 +49,9 @@ function TagTotalStat({ tagId }: { tagId: string }) {
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
-         search: tag.name,
          limit: 100,
          page: 1,
+         search: tag.name,
       }),
    );
 
@@ -77,9 +77,9 @@ function TagIncomeStat({ tagId }: { tagId: string }) {
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
-         search: tag.name,
          limit: 100,
          page: 1,
+         search: tag.name,
       }),
    );
 
@@ -116,9 +116,9 @@ function TagExpenseStat({ tagId }: { tagId: string }) {
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
-         search: tag.name,
          limit: 100,
          page: 1,
+         search: tag.name,
       }),
    );
 

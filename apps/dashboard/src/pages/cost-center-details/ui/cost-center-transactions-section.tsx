@@ -110,9 +110,9 @@ function TransactionsContent({ costCenterId }: { costCenterId: string }) {
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions(
          {
-            search: costCenter.name,
             limit: pageSize,
             page: currentPage,
+            search: costCenter.name,
          },
          {
             placeholderData: keepPreviousData,

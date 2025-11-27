@@ -49,9 +49,9 @@ function CostCenterTotalStat({ costCenterId }: { costCenterId: string }) {
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
-         search: costCenter.name,
          limit: 100,
          page: 1,
+         search: costCenter.name,
       }),
    );
 
@@ -77,9 +77,9 @@ function CostCenterIncomeStat({ costCenterId }: { costCenterId: string }) {
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
-         search: costCenter.name,
          limit: 100,
          page: 1,
+         search: costCenter.name,
       }),
    );
 
@@ -116,9 +116,9 @@ function CostCenterExpenseStat({ costCenterId }: { costCenterId: string }) {
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
-         search: costCenter.name,
          limit: 100,
          page: 1,
+         search: costCenter.name,
       }),
    );
 
