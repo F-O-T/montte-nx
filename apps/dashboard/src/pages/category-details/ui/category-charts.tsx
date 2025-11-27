@@ -178,13 +178,7 @@ function MonthlyTooltip({
    );
 }
 
-function CategoryTypeDistributionChart({
-   categoryId,
-   categoryColor,
-}: {
-   categoryId: string;
-   categoryColor: string;
-}) {
+function CategoryTypeDistributionChart({ categoryId }: { categoryId: string }) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
@@ -195,58 +189,55 @@ function CategoryTypeDistributionChart({
       }),
    );
 
-   const { chartData, chartConfig, hasData, total, totalIncome, totalExpense } =
-      useMemo(() => {
-         const transactions = data.transactions;
+   const { chartData, chartConfig, hasData, total } = useMemo(() => {
+      const transactions = data.transactions;
 
-         let incomeSum = 0;
-         let expenseSum = 0;
+      let incomeSum = 0;
+      let expenseSum = 0;
 
-         for (const t of transactions) {
-            const amount = Math.abs(parseFloat(t.amount));
-            if (t.type === "income") {
-               incomeSum += amount;
-            } else if (t.type === "expense") {
-               expenseSum += amount;
-            }
+      for (const t of transactions) {
+         const amount = Math.abs(parseFloat(t.amount));
+         if (t.type === "income") {
+            incomeSum += amount;
+         } else if (t.type === "expense") {
+            expenseSum += amount;
          }
+      }
 
-         const incomeLabel = translate("common.charts.labels.income");
-         const expensesLabel = translate("common.charts.labels.expenses");
+      const incomeLabel = translate("common.charts.labels.income");
+      const expensesLabel = translate("common.charts.labels.expenses");
 
-         const chartData = [
-            {
-               fill: "#10b981",
-               name: incomeLabel,
-               value: incomeSum,
-            },
-            {
-               fill: "#ef4444",
-               name: expensesLabel,
-               value: expenseSum,
-            },
-         ].filter((item) => item.value > 0);
+      const chartData = [
+         {
+            fill: "#10b981",
+            name: incomeLabel,
+            value: incomeSum,
+         },
+         {
+            fill: "#ef4444",
+            name: expensesLabel,
+            value: expenseSum,
+         },
+      ].filter((item) => item.value > 0);
 
-         const config: ChartConfig = {
-            [incomeLabel]: {
-               color: "#10b981",
-               label: incomeLabel,
-            },
-            [expensesLabel]: {
-               color: "#ef4444",
-               label: expensesLabel,
-            },
-         };
+      const config: ChartConfig = {
+         [incomeLabel]: {
+            color: "#10b981",
+            label: incomeLabel,
+         },
+         [expensesLabel]: {
+            color: "#ef4444",
+            label: expensesLabel,
+         },
+      };
 
-         return {
-            chartConfig: config,
-            chartData,
-            hasData: incomeSum > 0 || expenseSum > 0,
-            total: incomeSum + expenseSum,
-            totalExpense: expenseSum,
-            totalIncome: incomeSum,
-         };
-      }, [data.transactions]);
+      return {
+         chartConfig: config,
+         chartData,
+         hasData: incomeSum > 0 || expenseSum > 0,
+         total: incomeSum + expenseSum,
+      };
+   }, [data.transactions]);
 
    return (
       <Card className="flex flex-col">
@@ -335,13 +326,7 @@ function CategoryTypeDistributionChart({
    );
 }
 
-function CategoryMonthlyTrendChart({
-   categoryId,
-   categoryColor,
-}: {
-   categoryId: string;
-   categoryColor: string;
-}) {
+function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
@@ -478,41 +463,20 @@ function CategoryMonthlyTrendChart({
    );
 }
 
-function CategoryChartsContent({
-   categoryId,
-   categoryColor,
-}: {
-   categoryId: string;
-   categoryColor: string;
-}) {
+function CategoryChartsContent({ categoryId }: { categoryId: string }) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <CategoryMonthlyTrendChart
-            categoryColor={categoryColor}
-            categoryId={categoryId}
-         />
-         <CategoryTypeDistributionChart
-            categoryColor={categoryColor}
-            categoryId={categoryId}
-         />
+         <CategoryMonthlyTrendChart categoryId={categoryId} />
+         <CategoryTypeDistributionChart categoryId={categoryId} />
       </div>
    );
 }
 
-export function CategoryCharts({
-   categoryId,
-   categoryColor,
-}: {
-   categoryId: string;
-   categoryColor: string;
-}) {
+export function CategoryCharts({ categoryId }: { categoryId: string }) {
    return (
       <ErrorBoundary FallbackComponent={CategoryChartsErrorFallback}>
          <Suspense fallback={<CategoryChartsSkeleton />}>
-            <CategoryChartsContent
-               categoryColor={categoryColor}
-               categoryId={categoryId}
-            />
+            <CategoryChartsContent categoryId={categoryId} />
          </Suspense>
       </ErrorBoundary>
    );

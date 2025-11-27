@@ -33,7 +33,7 @@ function CategoryContent() {
       return (
          <CategoryPageError
             error={new Error("Invalid category ID")}
-            resetErrorBoundary={() => { }}
+            resetErrorBoundary={() => {}}
          />
       );
    }
@@ -52,10 +52,7 @@ function CategoryContent() {
          />
          <CategoryStats categoryId={categoryId} />
          <CategoryTransactions categoryId={categoryId} />
-         <CategoryCharts
-            categoryColor={category.color}
-            categoryId={categoryId}
-         />
+         <CategoryCharts categoryId={categoryId} />
       </main>
    );
 }
