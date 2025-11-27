@@ -20,6 +20,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 
+//TODO: dropdown duplicado aqui
 export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
    return [
       {
@@ -93,7 +94,7 @@ export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
                               params={{ categoryId: category.id, slug }}
                               to="/$slug/categories/$categoryId"
                            >
-                              <Eye className="size-4 mr-2" />
+                              <Eye className="size-4 " />
                               {translate(
                                  "dashboard.routes.categories.list-section.actions.view-details",
                               )}

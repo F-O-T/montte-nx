@@ -58,7 +58,7 @@ import {
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import {
    Eye,
    Filter,
@@ -128,7 +128,6 @@ function CategoriesCardHeader() {
 function CategoryActionsDropdown({ category }: { category: Category }) {
    const [isOpen, setIsOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
-   const navigate = useNavigate();
 
    return (
       <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
@@ -161,22 +160,19 @@ function CategoryActionsDropdown({ category }: { category: Category }) {
                )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-               className="flex items-center gap-2"
-               onClick={() => {
-                  navigate({
-                     params: {
-                        categoryId: category.id,
-                        slug: activeOrganization.slug,
-                     },
-                     to: "/$slug/categories/$categoryId" as const,
-                  } as never);
-               }}
-            >
-               <Eye className="size-4" />
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.view-details",
-               )}
+            <DropdownMenuItem asChild>
+               <Link
+                  params={{
+                     categoryId: category.id,
+                     slug: activeOrganization.slug,
+                  }}
+                  to="/$slug/categories/$categoryId"
+               >
+                  <Eye className="size-4" />
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.view-details",
+                  )}
+               </Link>
             </DropdownMenuItem>
             <ManageCategorySheet asChild category={category} />
             <DeleteCategory category={category}>
