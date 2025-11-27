@@ -23,6 +23,7 @@ import {
 } from "@packages/database/repositories/transaction-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { formatDecimalCurrency } from "@packages/utils/money";
+import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -100,12 +101,38 @@ async function checkBudgetAndNotify(
    return notifications;
 }
 
+function validateCategorySplitsForTransaction(
+   categorySplits:
+      | { categoryId: string; value: number; splitType: "amount" }[]
+      | null
+      | undefined,
+   categoryIds: string[],
+   amountInDecimal: number,
+): void {
+   if (!categorySplits || categorySplits.length === 0) {
+      return;
+   }
+
+   const amountInCents = Math.round(amountInDecimal * 100);
+   const result = validateSplits(categorySplits, categoryIds, amountInCents);
+
+   if (!result.isValid) {
+      throw new Error(result.errors.join("; "));
+   }
+}
+
 export const transactionRouter = router({
    create: protectedProcedure
       .input(createTransactionSchema)
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+
+         validateCategorySplitsForTransaction(
+            input.categorySplits,
+            input.categoryIds,
+            input.amount,
+         );
 
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
@@ -298,6 +325,22 @@ export const transactionRouter = router({
             existingTransaction.organizationId !== organizationId
          ) {
             throw new Error("Transaction not found");
+         }
+
+         if (input.data.categorySplits !== undefined) {
+            const categoryIds =
+               input.data.categoryIds ??
+               existingTransaction.transactionCategories?.map(
+                  (tc) => tc.category.id,
+               ) ??
+               [];
+            const amount =
+               input.data.amount ?? Number(existingTransaction.amount);
+            validateCategorySplitsForTransaction(
+               input.data.categorySplits,
+               categoryIds,
+               amount,
+            );
          }
 
          const updateData: {

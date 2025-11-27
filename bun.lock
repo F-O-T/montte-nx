@@ -101,7 +101,6 @@
         "@tooling/typescript": "workspace:*",
         "@types/bun": "latest",
         "typescript": "catalog:development",
-        "vitest": "catalog:testing",
       },
     },
     "libraries/ofx": {
@@ -231,7 +230,6 @@
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
         "typescript": "catalog:development",
-        "vitest": "catalog:testing",
       },
     },
     "packages/ofx": {
@@ -354,7 +352,6 @@
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
         "typescript": "catalog:development",
-        "vitest": "catalog:testing",
       },
     },
     "tooling/typescript": {

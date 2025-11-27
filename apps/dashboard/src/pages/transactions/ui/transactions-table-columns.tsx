@@ -15,8 +15,9 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { formatDecimalCurrency } from "@packages/utils/money";
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreVertical, Split } from "lucide-react";
+import { Eye, MoreVertical, Split } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -33,6 +34,7 @@ type CategorySplit = {
 
 export function createTransactionColumns(
    categories: Category[],
+   slug: string,
 ): ColumnDef<Transaction>[] {
    return [
       {
@@ -194,6 +196,20 @@ export function createTransactionColumns(
                            )}
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                           <Link
+                              params={{
+                                 slug,
+                                 transactionId: transaction.id,
+                              }}
+                              to="/$slug/transactions/$transactionId"
+                           >
+                              <Eye className="size-4" />
+                              {translate(
+                                 "dashboard.routes.transactions.list-section.actions.view-details",
+                              )}
+                           </Link>
+                        </DropdownMenuItem>
                         <Suspense
                            fallback={
                               <DropdownMenuItem disabled>

@@ -536,17 +536,44 @@ export async function getCategorySpending(
          0,
       );
 
-      const result = await dbClient.execute<{ total: number }>(sql`
-         SELECT COALESCE(SUM(CAST(t.amount AS REAL)), 0) as total
-         FROM ${transaction} t
-         INNER JOIN ${transactionCategory} tc ON t.id = tc.transaction_id
-         WHERE tc.category_id = ${categoryId}
-         AND t.type = 'expense'
-         AND t.date >= ${currentMonthStart}
-         AND t.date <= ${currentMonthEnd}
-      `);
+      const transactions = await dbClient
+         .select({
+            amount: transaction.amount,
+            categorySplits: transaction.categorySplits,
+            transactionId: transaction.id,
+         })
+         .from(transaction)
+         .innerJoin(
+            transactionCategory,
+            eq(transactionCategory.transactionId, transaction.id),
+         )
+         .where(
+            and(
+               eq(transactionCategory.categoryId, categoryId),
+               eq(transaction.type, "expense"),
+               gte(transaction.date, currentMonthStart),
+               lte(transaction.date, currentMonthEnd),
+            ),
+         );
 
-      return result.rows[0]?.total || 0;
+      let total = 0;
+
+      for (const tx of transactions) {
+         const splits = tx.categorySplits as
+            | { categoryId: string; value: number; splitType: string }[]
+            | null;
+
+         if (splits && splits.length > 0) {
+            const split = splits.find((s) => s.categoryId === categoryId);
+            if (split) {
+               total += split.value / 100;
+            }
+         } else {
+            total += Number(tx.amount);
+         }
+      }
+
+      return total;
    } catch (err) {
       propagateError(err);
       throw AppError.database(

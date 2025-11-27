@@ -24,10 +24,12 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import { MoreVertical, Split } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Eye, MoreVertical, Split } from "lucide-react";
 import { Suspense } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteTransaction } from "../features/delete-transaction-dialog";
 import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
@@ -48,6 +50,7 @@ export function TransactionItem({
    transaction,
    categories,
 }: TransactionItemProps) {
+   const { activeOrganization } = useActiveOrganization();
    const transactionCategoryIds =
       transaction.transactionCategories?.map((tc) => tc.category.id) || [];
    const categorySplits = transaction.categorySplits as CategorySplit[] | null;
@@ -92,8 +95,9 @@ export function TransactionItem({
    };
 
    return (
-      <Item>
+      <Item className="w-full">
          <ItemMedia
+            className="shrink-0"
             style={{
                backgroundColor: categoryColor,
             }}
@@ -101,15 +105,15 @@ export function TransactionItem({
          >
             <IconDisplay iconName={categoryIcon as IconName} size={16} />
          </ItemMedia>
-         <ItemContent>
+         <ItemContent className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-               <ItemTitle className="truncate">
+               <ItemTitle className="truncate flex-1 min-w-0">
                   {transaction.description}
                </ItemTitle>
                {hasSplit && (
                   <Tooltip>
                      <TooltipTrigger asChild>
-                        <Split className="size-3.5 text-muted-foreground" />
+                        <Split className="size-3.5 text-muted-foreground shrink-0" />
                      </TooltipTrigger>
                      <TooltipContent className="space-y-1.5 p-3">
                         {getSplitTooltipContent()}
@@ -117,12 +121,15 @@ export function TransactionItem({
                   </Tooltip>
                )}
             </div>
-            <ItemDescription>
+            <ItemDescription className="text-xs md:text-sm">
                {new Date(transaction.date).toLocaleDateString()}
             </ItemDescription>
          </ItemContent>
-         <ItemActions>
-            <Badge variant={isPositive ? "default" : "destructive"}>
+         <ItemActions className="shrink-0 ml-auto">
+            <Badge
+               className="text-xs md:text-sm"
+               variant={isPositive ? "default" : "destructive"}
+            >
                {isPositive ? "+" : "-"}
                {formattedAmount}
             </Badge>
@@ -144,6 +151,20 @@ export function TransactionItem({
                         <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
                      }
                   ></Suspense>
+                  <DropdownMenuItem asChild>
+                     <Link
+                        params={{
+                           slug: activeOrganization.slug,
+                           transactionId: transaction.id,
+                        }}
+                        to="/$slug/transactions/$transactionId"
+                     >
+                        <Eye className="size-4" />
+                        {translate(
+                           "dashboard.routes.transactions.list-section.actions.view-details",
+                        )}
+                     </Link>
+                  </DropdownMenuItem>
                   <ManageTransactionSheet asChild transaction={transaction} />
                   <DeleteTransaction asChild transaction={transaction} />
                </DropdownMenuContent>

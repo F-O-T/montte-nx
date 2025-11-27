@@ -1,6 +1,11 @@
 import { Label } from "@packages/ui/components/label";
 import { MoneyInput } from "@packages/ui/components/money-input";
 import { Switch } from "@packages/ui/components/switch";
+import {
+   type CategorySplit,
+   getRemainingAmount,
+   isSplitSumValid,
+} from "@packages/utils/split";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 
 type Category = {
@@ -8,12 +13,6 @@ type Category = {
    name: string;
    icon: string | null;
    color: string;
-};
-
-type CategorySplit = {
-   categoryId: string;
-   value: number;
-   splitType: "amount";
 };
 
 type CategorySplitInputProps = {
@@ -65,24 +64,22 @@ export function CategorySplitInput({
    const handleValueChange = (categoryId: string, newValue: number) => {
       if (!currentSplits) return;
 
-      const otherSplitsTotal = currentSplits
-         .filter((s) => s.categoryId !== categoryId)
-         .reduce((sum, s) => sum + s.value, 0);
-
-      const maxAllowed = totalAmount - otherSplitsTotal;
-      const clampedValue = Math.min(Math.max(0, newValue), maxAllowed);
+      const value = Math.max(0, newValue);
 
       const updatedSplits = currentSplits.map((s) => {
          if (s.categoryId !== categoryId) return s;
-         return { ...s, value: clampedValue };
+         return { ...s, value };
       });
 
       onChange(updatedSplits);
    };
 
-   const allocated = currentSplits?.reduce((sum, s) => sum + s.value, 0) ?? 0;
-   const remaining = totalAmount - allocated;
-   const isValid = Math.abs(remaining) < 1;
+   const isValid = currentSplits
+      ? isSplitSumValid(currentSplits, totalAmount)
+      : true;
+   const remainingAmount = currentSplits
+      ? getRemainingAmount(currentSplits, totalAmount)
+      : totalAmount;
 
    return (
       <div className="space-y-3 rounded-lg border p-3">
@@ -106,12 +103,14 @@ export function CategorySplitInput({
                      className={`text-sm ${
                         !isValid
                            ? "text-destructive font-medium"
-                           : "text-muted-foreground"
+                           : "text-green-600 font-medium"
                      }`}
                   >
                      {isValid
-                        ? "✓ Valores conferem"
-                        : `Restante: R$ ${(remaining / 100).toFixed(2)}`}
+                        ? "Valores conferem"
+                        : remainingAmount > 0
+                          ? `Falta: R$ ${(remainingAmount / 100).toFixed(2)}`
+                          : `Excede: R$ ${(Math.abs(remainingAmount) / 100).toFixed(2)}`}
                   </span>
                </div>
 
