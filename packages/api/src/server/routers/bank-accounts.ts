@@ -53,22 +53,16 @@ export const bankAccountRouter = router({
 
    createDefaultBusiness: protectedProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-      return createDefaultBusinessBankAccount(resolvedCtx.db, userId);
+      return createDefaultBusinessBankAccount(resolvedCtx.db, organizationId);
    }),
 
    createDefaultPersonal: protectedProcedure.mutation(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-      return createDefaultWalletBankAccount(resolvedCtx.db, userId);
+      return createDefaultWalletBankAccount(resolvedCtx.db, organizationId);
    }),
 
    delete: protectedProcedure

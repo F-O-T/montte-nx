@@ -378,7 +378,10 @@ export function OnboardingPage() {
             return;
          }
 
-         const slug = createSlug(value.name);
+         let slug = createSlug(value.name);
+         if (!slug || slug.trim().length === 0) {
+            slug = `organization-${Date.now()}`;
+         }
          await createOrganization.mutateAsync({
             name: value.name,
             slug,

@@ -5,7 +5,7 @@ import {
 } from "@packages/database/repositories/auth-repository";
 import { streamFileForProxy, uploadFile } from "@packages/files/client";
 import { compressImage } from "@packages/files/image-helper";
-import { APIError, propagateError } from "@packages/utils/errors";
+import { APIError, AppError, propagateError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -27,6 +27,12 @@ export const organizationRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
 
+         if (!input.slug || input.slug.trim().length === 0) {
+            throw APIError.badRequest(
+               "Organization slug cannot be empty. Please provide a valid organization name.",
+            );
+         }
+
          try {
             const organization = await resolvedCtx.auth.api.createOrganization({
                body: {
@@ -40,8 +46,17 @@ export const organizationRouter = router({
             return organization;
          } catch (error) {
             console.error("Failed to create organization:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to create organization");
+
+            if (error instanceof APIError || error instanceof AppError) {
+               throw error;
+            }
+
+            const errorMessage =
+               error instanceof Error
+                  ? error.message
+                  : "Failed to create organization";
+
+            throw APIError.internal(errorMessage);
          }
       }),
 

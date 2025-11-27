@@ -180,8 +180,8 @@ export async function createDefaultWalletBankAccount(
       const existingAccount = await dbClient.query.bankAccount.findFirst({
          where: (bankAccount, { eq, and }) =>
             and(
-               eq(bankAccount.userId, userId),
-               eq(bankAccount.name, "Carteira"),
+               eq(bankAccount.organizationId, organizationId),
+               eq(bankAccount.name, "Wallet"),
             ),
       });
 
@@ -209,12 +209,15 @@ export async function createDefaultWalletBankAccount(
 
 export async function createDefaultBusinessBankAccount(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
          where: (bankAccount, { eq, and }) =>
-            and(eq(bankAccount.userId, userId), eq(bankAccount.name, "Caixa")),
+            and(
+               eq(bankAccount.organizationId, organizationId),
+               eq(bankAccount.name, "Caixa"),
+            ),
       });
 
       if (existingAccount) {
@@ -226,8 +229,8 @@ export async function createDefaultBusinessBankAccount(
          .values({
             bank: "Caixa",
             name: "Caixa",
+            organizationId,
             type: "checking",
-            userId,
          })
          .returning();
       return result[0];
