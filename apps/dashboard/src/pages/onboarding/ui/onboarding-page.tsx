@@ -46,17 +46,6 @@ import { useTRPC } from "@/integrations/clients";
 
 type OnboardingContext = "personal" | "business" | null;
 
-const steps = [
-   {
-      id: "bank-account",
-   },
-   {
-      id: "category",
-   },
-] as const;
-
-const { Stepper } = defineStepper(...steps);
-
 const schema = z.object({
    bank: z
       .string()
@@ -165,7 +154,10 @@ export function OnboardingPage() {
    const [showOptionalBankAccount, setShowOptionalBankAccount] =
       useState(false);
 
-   const shouldGoNextRef = useRef(false);
+   const [shouldGoNext, setShouldGoNext] = useState(false);
+   const stepperMethodsRef = useRef<{
+      next: () => void;
+   } | null>(null);
 
    const { data: organizations } = useQuery(
       trpc.organization.getOrganizations.queryOptions(),
@@ -521,8 +513,8 @@ export function OnboardingPage() {
                <Button
                   className="my-2"
                   onClick={() => {
-                     shouldGoNextRef.current = true;
                      setShowOptionalBankAccount(true);
+                     setShouldGoNext(true);
                   }}
                   type="button"
                   variant="outline"
@@ -733,17 +725,23 @@ export function OnboardingPage() {
       );
    }
 
+   useEffect(() => {
+      if (shouldGoNext && stepperMethodsRef.current) {
+         setShouldGoNext(false);
+         stepperMethodsRef.current.next();
+      }
+   }, [shouldGoNext]);
+
    return (
       <Stepper.Provider>
          {({ methods }) => {
             const currentStepId = methods.current.id;
 
-            useEffect(() => {
-               if (shouldGoNextRef.current) {
-                  shouldGoNextRef.current = false;
-                  methods.next();
-               }
-            }, [methods, showOptionalBankAccount]);
+            if (!stepperMethodsRef.current) {
+               stepperMethodsRef.current = { next: methods.next };
+            } else {
+               stepperMethodsRef.current.next = methods.next;
+            }
 
             const handleNext = async () => {
                if (currentStepId === "context-selection" && context) {
@@ -754,7 +752,7 @@ export function OnboardingPage() {
                      } else if (context === "business") {
                         methods.next();
                      }
-                  } catch (error) {
+                  } catch {
                      // Error já tratado no onError da mutation
                   }
                   return;
@@ -766,7 +764,7 @@ export function OnboardingPage() {
                      if (organizationForm.state.isValid) {
                         methods.next();
                      }
-                  } catch (error) {
+                  } catch {
                      // Error já tratado no onError da mutation
                   }
                   return;
@@ -919,8 +917,6 @@ export function OnboardingPage() {
                                  <Button
                                     className="flex gap-2 items-center justify-center"
                                     disabled={
-                                       !formState.canSubmit ||
-                                       formState.isSubmitting ||
                                        createBankAccount.isPending ||
                                        createCategory.isPending ||
                                        selectedDefaultCategories.length === 0
