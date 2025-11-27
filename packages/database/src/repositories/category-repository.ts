@@ -657,7 +657,7 @@ export async function getTopCategories(
    try {
       const typeCondition =
          type === "all"
-            ? sql`t.type IN ('income', 'expense')`
+            ? sql`t.type IN ('income', 'expense', 'transfer')`
             : sql`t.type = ${type}`;
 
       const result = await dbClient.execute<{
