@@ -43,7 +43,7 @@ npm-debug.log*
 *storybook.log
 storybook-static
 
-
+.idea
 
 .nx/cache
 .nx/workspace-data

@@ -1,5 +1,7 @@
 import {
    createBankAccount,
+   createDefaultBusinessBankAccount,
+   createDefaultWalletBankAccount,
    deleteBankAccount,
    findBankAccountById,
    findBankAccountsByOrganizationId,
@@ -24,6 +26,7 @@ const createBankAccountSchema = z.object({
 const updateBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required").optional(),
    name: z.string().min(1, "Name is required").optional(),
+   status: z.enum(["active", "inactive"]).optional(),
    type: z.enum(["checking", "savings", "investment"]).optional(),
 });
 
@@ -48,6 +51,20 @@ export const bankAccountRouter = router({
             organizationId,
          });
       }),
+
+   createDefaultBusiness: protectedProcedure.mutation(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const organizationId = resolvedCtx.organizationId;
+
+      return createDefaultBusinessBankAccount(resolvedCtx.db, organizationId);
+   }),
+
+   createDefaultPersonal: protectedProcedure.mutation(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const organizationId = resolvedCtx.organizationId;
+
+      return createDefaultWalletBankAccount(resolvedCtx.db, organizationId);
+   }),
 
    delete: protectedProcedure
       .input(z.object({ id: z.string() }))
@@ -212,6 +229,21 @@ export const bankAccountRouter = router({
             throw new Error("Bank account not found");
          }
 
-         return updateBankAccount(resolvedCtx.db, input.id, input.data);
+         const updateData: {
+            type?: "checking" | "savings" | "investment";
+            bank?: string;
+            name?: string;
+            status?: "active" | "inactive";
+         } = {};
+         if (input.data.bank) updateData.bank = input.data.bank;
+         if (input.data.name) updateData.name = input.data.name;
+         if (input.data.status) updateData.status = input.data.status;
+         if (input.data.type) {
+            updateData.type = input.data.type as
+               | "checking"
+               | "savings"
+               | "investment";
+         }
+         return updateBankAccount(resolvedCtx.db, input.id, updateData);
       }),
 });

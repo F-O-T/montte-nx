@@ -67,6 +67,7 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             return (
                <nav
                   aria-label={ariaLabel}
+                  className="mb-5"
                   date-component="stepper-navigation"
                   {...props}
                >
@@ -165,7 +166,7 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
                <>
                   <li
                      className={cn([
-                        "group peer relative flex items-center gap-2",
+                        "group peer relative flex items-center gap-2 bg-red",
                         "data-[variant=vertical]:flex-row",
                         "data-[label-orientation=vertical]:w-full",
                         "data-[label-orientation=vertical]:flex-col",

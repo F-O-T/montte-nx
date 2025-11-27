@@ -6,6 +6,10 @@ export const bankAccountTypes = pgEnum("bank_account_type", [
    "savings",
    "investment",
 ]);
+export const bankAccountStatus = pgEnum("bank_account_status", [
+   "active",
+   "inactive",
+]);
 export const bankAccount = pgTable("bank_account", {
    bank: text("bank").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -14,6 +18,7 @@ export const bankAccount = pgTable("bank_account", {
    organizationId: uuid("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
+   status: bankAccountStatus("status").default("active").notNull(),
    type: bankAccountTypes("type").notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()

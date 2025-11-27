@@ -177,6 +177,18 @@ export async function createDefaultWalletBankAccount(
    organizationId: string,
 ) {
    try {
+      const existingAccount = await dbClient.query.bankAccount.findFirst({
+         where: (bankAccount, { eq, and }) =>
+            and(
+               eq(bankAccount.organizationId, organizationId),
+               eq(bankAccount.name, "Wallet"),
+            ),
+      });
+
+      if (existingAccount) {
+         return existingAccount;
+      }
+
       const result = await dbClient
          .insert(bankAccount)
          .values({
@@ -191,6 +203,41 @@ export async function createDefaultWalletBankAccount(
       propagateError(err);
       throw AppError.database(
          `Failed to create default wallet bank account: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function createDefaultBusinessBankAccount(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const existingAccount = await dbClient.query.bankAccount.findFirst({
+         where: (bankAccount, { eq, and }) =>
+            and(
+               eq(bankAccount.organizationId, organizationId),
+               eq(bankAccount.name, "Caixa"),
+            ),
+      });
+
+      if (existingAccount) {
+         return existingAccount;
+      }
+
+      const result = await dbClient
+         .insert(bankAccount)
+         .values({
+            bank: "Caixa",
+            name: "Caixa",
+            organizationId,
+            type: "checking",
+         })
+         .returning();
+      return result[0];
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create default business bank account: ${(err as Error).message}`,
       );
    }
 }

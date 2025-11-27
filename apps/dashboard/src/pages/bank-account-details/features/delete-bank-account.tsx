@@ -34,7 +34,7 @@ export function DeleteBankAccount({
          },
          onSuccess: () => {
             queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getAll.queryKey(),
+               queryKey: ["bankAccounts"],
             });
             toast.success("Bank account deleted successfully");
          },

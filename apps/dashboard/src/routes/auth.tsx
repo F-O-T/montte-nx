@@ -23,7 +23,7 @@ function AuthLayout() {
          </div>
          <main className="flex relative flex-col justify-center items-center px-4 w-full min-h-screen">
             <section
-               className="space-y-4 w-full max-w-md duration-700 animate-in slide-in-from-bottom-4 fade-in"
+               className="space-y-4 w-full max-w-lg duration-700 animate-in slide-in-from-bottom-4 fade-in"
                key={location.pathname}
             >
                <header className="flex flex-col justify-center items-center space-y-2 text-center">
