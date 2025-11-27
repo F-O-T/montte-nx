@@ -185,7 +185,6 @@ function NavUserContent() {
                   <DropdownMenuLabel>
                      {translate("dashboard.layout.nav-user.preferences.label")}
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
 
                   <div className="space-y-1">
                      <div className="px-2 py-1">
