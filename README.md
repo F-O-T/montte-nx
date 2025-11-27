@@ -1,4 +1,3 @@
-    
 # Montte
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -10,42 +9,63 @@
 
 ## ✨ Key Features
 
--   **Transaction Management**: Easily log your income and expenses with detailed descriptions, amounts, and dates.
--   **Bill Tracking**: Keep track of upcoming payables and receivables, and mark them as complete to automatically generate transactions.
--   **Smart Categorization**: Organize your finances with customizable categories, complete with unique icons and colors for quick identification.
--   **Bank Account Integration**: Link transactions and bills to specific bank accounts for precise tracking.
--   **Organizations & Teams**: Manage finances collaboratively by inviting members to an organization with role-based access control.
--   **Secure Authentication**: Robust authentication system with support for email/password and Google OAuth, including session management.
--   **Modern Tech Stack**: Built with TypeScript, React, ElysiaJS, and Drizzle ORM for a type-safe, performant, and maintainable codebase.
+-   **Transaction Management**: Log income, expenses, and transfers. Support for **split categories** within a single transaction.
+-   **Bill Tracking**: Manage accounts payable and receivable with recurrence patterns (monthly, quarterly, annual) and overdue tracking.
+-   **Bank Accounts & OFX**: Manage multiple bank accounts and import transactions directly using **OFX file upload**.
+-   **Advanced Categorization**: Organize finances with **Categories**, **Tags**, and **Cost Centers**.
+-   **Organizations & Teams**: Multi-tenant architecture allowing you to invite members, create teams, assign roles (Owner, Admin, Member), and manage finances collaboratively.
+-   **Financial Insights**: Dashboard with cash flow charts, monthly trends, category breakdowns, and planned vs. actual reports.
+-   **Secure Authentication**: Powered by **Better Auth** with support for Email/Password and Google OAuth, including session management and device tracking.
+-   **Internationalization**: Built-in support for localization (currently optimized for pt-BR).
 
 ## 🚀 Tech Stack
 
-The Quoto project is a full-stack application built within an Nx monorepo using Bun.
+The Montte project is a full-stack application built within an **Nx** monorepo using **Bun**.
 
 | Category      | Technology                                                                                                  |
 | :------------ | :---------------------------------------------------------------------------------------------------------- |
-| **Frontend**  | **React**, **Vite**, **TypeScript**, **TanStack Router**, **tRPC**, **shadcn/ui**, **Tailwind CSS**              |
+| **Frontend**  | **React**, **Vite**, **TypeScript**, **TanStack Router**, **TanStack Query**, **shadcn/ui**, **Tailwind CSS** |
 | **Backend**   | **ElysiaJS**, **Bun**, **tRPC**, **Drizzle ORM**, **PostgreSQL**                                              |
-| **Auth**      | **Better Auth** (Email/Password, Google OAuth, Organization Management)                                     |
-| **Payments**  | **Polar**                                                                                                   |
-| **Storage**   | **MinIO** (for file/logo storage)                                                                           |
-| **Supporting**| **Astro** (for Blog, Docs, and Landing Page)                                                                  |
-| **Tooling**   | **Nx**, **Biome** (Linting/Formatting), **Docker**, **Husky**, **commitlint**                                 |
+| **Auth**      | **Better Auth**                                                                                             |
+| **Storage**   | **MinIO** (S3 compatible for file/logo storage)                                                             |
+| **Analytics** | **PostHog**                                                                                                 |
+| **Email**     | **Resend** (Transactional emails)                                                                           |
+| **Documentation**| **Astro** (Starlight)                                                                                      |
+| **Tooling**   | **Nx**, **Biome**, **Docker**, **Husky**                                                                    |
 
 ## 📂 Project Structure
 
-This project is a monorepo managed by Nx. All applications and shared packages are located in their respective directories:
+This project is a monorepo managed by Nx.
 
--   `apps/`: Contains the main applications.
-    -   `dashboard`: The core finance tracking single-page application.
-    -   `server`: The ElysiaJS backend server providing the API.
-    -   `landing-page`, `blog`, `docs`: Supporting websites built with Astro.
--   `packages/`: Contains shared libraries used across the applications.
-    -   `api`: tRPC router definitions for client-server communication.
-    -   `authentication`: Configuration for `better-auth`.
-    -   `database`: Drizzle ORM schemas, migrations, and repositories.
-    -   `ui`: Shared React components library based on shadcn/ui.
-    -   And many more for localization, environment management, etc.
+### Apps (`apps/`)
+The deployable applications and websites.
+
+-   **`dashboard`**: The core finance tracking single-page application (SPA) built with React.
+-   **`server`**: The ElysiaJS backend server providing the tRPC API and authentication endpoints.
+-   **`docs`**: Documentation site built with Astro Starlight.
+-   **`landing-page`**: Public landing page built with Astro.
+-   **`blog`**: Blog site built with Astro.
+
+### Packages (`packages/`)
+Shared internal libraries used to modularize the application logic.
+
+-   **`api`**: Defines the tRPC routers, root router, context creation, and client-side API wrappers.
+-   **`authentication`**: Centralized configuration for Better Auth, including database adapters and plugins.
+-   **`database`**: Drizzle ORM setup, database schemas, repository pattern implementations, and migrations.
+-   **`ui`**: Shared React components library (shadcn/ui), hooks, and Tailwind configuration.
+-   **`environment`**: Type-safe environment variable validation using Zod. Handles parsing for both client and server environments to ensure runtime safety.
+-   **`files`**: Abstraction layer for file storage (MinIO/S3) and image processing (Sharp).
+-   **`localization`**: i18n configuration, language detectors, and translation JSON resources.
+-   **`transactional`**: React Email templates and Resend client for sending transactional emails.
+-   **`utils`**: General utility functions for dates, currency formatting, error handling, and text manipulation.
+-   **`posthog`**: Analytics integration setup for both client-side and server-side tracking.
+-   **`brasil-api`**: Integration wrapper for BrasilAPI to fetch bank data.
+-   **`ofx`**: Utilities for parsing and processing OFX (Open Financial Exchange) bank statement files.
+
+### Libraries (`libraries/`)
+Standalone libraries developed within the repo that could potentially be published separately.
+
+-   **`ofx`**: Core logic and types for extracting data from OFX file formats.
 
 ## 🤝 Contributing
 

@@ -1,7 +1,9 @@
 {
    "list-section": {
       "actions": {
-         "label": "Gerencie sua conta bancária"
+         "add-new": "Nova Conta Bancária",
+         "label": "Gerencie sua conta bancária",
+         "view-details": "Ver Detalhes"
       },
       "description": "Veja todas as suas contas bancárias aqui.",
       "state": {

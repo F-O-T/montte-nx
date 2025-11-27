@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Card,
    CardContent,
@@ -7,41 +6,55 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
-function StatErrorFallback() {
+function BankAccountStatsErrorFallback(props: FallbackProps) {
    return (
-      <Alert variant="destructive">
-         <AlertDescription>Failed to load statistics</AlertDescription>
-      </Alert>
+      <div className="grid gap-4 h-min">
+         {createErrorFallback({
+            errorDescription:
+               "Failed to load bank account stats. Please try again later.",
+            errorTitle: "Error loading stats",
+            retryText: "Retry",
+         })(props)}
+      </div>
    );
 }
 
-function StatSkeleton() {
+function BankAccountStatsSkeleton() {
    return (
-      <Card className="col-span-1 h-full w-full">
-         <CardHeader>
-            <CardTitle>
-               <Skeleton className="h-6 w-24" />
-            </CardTitle>
-            <CardDescription>
-               <Skeleton className="h-4 w-32" />
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
-            <Skeleton className="h-10 w-16" />
-         </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         {[1, 2, 3].map((index) => (
+            <Card
+               className="col-span-1 h-full w-full"
+               key={`stats-skeleton-${index}`}
+            >
+               <CardHeader>
+                  <CardTitle>
+                     <Skeleton className="h-6 w-24" />
+                  </CardTitle>
+                  <CardDescription>
+                     <Skeleton className="h-4 w-32" />
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <Skeleton className="h-10 w-16" />
+               </CardContent>
+            </Card>
+         ))}
+      </div>
    );
 }
 
-function AccountBalanceStat({ bankAccountId }: { bankAccountId: string }) {
+function BankAccountStatsContent({ bankAccountId }: { bankAccountId: string }) {
    const trpc = useTRPC();
+
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
          id: bankAccountId,
@@ -60,32 +73,6 @@ function AccountBalanceStat({ bankAccountId }: { bankAccountId: string }) {
       0,
    );
 
-   return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.bank-accounts.stats-section.current-balance.description",
-         )}
-         title={translate(
-            "dashboard.routes.bank-accounts.stats-section.current-balance.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(balance)}
-      />
-   );
-}
-
-function AccountIncomeStat({ bankAccountId }: { bankAccountId: string }) {
-   const trpc = useTRPC();
-   const { data } = useSuspenseQuery(
-      trpc.bankAccounts.getTransactions.queryOptions({
-         id: bankAccountId,
-         limit: 100,
-         page: 1,
-      }),
-   );
-
    const income = data.transactions
       .filter((t: { type: string }) => t.type === "income")
       .reduce(
@@ -93,32 +80,6 @@ function AccountIncomeStat({ bankAccountId }: { bankAccountId: string }) {
             acc + parseFloat(curr.amount),
          0,
       );
-
-   return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.bank-accounts.stats-section.total-income.description",
-         )}
-         title={translate(
-            "dashboard.routes.bank-accounts.stats-section.total-income.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(income)}
-      />
-   );
-}
-
-function AccountExpenseStat({ bankAccountId }: { bankAccountId: string }) {
-   const trpc = useTRPC();
-   const { data } = useSuspenseQuery(
-      trpc.bankAccounts.getTransactions.queryOptions({
-         id: bankAccountId,
-         limit: 100,
-         page: 1,
-      }),
-   );
 
    const expense = data.transactions
       .filter((t: { type: string }) => t.type === "expense")
@@ -129,41 +90,53 @@ function AccountExpenseStat({ bankAccountId }: { bankAccountId: string }) {
       );
 
    return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.bank-accounts.stats-section.total-expenses.description",
-         )}
-         title={translate(
-            "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(expense)}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         <StatsCard
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.current-balance.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.current-balance.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(balance)}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-income.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-income.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(income)}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-expenses.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(expense)}
+         />
+      </div>
    );
 }
 
 export function BankAccountStats({ bankAccountId }: { bankAccountId: string }) {
    return (
-      <div className="grid grid-cols-1 gap-4">
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <AccountBalanceStat bankAccountId={bankAccountId} />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <AccountIncomeStat bankAccountId={bankAccountId} />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <AccountExpenseStat bankAccountId={bankAccountId} />
-            </Suspense>
-         </ErrorBoundary>
-      </div>
+      <ErrorBoundary FallbackComponent={BankAccountStatsErrorFallback}>
+         <Suspense fallback={<BankAccountStatsSkeleton />}>
+            <BankAccountStatsContent bankAccountId={bankAccountId} />
+         </Suspense>
+      </ErrorBoundary>
    );
 }
