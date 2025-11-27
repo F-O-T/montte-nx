@@ -124,10 +124,6 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
    const { transactions, pagination } = data;
    const { totalPages } = pagination;
 
-   const { data: categories = [] } = useSuspenseQuery(
-      trpc.categories.getAll.queryOptions(),
-   );
-
    return (
       <Card className="w-full">
          <CardHeader>
@@ -150,19 +146,12 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
             ) : (
                <ItemGroup>
                   {transactions.map((transaction, index: number) => {
-                     const transactionCategories = Array.isArray(
-                        transaction.category,
-                     )
-                        ? transaction.category
-                        : [transaction.category];
+                     const transactionCategories =
+                        transaction.transactionCategories || [];
 
-                     const primaryCategoryName = transactionCategories[0];
-
-                     const categoryDetails = categories.find(
-                        (cat) => cat.name === primaryCategoryName,
-                     );
-                     const categoryColor = categoryDetails?.color || "#6b7280";
-                     const categoryIcon = categoryDetails?.icon || "Wallet";
+                     const primaryCategory = transactionCategories[0]?.category;
+                     const categoryColor = primaryCategory?.color || "#6b7280";
+                     const categoryIcon = primaryCategory?.icon || "Wallet";
 
                      return (
                         <Fragment key={transaction.id}>

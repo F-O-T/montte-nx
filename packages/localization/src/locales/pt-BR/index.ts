@@ -10,6 +10,7 @@ import layoutPtBr from "./dashboard/layout.json";
 import bankAccountsPtBr from "./dashboard/routes/bank-accounts.json";
 import billsPtBr from "./dashboard/routes/bills.json";
 import categoriesPtBr from "./dashboard/routes/categories.json";
+import costCentersPtBr from "./dashboard/routes/cost-centers.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
 import forgotPasswordPtBr from "./dashboard/routes/forgot-password.json";
 import homePagePtBr from "./dashboard/routes/home.json";
@@ -19,6 +20,7 @@ import profilePtBr from "./dashboard/routes/profile.json";
 import reportsPtBr from "./dashboard/routes/reports.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
+import tagsPtBr from "./dashboard/routes/tags.json";
 import transactionsPtBr from "./dashboard/routes/transactions.json";
 import serverAuthPtBr from "./server/auth.json";
 
@@ -40,6 +42,7 @@ const resources = {
             "bank-accounts": bankAccountsPtBr,
             bills: billsPtBr,
             categories: categoriesPtBr,
+            "cost-centers": costCentersPtBr,
             "email-verification": emailVerificationPtBr,
             "forgot-password": forgotPasswordPtBr,
             home: homePagePtBr,
@@ -49,6 +52,7 @@ const resources = {
             reports: reportsPtBr,
             "sign-in": signInPtBr,
             "sign-up": signUpPtBr,
+            tags: tagsPtBr,
             transactions: transactionsPtBr,
          },
       },

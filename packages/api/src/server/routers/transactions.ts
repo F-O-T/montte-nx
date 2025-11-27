@@ -8,6 +8,7 @@ import {
    createNotification,
    type Notification,
 } from "@packages/database/repositories/notification-repository";
+import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
    createTransaction,
    createTransfer,
@@ -36,23 +37,24 @@ const categorySplitSchema = z.object({
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
-   categoryIds: z.array(z.string()).min(1, "At least one category is required"),
+   categoryIds: z.array(z.string()).optional(),
    categorySplits: z.array(categorySplitSchema).nullable().optional(),
+   costCenterId: z.string().optional(),
    date: z.string(),
    description: z.string(),
+   tagIds: z.array(z.string()).optional(),
    type: z.enum(["income", "expense", "transfer"]),
 });
 
 const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
-   categoryIds: z
-      .array(z.string())
-      .min(1, "At least one category is required")
-      .optional(),
+   categoryIds: z.array(z.string()).optional(),
    categorySplits: z.array(categorySplitSchema).nullable().optional(),
+   costCenterId: z.string().nullable().optional(),
    date: z.string().optional(),
    description: z.string().optional(),
+   tagIds: z.array(z.string()).optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
@@ -66,6 +68,7 @@ const paginationSchema = z.object({
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
    startDate: z.string().optional(),
+   tagId: z.string().optional(),
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
@@ -138,12 +141,13 @@ export const transactionRouter = router({
             ...input,
             amount: input.amount.toString(),
             categorySplits: input.categorySplits || null,
+            costCenterId: input.costCenterId || undefined,
             date: new Date(input.date),
             id: crypto.randomUUID(),
             organizationId,
          });
 
-         if (input.categoryIds.length > 0) {
+         if (input.categoryIds && input.categoryIds.length > 0) {
             await setTransactionCategories(
                resolvedCtx.db,
                transaction.id,
@@ -151,8 +155,16 @@ export const transactionRouter = router({
             );
          }
 
+         if (input.tagIds && input.tagIds.length > 0) {
+            await setTransactionTags(
+               resolvedCtx.db,
+               transaction.id,
+               input.tagIds,
+            );
+         }
+
          let notifications: Notification[] = [];
-         if (input.type === "expense") {
+         if (input.type === "expense" && input.categoryIds) {
             notifications = await checkBudgetAndNotify(
                resolvedCtx.db,
                resolvedCtx.userId,
@@ -347,6 +359,7 @@ export const transactionRouter = router({
             amount?: string;
             bankAccountId?: string;
             categorySplits?: CategorySplit[] | null;
+            costCenterId?: string | null;
             date?: Date;
             description?: string;
             type?: "income" | "expense" | "transfer";
@@ -368,6 +381,10 @@ export const transactionRouter = router({
             updateData.categorySplits = input.data.categorySplits;
          }
 
+         if (input.data.costCenterId !== undefined) {
+            updateData.costCenterId = input.data.costCenterId;
+         }
+
          if (input.data.description !== undefined) {
             updateData.description = input.data.description;
          }
@@ -387,6 +404,14 @@ export const transactionRouter = router({
                resolvedCtx.db,
                input.id,
                input.data.categoryIds,
+            );
+         }
+
+         if (input.data.tagIds !== undefined) {
+            await setTransactionTags(
+               resolvedCtx.db,
+               input.id,
+               input.data.tagIds,
             );
          }
 

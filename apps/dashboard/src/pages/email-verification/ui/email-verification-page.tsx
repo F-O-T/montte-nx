@@ -21,13 +21,12 @@ import {
    InputOTPSlot,
 } from "@packages/ui/components/input-otp";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter, useSearch } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient } from "@/integrations/clients";
 
 export function EmailVerificationPage() {
    const email = useSearch({
@@ -45,55 +44,76 @@ export function EmailVerificationPage() {
    });
 
    const router = useRouter();
-   const trpc = useTRPC();
-
-   const sendVerificationOTPMutation = useMutation(
-      trpc.auth.sendVerificationOTP.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message, {
-               id: "verification-code-toast",
-            });
-         },
-      }),
-   );
 
    const handleResendEmail = useCallback(async () => {
-      await sendVerificationOTPMutation.mutateAsync({
-         email,
-         type: "email-verification",
-      });
-   }, [email, sendVerificationOTPMutation]);
-   const verifyEmailMutation = useMutation(
-      trpc.auth.verifyEmail.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message, {
-               id: "email-verification-toast",
-            });
+      await betterAuthClient.emailOtp.sendVerificationOtp(
+         {
+            email,
+            type: "email-verification",
          },
-         onSuccess: async () => {
-            router.navigate({
-               params: { slug: "" },
-               to: "/$slug/home",
-            });
+         {
+            onError: ({ error }) => {
+               toast.error(error.message);
+            },
+            onRequest: () => {
+               toast.loading(
+                  translate(
+                     "dashboard.routes.email-verification.messages.requesting",
+                  ),
+               );
+            },
+            onSuccess: () => {
+               toast.success(
+                  translate(
+                     "dashboard.routes.email-verification.messages.resend-success",
+                  ),
+               );
+            },
          },
-      }),
-   );
+      );
+   }, [email]);
 
    const handleVerifyEmail = useCallback(
-      async (value: z.infer<typeof schema>) => {
-         await verifyEmailMutation.mutateAsync({
-            email,
-            otp: value.otp,
-         });
+      async (otp: string) => {
+         await betterAuthClient.emailOtp.verifyEmail(
+            {
+               email,
+               otp,
+            },
+            {
+               onError: ({ error }) => {
+                  toast.error(error.message);
+               },
+               onRequest: () => {
+                  toast.loading(
+                     translate(
+                        "dashboard.routes.email-verification.messages.verifying",
+                     ),
+                  );
+               },
+               onSuccess: () => {
+                  toast.success(
+                     translate(
+                        "dashboard.routes.email-verification.messages.success",
+                     ),
+                  );
+                  router.navigate({
+                     params: { slug: "" },
+                     to: "/$slug/home",
+                  });
+               },
+            },
+         );
       },
-      [email, verifyEmailMutation],
+      [email, router.navigate],
    );
+
    const form = useForm({
       defaultValues: {
          otp: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await handleVerifyEmail(value);
+         await handleVerifyEmail(value.otp);
          formApi.reset();
       },
       validators: {
@@ -180,9 +200,7 @@ export function EmailVerificationPage() {
                      <Button
                         className="w-full flex gap-2 items-center justify-center"
                         disabled={
-                           !formState.canSubmit ||
-                           formState.isSubmitting ||
-                           verifyEmailMutation.isPending
+                           !formState.canSubmit || formState.isSubmitting
                         }
                         type="submit"
                      >
@@ -196,7 +214,6 @@ export function EmailVerificationPage() {
          <CardFooter>
             <Button
                className="w-full text-muted-foreground flex gap-2 items-center justify-center"
-               disabled={sendVerificationOTPMutation.isPending}
                onClick={handleResendEmail}
                variant="link"
             >

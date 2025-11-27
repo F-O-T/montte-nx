@@ -56,81 +56,83 @@ export function DataTable<TData, TValue>({
          rowSelection,
          sorting,
       },
-      // Removido initialState com pagination
    });
 
    return (
-      <div className="w-full space-y-4">
-         <div className="rounded-md border">
-            <Table>
-               <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                     <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
-                           return (
-                              <TableHead key={header.id}>
-                                 {header.isPlaceholder ? null : header.column.getCanSort() ? (
-                                    <Button
-                                       className="-ml-3 h-8"
-                                       onClick={header.column.getToggleSortingHandler()}
-                                       variant="ghost"
-                                    >
-                                       {flexRender(
-                                          header.column.columnDef.header,
-                                          header.getContext(),
-                                       )}
-                                       {header.column.getIsSorted() ===
-                                       "asc" ? (
-                                          <ArrowUp className="ml-2 size-4" />
-                                       ) : header.column.getIsSorted() ===
-                                         "desc" ? (
-                                          <ArrowDown className="ml-2 size-4" />
-                                       ) : (
-                                          <ArrowUpDown className="ml-2 size-4" />
-                                       )}
-                                    </Button>
-                                 ) : (
-                                    flexRender(
+      <div className=" rounded-md border">
+         <Table>
+            <TableHeader>
+               {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                     {headerGroup.headers.map((header) => {
+                        return (
+                           <TableHead key={header.id}>
+                              {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                                 <Button
+                                    className="-ml-3 h-8"
+                                    onClick={header.column.getToggleSortingHandler()}
+                                    variant="ghost"
+                                 >
+                                    {flexRender(
                                        header.column.columnDef.header,
                                        header.getContext(),
-                                    )
-                                 )}
-                              </TableHead>
-                           );
-                        })}
+                                    )}
+                                    {header.column.getIsSorted() === "asc" ? (
+                                       <ArrowUp className="ml-2 size-4" />
+                                    ) : header.column.getIsSorted() ===
+                                      "desc" ? (
+                                       <ArrowDown className="ml-2 size-4" />
+                                    ) : (
+                                       <ArrowUpDown className="ml-2 size-4" />
+                                    )}
+                                 </Button>
+                              ) : (
+                                 flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext(),
+                                 )
+                              )}
+                           </TableHead>
+                        );
+                     })}
+                  </TableRow>
+               ))}
+            </TableHeader>
+            <TableBody>
+               {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                     <TableRow
+                        data-state={row.getIsSelected() && "selected"}
+                        key={row.id}
+                     >
+                        {row.getVisibleCells().map((cell) => (
+                           <TableCell
+                              className="truncate"
+                              key={cell.id}
+                              style={{
+                                 maxWidth: cell.column.columnDef.maxSize,
+                              }}
+                           >
+                              {flexRender(
+                                 cell.column.columnDef.cell,
+                                 cell.getContext(),
+                              )}
+                           </TableCell>
+                        ))}
                      </TableRow>
-                  ))}
-               </TableHeader>
-               <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                     table.getRowModel().rows.map((row) => (
-                        <TableRow
-                           data-state={row.getIsSelected() && "selected"}
-                           key={row.id}
-                        >
-                           {row.getVisibleCells().map((cell) => (
-                              <TableCell key={cell.id}>
-                                 {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
-                                 )}
-                              </TableCell>
-                           ))}
-                        </TableRow>
-                     ))
-                  ) : (
-                     <TableRow>
-                        <TableCell
-                           className="h-24 text-center"
-                           colSpan={columns.length}
-                        >
-                           Nenhum resultado encontrado.
-                        </TableCell>
-                     </TableRow>
-                  )}
-               </TableBody>
-            </Table>
-         </div>
+                  ))
+               ) : (
+                  <TableRow>
+                     <TableCell
+                        className="h-24 text-center"
+                        colSpan={columns.length}
+                     >
+                        Nenhum resultado encontrado.
+                     </TableCell>
+                  </TableRow>
+               )}
+            </TableBody>
+         </Table>
       </div>
    );
 }

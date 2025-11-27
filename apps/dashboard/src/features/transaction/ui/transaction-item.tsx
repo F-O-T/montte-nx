@@ -95,7 +95,7 @@ export function TransactionItem({
    };
 
    return (
-      <Item className="w-full">
+      <Item size="sm">
          <ItemMedia
             className="shrink-0"
             style={{
@@ -105,7 +105,7 @@ export function TransactionItem({
          >
             <IconDisplay iconName={categoryIcon as IconName} size={16} />
          </ItemMedia>
-         <ItemContent className="min-w-0 flex-1">
+         <ItemContent className="min-w-0 flex-1 overflow-hidden">
             <div className="flex items-center gap-1.5">
                <ItemTitle className="truncate flex-1 min-w-0">
                   {transaction.description}
@@ -121,15 +121,15 @@ export function TransactionItem({
                   </Tooltip>
                )}
             </div>
-            <ItemDescription className="text-xs md:text-sm">
-               {new Date(transaction.date).toLocaleDateString()}
+            <ItemDescription>
+               {new Date(transaction.date).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "short",
+               })}
             </ItemDescription>
          </ItemContent>
-         <ItemActions className="shrink-0 ml-auto">
-            <Badge
-               className="text-xs md:text-sm"
-               variant={isPositive ? "default" : "destructive"}
-            >
+         <ItemActions className="ml-auto shrink-0">
+            <Badge variant={isPositive ? "default" : "destructive"}>
                {isPositive ? "+" : "-"}
                {formattedAmount}
             </Badge>
@@ -146,11 +146,6 @@ export function TransactionItem({
                      )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <Suspense
-                     fallback={
-                        <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
-                     }
-                  ></Suspense>
                   <DropdownMenuItem asChild>
                      <Link
                         params={{
@@ -165,8 +160,17 @@ export function TransactionItem({
                         )}
                      </Link>
                   </DropdownMenuItem>
-                  <ManageTransactionSheet asChild transaction={transaction} />
-                  <DeleteTransaction asChild transaction={transaction} />
+                  <Suspense
+                     fallback={
+                        <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
+                     }
+                  >
+                     <ManageTransactionSheet
+                        asChild
+                        transaction={transaction}
+                     />
+                     <DeleteTransaction asChild transaction={transaction} />
+                  </Suspense>
                </DropdownMenuContent>
             </DropdownMenu>
          </ItemActions>

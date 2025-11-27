@@ -2,7 +2,9 @@
    "breadcrumbs": {
       "bills": "Contas a Pagar",
       "categories": "Categorias",
+      "cost-centers": "Centros de Custo",
       "profile": "Perfil",
+      "tags": "Tags",
       "transactions": "Transações"
    },
    "language-command": {
@@ -10,6 +12,12 @@
       "search": "Pesquisar idiomas..."
    },
    "nav-main": {
+      "categorization": {
+         "categories": "Categorias",
+         "cost-centers": "Centros de Custo",
+         "tags": "Tags",
+         "title": "Categorização"
+      },
       "finance": {
          "categories": "Categorias",
          "overview": "Fluxo de caixa",
@@ -26,6 +34,10 @@
       "main": {
          "account": "Conta"
       },
+      "messages": {
+         "logging-out": "Saindo...",
+         "logout-success": "Você saiu com sucesso!"
+      },
       "preferences": {
          "label": "Preferencias",
          "language": "Idioma",
@@ -34,12 +46,14 @@
    },
    "organization-switcher": {
       "add-organization": "Adicionar organização",
+      "create-team": "Criar equipe",
       "error": {
          "failed-to-load-active": "Erro ao carregar organização ativa",
          "failed-to-load-teams": "Erro ao carregar equipes"
       },
       "label": "Organizações",
-      "limit-reached": "Você não pode criar mais organizações"
+      "limit-reached": "Você não pode criar mais organizações",
+      "no-teams": "Nenhuma equipe"
    },
    "sidebar": {
       "collapse": "Ocultar",
