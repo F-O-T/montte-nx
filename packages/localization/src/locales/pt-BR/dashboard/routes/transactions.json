@@ -5,6 +5,47 @@
          "delete-selected": "Excluir selecionados"
       }
    },
+   "details": {
+      "breadcrumb": "Detalhes da Transação",
+      "categories": {
+         "empty": "Nenhuma categoria associada",
+         "split": "Dividido",
+         "title": "Categorias",
+         "total": "Total"
+      },
+      "error": {
+         "back": "Voltar para Transações",
+         "load-categories": "Falha ao carregar categorias",
+         "load-info": "Falha ao carregar informações da transação",
+         "load-stats": "Falha ao carregar estatísticas",
+         "title": "Falha ao carregar transação"
+      },
+      "stats": {
+         "amount": {
+            "description": "Valor total da transação",
+            "title": "Valor"
+         },
+         "bank-account": {
+            "title": "Conta Bancária"
+         },
+         "categories": {
+            "description": "Categorias associadas",
+            "title": "Categorias"
+         },
+         "created": {
+            "title": "Criado em"
+         },
+         "description": "Informações detalhadas da transação",
+         "title": "Detalhes",
+         "updated": {
+            "description": "Atualizado em"
+         }
+      },
+      "toolbar": {
+         "description": "Ações e operações comuns",
+         "title": "Barra de Ações"
+      }
+   },
    "features": {
       "add-new": {
          "description": "Adicione uma nova transação ao seu registro financeiro.",
@@ -41,7 +82,8 @@
    "list-section": {
       "actions": {
          "delete": "Excluir transação",
-         "label": "Gerencie sua transação"
+         "label": "Gerencie sua transação",
+         "view-details": "Ver detalhes"
       },
       "description": "Veja todas as suas transações financeiras aqui.",
       "page": "Página {{current}} de {{total}}",

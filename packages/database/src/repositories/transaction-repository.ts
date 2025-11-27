@@ -2,11 +2,12 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category } from "../schemas/categories";
-import { transaction } from "../schemas/transactions";
+import { type CategorySplit, transaction } from "../schemas/transactions";
 import { setTransactionCategories } from "./category-repository";
 
 export type Transaction = typeof transaction.$inferSelect;
 export type NewTransaction = typeof transaction.$inferInsert;
+export type { CategorySplit };
 
 export async function createTransaction(
    dbClient: DatabaseInstance,

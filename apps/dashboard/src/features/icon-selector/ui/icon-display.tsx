@@ -3,7 +3,7 @@ import type { IconName } from "../lib/available-icons";
 import { getIconComponent } from "../lib/available-icons";
 
 interface IconDisplayProps {
-   iconName: IconName;
+   iconName: IconName | null;
    className?: string;
    size?: number;
 }
@@ -13,6 +13,10 @@ export function IconDisplay({
    className,
    size = 20,
 }: IconDisplayProps) {
+   if (!iconName) {
+      return null;
+   }
+
    const IconComponent = getIconComponent(iconName);
 
    if (!IconComponent) {

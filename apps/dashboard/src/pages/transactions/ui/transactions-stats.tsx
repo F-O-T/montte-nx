@@ -31,7 +31,7 @@ function TransactionsStatsErrorFallback(props: FallbackProps) {
 
 function TransactionsStatsSkeleton() {
    return (
-      <div className="grid grid-cols-2 gap-4 h-min">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
          {[1, 2, 3, 4].map((index) => (
             <Card
                className="col-span-1 h-full w-full"

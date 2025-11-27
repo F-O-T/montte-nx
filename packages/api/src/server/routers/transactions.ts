@@ -13,13 +13,22 @@ import {
    getTotalTransfersByOrganizationId,
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
+import type { CategorySplit } from "@packages/database/schemas/transactions";
+import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
+
+const categorySplitSchema = z.object({
+   categoryId: z.string().uuid(),
+   splitType: z.literal("amount"),
+   value: z.number().nonnegative(),
+});
 
 const createTransactionSchema = z.object({
    amount: z.number(),
    bankAccountId: z.string().optional(),
    categoryIds: z.array(z.string()).optional(),
+   categorySplits: z.array(categorySplitSchema).nullable().optional(),
    costCenterId: z.string().optional(),
    date: z.string(),
    description: z.string(),
@@ -31,6 +40,7 @@ const updateTransactionSchema = z.object({
    amount: z.number().optional(),
    bankAccountId: z.string().optional(),
    categoryIds: z.array(z.string()).optional(),
+   categorySplits: z.array(categorySplitSchema).nullable().optional(),
    costCenterId: z.string().nullable().optional(),
    date: z.string().optional(),
    description: z.string().optional(),
@@ -52,6 +62,26 @@ const paginationSchema = z.object({
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
+function validateCategorySplitsForTransaction(
+   categorySplits:
+      | { categoryId: string; value: number; splitType: "amount" }[]
+      | null
+      | undefined,
+   categoryIds: string[],
+   amountInDecimal: number,
+): void {
+   if (!categorySplits || categorySplits.length === 0) {
+      return;
+   }
+
+   const amountInCents = Math.round(amountInDecimal * 100);
+   const result = validateSplits(categorySplits, categoryIds, amountInCents);
+
+   if (!result.isValid) {
+      throw new Error(result.errors.join("; "));
+   }
+}
+
 export const transactionRouter = router({
    create: protectedProcedure
       .input(createTransactionSchema)
@@ -59,9 +89,16 @@ export const transactionRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
+         validateCategorySplitsForTransaction(
+            input.categorySplits,
+            input.categoryIds ?? [],
+            input.amount,
+         );
+
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
+            categorySplits: input.categorySplits || null,
             costCenterId: input.costCenterId || undefined,
             date: new Date(input.date),
             id: crypto.randomUUID(),
@@ -251,9 +288,26 @@ export const transactionRouter = router({
             throw new Error("Transaction not found");
          }
 
+         if (input.data.categorySplits !== undefined) {
+            const categoryIds =
+               input.data.categoryIds ??
+               existingTransaction.transactionCategories?.map(
+                  (tc) => tc.category.id,
+               ) ??
+               [];
+            const amount =
+               input.data.amount ?? Number(existingTransaction.amount);
+            validateCategorySplitsForTransaction(
+               input.data.categorySplits,
+               categoryIds,
+               amount,
+            );
+         }
+
          const updateData: {
             amount?: string;
             bankAccountId?: string;
+            categorySplits?: CategorySplit[] | null;
             costCenterId?: string | null;
             date?: Date;
             description?: string;
@@ -270,6 +324,10 @@ export const transactionRouter = router({
 
          if (input.data.bankAccountId !== undefined) {
             updateData.bankAccountId = input.data.bankAccountId;
+         }
+
+         if (input.data.categorySplits !== undefined) {
+            updateData.categorySplits = input.data.categorySplits;
          }
 
          if (input.data.costCenterId !== undefined) {

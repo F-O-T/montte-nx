@@ -52,6 +52,10 @@
       "./sanitization": {
          "default": "./src/sanitization.ts",
          "types": "./dist/src/sanitization.d.ts"
+      },
+      "./split": {
+         "default": "./src/split.ts",
+         "types": "./dist/src/split.d.ts"
       }
    },
    "files": [
