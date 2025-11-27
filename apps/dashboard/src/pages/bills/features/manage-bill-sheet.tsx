@@ -1,4 +1,4 @@
-import { createBillSchema } from "@packages/api/schemas";
+import { createBillSchema } from "@packages/api/schemas/bill";
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
@@ -160,9 +160,9 @@ export function ManageBillSheet({
                   data: {
                      amount: amount,
                      bankAccountId: value.bankAccountId,
-                     categoryId: value.category,
+                     categoryId: value.category || undefined,
                      counterparty: value.counterparty,
-                     description: value.description,
+                     description: value.description || undefined,
                      dueDate: value.dueDate.toISOString().split("T")[0] ?? "",
                      isRecurring: value.isRecurring,
                      issueDate: value.issueDate
@@ -179,7 +179,7 @@ export function ManageBillSheet({
                await createBillMutation.mutateAsync({
                   amount: amount,
                   bankAccountId: value.bankAccountId || undefined,
-                  categoryId: value.category,
+                  categoryId: value.category || undefined,
                   counterparty: value.counterparty || undefined,
                   description: value.description ?? "",
                   dueDate: value.dueDate,
@@ -312,7 +312,7 @@ export function ManageBillSheet({
                                     placeholder={translate(
                                        "common.form.notes.placeholder",
                                     )}
-                                    value={field.state.value}
+                                    value={field.state.value || ""}
                                  />
                                  {isInvalid && (
                                     <FieldError

@@ -25,7 +25,7 @@
          "default": "./src/client/index.ts",
          "types": "./dist/src/client/index.d.ts"
       },
-      "./schemas": {
+      "./schemas/*": {
          "default": "./src/server/schemas/*.ts",
          "types": "./dist/src/server/schemas/*.d.ts"
       },

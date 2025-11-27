@@ -15,7 +15,7 @@ export const bill = pgTable("bill", {
    bankAccountId: uuid("bank_account_id").references(() => bankAccount.id, {
       onDelete: "set null",
    }),
-   categoryId: text("category_id").notNull(),
+   categoryId: text("category_id"),
    completionDate: timestamp("completion_date"),
    counterparty: text("counterparty"),
    createdAt: timestamp("created_at").defaultNow().notNull(),
