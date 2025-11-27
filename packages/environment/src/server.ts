@@ -14,6 +14,7 @@ const EnvSchema = z.object({
    POSTHOG_HOST: z.string(),
    POSTHOG_KEY: z.string(),
    RESEND_API_KEY: z.string(),
+   STRIPE_SECRET_KEY: z.string(),
 });
 export type ServerEnv = z.infer<typeof EnvSchema>;
 export const serverEnv: ServerEnv = parseEnv(process.env, EnvSchema);
