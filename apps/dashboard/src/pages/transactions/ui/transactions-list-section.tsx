@@ -171,7 +171,8 @@ function TransactionsListContent() {
             trpc.transactions.getAllPaginated.queryOptions({
                bankAccountId:
                   bankAccountFilter === "all" ? undefined : bankAccountFilter,
-               category: categoryFilter === "all" ? undefined : categoryFilter,
+               categoryId:
+                  categoryFilter === "all" ? undefined : categoryFilter,
                endDate: endDate?.toISOString(),
                limit: pageSize,
                page: currentPage,

@@ -50,7 +50,7 @@ const updateTransactionSchema = z.object({
 
 const paginationSchema = z.object({
    bankAccountId: z.string().optional(),
-   category: z.string().optional(),
+   categoryId: z.string().optional(),
    endDate: z.string().optional(),
    limit: z.coerce.number().min(1).max(100).default(5),
    orderBy: z.enum(["date", "amount"]).default("date"),

@@ -1,7 +1,7 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, exists, gte, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { category } from "../schemas/categories";
+import { category, transactionCategory } from "../schemas/categories";
 import { type CategorySplit, transaction } from "../schemas/transactions";
 import { setTransactionCategories } from "./category-repository";
 
@@ -141,6 +141,7 @@ export async function findTransactionsByOrganizationIdPaginated(
       limit = 10,
       type,
       bankAccountId,
+      categoryId,
       search,
       orderBy = "date",
       orderDirection = "desc",
@@ -152,32 +153,48 @@ export async function findTransactionsByOrganizationIdPaginated(
 
    try {
       const buildWhereCondition = (
-         transaction: any,
-         { eq, and, ilike }: any,
+         txn: any,
+         { eq: eqOp, and: andOp, ilike }: any,
       ) => {
-         const conditions = [eq(transaction.organizationId, organizationId)];
+         const conditions = [eqOp(txn.organizationId, organizationId)];
 
          if (bankAccountId && bankAccountId !== "all") {
-            conditions.push(eq(transaction.bankAccountId, bankAccountId));
+            conditions.push(eqOp(txn.bankAccountId, bankAccountId));
          }
 
          if (type && type !== ("all" as any)) {
-            conditions.push(eq(transaction.type, type));
+            conditions.push(eqOp(txn.type, type));
          }
 
          if (search) {
-            conditions.push(ilike(transaction.description, `%${search}%`));
+            conditions.push(ilike(txn.description, `%${search}%`));
          }
 
          if (startDate) {
-            conditions.push(gte(transaction.date, startDate));
+            conditions.push(gte(txn.date, startDate));
          }
 
          if (endDate) {
-            conditions.push(lte(transaction.date, endDate));
+            conditions.push(lte(txn.date, endDate));
          }
 
-         return and(...conditions);
+         if (categoryId) {
+            conditions.push(
+               exists(
+                  dbClient
+                     .select({ one: sql`1` })
+                     .from(transactionCategory)
+                     .where(
+                        and(
+                           eq(transactionCategory.transactionId, txn.id),
+                           eq(transactionCategory.categoryId, categoryId),
+                        ),
+                     ),
+               ),
+            );
+         }
+
+         return andOp(...conditions);
       };
 
       const [transactions, totalCount] = await Promise.all([
