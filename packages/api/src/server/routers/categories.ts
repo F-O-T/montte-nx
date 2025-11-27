@@ -4,7 +4,12 @@ import {
    findCategoriesByOrganizationId,
    findCategoriesByOrganizationIdPaginated,
    findCategoryById,
+   getCategoryBreakdown,
+   getCategoryMonthlyTrend,
+   getCategoryTypeDistribution,
+   getCategoryUsageFrequency,
    getCategoryWithMostTransactions,
+   getTopCategories,
    getTotalCategoriesByOrganizationId,
    updateCategory,
 } from "@packages/database/repositories/category-repository";
@@ -92,6 +97,13 @@ export const categoryRouter = router({
          );
       }),
 
+   getBreakdown: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const organizationId = resolvedCtx.organizationId;
+
+      return getCategoryBreakdown(resolvedCtx.db, organizationId);
+   }),
+
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
@@ -105,6 +117,21 @@ export const categoryRouter = router({
          }
 
          return category;
+      }),
+
+   getMonthlyTrend: protectedProcedure
+      .input(
+         z.object({ months: z.number().min(1).max(12).default(6) }).optional(),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return getCategoryMonthlyTrend(
+            resolvedCtx.db,
+            organizationId,
+            input?.months ?? 6,
+         );
       }),
 
    getStats: protectedProcedure.query(async ({ ctx }) => {
@@ -123,6 +150,41 @@ export const categoryRouter = router({
             categoryWithMostTransactions?.categoryName || null,
          totalCategories,
       };
+   }),
+
+   getTopCategories: protectedProcedure
+      .input(
+         z
+            .object({
+               limit: z.number().min(1).max(10).default(5),
+               type: z.enum(["income", "expense", "all"]).default("all"),
+            })
+            .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return getTopCategories(
+            resolvedCtx.db,
+            organizationId,
+            input?.type ?? "all",
+            input?.limit ?? 5,
+         );
+      }),
+
+   getTypeDistribution: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const organizationId = resolvedCtx.organizationId;
+
+      return getCategoryTypeDistribution(resolvedCtx.db, organizationId);
+   }),
+
+   getUsageFrequency: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const organizationId = resolvedCtx.organizationId;
+
+      return getCategoryUsageFrequency(resolvedCtx.db, organizationId);
    }),
 
    update: protectedProcedure

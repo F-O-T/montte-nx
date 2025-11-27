@@ -113,10 +113,22 @@ export function ManageTransactionSheet({
                   queryKey: trpc.transactions.getAllPaginated.queryKey(),
                }),
                queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getStats.queryKey(),
+                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
                }),
                queryClient.invalidateQueries({
-                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
+                  queryKey: trpc.categories.getBreakdown.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getMonthlyTrend.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getTopCategories.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getTypeDistribution.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getUsageFrequency.queryKey(),
                }),
             ]);
 
@@ -136,13 +148,22 @@ export function ManageTransactionSheet({
                   queryKey: trpc.transactions.getAllPaginated.queryKey(),
                }),
                queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getById.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getStats.queryKey(),
-               }),
-               queryClient.invalidateQueries({
                   queryKey: trpc.bankAccounts.getTransactions.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getBreakdown.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getMonthlyTrend.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getTopCategories.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getTypeDistribution.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getUsageFrequency.queryKey(),
                }),
             ]);
 
@@ -162,13 +183,22 @@ export function ManageTransactionSheet({
                   queryKey: trpc.transactions.getAllPaginated.queryKey(),
                }),
                queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getStats.queryKey(),
-               }),
-               queryClient.invalidateQueries({
                   queryKey: trpc.bankAccounts.getTransactions.queryKey(),
                }),
                queryClient.invalidateQueries({
-                  queryKey: trpc.bankAccounts.getAll.queryKey(),
+                  queryKey: trpc.categories.getBreakdown.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getMonthlyTrend.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getTopCategories.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getTypeDistribution.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.categories.getUsageFrequency.queryKey(),
                }),
             ]);
             setIsOpen?.(false);

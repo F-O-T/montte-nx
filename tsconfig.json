@@ -17,9 +17,6 @@
       "path": "./packages/files"
     },
     {
-      "path": "./packages/api"
-    },
-    {
       "path": "./packages/ui"
     },
     {

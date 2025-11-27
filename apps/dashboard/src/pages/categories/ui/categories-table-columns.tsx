@@ -8,6 +8,7 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import { formatDate } from "@packages/utils/date";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, MoreVertical, Trash2 } from "lucide-react";
@@ -19,6 +20,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 
+//TODO: dropdown duplicado aqui
 export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
    return [
       {
@@ -49,6 +51,21 @@ export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
          header: translate("dashboard.routes.categories.table.columns.name"),
       },
       {
+         accessorKey: "createdAt",
+         cell: ({ row }) => {
+            const category = row.original;
+            return (
+               <span className="text-muted-foreground">
+                  {formatDate(new Date(category.createdAt), "DD/MM/YYYY")}
+               </span>
+            );
+         },
+         enableSorting: true,
+         header: translate(
+            "dashboard.routes.categories.table.columns.created-at",
+         ),
+      },
+      {
          cell: ({ row }) => {
             const category = row.original;
 
@@ -77,7 +94,7 @@ export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
                               params={{ categoryId: category.id, slug }}
                               to="/$slug/categories/$categoryId"
                            >
-                              <Eye className="size-4 mr-2" />
+                              <Eye className="size-4 " />
                               {translate(
                                  "dashboard.routes.categories.list-section.actions.view-details",
                               )}

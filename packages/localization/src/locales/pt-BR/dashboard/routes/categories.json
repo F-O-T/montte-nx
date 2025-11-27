@@ -68,6 +68,16 @@
    "stats": {
       "breakdown": {
          "description": "Despesas mensais por categoria",
+         "expenses": {
+            "description": "Distribuição de despesas por categoria",
+            "empty": "Nenhuma despesa registrada",
+            "title": "Despesas por Categoria"
+         },
+         "income": {
+            "description": "Distribuição de receitas por categoria",
+            "empty": "Nenhuma receita registrada",
+            "title": "Receitas por Categoria"
+         },
          "state": {
             "no-data": "Nenhuma despesa disponível para este mês"
          },
@@ -77,6 +87,29 @@
             "total-expenses": "Total de Despesas"
          },
          "title": "Análise por Categoria"
+      },
+      "charts": {
+         "monthly-trend": {
+            "description": "Evolução das despesas por categoria nos últimos 6 meses",
+            "empty": "Nenhum dado disponível para o período",
+            "title": "Tendência Mensal"
+         },
+         "top-categories": {
+            "description": "Categorias com maior volume de despesas",
+            "empty": "Nenhuma categoria com transações",
+            "title": "Top 5 Categorias"
+         },
+         "type-distribution": {
+            "description": "Quantidade de transações por tipo",
+            "empty": "Nenhuma transação registrada",
+            "title": "Distribuição por Tipo",
+            "total-label": "transações"
+         },
+         "usage-frequency": {
+            "description": "Quantidade de transações por categoria",
+            "empty": "Nenhuma categoria utilizada",
+            "title": "Frequência de Uso"
+         }
       },
       "most-spending": {
          "description": "A categoria onde você mais gastou dinheiro este mês.",
@@ -90,6 +123,7 @@
    "table": {
       "columns": {
          "budget": "Orçamento",
+         "created-at": "Criado em",
          "name": "Nome"
       }
    }
