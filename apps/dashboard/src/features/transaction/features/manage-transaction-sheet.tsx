@@ -50,12 +50,6 @@ import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 import { CategorySplitInput } from "../ui/category-split-input";
 
-type CategorySplit = {
-   categoryId: string;
-   value: number;
-   splitType: "amount";
-};
-
 type ManageTransactionSheetProps = {
    onOpen?: boolean;
    onOpenChange?: (open: boolean) => void;
@@ -216,8 +210,7 @@ export function ManageTransactionSheet({
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
             [],
-         categorySplits:
-            (transaction?.categorySplits as CategorySplit[] | null) || null,
+         categorySplits: transaction?.categorySplits ?? null,
          costCenterId: transaction?.costCenterId || "",
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",

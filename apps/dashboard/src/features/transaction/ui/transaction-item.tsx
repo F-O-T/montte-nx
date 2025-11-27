@@ -34,14 +34,9 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { DeleteTransaction } from "../features/delete-transaction-dialog";
 import { ManageTransactionSheet } from "../features/manage-transaction-sheet";
 
-type CategorySplit = {
-   categoryId: string;
-   value: number;
-   splitType: "amount";
-};
-
 export type Transaction =
    RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
+
 type TransactionItemProps = {
    transaction: Transaction;
    categories: Category[];
@@ -53,7 +48,7 @@ export function TransactionItem({
    const { activeOrganization } = useActiveOrganization();
    const transactionCategoryIds =
       transaction.transactionCategories?.map((tc) => tc.category.id) || [];
-   const categorySplits = transaction.categorySplits as CategorySplit[] | null;
+   const categorySplits = transaction.categorySplits;
    const hasSplit = categorySplits && categorySplits.length > 0;
 
    const primaryCategoryId = transactionCategoryIds[0];

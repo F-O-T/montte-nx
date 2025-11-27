@@ -18,12 +18,6 @@ import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useTRPC } from "@/integrations/clients";
 
-type CategorySplit = {
-   categoryId: string;
-   value: number;
-   splitType: "amount";
-};
-
 function CategoriesErrorFallback() {
    return (
       <Alert variant="destructive">
@@ -57,7 +51,7 @@ function CategoriesContent({ transactionId }: { transactionId: string }) {
    );
 
    const categories = data.transactionCategories || [];
-   const categorySplits = data.categorySplits as CategorySplit[] | null;
+   const categorySplits = data.categorySplits;
    const hasSplit = categorySplits && categorySplits.length > 0;
    const totalAmount = Math.abs(parseFloat(data.amount)) * 100;
 
