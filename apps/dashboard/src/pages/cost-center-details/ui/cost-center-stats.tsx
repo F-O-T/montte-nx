@@ -148,7 +148,7 @@ function CostCenterExpenseStat({ costCenterId }: { costCenterId: string }) {
 
 export function CostCenterStats({ costCenterId }: { costCenterId: string }) {
    return (
-      <div className="grid grid-cols-1 gap-4 h-min">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-min">
          <ErrorBoundary FallbackComponent={StatErrorFallback}>
             <Suspense fallback={<StatSkeleton />}>
                <CostCenterTotalStat costCenterId={costCenterId} />
