@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -32,10 +33,6 @@ import {
    YAxis,
 } from "recharts";
 import { trpc } from "@/integrations/clients";
-
-function formatCurrency(value: number): string {
-   return `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-}
 
 function CategoriesChartsErrorFallback(props: FallbackProps) {
    return (
@@ -455,7 +452,7 @@ function CategoryMonthlyTrendChart() {
                      />
                      <YAxis
                         axisLine={false}
-                        tickFormatter={(value) => `R$ ${value}`}
+                        tickFormatter={(value) => formatCurrency(value)}
                         tickLine={false}
                         tickMargin={8}
                      />
