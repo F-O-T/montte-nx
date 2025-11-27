@@ -5,6 +5,11 @@ type Transaction =
 
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
@@ -31,11 +36,6 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import {
-   Collapsible,
-   CollapsibleContent,
-   CollapsibleTrigger,
-} from "@packages/ui/components/collapsible";
 
 import { Textarea } from "@packages/ui/components/textarea";
 import { centsToReais } from "@packages/utils/money";

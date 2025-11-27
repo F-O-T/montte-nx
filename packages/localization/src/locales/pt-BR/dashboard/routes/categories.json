@@ -90,25 +90,25 @@
       },
       "charts": {
          "monthly-trend": {
-            "title": "Tendência Mensal",
             "description": "Evolução das despesas por categoria nos últimos 6 meses",
-            "empty": "Nenhum dado disponível para o período"
+            "empty": "Nenhum dado disponível para o período",
+            "title": "Tendência Mensal"
          },
          "top-categories": {
-            "title": "Top 5 Categorias",
             "description": "Categorias com maior volume de despesas",
-            "empty": "Nenhuma categoria com transações"
+            "empty": "Nenhuma categoria com transações",
+            "title": "Top 5 Categorias"
          },
          "type-distribution": {
-            "title": "Distribuição por Tipo",
             "description": "Quantidade de transações por tipo",
             "empty": "Nenhuma transação registrada",
+            "title": "Distribuição por Tipo",
             "total-label": "transações"
          },
          "usage-frequency": {
-            "title": "Frequência de Uso",
             "description": "Quantidade de transações por categoria",
-            "empty": "Nenhuma categoria utilizada"
+            "empty": "Nenhuma categoria utilizada",
+            "title": "Frequência de Uso"
          }
       },
       "most-spending": {

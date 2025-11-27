@@ -156,8 +156,8 @@ export const categoryRouter = router({
       .input(
          z
             .object({
-               type: z.enum(["income", "expense", "all"]).default("all"),
                limit: z.number().min(1).max(10).default(5),
+               type: z.enum(["income", "expense", "all"]).default("all"),
             })
             .optional(),
       )

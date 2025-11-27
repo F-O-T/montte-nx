@@ -557,11 +557,11 @@ export async function getCategoryBreakdown(
       `);
 
       return result.rows.map((row) => ({
+         categoryColor: row.categoryColor,
          categoryId: row.categoryId,
          categoryName: row.categoryName,
-         categoryColor: row.categoryColor,
-         income: parseFloat(row.income) || 0,
          expenses: parseFloat(row.expenses) || 0,
+         income: parseFloat(row.income) || 0,
       }));
    } catch (err) {
       propagateError(err);
@@ -617,17 +617,17 @@ export async function getCategoryMonthlyTrend(
       for (const row of result.rows) {
          if (!monthlyData.has(row.month)) {
             monthlyData.set(row.month, {
-               month: row.month,
                categories: [],
+               month: row.month,
             });
          }
 
          monthlyData.get(row.month)?.categories.push({
+            categoryColor: row.categoryColor,
             categoryId: row.categoryId,
             categoryName: row.categoryName,
-            categoryColor: row.categoryColor,
-            income: parseFloat(row.income) || 0,
             expenses: parseFloat(row.expenses) || 0,
+            income: parseFloat(row.income) || 0,
          });
       }
 
@@ -684,9 +684,9 @@ export async function getTopCategories(
       `);
 
       return result.rows.map((row) => ({
+         categoryColor: row.categoryColor,
          categoryId: row.categoryId,
          categoryName: row.categoryName,
-         categoryColor: row.categoryColor,
          total: parseFloat(row.total) || 0,
          transactionCount: parseInt(row.transactionCount, 10) || 0,
       }));
@@ -740,13 +740,13 @@ export async function getCategoryTypeDistribution(
       `);
 
       return result.rows.map((row) => ({
+         categoryColor: row.categoryColor,
          categoryId: row.categoryId,
          categoryName: row.categoryName,
-         categoryColor: row.categoryColor,
-         incomeCount: parseInt(row.incomeCount, 10) || 0,
          expenseCount: parseInt(row.expenseCount, 10) || 0,
-         incomeTotal: parseFloat(row.incomeTotal) || 0,
          expenseTotal: parseFloat(row.expenseTotal) || 0,
+         incomeCount: parseInt(row.incomeCount, 10) || 0,
+         incomeTotal: parseFloat(row.incomeTotal) || 0,
       }));
    } catch (err) {
       propagateError(err);
@@ -787,9 +787,9 @@ export async function getCategoryUsageFrequency(
       `);
 
       return result.rows.map((row) => ({
+         categoryColor: row.categoryColor,
          categoryId: row.categoryId,
          categoryName: row.categoryName,
-         categoryColor: row.categoryColor,
          transactionCount: parseInt(row.transactionCount, 10) || 0,
       }));
    } catch (err) {

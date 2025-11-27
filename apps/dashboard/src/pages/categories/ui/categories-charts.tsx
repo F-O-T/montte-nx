@@ -131,7 +131,6 @@ interface CustomTooltipProps {
          transactions?: number;
       };
    }>;
-   label?: string;
    total?: number;
    valueFormatter?: (value: number) => string;
    showPercentage?: boolean;
@@ -141,7 +140,6 @@ interface CustomTooltipProps {
 function CustomTooltip({
    active,
    payload,
-   label,
    total,
    valueFormatter = formatCurrency,
    showPercentage = false,
@@ -151,7 +149,6 @@ function CustomTooltip({
 
    return (
       <div className="rounded-lg border bg-background p-3 shadow-md">
-         {label && <p className="mb-2 font-medium text-foreground">{label}</p>}
          <div className="space-y-1.5">
             {payload.map((entry) => {
                const percentage =
