@@ -42,6 +42,10 @@ RUN bun install
 COPY . .
 
 ENV NODE_ENV=production
+
+# Build the ofx library first (required dependency)
+RUN cd libraries/ofx && bun run build
+
 RUN bun build \
     --minify-whitespace \
     --minify-syntax \
