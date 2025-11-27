@@ -24,7 +24,7 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AlertTriangle, UserPlus } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { createContext, Suspense, useContext } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -114,14 +114,14 @@ const InviteMemberSheetContent = () => {
 
    const schema = z.object({
       email: z.string().email("Valid email is required"),
-      organizationId: z.string().optional(),
+      organizationId: z.string().default(""),
       role: z.enum(["member", "admin"]),
    });
 
    const form = useForm({
       defaultValues: {
          email: "",
-         organizationId: organization?.id,
+         organizationId: organization?.id ?? "",
          role: "member" as "member" | "admin",
       },
       onSubmit: async ({ value, formApi }) => {
@@ -130,7 +130,7 @@ const InviteMemberSheetContent = () => {
       },
 
       validators: {
-         onBlur: schema,
+         onBlur: schema as unknown as undefined,
       },
    });
 

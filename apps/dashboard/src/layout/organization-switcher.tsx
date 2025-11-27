@@ -1,9 +1,13 @@
+import { translate } from "@packages/localization";
 import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
    DropdownMenuLabel,
    DropdownMenuSeparator,
+   DropdownMenuSub,
+   DropdownMenuSubContent,
+   DropdownMenuSubTrigger,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
 import {
@@ -13,6 +17,7 @@ import {
    useSidebar,
 } from "@packages/ui/components/sidebar";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { toast } from "@packages/ui/components/sonner";
 import { getInitials } from "@packages/utils/text";
 import {
    useMutation,
@@ -20,17 +25,21 @@ import {
    useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { ChevronsUpDown, Plus } from "lucide-react";
+import { ChevronsUpDown, Eye, Plus, Users } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
+import { CreateTeamSheet } from "@/pages/organization-teams/features/create-team-sheet";
 
+//TODO: Adicionar textos no Locale
 function OrganizationSwitcherErrorFallback() {
    return (
       <div className=" text-center text-destructive">
-         Failed to load active organization.
+         {translate(
+            "dashboard.layout.organization-switcher.error.failed-to-load-active",
+         )}
       </div>
    );
 }
@@ -39,9 +48,13 @@ function OrganizationDropdownErrorFallback() {
    return (
       <>
          <DropdownMenuLabel className="text-muted-foreground text-xs">
-            Teams
+            {translate("dashboard.layout.organization-switcher.label")}
          </DropdownMenuLabel>
-         <DropdownMenuItem disabled>Failed to load teams</DropdownMenuItem>
+         <DropdownMenuItem disabled>
+            {translate(
+               "dashboard.layout.organization-switcher.error.failed-to-load-teams",
+            )}
+         </DropdownMenuItem>
       </>
    );
 }
@@ -66,7 +79,7 @@ function OrganizationDropdownSkeleton() {
    return (
       <>
          <DropdownMenuLabel className="text-muted-foreground text-xs">
-            Organizations
+            {translate("dashboard.layout.organization-switcher.label")}
          </DropdownMenuLabel>
          <DropdownMenuItem disabled>
             <div className="gap-2 p-2 w-full flex items-center">
@@ -90,10 +103,13 @@ export function OrganizationSwitcher() {
    );
 }
 
-function OrganizationDropdownContent() {
+function OrganizationDropdownContent({
+   onCreateTeamClick,
+}: {
+   onCreateTeamClick: () => void;
+}) {
    const trpc = useTRPC();
    const router = useRouter();
-   const { activeOrganization } = useActiveOrganization();
 
    const { data: organizations } = useSuspenseQuery(
       trpc.organization.getOrganizations.queryOptions(),
@@ -107,52 +123,176 @@ function OrganizationDropdownContent() {
 
    const setActiveOrganization = useMutation(
       trpc.organization.setActiveOrganization.mutationOptions({
-         onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
+         onSuccess: async () => {
+            await queryClient.invalidateQueries({
+               queryKey: trpc.organization.getOrganizations.queryKey(),
             });
+            toast.success("Organization set successfully");
          },
       }),
    );
 
-   async function handleOrganizationClick(organizationSlug: string) {
-      router.navigate({
-         params: { slug: organizationSlug },
-         to: "/$slug/home",
+   async function handleOrganizationClick(organizationId: string) {
+      await setActiveOrganization.mutateAsync({
+         organizationId,
       });
    }
 
    return (
       <>
          <DropdownMenuLabel className="text-muted-foreground text-xs">
-            Organizations
+            {translate("dashboard.layout.organization-switcher.label")}
          </DropdownMenuLabel>
          {organizations?.map((organization) => (
-            <DropdownMenuItem
-               className="gap-2 p-2"
-               disabled={
-                  setActiveOrganization.isPending ||
-                  organization.id === activeOrganization?.id
-               }
-               key={organization.name}
-               onClick={() => handleOrganizationClick(organization.slug)}
-            >
-               <div className="flex size-6 items-center justify-center rounded-md border">
-                  {logo?.data ? (
-                     <img
-                        alt={organization.name}
-                        className="size-3.5 shrink-0 rounded"
-                        src={logo.data}
+            <DropdownMenuSub key={organization.name}>
+               <DropdownMenuSubTrigger
+                  className="gap-2 p-2"
+                  disabled={setActiveOrganization.isPending}
+                  onClick={() => {
+                     handleOrganizationClick(organization.id);
+                  }}
+               >
+                  <div className="flex p-1 size-6 items-center justify-center rounded-md border">
+                     {logo?.data ? (
+                        <img
+                           alt={organization.name}
+                           className="size-3.5 shrink-0 rounded"
+                           src={logo.data}
+                        />
+                     ) : (
+                        <div className="size-4 shrink-0 flex items-center justify-center text-xs bg-secondary rounded">
+                           {getInitials(organization.name)}
+                        </div>
+                     )}
+                  </div>
+                  <span className="truncate">{organization.name}</span>
+               </DropdownMenuSubTrigger>
+               <DropdownMenuSubContent>
+                  <Suspense
+                     fallback={
+                        <DropdownMenuItem disabled>
+                           <div className="gap-2 p-2 w-full flex items-center">
+                              <Skeleton className="size-4 rounded" />
+                              <Skeleton className="h-4 w-24" />
+                           </div>
+                        </DropdownMenuItem>
+                     }
+                  >
+                     <OrganizationTeamsList
+                        onCreateTeamClick={onCreateTeamClick}
+                        onViewDetailsClick={() => {
+                           router.navigate({
+                              params: { slug: organization.slug },
+                              to: "/$slug/organization",
+                           });
+                        }}
+                        organizationSlug={organization.slug}
                      />
-                  ) : (
-                     <div className="size-3.5 shrink-0 flex items-center justify-center text-xs bg-muted rounded">
-                        {getInitials(organization.name)}
-                     </div>
-                  )}
+                  </Suspense>
+               </DropdownMenuSubContent>
+            </DropdownMenuSub>
+         ))}
+      </>
+   );
+}
+
+function OrganizationTeamsList({
+   organizationSlug,
+   onCreateTeamClick,
+   onViewDetailsClick,
+}: {
+   organizationSlug: string;
+   onCreateTeamClick: () => void;
+   onViewDetailsClick: () => void;
+}) {
+   const trpc = useTRPC();
+   const router = useRouter();
+
+   const { data: teams } = useSuspenseQuery(
+      trpc.organization.listTeams.queryOptions(),
+   );
+
+   //TODO: checar necessidade de repetir o dropdown menu label
+   if (!teams || teams.length === 0) {
+      return (
+         <>
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+               Organização
+            </DropdownMenuLabel>
+            <DropdownMenuItem
+               className="gap-2 flex items-center"
+               onClick={onViewDetailsClick}
+            >
+               <Eye className="size-4" />
+               <span className="truncate">Ver detalhes</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+               Equipes
+            </DropdownMenuLabel>
+            <DropdownMenuItem disabled>
+               <div className="gap-2 p-2 w-full flex items-center">
+                  <Users className="size-4" />
+                  <span className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.layout.organization-switcher.no-teams",
+                     )}
+                  </span>
                </div>
-               {organization.name}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onCreateTeamClick}>
+               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Plus className="size-4" />
+               </div>
+               <span className="truncate">
+                  {translate(
+                     "dashboard.layout.organization-switcher.create-team",
+                  )}
+               </span>
+            </DropdownMenuItem>
+         </>
+      );
+   }
+
+   return (
+      <>
+         <DropdownMenuLabel className="text-muted-foreground text-xs">
+            Organização
+         </DropdownMenuLabel>
+         <DropdownMenuItem onClick={onViewDetailsClick}>
+            <Eye className="size-4" />
+            <span className="truncate">Ver detalhes</span>
+         </DropdownMenuItem>
+         <DropdownMenuSeparator />
+         <DropdownMenuLabel className="text-muted-foreground text-xs">
+            Equipes
+         </DropdownMenuLabel>
+         {teams.map((team) => (
+            <DropdownMenuItem
+               key={team.id}
+               onClick={() => {
+                  router.navigate({
+                     params: { slug: organizationSlug },
+                     to: "/$slug/organization/teams",
+                  });
+               }}
+            >
+               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                  <Users className="size-4" />
+               </div>
+               <span className="truncate">{team.name}</span>
             </DropdownMenuItem>
          ))}
+         <DropdownMenuSeparator />
+         <DropdownMenuItem onClick={onCreateTeamClick}>
+            <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+               <Plus className="size-4" />
+            </div>
+            <span className="truncate">
+               {translate("dashboard.layout.organization-switcher.create-team")}
+            </span>
+         </DropdownMenuItem>
       </>
    );
 }
@@ -162,6 +302,7 @@ function OrganizationSwitcherContent() {
    const trpc = useTRPC();
 
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const [isCreateTeamSheetOpen, setIsCreateTeamSheetOpen] = useState(false);
 
    const { activeOrganization } = useActiveOrganization();
 
@@ -188,7 +329,7 @@ function OrganizationSwitcherContent() {
                      className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                      size="lg"
                   >
-                     <div className="rounded-md border text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                     <div className="rounded-md border bg-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                         {logo?.data ? (
                            <img
                               alt={activeOrganization.name}
@@ -222,7 +363,11 @@ function OrganizationSwitcherContent() {
                      FallbackComponent={OrganizationDropdownErrorFallback}
                   >
                      <Suspense fallback={<OrganizationDropdownSkeleton />}>
-                        <OrganizationDropdownContent />
+                        <OrganizationDropdownContent
+                           onCreateTeamClick={() =>
+                              setIsCreateTeamSheetOpen(true)
+                           }
+                        />
                      </Suspense>
                   </ErrorBoundary>
 
@@ -233,7 +378,9 @@ function OrganizationSwitcherContent() {
                      onClick={() => setIsCreateSheetOpen(true)}
                      title={
                         hasReachedLimit
-                           ? "Você não pode criar mais organizações"
+                           ? translate(
+                                "dashboard.layout.organization-switcher.limit-reached",
+                             )
                            : undefined
                      }
                   >
@@ -241,7 +388,9 @@ function OrganizationSwitcherContent() {
                         <Plus className="size-4" />
                      </div>
                      <div className="text-muted-foreground font-medium">
-                        Add organization
+                        {translate(
+                           "dashboard.layout.organization-switcher.add-organization",
+                        )}
                      </div>
                   </DropdownMenuItem>
                </DropdownMenuContent>
@@ -251,6 +400,10 @@ function OrganizationSwitcherContent() {
          <ManageOrganizationSheet
             onOpen={isCreateSheetOpen}
             onOpenChange={setIsCreateSheetOpen}
+         />
+         <CreateTeamSheet
+            onOpenChange={setIsCreateTeamSheetOpen}
+            open={isCreateTeamSheetOpen}
          />
       </SidebarMenu>
    );

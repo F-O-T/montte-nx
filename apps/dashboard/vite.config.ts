@@ -17,21 +17,32 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Montte',
+        id: '/',
+        scope: '/',
+        name: 'Montte - Gestão Financeira',
         short_name: 'Montte',
         description: 'Gestão financeira completa para você e seus negócios. Simples, transparente e Open Source.',
         display: 'standalone',
         start_url: '/',
+        background_color: '#050816',
+        theme_color: '#050816',
+        orientation: 'portrait',
         icons: [
-          {
-            src: 'favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml'
-          }
-        ]
+          { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' },
+        ],
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/assets'),
+            handler: 'CacheFirst',
+          },
+          {
+            urlPattern: ({ url }) => url.origin === 'https://api.montte.co',
+            handler: 'StaleWhileRevalidate',
+          },
+        ],
       },
     }),
 

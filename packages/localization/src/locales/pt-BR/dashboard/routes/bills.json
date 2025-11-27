@@ -1,10 +1,18 @@
 {
+   "actions": {
+      "delete": "Excluir",
+      "edit": "Editar",
+      "label": "Ações",
+      "pay": "Pagar",
+      "receive": "Receber"
+   },
    "actions-toolbar": {
       "actions": {
          "add-new": "Nova Conta",
          "delete-selected": "Excluir selecionados"
       }
    },
+   "completedOn": "Concluído em",
    "copy": {
       "tooltip": "Copiar informações"
    },
@@ -123,6 +131,9 @@
          "description": "Total de contas a pagar vencidas",
          "title": "Vencidas"
       },
+      "overdueBills": {
+         "title": "Contas Vencidas"
+      },
       "overduePayables": {
          "count": "0",
          "description": "Total de contas a pagar vencidas",
@@ -137,6 +148,7 @@
          "title": "A Receber"
       },
       "title": "Estatísticas",
+      "totalOverdue": "Total vencido",
       "totalPayables": {
          "description": "Total de contas a pagar",
          "title": "A Pagar"

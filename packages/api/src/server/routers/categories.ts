@@ -1,25 +1,23 @@
 import {
    createCategory,
    deleteCategory,
-   findCategoriesByUserId,
-   findCategoriesByUserIdPaginated,
+   findCategoriesByOrganizationId,
+   findCategoriesByOrganizationIdPaginated,
    findCategoryById,
    getCategoryWithMostTransactions,
-   getTotalCategoriesByUserId,
+   getTotalCategoriesByOrganizationId,
    updateCategory,
 } from "@packages/database/repositories/category-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 const createCategorySchema = z.object({
-   budget: z.number().optional(),
    color: z.string(),
    icon: z.string().optional(),
    name: z.string(),
 });
 
 const updateCategorySchema = z.object({
-   budget: z.number().optional(),
    color: z.string().optional(),
    icon: z.string().optional(),
    name: z.string().optional(),
@@ -38,17 +36,12 @@ export const categoryRouter = router({
       .input(createCategorySchema)
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          return createCategory(resolvedCtx.db, {
             ...input,
-            budget: input.budget?.toString(),
             id: crypto.randomUUID(),
-            userId,
+            organizationId,
          });
       }),
 
@@ -56,18 +49,17 @@ export const categoryRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingCategory = await findCategoryById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!existingCategory || existingCategory.userId !== userId) {
+         if (
+            !existingCategory ||
+            existingCategory.organizationId !== organizationId
+         ) {
             throw new Error("Category not found");
          }
 
@@ -76,47 +68,39 @@ export const categoryRouter = router({
 
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return findCategoriesByUserId(resolvedCtx.db, userId);
+      return findCategoriesByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
    getAllPaginated: protectedProcedure
       .input(paginationSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return findCategoriesByUserIdPaginated(resolvedCtx.db, userId, {
-            limit: input.limit,
-            orderBy: input.orderBy,
-            orderDirection: input.orderDirection,
-            page: input.page,
-            search: input.search,
-         });
+         return findCategoriesByOrganizationIdPaginated(
+            resolvedCtx.db,
+            organizationId,
+            {
+               limit: input.limit,
+               orderBy: input.orderBy,
+               orderDirection: input.orderDirection,
+               page: input.page,
+               search: input.search,
+            },
+         );
       }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const category = await findCategoryById(resolvedCtx.db, input.id);
 
-         if (!category || category.userId !== userId) {
+         if (!category || category.organizationId !== organizationId) {
             throw new Error("Category not found");
          }
 
@@ -125,16 +109,12 @@ export const categoryRouter = router({
 
    getStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
-
-      const userId = resolvedCtx.session.user.id;
+      const organizationId = resolvedCtx.organizationId;
 
       const [totalCategories, categoryWithMostTransactions] = await Promise.all(
          [
-            getTotalCategoriesByUserId(resolvedCtx.db, userId),
-            getCategoryWithMostTransactions(resolvedCtx.db, userId),
+            getTotalCategoriesByOrganizationId(resolvedCtx.db, organizationId),
+            getCategoryWithMostTransactions(resolvedCtx.db, organizationId),
          ],
       );
 
@@ -154,24 +134,20 @@ export const categoryRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingCategory = await findCategoryById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!existingCategory || existingCategory.userId !== userId) {
+         if (
+            !existingCategory ||
+            existingCategory.organizationId !== organizationId
+         ) {
             throw new Error("Category not found");
          }
 
-         return updateCategory(resolvedCtx.db, input.id, {
-            ...input.data,
-            budget: input.data.budget?.toString(),
-         });
+         return updateCategory(resolvedCtx.db, input.id, input.data);
       }),
 });

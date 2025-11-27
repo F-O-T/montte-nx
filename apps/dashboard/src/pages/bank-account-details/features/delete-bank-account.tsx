@@ -30,22 +30,13 @@ export function DeleteBankAccount({
    const deleteBankAccountMutation = useMutation(
       trpc.bankAccounts.delete.mutationOptions({
          onError: (error) => {
-            toast.error(
-               error.message ||
-                  translate(
-                     "dashboard.routes.profile.bank-accounts.delete.error",
-                  ),
-            );
+            toast.error(error.message || "Failed to delete bank account");
          },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: ["bankAccounts"],
             });
-            toast.success(
-               translate(
-                  "dashboard.routes.profile.bank-accounts.delete.success",
-               ),
-            );
+            toast.success("Bank account deleted successfully");
          },
       }),
    );

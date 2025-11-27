@@ -4,8 +4,8 @@ import {
    createDefaultWalletBankAccount,
    deleteBankAccount,
    findBankAccountById,
-   findBankAccountsByUserId,
-   findBankAccountsByUserIdPaginated,
+   findBankAccountsByOrganizationId,
+   findBankAccountsByOrganizationIdPaginated,
    getBankAccountStats,
    updateBankAccount,
 } from "@packages/database/repositories/bank-account-repository";
@@ -20,24 +20,18 @@ import { protectedProcedure, router } from "../trpc";
 const createBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required"),
    name: z.string().min(1, "Name is required"),
-   nickname: z.string().optional(),
-   status: z.enum(["active", "inactive"]).optional(),
-   type: z.string().min(1, "Type is required"),
+   type: z.enum(["checking", "savings", "investment"]),
 });
 
 const updateBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required").optional(),
    name: z.string().min(1, "Name is required").optional(),
-   nickname: z.string().optional(),
-   status: z.enum(["active", "inactive"]).optional(),
-   type: z.string().min(1, "Type is required").optional(),
+   type: z.enum(["checking", "savings", "investment"]).optional(),
 });
 
 const paginationSchema = z.object({
    limit: z.coerce.number().min(1).max(100).default(10),
-   orderBy: z
-      .enum(["name", "bank", "createdAt", "updatedAt", "status"])
-      .default("name"),
+   orderBy: z.enum(["name", "bank", "createdAt", "updatedAt"]).default("name"),
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
@@ -48,18 +42,12 @@ export const bankAccountRouter = router({
       .input(createBankAccountSchema)
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          return createBankAccount(resolvedCtx.db, {
             ...input,
             id: crypto.randomUUID(),
-            status: input.status || "active",
-            type: input.type as "checking" | "savings" | "investment",
-            userId,
+            organizationId,
          });
       }),
 
@@ -87,18 +75,17 @@ export const bankAccountRouter = router({
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingBankAccount = await findBankAccountById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!existingBankAccount || existingBankAccount.userId !== userId) {
+         if (
+            !existingBankAccount ||
+            existingBankAccount.organizationId !== organizationId
+         ) {
             throw new Error("Bank account not found");
          }
 
@@ -107,50 +94,42 @@ export const bankAccountRouter = router({
 
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return findBankAccountsByUserId(resolvedCtx.db, userId);
+      return findBankAccountsByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
    getAllPaginated: protectedProcedure
       .input(paginationSchema)
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
+         const organizationId = resolvedCtx.organizationId;
 
-         const userId = resolvedCtx.session.user.id;
-
-         return findBankAccountsByUserIdPaginated(resolvedCtx.db, userId, {
-            limit: input.limit,
-            orderBy: input.orderBy,
-            orderDirection: input.orderDirection,
-            page: input.page,
-            search: input.search,
-         });
+         return findBankAccountsByOrganizationIdPaginated(
+            resolvedCtx.db,
+            organizationId,
+            {
+               limit: input.limit,
+               orderBy: input.orderBy,
+               orderDirection: input.orderDirection,
+               page: input.page,
+               search: input.search,
+            },
+         );
       }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!bankAccount || bankAccount.userId !== userId) {
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw new Error("Bank account not found");
          }
 
@@ -159,13 +138,9 @@ export const bankAccountRouter = router({
 
    getStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
-      if (!resolvedCtx.session?.user) {
-         throw new Error("Unauthorized");
-      }
+      const organizationId = resolvedCtx.organizationId;
 
-      const userId = resolvedCtx.session.user.id;
-
-      return getBankAccountStats(resolvedCtx.db, userId);
+      return getBankAccountStats(resolvedCtx.db, organizationId);
    }),
 
    getTransactions: protectedProcedure
@@ -178,18 +153,14 @@ export const bankAccountRouter = router({
       )
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!bankAccount || bankAccount.userId !== userId) {
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw new Error("Bank account not found");
          }
 
@@ -207,11 +178,7 @@ export const bankAccountRouter = router({
       .input(z.object({ bankAccountId: z.string(), content: z.string() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
          const transactions = await parseOfxContent(input.content);
 
          const createdTransactions = [];
@@ -230,13 +197,12 @@ export const bankAccountRouter = router({
                const newTransaction = await createTransaction(resolvedCtx.db, {
                   amount: trn.amount.toString(),
                   bankAccountId: input.bankAccountId,
-                  categoryIds: ["Uncategorized"],
                   date: trn.date,
                   description: trn.description,
                   externalId: trn.fitid,
                   id: crypto.randomUUID(),
+                  organizationId,
                   type: trn.type,
-                  userId,
                });
                createdTransactions.push(newTransaction);
             }
@@ -254,18 +220,17 @@ export const bankAccountRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         if (!resolvedCtx.session?.user) {
-            throw new Error("Unauthorized");
-         }
-
-         const userId = resolvedCtx.session.user.id;
+         const organizationId = resolvedCtx.organizationId;
 
          const existingBankAccount = await findBankAccountById(
             resolvedCtx.db,
             input.id,
          );
 
-         if (!existingBankAccount || existingBankAccount.userId !== userId) {
+         if (
+            !existingBankAccount ||
+            existingBankAccount.organizationId !== organizationId
+         ) {
             throw new Error("Bank account not found");
          }
 

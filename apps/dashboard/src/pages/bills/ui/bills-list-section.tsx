@@ -138,12 +138,12 @@ function BillItem({ bill, categories }: BillItemProps) {
                         className="text-[10px] h-5 px-1"
                         variant="destructive"
                      >
-                        {translate("dashboard.routes.bills.overdue")}
+                        {translate("dashboard.routes.bills.status.overdue")}
                      </Badge>
                   )}
                </ItemTitle>
                <ItemDescription>
-                  {translate("dashboard.routes.bills.dueDate")}:{" "}
+                  {translate("dashboard.routes.bills.table.columns.dueDate")}:{" "}
                   {bill.dueDate
                      ? format(new Date(bill.dueDate), "dd/MM/yyyy")
                      : "-"}
@@ -331,7 +331,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
          setCurrentPage(1);
       }, 300);
       return () => clearTimeout(timer);
-   }, [searchTerm]);
+   }, [searchTerm, setCurrentPage]);
 
    // Set the context filter type based on the component prop
    useEffect(() => {
@@ -631,7 +631,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
                            className="h-8 w-8 p-0"
                            disabled={currentPage === 1}
                            onClick={() =>
-                              setCurrentPage((prev) => Math.max(1, prev - 1))
+                              setCurrentPage(Math.max(1, currentPage - 1))
                            }
                            variant="outline"
                         >
@@ -642,8 +642,8 @@ function BillsListContent({ type }: BillsListSectionProps) {
                            className="h-8 w-8 p-0"
                            disabled={currentPage === totalPages}
                            onClick={() =>
-                              setCurrentPage((prev) =>
-                                 Math.min(totalPages, prev + 1),
+                              setCurrentPage(
+                                 Math.min(totalPages, currentPage + 1),
                               )
                            }
                            variant="outline"

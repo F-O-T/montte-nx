@@ -18,7 +18,7 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AlertTriangle, Users } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { createContext, Suspense, useContext } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -97,6 +97,9 @@ const CreateTeamSheetContent = () => {
                queryKey: trpc.organizationTeams.listTeams.queryKey(),
             });
             await queryClient.invalidateQueries({
+               queryKey: trpc.organization.listTeams.queryKey(),
+            });
+            await queryClient.invalidateQueries({
                queryKey: trpc.organizationTeams.getTeamStats.queryKey(),
             });
             onOpenChange(false);
@@ -108,19 +111,19 @@ const CreateTeamSheetContent = () => {
       description: z
          .string()
          .max(200, "Description must be less than 200 characters")
-         .optional(),
+         .default(""),
       name: z
          .string()
          .min(1, "Team name is required")
          .max(50, "Team name must be less than 50 characters"),
-      organizationId: z.string().optional(),
+      organizationId: z.string().default(""),
    });
 
    const form = useForm({
       defaultValues: {
          description: "",
          name: "",
-         organizationId: organization?.id,
+         organizationId: organization?.id ?? "",
       },
       onSubmit: async ({ value, formApi }) => {
          await createTeamMutation.mutateAsync(value);
@@ -128,7 +131,7 @@ const CreateTeamSheetContent = () => {
       },
 
       validators: {
-         onBlur: schema,
+         onBlur: schema as unknown as undefined,
       },
    });
 

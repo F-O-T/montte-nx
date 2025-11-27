@@ -1,4 +1,7 @@
 {
+   "actions": {
+      "add-category": "Adicionar Categoria"
+   },
    "actions-toolbar": {
       "actions": {
          "add-new": "Adicionar nova categoria",
@@ -43,7 +46,10 @@
    "list-section": {
       "actions": {
          "delete": "Excluir categoria",
+         "delete-category": "Excluir categoria",
+         "edit-category": "Editar categoria",
          "label": "Gerencie sua categoria",
+         "view": "Ver detalhes",
          "view-details": "Ver detalhes"
       },
       "description": "Visualize e gerencie suas categorias aqui.",

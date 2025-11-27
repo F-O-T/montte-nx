@@ -18,12 +18,11 @@ import { Input } from "@packages/ui/components/input";
 import { PasswordInput } from "@packages/ui/components/password-input";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient } from "@/integrations/clients";
 
 const steps = [
    { id: "basic-info", title: "basic-info" },
@@ -33,7 +32,6 @@ const steps = [
 const { Stepper } = defineStepper(...steps);
 
 export function SignUpPage() {
-   const trpc = useTRPC();
    const router = useRouter();
    const schema = z
       .object({
@@ -57,18 +55,36 @@ export function SignUpPage() {
          path: ["confirmPassword"],
       });
 
-   const signUpMutation = useMutation(
-      trpc.auth.signUp.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message);
-         },
-         onSuccess: async (_, variables) => {
-            router.navigate({
-               search: { email: variables.email },
-               to: "/auth/email-verification",
-            });
-         },
-      }),
+   const handleSignUp = useCallback(
+      async (email: string, name: string, password: string) => {
+         await betterAuthClient.signUp.email(
+            {
+               email,
+               name,
+               password,
+            },
+            {
+               onError: ({ error }) => {
+                  toast.error(error.message);
+               },
+               onRequest: () => {
+                  toast.loading(
+                     translate("dashboard.routes.sign-up.messages.requesting"),
+                  );
+               },
+               onSuccess: () => {
+                  toast.success(
+                     translate("dashboard.routes.sign-up.messages.success"),
+                  );
+                  router.navigate({
+                     search: { email },
+                     to: "/auth/email-verification",
+                  });
+               },
+            },
+         );
+      },
+      [router.navigate],
    );
 
    const form = useForm({
@@ -79,7 +95,8 @@ export function SignUpPage() {
          password: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await signUpMutation.mutateAsync(value);
+         const { email, name, password } = value;
+         await handleSignUp(email, name, password);
          formApi.reset();
       },
       validators: {
@@ -278,8 +295,7 @@ export function SignUpPage() {
                                     className=" flex gap-2 items-center justify-center"
                                     disabled={
                                        !formState.canSubmit ||
-                                       formState.isSubmitting ||
-                                       signUpMutation.isPending
+                                       formState.isSubmitting
                                     }
                                     type="submit"
                                     variant="default"

@@ -84,8 +84,8 @@ function HomeQuickAccessCardsContent() {
             router.navigate({
                params: {
                   slug: activeOrganization.slug,
-                  type: "payable",
                },
+               search: { type: "payable" },
                to: "/$slug/bills",
             }),
          title: translate("dashboard.layout.nav-main.finance.payables"),
@@ -97,7 +97,8 @@ function HomeQuickAccessCardsContent() {
          icon: <ArrowUpRight className="size-4" />,
          onClick: () =>
             router.navigate({
-               params: { slug: activeOrganization.slug, type: "receivable" },
+               params: { slug: activeOrganization.slug },
+               search: { type: "receivable" },
                to: "/$slug/bills",
             }),
          title: translate("dashboard.layout.nav-main.finance.receivables"),

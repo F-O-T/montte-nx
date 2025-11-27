@@ -56,7 +56,7 @@ function CategoryBudgetContent({ categoryId }: { categoryId: string }) {
       }),
    );
 
-   const budget = Number(category.budget || 0);
+   const budget = 0; // Budget not yet supported in schema
 
    if (budget === 0) {
       return (
@@ -80,8 +80,12 @@ function CategoryBudgetContent({ categoryId }: { categoryId: string }) {
    }
 
    const spent = transactionsData.transactions
-      .filter((t: any) => t.type === "expense")
-      .reduce((acc: number, curr: any) => acc + Number(curr.amount), 0);
+      .filter((t: { type: string }) => t.type === "expense")
+      .reduce(
+         (acc: number, curr: { amount: string | number }) =>
+            acc + Number(curr.amount),
+         0,
+      );
 
    const percentage = Math.min(Math.round((spent / budget) * 100), 100);
    const isExceeded = spent > budget;

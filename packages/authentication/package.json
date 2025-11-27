@@ -3,7 +3,8 @@
       "@packages/database": "workspace:*",
       "@packages/environment": "workspace:*",
       "@packages/transactional": "workspace:*",
-      "better-auth": "catalog:auth"
+      "better-auth": "catalog:auth",
+      "better-auth-localization": "^2.2.2"
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",

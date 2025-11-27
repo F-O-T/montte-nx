@@ -49,8 +49,9 @@ function TeamsListContent() {
                            <ItemTitle className="truncate">
                               {team.name}
                            </ItemTitle>
-                           {/** @ts-expect-error **/}
-                           <ItemDescription>{team.description}</ItemDescription>
+                           <ItemDescription>
+                              {team.description ?? ""}
+                           </ItemDescription>
                         </ItemContent>
                      </Item>
                      {index !== teamsData.length - 1 && <ItemSeparator />}

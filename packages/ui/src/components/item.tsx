@@ -4,12 +4,11 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import type * as React from "react";
 
-function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
+function ItemGroup({ className, ...props }: React.ComponentProps<"ul">) {
    return (
-      <div
+      <ul
          className={cn("group/item-group flex flex-col", className)}
          data-slot="item-group"
-         role="list"
          {...props}
       />
    );
@@ -118,7 +117,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
    return (
       <div
          className={cn(
-            "flex w-fit font-serif items-center gap-2 text-sm leading-snug font-medium",
+            "font-serif items-center gap-2 text-sm leading-snug font-medium",
             className,
          )}
          data-slot="item-title"

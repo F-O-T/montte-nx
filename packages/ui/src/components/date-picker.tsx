@@ -11,7 +11,6 @@ import {
 import { cn } from "@packages/ui/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import * as React from "react";
 
 export interface DatePickerProps {
    date?: Date;

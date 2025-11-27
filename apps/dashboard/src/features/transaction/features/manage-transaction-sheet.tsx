@@ -1,4 +1,8 @@
-import type { Transaction } from "@packages/database/repositories/transaction-repository";
+import type { RouterOutput } from "@packages/api/client";
+
+type Transaction =
+   RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
+
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { DatePicker } from "@packages/ui/components/date-picker";
@@ -27,13 +31,19 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import { toast } from "@packages/ui/components/sonner";
+import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
+
 import { Textarea } from "@packages/ui/components/textarea";
 import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus } from "lucide-react";
+import { ChevronDown, Pencil, Plus, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
 
@@ -86,27 +96,23 @@ export function ManageTransactionSheet({
       trpc.bankAccounts.getAll.queryOptions(),
    );
 
-   const activeBankAccounts = bankAccounts.filter(
-      (account) => account.status === "active",
+   const { data: tags = [] } = useQuery(trpc.tags.getAll.queryOptions());
+
+   const { data: costCenters = [] } = useQuery(
+      trpc.costCenters.getAll.queryOptions(),
    );
+
+   const activeBankAccounts = bankAccounts;
 
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
-         onSuccess: async (data) => {
+         onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
-
-            if (data.notifications && data.notifications.length > 0) {
-               data.notifications.forEach((notification) => {
-                  toast.error(notification.title, {
-                     description: notification.message,
-                  });
-               });
-            }
 
             setIsOpen?.(false);
          },
@@ -118,21 +124,13 @@ export function ManageTransactionSheet({
          onError: (error) => {
             console.error("Failed to update transaction:", error);
          },
-         onSuccess: async (data) => {
+         onSuccess: async () => {
             await queryClient.invalidateQueries({
                queryKey: trpc.transactions.getAllPaginated.queryKey(),
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bankAccounts.getTransactions.queryKey(),
             });
-
-            if (data.notifications && data.notifications.length > 0) {
-               data.notifications.forEach((notification) => {
-                  toast.error(notification.title, {
-                     description: notification.message,
-                  });
-               });
-            }
 
             setIsOpen?.(false);
          },
@@ -163,23 +161,21 @@ export function ManageTransactionSheet({
             ? Math.round(Number(transaction.amount) * 100)
             : 0, // Store as cents
          bankAccountId: transaction?.bankAccountId || "",
-         categoryIds: transaction?.categoryIds || [],
+         categoryIds:
+            transaction?.transactionCategories?.map((tc) => tc.category.id) ||
+            [],
+         costCenterId: transaction?.costCenterId || "",
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
+         tagIds: transaction?.transactionTags?.map((tt) => tt.tag.id) || [],
          toBankAccountId: "",
-         type:
-            transaction?.type ||
-            ("expense" as "expense" | "income" | "transfer"),
+         type: (transaction?.type || "expense") as
+            | "expense"
+            | "income"
+            | "transfer",
       },
       onSubmit: async ({ value }) => {
          if (!value.amount || !value.description) {
-            return;
-         }
-
-         if (
-            value.type !== "transfer" &&
-            (!value.categoryIds || value.categoryIds.length === 0)
-         ) {
             return;
          }
 
@@ -193,9 +189,11 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: value.categoryIds || [],
-                     date: value.date.toISOString().split("T")[0],
+                     costCenterId: value.costCenterId || null,
+                     date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
-                     type: value.type,
+                     tagIds: value.tagIds || [],
+                     type: value.type as "income" | "expense" | "transfer",
                   },
                   id: transaction.id,
                });
@@ -204,21 +202,21 @@ export function ManageTransactionSheet({
                   if (!value.toBankAccountId || !value.bankAccountId) return;
                   await transferTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
-                     date: value.date.toISOString().split("T")[0],
+                     date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
                      fromBankAccountId: value.bankAccountId,
                      toBankAccountId: value.toBankAccountId,
                   });
                } else {
-                  if (!value.categoryIds || value.categoryIds.length === 0)
-                     return;
                   await createTransactionMutation.mutateAsync({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: (value.categoryIds || []) as string[],
-                     date: value.date.toISOString().split("T")[0],
+                     costCenterId: value.costCenterId || undefined,
+                     date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
-                     type: value.type,
+                     tagIds: (value.tagIds || []) as string[],
+                     type: value.type as "income" | "expense",
                   });
                }
             }
@@ -461,63 +459,185 @@ export function ManageTransactionSheet({
                            )}
 
                            {type !== "transfer" && (
-                              <FieldGroup>
-                                 <form.Field name="categoryIds">
-                                    {(field) => {
-                                       const isInvalid =
-                                          field.state.meta.isTouched &&
-                                          !field.state.meta.isValid;
+                              <Collapsible className="space-y-2">
+                                 <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                                    <ChevronDown className="size-4 transition-transform duration-200" />
+                                    {translate(
+                                       "common.form.advanced-options.label",
+                                    )}
+                                 </CollapsibleTrigger>
+                                 <CollapsibleContent className="space-y-4">
+                                    <FieldGroup>
+                                       <form.Field name="categoryIds">
+                                          {(field) => {
+                                             const isInvalid =
+                                                field.state.meta.isTouched &&
+                                                !field.state.meta.isValid;
 
-                                       const categoryOptions = categories.map(
-                                          (category) => ({
-                                             icon: (
-                                                <IconDisplay
-                                                   iconName={category.icon}
-                                                   size={16}
-                                                />
-                                             ),
-                                             label: category.name,
-                                             value: category.id,
-                                          }),
-                                       );
+                                             const categoryOptions =
+                                                categories.map((category) => {
+                                                   const iconName =
+                                                      (category.icon ||
+                                                         "Wallet") as IconName;
+                                                   return {
+                                                      icon: (
+                                                         <IconDisplay
+                                                            iconName={iconName}
+                                                            size={16}
+                                                         />
+                                                      ),
+                                                      label: category.name,
+                                                      value: category.id,
+                                                   };
+                                                });
 
-                                       return (
-                                          <Field data-invalid={isInvalid}>
-                                             <FieldLabel>
-                                                {translate(
-                                                   "common.form.category.label",
-                                                )}
-                                             </FieldLabel>
-                                             <MultiSelect
-                                                className="flex-1"
-                                                emptyMessage={translate(
-                                                   "common.form.search.no-results",
-                                                )}
-                                                onChange={(val) =>
-                                                   field.handleChange(val)
-                                                }
-                                                options={categoryOptions}
-                                                placeholder={translate(
-                                                   "common.form.category.placeholder",
-                                                )}
-                                                selected={
-                                                   (field.state
-                                                      .value as unknown as string[]) ||
-                                                   []
-                                                }
-                                             />
-                                             {isInvalid && (
-                                                <FieldError
-                                                   errors={
-                                                      field.state.meta.errors
+                                             return (
+                                                <Field data-invalid={isInvalid}>
+                                                   <FieldLabel>
+                                                      {translate(
+                                                         "common.form.category.label",
+                                                      )}
+                                                   </FieldLabel>
+                                                   <MultiSelect
+                                                      className="flex-1"
+                                                      emptyMessage={translate(
+                                                         "common.form.search.no-results",
+                                                      )}
+                                                      onChange={(val) =>
+                                                         field.handleChange(val)
+                                                      }
+                                                      options={categoryOptions}
+                                                      placeholder={translate(
+                                                         "common.form.category.placeholder",
+                                                      )}
+                                                      selected={
+                                                         (field.state
+                                                            .value as unknown as string[]) ||
+                                                         []
+                                                      }
+                                                   />
+                                                   {isInvalid && (
+                                                      <FieldError
+                                                         errors={
+                                                            field.state.meta
+                                                               .errors
+                                                         }
+                                                      />
+                                                   )}
+                                                </Field>
+                                             );
+                                          }}
+                                       </form.Field>
+                                    </FieldGroup>
+
+                                    <FieldGroup>
+                                       <form.Field name="tagIds">
+                                          {(field) => {
+                                             const tagOptions = tags.map(
+                                                (tag) => ({
+                                                   icon: (
+                                                      <Tag
+                                                         className="size-4"
+                                                         style={{
+                                                            color: tag.color,
+                                                         }}
+                                                      />
+                                                   ),
+                                                   label: tag.name,
+                                                   value: tag.id,
+                                                }),
+                                             );
+
+                                             return (
+                                                <Field>
+                                                   <FieldLabel>
+                                                      {translate(
+                                                         "common.form.tags.label",
+                                                      )}
+                                                   </FieldLabel>
+                                                   <MultiSelect
+                                                      className="flex-1"
+                                                      emptyMessage={translate(
+                                                         "common.form.search.no-results",
+                                                      )}
+                                                      onChange={(val) =>
+                                                         field.handleChange(val)
+                                                      }
+                                                      options={tagOptions}
+                                                      placeholder={translate(
+                                                         "common.form.tags.placeholder",
+                                                      )}
+                                                      selected={
+                                                         (field.state
+                                                            .value as unknown as string[]) ||
+                                                         []
+                                                      }
+                                                   />
+                                                </Field>
+                                             );
+                                          }}
+                                       </form.Field>
+                                    </FieldGroup>
+
+                                    <FieldGroup>
+                                       <form.Field name="costCenterId">
+                                          {(field) => (
+                                             <Field>
+                                                <FieldLabel>
+                                                   {translate(
+                                                      "common.form.cost-center.label",
+                                                   )}
+                                                </FieldLabel>
+                                                <Select
+                                                   onValueChange={(value) =>
+                                                      field.handleChange(
+                                                         value === "none"
+                                                            ? ""
+                                                            : value,
+                                                      )
                                                    }
-                                                />
-                                             )}
-                                          </Field>
-                                       );
-                                    }}
-                                 </form.Field>
-                              </FieldGroup>
+                                                   value={
+                                                      field.state.value ||
+                                                      "none"
+                                                   }
+                                                >
+                                                   <SelectTrigger>
+                                                      <SelectValue
+                                                         placeholder={translate(
+                                                            "common.form.cost-center.placeholder",
+                                                         )}
+                                                      />
+                                                   </SelectTrigger>
+                                                   <SelectContent>
+                                                      <SelectItem value="none">
+                                                         {translate(
+                                                            "common.form.cost-center.none",
+                                                         )}
+                                                      </SelectItem>
+                                                      {costCenters.map(
+                                                         (costCenter) => (
+                                                            <SelectItem
+                                                               key={
+                                                                  costCenter.id
+                                                               }
+                                                               value={
+                                                                  costCenter.id
+                                                               }
+                                                            >
+                                                               {costCenter.name}
+                                                               {costCenter.code &&
+                                                                  ` (${costCenter.code})`}
+                                                            </SelectItem>
+                                                         ),
+                                                      )}
+                                                   </SelectContent>
+                                                </Select>
+                                             </Field>
+                                          )}
+                                       </form.Field>
+                                    </FieldGroup>
+                                 </CollapsibleContent>
+                              </Collapsible>
                            )}
                         </>
                      )}

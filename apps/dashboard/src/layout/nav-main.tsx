@@ -16,6 +16,8 @@ import {
    Building2,
    CirclePlus,
    FileText,
+   Landmark,
+   Tag,
    TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
@@ -37,36 +39,61 @@ export function NavMain() {
       return pathname === url;
    };
 
-   const items = [
+   const financeItems = [
       {
+         id: "transactions",
          icon: TrendingUp,
          title: translate("dashboard.layout.nav-main.finance.overview"),
          url: "/$slug/transactions",
       },
       {
+         id: "bank-accounts",
          icon: Building2,
          title: translate("dashboard.routes.bank-accounts.list-section.title"),
          url: "/$slug/bank-accounts",
       },
       {
+         id: "payables",
          icon: ArrowDownRight,
          title: translate("dashboard.layout.nav-main.finance.payables"),
          url: "/$slug/bills?type=payable",
       },
       {
+         id: "receivables",
          icon: ArrowUpRight,
          title: translate("dashboard.layout.nav-main.finance.receivables"),
          url: "/$slug/bills?type=receivable",
       },
       {
-         icon: FileText,
-         title: translate("dashboard.layout.nav-main.finance.categories"),
-         url: "/$slug/categories",
-      },
-      {
+         id: "reports",
          icon: BarChart3,
          title: translate("dashboard.layout.nav-main.finance.reports"),
          url: "/$slug/reports",
+      },
+   ];
+
+   const categorizationItems = [
+      {
+         id: "categories",
+         icon: FileText,
+         title: translate(
+            "dashboard.layout.nav-main.categorization.categories",
+         ),
+         url: "/$slug/categories",
+      },
+      {
+         id: "cost-centers",
+         icon: Landmark,
+         title: translate(
+            "dashboard.layout.nav-main.categorization.cost-centers",
+         ),
+         url: "/$slug/cost-centers",
+      },
+      {
+         id: "tags",
+         icon: Tag,
+         title: translate("dashboard.layout.nav-main.categorization.tags"),
+         url: "/$slug/tags",
       },
    ];
 
@@ -95,8 +122,37 @@ export function NavMain() {
                </SidebarGroupLabel>
             )}
             <SidebarMenu>
-               {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+               {financeItems.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                     <SidebarMenuButton
+                        asChild
+                        className={
+                           isActive(item.url)
+                              ? "bg-primary/10 text-primary rounded-lg"
+                              : ""
+                        }
+                        tooltip={item.title}
+                     >
+                        <Link
+                           onClick={() => setOpenMobile(false)}
+                           params={{}}
+                           to={item.url}
+                        >
+                           <item.icon />
+                           <span>{item.title}</span>
+                        </Link>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+               ))}
+            </SidebarMenu>
+            {state === "expanded" && (
+               <SidebarGroupLabel>
+                  {translate("dashboard.layout.nav-main.categorization.title")}
+               </SidebarGroupLabel>
+            )}
+            <SidebarMenu>
+               {categorizationItems.map((item) => (
+                  <SidebarMenuItem key={item.id}>
                      <SidebarMenuButton
                         asChild
                         className={

@@ -90,7 +90,7 @@ function CategoryContent({ categoryId }: { categoryId: string }) {
                   <SetBudgetSheet
                      asChild
                      categoryId={categoryId}
-                     currentBudget={data.budget || 0}
+                     currentBudget={0}
                   />
                </DropdownMenuContent>
             </DropdownMenu>

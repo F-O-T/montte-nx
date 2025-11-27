@@ -11,7 +11,8 @@ ARG MINIO_ENDPOINT
 ARG MINIO_ACCESS_KEY
 ARG MINIO_SECRET_KEY
 ARG MINIO_BUCKET
-
+ARG POSTHOG_HOST
+ARG POSTHOG_KEY
 WORKDIR /app
 
 # Copy all package manifests and the lockfile first.
@@ -92,6 +93,8 @@ ARG MINIO_ENDPOINT
 ARG MINIO_ACCESS_KEY
 ARG MINIO_SECRET_KEY
 ARG MINIO_BUCKET
+ARG POSTHOG_HOST
+ARG POSTHOG_KEY
 
 # Copy the pruned, production-only node_modules from the 'deps' stage.
 COPY --from=deps /app/node_modules ./node_modules

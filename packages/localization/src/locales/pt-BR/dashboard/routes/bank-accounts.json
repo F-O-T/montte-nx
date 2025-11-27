@@ -17,6 +17,10 @@
          "description": "Contas bancárias ativas",
          "title": "Contas Ativas"
       },
+      "current-balance": {
+         "description": "Saldo calculado atual",
+         "title": "Saldo"
+      },
       "total-accounts": {
          "description": "Número total de contas bancárias",
          "title": "Total de Contas"
@@ -25,17 +29,13 @@
          "description": "Saldo total em todas as contas",
          "title": "Saldo Total"
       },
-      "current-balance": {
-         "description": "Saldo calculado atual",
-         "title": "Saldo"
+      "total-expenses": {
+         "description": "Despesas totais",
+         "title": "Despesas"
       },
       "total-income": {
          "description": "Receita total",
          "title": "Receita"
-      },
-      "total-expenses": {
-         "description": "Despesas totais",
-         "title": "Despesas"
       }
    },
    "status": {

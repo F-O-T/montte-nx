@@ -37,7 +37,8 @@ export function TransactionItem({
    transaction,
    categories,
 }: TransactionItemProps) {
-   const transactionCategoryIds = transaction.categoryIds;
+   const transactionCategoryIds =
+      transaction.transactionCategories?.map((tc) => tc.category.id) || [];
 
    const primaryCategoryId = transactionCategoryIds[0];
    const categoryDetails = categories.find(
@@ -53,7 +54,7 @@ export function TransactionItem({
    const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
    return (
-      <Item>
+      <Item size="sm">
          <ItemMedia
             style={{
                backgroundColor: categoryColor,
@@ -62,15 +63,18 @@ export function TransactionItem({
          >
             <IconDisplay iconName={categoryIcon as IconName} size={16} />
          </ItemMedia>
-         <ItemContent>
+         <ItemContent className="min-w-0 flex-1 overflow-hidden">
             <ItemTitle className="truncate">
                {transaction.description}
             </ItemTitle>
             <ItemDescription>
-               {new Date(transaction.date).toLocaleDateString()}
+               {new Date(transaction.date).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "short",
+               })}
             </ItemDescription>
          </ItemContent>
-         <ItemActions>
+         <ItemActions className="ml-auto shrink-0">
             <Badge variant={isPositive ? "default" : "destructive"}>
                {isPositive ? "+" : "-"}
                {formattedAmount}
@@ -92,9 +96,13 @@ export function TransactionItem({
                      fallback={
                         <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
                      }
-                  ></Suspense>
-                  <ManageTransactionSheet asChild transaction={transaction} />
-                  <DeleteTransaction asChild transaction={transaction} />
+                  >
+                     <ManageTransactionSheet
+                        asChild
+                        transaction={transaction}
+                     />
+                     <DeleteTransaction asChild transaction={transaction} />
+                  </Suspense>
                </DropdownMenuContent>
             </DropdownMenu>
          </ItemActions>

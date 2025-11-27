@@ -5,8 +5,10 @@
       "sign-up": "Registre-se aqui"
    },
    "description": "Digite seus dados para acessar sua conta.",
-   "error-codes": {
-      "INVALID_EMAIL_OR_PASSWORD": "Email ou senha inválidos."
+   "messages": {
+      "google-requesting": "Redirecionando para o Google...",
+      "requesting": "Solicitando acesso à sua conta...",
+      "success": "Bem vindo ao Montte!"
    },
    "texts": {
       "no-account": "Não tem uma conta? ",
