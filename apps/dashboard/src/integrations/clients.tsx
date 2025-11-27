@@ -3,7 +3,11 @@ import type { AppRouter } from "@packages/api/server";
 import { createAuthClient } from "@packages/authentication/client";
 import { clientEnv } from "@packages/environment/client";
 import { getCurrentLanguage } from "@packages/localization";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+   MutationCache,
+   QueryClient,
+   QueryClientProvider,
+} from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
    createTRPCContext,
@@ -29,13 +33,22 @@ export const betterAuthClient = createAuthClient({
 });
 
 export function makeQueryClient() {
-   return new QueryClient({
+   const queryClient: QueryClient = new QueryClient({
       defaultOptions: {
          queries: {
             staleTime: 60 * 1000,
          },
       },
+      mutationCache: new MutationCache({
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               predicate: (query) =>
+                  query.meta?.skipGlobalInvalidation !== true,
+            });
+         },
+      }),
    });
+   return queryClient;
 }
 
 // Client-side singleton for QueryClient

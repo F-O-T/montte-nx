@@ -24,23 +24,8 @@ import {
    getNextDueDate,
 } from "@packages/utils/recurrence";
 import { z } from "zod";
+import { createBillSchema } from "../schemas/bill";
 import { protectedProcedure, router } from "../trpc";
-
-const createBillSchema = z.object({
-   amount: z.number(),
-   bankAccountId: z.string().optional(),
-   categoryId: z.string(),
-   counterparty: z.string().optional(),
-   description: z.string(),
-   dueDate: z.string(),
-   isRecurring: z.boolean().optional().default(false),
-   issueDate: z.string().optional(),
-   notes: z.string().optional(),
-   recurrencePattern: z
-      .enum(["monthly", "quarterly", "semiannual", "annual"])
-      .optional(),
-   type: z.enum(["income", "expense"]),
-});
 
 const updateBillSchema = z.object({
    amount: z.number().optional(),
@@ -137,6 +122,7 @@ export const billRouter = router({
          const firstBill = await createBill(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
+            description: input.description || "",
             dueDate: new Date(input.dueDate),
             id: crypto.randomUUID(),
             isRecurring: input.isRecurring ?? false,
@@ -163,7 +149,7 @@ export const billRouter = router({
                   bankAccountId: input.bankAccountId,
                   categoryId: input.categoryId,
                   counterparty: input.counterparty,
-                  description: input.description,
+                  description: input.description || "",
                   dueDate,
                   id: crypto.randomUUID(),
                   isRecurring: true,
