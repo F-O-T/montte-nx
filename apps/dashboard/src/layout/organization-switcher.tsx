@@ -119,6 +119,7 @@ function OrganizationDropdownContent({
       trpc.organization.getLogo.queryOptions(),
    );
 
+   const { activeOrganization } = useActiveOrganization();
    const queryClient = useQueryClient();
 
    const setActiveOrganization = useMutation(
@@ -133,14 +134,19 @@ function OrganizationDropdownContent({
       organizationId: string,
       organizationSlug: string,
    ) {
+      const isCurrentOrg = activeOrganization.slug === organizationSlug;
+
       await router.navigate({
          params: { slug: organizationSlug },
          to: "/$slug/home",
       });
       await queryClient.invalidateQueries();
-      setActiveOrganization.mutate({
-         organizationId,
-      });
+
+      if (!isCurrentOrg) {
+         setActiveOrganization.mutate({
+            organizationId,
+         });
+      }
    }
 
    return (
