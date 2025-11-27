@@ -44,6 +44,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Pencil, Plus, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
+import { z } from "zod";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
@@ -185,6 +186,27 @@ export function ManageTransactionSheet({
       !!transaction?.categorySplits?.length,
    );
 
+   const transactionSchema = z.object({
+      amount: z.number().min(1, translate("common.validation.required")),
+      bankAccountId: z.string().min(1, translate("common.validation.required")),
+      categoryIds: z.array(z.string()),
+      categorySplits: z
+         .array(
+            z.object({
+               categoryId: z.string(),
+               splitType: z.literal("amount"),
+               value: z.number(),
+            }),
+         )
+         .nullable(),
+      costCenterId: z.string(),
+      date: z.date({ message: translate("common.validation.required") }),
+      description: z.string().min(1, translate("common.validation.required")),
+      tagIds: z.array(z.string()),
+      toBankAccountId: z.string(),
+      type: z.enum(["expense", "income", "transfer"]),
+   });
+
    const form = useForm({
       defaultValues: {
          amount: transaction?.amount
@@ -276,6 +298,9 @@ export function ManageTransactionSheet({
                error,
             );
          }
+      },
+      validators: {
+         onBlur: transactionSchema,
       },
    });
 
@@ -404,6 +429,9 @@ export function ManageTransactionSheet({
                                                   )}
                                           </FieldLabel>
                                           <Select
+                                             onOpenChange={(open) => {
+                                                if (!open) field.handleBlur();
+                                             }}
                                              onValueChange={(value) =>
                                                 field.handleChange(value)
                                              }
