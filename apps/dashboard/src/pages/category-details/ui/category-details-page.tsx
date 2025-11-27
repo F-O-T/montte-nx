@@ -16,6 +16,7 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
+import { CategoryCharts } from "./category-charts";
 import { CategoryStats } from "./category-stats";
 import { CategoryTransactions } from "./category-transactions-section";
 
@@ -32,7 +33,7 @@ function CategoryContent() {
       return (
          <CategoryPageError
             error={new Error("Invalid category ID")}
-            resetErrorBoundary={() => {}}
+            resetErrorBoundary={() => { }}
          />
       );
    }
@@ -51,6 +52,10 @@ function CategoryContent() {
          />
          <CategoryStats categoryId={categoryId} />
          <CategoryTransactions categoryId={categoryId} />
+         <CategoryCharts
+            categoryColor={category.color}
+            categoryId={categoryId}
+         />
       </main>
    );
 }
