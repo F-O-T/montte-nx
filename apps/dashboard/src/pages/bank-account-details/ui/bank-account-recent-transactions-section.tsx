@@ -143,7 +143,9 @@ function RecentTransactionsContent({
    const parseOfxMutation = useMutation(
       trpc.bankAccounts.parseOfx.mutationOptions({
          onError: (error) => {
-            toast.error(error.message || "Falha ao importar arquivo OFX");
+            toast.error(error.message || "Falha ao importar arquivo OFX", {
+               id: "ofx-import",
+            });
             setIsImporting(false);
          },
          onSuccess: async (data) => {
@@ -153,7 +155,9 @@ function RecentTransactionsContent({
             await queryClient.invalidateQueries({
                queryKey: trpcClient.bankAccounts.getStats.queryKey(),
             });
-            toast.success(`${data.length} transacoes importadas com sucesso!`);
+            toast.success(`${data.length} transacoes importadas com sucesso!`, {
+               id: "ofx-import",
+            });
             setIsImporting(false);
          },
       }),
@@ -173,6 +177,7 @@ function RecentTransactionsContent({
       }
 
       setIsImporting(true);
+      toast.loading("Importando arquivo OFX...", { id: "ofx-import" });
 
       try {
          const content = await file.text();
