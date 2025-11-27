@@ -53,6 +53,7 @@
       "lint:fix": "biome check --write .",
       "postinstall": "bun simple-git-hooks",
       "release": "bumpp --commit --push --tag",
+      "publish": "bunx npm publish",
       "test": "bun test",
       "test:coverage": "bun test --coverage",
       "test:watch": "bun test --watch",
