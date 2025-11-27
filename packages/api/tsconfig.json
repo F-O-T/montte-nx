@@ -20,5 +20,28 @@
    "include": [
       "src",
       "__tests__/*.test.ts"
-   ]
+  ],
+  "references": [
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../posthog"
+    },
+    {
+      "path": "../ofx"
+    },
+    {
+      "path": "../localization"
+    },
+    {
+      "path": "../files"
+    },
+    {
+      "path": "../database"
+    },
+    {
+      "path": "../brasil-api"
+    }
+  ]
 }
