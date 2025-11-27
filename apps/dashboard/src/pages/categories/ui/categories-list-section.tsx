@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDate } from "@packages/utils/date";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -378,17 +379,12 @@ function CategoriesListContent() {
                                  <ItemContent>
                                     <ItemTitle>{category.name}</ItemTitle>
                                     <ItemDescription>
-                                       <div className="flex items-center gap-1">
-                                          <div
-                                             className="w-3 h-3 rounded-full border"
-                                             style={{
-                                                backgroundColor: category.color,
-                                             }}
-                                          />
-                                          <span className="text-xs text-muted-foreground">
-                                             {category.color}
-                                          </span>
-                                       </div>
+                                       <span className="text-xs text-muted-foreground">
+                                          {formatDate(
+                                             new Date(category.createdAt),
+                                             "DD/MM/YYYY",
+                                          )}
+                                       </span>
                                     </ItemDescription>
                                  </ItemContent>
                                  <ItemActions>
