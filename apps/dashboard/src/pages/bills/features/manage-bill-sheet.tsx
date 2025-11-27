@@ -56,7 +56,8 @@ import {
    Pencil,
    Plus,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
@@ -68,6 +69,24 @@ type ManageBillSheetProps = {
    bill?: Bill; // If provided, edit mode. If not, create mode
    asChild?: boolean;
 };
+
+const billSchema = z.object({
+   amount: z.number().positive("Valor deve ser maior que zero"),
+   bankAccountId: z.string().optional(),
+   category: z.string().min(1, "Categoria é obrigatória"),
+   counterparty: z.string().optional(),
+   description: z.string().min(1, "Descrição é obrigatória"),
+   dueDate: z.date(),
+   isRecurring: z.boolean(),
+   issueDate: z.date().optional(),
+   notes: z.string().optional(),
+   recurrencePattern: z
+      .enum(["monthly", "quarterly", "semiannual", "annual"])
+      .optional(),
+   type: z
+      .enum(["expense", "income"], { error: "Tipo é obrigatório" })
+      .optional(),
+});
 
 export function ManageBillSheet({
    onOpen,
@@ -122,28 +141,6 @@ export function ManageBillSheet({
       }),
    );
 
-   // Default values for create mode
-   const defaultValues = useMemo(
-      () => ({
-         amount: 0,
-         bankAccountId: undefined as string | undefined,
-         category: "",
-         counterparty: "",
-         description: "",
-         dueDate: new Date(),
-         isRecurring: false,
-         issueDate: undefined as Date | undefined,
-         notes: "",
-         recurrencePattern: undefined as RecurrencePattern | undefined,
-         type: (currentFilterType === "payable"
-            ? "expense"
-            : currentFilterType === "receivable"
-              ? "income"
-              : "expense") as "expense" | "income",
-      }),
-      [currentFilterType],
-   );
-
    // Values for edit mode - convert from Bill data
    const editValues = bill
       ? {
@@ -161,20 +158,28 @@ export function ManageBillSheet({
               | undefined,
            type: bill.type as "expense" | "income",
         }
-      : defaultValues;
+      : {
+           amount: 0,
+           bankAccountId: undefined as string | undefined,
+           category: "",
+           counterparty: "",
+           description: "",
+           dueDate: new Date(),
+           isRecurring: false,
+           issueDate: undefined as Date | undefined,
+           notes: "",
+           recurrencePattern: undefined as RecurrencePattern | undefined,
+           type: (currentFilterType === "payable"
+              ? "expense"
+              : currentFilterType === "receivable"
+                ? "income"
+                : "expense") as "expense" | "income",
+        };
 
    const form = useForm({
       defaultValues: editValues,
       onSubmit: async ({ value }) => {
          const amount = Number(value.amount);
-         if (
-            value.amount === undefined ||
-            amount <= 0 ||
-            !value.category ||
-            !value.description
-         ) {
-            return;
-         }
 
          try {
             if (isEditMode && bill) {
@@ -223,6 +228,9 @@ export function ManageBillSheet({
                error,
             );
          }
+      },
+      validators: {
+         onChange: billSchema as unknown as undefined,
       },
    });
 

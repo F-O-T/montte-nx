@@ -124,7 +124,7 @@
             "node-fetch": "^3.3.2"
          },
          "tanstack": {
-            "@tanstack/react-form": "^1.23.8",
+            "@tanstack/react-form": "1.26.0",
             "@tanstack/react-query": "^5.66.5",
             "@tanstack/react-query-devtools": "^5.66.5",
             "@tanstack/react-router": "^1.139.1",
@@ -156,7 +156,7 @@
             "tailwindcss": "^4.1.16"
          },
          "validation": {
-            "zod": "4.1.8"
+            "zod": "4.1.13"
          },
          "vite": {
             "@tailwindcss/vite": "^4.1.8",
