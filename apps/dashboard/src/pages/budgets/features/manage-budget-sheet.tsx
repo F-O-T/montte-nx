@@ -140,9 +140,7 @@ export function ManageBudgetSheet({
 
    const form = useForm({
       defaultValues: {
-         name: budget?.name || "",
          amount: budget?.amount ? centsToReais(Number(budget.amount)) : 0,
-         targetType: getInitialTargetType(),
          categoryId:
             budget?.target &&
             (budget.target as BudgetTarget).type === "category"
@@ -153,15 +151,12 @@ export function ManageBudgetSheet({
             (budget.target as BudgetTarget).type === "categories"
                ? (budget.target as { categoryIds: string[] }).categoryIds
                : [],
-         tagId:
-            budget?.target && (budget.target as BudgetTarget).type === "tag"
-               ? (budget.target as { tagId: string }).tagId
-               : "",
          costCenterId:
             budget?.target &&
             (budget.target as BudgetTarget).type === "cost_center"
                ? (budget.target as { costCenterId: string }).costCenterId
                : "",
+         name: budget?.name || "",
          periodType: (budget?.periodType || "monthly") as
             | "daily"
             | "weekly"
@@ -169,8 +164,29 @@ export function ManageBudgetSheet({
             | "quarterly"
             | "yearly"
             | "custom",
+         tagId:
+            budget?.target && (budget.target as BudgetTarget).type === "tag"
+               ? (budget.target as { tagId: string }).tagId
+               : "",
+         targetType: getInitialTargetType(),
       },
       onSubmit: async ({ value }) => {
+         if (value.targetType === "category" && !value.categoryId) {
+            return;
+         }
+         if (
+            value.targetType === "categories" &&
+            value.categoryIds.length === 0
+         ) {
+            return;
+         }
+         if (value.targetType === "tag" && !value.tagId) {
+            return;
+         }
+         if (value.targetType === "cost_center" && !value.costCenterId) {
+            return;
+         }
+
          let target: BudgetTarget;
 
          switch (value.targetType) {

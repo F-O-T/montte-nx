@@ -14,20 +14,20 @@ import { protectedProcedure, router } from "../trpc";
 
 const budgetTargetSchema = z.discriminatedUnion("type", [
    z.object({
+      categoryId: z.string().uuid(),
       type: z.literal("category"),
-      categoryId: z.string(),
    }),
    z.object({
+      categoryIds: z.array(z.string().uuid()).min(1),
       type: z.literal("categories"),
-      categoryIds: z.array(z.string()),
    }),
    z.object({
+      tagId: z.string().uuid(),
       type: z.literal("tag"),
-      tagId: z.string(),
    }),
    z.object({
+      costCenterId: z.string().uuid(),
       type: z.literal("cost_center"),
-      costCenterId: z.string(),
    }),
 ]);
 
