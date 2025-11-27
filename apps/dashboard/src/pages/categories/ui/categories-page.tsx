@@ -1,6 +1,7 @@
 import type { RouterOutput } from "@packages/api/client";
 import { DefaultHeader } from "@/default/default-header";
 import { CategoryListProvider } from "../features/category-list-context";
+import { CategoriesCharts } from "./categories-charts";
 import { CategoriesListSection } from "./categories-list-section";
 import { CategoriesStats } from "./categories-stats";
 export type Category =
@@ -16,6 +17,7 @@ export function CategoriesPage() {
             />
             <CategoriesStats />
             <CategoriesListSection />
+            <CategoriesCharts />
          </main>
       </CategoryListProvider>
    );

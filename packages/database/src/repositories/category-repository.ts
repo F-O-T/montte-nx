@@ -521,3 +521,281 @@ export async function findCategoriesByIds(
       );
    }
 }
+
+export interface CategoryBreakdown {
+   categoryId: string;
+   categoryName: string;
+   categoryColor: string;
+   income: number;
+   expenses: number;
+}
+
+export async function getCategoryBreakdown(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient.execute<{
+         categoryId: string;
+         categoryName: string;
+         categoryColor: string;
+         income: string;
+         expenses: string;
+      }>(sql`
+         SELECT
+            c.id as "categoryId",
+            c.name as "categoryName",
+            c.color as "categoryColor",
+            COALESCE(SUM(CASE WHEN t.type = 'income' THEN CAST(t.amount AS DECIMAL) ELSE 0 END), 0) as "income",
+            COALESCE(SUM(CASE WHEN t.type = 'expense' THEN CAST(t.amount AS DECIMAL) ELSE 0 END), 0) as "expenses"
+         FROM ${category} c
+         LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
+         LEFT JOIN ${transaction} t ON tc.transaction_id = t.id
+         WHERE c.organization_id = ${organizationId}
+         GROUP BY c.id, c.name, c.color
+         ORDER BY c.name ASC
+      `);
+
+      return result.rows.map((row) => ({
+         categoryId: row.categoryId,
+         categoryName: row.categoryName,
+         categoryColor: row.categoryColor,
+         income: parseFloat(row.income) || 0,
+         expenses: parseFloat(row.expenses) || 0,
+      }));
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category breakdown: ${(err as Error).message}`,
+      );
+   }
+}
+
+export interface CategoryMonthlyTrend {
+   month: string;
+   categories: {
+      categoryId: string;
+      categoryName: string;
+      categoryColor: string;
+      income: number;
+      expenses: number;
+   }[];
+}
+
+export async function getCategoryMonthlyTrend(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   months: number = 6,
+) {
+   try {
+      const result = await dbClient.execute<{
+         month: string;
+         categoryId: string;
+         categoryName: string;
+         categoryColor: string;
+         income: string;
+         expenses: string;
+      }>(sql`
+         SELECT
+            TO_CHAR(t.date, 'YYYY-MM') as "month",
+            c.id as "categoryId",
+            c.name as "categoryName",
+            c.color as "categoryColor",
+            COALESCE(SUM(CASE WHEN t.type = 'income' THEN CAST(t.amount AS DECIMAL) ELSE 0 END), 0) as "income",
+            COALESCE(SUM(CASE WHEN t.type = 'expense' THEN CAST(t.amount AS DECIMAL) ELSE 0 END), 0) as "expenses"
+         FROM ${category} c
+         LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
+         LEFT JOIN ${transaction} t ON tc.transaction_id = t.id
+         WHERE c.organization_id = ${organizationId}
+            AND t.date >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '${sql.raw(String(months - 1))} months'
+         GROUP BY TO_CHAR(t.date, 'YYYY-MM'), c.id, c.name, c.color
+         ORDER BY "month" ASC, c.name ASC
+      `);
+
+      const monthlyData = new Map<string, CategoryMonthlyTrend>();
+
+      for (const row of result.rows) {
+         if (!monthlyData.has(row.month)) {
+            monthlyData.set(row.month, {
+               month: row.month,
+               categories: [],
+            });
+         }
+
+         monthlyData.get(row.month)?.categories.push({
+            categoryId: row.categoryId,
+            categoryName: row.categoryName,
+            categoryColor: row.categoryColor,
+            income: parseFloat(row.income) || 0,
+            expenses: parseFloat(row.expenses) || 0,
+         });
+      }
+
+      return Array.from(monthlyData.values());
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category monthly trend: ${(err as Error).message}`,
+      );
+   }
+}
+
+export interface TopCategory {
+   categoryId: string;
+   categoryName: string;
+   categoryColor: string;
+   total: number;
+   transactionCount: number;
+}
+
+export async function getTopCategories(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   type: "income" | "expense" | "all" = "all",
+   limit: number = 5,
+) {
+   try {
+      const typeCondition =
+         type === "all"
+            ? sql`t.type IN ('income', 'expense')`
+            : sql`t.type = ${type}`;
+
+      const result = await dbClient.execute<{
+         categoryId: string;
+         categoryName: string;
+         categoryColor: string;
+         total: string;
+         transactionCount: string;
+      }>(sql`
+         SELECT
+            c.id as "categoryId",
+            c.name as "categoryName",
+            c.color as "categoryColor",
+            COALESCE(SUM(CAST(t.amount AS DECIMAL)), 0) as "total",
+            COUNT(t.id) as "transactionCount"
+         FROM ${category} c
+         LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
+         LEFT JOIN ${transaction} t ON tc.transaction_id = t.id AND ${typeCondition}
+         WHERE c.organization_id = ${organizationId}
+         GROUP BY c.id, c.name, c.color
+         HAVING COUNT(t.id) > 0
+         ORDER BY "total" DESC
+         LIMIT ${limit}
+      `);
+
+      return result.rows.map((row) => ({
+         categoryId: row.categoryId,
+         categoryName: row.categoryName,
+         categoryColor: row.categoryColor,
+         total: parseFloat(row.total) || 0,
+         transactionCount: parseInt(row.transactionCount, 10) || 0,
+      }));
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get top categories: ${(err as Error).message}`,
+      );
+   }
+}
+
+export interface CategoryTypeDistribution {
+   categoryId: string;
+   categoryName: string;
+   categoryColor: string;
+   incomeCount: number;
+   expenseCount: number;
+   incomeTotal: number;
+   expenseTotal: number;
+}
+
+export async function getCategoryTypeDistribution(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient.execute<{
+         categoryId: string;
+         categoryName: string;
+         categoryColor: string;
+         incomeCount: string;
+         expenseCount: string;
+         incomeTotal: string;
+         expenseTotal: string;
+      }>(sql`
+         SELECT
+            c.id as "categoryId",
+            c.name as "categoryName",
+            c.color as "categoryColor",
+            COUNT(CASE WHEN t.type = 'income' THEN 1 END) as "incomeCount",
+            COUNT(CASE WHEN t.type = 'expense' THEN 1 END) as "expenseCount",
+            COALESCE(SUM(CASE WHEN t.type = 'income' THEN CAST(t.amount AS DECIMAL) ELSE 0 END), 0) as "incomeTotal",
+            COALESCE(SUM(CASE WHEN t.type = 'expense' THEN CAST(t.amount AS DECIMAL) ELSE 0 END), 0) as "expenseTotal"
+         FROM ${category} c
+         LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
+         LEFT JOIN ${transaction} t ON tc.transaction_id = t.id
+         WHERE c.organization_id = ${organizationId}
+         GROUP BY c.id, c.name, c.color
+         HAVING COUNT(t.id) > 0
+         ORDER BY (COUNT(CASE WHEN t.type = 'income' THEN 1 END) + COUNT(CASE WHEN t.type = 'expense' THEN 1 END)) DESC
+      `);
+
+      return result.rows.map((row) => ({
+         categoryId: row.categoryId,
+         categoryName: row.categoryName,
+         categoryColor: row.categoryColor,
+         incomeCount: parseInt(row.incomeCount, 10) || 0,
+         expenseCount: parseInt(row.expenseCount, 10) || 0,
+         incomeTotal: parseFloat(row.incomeTotal) || 0,
+         expenseTotal: parseFloat(row.expenseTotal) || 0,
+      }));
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category type distribution: ${(err as Error).message}`,
+      );
+   }
+}
+
+export interface CategoryUsageFrequency {
+   categoryId: string;
+   categoryName: string;
+   categoryColor: string;
+   transactionCount: number;
+}
+
+export async function getCategoryUsageFrequency(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient.execute<{
+         categoryId: string;
+         categoryName: string;
+         categoryColor: string;
+         transactionCount: string;
+      }>(sql`
+         SELECT
+            c.id as "categoryId",
+            c.name as "categoryName",
+            c.color as "categoryColor",
+            COUNT(tc.transaction_id) as "transactionCount"
+         FROM ${category} c
+         LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
+         WHERE c.organization_id = ${organizationId}
+         GROUP BY c.id, c.name, c.color
+         ORDER BY "transactionCount" DESC
+      `);
+
+      return result.rows.map((row) => ({
+         categoryId: row.categoryId,
+         categoryName: row.categoryName,
+         categoryColor: row.categoryColor,
+         transactionCount: parseInt(row.transactionCount, 10) || 0,
+      }));
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category usage frequency: ${(err as Error).message}`,
+      );
+   }
+}
