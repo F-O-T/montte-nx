@@ -667,6 +667,7 @@ function BillsListContent({ type }: BillsListSectionProps) {
                </CardFooter>
             )}
          </Card>
+
          <BillFilterSheet categories={categories} />
 
          {/* Mobile Floating Action Button */}

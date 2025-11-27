@@ -1,6 +1,6 @@
 import { clientEnv } from "@packages/environment/client";
 import { NotFoundComponent } from "@/default/not-found";
-import { QueryProvider, trpc } from "@/integrations/clients";
+import { QueryProvider, useTRPC } from "@/integrations/clients";
 import { ThemeProvider } from "@/layout/theme-provider";
 import "@packages/localization";
 import { translate } from "@packages/localization";
@@ -60,8 +60,11 @@ function TelemetryAwarePostHogWrapper({
 }: {
    children: React.ReactNode;
 }) {
+   const trpc = useTRPC();
    const { data: hasConsent } = useSuspenseQuery(
-      trpc.session.getTelemetryConsent.queryOptions(),
+      trpc.session.getTelemetryConsent.queryOptions(undefined, {
+         meta: { skipGlobalInvalidation: true },
+      }),
    );
 
    return (
