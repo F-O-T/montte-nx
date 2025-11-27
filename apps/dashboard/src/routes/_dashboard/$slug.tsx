@@ -1,7 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { getQueryClient, trpc } from "@/integrations/clients";
-
-const RESERVED_SLUGS = ["home"];
+import { getQueryClient, reservedRoutes, trpc } from "@/integrations/clients";
 
 export const Route = createFileRoute("/_dashboard/$slug")({
    beforeLoad: async ({ params, location }) => {
@@ -11,7 +9,7 @@ export const Route = createFileRoute("/_dashboard/$slug")({
       );
       const firstSlug = organizations[0]?.slug;
 
-      const isReservedSlug = RESERVED_SLUGS.includes(params.slug);
+      const isReservedSlug = reservedRoutes.includes(params.slug);
 
       if (isReservedSlug && firstSlug) {
          throw redirect({

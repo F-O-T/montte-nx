@@ -19,12 +19,13 @@ import { useState } from "react";
 export const { TRPCProvider, useTRPC, useTRPCClient } =
    createTRPCContext<AppRouter>();
 
+export const reservedRoutes = ["auth", "home", "api"];
+
 function getOrganizationSlugFromUrl(): string | undefined {
    if (typeof window === "undefined") return undefined;
    const pathSegments = window.location.pathname.split("/").filter(Boolean);
    const firstSegment = pathSegments[0];
    if (!firstSegment) return undefined;
-   const reservedRoutes = ["auth", "home", "api"];
    if (reservedRoutes.includes(firstSegment)) return undefined;
    return firstSegment;
 }
