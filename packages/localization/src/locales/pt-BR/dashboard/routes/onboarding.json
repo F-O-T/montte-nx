@@ -72,6 +72,7 @@
       "title": "Escolha seu Contexto Financeiro"
    },
    "default-account-created": {
+      "add-additional-account": "Desejo criar uma conta adicional",
       "business": {
          "message": "A conta 'Caixa' foi criada automaticamente para você."
       },

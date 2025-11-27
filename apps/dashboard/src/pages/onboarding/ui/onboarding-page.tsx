@@ -30,7 +30,9 @@ import { useRouter } from "@tanstack/react-router";
 import {
    type FormEvent,
    useCallback,
+   useEffect,
    useMemo,
+   useRef,
    useState,
 } from "react";
 import { toast } from "sonner";
@@ -131,6 +133,10 @@ export function OnboardingPage() {
    const [selectedDefaultCategories, setSelectedDefaultCategories] = useState<
       DefaultCategoryKey[]
    >([]);
+   const [showOptionalBankAccount, setShowOptionalBankAccount] =
+      useState(false);
+
+   const shouldGoNextRef = useRef(false);
 
    const { data: organizations } = useQuery(
       trpc.organization.getOrganizations.queryOptions(),
@@ -149,23 +155,23 @@ export function OnboardingPage() {
          return [{ id: "context-selection" }] as const;
       }
 
-      if (context === "personal") {
-         return [
-            { id: "context-selection" },
-            { id: "default-account-created" },
-            { id: "optional-bank-account" },
-            { id: "category" },
-         ] as const;
-      }
+      const baseSteps =
+         context === "personal"
+            ? [{ id: "context-selection" }, { id: "default-account-created" }]
+            : [
+                 { id: "context-selection" },
+                 { id: "organization-setup" },
+                 { id: "default-account-created" },
+              ];
 
-      return [
-         { id: "context-selection" },
-         { id: "organization-setup" },
-         { id: "default-account-created" },
-         { id: "optional-bank-account" },
-         { id: "category" },
-      ] as const;
-   }, [context]);
+      const optionalStep = showOptionalBankAccount
+         ? [{ id: "optional-bank-account" }]
+         : [];
+
+      return [...baseSteps, ...optionalStep, { id: "category" }] as Array<{
+         id: string;
+      }>;
+   }, [context, showOptionalBankAccount]);
 
    const { Stepper } = useMemo(() => defineStepper(...steps), [steps]);
 
@@ -481,6 +487,21 @@ export function OnboardingPage() {
       return (
          <div className="space-y-4 text-center">
             <p className="text-muted-foreground">{translate(messageKey)}</p>
+            {!showOptionalBankAccount && (
+               <Button
+                  className="my-2"
+                  onClick={() => {
+                     shouldGoNextRef.current = true;
+                     setShowOptionalBankAccount(true);
+                  }}
+                  type="button"
+                  variant="outline"
+               >
+                  {translate(
+                     "dashboard.routes.onboarding.default-account-created.add-additional-account",
+                  )}
+               </Button>
+            )}
          </div>
       );
    }
@@ -689,6 +710,13 @@ export function OnboardingPage() {
       <Stepper.Provider>
          {({ methods }) => {
             const currentStepId = methods.current.id;
+
+            useEffect(() => {
+               if (shouldGoNextRef.current) {
+                  shouldGoNextRef.current = false;
+                  methods.next();
+               }
+            }, [methods, showOptionalBankAccount]);
 
             const handleNext = async () => {
                if (currentStepId === "context-selection" && context) {
