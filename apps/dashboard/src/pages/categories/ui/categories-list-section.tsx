@@ -2,6 +2,7 @@ import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardFooter,
@@ -54,9 +55,18 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Eye, Filter, Inbox, MoreVertical, Search, Trash2 } from "lucide-react";
+import {
+   Eye,
+   Filter,
+   Inbox,
+   MoreVertical,
+   Plus,
+   Search,
+   Trash2,
+} from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
@@ -71,15 +81,46 @@ import type { Category } from "../ui/categories-page";
 import { createCategoryColumns } from "./categories-table-columns";
 
 function CategoriesCardHeader() {
+   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
+
+   const isMobile = useIsMobile();
    return (
-      <CardHeader>
-         <CardTitle>
-            {translate("dashboard.routes.categories.list-section.title")}
-         </CardTitle>
-         <CardDescription>
-            {translate("dashboard.routes.categories.list-section.description")}
-         </CardDescription>
-      </CardHeader>
+      <>
+         <CardHeader>
+            <CardTitle>
+               {translate("dashboard.routes.categories.list-section.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate(
+                  "dashboard.routes.categories.list-section.description",
+               )}
+            </CardDescription>
+            {!isMobile && (
+               <CardAction>
+                  <Button
+                     onClick={() => setIsCategorySheetOpen(true)}
+                     size="sm"
+                  >
+                     <Plus className="size-4 mr-2" />
+                     {translate(
+                        "dashboard.routes.categories.actions-toolbar.actions.add-new",
+                     )}
+                  </Button>
+               </CardAction>
+            )}
+         </CardHeader>
+         <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
+            onClick={() => setIsCategorySheetOpen(true)}
+            size="icon"
+         >
+            <Plus className="size-6" />
+         </Button>
+         <ManageCategorySheet
+            onOpen={isCategorySheetOpen}
+            onOpenChange={setIsCategorySheetOpen}
+         />
+      </>
    );
 }
 
@@ -177,27 +218,27 @@ function CategoriesListSkeleton() {
       <Card>
          <CategoriesCardHeader />
          <CardContent>
-            <div className="flex items-center gap-3 pt-4">
-               <div className="relative flex-1 max-w-md">
-                  <Skeleton className="h-10 w-full" />
-               </div>
-               <Skeleton className="ml-auto h-10 w-10" />
-            </div>
-            <div className="space-y-4 mt-4">
-               {Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                     className="flex items-center space-x-4 p-4 border rounded-lg"
-                     key={`category-skeleton-${index + 1}`}
-                  >
-                     <Skeleton className="h-10 w-10 rounded-full" />
-                     <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                     </div>
-                     <Skeleton className="h-8 w-8" />
-                  </div>
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((_, index) => (
+                  <Fragment key={`category-skeleton-${index + 1}`}>
+                     <Item>
+                        <ItemMedia variant="icon">
+                           <div className="size-8 rounded-sm border group relative">
+                              <Skeleton className="size-8 rounded-sm" />
+                           </div>
+                        </ItemMedia>
+                        <ItemContent className="gap-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-48" />
+                        </ItemContent>
+                        <ItemActions>
+                           <Skeleton className="size-8" />
+                        </ItemActions>
+                     </Item>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
                ))}
-            </div>
+            </ItemGroup>
          </CardContent>
          <CardFooter>
             <Skeleton className="h-10 w-full" />
@@ -254,6 +295,7 @@ function CategoriesListContent() {
       setCurrentPage(1);
    };
 
+   const isMobile = useIsMobile();
    const hasActiveFilters = orderBy !== "name" || orderDirection !== "asc";
 
    return (
@@ -292,8 +334,8 @@ function CategoriesListContent() {
                   </Tooltip>
                </div>
 
-               <div className="block md:hidden">
-                  {categories.length === 0 && pagination.totalCount === 0 ? (
+               {isMobile ? (
+                  categories.length === 0 && pagination.totalCount === 0 ? (
                      <Empty>
                         <EmptyContent>
                            <EmptyMedia variant="icon">
@@ -361,35 +403,31 @@ function CategoriesListContent() {
                            </Fragment>
                         ))}
                      </ItemGroup>
-                  )}
-               </div>
-
-               <div className="hidden md:block">
-                  {categories.length === 0 && pagination.totalCount === 0 ? (
-                     <Empty>
-                        <EmptyContent>
-                           <EmptyMedia variant="icon">
-                              <Inbox className="size-6" />
-                           </EmptyMedia>
-                           <EmptyTitle>
-                              {translate(
-                                 "dashboard.routes.categories.list-section.state.empty.title",
-                              )}
-                           </EmptyTitle>
-                           <EmptyDescription>
-                              {translate(
-                                 "dashboard.routes.categories.list-section.state.empty.description",
-                              )}
-                           </EmptyDescription>
-                        </EmptyContent>
-                     </Empty>
-                  ) : (
-                     <DataTable
-                        columns={createCategoryColumns(activeOrganization.slug)}
-                        data={categories}
-                     />
-                  )}
-               </div>
+                  )
+               ) : categories.length === 0 && pagination.totalCount === 0 ? (
+                  <Empty>
+                     <EmptyContent>
+                        <EmptyMedia variant="icon">
+                           <Inbox className="size-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                           {translate(
+                              "dashboard.routes.categories.list-section.state.empty.title",
+                           )}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                           {translate(
+                              "dashboard.routes.categories.list-section.state.empty.description",
+                           )}
+                        </EmptyDescription>
+                     </EmptyContent>
+                  </Empty>
+               ) : (
+                  <DataTable
+                     columns={createCategoryColumns(activeOrganization.slug)}
+                     data={categories}
+                  />
+               )}
             </CardContent>
 
             {/* Pagination Mobile */}
@@ -523,6 +561,9 @@ function CategoriesListContent() {
                </CardFooter>
             )}
          </Card>
+
+         {/* Mobile Floating Action Button */}
+
          <CategoryFilterSheet
             isOpen={isFilterSheetOpen}
             onOpenChange={setIsFilterSheetOpen}
