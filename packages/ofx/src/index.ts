@@ -1,4 +1,5 @@
 import { getTransactions, parse } from "@f-o-t/ofx";
+import { AppError } from "@packages/utils/errors";
 
 interface OFXDateValue {
    raw: string;
@@ -35,8 +36,9 @@ export async function parseOfxContent(content: string) {
    const result = parse(content);
 
    if (!result.success) {
-      console.error("OFX parse error:", result.error);
-      throw new Error("Failed to parse OFX file");
+      throw AppError.validation("Failed to parse OFX file", {
+         cause: result.error,
+      });
    }
 
    const transactions = getTransactions(result.data) as Transaction[];

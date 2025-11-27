@@ -1,6 +1,7 @@
 {
    "dependencies": {
-      "@f-o-t/ofx": "workspace:*"
+      "@f-o-t/ofx": "workspace:*",
+      "@packages/utils": "workspace:*"
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
