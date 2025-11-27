@@ -200,6 +200,7 @@ function OrganizationDropdownContent({
                               to: "/$slug/organization",
                            });
                         }}
+                        organizationId={organization.id}
                         organizationSlug={organization.slug}
                      />
                   </Suspense>
@@ -211,10 +212,12 @@ function OrganizationDropdownContent({
 }
 
 function OrganizationTeamsList({
+   organizationId,
    organizationSlug,
    onCreateTeamClick,
    onViewDetailsClick,
 }: {
+   organizationId: string;
    organizationSlug: string;
    onCreateTeamClick: () => void;
    onViewDetailsClick: () => void;
@@ -223,7 +226,9 @@ function OrganizationTeamsList({
    const router = useRouter();
 
    const { data: teams } = useSuspenseQuery(
-      trpc.organization.listTeams.queryOptions(),
+      trpc.organization.listTeamsByOrganizationId.queryOptions({
+         organizationId,
+      }),
    );
 
    //TODO: checar necessidade de repetir o dropdown menu label

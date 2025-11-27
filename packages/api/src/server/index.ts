@@ -5,6 +5,7 @@ import type { PostHog } from "posthog-node";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
+import { budgetRouter } from "./routers/budgets";
 import { categoryRouter } from "./routers/categories";
 import { costCenterRouter } from "./routers/cost-centers";
 import { notificationRouter } from "./routers/notifications";
@@ -22,6 +23,7 @@ export const appRouter = router({
    bankAccounts: bankAccountRouter,
    bills: billRouter,
    brasilApi: brasilApiRouter,
+   budgets: budgetRouter,
    categories: categoryRouter,
    costCenters: costCenterRouter,
    notifications: notificationRouter,
