@@ -44,7 +44,6 @@ export async function parseOfxContent(content: string) {
    return transactions.map((trn) => {
       const amount = trn.TRNAMT;
       const date = trn.DTPOSTED.toDate();
-
       return {
          amount: Math.abs(amount),
          date,
