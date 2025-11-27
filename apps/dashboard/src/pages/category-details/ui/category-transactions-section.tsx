@@ -104,14 +104,10 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
 
    const trpc = useTRPC();
 
-   const { data: category } = useSuspenseQuery(
-      trpc.categories.getById.queryOptions({ id: categoryId }),
-   );
-
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions(
          {
-            category: category.name,
+            categoryId,
             limit: pageSize,
             page: currentPage,
          },
