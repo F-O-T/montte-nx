@@ -26,6 +26,7 @@ const createBankAccountSchema = z.object({
 const updateBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required").optional(),
    name: z.string().min(1, "Name is required").optional(),
+   status: z.enum(["active", "inactive"]).optional(),
    type: z.enum(["checking", "savings", "investment"]).optional(),
 });
 

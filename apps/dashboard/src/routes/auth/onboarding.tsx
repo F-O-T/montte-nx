@@ -26,8 +26,12 @@ import { Toggle } from "@packages/ui/components/toggle";
 import { createSlug } from "@packages/utils/text";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+   createFileRoute,
+   useNavigate,
+   useRouter,
+} from "@tanstack/react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
@@ -117,7 +121,15 @@ const organizationSchema = z.object({
       ),
 });
 
+type StepId =
+   | "context"
+   | "organization"
+   | "account-created"
+   | "additional-account"
+   | "categories";
+
 const searchSchema = z.object({
+   context: z.enum(["personal", "business"]).optional(),
    step: z
       .enum([
          "context",
@@ -128,7 +140,6 @@ const searchSchema = z.object({
       ])
       .optional()
       .default("context"),
-   context: z.enum(["personal", "business"]).optional(),
 });
 
 export const Route = createFileRoute("/auth/onboarding")({
@@ -143,7 +154,9 @@ function RouteComponent() {
    const navigate = useNavigate({ from: "/auth/onboarding" });
    const { step, context: urlContext } = Route.useSearch();
 
-   const [context, setContext] = useState<OnboardingContext>(urlContext || null);
+   const [context, setContext] = useState<OnboardingContext>(
+      urlContext || null,
+   );
    const [selectedDefaultCategories, setSelectedDefaultCategories] = useState<
       DefaultCategoryKey[]
    >([]);
@@ -319,11 +332,15 @@ function RouteComponent() {
          await createBankAccount.mutateAsync({
             bank: value.bank,
             name: value.bankAccountName,
-            nickname: value.nickname || undefined,
-            type: value.bankAccountType,
+            type: value.bankAccountType as
+               | "checking"
+               | "savings"
+               | "investment",
          });
 
-         navigate({ search: { step: "categories", context } });
+         navigate({
+            search: { context: context || undefined, step: "categories" },
+         });
          formApi.reset();
       },
       validators: {
@@ -368,25 +385,29 @@ function RouteComponent() {
             name: value.name,
             slug,
          });
-         navigate({ search: { step: "account-created", context: "business" } });
+         navigate({ search: { context: "business", step: "account-created" } });
       },
       validators: {
          onBlur: organizationSchema,
       },
    });
 
-   const handleContextSelection = async (selectedContext: "personal" | "business") => {
+   const handleContextSelection = async (
+      selectedContext: "personal" | "business",
+   ) => {
       setContext(selectedContext);
 
       if (selectedContext === "personal") {
          try {
             await createDefaultPersonalAccount.mutateAsync();
-            navigate({ search: { step: "account-created", context: "personal" } });
-         } catch (error) {
+            navigate({
+               search: { context: "personal", step: "account-created" },
+            });
+         } catch (_error) {
             // Error already handled in onError
          }
       } else {
-         navigate({ search: { step: "organization", context: "business" } });
+         navigate({ search: { context: "business", step: "organization" } });
       }
    };
 
@@ -409,9 +430,7 @@ function RouteComponent() {
                "dashboard.routes.onboarding.optional-bank-account.title",
             );
          case "categories":
-            return translate(
-               "dashboard.routes.onboarding.category.title",
-            );
+            return translate("dashboard.routes.onboarding.category.title");
          default:
             return "";
       }
@@ -451,9 +470,9 @@ function RouteComponent() {
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                      className="p-6 border-2 rounded-lg hover:border-primary transition-colors text-left"
+                     disabled={createDefaultPersonalAccount.isPending}
                      onClick={() => handleContextSelection("personal")}
                      type="button"
-                     disabled={createDefaultPersonalAccount.isPending}
                   >
                      <div className="flex items-center gap-3 mb-2">
                         {(() => {
@@ -522,7 +541,8 @@ function RouteComponent() {
                      <organizationForm.Field name="name">
                         {(field) => {
                            const isInvalid =
-                              field.state.meta.isTouched && !field.state.meta.isValid;
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel htmlFor={field.name}>
@@ -544,7 +564,9 @@ function RouteComponent() {
                                     value={field.state.value}
                                  />
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -554,7 +576,9 @@ function RouteComponent() {
 
                   <div className="flex justify-between">
                      <Button
-                        onClick={() => navigate({ search: { step: "context" } })}
+                        onClick={() =>
+                           navigate({ search: { step: "context" } })
+                        }
                         type="button"
                         variant="outline"
                      >
@@ -578,7 +602,7 @@ function RouteComponent() {
                </form>
             );
 
-         case "account-created":
+         case "account-created": {
             const messageKey =
                context === "personal"
                   ? "dashboard.routes.onboarding.default-account-created.personal.message"
@@ -587,11 +611,18 @@ function RouteComponent() {
             return (
                <>
                   <div className="text-center space-y-4">
-                     <p className="text-muted-foreground">{translate(messageKey)}</p>
+                     <p className="text-muted-foreground">
+                        {translate(messageKey)}
+                     </p>
                      <Button
                         className="my-2"
                         onClick={() => {
-                           navigate({ search: { step: "additional-account", context } });
+                           navigate({
+                              search: {
+                                 context: context || undefined,
+                                 step: "additional-account",
+                              },
+                           });
                         }}
                         type="button"
                         variant="outline"
@@ -606,7 +637,9 @@ function RouteComponent() {
                      <Button
                         onClick={() => {
                            if (context === "business") {
-                              navigate({ search: { step: "organization", context } });
+                              navigate({
+                                 search: { context, step: "organization" },
+                              });
                            } else {
                               navigate({ search: { step: "context" } });
                            }
@@ -617,7 +650,14 @@ function RouteComponent() {
                         {translate("common.actions.previous")}
                      </Button>
                      <Button
-                        onClick={() => navigate({ search: { step: "categories", context } })}
+                        onClick={() =>
+                           navigate({
+                              search: {
+                                 context: context || undefined,
+                                 step: "categories",
+                              },
+                           })
+                        }
                         type="button"
                      >
                         {translate("common.actions.next")}
@@ -625,6 +665,7 @@ function RouteComponent() {
                   </div>
                </>
             );
+         }
 
          case "additional-account":
             return (
@@ -639,7 +680,8 @@ function RouteComponent() {
                      <optionalBankAccountForm.Field name="bankAccountName">
                         {(field) => {
                            const isInvalid =
-                              field.state.meta.isTouched && !field.state.meta.isValid;
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel htmlFor={field.name}>
@@ -661,7 +703,9 @@ function RouteComponent() {
                                     value={field.state.value}
                                  />
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -673,7 +717,8 @@ function RouteComponent() {
                      <optionalBankAccountForm.Field name="bank">
                         {(field) => {
                            const isInvalid =
-                              field.state.meta.isTouched && !field.state.meta.isValid;
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
                            return (
                               <Field data-invalid={isInvalid}>
                                  <FieldLabel htmlFor={field.name}>
@@ -687,7 +732,9 @@ function RouteComponent() {
                                     value={field.state.value}
                                  />
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            );
@@ -705,7 +752,9 @@ function RouteComponent() {
                                  )}
                               </FieldLabel>
                               <Select
-                                 onValueChange={(value) => field.handleChange(value)}
+                                 onValueChange={(value) =>
+                                    field.handleChange(value)
+                                 }
                                  value={field.state.value}
                               >
                                  <SelectTrigger>
@@ -751,7 +800,9 @@ function RouteComponent() {
                                  id={field.name}
                                  name={field.name}
                                  onBlur={field.handleBlur}
-                                 onChange={(e) => field.handleChange(e.target.value)}
+                                 onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                 }
                                  placeholder={translate(
                                     "dashboard.routes.onboarding.optional-bank-account.form.nickname.placeholder",
                                  )}
@@ -764,7 +815,14 @@ function RouteComponent() {
 
                   <div className="flex justify-between gap-2">
                      <Button
-                        onClick={() => navigate({ search: { step: "account-created", context } })}
+                        onClick={() =>
+                           navigate({
+                              search: {
+                                 context: context || undefined,
+                                 step: "account-created",
+                              },
+                           })
+                        }
                         type="button"
                         variant="outline"
                      >
@@ -772,7 +830,14 @@ function RouteComponent() {
                      </Button>
                      <div className="flex gap-2">
                         <Button
-                           onClick={() => navigate({ search: { step: "categories", context } })}
+                           onClick={() =>
+                              navigate({
+                                 search: {
+                                    context: context || undefined,
+                                    step: "categories",
+                                 },
+                              })
+                           }
                            type="button"
                            variant="outline"
                         >
@@ -838,7 +903,9 @@ function RouteComponent() {
                                                 : [...prev, key];
                                           }
 
-                                          return prev.filter((item) => item !== key);
+                                          return prev.filter(
+                                             (item) => item !== key,
+                                          );
                                        });
                                     }}
                                     pressed={isSelected}
@@ -868,16 +935,20 @@ function RouteComponent() {
 
                   <div className="flex justify-between">
                      <Button
-                        onClick={() => navigate({ search: { step: "account-created", context } })}
+                        onClick={() =>
+                           navigate({
+                              search: {
+                                 context: context || undefined,
+                                 step: "account-created",
+                              },
+                           })
+                        }
                         type="button"
                         variant="outline"
                      >
                         {translate("common.actions.previous")}
                      </Button>
-                     <Button
-                        disabled={createCategory.isPending}
-                        type="submit"
-                     >
+                     <Button disabled={createCategory.isPending} type="submit">
                         {translate("common.actions.submit")}
                      </Button>
                   </div>
@@ -890,6 +961,30 @@ function RouteComponent() {
    };
 
    const currentStepIndex = steps.findIndex((s) => s.id === step);
+   const stepperMethodsRef = useRef<
+      | {
+           current: { id: string };
+           goTo: (id: string) => void;
+        }
+      | undefined
+   >(undefined);
+
+   useEffect(() => {
+      if (currentStepIndex !== -1 && stepperMethodsRef.current) {
+         const currentStep = steps[currentStepIndex];
+         if (
+            currentStep &&
+            stepperMethodsRef.current.current.id !== currentStep.id
+         ) {
+            try {
+               stepperMethodsRef.current.goTo(currentStep.id);
+            } catch (e) {
+               // Silently fail if step doesn't exist
+               console.warn("Failed to navigate to step:", currentStep.id, e);
+            }
+         }
+      }
+   }, [currentStepIndex, steps]);
 
    return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -902,27 +997,32 @@ function RouteComponent() {
                <CardContent className="space-y-4">
                   <Stepper.Provider>
                      {({ methods }) => {
-                        // Set current step on mount and when step changes
-                        useEffect(() => {
-                           if (currentStepIndex !== -1) {
-                              const currentStep = steps[currentStepIndex];
-                              if (currentStep && methods.current.id !== currentStep.id) {
-                                 try {
-                                    methods.goTo(currentStep.id);
-                                 } catch (e) {
-                                    // Silently fail if step doesn't exist
-                                    console.warn('Failed to navigate to step:', currentStep.id, e);
-                                 }
-                              }
-                           }
-                        }, [currentStepIndex, methods]);
+                        stepperMethodsRef.current = methods as {
+                           current: { id: string };
+                           goTo: (id: string) => void;
+                        };
 
                         const handleStepClick = (stepId: string) => {
-                           const clickedIndex = steps.findIndex((s) => s.id === stepId);
+                           const clickedIndex = steps.findIndex(
+                              (s) => s.id === stepId,
+                           );
 
                            // Only allow navigation to visited steps or current step
-                           if (clickedIndex !== -1 && clickedIndex <= currentStepIndex) {
-                              navigate({ search: { step: stepId as any, context } });
+                           if (
+                              clickedIndex !== -1 &&
+                              clickedIndex <= currentStepIndex &&
+                              (stepId === "context" ||
+                                 stepId === "organization" ||
+                                 stepId === "account-created" ||
+                                 stepId === "additional-account" ||
+                                 stepId === "categories")
+                           ) {
+                              navigate({
+                                 search: {
+                                    context: context || undefined,
+                                    step: stepId as StepId,
+                                 },
+                              });
                            }
                         };
 
@@ -931,14 +1031,14 @@ function RouteComponent() {
                               <Stepper.Navigation>
                                  {steps.map((s, index) => (
                                     <Stepper.Step
-                                       key={s.id}
-                                       of={s.id}
-                                       onClick={() => handleStepClick(s.id)}
                                        className={
                                           index <= currentStepIndex
                                              ? "cursor-pointer hover:opacity-80 transition-opacity"
                                              : "cursor-not-allowed opacity-50"
                                        }
+                                       key={s.id}
+                                       of={s.id}
+                                       onClick={() => handleStepClick(s.id)}
                                     />
                                  ))}
                               </Stepper.Navigation>
