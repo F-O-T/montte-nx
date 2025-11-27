@@ -1,4 +1,3 @@
-import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -34,7 +33,7 @@ function BankAccountContent() {
       return (
          <BankAccountPageError
             error={new Error("Invalid bank account ID")}
-            resetErrorBoundary={() => {}}
+            resetErrorBoundary={() => { }}
          />
       );
    }
@@ -46,9 +45,7 @@ function BankAccountContent() {
    return (
       <main className="space-y-4">
          <DefaultHeader
-            description={translate(
-               "dashboard.routes.bank-accounts.list-section.description",
-            )}
+            description={"Detalhes da sua conta bancaria"}
             title={bankAccount.name || "Conta Bancaria"}
          />
          <BankAccountStats bankAccountId={bankAccountId} />
