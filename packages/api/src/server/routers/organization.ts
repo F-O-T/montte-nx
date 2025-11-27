@@ -243,6 +243,26 @@ export const organizationRouter = router({
       }
    }),
 
+   listTeamsByOrganizationId: protectedProcedure
+      .input(z.object({ organizationId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         try {
+            const teams = await resolvedCtx.auth.api.listOrganizationTeams({
+               headers: resolvedCtx.headers,
+               query: {
+                  organizationId: input.organizationId,
+               },
+            });
+
+            return teams;
+         } catch (error) {
+            console.error("Failed to list teams:", error);
+            propagateError(error);
+            throw APIError.internal("Failed to retrieve teams");
+         }
+      }),
+
    setActiveOrganization: protectedProcedure
       .input(
          z.object({

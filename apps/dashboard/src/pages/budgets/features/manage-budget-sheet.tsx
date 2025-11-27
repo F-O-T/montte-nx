@@ -1,0 +1,634 @@
+import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
+import {
+   Field,
+   FieldError,
+   FieldGroup,
+   FieldLabel,
+} from "@packages/ui/components/field";
+import { Input } from "@packages/ui/components/input";
+import { MoneyInput } from "@packages/ui/components/money-input";
+import { MultiSelect } from "@packages/ui/components/multi-select";
+import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "@packages/ui/components/select";
+import {
+   Sheet,
+   SheetContent,
+   SheetDescription,
+   SheetFooter,
+   SheetHeader,
+   SheetTitle,
+   SheetTrigger,
+} from "@packages/ui/components/sheet";
+import { centsToReais, reaisToCents } from "@packages/utils/money";
+import { useForm } from "@tanstack/react-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { trpc } from "@/integrations/clients";
+import type { Budget } from "../ui/budgets-page";
+
+type ManageBudgetSheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   budget?: Budget;
+   asChild?: boolean;
+};
+
+type BudgetTarget =
+   | { type: "category"; categoryId: string }
+   | { type: "categories"; categoryIds: string[] }
+   | { type: "tag"; tagId: string }
+   | { type: "cost_center"; costCenterId: string };
+
+export function ManageBudgetSheet({
+   onOpen,
+   onOpenChange,
+   budget,
+   asChild = false,
+}: ManageBudgetSheetProps) {
+   const queryClient = useQueryClient();
+   const isEditMode = !!budget;
+
+   const modeTexts = useMemo(() => {
+      const createTexts = {
+         description: translate(
+            "dashboard.routes.budgets.features.create-budget.description",
+         ),
+         title: translate(
+            "dashboard.routes.budgets.features.create-budget.title",
+         ),
+      };
+
+      const editTexts = {
+         description: translate(
+            "dashboard.routes.budgets.features.edit-budget.description",
+            { name: budget?.name || "" },
+         ),
+         title: translate(
+            "dashboard.routes.budgets.features.edit-budget.title",
+         ),
+      };
+
+      return isEditMode ? editTexts : createTexts;
+   }, [isEditMode, budget?.name]);
+
+   const [internalOpen, setInternalOpen] = useState(false);
+   const isOpen = asChild ? internalOpen : onOpen;
+   const setIsOpen = asChild ? setInternalOpen : onOpenChange;
+
+   const { data: categories = [] } = useQuery(
+      trpc.categories.getAll.queryOptions(),
+   );
+
+   const { data: tags = [] } = useQuery(trpc.tags.getAll.queryOptions());
+
+   const { data: costCenters = [] } = useQuery(
+      trpc.costCenters.getAll.queryOptions(),
+   );
+
+   const createBudgetMutation = useMutation(
+      trpc.budgets.create.mutationOptions({
+         onSuccess: async () => {
+            await Promise.all([
+               queryClient.invalidateQueries({
+                  queryKey: trpc.budgets.getAllPaginated.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.budgets.getStats.queryKey(),
+               }),
+            ]);
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
+   const updateBudgetMutation = useMutation(
+      trpc.budgets.update.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to update budget:", error);
+         },
+         onSuccess: async () => {
+            await Promise.all([
+               queryClient.invalidateQueries({
+                  queryKey: trpc.budgets.getAllPaginated.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.budgets.getStats.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.budgets.getById.queryKey(),
+               }),
+            ]);
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
+   const getInitialTargetType = (): string => {
+      if (budget?.target) {
+         return (budget.target as BudgetTarget).type;
+      }
+      return "category";
+   };
+
+   const form = useForm({
+      defaultValues: {
+         name: budget?.name || "",
+         amount: budget?.amount ? centsToReais(Number(budget.amount)) : 0,
+         targetType: getInitialTargetType(),
+         categoryId:
+            budget?.target &&
+            (budget.target as BudgetTarget).type === "category"
+               ? (budget.target as { categoryId: string }).categoryId
+               : "",
+         categoryIds:
+            budget?.target &&
+            (budget.target as BudgetTarget).type === "categories"
+               ? (budget.target as { categoryIds: string[] }).categoryIds
+               : [],
+         tagId:
+            budget?.target && (budget.target as BudgetTarget).type === "tag"
+               ? (budget.target as { tagId: string }).tagId
+               : "",
+         costCenterId:
+            budget?.target &&
+            (budget.target as BudgetTarget).type === "cost_center"
+               ? (budget.target as { costCenterId: string }).costCenterId
+               : "",
+         periodType: (budget?.periodType || "monthly") as
+            | "daily"
+            | "weekly"
+            | "monthly"
+            | "quarterly"
+            | "yearly"
+            | "custom",
+      },
+      onSubmit: async ({ value }) => {
+         let target: BudgetTarget;
+
+         switch (value.targetType) {
+            case "category":
+               target = { type: "category", categoryId: value.categoryId };
+               break;
+            case "categories":
+               target = { type: "categories", categoryIds: value.categoryIds };
+               break;
+            case "tag":
+               target = { type: "tag", tagId: value.tagId };
+               break;
+            case "cost_center":
+               target = {
+                  type: "cost_center",
+                  costCenterId: value.costCenterId,
+               };
+               break;
+            default:
+               target = { type: "category", categoryId: value.categoryId };
+         }
+
+         const budgetData = {
+            name: value.name,
+            amount: String(reaisToCents(value.amount)),
+            target,
+            periodType: value.periodType,
+         };
+
+         try {
+            if (isEditMode && budget) {
+               await updateBudgetMutation.mutateAsync({
+                  data: budgetData,
+                  id: budget.id,
+               });
+            } else {
+               await createBudgetMutation.mutateAsync(budgetData);
+            }
+         } catch (error) {
+            console.error(
+               `Failed to ${isEditMode ? "update" : "create"} budget:`,
+               error,
+            );
+         }
+      },
+   });
+
+   const TriggerComponent = (
+      <DropdownMenuItem
+         className="flex items-center gap-2"
+         onSelect={(e) => {
+            e.preventDefault();
+            setIsOpen?.(true);
+         }}
+      >
+         {isEditMode ? (
+            <>
+               <Pencil className="size-4" />
+               {translate(
+                  "dashboard.routes.budgets.list-section.actions.edit-budget",
+               )}
+            </>
+         ) : (
+            <>
+               <Plus className="size-4" />
+               {translate(
+                  "dashboard.routes.budgets.actions-toolbar.actions.add-new",
+               )}
+            </>
+         )}
+      </DropdownMenuItem>
+   );
+
+   const periodOptions = [
+      {
+         label: translate("dashboard.routes.budgets.form.period.daily"),
+         value: "daily",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.period.weekly"),
+         value: "weekly",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.period.monthly"),
+         value: "monthly",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.period.quarterly"),
+         value: "quarterly",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.period.yearly"),
+         value: "yearly",
+      },
+   ];
+
+   const targetTypeOptions = [
+      {
+         label: translate("dashboard.routes.budgets.form.target.category"),
+         value: "category",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.target.categories"),
+         value: "categories",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.target.tag"),
+         value: "tag",
+      },
+      {
+         label: translate("dashboard.routes.budgets.form.target.cost_center"),
+         value: "cost_center",
+      },
+   ];
+
+   return (
+      <Sheet onOpenChange={setIsOpen} open={isOpen}>
+         {asChild && <SheetTrigger asChild>{TriggerComponent}</SheetTrigger>}
+         <SheetContent>
+            <form
+               className="h-full flex flex-col"
+               onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+               }}
+            >
+               <SheetHeader>
+                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetDescription>{modeTexts.description}</SheetDescription>
+               </SheetHeader>
+               <div className="grid gap-4 px-4 pb-4">
+                  <FieldGroup>
+                     <form.Field name="name">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.budgets.form.name.label",
+                                    )}
+                                 </FieldLabel>
+                                 <Input
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.budgets.form.name.placeholder",
+                                    )}
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="amount">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.budgets.form.amount.label",
+                                    )}
+                                 </FieldLabel>
+                                 <MoneyInput
+                                    onBlur={field.handleBlur}
+                                    onChange={(value) =>
+                                       field.handleChange(value ?? 0)
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.budgets.form.amount.placeholder",
+                                    )}
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="periodType">
+                        {(field) => (
+                           <Field>
+                              <FieldLabel>
+                                 {translate(
+                                    "dashboard.routes.budgets.form.period.label",
+                                 )}
+                              </FieldLabel>
+                              <Select
+                                 onValueChange={(value) =>
+                                    field.handleChange(
+                                       value as
+                                          | "daily"
+                                          | "weekly"
+                                          | "monthly"
+                                          | "quarterly"
+                                          | "yearly"
+                                          | "custom",
+                                    )
+                                 }
+                                 value={field.state.value}
+                              >
+                                 <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    {periodOptions.map((option) => (
+                                       <SelectItem
+                                          key={option.value}
+                                          value={option.value}
+                                       >
+                                          {option.label}
+                                       </SelectItem>
+                                    ))}
+                                 </SelectContent>
+                              </Select>
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="targetType">
+                        {(field) => (
+                           <Field>
+                              <FieldLabel>
+                                 {translate(
+                                    "dashboard.routes.budgets.form.target.label",
+                                 )}
+                              </FieldLabel>
+                              <Select
+                                 onValueChange={(value) =>
+                                    field.handleChange(value)
+                                 }
+                                 value={field.state.value}
+                              >
+                                 <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    {targetTypeOptions.map((option) => (
+                                       <SelectItem
+                                          key={option.value}
+                                          value={option.value}
+                                       >
+                                          {option.label}
+                                       </SelectItem>
+                                    ))}
+                                 </SelectContent>
+                              </Select>
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <form.Subscribe selector={(state) => state.values.targetType}>
+                     {(targetType) => (
+                        <>
+                           {targetType === "category" && (
+                              <FieldGroup>
+                                 <form.Field name="categoryId">
+                                    {(field) => (
+                                       <Field>
+                                          <FieldLabel>
+                                             {translate(
+                                                "common.form.category.label",
+                                             )}
+                                          </FieldLabel>
+                                          <Select
+                                             onValueChange={(value) =>
+                                                field.handleChange(value)
+                                             }
+                                             value={field.state.value}
+                                          >
+                                             <SelectTrigger className="w-full">
+                                                <SelectValue
+                                                   placeholder={translate(
+                                                      "common.form.category.placeholder",
+                                                   )}
+                                                />
+                                             </SelectTrigger>
+                                             <SelectContent>
+                                                {categories.map((cat) => (
+                                                   <SelectItem
+                                                      key={cat.id}
+                                                      value={cat.id}
+                                                   >
+                                                      {cat.name}
+                                                   </SelectItem>
+                                                ))}
+                                             </SelectContent>
+                                          </Select>
+                                       </Field>
+                                    )}
+                                 </form.Field>
+                              </FieldGroup>
+                           )}
+
+                           {targetType === "categories" && (
+                              <FieldGroup>
+                                 <form.Field name="categoryIds">
+                                    {(field) => (
+                                       <Field>
+                                          <FieldLabel>
+                                             {translate(
+                                                "common.form.category.label",
+                                             )}
+                                          </FieldLabel>
+                                          <MultiSelect
+                                             onChange={(selected) =>
+                                                field.handleChange(selected)
+                                             }
+                                             options={categories.map((cat) => ({
+                                                label: cat.name,
+                                                value: cat.id,
+                                             }))}
+                                             placeholder={translate(
+                                                "common.form.category.placeholder",
+                                             )}
+                                             selected={field.state.value}
+                                          />
+                                       </Field>
+                                    )}
+                                 </form.Field>
+                              </FieldGroup>
+                           )}
+
+                           {targetType === "tag" && (
+                              <FieldGroup>
+                                 <form.Field name="tagId">
+                                    {(field) => (
+                                       <Field>
+                                          <FieldLabel>
+                                             {translate(
+                                                "common.form.tags.label",
+                                             )}
+                                          </FieldLabel>
+                                          <Select
+                                             onValueChange={(value) =>
+                                                field.handleChange(value)
+                                             }
+                                             value={field.state.value}
+                                          >
+                                             <SelectTrigger className="w-full">
+                                                <SelectValue
+                                                   placeholder={translate(
+                                                      "common.form.tags.placeholder",
+                                                   )}
+                                                />
+                                             </SelectTrigger>
+                                             <SelectContent>
+                                                {tags.map((tag) => (
+                                                   <SelectItem
+                                                      key={tag.id}
+                                                      value={tag.id}
+                                                   >
+                                                      {tag.name}
+                                                   </SelectItem>
+                                                ))}
+                                             </SelectContent>
+                                          </Select>
+                                       </Field>
+                                    )}
+                                 </form.Field>
+                              </FieldGroup>
+                           )}
+
+                           {targetType === "cost_center" && (
+                              <FieldGroup>
+                                 <form.Field name="costCenterId">
+                                    {(field) => (
+                                       <Field>
+                                          <FieldLabel>
+                                             {translate(
+                                                "common.form.cost-center.label",
+                                             )}
+                                          </FieldLabel>
+                                          <Select
+                                             onValueChange={(value) =>
+                                                field.handleChange(value)
+                                             }
+                                             value={field.state.value}
+                                          >
+                                             <SelectTrigger className="w-full">
+                                                <SelectValue
+                                                   placeholder={translate(
+                                                      "common.form.cost-center.placeholder",
+                                                   )}
+                                                />
+                                             </SelectTrigger>
+                                             <SelectContent>
+                                                {costCenters.map((cc) => (
+                                                   <SelectItem
+                                                      key={cc.id}
+                                                      value={cc.id}
+                                                   >
+                                                      {cc.name}
+                                                   </SelectItem>
+                                                ))}
+                                             </SelectContent>
+                                          </Select>
+                                       </Field>
+                                    )}
+                                 </form.Field>
+                              </FieldGroup>
+                           )}
+                        </>
+                     )}
+                  </form.Subscribe>
+               </div>
+
+               <SheetFooter>
+                  <form.Subscribe>
+                     {(state) => (
+                        <Button
+                           className="w-full"
+                           disabled={
+                              !state.canSubmit ||
+                              state.isSubmitting ||
+                              createBudgetMutation.isPending ||
+                              updateBudgetMutation.isPending
+                           }
+                           type="submit"
+                        >
+                           {isEditMode
+                              ? translate(
+                                   "dashboard.routes.budgets.features.edit-budget.title",
+                                )
+                              : translate(
+                                   "dashboard.routes.budgets.features.create-budget.title",
+                                )}
+                        </Button>
+                     )}
+                  </form.Subscribe>
+               </SheetFooter>
+            </form>
+         </SheetContent>
+      </Sheet>
+   );
+}

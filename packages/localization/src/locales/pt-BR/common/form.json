@@ -6,6 +6,9 @@
    "advanced-options": {
       "label": "Opções Avançadas"
    },
+   "all": {
+      "label": "Todos"
+   },
    "amount": {
       "label": "Valor",
       "placeholder": "Digite o valor"

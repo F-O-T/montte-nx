@@ -19,6 +19,7 @@ import {
    Landmark,
    Tag,
    TrendingUp,
+   Wallet,
 } from "lucide-react";
 import { useState } from "react";
 import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
@@ -70,6 +71,12 @@ export function NavMain() {
          id: "reports",
          title: translate("dashboard.layout.nav-main.finance.reports"),
          url: "/$slug/reports",
+      },
+      {
+         icon: Wallet,
+         id: "budgets",
+         title: translate("dashboard.layout.nav-main.finance.budgets"),
+         url: "/$slug/budgets",
       },
    ];
 

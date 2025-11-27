@@ -9,6 +9,7 @@ import commonValidationPtBr from "./common/validation.json";
 import layoutPtBr from "./dashboard/layout.json";
 import bankAccountsPtBr from "./dashboard/routes/bank-accounts.json";
 import billsPtBr from "./dashboard/routes/bills.json";
+import budgetsPtBr from "./dashboard/routes/budgets.json";
 import categoriesPtBr from "./dashboard/routes/categories.json";
 import costCentersPtBr from "./dashboard/routes/cost-centers.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
@@ -41,6 +42,7 @@ const resources = {
          routes: {
             "bank-accounts": bankAccountsPtBr,
             bills: billsPtBr,
+            budgets: budgetsPtBr,
             categories: categoriesPtBr,
             "cost-centers": costCentersPtBr,
             "email-verification": emailVerificationPtBr,

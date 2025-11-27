@@ -1,6 +1,7 @@
 {
    "breadcrumbs": {
       "bills": "Contas a Pagar",
+      "budgets": "Orçamentos",
       "categories": "Categorias",
       "cost-centers": "Centros de Custo",
       "profile": "Perfil",
@@ -19,6 +20,7 @@
          "title": "Categorização"
       },
       "finance": {
+         "budgets": "Orçamentos",
          "categories": "Categorias",
          "overview": "Fluxo de caixa",
          "payables": "Contas a pagar",
