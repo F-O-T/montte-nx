@@ -406,7 +406,7 @@ function CategoryMonthlyTrendChart() {
 
       const data = monthlyTrend.map((month) => {
          const monthData: Record<string, string | number> = {
-            month: new Date(month.month + "-01").toLocaleDateString("pt-BR", {
+            month: new Date(`${month.month}-01`).toLocaleDateString("pt-BR", {
                month: "short",
             }),
          };
