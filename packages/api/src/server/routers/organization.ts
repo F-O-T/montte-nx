@@ -28,7 +28,7 @@ export const organizationRouter = router({
          const resolvedCtx = await ctx;
 
          if (!input.slug || input.slug.trim().length === 0) {
-            throw APIError.badRequest(
+            throw APIError.validation(
                "Organization slug cannot be empty. Please provide a valid organization name.",
             );
          }
