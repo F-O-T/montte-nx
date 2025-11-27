@@ -74,6 +74,7 @@ const paginationSchema = z.object({
 
 async function checkBudgetAndNotify(
    db: DatabaseInstance,
+   organizationId: string,
    userId: string,
    categoryIds: string[],
 ): Promise<Notification[]> {
@@ -83,7 +84,7 @@ async function checkBudgetAndNotify(
       if (!category || !category.budget || Number(category.budget) === 0)
          continue;
 
-      const spent = await getCategorySpending(db, userId, categoryId);
+      const spent = await getCategorySpending(db, organizationId, categoryId);
       const budget = Number(category.budget);
 
       if (spent >= budget) {
@@ -167,6 +168,7 @@ export const transactionRouter = router({
          if (input.type === "expense" && input.categoryIds) {
             notifications = await checkBudgetAndNotify(
                resolvedCtx.db,
+               organizationId,
                resolvedCtx.userId,
                input.categoryIds,
             );
@@ -419,6 +421,7 @@ export const transactionRouter = router({
          if (updatedTransaction.type === "expense" && input.data.categoryIds) {
             notifications = await checkBudgetAndNotify(
                resolvedCtx.db,
+               organizationId,
                resolvedCtx.userId,
                input.data.categoryIds,
             );

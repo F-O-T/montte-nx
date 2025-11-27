@@ -524,7 +524,7 @@ export async function findCategoriesByIds(
 
 export async function getCategorySpending(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    categoryId: string,
 ) {
    try {
@@ -549,6 +549,7 @@ export async function getCategorySpending(
          )
          .where(
             and(
+               eq(transaction.organizationId, organizationId),
                eq(transactionCategory.categoryId, categoryId),
                eq(transaction.type, "expense"),
                gte(transaction.date, currentMonthStart),
@@ -559,9 +560,7 @@ export async function getCategorySpending(
       let total = 0;
 
       for (const tx of transactions) {
-         const splits = tx.categorySplits as
-            | { categoryId: string; value: number; splitType: string }[]
-            | null;
+         const splits = tx.categorySplits;
 
          if (splits && splits.length > 0) {
             const split = splits.find((s) => s.categoryId === categoryId);

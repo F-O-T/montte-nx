@@ -8,6 +8,7 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -60,21 +61,8 @@ function StatsContent({ transactionId }: { transactionId: string }) {
       data.type === "income" || (data.type === "transfer" && amount > 0);
    const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
-   const createdAt = new Date(data.createdAt).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      month: "short",
-      year: "numeric",
-   });
-
-   const updatedAt = new Date(data.updatedAt).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      month: "short",
-      year: "numeric",
-   });
+   const createdAt = formatDate(new Date(data.createdAt), "DD/MM/YYYY");
+   const updatedAt = formatDate(new Date(data.updatedAt), "DD/MM/YYYY");
 
    const stats = [
       {
