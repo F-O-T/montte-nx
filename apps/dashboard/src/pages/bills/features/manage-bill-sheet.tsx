@@ -83,16 +83,6 @@ export function ManageBillSheet({
    const createBillMutation = useMutation(
       trpc.bills.create.mutationOptions({
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.bills.getAll.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.bills.getStats.queryKey(),
-            });
-
-            await queryClient.invalidateQueries({
-               queryKey: trpc.bills.getAllPaginated.queryKey(),
-            });
             form.reset();
             onOpenChange?.(false);
          },
