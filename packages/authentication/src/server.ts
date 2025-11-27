@@ -1,3 +1,4 @@
+import { stripe } from "@better-auth/stripe";
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    createDefaultOrganization,
@@ -5,6 +6,7 @@ import {
 } from "@packages/database/repositories/auth-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
+import type { StripeClient } from "@packages/stripe";
 import {
    type ResendClient,
    type SendEmailOTPOptions,
@@ -21,16 +23,19 @@ import {
    organization,
 } from "better-auth/plugins";
 import { type BuiltInLocales, localization } from "better-auth-localization";
+export const ORGANIZATION_LIMIT = 3;
+
 export interface AuthOptions {
    db: DatabaseInstance;
    resendClient: ResendClient;
+   stripeClient: StripeClient;
+   STRIPE_WEBHOOK_SECRET: string;
 }
-
-export const ORGANIZATION_LIMIT = 3;
-
 export const getAuthOptions = (
-   db: DatabaseInstance,
-   resendClient: ResendClient,
+   db: AuthOptions["db"],
+   resendClient: AuthOptions["resendClient"],
+   stripeClient: AuthOptions["stripeClient"],
+   STRIPE_WEBHOOK_SECRET: AuthOptions["STRIPE_WEBHOOK_SECRET"],
 ) =>
    ({
       advanced: {
@@ -106,6 +111,11 @@ export const getAuthOptions = (
          joins: true,
       },
       plugins: [
+         stripe({
+            createCustomerOnSignUp: true,
+            stripeClient,
+            stripeWebhookSecret: STRIPE_WEBHOOK_SECRET,
+         }),
          localization({
             defaultLocale: "pt-BR", // Use built-in Portuguese translations
             fallbackLocale: "default", // Fallback to English,
@@ -217,7 +227,12 @@ export const getAuthOptions = (
    }) satisfies BetterAuthOptions;
 
 export const createAuth = (options: AuthOptions) => {
-   const authOptions = getAuthOptions(options.db, options.resendClient);
+   const authOptions = getAuthOptions(
+      options.db,
+      options.resendClient,
+      options.stripeClient,
+      options.STRIPE_WEBHOOK_SECRET,
+   );
    return betterAuth(authOptions);
 };
 export type AuthInstance = ReturnType<typeof createAuth>;
