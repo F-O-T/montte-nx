@@ -5,4 +5,5 @@ export const Route = createFileRoute(
    "/_dashboard/$slug/categories/$categoryId",
 )({
    component: CategoryDetailsPage,
+   staticData: { breadcrumb: "Detalhes da categoria" },
 });

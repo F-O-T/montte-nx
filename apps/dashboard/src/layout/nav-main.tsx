@@ -30,13 +30,14 @@ export function NavMain() {
    const isActive = (url: string) => {
       if (!url) return false;
 
-      // Handle query parameter URLs for bills
-      if (url.includes("/bills?")) {
-         const [path, params] = url.split("?");
-         return pathname === path && searchStr === params;
+      const resolvedUrl = url.replace("$slug", pathname.split("/")[1] || "");
+
+      if (resolvedUrl.includes("?")) {
+         const [path, params] = resolvedUrl.split("?");
+         return pathname === path && searchStr === `?${params}`;
       }
 
-      return pathname === url;
+      return pathname === resolvedUrl;
    };
 
    const financeItems = [
