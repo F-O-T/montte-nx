@@ -1,4 +1,3 @@
-import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
@@ -37,16 +36,8 @@ function TransactionsErrorFallback() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>
-               {translate(
-                  "dashboard.routes.transactions.stats-section.total.title",
-               )}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.transactions.stats-section.total.description",
-               )}
-            </CardDescription>
+            <CardTitle>Transacoes</CardTitle>
+            <CardDescription>Transacoes associadas a esta tag</CardDescription>
          </CardHeader>
          <CardContent>
             <div className="text-center py-4 text-muted-foreground">
@@ -61,16 +52,8 @@ function TransactionsSkeleton() {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>
-               {translate(
-                  "dashboard.routes.transactions.stats-section.total.title",
-               )}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.transactions.stats-section.total.description",
-               )}
-            </CardDescription>
+            <CardTitle>Transacoes</CardTitle>
+            <CardDescription>Transacoes associadas a esta tag</CardDescription>
          </CardHeader>
          <CardContent>
             <ItemGroup>
@@ -126,21 +109,13 @@ function TransactionsContent({ tagId }: { tagId: string }) {
    return (
       <Card className="w-full">
          <CardHeader>
-            <CardTitle>
-               {translate(
-                  "dashboard.routes.transactions.stats-section.total.title",
-               )}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.transactions.stats-section.total.description",
-               )}
-            </CardDescription>
+            <CardTitle>Transacoes</CardTitle>
+            <CardDescription>Transacoes associadas a esta tag</CardDescription>
          </CardHeader>
          <CardContent>
             {transactions.length === 0 ? (
                <div className="text-center py-8 text-muted-foreground">
-                  No transactions found for this tag.
+                  Nenhuma transacao encontrada para esta tag.
                </div>
             ) : (
                <ItemGroup>

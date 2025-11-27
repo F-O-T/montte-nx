@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Card,
    CardContent,
@@ -7,79 +6,60 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
-function StatErrorFallback() {
+function TagStatsErrorFallback(props: FallbackProps) {
    return (
-      <Alert variant="destructive">
-         <AlertDescription>Failed to load statistics</AlertDescription>
-      </Alert>
+      <div className="grid gap-4 h-min">
+         {createErrorFallback({
+            errorDescription:
+               "Failed to load tag stats. Please try again later.",
+            errorTitle: "Error loading stats",
+            retryText: "Retry",
+         })(props)}
+      </div>
    );
 }
 
-function StatSkeleton() {
+function TagStatsSkeleton() {
    return (
-      <Card className="col-span-1 h-full w-full">
-         <CardHeader>
-            <CardTitle>
-               <Skeleton className="h-6 w-24" />
-            </CardTitle>
-            <CardDescription>
-               <Skeleton className="h-4 w-32" />
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
-            <Skeleton className="h-10 w-16" />
-         </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         {[1, 2, 3].map((index) => (
+            <Card
+               className="col-span-1 h-full w-full"
+               key={`stats-skeleton-${index}`}
+            >
+               <CardHeader>
+                  <CardTitle>
+                     <Skeleton className="h-6 w-24" />
+                  </CardTitle>
+                  <CardDescription>
+                     <Skeleton className="h-4 w-32" />
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <Skeleton className="h-10 w-16" />
+               </CardContent>
+            </Card>
+         ))}
+      </div>
    );
 }
 
-function TagTotalStat({ tagId }: { tagId: string }) {
+function TagStatsContent({ tagId }: { tagId: string }) {
    const trpc = useTRPC();
 
-   const { data: tag } = useSuspenseQuery(
-      trpc.tags.getById.queryOptions({ id: tagId }),
-   );
-
    const { data } = useSuspenseQuery(
-      trpc.transactions.getAllPaginated.queryOptions({
+      trpc.tags.getTransactions.queryOptions({
+         id: tagId,
          limit: 100,
          page: 1,
-         search: tag.name,
-      }),
-   );
-
-   return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.transactions.stats-section.total.description",
-         )}
-         title={translate(
-            "dashboard.routes.transactions.stats-section.total.title",
-         )}
-         value={data.pagination.totalCount}
-      />
-   );
-}
-
-function TagIncomeStat({ tagId }: { tagId: string }) {
-   const trpc = useTRPC();
-
-   const { data: tag } = useSuspenseQuery(
-      trpc.tags.getById.queryOptions({ id: tagId }),
-   );
-
-   const { data } = useSuspenseQuery(
-      trpc.transactions.getAllPaginated.queryOptions({
-         limit: 100,
-         page: 1,
-         search: tag.name,
       }),
    );
 
@@ -91,37 +71,6 @@ function TagIncomeStat({ tagId }: { tagId: string }) {
          0,
       );
 
-   return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.transactions.stats-section.income.description",
-         )}
-         title={translate(
-            "dashboard.routes.transactions.stats-section.income.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(income)}
-      />
-   );
-}
-
-function TagExpenseStat({ tagId }: { tagId: string }) {
-   const trpc = useTRPC();
-
-   const { data: tag } = useSuspenseQuery(
-      trpc.tags.getById.queryOptions({ id: tagId }),
-   );
-
-   const { data } = useSuspenseQuery(
-      trpc.transactions.getAllPaginated.queryOptions({
-         limit: 100,
-         page: 1,
-         search: tag.name,
-      }),
-   );
-
    const expense = data.transactions
       .filter((t: { type: string }) => t.type === "expense")
       .reduce(
@@ -131,41 +80,50 @@ function TagExpenseStat({ tagId }: { tagId: string }) {
       );
 
    return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.transactions.stats-section.expense.description",
-         )}
-         title={translate(
-            "dashboard.routes.transactions.stats-section.expense.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(expense)}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.total.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.total.title",
+            )}
+            value={data.pagination.totalCount}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.income.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.income.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(income)}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.expense.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.expense.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(expense)}
+         />
+      </div>
    );
 }
 
 export function TagStats({ tagId }: { tagId: string }) {
    return (
-      <div className="grid grid-cols-1 gap-4 h-min">
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <TagTotalStat tagId={tagId} />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <TagIncomeStat tagId={tagId} />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <TagExpenseStat tagId={tagId} />
-            </Suspense>
-         </ErrorBoundary>
-      </div>
+      <ErrorBoundary FallbackComponent={TagStatsErrorFallback}>
+         <Suspense fallback={<TagStatsSkeleton />}>
+            <TagStatsContent tagId={tagId} />
+         </Suspense>
+      </ErrorBoundary>
    );
 }
