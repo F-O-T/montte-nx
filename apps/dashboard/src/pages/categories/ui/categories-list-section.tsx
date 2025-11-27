@@ -330,7 +330,9 @@ function CategoriesListContent() {
                         </Button>
                      </TooltipTrigger>
                      <TooltipContent>
-                        <p>Filter categories</p>
+                        {translate(
+                           "dashboard.routes.categories.features.filter.title",
+                        )}
                      </TooltipContent>
                   </Tooltip>
                </div>
