@@ -6,6 +6,7 @@ import {
    getRemainingAmount,
    isSplitSumValid,
 } from "@packages/utils/split";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 
 type Category = {
@@ -126,7 +127,10 @@ export function CategorySplitInput({
                               className="flex size-6 items-center justify-center rounded"
                               style={{ backgroundColor: category.color }}
                            >
-                              <IconDisplay iconName={category.icon} size={14} />
+                              <IconDisplay
+                                 iconName={category.icon as IconName | null}
+                                 size={14}
+                              />
                            </div>
                            <span className="truncate text-sm">
                               {category.name}

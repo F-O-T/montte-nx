@@ -1,13 +1,4 @@
-import type { DatabaseInstance } from "@packages/database/client";
-import {
-   findCategoryById,
-   getCategorySpending,
-   setTransactionCategories,
-} from "@packages/database/repositories/category-repository";
-import {
-   createNotification,
-   type Notification,
-} from "@packages/database/repositories/notification-repository";
+import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
    createTransaction,
@@ -23,7 +14,6 @@ import {
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -72,39 +62,6 @@ const paginationSchema = z.object({
    type: z.enum(["income", "expense", "transfer"]).optional(),
 });
 
-async function checkBudgetAndNotify(
-   db: DatabaseInstance,
-   organizationId: string,
-   userId: string,
-   categoryIds: string[],
-): Promise<Notification[]> {
-   const notifications: Notification[] = [];
-   for (const categoryId of categoryIds) {
-      const category = await findCategoryById(db, categoryId);
-      if (!category || !category.budget || Number(category.budget) === 0)
-         continue;
-
-      const spent = await getCategorySpending(db, organizationId, categoryId);
-      const budget = Number(category.budget);
-
-      if (spent >= budget) {
-         const formattedBudget = formatDecimalCurrency(budget, "BRL", "pt-BR");
-         const formattedSpent = formatDecimalCurrency(spent, "BRL", "pt-BR");
-
-         const notification = await createNotification(db, {
-            id: crypto.randomUUID(),
-            message: `Você excedeu seu orçamento de ${formattedBudget} para ${category.name}. Total gasto: ${formattedSpent}`,
-            metadata: { budget, categoryId, spent },
-            title: `Orçamento Excedido: ${category.name}`,
-            type: "budget_alert",
-            userId,
-         });
-         notifications.push(notification);
-      }
-   }
-   return notifications;
-}
-
 function validateCategorySplitsForTransaction(
    categorySplits:
       | { categoryId: string; value: number; splitType: "amount" }[]
@@ -134,7 +91,7 @@ export const transactionRouter = router({
 
          validateCategorySplitsForTransaction(
             input.categorySplits,
-            input.categoryIds,
+            input.categoryIds ?? [],
             input.amount,
          );
 
@@ -161,16 +118,6 @@ export const transactionRouter = router({
                resolvedCtx.db,
                transaction.id,
                input.tagIds,
-            );
-         }
-
-         let notifications: Notification[] = [];
-         if (input.type === "expense" && input.categoryIds) {
-            notifications = await checkBudgetAndNotify(
-               resolvedCtx.db,
-               organizationId,
-               resolvedCtx.userId,
-               input.categoryIds,
             );
          }
 
@@ -417,18 +364,7 @@ export const transactionRouter = router({
             );
          }
 
-         let notifications: Notification[] = [];
-         if (updatedTransaction.type === "expense" && input.data.categoryIds) {
-            notifications = await checkBudgetAndNotify(
-               resolvedCtx.db,
-               organizationId,
-               resolvedCtx.userId,
-               input.data.categoryIds,
-            );
-         }
-
          return {
-            notifications,
             transaction: updatedTransaction,
          };
       }),
