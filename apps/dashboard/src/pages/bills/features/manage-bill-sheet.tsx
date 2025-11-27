@@ -1,12 +1,9 @@
+import { createBillSchema } from "@packages/api/schemas";
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
-import {
-   Collapsible,
-   CollapsibleContent,
-   CollapsibleTrigger,
-} from "@packages/ui/components/collapsible";
+
 import {
    Command,
    CommandEmpty,
@@ -22,7 +19,7 @@ import {
    FieldGroup,
    FieldLabel,
 } from "@packages/ui/components/field";
-import { Input } from "@packages/ui/components/input";
+
 import { MoneyInput } from "@packages/ui/components/money-input";
 import {
    Popover,
@@ -49,15 +46,8 @@ import { Textarea } from "@packages/ui/components/textarea";
 import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-   CheckIcon,
-   ChevronDownIcon,
-   ChevronsUpDownIcon,
-   Pencil,
-   Plus,
-} from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
@@ -70,23 +60,7 @@ type ManageBillSheetProps = {
    asChild?: boolean;
 };
 
-const billSchema = z.object({
-   amount: z.number().positive("Valor deve ser maior que zero"),
-   bankAccountId: z.string().optional(),
-   category: z.string().min(1, "Categoria é obrigatória"),
-   counterparty: z.string().optional(),
-   description: z.string().min(1, "Descrição é obrigatória"),
-   dueDate: z.date(),
-   isRecurring: z.boolean(),
-   issueDate: z.date().optional(),
-   notes: z.string().optional(),
-   recurrencePattern: z
-      .enum(["monthly", "quarterly", "semiannual", "annual"])
-      .optional(),
-   type: z
-      .enum(["expense", "income"], { error: "Tipo é obrigatório" })
-      .optional(),
-});
+// TODO > internalize this schema
 
 export function ManageBillSheet({
    onOpen,
@@ -95,19 +69,13 @@ export function ManageBillSheet({
    asChild = false,
 }: ManageBillSheetProps) {
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
-   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
    const { currentFilterType } = useBillList();
    const queryClient = useQueryClient();
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
    );
-
-   const { data: bankAccounts = [] } = useQuery(
-      trpc.bankAccounts.getAll.queryOptions(),
-   );
-
-   const activeBankAccounts = bankAccounts;
 
    const isEditMode = !!bill;
    const isOpen = onOpen ?? false;
@@ -120,6 +88,10 @@ export function ManageBillSheet({
             });
             await queryClient.invalidateQueries({
                queryKey: trpc.bills.getStats.queryKey(),
+            });
+
+            await queryClient.invalidateQueries({
+               queryKey: trpc.bills.getAllPaginated.queryKey(),
             });
             form.reset();
             onOpenChange?.(false);
@@ -210,7 +182,7 @@ export function ManageBillSheet({
                   categoryId: value.category,
                   counterparty: value.counterparty || undefined,
                   description: value.description ?? "",
-                  dueDate: value.dueDate.toISOString().split("T")[0] ?? "",
+                  dueDate: value.dueDate,
                   isRecurring: value.isRecurring,
                   issueDate: value.issueDate
                      ? (value.issueDate.toISOString().split("T")[0] ?? "")
@@ -230,7 +202,7 @@ export function ManageBillSheet({
          }
       },
       validators: {
-         onChange: billSchema as unknown as undefined,
+         onChange: createBillSchema as unknown as undefined,
       },
    });
 
@@ -371,7 +343,7 @@ export function ManageBillSheet({
                                     }}
                                     placeholder="0,00"
                                     value={field.state.value}
-                                    valueInCents={true}
+                                    valueInCents={false}
                                  />
                                  {isInvalid && (
                                     <FieldError
@@ -608,7 +580,7 @@ export function ManageBillSheet({
                </div>
 
                {/* Optional Details Section */}
-               <Collapsible
+               {/* <Collapsible
                   onOpenChange={setIsDetailsOpen}
                   open={isDetailsOpen}
                >
@@ -773,7 +745,7 @@ export function ManageBillSheet({
                         </form.Field>
                      </FieldGroup>
                   </CollapsibleContent>
-               </Collapsible>
+               </Collapsible> */}
             </div>
 
             <SheetFooter>

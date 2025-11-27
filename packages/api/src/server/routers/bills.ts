@@ -24,23 +24,8 @@ import {
    getNextDueDate,
 } from "@packages/utils/recurrence";
 import { z } from "zod";
+import { createBillSchema } from "../schemas";
 import { protectedProcedure, router } from "../trpc";
-
-const createBillSchema = z.object({
-   amount: z.number(),
-   bankAccountId: z.string().optional(),
-   categoryId: z.string(),
-   counterparty: z.string().optional(),
-   description: z.string(),
-   dueDate: z.string(),
-   isRecurring: z.boolean().optional().default(false),
-   issueDate: z.string().optional(),
-   notes: z.string().optional(),
-   recurrencePattern: z
-      .enum(["monthly", "quarterly", "semiannual", "annual"])
-      .optional(),
-   type: z.enum(["income", "expense"]),
-});
 
 const updateBillSchema = z.object({
    amount: z.number().optional(),

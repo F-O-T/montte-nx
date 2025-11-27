@@ -39,6 +39,9 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
                queryKey: trpc.bills.getAll.queryKey(),
             });
             queryClient.invalidateQueries({
+               queryKey: trpc.bills.getAllPaginated.queryKey(),
+            });
+            queryClient.invalidateQueries({
                queryKey: trpc.bills.getStats.queryKey(),
             });
             toast.success(

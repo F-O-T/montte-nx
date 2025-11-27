@@ -17,6 +17,7 @@ import { sessionRouter } from "./routers/session";
 import { tagRouter } from "./routers/tags";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
+
 export const appRouter = router({
    bankAccounts: bankAccountRouter,
    bills: billRouter,
@@ -33,6 +34,7 @@ export const appRouter = router({
    tags: tagRouter,
    transactions: transactionRouter,
 });
+
 export const createApi = ({
    auth,
    db,
