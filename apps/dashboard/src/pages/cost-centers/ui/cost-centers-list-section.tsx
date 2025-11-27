@@ -2,6 +2,7 @@ import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardFooter,
@@ -54,12 +55,16 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
    Building2,
+   Eye,
    Filter,
    Inbox,
    MoreVertical,
+   Plus,
    Search,
    Trash2,
 } from "lucide-react";
@@ -75,22 +80,52 @@ import type { CostCenter } from "../ui/cost-centers-page";
 import { createCostCenterColumns } from "./cost-centers-table-columns";
 
 function CostCentersCardHeader() {
+   const [isCostCenterSheetOpen, setIsCostCenterSheetOpen] = useState(false);
+
+   const isMobile = useIsMobile();
    return (
-      <CardHeader>
-         <CardTitle>
-            {translate("dashboard.routes.cost-centers.list-section.title")}
-         </CardTitle>
-         <CardDescription>
-            {translate(
-               "dashboard.routes.cost-centers.list-section.description",
+      <>
+         <CardHeader>
+            <CardTitle>
+               {translate("dashboard.routes.cost-centers.list-section.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate(
+                  "dashboard.routes.cost-centers.list-section.description",
+               )}
+            </CardDescription>
+            {!isMobile && (
+               <CardAction>
+                  <Button
+                     onClick={() => setIsCostCenterSheetOpen(true)}
+                     size="sm"
+                  >
+                     <Plus className="size-4 mr-2" />
+                     {translate(
+                        "dashboard.routes.cost-centers.actions-toolbar.actions.add-new",
+                     )}
+                  </Button>
+               </CardAction>
             )}
-         </CardDescription>
-      </CardHeader>
+         </CardHeader>
+         <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
+            onClick={() => setIsCostCenterSheetOpen(true)}
+            size="icon"
+         >
+            <Plus className="size-6" />
+         </Button>
+         <ManageCostCenterSheet
+            onOpen={isCostCenterSheetOpen}
+            onOpenChange={setIsCostCenterSheetOpen}
+         />
+      </>
    );
 }
 
 function CostCenterActionsDropdown({ costCenter }: { costCenter: CostCenter }) {
    const [isOpen, setIsOpen] = useState(false);
+   const { activeOrganization } = useActiveOrganization();
 
    return (
       <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
@@ -123,6 +158,18 @@ function CostCenterActionsDropdown({ costCenter }: { costCenter: CostCenter }) {
                )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+               <Link
+                  params={{
+                     costCenterId: costCenter.id,
+                     slug: activeOrganization.slug,
+                  }}
+                  to="/$slug/cost-centers/$costCenterId"
+               >
+                  <Eye className="size-4" />
+                  Ver detalhes
+               </Link>
+            </DropdownMenuItem>
             <ManageCostCenterSheet asChild costCenter={costCenter} />
             <DeleteCostCenter costCenter={costCenter}>
                <DropdownMenuItem

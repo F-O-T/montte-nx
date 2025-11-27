@@ -12,9 +12,10 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Home, Landmark } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { CostCenterInfo } from "./cost-center-information-section";
+import { CostCenterCharts } from "./cost-center-charts";
 import { CostCenterStats } from "./cost-center-stats";
 import { CostCenterTransactions } from "./cost-center-transactions-section";
 
@@ -42,33 +43,31 @@ function CostCenterContent() {
    }
 
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-min col-span-1 md:col-span-2 grid gap-4">
-               <CostCenterInfo costCenterId={costCenterId} />
-               <CostCenterTransactions costCenterId={costCenterId} />
-            </div>
-            <div className="col-span-1">
-               <CostCenterStats costCenterId={costCenterId} />
-            </div>
-         </div>
+      <main className="space-y-4">
+         <DefaultHeader
+            description="Visualize detalhes e estatisticas do centro de custo"
+            title={costCenter.name}
+         />
+         <CostCenterStats costCenterId={costCenterId} />
+         <CostCenterTransactions costCenterId={costCenterId} />
+         <CostCenterCharts costCenterId={costCenterId} />
       </main>
    );
 }
 
 function CostCenterPageSkeleton() {
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid md:grid-cols-1 gap-4">
-            <div className="col-span-1 grid gap-4">
-               <Skeleton className="h-20 w-full" />
-               <Skeleton className="h-32 w-full" />
-               <Skeleton className="h-24 w-full" />
-            </div>
+      <main className="space-y-4">
+         <div className="flex flex-col gap-2">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-6 w-72" />
          </div>
-         <div className="grid md:grid-cols-1 gap-4">
-            <Skeleton className="h-48 w-full" />
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
          </div>
+         <Skeleton className="h-64 w-full" />
       </main>
    );
 }
