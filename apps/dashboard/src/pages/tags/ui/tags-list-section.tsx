@@ -1,7 +1,9 @@
 import { translate } from "@packages/localization";
+import { formatDate } from "@packages/utils/date";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardFooter,
@@ -36,6 +38,7 @@ import {
    ItemContent,
    ItemDescription,
    ItemGroup,
+   ItemMedia,
    ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
@@ -53,8 +56,18 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
-import { Filter, Inbox, MoreVertical, Search, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import {
+   Eye,
+   Filter,
+   Inbox,
+   MoreVertical,
+   Plus,
+   Search,
+   Trash2,
+} from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -67,20 +80,47 @@ import type { Tag } from "../ui/tags-page";
 import { createTagColumns } from "./tags-table-columns";
 
 function TagsCardHeader() {
+   const [isTagSheetOpen, setIsTagSheetOpen] = useState(false);
+
+   const isMobile = useIsMobile();
    return (
-      <CardHeader>
-         <CardTitle>
-            {translate("dashboard.routes.tags.list-section.title")}
-         </CardTitle>
-         <CardDescription>
-            {translate("dashboard.routes.tags.list-section.description")}
-         </CardDescription>
-      </CardHeader>
+      <>
+         <CardHeader>
+            <CardTitle>
+               {translate("dashboard.routes.tags.list-section.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate("dashboard.routes.tags.list-section.description")}
+            </CardDescription>
+            {!isMobile && (
+               <CardAction>
+                  <Button onClick={() => setIsTagSheetOpen(true)} size="sm">
+                     <Plus className="size-4 mr-2" />
+                     {translate(
+                        "dashboard.routes.tags.actions-toolbar.actions.add-new",
+                     )}
+                  </Button>
+               </CardAction>
+            )}
+         </CardHeader>
+         <Button
+            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
+            onClick={() => setIsTagSheetOpen(true)}
+            size="icon"
+         >
+            <Plus className="size-6" />
+         </Button>
+         <ManageTagSheet
+            onOpen={isTagSheetOpen}
+            onOpenChange={setIsTagSheetOpen}
+         />
+      </>
    );
 }
 
 function TagActionsDropdown({ tag }: { tag: Tag }) {
    const [isOpen, setIsOpen] = useState(false);
+   const { activeOrganization } = useActiveOrganization();
 
    return (
       <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
@@ -109,13 +149,27 @@ function TagActionsDropdown({ tag }: { tag: Tag }) {
                {translate("dashboard.routes.tags.list-section.actions.label")}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+               <Link
+                  params={{
+                     slug: activeOrganization.slug,
+                     tagId: tag.id,
+                  }}
+                  to="/$slug/tags/$tagId"
+               >
+                  <Eye className="size-4" />
+                  {translate(
+                     "dashboard.routes.tags.list-section.actions.view-details",
+                  )}
+               </Link>
+            </DropdownMenuItem>
             <ManageTagSheet asChild tag={tag} />
             <DeleteTag tag={tag}>
                <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onSelect={(e) => e.preventDefault()}
                >
-                  <Trash2 className="size-4 mr-2" />
+                  <Trash2 className="size-4" />
                   {translate(
                      "dashboard.routes.tags.list-section.actions.delete",
                   )}
@@ -150,27 +204,27 @@ function TagsListSkeleton() {
       <Card>
          <TagsCardHeader />
          <CardContent>
-            <div className="flex items-center gap-3 pt-4">
-               <div className="relative flex-1 max-w-md">
-                  <Skeleton className="h-10 w-full" />
-               </div>
-               <Skeleton className="ml-auto h-10 w-10" />
-            </div>
-            <div className="space-y-4 mt-4">
-               {Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                     className="flex items-center space-x-4 p-4 border rounded-lg"
-                     key={`tag-skeleton-${index + 1}`}
-                  >
-                     <Skeleton className="h-10 w-10 rounded-full" />
-                     <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-3 w-16" />
-                     </div>
-                     <Skeleton className="h-8 w-8" />
-                  </div>
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((_, index) => (
+                  <Fragment key={`tag-skeleton-${index + 1}`}>
+                     <Item>
+                        <ItemMedia variant="icon">
+                           <div className="size-8 rounded-sm border group relative">
+                              <Skeleton className="size-8 rounded-sm" />
+                           </div>
+                        </ItemMedia>
+                        <ItemContent className="gap-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-48" />
+                        </ItemContent>
+                        <ItemActions>
+                           <Skeleton className="size-8" />
+                        </ItemActions>
+                     </Item>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
                ))}
-            </div>
+            </ItemGroup>
          </CardContent>
          <CardFooter>
             <Skeleton className="h-10 w-full" />
@@ -227,6 +281,7 @@ function TagsListContent() {
       setCurrentPage(1);
    };
 
+   const isMobile = useIsMobile();
    const hasActiveFilters = orderBy !== "name" || orderDirection !== "asc";
 
    return (
@@ -260,13 +315,15 @@ function TagsListContent() {
                         </Button>
                      </TooltipTrigger>
                      <TooltipContent>
-                        <p>Filter tags</p>
+                        {translate(
+                           "dashboard.routes.tags.features.filter.title",
+                        )}
                      </TooltipContent>
                   </Tooltip>
                </div>
 
-               <div className="block md:hidden">
-                  {tags.length === 0 && pagination.totalCount === 0 ? (
+               {isMobile ? (
+                  tags.length === 0 && pagination.totalCount === 0 ? (
                      <Empty>
                         <EmptyContent>
                            <EmptyMedia variant="icon">
@@ -289,26 +346,23 @@ function TagsListContent() {
                         {tags.map((tag, index) => (
                            <Fragment key={tag.id}>
                               <Item>
-                                 <div
-                                    className="size-8 rounded-sm shrink-0"
-                                    style={{
-                                       backgroundColor: tag.color,
-                                    }}
-                                 />
+                                 <ItemMedia variant="icon">
+                                    <div
+                                       className="size-8 rounded-sm border flex items-center justify-center"
+                                       style={{
+                                          backgroundColor: tag.color,
+                                       }}
+                                    />
+                                 </ItemMedia>
                                  <ItemContent>
                                     <ItemTitle>{tag.name}</ItemTitle>
                                     <ItemDescription>
-                                       <div className="flex items-center gap-1">
-                                          <div
-                                             className="w-3 h-3 rounded-full border"
-                                             style={{
-                                                backgroundColor: tag.color,
-                                             }}
-                                          />
-                                          <span className="text-xs text-muted-foreground">
-                                             {tag.color}
-                                          </span>
-                                       </div>
+                                       <span className="text-xs text-muted-foreground">
+                                          {formatDate(
+                                             new Date(tag.createdAt),
+                                             "DD/MM/YYYY",
+                                          )}
+                                       </span>
                                     </ItemDescription>
                                  </ItemContent>
                                  <ItemActions>
@@ -319,35 +373,31 @@ function TagsListContent() {
                            </Fragment>
                         ))}
                      </ItemGroup>
-                  )}
-               </div>
-
-               <div className="hidden md:block">
-                  {tags.length === 0 && pagination.totalCount === 0 ? (
-                     <Empty>
-                        <EmptyContent>
-                           <EmptyMedia variant="icon">
-                              <Inbox className="size-6" />
-                           </EmptyMedia>
-                           <EmptyTitle>
-                              {translate(
-                                 "dashboard.routes.tags.list-section.state.empty.title",
-                              )}
-                           </EmptyTitle>
-                           <EmptyDescription>
-                              {translate(
-                                 "dashboard.routes.tags.list-section.state.empty.description",
-                              )}
-                           </EmptyDescription>
-                        </EmptyContent>
-                     </Empty>
-                  ) : (
-                     <DataTable
-                        columns={createTagColumns(activeOrganization.slug)}
-                        data={tags}
-                     />
-                  )}
-               </div>
+                  )
+               ) : tags.length === 0 && pagination.totalCount === 0 ? (
+                  <Empty>
+                     <EmptyContent>
+                        <EmptyMedia variant="icon">
+                           <Inbox className="size-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                           {translate(
+                              "dashboard.routes.tags.list-section.state.empty.title",
+                           )}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                           {translate(
+                              "dashboard.routes.tags.list-section.state.empty.description",
+                           )}
+                        </EmptyDescription>
+                     </EmptyContent>
+                  </Empty>
+               ) : (
+                  <DataTable
+                     columns={createTagColumns(activeOrganization.slug)}
+                     data={tags}
+                  />
+               )}
             </CardContent>
 
             {/* Pagination Mobile */}
@@ -480,6 +530,7 @@ function TagsListContent() {
                </CardFooter>
             )}
          </Card>
+
          <TagFilterSheet
             isOpen={isFilterSheetOpen}
             onOpenChange={setIsFilterSheetOpen}

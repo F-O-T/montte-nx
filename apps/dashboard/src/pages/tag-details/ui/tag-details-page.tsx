@@ -12,9 +12,10 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Home, Tag } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { TagInfo } from "./tag-information-section";
+import { TagCharts } from "./tag-charts";
 import { TagStats } from "./tag-stats";
 import { TagTransactions } from "./tag-transactions-section";
 
@@ -41,33 +42,31 @@ function TagContent() {
    }
 
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-min col-span-1 md:col-span-2 grid gap-4">
-               <TagInfo tagId={tagId} />
-               <TagTransactions tagId={tagId} />
-            </div>
-            <div className="col-span-1">
-               <TagStats tagId={tagId} />
-            </div>
-         </div>
+      <main className="space-y-4">
+         <DefaultHeader
+            description="Visualize detalhes e transacoes desta tag"
+            title={tag.name}
+         />
+         <TagStats tagId={tagId} />
+         <TagTransactions tagId={tagId} />
+         <TagCharts tagId={tagId} />
       </main>
    );
 }
 
 function TagPageSkeleton() {
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid md:grid-cols-1 gap-4">
-            <div className="col-span-1 grid gap-4">
-               <Skeleton className="h-20 w-full" />
-               <Skeleton className="h-32 w-full" />
-               <Skeleton className="h-24 w-full" />
-            </div>
+      <main className="space-y-4">
+         <div className="flex flex-col gap-2">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-6 w-72" />
          </div>
-         <div className="grid md:grid-cols-1 gap-4">
-            <Skeleton className="h-48 w-full" />
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
          </div>
+         <Skeleton className="h-64 w-full" />
       </main>
    );
 }
