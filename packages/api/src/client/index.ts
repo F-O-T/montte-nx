@@ -17,12 +17,14 @@ export interface APIClientOptions {
 
    headers?: Record<string, string> | Headers;
    language?: string;
+   getOrganizationSlug?: () => string | undefined;
 }
 
 export const createTrpcClient = ({
    serverUrl,
    headers,
    language,
+   getOrganizationSlug,
 }: APIClientOptions) => {
    return createTRPCClient<AppRouter>({
       links: [
@@ -46,6 +48,15 @@ export const createTrpcClient = ({
                      if (clientLanguage) {
                         requestHeaders.set("Accept-Language", clientLanguage);
                         requestHeaders.set("x-locale", clientLanguage);
+                     }
+
+                     // Add organization slug header
+                     const organizationSlug = getOrganizationSlug?.();
+                     if (organizationSlug) {
+                        requestHeaders.set(
+                           "x-organization-slug",
+                           organizationSlug,
+                        );
                      }
 
                      if (headers) {

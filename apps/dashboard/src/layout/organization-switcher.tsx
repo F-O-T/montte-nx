@@ -124,16 +124,21 @@ function OrganizationDropdownContent({
    const setActiveOrganization = useMutation(
       trpc.organization.setActiveOrganization.mutationOptions({
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getOrganizations.queryKey(),
-            });
             toast.success("Organization set successfully");
          },
       }),
    );
 
-   async function handleOrganizationClick(organizationId: string) {
-      await setActiveOrganization.mutateAsync({
+   async function handleOrganizationClick(
+      organizationId: string,
+      organizationSlug: string,
+   ) {
+      await router.navigate({
+         params: { slug: organizationSlug },
+         to: "/$slug/home",
+      });
+      await queryClient.invalidateQueries();
+      setActiveOrganization.mutate({
          organizationId,
       });
    }
@@ -149,7 +154,10 @@ function OrganizationDropdownContent({
                   className="gap-2 p-2"
                   disabled={setActiveOrganization.isPending}
                   onClick={() => {
-                     handleOrganizationClick(organization.id);
+                     handleOrganizationClick(
+                        organization.id,
+                        organization.slug,
+                     );
                   }}
                >
                   <div className="flex p-1 size-6 items-center justify-center rounded-md border">
