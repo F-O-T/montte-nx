@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { Alert, AlertTitle } from "@packages/ui/components/alert";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -31,6 +32,7 @@ import {
    useNavigate,
    useRouter,
 } from "@tanstack/react-router";
+import { CheckCircle2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -611,9 +613,10 @@ function RouteComponent() {
             return (
                <>
                   <div className="text-center space-y-4">
-                     <p className="text-muted-foreground">
-                        {translate(messageKey)}
-                     </p>
+                     <Alert>
+                        <CheckCircle2Icon className="size-4" />
+                        <AlertTitle>{translate(messageKey)}</AlertTitle>
+                     </Alert>
                      <Button
                         className="my-2"
                         onClick={() => {

@@ -14,7 +14,7 @@ export const bankAccount = pgTable("bank_account", {
    bank: text("bank").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
-   name: text("name").notNull(),
+   name: text("name"),
    organizationId: uuid("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
