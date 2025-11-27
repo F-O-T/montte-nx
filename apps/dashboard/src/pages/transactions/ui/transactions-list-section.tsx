@@ -232,7 +232,7 @@ function TransactionsListContent() {
                   </CardAction>
                )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
                <div className="flex items-center justify-between gap-8">
                   <InputGroup>
                      <InputGroupInput

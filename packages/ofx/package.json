@@ -1,6 +1,6 @@
 {
    "dependencies": {
-      "ofx-data-extractor": "^1.4.8"
+      "@f-o-t/ofx": "workspace:*"
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",

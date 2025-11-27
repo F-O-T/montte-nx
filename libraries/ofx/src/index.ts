@@ -352,9 +352,11 @@ function addToContent(
 ): void {
    const existing = content[key];
    if (existing !== undefined) {
-      content[key] = Array.isArray(existing)
-         ? [...existing, value]
-         : [existing, value];
+      if (Array.isArray(existing)) {
+         existing.push(value);
+      } else {
+         content[key] = [existing, value];
+      }
    } else {
       content[key] = value;
    }
@@ -363,6 +365,7 @@ function addToContent(
 function sgmlToObject(sgml: string): Record<string, unknown> {
    const result: Record<string, unknown> = {};
    const tagStack: TagStackItem[] = [{ content: result, name: "root" }];
+   const stackMap = new Map<string, number>([["root", 0]]);
 
    const cleanSgml = sgml
       .replace(/<\?.*?\?>/g, "")
@@ -389,14 +392,20 @@ function sgmlToObject(sgml: string): Record<string, unknown> {
       }
 
       if (isClosing) {
-         if (tagStack.length > 1) {
-            tagStack.pop();
+         const stackIndex = stackMap.get(tagName);
+         if (stackIndex !== undefined && stackIndex > 0) {
+            for (let i = tagStack.length - 1; i >= stackIndex; i--) {
+               const item = tagStack[i];
+               if (item) stackMap.delete(item.name);
+            }
+            tagStack.length = stackIndex;
          }
       } else if (textContent) {
          addToContent(current.content, tagName, textContent);
       } else {
          const newObj: Record<string, unknown> = {};
          addToContent(current.content, tagName, newObj);
+         stackMap.set(tagName, tagStack.length);
          tagStack.push({ content: newObj, name: tagName });
       }
 

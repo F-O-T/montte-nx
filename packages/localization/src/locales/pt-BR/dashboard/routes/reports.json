@@ -24,9 +24,39 @@
       "financial-evolution": {
          "description": "Receitas e despesas ao longo do tempo",
          "title": "Evolução Financeira"
+      },
+      "income-breakdown": {
+         "description": "Distribuição das receitas por categoria",
+         "empty": "Nenhuma receita encontrada",
+         "title": "Receitas por Categoria"
+      },
+      "expenses-breakdown": {
+         "description": "Distribuição das despesas por categoria",
+         "empty": "Nenhuma despesa encontrada",
+         "title": "Despesas por Categoria"
+      },
+      "payment-status-distribution": {
+         "description": "Distribuição dos status de pagamento",
+         "empty": "Nenhum dado de pagamento encontrado",
+         "title": "Status de Pagamento",
+         "total-label": "Total de Contas"
       }
    },
    "description": "Análise e insights financeiros detalhados",
+   "errors": {
+      "charts": {
+         "description": "Falha ao carregar os gráficos. Por favor, tente novamente.",
+         "title": "Erro ao carregar gráficos"
+      },
+      "page": {
+         "description": "Falha ao carregar os relatórios financeiros. Por favor, tente novamente.",
+         "title": "Erro ao carregar relatórios"
+      },
+      "stats": {
+         "description": "Falha ao carregar as estatísticas. Por favor, tente novamente.",
+         "title": "Erro ao carregar estatísticas"
+      }
+   },
    "financial-summary": {
       "net-balance": {
          "description": "Receitas - Despesas",
@@ -78,6 +108,18 @@
          "description": "Contas no período",
          "title": "Total de Contas"
       }
+   },
+   "period-filter": {
+      "apply": "Aplicar",
+      "custom": "Período Personalizado",
+      "current-month": "Mês Atual",
+      "current-year": "Ano Atual",
+      "end-date": "Data Final",
+      "label": "Período",
+      "last-month": "Mês Anterior",
+      "last-year": "Ano Anterior",
+      "placeholder": "Selecione o período",
+      "start-date": "Data Inicial"
    },
    "planned-vs-actual": {
       "actual-income": {

@@ -21,6 +21,7 @@ COPY package.json ./
 COPY apps/server/package.json ./apps/server/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/api/package.json ./packages/api/
+COPY libraries/ofx/package.json ./libraries/ofx/
 COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
@@ -69,6 +70,8 @@ COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/ofx/package.json ./packages/ofx/
+COPY libraries/ofx/package.json ./libraries/ofx/
+
 
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
