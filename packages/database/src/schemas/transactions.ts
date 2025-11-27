@@ -1,16 +1,30 @@
 import { relations, sql } from "drizzle-orm";
-import { decimal, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+   decimal,
+   jsonb,
+   pgTable,
+   text,
+   timestamp,
+   uuid,
+} from "drizzle-orm/pg-core";
 import { organization } from "./auth";
 import { bankAccount } from "./bank-accounts";
 import { transactionCategory } from "./categories";
 import { costCenter } from "./cost-centers";
 import { transactionTag } from "./tags";
 
+export type CategorySplit = {
+   categoryId: string;
+   value: number;
+   splitType: "amount";
+};
+
 export const transaction = pgTable("transaction", {
    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
    bankAccountId: uuid("bank_account_id").references(() => bankAccount.id, {
       onDelete: "cascade",
    }),
+   categorySplits: jsonb("category_splits").$type<CategorySplit[]>(),
    costCenterId: uuid("cost_center_id").references(() => costCenter.id, {
       onDelete: "set null",
    }),

@@ -8,23 +8,28 @@ import {
    AlertDialogFooter,
    AlertDialogHeader,
    AlertDialogTitle,
-   AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
-import { Button } from "@packages/ui/components/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
 import { trpc } from "@/integrations/clients";
-import type { Transaction } from "../ui/transaction-item";
 
-interface DeleteTransactionProps {
+type Transaction = {
+   id: string;
+   description: string;
+};
+
+type DeleteTransactionDialogProps = {
    transaction: Transaction;
-   asChild?: boolean;
-}
+   open: boolean;
+   setOpen: (open: boolean) => void;
+   onDeleted?: () => void;
+};
 
-export function DeleteTransaction({
+export function DeleteTransactionDialog({
    transaction,
-   asChild,
-}: DeleteTransactionProps) {
+   open,
+   setOpen,
+   onDeleted,
+}: DeleteTransactionDialogProps) {
    const queryClient = useQueryClient();
 
    const deleteTransactionMutation = useMutation(
@@ -41,6 +46,8 @@ export function DeleteTransaction({
                   queryKey: trpc.bankAccounts.getTransactions.queryKey(),
                }),
             ]);
+            setOpen(false);
+            onDeleted?.();
          },
       }),
    );
@@ -54,19 +61,7 @@ export function DeleteTransaction({
    };
 
    return (
-      <AlertDialog>
-         <AlertDialogTrigger asChild={asChild}>
-            <Button
-               className="text-destructive hover:text-destructive"
-               size="sm"
-               variant="ghost"
-            >
-               <Trash2 className="h-4 w-4" />
-               {translate(
-                  "dashboard.routes.transactions.list-section.actions.delete",
-               )}
-            </Button>
-         </AlertDialogTrigger>
+      <AlertDialog onOpenChange={setOpen} open={open}>
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>

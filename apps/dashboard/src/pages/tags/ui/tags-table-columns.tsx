@@ -8,8 +8,8 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
-import type { ColumnDef } from "@tanstack/react-table";
 import { Link } from "@tanstack/react-router";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import { Suspense } from "react";
 import type { Tag } from "@/pages/tags/ui/tags-page";

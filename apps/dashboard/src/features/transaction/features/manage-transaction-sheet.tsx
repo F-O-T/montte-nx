@@ -1,10 +1,16 @@
 import type { RouterOutput } from "@packages/api/client";
+import { toast } from "sonner";
 
 type Transaction =
    RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
 
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
@@ -31,11 +37,6 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import {
-   Collapsible,
-   CollapsibleContent,
-   CollapsibleTrigger,
-} from "@packages/ui/components/collapsible";
 
 import { Textarea } from "@packages/ui/components/textarea";
 import { centsToReais } from "@packages/utils/money";
@@ -43,9 +44,11 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, Pencil, Plus, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
+import { z } from "zod";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
+import { CategorySplitInput } from "../ui/category-split-input";
 
 type ManageTransactionSheetProps = {
    onOpen?: boolean;
@@ -102,17 +105,20 @@ export function ManageTransactionSheet({
       trpc.costCenters.getAll.queryOptions(),
    );
 
-   const activeBankAccounts = bankAccounts;
-
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions({
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAllPaginated.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-            });
+            await Promise.all([
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getStats.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
+               }),
+            ]);
 
             setIsOpen?.(false);
          },
@@ -125,12 +131,20 @@ export function ManageTransactionSheet({
             console.error("Failed to update transaction:", error);
          },
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAllPaginated.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-            });
+            await Promise.all([
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getById.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getStats.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
+               }),
+            ]);
 
             setIsOpen?.(false);
          },
@@ -142,28 +156,61 @@ export function ManageTransactionSheet({
          onError: (error) => {
             console.error("Failed to create transfer:", error);
          },
-
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAllPaginated.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-            });
+            await Promise.all([
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.transactions.getStats.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
+               }),
+               queryClient.invalidateQueries({
+                  queryKey: trpc.bankAccounts.getAll.queryKey(),
+               }),
+            ]);
             setIsOpen?.(false);
          },
       }),
    );
 
+   const [splitEnabled, setSplitEnabled] = useState(
+      !!transaction?.categorySplits?.length,
+   );
+
+   const transactionSchema = z.object({
+      amount: z.number().min(1, translate("common.validation.required")),
+      bankAccountId: z.string().min(1, translate("common.validation.required")),
+      categoryIds: z.array(z.string()),
+      categorySplits: z
+         .array(
+            z.object({
+               categoryId: z.string(),
+               splitType: z.literal("amount"),
+               value: z.number(),
+            }),
+         )
+         .nullable(),
+      costCenterId: z.string(),
+      date: z.date({ message: translate("common.validation.required") }),
+      description: z.string().min(1, translate("common.validation.required")),
+      tagIds: z.array(z.string()),
+      toBankAccountId: z.string(),
+      type: z.enum(["expense", "income", "transfer"]),
+   });
+
    const form = useForm({
       defaultValues: {
          amount: transaction?.amount
             ? Math.round(Number(transaction.amount) * 100)
-            : 0, // Store as cents
+            : 0,
          bankAccountId: transaction?.bankAccountId || "",
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
             [],
+         categorySplits: transaction?.categorySplits ?? null,
          costCenterId: transaction?.costCenterId || "",
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
@@ -179,8 +226,25 @@ export function ManageTransactionSheet({
             return;
          }
 
+         if (
+            isEditMode &&
+            value.categorySplits &&
+            value.categorySplits.length > 0
+         ) {
+            const allocatedAmount = value.categorySplits.reduce(
+               (sum, split) => sum + split.value,
+               0,
+            );
+
+            if (Math.abs(value.amount - allocatedAmount) > 1) {
+               toast.error(
+                  "A soma dos valores divididos deve ser igual ao valor total",
+               );
+               return;
+            }
+         }
+
          try {
-            // Convert cents back to decimal for database
             const amountInDecimal = centsToReais(value.amount);
 
             if (isEditMode && transaction) {
@@ -189,6 +253,7 @@ export function ManageTransactionSheet({
                      amount: amountInDecimal,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryIds: value.categoryIds || [],
+                     categorySplits: value.categorySplits,
                      costCenterId: value.costCenterId || null,
                      date: value.date.toISOString().split("T")[0] ?? "",
                      description: value.description,
@@ -226,6 +291,9 @@ export function ManageTransactionSheet({
                error,
             );
          }
+      },
+      validators: {
+         onBlur: transactionSchema,
       },
    });
 
@@ -354,6 +422,9 @@ export function ManageTransactionSheet({
                                                   )}
                                           </FieldLabel>
                                           <Select
+                                             onOpenChange={(open) => {
+                                                if (!open) field.handleBlur();
+                                             }}
                                              onValueChange={(value) =>
                                                 field.handleChange(value)
                                              }
@@ -373,17 +444,15 @@ export function ManageTransactionSheet({
                                                 />
                                              </SelectTrigger>
                                              <SelectContent>
-                                                {activeBankAccounts.map(
-                                                   (account) => (
-                                                      <SelectItem
-                                                         key={account.id}
-                                                         value={account.id}
-                                                      >
-                                                         {account.name} -{" "}
-                                                         {account.bank}
-                                                      </SelectItem>
-                                                   ),
-                                                )}
+                                                {bankAccounts.map((account) => (
+                                                   <SelectItem
+                                                      key={account.id}
+                                                      value={account.id}
+                                                   >
+                                                      {account.name} -{" "}
+                                                      {account.bank}
+                                                   </SelectItem>
+                                                ))}
                                              </SelectContent>
                                           </Select>
                                           {isInvalid && (
@@ -425,7 +494,7 @@ export function ManageTransactionSheet({
                                                    />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                   {activeBankAccounts.map(
+                                                   {bankAccounts.map(
                                                       (account) => (
                                                          <SelectItem
                                                             disabled={
@@ -642,6 +711,42 @@ export function ManageTransactionSheet({
                         </>
                      )}
                   </form.Subscribe>
+
+                  {isEditMode && (
+                     <form.Subscribe
+                        selector={(state) => ({
+                           amount: state.values.amount,
+                           categoryIds: state.values.categoryIds,
+                           type: state.values.type,
+                        })}
+                     >
+                        {({ categoryIds, amount, type }) =>
+                           type !== "transfer" &&
+                           categoryIds.length > 1 && (
+                              <form.Field name="categorySplits">
+                                 {(field) => (
+                                    <CategorySplitInput
+                                       categories={categories}
+                                       enabled={splitEnabled}
+                                       onChange={(splits) =>
+                                          field.handleChange(splits)
+                                       }
+                                       onEnabledChange={(enabled) => {
+                                          setSplitEnabled(enabled);
+                                          if (!enabled) {
+                                             field.handleChange(null);
+                                          }
+                                       }}
+                                       selectedCategoryIds={categoryIds}
+                                       splits={field.state.value}
+                                       totalAmount={amount}
+                                    />
+                                 )}
+                              </form.Field>
+                           )
+                        }
+                     </form.Subscribe>
+                  )}
 
                   <FieldGroup>
                      <form.Field name="type">

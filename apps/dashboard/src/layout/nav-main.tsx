@@ -41,32 +41,32 @@ export function NavMain() {
 
    const financeItems = [
       {
-         id: "transactions",
          icon: TrendingUp,
+         id: "transactions",
          title: translate("dashboard.layout.nav-main.finance.overview"),
          url: "/$slug/transactions",
       },
       {
-         id: "bank-accounts",
          icon: Building2,
+         id: "bank-accounts",
          title: translate("dashboard.routes.bank-accounts.list-section.title"),
          url: "/$slug/bank-accounts",
       },
       {
-         id: "payables",
          icon: ArrowDownRight,
+         id: "payables",
          title: translate("dashboard.layout.nav-main.finance.payables"),
          url: "/$slug/bills?type=payable",
       },
       {
-         id: "receivables",
          icon: ArrowUpRight,
+         id: "receivables",
          title: translate("dashboard.layout.nav-main.finance.receivables"),
          url: "/$slug/bills?type=receivable",
       },
       {
-         id: "reports",
          icon: BarChart3,
+         id: "reports",
          title: translate("dashboard.layout.nav-main.finance.reports"),
          url: "/$slug/reports",
       },
@@ -74,24 +74,24 @@ export function NavMain() {
 
    const categorizationItems = [
       {
-         id: "categories",
          icon: FileText,
+         id: "categories",
          title: translate(
             "dashboard.layout.nav-main.categorization.categories",
          ),
          url: "/$slug/categories",
       },
       {
-         id: "cost-centers",
          icon: Landmark,
+         id: "cost-centers",
          title: translate(
             "dashboard.layout.nav-main.categorization.cost-centers",
          ),
          url: "/$slug/cost-centers",
       },
       {
-         id: "tags",
          icon: Tag,
+         id: "tags",
          title: translate("dashboard.layout.nav-main.categorization.tags"),
          url: "/$slug/tags",
       },

@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
+import { and, count, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
@@ -518,6 +518,65 @@ export async function findCategoriesByIds(
       propagateError(err);
       throw AppError.database(
          `Failed to find categories by ids: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getCategorySpending(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   categoryId: string,
+) {
+   try {
+      const now = new Date();
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const currentMonthEnd = new Date(
+         now.getFullYear(),
+         now.getMonth() + 1,
+         0,
+      );
+
+      const transactions = await dbClient
+         .select({
+            amount: transaction.amount,
+            categorySplits: transaction.categorySplits,
+            transactionId: transaction.id,
+         })
+         .from(transaction)
+         .innerJoin(
+            transactionCategory,
+            eq(transactionCategory.transactionId, transaction.id),
+         )
+         .where(
+            and(
+               eq(transaction.organizationId, organizationId),
+               eq(transactionCategory.categoryId, categoryId),
+               eq(transaction.type, "expense"),
+               gte(transaction.date, currentMonthStart),
+               lte(transaction.date, currentMonthEnd),
+            ),
+         );
+
+      let total = 0;
+
+      for (const tx of transactions) {
+         const splits = tx.categorySplits;
+
+         if (splits && splits.length > 0) {
+            const split = splits.find((s) => s.categoryId === categoryId);
+            if (split) {
+               total += split.value / 100;
+            }
+         } else {
+            total += Number(tx.amount);
+         }
+      }
+
+      return total;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get category spending: ${(err as Error).message}`,
       );
    }
 }

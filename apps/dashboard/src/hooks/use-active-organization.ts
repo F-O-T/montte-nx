@@ -2,7 +2,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useTRPC } from "@/integrations/clients";
 
-
 //TODO: Funçao para setar a organization ativa no contexto
 export function useActiveOrganization() {
    const trpc = useTRPC();
