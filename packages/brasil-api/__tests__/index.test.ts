@@ -45,9 +45,8 @@ describe("brasil-api", () => {
    let fetchSpy: ReturnType<typeof spyOn>;
 
    beforeEach(() => {
-      fetchSpy = spyOn(globalThis, "fetch").mockImplementation(() =>
-         createMockResponse(mockBanks),
-      );
+      fetchSpy = spyOn(globalThis, "fetch").mockImplementation((() =>
+         createMockResponse(mockBanks)) as unknown as typeof fetch);
    });
 
    afterEach(() => {

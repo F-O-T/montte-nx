@@ -119,23 +119,34 @@ function OrganizationDropdownContent({
       trpc.organization.getLogo.queryOptions(),
    );
 
+   const { activeOrganization } = useActiveOrganization();
    const queryClient = useQueryClient();
 
    const setActiveOrganization = useMutation(
       trpc.organization.setActiveOrganization.mutationOptions({
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getOrganizations.queryKey(),
-            });
             toast.success("Organization set successfully");
          },
       }),
    );
 
-   async function handleOrganizationClick(organizationId: string) {
-      await setActiveOrganization.mutateAsync({
-         organizationId,
+   async function handleOrganizationClick(
+      organizationId: string,
+      organizationSlug: string,
+   ) {
+      const isCurrentOrg = activeOrganization.slug === organizationSlug;
+
+      await router.navigate({
+         params: { slug: organizationSlug },
+         to: "/$slug/home",
       });
+      await queryClient.invalidateQueries();
+
+      if (!isCurrentOrg) {
+         setActiveOrganization.mutate({
+            organizationId,
+         });
+      }
    }
 
    return (
@@ -149,7 +160,10 @@ function OrganizationDropdownContent({
                   className="gap-2 p-2"
                   disabled={setActiveOrganization.isPending}
                   onClick={() => {
-                     handleOrganizationClick(organization.id);
+                     handleOrganizationClick(
+                        organization.id,
+                        organization.slug,
+                     );
                   }}
                >
                   <div className="flex p-1 size-6 items-center justify-center rounded-md border">

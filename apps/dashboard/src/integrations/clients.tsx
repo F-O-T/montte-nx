@@ -19,9 +19,21 @@ import { useState } from "react";
 export const { TRPCProvider, useTRPC, useTRPCClient } =
    createTRPCContext<AppRouter>();
 
+export const reservedRoutes = ["auth", "home", "api"];
+
+function getOrganizationSlugFromUrl(): string | undefined {
+   if (typeof window === "undefined") return undefined;
+   const pathSegments = window.location.pathname.split("/").filter(Boolean);
+   const firstSegment = pathSegments[0];
+   if (!firstSegment) return undefined;
+   if (reservedRoutes.includes(firstSegment)) return undefined;
+   return firstSegment;
+}
+
 // This function now correctly uses the environment variable
 export function makeTrpcClient(headers?: Headers) {
    return createTrpcClient({
+      getOrganizationSlug: getOrganizationSlugFromUrl,
       headers,
       language: getCurrentLanguage(),
       serverUrl: clientEnv.VITE_SERVER_URL,

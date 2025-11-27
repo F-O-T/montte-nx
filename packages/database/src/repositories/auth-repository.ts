@@ -176,3 +176,32 @@ export async function enableTelemetryConsent(
       );
    }
 }
+
+export async function getOrganizationMembership(
+   dbClient: DatabaseInstance,
+   userId: string,
+   organizationSlug: string,
+) {
+   try {
+      const org = await dbClient.query.organization.findFirst({
+         where: (organization, { eq }) =>
+            eq(organization.slug, organizationSlug),
+      });
+
+      if (!org) {
+         return { organization: null, membership: null };
+      }
+
+      const membership = await dbClient.query.member.findFirst({
+         where: (member, { eq, and }) =>
+            and(eq(member.organizationId, org.id), eq(member.userId, userId)),
+      });
+
+      return { organization: org, membership };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get organization membership: ${(err as Error).message}`,
+      );
+   }
+}

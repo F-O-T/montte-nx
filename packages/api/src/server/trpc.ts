@@ -1,5 +1,6 @@
 import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
+import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { APIError } from "@packages/utils/errors";
@@ -89,7 +90,31 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    if (!resolvedCtx.session?.user) {
       throw APIError.forbidden("Access denied.");
    }
-   const organizationId = resolvedCtx.session.session.activeOrganizationId;
+
+   const userId = resolvedCtx.session.user.id;
+   const organizationSlug = resolvedCtx.headers.get("x-organization-slug");
+   let organizationId = resolvedCtx.session.session.activeOrganizationId;
+
+   if (organizationSlug) {
+      const { organization, membership } = await getOrganizationMembership(
+         resolvedCtx.db,
+         userId,
+         organizationSlug,
+      );
+
+      if (!organization) {
+         throw APIError.notFound("Organization not found.");
+      }
+
+      if (!membership) {
+         throw APIError.forbidden(
+            "You do not have access to this organization.",
+         );
+      }
+
+      organizationId = organization.id;
+   }
+
    return next({
       ctx: {
          organizationId,
