@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -116,7 +117,7 @@ function BankAccountsListContent() {
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const pageSize = 10;
-
+   const isMobile = useIsMobile();
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
@@ -155,14 +156,14 @@ function BankAccountsListContent() {
                      "dashboard.routes.bank-accounts.list-section.description",
                   )}
                </CardDescription>
-               <CardAction className="hidden md:flex">
+               {!isMobile && (<CardAction >
                   <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
                      <Plus className="size-4 mr-2" />
                      {translate(
-                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                        "dashboard.routes.bank-accounts.list-section.actions.add-new",
                      )}
                   </Button>
-               </CardAction>
+               </CardAction>)}
             </CardHeader>
             <CardContent>
                <Empty>
@@ -216,14 +217,15 @@ function BankAccountsListContent() {
                      "dashboard.routes.bank-accounts.list-section.description",
                   )}
                </CardDescription>
-               <CardAction className="hidden md:flex">
+               {!isMobile && (<CardAction >
                   <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
                      <Plus className="size-4 mr-2" />
                      {translate(
-                        "dashboard.routes.transactions.actions-toolbar.actions.add-new",
+                        "dashboard.routes.bank-accounts.list-section.actions.add-new",
                      )}
                   </Button>
                </CardAction>
+               )}
             </CardHeader>
             <CardContent className="grid gap-2">
                <div className="flex items-center gap-3">
@@ -252,7 +254,7 @@ function BankAccountsListContent() {
                      <ItemGroup>
                         {bankAccounts.map((account, index) => (
                            <Fragment key={account.id}>
-                              <BankAccountItem account={account} />
+                              <BankAccountItem solid account={account} />
                               {index !== bankAccounts.length - 1 && (
                                  <ItemSeparator />
                               )}

@@ -284,3 +284,143 @@ export async function getBankAccountStats(
       );
    }
 }
+
+export async function getBankAccountBalances(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({
+            balance: sql<number>`
+               COALESCE(SUM(
+                  CASE
+                     WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL)
+                     WHEN ${transaction.type} = 'expense' THEN -CAST(${transaction.amount} AS REAL)
+                     WHEN ${transaction.type} = 'transfer' THEN CAST(${transaction.amount} AS REAL)
+                     ELSE 0
+                  END
+               ), 0)
+            `,
+            bank: bankAccount.bank,
+            id: bankAccount.id,
+            name: bankAccount.name,
+            type: bankAccount.type,
+         })
+         .from(bankAccount)
+         .leftJoin(transaction, eq(transaction.bankAccountId, bankAccount.id))
+         .where(eq(bankAccount.organizationId, organizationId))
+         .groupBy(
+            bankAccount.id,
+            bankAccount.name,
+            bankAccount.bank,
+            bankAccount.type,
+         );
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get bank account balances: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getBankAccountTypeDistribution(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({
+            count: sql<number>`count(*)`,
+            type: bankAccount.type,
+         })
+         .from(bankAccount)
+         .where(eq(bankAccount.organizationId, organizationId))
+         .groupBy(bankAccount.type);
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get bank account type distribution: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getBankAccountMonthlyFlow(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   months: number = 6,
+) {
+   try {
+      const result = await dbClient
+         .select({
+            expenses: sql<number>`
+               COALESCE(SUM(
+                  CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END
+               ), 0)
+            `,
+            income: sql<number>`
+               COALESCE(SUM(
+                  CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END
+               ), 0)
+            `,
+            month: sql<string>`to_char(${transaction.date}, 'YYYY-MM')`,
+         })
+         .from(transaction)
+         .innerJoin(bankAccount, eq(transaction.bankAccountId, bankAccount.id))
+         .where(
+            and(
+               eq(bankAccount.organizationId, organizationId),
+               sql`${transaction.date} >= date_trunc('month', CURRENT_DATE - interval '${sql.raw(String(months - 1))} months')`,
+            ),
+         )
+         .groupBy(sql`to_char(${transaction.date}, 'YYYY-MM')`)
+         .orderBy(sql`to_char(${transaction.date}, 'YYYY-MM')`);
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get bank account monthly flow: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getBankAccountTransactionsByAccount(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({
+            accountId: bankAccount.id,
+            accountName: bankAccount.name,
+            bank: bankAccount.bank,
+            expenses: sql<number>`
+               COALESCE(SUM(
+                  CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END
+               ), 0)
+            `,
+            income: sql<number>`
+               COALESCE(SUM(
+                  CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END
+               ), 0)
+            `,
+            transactionCount: sql<number>`count(${transaction.id})`,
+         })
+         .from(bankAccount)
+         .leftJoin(transaction, eq(transaction.bankAccountId, bankAccount.id))
+         .where(eq(bankAccount.organizationId, organizationId))
+         .groupBy(bankAccount.id, bankAccount.name, bankAccount.bank);
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get bank account transactions by account: ${(err as Error).message}`,
+      );
+   }
+}

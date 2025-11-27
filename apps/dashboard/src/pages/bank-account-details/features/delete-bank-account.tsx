@@ -16,12 +16,14 @@ import { trpc } from "@/integrations/clients";
 
 interface DeleteBankAccountProps {
    bankAccount: BankAccount;
+   onSuccess?: () => void;
    open: boolean;
    setOpen: (open: boolean) => void;
 }
 
 export function DeleteBankAccount({
    bankAccount,
+   onSuccess,
    open,
    setOpen,
 }: DeleteBankAccountProps) {
@@ -37,6 +39,7 @@ export function DeleteBankAccount({
                queryKey: ["bankAccounts"],
             });
             toast.success("Bank account deleted successfully");
+            onSuccess?.();
          },
       }),
    );

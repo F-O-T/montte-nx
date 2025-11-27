@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -12,12 +13,12 @@ import { useParams, useRouter } from "@tanstack/react-router";
 import { Building, Home } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { BankAccountInfo } from "./bank-account-information-section";
-import { BankAccountQuickActionsToolbar } from "./bank-account-quick-actions-toolbar";
-import { RecentTransactions } from "./bank-account-recent-transactions-section";
+import { BankAccountCharts } from "./bank-account-charts";
 import { BankAccountStats } from "./bank-account-stats";
+import { RecentTransactions } from "./bank-account-recent-transactions-section";
 
 function BankAccountContent() {
    const params = useParams({ strict: false });
@@ -28,6 +29,7 @@ function BankAccountContent() {
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
+
    if (!bankAccountId) {
       return (
          <BankAccountPageError
@@ -42,34 +44,33 @@ function BankAccountContent() {
    }
 
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-min col-span-1 md:col-span-2 grid gap-4">
-               <BankAccountQuickActionsToolbar bankAccountId={bankAccountId} />
-               <BankAccountInfo bankAccountId={bankAccountId} />
-               <RecentTransactions bankAccountId={bankAccountId} />
-            </div>
-            <div className="col-span-1">
-               <BankAccountStats bankAccountId={bankAccountId} />
-            </div>
-         </div>
+      <main className="space-y-4">
+         <DefaultHeader
+            description={translate(
+               "dashboard.routes.bank-accounts.list-section.description",
+            )}
+            title={bankAccount.name || "Conta Bancaria"}
+         />
+         <BankAccountStats bankAccountId={bankAccountId} />
+         <RecentTransactions bankAccountId={bankAccountId} />
+         <BankAccountCharts bankAccountId={bankAccountId} />
       </main>
    );
 }
 
 function BankAccountPageSkeleton() {
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid md:grid-cols-1 gap-4">
-            <div className="col-span-1 grid gap-4">
-               <Skeleton className="h-20 w-full" />
-               <Skeleton className="h-32 w-full" />
-               <Skeleton className="h-24 w-full" />
-            </div>
+      <main className="space-y-4">
+         <div className="flex flex-col gap-2">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-6 w-72" />
          </div>
-         <div className="grid md:grid-cols-1 gap-4">
-            <Skeleton className="h-48 w-full" />
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
          </div>
+         <Skeleton className="h-64 w-full" />
       </main>
    );
 }
@@ -92,14 +93,14 @@ function BankAccountPageError({ error, resetErrorBoundary }: FallbackProps) {
                         onClick={() =>
                            router.navigate({
                               params: { slug: activeOrganization.slug },
-                              to: "/$slug/profile",
+                              to: "/$slug/bank-accounts",
                            })
                         }
                         size="default"
                         variant="outline"
                      >
                         <Home className="size-4 mr-2" />
-                        Go to Profile
+                        Go to Bank Accounts
                      </Button>
                      <Button
                         onClick={resetErrorBoundary}

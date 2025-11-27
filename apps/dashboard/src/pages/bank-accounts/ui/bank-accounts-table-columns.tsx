@@ -1,4 +1,5 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
+import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -9,14 +10,17 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { DeleteBankAccount } from "@/pages/bank-account-details/features/delete-bank-account";
 
 function BankAccountActionsCell({ account }: { account: BankAccount }) {
    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const { activeOrganization } = useActiveOrganization();
 
    return (
       <>
@@ -29,9 +33,25 @@ function BankAccountActionsCell({ account }: { account: BankAccount }) {
                </DropdownMenuTrigger>
                <DropdownMenuContent align="end">
                   <DropdownMenuLabel>
-                     Gerencie sua conta bancária
+                     {translate(
+                        "dashboard.routes.bank-accounts.list-section.actions.label",
+                     )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                     <Link
+                        params={{
+                           bankAccountId: account.id,
+                           slug: activeOrganization.slug,
+                        }}
+                        to="/$slug/bank-accounts/$bankAccountId"
+                     >
+                        <Eye className="size-4" />
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.actions.view-details",
+                        )}
+                     </Link>
+                  </DropdownMenuItem>
                   <Suspense
                      fallback={
                         <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
@@ -39,12 +59,13 @@ function BankAccountActionsCell({ account }: { account: BankAccount }) {
                   >
                      <ManageBankAccountSheet asChild bankAccount={account} />
                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
                         onSelect={(e) => {
                            e.preventDefault();
                            setIsDeleteOpen(true);
                         }}
                      >
-                        <Trash2 className="size-4 mr-2" />
+                        <Trash2 className="size-4" />
                         Excluir conta
                      </DropdownMenuItem>
                   </Suspense>
