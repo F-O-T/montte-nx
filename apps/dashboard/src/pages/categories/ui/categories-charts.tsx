@@ -15,7 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -138,7 +138,7 @@ function CustomTooltip({
    active,
    payload,
    total,
-   valueFormatter = formatCurrency,
+   valueFormatter = formatDecimalCurrency,
    showPercentage = false,
    showTransactions = false,
 }: CustomTooltipProps) {
@@ -230,7 +230,7 @@ function MonthlyTrendTooltip({
                      </div>
                      <div className="flex items-center gap-1.5">
                         <span className="text-sm font-medium text-foreground">
-                           {formatCurrency(entry.value)}
+                           {formatDecimalCurrency(entry.value)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                            ({percentage}%)
@@ -245,7 +245,7 @@ function MonthlyTrendTooltip({
                Total
             </span>
             <span className="text-sm font-bold text-foreground">
-               {formatCurrency(total)}
+               {formatDecimalCurrency(total)}
             </span>
          </div>
       </div>
@@ -290,7 +290,7 @@ function CategoryPieChart({
                            <CustomTooltip
                               showPercentage
                               total={total}
-                              valueFormatter={formatCurrency}
+                              valueFormatter={formatDecimalCurrency}
                            />
                         }
                         cursor={false}
@@ -324,11 +324,7 @@ function CategoryPieChart({
                                           x={viewBox.cx}
                                           y={viewBox.cy}
                                        >
-                                          R${" "}
-                                          {total.toLocaleString("pt-BR", {
-                                             maximumFractionDigits: 0,
-                                             minimumFractionDigits: 0,
-                                          })}
+                                          {formatDecimalCurrency(total)}
                                        </tspan>
                                        <tspan
                                           className="fill-muted-foreground text-xs"
@@ -452,7 +448,7 @@ function CategoryMonthlyTrendChart() {
                      />
                      <YAxis
                         axisLine={false}
-                        tickFormatter={(value) => formatCurrency(value)}
+                        tickFormatter={(value) => formatDecimalCurrency(value)}
                         tickLine={false}
                         tickMargin={8}
                      />
@@ -573,7 +569,7 @@ function TopCategoriesChart() {
                               showPercentage
                               showTransactions
                               total={total}
-                              valueFormatter={formatCurrency}
+                              valueFormatter={formatDecimalCurrency}
                            />
                         }
                         cursor={false}
