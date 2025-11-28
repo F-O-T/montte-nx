@@ -4,9 +4,13 @@
       "builder": "DOCKERFILE",
       "dockerfilePath": "/apps/server/Dockerfile",
       "nixpacksPlan": {
-         "providers": ["..."]
+         "providers": [
+            "..."
+         ]
       },
-      "watchPatterns": ["/packages/**"]
+      "watchPatterns": [
+         "/packages/**"
+      ]
    },
    "deploy": {
       "multiRegionConfig": {
@@ -18,6 +22,6 @@
       "restartPolicyMaxRetries": 10,
       "restartPolicyType": "ON_FAILURE",
       "runtime": "V2",
-      "sleepApplication": true
+      "sleepApplication": false
    }
 }

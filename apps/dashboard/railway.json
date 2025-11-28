@@ -10,7 +10,7 @@
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "sleepApplication": true,
+    "sleepApplication": false,
     "multiRegionConfig": {
       "us-east4-eqdc4a": {
         "numReplicas": 1

@@ -8,6 +8,7 @@ export async function compressImage(
    } = {},
 ): Promise<Buffer> {
    const format = options.format || "jpeg";
+
    const quality = options.quality || 80;
    let image = sharp(inputBuffer);
    switch (format) {
