@@ -2,6 +2,7 @@
    "actions": {
       "forgot-password": "Esqueceu sua senha?",
       "google-sign-in": "Entrar com Google",
+      "sign-in": "Entrar",
       "sign-up": "Registre-se aqui"
    },
    "description": "Digite seus dados para acessar sua conta.",
@@ -12,6 +13,7 @@
    },
    "texts": {
       "no-account": "Não tem uma conta? ",
+      "or-continue-with": "ou continue com",
       "privacy-policy": "Política de Privacidade",
       "terms-and-privacy": "Ao clicar em enviar, você concorda com nossos {split} e {split}.",
       "terms-of-service": "Termos de Serviço"
