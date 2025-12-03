@@ -41,6 +41,7 @@ import { ManageTransactionSheet } from "@/features/transaction/features/manage-t
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { DeleteBankAccount } from "../features/delete-bank-account";
+import { ImportOfxSheet } from "../features/import-ofx-sheet";
 import { BankAccountCharts } from "./bank-account-charts";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
 import { BankAccountStats } from "./bank-account-stats";
@@ -54,6 +55,7 @@ function BankAccountContent() {
       useState(false);
    const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
    const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
+   const [isImportOfxOpen, setIsImportOfxOpen] = useState(false);
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
 
@@ -139,7 +141,7 @@ function BankAccountContent() {
                   </Button>
                </DropdownMenuTrigger>
                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => {}}>
+                  <DropdownMenuItem onClick={() => setIsImportOfxOpen(true)}>
                      <FileSpreadsheet className="size-4" />
                      Importar OFX
                   </DropdownMenuItem>
@@ -208,6 +210,11 @@ function BankAccountContent() {
             onSuccess={handleDeleteSuccess}
             open={isDeleteAccountOpen}
             setOpen={setIsDeleteAccountOpen}
+         />
+         <ImportOfxSheet
+            bankAccountId={bankAccountId}
+            isOpen={isImportOfxOpen}
+            onOpenChange={setIsImportOfxOpen}
          />
       </main>
    );
