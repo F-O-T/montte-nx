@@ -25,8 +25,8 @@ import {
 } from "@packages/ui/components/tooltip";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
-import { Eye, MoreVertical, Split } from "lucide-react";
-import { Suspense } from "react";
+import { Eye, MoreVertical, Pencil, Split, Trash2 } from "lucide-react";
+import { useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -46,6 +46,8 @@ export function TransactionItem({
    categories,
 }: TransactionItemProps) {
    const { activeOrganization } = useActiveOrganization();
+   const [isEditOpen, setIsEditOpen] = useState(false);
+   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const transactionCategoryIds =
       transaction.transactionCategories?.map((tc) => tc.category.id) || [];
    const categorySplits = transaction.categorySplits;
@@ -155,19 +157,41 @@ export function TransactionItem({
                         )}
                      </Link>
                   </DropdownMenuItem>
-                  <Suspense
-                     fallback={
-                        <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
-                     }
+                  <DropdownMenuItem
+                     onSelect={(e) => {
+                        e.preventDefault();
+                        setIsEditOpen(true);
+                     }}
                   >
-                     <ManageTransactionSheet
-                        asChild
-                        transaction={transaction}
-                     />
-                     <DeleteTransaction asChild transaction={transaction} />
-                  </Suspense>
+                     <Pencil className="size-4" />
+                     {translate(
+                        "dashboard.routes.transactions.features.edit.title",
+                     )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                     className="text-destructive focus:text-destructive"
+                     onSelect={(e) => {
+                        e.preventDefault();
+                        setIsDeleteOpen(true);
+                     }}
+                  >
+                     <Trash2 className="size-4" />
+                     {translate(
+                        "dashboard.routes.transactions.list-section.actions.delete",
+                     )}
+                  </DropdownMenuItem>
                </DropdownMenuContent>
             </DropdownMenu>
+            <ManageTransactionSheet
+               onOpen={isEditOpen}
+               onOpenChange={setIsEditOpen}
+               transaction={transaction}
+            />
+            <DeleteTransaction
+               onOpen={isDeleteOpen}
+               onOpenChange={setIsDeleteOpen}
+               transaction={transaction}
+            />
          </ItemActions>
       </Item>
    );

@@ -4,6 +4,7 @@ import {
    createTransaction,
    createTransfer,
    deleteTransaction,
+   deleteTransactions,
    findTransactionById,
    findTransactionsByOrganizationId,
    findTransactionsByOrganizationIdPaginated,
@@ -12,6 +13,7 @@ import {
    getTotalTransactionsByOrganizationId,
    getTotalTransfersByOrganizationId,
    updateTransaction,
+   updateTransactionsCategory,
 } from "@packages/database/repositories/transaction-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
@@ -152,6 +154,27 @@ export const transactionRouter = router({
          return deleteTransaction(resolvedCtx.db, input.id);
       }),
 
+   deleteMany: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()).min(1) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transactions = await Promise.all(
+            input.ids.map((id) => findTransactionById(resolvedCtx.db, id)),
+         );
+
+         const validIds = transactions
+            .filter((t) => t && t.organizationId === organizationId)
+            .map((t) => t!.id);
+
+         if (validIds.length === 0) {
+            throw new Error("No valid transactions found");
+         }
+
+         return deleteTransactions(resolvedCtx.db, validIds);
+      }),
+
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
@@ -239,6 +262,41 @@ export const transactionRouter = router({
             totalTransactions,
             totalTransfers: totalTransfers || 0,
          };
+      }),
+
+   markAsTransfer: protectedProcedure
+      .input(
+         z.object({
+            ids: z.array(z.string()).min(1),
+            toBankAccountId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transactions = await Promise.all(
+            input.ids.map((id) => findTransactionById(resolvedCtx.db, id)),
+         );
+
+         const validTransactions = transactions.filter(
+            (t) => t && t.organizationId === organizationId && t.bankAccountId,
+         );
+
+         if (validTransactions.length === 0) {
+            throw new Error("No valid transactions found");
+         }
+
+         const results = await Promise.all(
+            validTransactions.map(async (t) => {
+               await updateTransaction(resolvedCtx.db, t!.id, {
+                  type: "transfer",
+               });
+               return t!.id;
+            }),
+         );
+
+         return results;
       }),
 
    transfer: protectedProcedure
@@ -367,5 +425,101 @@ export const transactionRouter = router({
          return {
             transaction: updatedTransaction,
          };
+      }),
+
+   updateCategory: protectedProcedure
+      .input(
+         z.object({
+            categoryId: z.string(),
+            ids: z.array(z.string()).min(1),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transactions = await Promise.all(
+            input.ids.map((id) => findTransactionById(resolvedCtx.db, id)),
+         );
+
+         const validIds = transactions
+            .filter((t) => t && t.organizationId === organizationId)
+            .map((t) => t!.id);
+
+         if (validIds.length === 0) {
+            throw new Error("No valid transactions found");
+         }
+
+         return updateTransactionsCategory(
+            resolvedCtx.db,
+            validIds,
+            input.categoryId,
+         );
+      }),
+
+   updateCostCenter: protectedProcedure
+      .input(
+         z.object({
+            costCenterId: z.string().nullable(),
+            ids: z.array(z.string()).min(1),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transactions = await Promise.all(
+            input.ids.map((id) => findTransactionById(resolvedCtx.db, id)),
+         );
+
+         const validIds = transactions
+            .filter((t) => t && t.organizationId === organizationId)
+            .map((t) => t!.id);
+
+         if (validIds.length === 0) {
+            throw new Error("No valid transactions found");
+         }
+
+         const results = await Promise.all(
+            validIds.map((id) =>
+               updateTransaction(resolvedCtx.db, id, {
+                  costCenterId: input.costCenterId,
+               }),
+            ),
+         );
+
+         return results;
+      }),
+
+   updateTags: protectedProcedure
+      .input(
+         z.object({
+            ids: z.array(z.string()).min(1),
+            tagIds: z.array(z.string()),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transactions = await Promise.all(
+            input.ids.map((id) => findTransactionById(resolvedCtx.db, id)),
+         );
+
+         const validIds = transactions
+            .filter((t) => t && t.organizationId === organizationId)
+            .map((t) => t!.id);
+
+         if (validIds.length === 0) {
+            throw new Error("No valid transactions found");
+         }
+
+         await Promise.all(
+            validIds.map((id) =>
+               setTransactionTags(resolvedCtx.db, id, input.tagIds),
+            ),
+         );
+
+         return validIds;
       }),
 });

@@ -60,7 +60,6 @@ export const Route = createFileRoute("/_dashboard")({
       }
    },
    component: RouteComponent,
-   staticData: { breadcrumb: "Dashboard Layout" },
    wrapInSuspense: true,
 });
 

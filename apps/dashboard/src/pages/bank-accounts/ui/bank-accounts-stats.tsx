@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import {
    Card,
    CardContent,
@@ -29,8 +30,8 @@ function BankAccountsStatsErrorFallback(props: FallbackProps) {
 
 function BankAccountsStatsSkeleton() {
    return (
-      <div className="grid grid-cols-2 gap-4 h-min">
-         {[1, 2].map((index) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+         {[1, 2, 3, 4].map((index) => (
             <Card
                className="col-span-1 h-full w-full"
                key={`stats-skeleton-card-${index + 1}`}
@@ -58,16 +59,42 @@ function BankAccountsStatsContent() {
    );
 
    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-min">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
          <StatsCard
-            description="Saldo total em todas as contas"
-            title="Saldo Total"
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-balance.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-balance.title",
+            )}
             value={formatDecimalCurrency(stats.totalBalance)}
          />
          <StatsCard
-            description="Número total de contas bancárias"
-            title="Total de Contas"
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-accounts.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-accounts.title",
+            )}
             value={stats.totalAccounts}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-income.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-income.title",
+            )}
+            value={formatDecimalCurrency(stats.totalIncome)}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-expenses.description",
+            )}
+            title={translate(
+               "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+            )}
+            value={formatDecimalCurrency(stats.totalExpenses)}
          />
       </div>
    );

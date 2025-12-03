@@ -5,6 +5,7 @@
    },
    "delete-confirmation": {
       "description": "Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.",
+      "description-bulk": "Tem certeza que deseja excluir {{count}} itens? Esta ação não pode ser desfeita.",
       "title": "Confirmar Exclusão"
    }
 }

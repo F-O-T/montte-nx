@@ -3,11 +3,14 @@ import {
    createDefaultBusinessBankAccount,
    createDefaultWalletBankAccount,
    deleteBankAccount,
+   deleteBankAccounts,
    findBankAccountById,
    findBankAccountsByOrganizationId,
    findBankAccountsByOrganizationIdPaginated,
+   getBankAccountBalances,
    getBankAccountStats,
    updateBankAccount,
+   updateBankAccountsStatus,
 } from "@packages/database/repositories/bank-account-repository";
 import {
    createTransaction,
@@ -36,6 +39,8 @@ const paginationSchema = z.object({
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
+   status: z.enum(["active", "inactive"]).optional(),
+   type: z.enum(["checking", "savings", "investment"]).optional(),
 });
 
 export const bankAccountRouter = router({
@@ -87,6 +92,15 @@ export const bankAccountRouter = router({
          return deleteBankAccount(resolvedCtx.db, input.id);
       }),
 
+   deleteMany: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return deleteBankAccounts(resolvedCtx.db, input.ids, organizationId);
+      }),
+
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
@@ -109,9 +123,18 @@ export const bankAccountRouter = router({
                orderDirection: input.orderDirection,
                page: input.page,
                search: input.search,
+               status: input.status,
+               type: input.type,
             },
          );
       }),
+
+   getBalances: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const organizationId = resolvedCtx.organizationId;
+
+      return getBankAccountBalances(resolvedCtx.db, organizationId);
+   }),
 
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
@@ -141,9 +164,14 @@ export const bankAccountRouter = router({
    getTransactions: protectedProcedure
       .input(
          z.object({
+            categoryId: z.string().optional(),
+            endDate: z.string().optional(),
             id: z.string(),
             limit: z.number().min(1).max(100).default(10),
             page: z.number().min(1).default(1),
+            search: z.string().optional(),
+            startDate: z.string().optional(),
+            type: z.enum(["income", "expense", "transfer"]).optional(),
          }),
       )
       .query(async ({ ctx, input }) => {
@@ -163,8 +191,15 @@ export const bankAccountRouter = router({
             resolvedCtx.db,
             input.id,
             {
+               categoryId: input.categoryId,
+               endDate: input.endDate ? new Date(input.endDate) : undefined,
                limit: input.limit,
                page: input.page,
+               search: input.search,
+               startDate: input.startDate
+                  ? new Date(input.startDate)
+                  : undefined,
+               type: input.type,
             },
          );
       }),
@@ -245,5 +280,24 @@ export const bankAccountRouter = router({
                | "investment";
          }
          return updateBankAccount(resolvedCtx.db, input.id, updateData);
+      }),
+
+   updateStatus: protectedProcedure
+      .input(
+         z.object({
+            ids: z.array(z.string()),
+            status: z.enum(["active", "inactive"]),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return updateBankAccountsStatus(
+            resolvedCtx.db,
+            input.ids,
+            input.status,
+            organizationId,
+         );
       }),
 });

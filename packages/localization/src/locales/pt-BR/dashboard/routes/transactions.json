@@ -82,6 +82,7 @@
    "list-section": {
       "actions": {
          "delete": "Excluir transação",
+         "edit": "Editar transação",
          "label": "Gerencie sua transação",
          "view-details": "Ver detalhes"
       },

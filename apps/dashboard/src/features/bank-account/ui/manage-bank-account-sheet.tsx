@@ -1,7 +1,6 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
-import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
    Field,
    FieldError,
@@ -27,7 +26,6 @@ import {
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 import { useTRPC } from "@/integrations/clients";
@@ -138,35 +136,9 @@ export function ManageBankAccountSheet({
       },
    });
 
-   const TriggerComponent = asChild ? (
-      <DropdownMenuItem
-         className="flex items-center gap-2"
-         onSelect={(e) => {
-            e.preventDefault();
-            setIsOpen?.(true);
-         }}
-      >
-         {isEditMode ? (
-            <>
-               <Pencil className="size-4" />
-               {translate(
-                  "dashboard.routes.profile.bank-accounts.actions.edit",
-               )}
-            </>
-         ) : (
-            <>
-               <Plus className="mr-2 h-4 w-4" />
-               {translate(
-                  "dashboard.routes.profile.bank-accounts.actions.add-account.title",
-               )}
-            </>
-         )}
-      </DropdownMenuItem>
-   ) : null;
-
    return (
       <Sheet onOpenChange={setIsOpen} open={isOpen}>
-         {asChild && <SheetTrigger asChild>{TriggerComponent}</SheetTrigger>}
+         {asChild && <SheetTrigger asChild />}
          <SheetContent>
             <form
                className="h-full flex flex-col"

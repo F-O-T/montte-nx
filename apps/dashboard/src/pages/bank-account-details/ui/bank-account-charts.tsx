@@ -178,18 +178,26 @@ function MonthlyTooltip({
    );
 }
 
+interface ChartProps {
+   bankAccountId: string;
+   startDate?: Date | null;
+   endDate?: Date | null;
+}
+
 function BankAccountTypeDistributionChart({
    bankAccountId,
-}: {
-   bankAccountId: string;
-}) {
+   startDate,
+   endDate,
+}: ChartProps) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
+         endDate: endDate?.toISOString(),
          id: bankAccountId,
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -332,16 +340,18 @@ function BankAccountTypeDistributionChart({
 
 function BankAccountMonthlyTrendChart({
    bankAccountId,
-}: {
-   bankAccountId: string;
-}) {
+   startDate,
+   endDate,
+}: ChartProps) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
+         endDate: endDate?.toISOString(),
          id: bankAccountId,
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -473,26 +483,42 @@ function BankAccountMonthlyTrendChart({
 
 function BankAccountChartsContent({
    bankAccountId,
-}: {
-   bankAccountId: string;
-}) {
+   startDate,
+   endDate,
+}: ChartProps) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <BankAccountMonthlyTrendChart bankAccountId={bankAccountId} />
-         <BankAccountTypeDistributionChart bankAccountId={bankAccountId} />
+         <BankAccountMonthlyTrendChart
+            bankAccountId={bankAccountId}
+            endDate={endDate}
+            startDate={startDate}
+         />
+         <BankAccountTypeDistributionChart
+            bankAccountId={bankAccountId}
+            endDate={endDate}
+            startDate={startDate}
+         />
       </div>
    );
 }
 
 export function BankAccountCharts({
    bankAccountId,
+   startDate,
+   endDate,
 }: {
    bankAccountId: string;
+   startDate: Date | null;
+   endDate: Date | null;
 }) {
    return (
       <ErrorBoundary FallbackComponent={BankAccountChartsErrorFallback}>
          <Suspense fallback={<BankAccountChartsSkeleton />}>
-            <BankAccountChartsContent bankAccountId={bankAccountId} />
+            <BankAccountChartsContent
+               bankAccountId={bankAccountId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

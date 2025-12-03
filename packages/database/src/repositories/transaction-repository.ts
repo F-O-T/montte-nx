@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, eq, exists, gte, inArray, lte, sql } from "drizzle-orm";
+import { and, eq, exists, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
 import { type CategorySplit, transaction } from "../schemas/transactions";
@@ -288,19 +288,67 @@ export async function findTransactionsByBankAccountIdPaginated(
    options: {
       page?: number;
       limit?: number;
+      search?: string;
+      startDate?: Date;
+      endDate?: Date;
+      categoryId?: string;
+      type?: "income" | "expense" | "transfer";
    } = {},
 ) {
-   const { page = 1, limit = 10 } = options;
-   const offset = (page - 1) * limit;
+   const {
+      page = 1,
+      limit: pageLimit = 10,
+      search,
+      startDate,
+      endDate,
+      categoryId,
+      type,
+   } = options;
+   const offset = (page - 1) * pageLimit;
 
    try {
+      const baseConditions = [eq(transaction.bankAccountId, bankAccountId)];
+
+      if (search) {
+         baseConditions.push(ilike(transaction.description, `%${search}%`));
+      }
+
+      if (startDate) {
+         baseConditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         baseConditions.push(lte(transaction.date, endDate));
+      }
+
+      if (type) {
+         baseConditions.push(eq(transaction.type, type));
+      }
+
+      if (categoryId) {
+         baseConditions.push(
+            exists(
+               dbClient
+                  .select()
+                  .from(transactionCategory)
+                  .where(
+                     and(
+                        eq(transactionCategory.transactionId, transaction.id),
+                        eq(transactionCategory.categoryId, categoryId),
+                     ),
+                  ),
+            ),
+         );
+      }
+
+      const whereClause = and(...baseConditions);
+
       const [transactions, totalCount] = await Promise.all([
          dbClient.query.transaction.findMany({
-            limit,
+            limit: pageLimit,
             offset,
-            orderBy: (transaction, { desc }) => desc(transaction.date),
-            where: (transaction, { eq }) =>
-               eq(transaction.bankAccountId, bankAccountId),
+            orderBy: (txn, { desc }) => desc(txn.date),
+            where: whereClause,
             with: {
                bankAccount: true,
                costCenter: true,
@@ -318,20 +366,19 @@ export async function findTransactionsByBankAccountIdPaginated(
          }),
          dbClient.query.transaction
             .findMany({
-               where: (transaction, { eq }) =>
-                  eq(transaction.bankAccountId, bankAccountId),
+               where: whereClause,
             })
             .then((result) => result.length),
       ]);
 
-      const totalPages = Math.ceil(totalCount / limit);
+      const totalPages = Math.ceil(totalCount / pageLimit);
 
       return {
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
             hasPreviousPage: page > 1,
-            limit,
+            limit: pageLimit,
             totalCount,
             totalPages,
          },
@@ -560,6 +607,77 @@ export async function getTotalTransfersByOrganizationId(
       propagateError(err);
       throw AppError.database(
          `Failed to get total transfers: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteTransactions(
+   dbClient: DatabaseInstance,
+   transactionIds: string[],
+) {
+   try {
+      if (transactionIds.length === 0) {
+         return [];
+      }
+
+      const result = await dbClient
+         .delete(transaction)
+         .where(inArray(transaction.id, transactionIds))
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete transactions: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function updateTransactionsCategory(
+   dbClient: DatabaseInstance,
+   transactionIds: string[],
+   categoryId: string,
+) {
+   try {
+      if (transactionIds.length === 0) {
+         return [];
+      }
+
+      await dbClient
+         .delete(transactionCategory)
+         .where(inArray(transactionCategory.transactionId, transactionIds));
+
+      const categoryInserts = transactionIds.map((transactionId) => ({
+         categoryId,
+         transactionId,
+      }));
+
+      await dbClient.insert(transactionCategory).values(categoryInserts);
+
+      const updatedTransactions = await dbClient.query.transaction.findMany({
+         where: (txn) => inArray(txn.id, transactionIds),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            transactionCategories: {
+               with: {
+                  category: true,
+               },
+            },
+            transactionTags: {
+               with: {
+                  tag: true,
+               },
+            },
+         },
+      });
+
+      return updatedTransactions;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update transactions category: ${(err as Error).message}`,
       );
    }
 }

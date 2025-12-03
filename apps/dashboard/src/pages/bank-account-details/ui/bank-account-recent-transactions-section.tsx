@@ -1,75 +1,84 @@
-import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import {
-   Card,
-   CardAction,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+} from "@packages/ui/components/alert-dialog";
+import { Button } from "@packages/ui/components/button";
+import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
+   Empty,
+   EmptyContent,
+   EmptyDescription,
+   EmptyMedia,
+   EmptyTitle,
+} from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import {
+   InputGroup,
+   InputGroupAddon,
+   InputGroupInput,
+} from "@packages/ui/components/input-group";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-   Pagination,
-   PaginationContent,
-   PaginationItem,
-   PaginationLink,
-   PaginationNext,
-   PaginationPrevious,
-} from "@packages/ui/components/pagination";
+   SelectionActionBar,
+   SelectionActionButton,
+} from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDecimalCurrency } from "@packages/utils/money";
+import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
+import type { RowSelectionState } from "@tanstack/react-table";
 import {
-   keepPreviousData,
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
-import { FileUp, MoreVertical, Plus, Trash2 } from "lucide-react";
-import { Fragment, Suspense, useRef, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { toast } from "sonner";
-import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
-import {
-   type Transaction,
-   TransactionItem,
-} from "@/features/transaction/ui/transaction-item";
+   ArrowDownLeft,
+   ArrowLeftRight,
+   ArrowUpRight,
+   Filter,
+   FolderOpen,
+   Search,
+   Trash2,
+   Wallet,
+   X,
+} from "lucide-react";
+import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { CategorizeSheet } from "@/features/transaction/features/categorize-sheet";
+import { MarkAsTransferSheet } from "@/features/transaction/features/mark-as-transfer-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc, useTRPC } from "@/integrations/clients";
-import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
-import { DeleteBankAccount } from "../features/delete-bank-account";
+import { trpc } from "@/integrations/clients";
+import {
+   createTransactionColumns,
+   TransactionExpandedContent,
+   TransactionMobileCard,
+} from "@/pages/transactions/ui/transactions-table-columns";
+import { TransactionFilterSheet } from "../features/transaction-filter-sheet";
+import { useTransactionBulkActions } from "../features/use-transaction-bulk-actions";
 
-function RecentTransactionsErrorFallback() {
+function RecentTransactionsErrorFallback(props: FallbackProps) {
    return (
-      <Card className="w-full">
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.transactions.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.transactions.list-section.description",
-               )}
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
-            <div className="text-center py-4 text-muted-foreground">
-               {translate(
-                  "dashboard.routes.transactions.list-section.state.empty.title",
-               )}
-            </div>
+      <Card>
+         <CardContent className="pt-6">
+            {createErrorFallback({
+               errorDescription:
+                  "Falha ao carregar transações. Tente novamente mais tarde.",
+               errorTitle: "Erro ao carregar transações",
+               retryText: "Tentar novamente",
+            })(props)}
          </CardContent>
       </Card>
    );
@@ -77,22 +86,35 @@ function RecentTransactionsErrorFallback() {
 
 function RecentTransactionsSkeleton() {
    return (
-      <Card className="w-full">
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.transactions.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.transactions.list-section.description",
-               )}
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
-            <div className="space-y-4">
-               <Skeleton className="h-12 w-full" />
-               <Skeleton className="h-12 w-full" />
-               <Skeleton className="h-12 w-full" />
+      <Card>
+         <CardContent className="pt-6 grid gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+               <Skeleton className="h-9 flex-1 sm:max-w-md" />
+            </div>
+            <div className="flex gap-2">
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-28" />
+            </div>
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((_, index) => (
+                  <Fragment key={`transaction-skeleton-${index + 1}`}>
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
+               ))}
+            </ItemGroup>
+            <div className="flex items-center justify-end gap-2 pt-4">
+               <Skeleton className="h-10 w-24" />
+               <Skeleton className="h-10 w-10" />
+               <Skeleton className="h-10 w-24" />
             </div>
          </CardContent>
       </Card>
@@ -101,27 +123,55 @@ function RecentTransactionsSkeleton() {
 
 function RecentTransactionsContent({
    bankAccountId,
+   startDate,
+   endDate,
 }: {
    bankAccountId: string;
+   startDate: Date | null;
+   endDate: Date | null;
 }) {
    const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
    const [currentPage, setCurrentPage] = useState(1);
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isImporting, setIsImporting] = useState(false);
-   const fileInputRef = useRef<HTMLInputElement>(null);
-   const router = useRouter();
-   const queryClient = useQueryClient();
    const pageSize = 10;
+   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
+   const [isTransferOpen, setIsTransferOpen] = useState(false);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-   const trpcClient = useTRPC();
+   const [searchTerm, setSearchTerm] = useState("");
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [categoryFilter, setCategoryFilter] = useState("all");
+   const [typeFilter, setTypeFilter] = useState<string>("");
+
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setDebouncedSearchTerm(searchTerm);
+         setCurrentPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+   }, [searchTerm]);
+
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [typeFilter, categoryFilter, startDate, endDate]);
+
    const { data } = useSuspenseQuery(
-      trpcClient.bankAccounts.getTransactions.queryOptions(
+      trpc.bankAccounts.getTransactions.queryOptions(
          {
+            categoryId: categoryFilter === "all" ? undefined : categoryFilter,
+            endDate: endDate?.toISOString(),
             id: bankAccountId,
             limit: pageSize,
             page: currentPage,
+            search: debouncedSearchTerm || undefined,
+            startDate: startDate?.toISOString(),
+            type:
+               typeFilter === ""
+                  ? undefined
+                  : (typeFilter as "income" | "expense" | "transfer"),
          },
          {
             placeholderData: keepPreviousData,
@@ -129,156 +179,191 @@ function RecentTransactionsContent({
       ),
    );
 
-   const { data: bankAccount } = useSuspenseQuery(
-      trpcClient.bankAccounts.getById.queryOptions({ id: bankAccountId }),
-   );
-
    const { transactions, pagination } = data;
-   const { totalPages } = pagination;
+   const { totalPages, totalCount } = pagination;
 
    const { data: categories = [] } = useSuspenseQuery(
-      trpcClient.categories.getAll.queryOptions(),
+      trpc.categories.getAll.queryOptions(),
    );
 
-   const parseOfxMutation = useMutation(
-      trpc.bankAccounts.parseOfx.mutationOptions({
-         onError: (error) => {
-            toast.error(error.message || "Falha ao importar arquivo OFX", {
-               id: "ofx-import",
-            });
-            setIsImporting(false);
+   const { deleteSelected, isLoading: isBulkActionLoading } =
+      useTransactionBulkActions({
+         bankAccountId,
+         onSuccess: () => {
+            setRowSelection({});
+            setIsCategorizeOpen(false);
+            setIsTransferOpen(false);
          },
-         onSuccess: async (data) => {
-            await queryClient.invalidateQueries({
-               queryKey: trpcClient.bankAccounts.getTransactions.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpcClient.bankAccounts.getStats.queryKey(),
-            });
-            toast.success(`${data.length} transacoes importadas com sucesso!`, {
-               id: "ofx-import",
-            });
-            setIsImporting(false);
-         },
-      }),
-   );
-
-   const handleImportOfx = () => {
-      fileInputRef.current?.click();
-   };
-
-   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      if (!file.name.toLowerCase().endsWith(".ofx")) {
-         toast.error("Por favor, selecione um arquivo OFX valido");
-         return;
-      }
-
-      setIsImporting(true);
-      toast.loading("Importando arquivo OFX...", { id: "ofx-import" });
-
-      try {
-         const content = await file.text();
-         await parseOfxMutation.mutateAsync({
-            bankAccountId,
-            content,
-         });
-      } catch (error) {
-         console.error("Error reading file:", error);
-      }
-
-      if (fileInputRef.current) {
-         fileInputRef.current.value = "";
-      }
-   };
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/bank-accounts",
       });
+
+   const hasActiveFilters =
+      debouncedSearchTerm || typeFilter !== "" || categoryFilter !== "all";
+
+   const selectedIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id],
+   );
+   const selectedTransactions = transactions.filter((t) =>
+      selectedIds.includes(t.id),
+   );
+   const selectedTotal = useMemo(() => {
+      return selectedTransactions.reduce((sum, t) => {
+         const amount = Number.parseFloat(t.amount);
+         return t.type === "expense" ? sum - amount : sum + amount;
+      }, 0);
+   }, [selectedTransactions]);
+
+   const handleClearSelection = () => {
+      setRowSelection({});
    };
 
-   const hasTransactions = transactions.length > 0;
+   const handleClearFilters = () => {
+      setTypeFilter("");
+      setCategoryFilter("all");
+      setSearchTerm("");
+   };
+
+   const handleBulkDelete = () => {
+      deleteSelected(selectedIds);
+      setIsDeleteDialogOpen(false);
+   };
+
+   const handleBulkChangeCategory = () => {
+      setIsCategorizeOpen(true);
+   };
+
+   const handleBulkTransfer = () => {
+      setIsTransferOpen(true);
+   };
+
+   if (transactions.length === 0 && !hasActiveFilters) {
+      return (
+         <Card>
+            <CardContent className="pt-6">
+               <Empty>
+                  <EmptyContent>
+                     <EmptyMedia variant="icon">
+                        <Wallet className="size-12 text-muted-foreground" />
+                     </EmptyMedia>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.transactions.list-section.state.empty.title",
+                        )}
+                     </EmptyTitle>
+                     <EmptyDescription>
+                        {translate(
+                           "dashboard.routes.transactions.list-section.state.empty.description",
+                        )}
+                     </EmptyDescription>
+                  </EmptyContent>
+               </Empty>
+            </CardContent>
+         </Card>
+      );
+   }
 
    return (
       <>
-         <Card className="w-full">
-            <CardHeader>
-               <CardTitle>
-                  {translate(
-                     "dashboard.routes.transactions.list-section.title",
-                  )}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.transactions.list-section.description",
-                  )}
-               </CardDescription>
-               <CardAction>
-                  <div className="flex items-center gap-2">
-                     <Button
-                        className="hidden sm:flex"
-                        onClick={() => setIsCreateSheetOpen(true)}
-                        size="sm"
-                     >
-                        <Plus className="size-4 mr-2" />
-                        Nova Transacao
-                     </Button>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button size="icon" variant="outline">
-                              <MoreVertical className="size-4" />
+         <Card>
+            <CardContent className="pt-6 grid gap-4">
+               <div className="flex flex-col sm:flex-row gap-3">
+                  <InputGroup className="flex-1 sm:max-w-md">
+                     <InputGroupInput
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder={translate(
+                           "common.form.search.placeholder",
+                        )}
+                        value={searchTerm}
+                     />
+                     <InputGroupAddon>
+                        <Search />
+                     </InputGroupAddon>
+                  </InputGroup>
+
+                  {isMobile && (
+                     <Tooltip>
+                        <TooltipTrigger asChild>
+                           <Button
+                              onClick={() => setIsFilterSheetOpen(true)}
+                              size="icon"
+                              variant={hasActiveFilters ? "default" : "outline"}
+                           >
+                              <Filter className="size-4" />
                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                           <DropdownMenuLabel>Acoes</DropdownMenuLabel>
-                           <DropdownMenuSeparator />
-                           <DropdownMenuItem
-                              disabled={isImporting}
-                              onClick={handleImportOfx}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                           <p>Filtrar transações</p>
+                        </TooltipContent>
+                     </Tooltip>
+                  )}
+               </div>
+
+               {!isMobile && (
+                  <div className="flex flex-wrap items-center gap-3">
+                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                           Tipo:
+                        </span>
+                        <ToggleGroup
+                           onValueChange={setTypeFilter}
+                           size="sm"
+                           spacing={2}
+                           type="single"
+                           value={typeFilter}
+                           variant="outline"
+                        >
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                              value="income"
                            >
-                              <FileUp className="size-4" />
-                              {isImporting ? "Importando..." : "Importar OFX"}
-                           </DropdownMenuItem>
-                           <DropdownMenuSeparator />
-                           <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() => setIsDeleteOpen(true)}
+                              <ArrowDownLeft className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.transactions.list-section.types.income",
+                              )}
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-red-500 data-[state=on]:text-red-600"
+                              value="expense"
                            >
-                              <Trash2 className="size-4" />
-                              Excluir Conta
-                           </DropdownMenuItem>
-                        </DropdownMenuContent>
-                     </DropdownMenu>
+                              <ArrowUpRight className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.transactions.list-section.types.expense",
+                              )}
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-blue-500 data-[state=on]:text-blue-600"
+                              value="transfer"
+                           >
+                              <ArrowLeftRight className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.transactions.list-section.types.transfer",
+                              )}
+                           </ToggleGroupItem>
+                        </ToggleGroup>
+                     </div>
+
+                     {hasActiveFilters && (
+                        <>
+                           <div className="h-4 w-px bg-border" />
+                           <Button
+                              className="h-8 text-xs"
+                              onClick={handleClearFilters}
+                              size="sm"
+                              variant="outline"
+                           >
+                              <X className="size-3" />
+                              {translate("common.actions.clear-filters")}
+                           </Button>
+                        </>
+                     )}
                   </div>
-               </CardAction>
-            </CardHeader>
-            <CardContent>
-               {!hasTransactions ? (
-                  <div className="text-center py-8 text-muted-foreground">
+               )}
+
+               {transactions.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">
                      {translate(
                         "dashboard.routes.transactions.list-section.state.empty.title",
                      )}
                   </div>
-               ) : isMobile ? (
-                  <ItemGroup>
-                     {transactions.map(
-                        (transaction: Transaction, index: number) => (
-                           <Fragment key={transaction.id}>
-                              <TransactionItem
-                                 categories={categories}
-                                 transaction={transaction}
-                              />
-                              {index !== transactions.length - 1 && (
-                                 <ItemSeparator />
-                              )}
-                           </Fragment>
-                        ),
-                     )}
-                  </ItemGroup>
                ) : (
                   <DataTable
                      columns={createTransactionColumns(
@@ -286,200 +371,139 @@ function RecentTransactionsContent({
                         activeOrganization.slug,
                      )}
                      data={transactions}
+                     enableRowSelection
+                     getRowId={(row) => row.id}
+                     onRowSelectionChange={setRowSelection}
+                     pagination={{
+                        currentPage,
+                        onPageChange: setCurrentPage,
+                        pageSize,
+                        totalCount,
+                        totalPages,
+                     }}
+                     renderMobileCard={(props) => (
+                        <TransactionMobileCard
+                           {...props}
+                           categories={categories}
+                        />
+                     )}
+                     renderSubComponent={(props) => (
+                        <TransactionExpandedContent
+                           {...props}
+                           categories={categories}
+                           slug={activeOrganization.slug}
+                        />
+                     )}
+                     rowSelection={rowSelection}
                   />
                )}
             </CardContent>
-
-            {totalPages > 1 && (
-               <CardFooter className="block md:hidden">
-                  <Pagination>
-                     <PaginationContent>
-                        <PaginationItem>
-                           <PaginationPrevious
-                              className={
-                                 currentPage === 1
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              href="#"
-                              onClick={(e) => {
-                                 e.preventDefault();
-                                 setCurrentPage((prev) =>
-                                    Math.max(1, prev - 1),
-                                 );
-                              }}
-                           />
-                        </PaginationItem>
-
-                        {Array.from(
-                           { length: Math.min(5, totalPages) },
-                           (_, i: number): number => {
-                              if (totalPages <= 5) {
-                                 return i + 1;
-                              } else if (currentPage <= 3) {
-                                 return i + 1;
-                              } else if (currentPage >= totalPages - 2) {
-                                 return totalPages - 4 + i;
-                              } else {
-                                 return currentPage - 2 + i;
-                              }
-                           },
-                        ).map((pageNum) => (
-                           <PaginationItem key={pageNum}>
-                              <PaginationLink
-                                 href="#"
-                                 isActive={pageNum === currentPage}
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentPage(pageNum);
-                                 }}
-                              >
-                                 {pageNum}
-                              </PaginationLink>
-                           </PaginationItem>
-                        ))}
-
-                        <PaginationItem>
-                           <PaginationNext
-                              className={
-                                 currentPage === totalPages
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              href="#"
-                              onClick={(e) => {
-                                 e.preventDefault();
-                                 setCurrentPage((prev) =>
-                                    Math.min(totalPages, prev + 1),
-                                 );
-                              }}
-                           />
-                        </PaginationItem>
-                     </PaginationContent>
-                  </Pagination>
-               </CardFooter>
-            )}
-
-            {totalPages > 1 && (
-               <CardFooter className="hidden md:flex md:items-center md:justify-between">
-                  <div className="text-sm text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.transactions.list-section.showing",
-                        {
-                           count: transactions.length,
-                           total: pagination.totalCount,
-                        },
-                     )}
-                  </div>
-                  <div className="flex items-center space-x-6 lg:space-x-8">
-                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        {translate(
-                           "dashboard.routes.transactions.list-section.page",
-                           {
-                              current: currentPage,
-                              total: totalPages,
-                           },
-                        )}
-                     </div>
-                     <div className="flex items-center space-x-2">
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === 1}
-                           onClick={() => setCurrentPage(1)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              {translate("common.actions.first-page")}
-                           </span>
-                           {"<<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === 1}
-                           onClick={() =>
-                              setCurrentPage((prev) => Math.max(1, prev - 1))
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              {translate("common.actions.previous-page")}
-                           </span>
-                           {"<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === totalPages}
-                           onClick={() =>
-                              setCurrentPage((prev) =>
-                                 Math.min(totalPages, prev + 1),
-                              )
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              {translate("common.actions.next-page")}
-                           </span>
-                           {">"}
-                        </Button>
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === totalPages}
-                           onClick={() => setCurrentPage(totalPages)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              {translate("common.actions.last-page")}
-                           </span>
-                           {">>"}
-                        </Button>
-                     </div>
-                  </div>
-               </CardFooter>
-            )}
          </Card>
 
-         <input
-            accept=".ofx"
-            className="hidden"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            type="file"
-         />
-
-         <ManageTransactionSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
-
-         <DeleteBankAccount
-            bankAccount={bankAccount as BankAccount}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
-
-         {isMobile && (
-            <Button
-               className="fixed bottom-6 right-6 size-14 rounded-full bg-emerald-500 hover:bg-emerald-600 shadow-lg z-50"
-               onClick={() => setIsCreateSheetOpen(true)}
-               size="icon"
+         <SelectionActionBar
+            onClear={handleClearSelection}
+            selectedCount={selectedIds.length}
+            summary={formatDecimalCurrency(Math.abs(selectedTotal))}
+         >
+            <SelectionActionButton
+               icon={<ArrowLeftRight className="size-3.5" />}
+               onClick={handleBulkTransfer}
             >
-               <Plus className="size-6" />
-            </Button>
-         )}
+               Transferência
+            </SelectionActionButton>
+            <SelectionActionButton
+               icon={<FolderOpen className="size-3.5" />}
+               onClick={handleBulkChangeCategory}
+            >
+               Categorizar
+            </SelectionActionButton>
+            <SelectionActionButton
+               icon={<Trash2 className="size-3.5" />}
+               onClick={() => setIsDeleteDialogOpen(true)}
+               variant="destructive"
+            >
+               Excluir
+            </SelectionActionButton>
+         </SelectionActionBar>
+
+         <AlertDialog
+            onOpenChange={setIsDeleteDialogOpen}
+            open={isDeleteDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate("common.headers.delete-confirmation.title")}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "common.headers.delete-confirmation.description-bulk",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                     disabled={isBulkActionLoading}
+                     onClick={handleBulkDelete}
+                  >
+                     {translate(
+                        "dashboard.routes.transactions.list-section.actions.delete",
+                     )}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
+
+         <TransactionFilterSheet
+            categories={categories}
+            categoryFilter={categoryFilter}
+            isOpen={isFilterSheetOpen}
+            onCategoryFilterChange={setCategoryFilter}
+            onClearFilters={handleClearFilters}
+            onOpenChange={setIsFilterSheetOpen}
+            onTypeFilterChange={setTypeFilter}
+            typeFilter={typeFilter}
+         />
+
+         <CategorizeSheet
+            isOpen={isCategorizeOpen}
+            onOpenChange={setIsCategorizeOpen}
+            onSuccess={() => setRowSelection({})}
+            transactions={selectedTransactions}
+         />
+
+         <MarkAsTransferSheet
+            isOpen={isTransferOpen}
+            onOpenChange={setIsTransferOpen}
+            onSuccess={() => setRowSelection({})}
+            transactions={selectedTransactions}
+         />
       </>
    );
 }
 
 export function RecentTransactions({
    bankAccountId,
+   startDate,
+   endDate,
 }: {
    bankAccountId: string;
+   startDate: Date | null;
+   endDate: Date | null;
 }) {
    return (
       <ErrorBoundary FallbackComponent={RecentTransactionsErrorFallback}>
          <Suspense fallback={<RecentTransactionsSkeleton />}>
-            <RecentTransactionsContent bankAccountId={bankAccountId} />
+            <RecentTransactionsContent
+               bankAccountId={bankAccountId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

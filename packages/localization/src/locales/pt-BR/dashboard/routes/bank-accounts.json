@@ -1,7 +1,27 @@
 {
+   "bulk-actions": {
+      "activate": "Ativar",
+      "activate-confirm-description": "Ao ativar {{count}} conta(s), elas voltarão a ser exibidas nos relatórios e estatísticas.",
+      "activate-confirm-title": "Ativar {{count}} conta(s)?",
+      "activated-error": "Erro ao ativar contas",
+      "activated-success": "{{count}} conta(s) ativada(s) com sucesso",
+      "confirm": "Confirmar",
+      "deactivate": "Inativar",
+      "deactivate-confirm-description": "Ao inativar {{count}} conta(s), elas não serão mais exibidas nos relatórios e estatísticas.",
+      "deactivate-confirm-title": "Inativar {{count}} conta(s)?",
+      "delete": "Excluir",
+      "delete-confirm-description": "Esta ação não pode ser desfeita. {{count}} conta(s) e todas as suas transações serão excluídas permanentemente.",
+      "delete-confirm-title": "Excluir {{count}} conta(s)?",
+      "deleted-error": "Erro ao excluir contas",
+      "deleted-success": "{{count}} conta(s) excluída(s) com sucesso",
+      "inactivated-error": "Erro ao inativar contas",
+      "inactivated-success": "{{count}} conta(s) inativada(s) com sucesso"
+   },
    "list-section": {
       "actions": {
          "add-new": "Nova Conta Bancária",
+         "delete": "Excluir",
+         "edit": "Editar",
          "label": "Gerencie sua conta bancária",
          "view-details": "Ver Detalhes"
       },
@@ -13,6 +33,11 @@
          }
       },
       "title": "Contas Bancárias"
+   },
+   "notifications": {
+      "activated": "Conta bancária ativada com sucesso",
+      "deactivated": "Conta bancária desativada com sucesso",
+      "error": "Erro ao atualizar conta bancária"
    },
    "stats-section": {
       "active-accounts": {
@@ -44,14 +69,28 @@
       "active": "Ativa",
       "inactive": "Inativa"
    },
+   "status-toggle": {
+      "activate-description": "Ao ativar esta conta, ela voltará a ser exibida nos relatórios e estatísticas.",
+      "activate-title": "Ativar conta bancária?",
+      "active": "Conta ativa",
+      "confirm": "Confirmar",
+      "deactivate-description": "Ao desativar esta conta, ela não será mais exibida nos relatórios e estatísticas.",
+      "deactivate-title": "Desativar conta bancária?",
+      "inactive": "Conta inativa"
+   },
    "table": {
+      "bank": "Banco",
       "columns": {
          "bank": "Banco",
          "createdAt": "Criado em",
          "name": "Nome",
          "status": "Status",
          "type": "Tipo"
-      }
+      },
+      "created-at": "Criado em",
+      "status": "Status",
+      "type": "Tipo",
+      "updated-at": "Atualizado em"
    },
    "types": {
       "checking": "Conta corrente",

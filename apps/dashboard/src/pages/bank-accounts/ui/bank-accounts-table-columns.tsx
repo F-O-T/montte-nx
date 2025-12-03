@@ -1,44 +1,68 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
+import {
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+   AlertDialogTrigger,
+} from "@packages/ui/components/alert-dialog";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
+   Card,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
+import { Separator } from "@packages/ui/components/separator";
+import { Switch } from "@packages/ui/components/switch";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDecimalCurrency } from "@packages/utils/money";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreVertical, Trash2 } from "lucide-react";
-import { Suspense, useState } from "react";
+import type { ColumnDef, Row } from "@tanstack/react-table";
+import {
+   ArrowDownLeft,
+   ArrowUpRight,
+   Calendar,
+   ChevronDown,
+   CreditCard,
+   Edit,
+   Eye,
+   Trash2,
+   Wallet,
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { trpc } from "@/integrations/clients";
 import { DeleteBankAccount } from "@/pages/bank-account-details/features/delete-bank-account";
 
 function BankAccountActionsCell({ account }: { account: BankAccount }) {
    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
 
    return (
       <>
-         <div className="flex justify-end">
-            <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                  <Button aria-label="Actions" size="icon" variant="ghost">
-                     <MoreVertical className="size-4" />
-                  </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>
-                     {translate(
-                        "dashboard.routes.bank-accounts.list-section.actions.label",
-                     )}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
+         <div className="flex justify-end gap-1">
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button asChild size="icon" variant="outline">
                      <Link
                         params={{
                            bankAccountId: account.id,
@@ -47,31 +71,54 @@ function BankAccountActionsCell({ account }: { account: BankAccount }) {
                         to="/$slug/bank-accounts/$bankAccountId"
                      >
                         <Eye className="size-4" />
-                        {translate(
-                           "dashboard.routes.bank-accounts.list-section.actions.view-details",
-                        )}
                      </Link>
-                  </DropdownMenuItem>
-                  <Suspense
-                     fallback={
-                        <DropdownMenuItem disabled>Loading...</DropdownMenuItem>
-                     }
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.actions.view-details",
+                  )}
+               </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button
+                     onClick={() => setIsEditOpen(true)}
+                     size="icon"
+                     variant="outline"
                   >
-                     <ManageBankAccountSheet asChild bankAccount={account} />
-                     <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onSelect={(e) => {
-                           e.preventDefault();
-                           setIsDeleteOpen(true);
-                        }}
-                     >
-                        <Trash2 className="size-4" />
-                        Excluir conta
-                     </DropdownMenuItem>
-                  </Suspense>
-               </DropdownMenuContent>
-            </DropdownMenu>
+                     <Edit className="size-4" />
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.actions.edit",
+                  )}
+               </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button
+                     className="text-destructive hover:text-destructive"
+                     onClick={() => setIsDeleteOpen(true)}
+                     size="icon"
+                     variant="outline"
+                  >
+                     <Trash2 className="size-4" />
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.actions.delete",
+                  )}
+               </TooltipContent>
+            </Tooltip>
          </div>
+         <ManageBankAccountSheet
+            bankAccount={account}
+            onOpen={isEditOpen}
+            onOpenChange={setIsEditOpen}
+         />
          <DeleteBankAccount
             bankAccount={account}
             open={isDeleteOpen}
@@ -152,4 +199,436 @@ export function createBankAccountColumns(): ColumnDef<BankAccount>[] {
          id: "actions",
       },
    ];
+}
+
+const typeMap: Record<string, string> = {
+   checking: translate("dashboard.routes.bank-accounts.types.checking"),
+   investment: translate("dashboard.routes.bank-accounts.types.investment"),
+   savings: translate("dashboard.routes.bank-accounts.types.savings"),
+};
+
+interface BankAccountExpandedContentProps {
+   row: Row<BankAccount>;
+   balance: number;
+   income: number;
+   expenses: number;
+}
+
+export function BankAccountExpandedContent({
+   row,
+   balance,
+   income,
+   expenses,
+}: BankAccountExpandedContentProps) {
+   const account = row.original;
+   const { activeOrganization } = useActiveOrganization();
+   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const [isEditOpen, setIsEditOpen] = useState(false);
+   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+   const isMobile = useIsMobile();
+   const queryClient = useQueryClient();
+
+   const updateStatusMutation = useMutation(
+      trpc.bankAccounts.update.mutationOptions({
+         onError: () => {
+            toast.error(
+               translate("dashboard.routes.bank-accounts.notifications.error"),
+            );
+         },
+         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["bankAccounts"] });
+            toast.success(
+               account.status === "active"
+                  ? translate(
+                       "dashboard.routes.bank-accounts.notifications.deactivated",
+                    )
+                  : translate(
+                       "dashboard.routes.bank-accounts.notifications.activated",
+                    ),
+            );
+         },
+      }),
+   );
+
+   const handleStatusToggle = () => {
+      const newStatus = account.status === "active" ? "inactive" : "active";
+      updateStatusMutation.mutate({
+         data: { status: newStatus },
+         id: account.id,
+      });
+      setIsStatusDialogOpen(false);
+   };
+
+   const statusToggleElement = (
+      <AlertDialog
+         onOpenChange={setIsStatusDialogOpen}
+         open={isStatusDialogOpen}
+      >
+         <AlertDialogTrigger asChild>
+            <div
+               className="flex items-center gap-2 cursor-pointer"
+               onClick={(e) => e.stopPropagation()}
+            >
+               <Switch
+                  checked={account.status === "active"}
+                  disabled={updateStatusMutation.isPending}
+                  onCheckedChange={() => setIsStatusDialogOpen(true)}
+               />
+               <span className="text-sm text-muted-foreground">
+                  {account.status === "active"
+                     ? translate(
+                          "dashboard.routes.bank-accounts.status-toggle.active",
+                       )
+                     : translate(
+                          "dashboard.routes.bank-accounts.status-toggle.inactive",
+                       )}
+               </span>
+            </div>
+         </AlertDialogTrigger>
+         <AlertDialogContent>
+            <AlertDialogHeader>
+               <AlertDialogTitle>
+                  {account.status === "active"
+                     ? translate(
+                          "dashboard.routes.bank-accounts.status-toggle.deactivate-title",
+                       )
+                     : translate(
+                          "dashboard.routes.bank-accounts.status-toggle.activate-title",
+                       )}
+               </AlertDialogTitle>
+               <AlertDialogDescription>
+                  {account.status === "active"
+                     ? translate(
+                          "dashboard.routes.bank-accounts.status-toggle.deactivate-description",
+                       )
+                     : translate(
+                          "dashboard.routes.bank-accounts.status-toggle.activate-description",
+                       )}
+               </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+               <AlertDialogCancel>
+                  {translate("common.actions.cancel")}
+               </AlertDialogCancel>
+               <AlertDialogAction onClick={handleStatusToggle}>
+                  {translate(
+                     "dashboard.routes.bank-accounts.status-toggle.confirm",
+                  )}
+               </AlertDialogAction>
+            </AlertDialogFooter>
+         </AlertDialogContent>
+      </AlertDialog>
+   );
+
+   if (isMobile) {
+      return (
+         <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+               <div className="flex items-center gap-2">
+                  <Wallet className="size-4 text-muted-foreground" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.stats-section.total-balance.title",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium">
+                        {formatDecimalCurrency(balance)}
+                     </p>
+                  </div>
+               </div>
+               <Separator className="h-8" orientation="vertical" />
+               <div className="flex items-center gap-2">
+                  <ArrowDownLeft className="size-4 text-emerald-500" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.stats-section.total-income.title",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium text-emerald-500">
+                        +{formatDecimalCurrency(income)}
+                     </p>
+                  </div>
+               </div>
+               <Separator className="h-8" orientation="vertical" />
+               <div className="flex items-center gap-2">
+                  <ArrowUpRight className="size-4 text-destructive" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium text-destructive">
+                        -{formatDecimalCurrency(expenses)}
+                     </p>
+                  </div>
+               </div>
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between gap-2">
+               <div className="flex items-center gap-2">
+                  <CreditCard className="size-4 text-muted-foreground" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate("dashboard.routes.bank-accounts.table.type")}
+                     </p>
+                     <p className="text-sm font-medium">
+                        {typeMap[account.type] || account.type}
+                     </p>
+                  </div>
+               </div>
+               <Separator className="h-8" orientation="vertical" />
+               <div className="flex items-center gap-2">
+                  <Calendar className="size-4 text-muted-foreground" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.table.created-at",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium">
+                        {new Date(account.createdAt).toLocaleDateString(
+                           "pt-BR",
+                           {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                           },
+                        )}
+                     </p>
+                  </div>
+               </div>
+            </div>
+
+            <Separator />
+
+            {statusToggleElement}
+
+            <Separator />
+
+            <div className="flex flex-wrap items-center gap-2">
+               <Button asChild size="sm" variant="outline">
+                  <Link
+                     params={{
+                        bankAccountId: account.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/bank-accounts/$bankAccountId"
+                  >
+                     <Eye className="size-4" />
+                     {translate(
+                        "dashboard.routes.bank-accounts.list-section.actions.view-details",
+                     )}
+                  </Link>
+               </Button>
+               <Button
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     setIsEditOpen(true);
+                  }}
+                  size="sm"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.actions.edit",
+                  )}
+               </Button>
+               <Button
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     setIsDeleteOpen(true);
+                  }}
+                  size="sm"
+                  variant="destructive"
+               >
+                  <Trash2 className="size-4" />
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.actions.delete",
+                  )}
+               </Button>
+            </div>
+
+            <ManageBankAccountSheet
+               bankAccount={account}
+               onOpen={isEditOpen}
+               onOpenChange={setIsEditOpen}
+            />
+            <DeleteBankAccount
+               bankAccount={account}
+               open={isDeleteOpen}
+               setOpen={setIsDeleteOpen}
+            />
+         </div>
+      );
+   }
+
+   return (
+      <div className="p-4 flex items-center justify-between gap-6">
+         <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+               <Wallet className="size-4 text-muted-foreground" />
+               <div>
+                  <p className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.bank-accounts.stats-section.total-balance.title",
+                     )}
+                  </p>
+                  <p className="text-sm font-medium">
+                     {formatDecimalCurrency(balance)}
+                  </p>
+               </div>
+            </div>
+            <Separator className="h-8" orientation="vertical" />
+            <div className="flex items-center gap-2">
+               <ArrowDownLeft className="size-4 text-emerald-500" />
+               <div>
+                  <p className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.bank-accounts.stats-section.total-income.title",
+                     )}
+                  </p>
+                  <p className="text-sm font-medium text-emerald-500">
+                     +{formatDecimalCurrency(income)}
+                  </p>
+               </div>
+            </div>
+            <Separator className="h-8" orientation="vertical" />
+            <div className="flex items-center gap-2">
+               <ArrowUpRight className="size-4 text-destructive" />
+               <div>
+                  <p className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+                     )}
+                  </p>
+                  <p className="text-sm font-medium text-destructive">
+                     -{formatDecimalCurrency(expenses)}
+                  </p>
+               </div>
+            </div>
+            <Separator className="h-8" orientation="vertical" />
+            {statusToggleElement}
+         </div>
+
+         <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+               <Link
+                  params={{
+                     bankAccountId: account.id,
+                     slug: activeOrganization.slug,
+                  }}
+                  to="/$slug/bank-accounts/$bankAccountId"
+               >
+                  <Eye className="size-4" />
+                  {translate(
+                     "dashboard.routes.bank-accounts.list-section.actions.view-details",
+                  )}
+               </Link>
+            </Button>
+            <Button
+               onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditOpen(true);
+               }}
+               size="sm"
+               variant="outline"
+            >
+               <Edit className="size-4" />
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.actions.edit",
+               )}
+            </Button>
+            <Button
+               onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteOpen(true);
+               }}
+               size="sm"
+               variant="destructive"
+            >
+               <Trash2 className="size-4" />
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.actions.delete",
+               )}
+            </Button>
+         </div>
+
+         <ManageBankAccountSheet
+            bankAccount={account}
+            onOpen={isEditOpen}
+            onOpenChange={setIsEditOpen}
+         />
+         <DeleteBankAccount
+            bankAccount={account}
+            open={isDeleteOpen}
+            setOpen={setIsDeleteOpen}
+         />
+      </div>
+   );
+}
+
+interface BankAccountMobileCardProps {
+   row: Row<BankAccount>;
+   isExpanded: boolean;
+   toggleExpanded: () => void;
+   balance: number;
+   income: number;
+   expenses: number;
+}
+
+export function BankAccountMobileCard({
+   row,
+   isExpanded,
+   toggleExpanded,
+   balance,
+}: BankAccountMobileCardProps) {
+   const account = row.original;
+
+   return (
+      <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
+         <CardHeader>
+            <CardDescription>{account.name}</CardDescription>
+            <CardTitle>{account.bank}</CardTitle>
+            <CardDescription>
+               <Badge variant="outline">{formatDecimalCurrency(balance)}</Badge>
+            </CardDescription>
+         </CardHeader>
+         <CardContent>
+            <Badge
+               variant={account.status === "active" ? "default" : "secondary"}
+            >
+               {account.status === "active"
+                  ? translate("dashboard.routes.bank-accounts.status.active")
+                  : translate("dashboard.routes.bank-accounts.status.inactive")}
+            </Badge>
+            <Badge variant="secondary">
+               {typeMap[account.type] || account.type}
+            </Badge>
+         </CardContent>
+         <CardFooter>
+            <CollapsibleTrigger asChild>
+               <Button
+                  className="w-full"
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     toggleExpanded();
+                  }}
+                  variant="outline"
+               >
+                  {isExpanded
+                     ? translate("common.actions.less-info")
+                     : translate("common.actions.more-info")}
+                  <ChevronDown
+                     className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                  />
+               </Button>
+            </CollapsibleTrigger>
+         </CardFooter>
+      </Card>
+   );
 }
