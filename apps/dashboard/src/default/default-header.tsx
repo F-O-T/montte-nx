@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 interface DefaultHeaderProps {
    title: string;
-   description: string;
+   description: ReactNode;
    actions?: ReactNode;
 }
 
@@ -13,13 +13,13 @@ export function DefaultHeader({
 }: DefaultHeaderProps) {
    return (
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-         <div className="flex flex-col gap-2">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight font-serif leading-tight">
+         <div className="flex flex-col gap-2 min-w-0 flex-1 max-w-2xl">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight font-serif leading-tight truncate">
                {title}
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground font-sans leading-relaxed max-w-3xl">
+            <div className="text-base md:text-lg text-muted-foreground font-sans leading-relaxed">
                {description}
-            </p>
+            </div>
          </div>
          {actions && (
             <div className="flex items-center gap-2 shrink-0">{actions}</div>

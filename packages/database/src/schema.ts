@@ -7,3 +7,4 @@ export * from "./schemas/cost-centers";
 export * from "./schemas/notifications";
 export * from "./schemas/tags";
 export * from "./schemas/transactions";
+export * from "./schemas/transfers";

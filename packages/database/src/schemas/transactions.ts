@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
    decimal,
+   integer,
    jsonb,
    pgTable,
    text,
@@ -21,6 +22,7 @@ export type CategorySplit = {
 
 export const transaction = pgTable("transaction", {
    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+   attachmentKey: text("attachment_key"),
    bankAccountId: uuid("bank_account_id").references(() => bankAccount.id, {
       onDelete: "cascade",
    }),
@@ -43,7 +45,34 @@ export const transaction = pgTable("transaction", {
       .notNull(),
 });
 
+export const transactionAttachment = pgTable("transaction_attachment", {
+   contentType: text("content_type").notNull(),
+   createdAt: timestamp("created_at").defaultNow().notNull(),
+   fileName: text("file_name").notNull(),
+   fileSize: integer("file_size"),
+   id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+   storageKey: text("storage_key").notNull(),
+   transactionId: uuid("transaction_id")
+      .notNull()
+      .references(() => transaction.id, { onDelete: "cascade" }),
+   updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+});
+
+export const transactionAttachmentRelations = relations(
+   transactionAttachment,
+   ({ one }) => ({
+      transaction: one(transaction, {
+         fields: [transactionAttachment.transactionId],
+         references: [transaction.id],
+      }),
+   }),
+);
+
 export const transactionRelations = relations(transaction, ({ one, many }) => ({
+   attachments: many(transactionAttachment),
    bankAccount: one(bankAccount, {
       fields: [transaction.bankAccountId],
       references: [bankAccount.id],

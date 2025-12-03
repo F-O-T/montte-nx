@@ -3,6 +3,7 @@ import { and, eq, exists, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
 import { type CategorySplit, transaction } from "../schemas/transactions";
+import { transferLog } from "../schemas/transfers";
 import { setTransactionCategories } from "./category-repository";
 
 export type Transaction = typeof transaction.$inferSelect;
@@ -691,6 +692,7 @@ export async function createTransfer(
       fromBankAccountId: string;
       toBankAccountId: string;
       organizationId: string;
+      notes?: string;
    },
 ) {
    try {
@@ -742,6 +744,16 @@ export async function createTransfer(
          await setTransactionCategories(tx, toTransaction.id, [
             transferCategoryId,
          ]);
+
+         await tx.insert(transferLog).values({
+            fromBankAccountId: data.fromBankAccountId,
+            fromTransactionId: fromTransaction.id,
+            id: crypto.randomUUID(),
+            notes: data.notes || null,
+            organizationId: data.organizationId,
+            toBankAccountId: data.toBankAccountId,
+            toTransactionId: toTransaction.id,
+         });
 
          return [fromTransaction, toTransaction];
       });

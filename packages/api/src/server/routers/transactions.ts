@@ -1,6 +1,12 @@
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
+   createTransactionAttachment,
+   deleteTransactionAttachment,
+   findTransactionAttachmentById,
+   findTransactionAttachmentsByTransactionId,
+} from "@packages/database/repositories/transaction-attachment-repository";
+import {
    createTransaction,
    createTransfer,
    deleteTransaction,
@@ -15,7 +21,12 @@ import {
    updateTransaction,
    updateTransactionsCategory,
 } from "@packages/database/repositories/transaction-repository";
+import {
+   createTransferLog,
+   findTransferLogByTransactionId,
+} from "@packages/database/repositories/transfer-log-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
+import { streamFileForProxy, uploadFile } from "@packages/files/client";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -521,5 +532,459 @@ export const transactionRouter = router({
          );
 
          return validIds;
+      }),
+
+   uploadAttachment: protectedProcedure
+      .input(
+         z.object({
+            contentType: z.string(),
+            fileBuffer: z.string(),
+            fileName: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { fileName, fileBuffer, contentType, transactionId } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("Transaction not found");
+         }
+
+         if (existingTransaction.attachmentKey) {
+            try {
+               const bucketName = resolvedCtx.minioBucket;
+               const minioClient = resolvedCtx.minioClient;
+               await minioClient.removeObject(
+                  bucketName,
+                  existingTransaction.attachmentKey,
+               );
+            } catch (error) {
+               console.error("Error deleting old attachment:", error);
+            }
+         }
+
+         const key = `transactions/${organizationId}/${transactionId}/attachment/${fileName}`;
+         const buffer = Buffer.from(fileBuffer, "base64");
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const url = await uploadFile(
+            key,
+            buffer,
+            contentType,
+            bucketName,
+            minioClient,
+         );
+
+         await updateTransaction(resolvedCtx.db, transactionId, {
+            attachmentKey: key,
+         });
+
+         return { key, url };
+      }),
+
+   getAttachment: protectedProcedure
+      .input(z.object({ transactionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         if (!transaction.attachmentKey) {
+            return null;
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const key = transaction.attachmentKey;
+
+         try {
+            const { buffer, contentType } = await streamFileForProxy(
+               key,
+               bucketName,
+               resolvedCtx.minioClient,
+            );
+            const base64 = buffer.toString("base64");
+            return {
+               contentType,
+               data: `data:${contentType};base64,${base64}`,
+               fileName: key.split("/").pop() || "attachment",
+            };
+         } catch (error) {
+            console.error("Error fetching transaction attachment:", error);
+            return null;
+         }
+      }),
+
+   removeAttachment: protectedProcedure
+      .input(z.object({ transactionId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         if (!transaction.attachmentKey) {
+            return { success: true };
+         }
+
+         try {
+            const bucketName = resolvedCtx.minioBucket;
+            const minioClient = resolvedCtx.minioClient;
+            await minioClient.removeObject(
+               bucketName,
+               transaction.attachmentKey,
+            );
+         } catch (error) {
+            console.error("Error deleting attachment:", error);
+         }
+
+         await updateTransaction(resolvedCtx.db, input.transactionId, {
+            attachmentKey: null,
+         });
+
+         return { success: true };
+      }),
+
+   addAttachment: protectedProcedure
+      .input(
+         z.object({
+            contentType: z.string(),
+            fileBuffer: z.string(),
+            fileName: z.string(),
+            fileSize: z.number().optional(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { fileName, fileBuffer, contentType, fileSize, transactionId } =
+            input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("Transaction not found");
+         }
+
+         const attachmentId = crypto.randomUUID();
+         const key = `transactions/${organizationId}/${transactionId}/attachments/${attachmentId}/${fileName}`;
+         const buffer = Buffer.from(fileBuffer, "base64");
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         await uploadFile(key, buffer, contentType, bucketName, minioClient);
+
+         const attachment = await createTransactionAttachment(resolvedCtx.db, {
+            contentType,
+            fileName,
+            fileSize: fileSize || buffer.length,
+            id: attachmentId,
+            storageKey: key,
+            transactionId,
+         });
+
+         return attachment;
+      }),
+
+   getAttachments: protectedProcedure
+      .input(z.object({ transactionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         const attachments = await findTransactionAttachmentsByTransactionId(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         return attachments;
+      }),
+
+   getAttachmentData: protectedProcedure
+      .input(z.object({ attachmentId: z.string(), transactionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         const attachment = await findTransactionAttachmentById(
+            resolvedCtx.db,
+            input.attachmentId,
+         );
+
+         if (!attachment || attachment.transactionId !== input.transactionId) {
+            throw new Error("Attachment not found");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+
+         try {
+            const { buffer, contentType } = await streamFileForProxy(
+               attachment.storageKey,
+               bucketName,
+               resolvedCtx.minioClient,
+            );
+            const base64 = buffer.toString("base64");
+            return {
+               contentType,
+               data: `data:${contentType};base64,${base64}`,
+               fileName: attachment.fileName,
+               id: attachment.id,
+            };
+         } catch (error) {
+            console.error("Error fetching attachment:", error);
+            return null;
+         }
+      }),
+
+   deleteAttachment: protectedProcedure
+      .input(z.object({ attachmentId: z.string(), transactionId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         const attachment = await findTransactionAttachmentById(
+            resolvedCtx.db,
+            input.attachmentId,
+         );
+
+         if (!attachment || attachment.transactionId !== input.transactionId) {
+            throw new Error("Attachment not found");
+         }
+
+         try {
+            const bucketName = resolvedCtx.minioBucket;
+            const minioClient = resolvedCtx.minioClient;
+            await minioClient.removeObject(bucketName, attachment.storageKey);
+         } catch (error) {
+            console.error("Error deleting attachment file:", error);
+         }
+
+         await deleteTransactionAttachment(resolvedCtx.db, input.attachmentId);
+
+         return { success: true };
+      }),
+
+   getTransferLog: protectedProcedure
+      .input(z.object({ transactionId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         if (transaction.type !== "transfer") {
+            return null;
+         }
+
+         const transferLogData = await findTransferLogByTransactionId(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         return transferLogData;
+      }),
+
+   linkTransferTransactions: protectedProcedure
+      .input(
+         z.object({
+            fromTransactionId: z.string(),
+            notes: z.string().optional(),
+            toTransactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const [fromTransaction, toTransaction] = await Promise.all([
+            findTransactionById(resolvedCtx.db, input.fromTransactionId),
+            findTransactionById(resolvedCtx.db, input.toTransactionId),
+         ]);
+
+         if (
+            !fromTransaction ||
+            fromTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("From transaction not found");
+         }
+
+         if (
+            !toTransaction ||
+            toTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("To transaction not found");
+         }
+
+         if (!fromTransaction.bankAccountId || !toTransaction.bankAccountId) {
+            throw new Error("Both transactions must have a bank account");
+         }
+
+         await Promise.all([
+            updateTransaction(resolvedCtx.db, input.fromTransactionId, {
+               type: "transfer",
+            }),
+            updateTransaction(resolvedCtx.db, input.toTransactionId, {
+               type: "transfer",
+            }),
+         ]);
+
+         const log = await createTransferLog(resolvedCtx.db, {
+            fromBankAccountId: fromTransaction.bankAccountId,
+            fromTransactionId: input.fromTransactionId,
+            notes: input.notes || null,
+            organizationId,
+            toBankAccountId: toTransaction.bankAccountId,
+            toTransactionId: input.toTransactionId,
+         });
+
+         return log;
+      }),
+
+   completeTransferLink: protectedProcedure
+      .input(
+         z.object({
+            notes: z.string().optional(),
+            otherBankAccountId: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("Transaction not found");
+         }
+
+         if (!existingTransaction.bankAccountId) {
+            throw new Error("Transaction must have a bank account");
+         }
+
+         const existingLog = await findTransferLogByTransactionId(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (existingLog) {
+            throw new Error("Transfer already has a linked transaction");
+         }
+
+         const amount = parseFloat(existingTransaction.amount);
+         const isOutgoing = amount < 0;
+
+         const counterpartTransaction = await createTransaction(
+            resolvedCtx.db,
+            {
+               amount: (-amount).toString(),
+               bankAccountId: input.otherBankAccountId,
+               date: existingTransaction.date,
+               description: existingTransaction.description,
+               id: crypto.randomUUID(),
+               organizationId,
+               type: "transfer",
+            },
+         );
+
+         await updateTransaction(resolvedCtx.db, input.transactionId, {
+            type: "transfer",
+         });
+
+         const log = await createTransferLog(resolvedCtx.db, {
+            fromBankAccountId: isOutgoing
+               ? existingTransaction.bankAccountId
+               : input.otherBankAccountId,
+            fromTransactionId: isOutgoing
+               ? input.transactionId
+               : counterpartTransaction.id,
+            notes: input.notes || null,
+            organizationId,
+            toBankAccountId: isOutgoing
+               ? input.otherBankAccountId
+               : existingTransaction.bankAccountId,
+            toTransactionId: isOutgoing
+               ? counterpartTransaction.id
+               : input.transactionId,
+         });
+
+         return {
+            counterpartTransaction,
+            log,
+         };
       }),
 });

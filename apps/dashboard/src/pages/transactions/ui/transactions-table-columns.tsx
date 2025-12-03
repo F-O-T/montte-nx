@@ -24,6 +24,7 @@ import {
    ChevronDown,
    Eye,
    FolderOpen,
+   Paperclip,
    Pencil,
    Split,
    Trash2,
@@ -34,6 +35,7 @@ import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { CategorizeSheet } from "@/features/transaction/features/categorize-sheet";
 import { CategorySplitSheet } from "@/features/transaction/features/category-split-sheet";
 import { DeleteTransaction } from "@/features/transaction/features/delete-transaction-dialog";
+import { LinkFileSheet } from "@/features/transaction/features/link-file-sheet";
 import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
 import { MarkAsTransferSheet } from "@/features/transaction/features/mark-as-transfer-sheet";
 import type { Transaction } from "@/features/transaction/ui/transaction-item";
@@ -331,6 +333,7 @@ export function TransactionExpandedContent({
    const [isTransferOpen, setIsTransferOpen] = useState(false);
    const [isSplitOpen, setIsSplitOpen] = useState(false);
    const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
+   const [isLinkFileOpen, setIsLinkFileOpen] = useState(false);
 
    const isNotTransfer = transaction.type !== "transfer";
 
@@ -445,6 +448,14 @@ export function TransactionExpandedContent({
                <FolderOpen className="size-4" />
                Categorizar
             </Button>
+            <Button
+               onClick={() => setIsLinkFileOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <Paperclip className="size-4" />
+               {translate("dashboard.routes.transactions.link-file.button")}
+            </Button>
             <div className="h-4 w-px bg-border" />
             <Button asChild size="sm" variant="outline">
                <Link
@@ -497,6 +508,11 @@ export function TransactionExpandedContent({
             isOpen={isCategorizeOpen}
             onOpenChange={setIsCategorizeOpen}
             transactions={[transaction]}
+         />
+         <LinkFileSheet
+            isOpen={isLinkFileOpen}
+            onOpenChange={setIsLinkFileOpen}
+            transaction={transaction}
          />
       </div>
    );

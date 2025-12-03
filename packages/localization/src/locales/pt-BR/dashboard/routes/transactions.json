@@ -33,7 +33,11 @@
             "title": "Categorias"
          },
          "created": {
+            "description": "Data de registro no sistema",
             "title": "Criado em"
+         },
+         "type": {
+            "title": "Tipo"
          },
          "description": "Informações detalhadas da transação",
          "title": "Detalhes",
@@ -78,6 +82,21 @@
          },
          "title": "Filtrar Transações"
       }
+   },
+   "link-file": {
+      "button": "Anexar Arquivo",
+      "clear-selection": "Limpar seleção",
+      "click-to-change": "Clique para alterar",
+      "current-file": "Arquivo atual",
+      "new-file": "Novo arquivo",
+      "replace-hint": "Envie um novo arquivo para substituir o atual",
+      "select-file": "Selecione um arquivo",
+      "sheet": {
+         "description": "Anexe um arquivo à transação, como uma nota fiscal ou comprovante.",
+         "title": "Anexar Arquivo"
+      },
+      "upload": "Enviar arquivo",
+      "uploading": "Enviando..."
    },
    "list-section": {
       "actions": {

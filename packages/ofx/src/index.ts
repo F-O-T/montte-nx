@@ -1,5 +1,6 @@
 import { getTransactions, parse } from "@f-o-t/ofx";
 import { AppError } from "@packages/utils/errors";
+import { normalizeText } from "@packages/utils/text";
 
 interface OFXDateValue {
    raw: string;
@@ -46,10 +47,11 @@ export async function parseOfxContent(content: string) {
    return transactions.map((trn) => {
       const amount = trn.TRNAMT;
       const date = trn.DTPOSTED.toDate();
+      const rawDescription = trn.MEMO || trn.NAME || "No description";
       return {
          amount: Math.abs(amount),
          date,
-         description: trn.MEMO || trn.NAME || "No description",
+         description: normalizeText(rawDescription),
          fitid: trn.FITID,
          type: amount < 0 ? "expense" : "income",
       };

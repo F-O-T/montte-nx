@@ -10,14 +10,29 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
-import { Home, Receipt } from "lucide-react";
-import { Suspense } from "react";
+import {
+   ArrowLeftRight,
+   FolderOpen,
+   Home,
+   Paperclip,
+   Pencil,
+   Receipt,
+   Split,
+   Trash2,
+} from "lucide-react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { DefaultHeader } from "@/default/default-header";
+import { CategorizeSheet } from "@/features/transaction/features/categorize-sheet";
+import { CategorySplitSheet } from "@/features/transaction/features/category-split-sheet";
+import { LinkFileSheet } from "@/features/transaction/features/link-file-sheet";
+import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
+import { MarkAsTransferSheet } from "@/features/transaction/features/mark-as-transfer-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { TransactionCategoriesSection } from "./transaction-categories-section";
-import { TransactionInfo } from "./transaction-information-section";
-import { TransactionQuickActionsToolbar } from "./transaction-quick-actions-toolbar";
+import { DeleteTransactionDialog } from "../features/delete-transaction-dialog";
+import { TransactionCategorizationSection } from "./transaction-categories-section";
+import { TransactionDetailsSection } from "./transaction-details-section";
 import { TransactionStats } from "./transaction-stats";
 
 function TransactionContent() {
@@ -25,6 +40,15 @@ function TransactionContent() {
    const transactionId =
       (params as { transactionId?: string }).transactionId ?? "";
    const trpc = useTRPC();
+   const router = useRouter();
+   const { activeOrganization } = useActiveOrganization();
+
+   const [isEditOpen, setIsEditOpen] = useState(false);
+   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const [isTransferOpen, setIsTransferOpen] = useState(false);
+   const [isSplitOpen, setIsSplitOpen] = useState(false);
+   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
+   const [isLinkFileOpen, setIsLinkFileOpen] = useState(false);
 
    const { data: transaction } = useSuspenseQuery(
       trpc.transactions.getById.queryOptions({ id: transactionId }),
@@ -43,35 +67,139 @@ function TransactionContent() {
       return null;
    }
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/transactions",
+      });
+   };
+
+   const isNotTransfer = transaction.type !== "transfer";
+
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-stretch">
-            <div className="col-span-1 md:col-span-2 flex flex-col gap-4">
-               <TransactionQuickActionsToolbar transactionId={transactionId} />
-               <TransactionInfo transactionId={transactionId} />
-               <TransactionCategoriesSection transactionId={transactionId} />
-            </div>
-            <div className="col-span-1 flex flex-col">
-               <TransactionStats transactionId={transactionId} />
-            </div>
+      <main className="space-y-4">
+         <DefaultHeader
+            description="Detalhes da sua transação"
+            title={transaction.description}
+         />
+
+         <div className="flex flex-wrap items-center gap-2">
+            {isNotTransfer && (
+               <>
+                  <Button
+                     onClick={() => setIsTransferOpen(true)}
+                     size="sm"
+                     variant="outline"
+                  >
+                     <ArrowLeftRight className="size-4" />
+                     Marcar Transferência
+                  </Button>
+                  <Button
+                     onClick={() => setIsSplitOpen(true)}
+                     size="sm"
+                     variant="outline"
+                  >
+                     <Split className="size-4" />
+                     Dividir Categorias
+                  </Button>
+               </>
+            )}
+            <Button
+               onClick={() => setIsCategorizeOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <FolderOpen className="size-4" />
+               Categorizar
+            </Button>
+            <Button
+               onClick={() => setIsLinkFileOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <Paperclip className="size-4" />
+               {translate("dashboard.routes.transactions.link-file.button")}
+            </Button>
+            <Button
+               onClick={() => setIsEditOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <Pencil className="size-4" />
+               {translate("dashboard.routes.transactions.features.edit.title")}
+            </Button>
+            <Button
+               className="text-destructive hover:text-destructive"
+               onClick={() => setIsDeleteOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <Trash2 className="size-4" />
+               Excluir
+            </Button>
          </div>
+
+         <TransactionStats transactionId={transactionId} />
+         <TransactionCategorizationSection transactionId={transactionId} />
+         <TransactionDetailsSection transactionId={transactionId} />
+
+         <ManageTransactionSheet
+            onOpen={isEditOpen}
+            onOpenChange={setIsEditOpen}
+            transaction={transaction}
+         />
+         <DeleteTransactionDialog
+            onDeleted={handleDeleteSuccess}
+            open={isDeleteOpen}
+            setOpen={setIsDeleteOpen}
+            transaction={transaction}
+         />
+         <MarkAsTransferSheet
+            isOpen={isTransferOpen}
+            onOpenChange={setIsTransferOpen}
+            transactions={[transaction]}
+         />
+         <CategorySplitSheet
+            isOpen={isSplitOpen}
+            onOpenChange={setIsSplitOpen}
+            transaction={transaction}
+         />
+         <CategorizeSheet
+            isOpen={isCategorizeOpen}
+            onOpenChange={setIsCategorizeOpen}
+            transactions={[transaction]}
+         />
+         <LinkFileSheet
+            isOpen={isLinkFileOpen}
+            onOpenChange={setIsLinkFileOpen}
+            transaction={transaction}
+         />
       </main>
    );
 }
 
 function TransactionPageSkeleton() {
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-stretch">
-            <div className="col-span-1 md:col-span-2 flex flex-col gap-4">
-               <Skeleton className="h-20 w-full" />
-               <Skeleton className="h-32 w-full" />
-               <Skeleton className="h-24 w-full" />
-            </div>
-            <div className="col-span-1 flex flex-col">
-               <Skeleton className="h-full min-h-48 w-full" />
-            </div>
+      <main className="space-y-4">
+         <div className="flex flex-col gap-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-6 w-48" />
          </div>
+         <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-8 w-28" />
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-24" />
+         </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+         </div>
+         <Skeleton className="h-48 w-full" />
       </main>
    );
 }

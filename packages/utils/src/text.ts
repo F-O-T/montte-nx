@@ -1,5 +1,17 @@
 import slugfy from "slugify";
 
+export function normalizeText(text: string): string {
+   if (!text) return "";
+   return text
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .trim();
+}
+
+export function normalizeTextLower(text: string): string {
+   return normalizeText(text).toLowerCase();
+}
+
 export function createDescriptionFromText({
    text,
    maxLength = 160,
