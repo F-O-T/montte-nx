@@ -264,7 +264,7 @@ function RecentTransactionsContent({
    return (
       <>
          <Card>
-            <CardContent className="pt-6 grid gap-4">
+            <CardContent className="space-y-4">
                <div className="flex flex-col sm:flex-row gap-3">
                   <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput

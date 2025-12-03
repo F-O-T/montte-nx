@@ -1,16 +1,18 @@
 import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
-import { Card } from "@packages/ui/components/card";
-import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
 import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemMedia,
-   ItemTitle,
-} from "@packages/ui/components/item";
+   Card,
+   CardAction,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { Checkbox } from "@packages/ui/components/checkbox";
+import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
+import { ItemMedia } from "@packages/ui/components/item";
 import {
    Tooltip,
    TooltipContent,
@@ -542,43 +544,55 @@ export function TransactionMobileCard({
    const hasSplit = categorySplits && categorySplits.length > 0;
 
    return (
-      <Card className={isExpanded ? "rounded-b-none" : ""}>
-         <CollapsibleTrigger asChild onClick={toggleExpanded}>
-            <Item className="cursor-pointer" size="sm">
-               <ItemMedia
-                  className="shrink-0"
-                  style={{ backgroundColor: category.color }}
-                  variant="icon"
-               >
-                  <IconDisplay iconName={category.icon as IconName} size={16} />
-               </ItemMedia>
-               <ItemContent className="min-w-0 flex-1 overflow-hidden">
-                  <div className="flex items-center gap-1.5">
-                     <ItemTitle className="truncate flex-1 min-w-0">
-                        {transaction.description}
-                     </ItemTitle>
-                     {hasSplit && (
-                        <Split className="size-3.5 text-muted-foreground shrink-0" />
-                     )}
-                  </div>
-                  <ItemDescription>
-                     {new Date(transaction.date).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                     })}
-                  </ItemDescription>
-               </ItemContent>
-               <ItemActions className="ml-auto shrink-0 flex items-center gap-2">
-                  <Badge variant={isPositive ? "default" : "destructive"}>
-                     {isPositive ? "+" : "-"}
-                     {formattedAmount}
-                  </Badge>
+      <Card className={isExpanded ? "rounded-b-none py-4" : "py-4"}>
+         <CardHeader className="flex items-center gap-2">
+            <ItemMedia
+               className="shrink-0"
+               style={{ backgroundColor: category.color }}
+               variant="icon"
+            >
+               <IconDisplay iconName={category.icon as IconName} size={16} />
+            </ItemMedia>
+            <div className="min-w-0 flex-1">
+               <CardTitle className="flex items-center gap-1.5 text-sm">
+                  <span className="truncate">{transaction.description}</span>
+                  {hasSplit && (
+                     <Split className="size-3.5 text-muted-foreground shrink-0" />
+                  )}
+               </CardTitle>
+               <CardDescription>
+                  {new Date(transaction.date).toLocaleDateString("pt-BR", {
+                     day: "2-digit",
+                     month: "short",
+                     year: "numeric",
+                  })}
+               </CardDescription>
+            </div>
+            <CardAction>
+               <Checkbox
+                  checked={row.getIsSelected()}
+                  onCheckedChange={(value) => row.toggleSelected(!!value)}
+               />
+            </CardAction>
+         </CardHeader>
+         <CardContent>
+            <Badge variant={isPositive ? "default" : "destructive"}>
+               {isPositive ? "+" : "-"}
+               {formattedAmount}
+            </Badge>
+         </CardContent>
+         <CardFooter>
+            <CollapsibleTrigger asChild onClick={toggleExpanded}>
+               <Button className="w-full" variant="outline">
                   <ChevronDown
-                     className={`size-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                     className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                   />
-               </ItemActions>
-            </Item>
-         </CollapsibleTrigger>
+                  {translate(
+                     "dashboard.routes.transactions.list-section.actions.view-details",
+                  )}
+               </Button>
+            </CollapsibleTrigger>
+         </CardFooter>
       </Card>
    );
 }
