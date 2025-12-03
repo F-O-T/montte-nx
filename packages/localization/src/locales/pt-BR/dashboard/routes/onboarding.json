@@ -148,6 +148,10 @@
             "description": "Visualize relatórios detalhados das suas finanças.",
             "title": "Relatórios"
          },
+         "security": {
+            "description": "Seus dados protegidos com criptografia de ponta.",
+            "title": "Segurança"
+         },
          "wallet": {
             "description": "Organize suas contas e transações em um só lugar.",
             "title": "Carteira Digital"

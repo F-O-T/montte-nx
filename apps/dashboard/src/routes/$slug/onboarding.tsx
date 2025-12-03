@@ -30,6 +30,7 @@ import {
    ChevronLeftIcon,
    ChevronRightIcon,
    PiggyBankIcon,
+   ShieldCheckIcon,
    WalletIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -329,7 +330,7 @@ function RouteComponent() {
       switch (step) {
          case "welcome":
             return (
-               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex flex-col items-center gap-3 p-6 rounded-lg border bg-card">
                      <div className="p-3 rounded-full bg-primary/10">
                         <WalletIcon className="size-6 text-primary" />
@@ -377,6 +378,23 @@ function RouteComponent() {
                         <p className="text-sm text-muted-foreground">
                            {translate(
                               "dashboard.routes.onboarding.welcome.features.insights.description",
+                           )}
+                        </p>
+                     </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-3 p-6 rounded-lg border bg-card">
+                     <div className="p-3 rounded-full bg-primary/10">
+                        <ShieldCheckIcon className="size-6 text-primary" />
+                     </div>
+                     <div className="text-center space-y-1">
+                        <p className="font-medium font-serif">
+                           {translate(
+                              "dashboard.routes.onboarding.welcome.features.security.title",
+                           )}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                           {translate(
+                              "dashboard.routes.onboarding.welcome.features.security.description",
                            )}
                         </p>
                      </div>
