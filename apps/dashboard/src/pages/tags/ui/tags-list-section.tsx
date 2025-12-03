@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { formatDate } from "@packages/utils/date";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -57,6 +56,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDate } from "@packages/utils/date";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {

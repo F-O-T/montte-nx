@@ -4,8 +4,8 @@ import {
    findBudgetById,
    findBudgetsByOrganizationIdPaginated,
    getBudgetStats,
-   getBudgetWithProgress,
    getBudgetsWithProgress,
+   getBudgetWithProgress,
    processRollover,
    updateBudget,
 } from "@packages/database/repositories/budget-repository";
@@ -35,79 +35,79 @@ const alertConfigSchema = z.object({
    enabled: z.boolean(),
    thresholds: z.array(
       z.object({
-         percentage: z.number(),
          notified: z.boolean(),
          notifiedAt: z.date().optional(),
+         percentage: z.number(),
       }),
    ),
 });
 
 const shadowBudgetSchema = z.object({
    enabled: z.boolean(),
-   visibleLimit: z.number(),
    internalLimit: z.number(),
+   visibleLimit: z.number(),
 });
 
 const createBudgetSchema = z.object({
-   name: z.string().min(1),
-   description: z.string().optional(),
-   color: z.string().optional(),
-   icon: z.string().optional(),
+   alertConfig: alertConfigSchema.optional(),
    amount: z.string(),
-   target: budgetTargetSchema,
+   blockOnExceed: z.boolean().default(false),
+   color: z.string().optional(),
+   customPeriodEnd: z.date().optional(),
+   customPeriodStart: z.date().optional(),
+   description: z.string().optional(),
+   endDate: z.date().optional(),
+   icon: z.string().optional(),
+   isActive: z.boolean().default(true),
+   mode: z.enum(["personal", "business"]).default("personal"),
+   name: z.string().min(1),
+   periodStartDay: z.string().optional(),
    periodType: z
       .enum(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"])
       .default("monthly"),
-   periodStartDay: z.string().optional(),
-   customPeriodStart: z.date().optional(),
-   customPeriodEnd: z.date().optional(),
+   regime: z.enum(["cash", "accrual"]).default("cash"),
    rollover: z.boolean().default(false),
    rolloverCap: z.string().optional(),
-   regime: z.enum(["cash", "accrual"]).default("cash"),
-   mode: z.enum(["personal", "business"]).default("personal"),
-   alertConfig: alertConfigSchema.optional(),
    shadowBudget: shadowBudgetSchema.optional(),
-   blockOnExceed: z.boolean().default(false),
-   isActive: z.boolean().default(true),
    startDate: z.date().optional(),
-   endDate: z.date().optional(),
+   target: budgetTargetSchema,
 });
 
 const updateBudgetSchema = z.object({
-   name: z.string().min(1).optional(),
-   description: z.string().optional(),
-   color: z.string().optional(),
-   icon: z.string().optional(),
+   alertConfig: alertConfigSchema.optional(),
    amount: z.string().optional(),
-   target: budgetTargetSchema.optional(),
+   blockOnExceed: z.boolean().optional(),
+   color: z.string().optional(),
+   customPeriodEnd: z.date().optional(),
+   customPeriodStart: z.date().optional(),
+   description: z.string().optional(),
+   endDate: z.date().optional(),
+   icon: z.string().optional(),
+   isActive: z.boolean().optional(),
+   mode: z.enum(["personal", "business"]).optional(),
+   name: z.string().min(1).optional(),
+   periodStartDay: z.string().optional(),
    periodType: z
       .enum(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"])
       .optional(),
-   periodStartDay: z.string().optional(),
-   customPeriodStart: z.date().optional(),
-   customPeriodEnd: z.date().optional(),
+   regime: z.enum(["cash", "accrual"]).optional(),
    rollover: z.boolean().optional(),
    rolloverCap: z.string().optional(),
-   regime: z.enum(["cash", "accrual"]).optional(),
-   mode: z.enum(["personal", "business"]).optional(),
-   alertConfig: alertConfigSchema.optional(),
    shadowBudget: shadowBudgetSchema.optional(),
-   blockOnExceed: z.boolean().optional(),
-   isActive: z.boolean().optional(),
    startDate: z.date().optional(),
-   endDate: z.date().optional(),
+   target: budgetTargetSchema.optional(),
 });
 
 const paginationSchema = z.object({
+   isActive: z.boolean().optional(),
    limit: z.coerce.number().min(1).max(100).default(10),
+   mode: z.enum(["personal", "business"]).optional(),
    orderBy: z
       .enum(["name", "createdAt", "updatedAt", "amount"])
       .default("name"),
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),
    search: z.string().optional(),
-   mode: z.enum(["personal", "business"]).optional(),
-   isActive: z.boolean().optional(),
 });
 
 export const budgetRouter = router({
@@ -159,13 +159,13 @@ export const budgetRouter = router({
             resolvedCtx.db,
             organizationId,
             {
+               isActive: input.isActive,
                limit: input.limit,
+               mode: input.mode,
                orderBy: input.orderBy,
                orderDirection: input.orderDirection,
                page: input.page,
                search: input.search,
-               mode: input.mode,
-               isActive: input.isActive,
             },
          );
       }),

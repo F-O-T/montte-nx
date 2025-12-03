@@ -1,14 +1,6 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
-import {
    Field,
    FieldError,
    FieldGroup,
@@ -22,7 +14,6 @@ import {
 } from "@packages/ui/components/input-otp";
 import { useForm } from "@tanstack/react-form";
 import { useRouter, useSearch } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
 import { type FormEvent, useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
@@ -131,16 +122,17 @@ export function EmailVerificationPage() {
    );
 
    return (
-      <Card>
-         <CardHeader className="text-center">
-            <CardTitle className="text-3xl ">
+      <section className="space-y-6 w-full">
+         <div className="text-center space-y-2">
+            <h1 className="text-3xl font-semibold font-serif">
                {translate("dashboard.routes.email-verification.title")}
-            </CardTitle>
-            <CardDescription>
+            </h1>
+            <p className="text-muted-foreground text-sm">
                {translate("dashboard.routes.email-verification.description")}
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
+            </p>
+         </div>
+
+         <div className="space-y-6">
             <form
                className="space-y-4"
                onSubmit={(e) => {
@@ -198,28 +190,28 @@ export function EmailVerificationPage() {
                <form.Subscribe>
                   {(formState) => (
                      <Button
-                        className="w-full flex gap-2 items-center justify-center"
+                        className="w-full"
                         disabled={
                            !formState.canSubmit || formState.isSubmitting
                         }
                         type="submit"
                      >
                         {translate("common.actions.submit")}
-                        <ArrowRight className="w-4 h-4 " />
                      </Button>
                   )}
                </form.Subscribe>
             </form>
-         </CardContent>
-         <CardFooter>
+         </div>
+
+         <div className="text-sm text-center">
             <Button
-               className="w-full text-muted-foreground flex gap-2 items-center justify-center"
+               className="text-muted-foreground"
                onClick={handleResendEmail}
                variant="link"
             >
                {translate("dashboard.routes.email-verification.actions.resend")}
             </Button>
-         </CardFooter>
-      </Card>
+         </div>
+      </section>
    );
 }

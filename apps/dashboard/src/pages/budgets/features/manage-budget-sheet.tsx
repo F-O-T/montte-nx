@@ -191,29 +191,29 @@ export function ManageBudgetSheet({
 
          switch (value.targetType) {
             case "category":
-               target = { type: "category", categoryId: value.categoryId };
+               target = { categoryId: value.categoryId, type: "category" };
                break;
             case "categories":
-               target = { type: "categories", categoryIds: value.categoryIds };
+               target = { categoryIds: value.categoryIds, type: "categories" };
                break;
             case "tag":
-               target = { type: "tag", tagId: value.tagId };
+               target = { tagId: value.tagId, type: "tag" };
                break;
             case "cost_center":
                target = {
-                  type: "cost_center",
                   costCenterId: value.costCenterId,
+                  type: "cost_center",
                };
                break;
             default:
-               target = { type: "category", categoryId: value.categoryId };
+               target = { categoryId: value.categoryId, type: "category" };
          }
 
          const budgetData = {
-            name: value.name,
             amount: String(reaisToCents(value.amount)),
-            target,
+            name: value.name,
             periodType: value.periodType,
+            target,
          };
 
          try {

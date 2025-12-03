@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getQueryClient, reservedRoutes, trpc } from "@/integrations/clients";
 
-export const Route = createFileRoute("/_dashboard/$slug")({
+export const Route = createFileRoute("/$slug")({
    beforeLoad: async ({ params, location }) => {
       const queryClient = getQueryClient();
       const organizations = await queryClient.fetchQuery(

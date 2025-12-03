@@ -7,7 +7,7 @@ import {
 import { getQueryClient, trpc } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
 
-export const Route = createFileRoute("/_dashboard")({
+export const Route = createFileRoute("/$slug/_dashboard")({
    beforeLoad: async ({ location }) => {
       const queryClient = getQueryClient();
       try {

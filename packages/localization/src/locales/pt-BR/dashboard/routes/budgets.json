@@ -4,197 +4,197 @@
          "add-new": "Novo orçamento"
       }
    },
-   "features": {
-      "create-budget": {
-         "description": "Crie um novo orçamento para controlar seus gastos",
-         "title": "Novo orçamento"
-      },
-      "edit-budget": {
-         "description": "Editando o orçamento {name}",
-         "title": "Editar orçamento"
-      },
-      "delete-budget": {
-         "description": "Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.",
-         "title": "Excluir orçamento",
-         "confirm": "Excluir",
-         "cancel": "Cancelar"
-      },
-      "filter": {
-         "title": "Filtrar orçamentos",
-         "description": "Filtre os orçamentos por diferentes critérios"
-      }
-   },
-   "form": {
-      "name": {
-         "label": "Nome",
-         "placeholder": "Ex: Alimentação, Lazer, Marketing..."
-      },
-      "description": {
-         "label": "Descrição",
-         "placeholder": "Descrição opcional do orçamento"
-      },
-      "amount": {
-         "label": "Valor limite",
-         "placeholder": "0,00"
-      },
-      "target": {
-         "label": "Alvo do orçamento",
-         "category": "Categoria única",
-         "categories": "Múltiplas categorias",
-         "tag": "Tag",
-         "cost_center": "Centro de custo"
-      },
-      "period": {
-         "label": "Período",
-         "daily": "Diário",
-         "weekly": "Semanal",
-         "monthly": "Mensal",
-         "quarterly": "Trimestral",
-         "yearly": "Anual",
-         "custom": "Personalizado"
-      },
-      "periodStartDay": {
-         "label": "Dia de início do período",
-         "placeholder": "1"
-      },
-      "rollover": {
-         "label": "Acumular saldo (Rollover)",
-         "description": "O saldo não utilizado será acumulado para o próximo período"
-      },
-      "rolloverCap": {
-         "label": "Limite de acumulação",
-         "placeholder": "Sem limite"
-      },
-      "regime": {
-         "label": "Regime de visualização",
-         "cash": "Regime de caixa",
-         "cash-description": "Consome o orçamento na data do pagamento",
-         "accrual": "Regime de competência",
-         "accrual-description": "Consome o orçamento na data da emissão/compra"
-      },
-      "mode": {
-         "label": "Modo",
-         "personal": "Pessoal",
-         "personal-description": "Foco em economia e gamificação",
-         "business": "Empresarial",
-         "business-description": "Controle rigoroso com previsão vs realizado"
-      },
-      "alerts": {
-         "label": "Alertas",
-         "enabled": "Ativar alertas",
-         "thresholds": "Limites de alerta"
-      },
-      "blockOnExceed": {
-         "label": "Bloquear ao exceder",
-         "description": "Impede criação de despesas quando o orçamento for excedido"
-      }
-   },
-   "list-section": {
-      "title": "Orçamentos",
-      "description": "Gerencie seus orçamentos e acompanhe seus gastos",
-      "actions": {
-         "label": "Ações",
-         "view-details": "Ver detalhes",
-         "edit-budget": "Editar",
-         "delete": "Excluir"
-      },
-      "state": {
-         "empty": {
-            "title": "Nenhum orçamento encontrado",
-            "description": "Crie seu primeiro orçamento para começar a controlar seus gastos"
-         },
-         "error": {
-            "title": "Erro ao carregar orçamentos",
-            "description": "Não foi possível carregar os orçamentos. Tente novamente."
-         }
-      }
-   },
-   "stats": {
-      "total-budgets": {
-         "title": "Total de orçamentos",
-         "description": "Número de orçamentos ativos"
-      },
-      "total-budgeted": {
-         "title": "Total orçado",
-         "description": "Soma de todos os limites"
-      },
-      "total-spent": {
-         "title": "Total gasto",
-         "description": "Soma de todos os gastos realizados"
-      },
-      "total-available": {
-         "title": "Total disponível",
-         "description": "Quanto ainda pode ser gasto"
-      },
-      "average-utilization": {
-         "title": "Utilização média",
-         "description": "Percentual médio de uso dos orçamentos"
-      },
-      "budgets-over-limit": {
-         "title": "Orçamentos estourados",
-         "description": "Orçamentos que ultrapassaram o limite"
-      },
-      "budgets-near-limit": {
-         "title": "Próximos do limite",
-         "description": "Orçamentos com mais de 80% utilizados"
-      }
-   },
-   "progress": {
-      "spent": "Gasto",
-      "scheduled": "Agendado",
-      "available": "Disponível",
-      "over-budget": "Acima do limite",
-      "rollover": "Acumulado do período anterior"
-   },
    "alerts": {
       "near-limit": "Você gastou {percentage}% do orçamento de {name}",
       "over-limit": "Orçamento de {name} foi excedido!",
       "suggestion": "Considere remanejar R$ {amount} de outro orçamento"
    },
-   "page": {
-      "title": "Orçamentos",
-      "description": "Gerencie seus orçamentos e acompanhe a evolução dos seus gastos"
-   },
    "details": {
+      "error": {
+         "back": "Voltar para Orçamentos",
+         "title": "Erro ao carregar orçamento"
+      },
+      "information": {
+         "active": "Ativo",
+         "created-at": "Criado em",
+         "description": "Configurações e detalhes do orçamento",
+         "inactive": "Inativo",
+         "mode": "Modo",
+         "period": "Período",
+         "regime": "Regime",
+         "rollover": "Acumulação",
+         "rollover-cap": "Limite de acumulação",
+         "rollover-disabled": "Desativado",
+         "rollover-enabled": "Ativado",
+         "status": "Status",
+         "target": "Alvo",
+         "title": "Informações do Orçamento",
+         "updated-at": "Atualizado em"
+      },
       "page": {
          "description": "Acompanhe o progresso e detalhes deste orçamento"
       },
-      "error": {
-         "title": "Erro ao carregar orçamento",
-         "back": "Voltar para Orçamentos"
-      },
       "progress": {
-         "title": "Progresso do Período",
          "description": "Acompanhe quanto foi gasto em relação ao limite definido",
          "of-budget": "do orçamento",
-         "remaining": "restante"
+         "remaining": "restante",
+         "title": "Progresso do Período"
       },
       "stats": {
-         "title": "Estatísticas",
-         "description": "Métricas detalhadas do seu orçamento",
-         "on-track": "No caminho certo",
-         "days-remaining": "Dias restantes",
          "daily-budget": "Orçamento diário",
-         "per-day": "por dia disponível",
+         "days-remaining": "Dias restantes",
+         "description": "Métricas detalhadas do seu orçamento",
          "forecast": "Previsão",
-         "including-scheduled": "incluindo agendados"
+         "including-scheduled": "incluindo agendados",
+         "on-track": "No caminho certo",
+         "per-day": "por dia disponível",
+         "title": "Estatísticas"
+      }
+   },
+   "features": {
+      "create-budget": {
+         "description": "Crie um novo orçamento para controlar seus gastos",
+         "title": "Novo orçamento"
       },
-      "information": {
-         "title": "Informações do Orçamento",
-         "description": "Configurações e detalhes do orçamento",
-         "target": "Alvo",
-         "period": "Período",
-         "mode": "Modo",
-         "regime": "Regime",
-         "rollover": "Acumulação",
-         "rollover-enabled": "Ativado",
-         "rollover-disabled": "Desativado",
-         "rollover-cap": "Limite de acumulação",
-         "created-at": "Criado em",
-         "updated-at": "Atualizado em",
-         "status": "Status",
-         "active": "Ativo",
-         "inactive": "Inativo"
+      "delete-budget": {
+         "cancel": "Cancelar",
+         "confirm": "Excluir",
+         "description": "Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.",
+         "title": "Excluir orçamento"
+      },
+      "edit-budget": {
+         "description": "Editando o orçamento {name}",
+         "title": "Editar orçamento"
+      },
+      "filter": {
+         "description": "Filtre os orçamentos por diferentes critérios",
+         "title": "Filtrar orçamentos"
+      }
+   },
+   "form": {
+      "alerts": {
+         "enabled": "Ativar alertas",
+         "label": "Alertas",
+         "thresholds": "Limites de alerta"
+      },
+      "amount": {
+         "label": "Valor limite",
+         "placeholder": "0,00"
+      },
+      "blockOnExceed": {
+         "description": "Impede criação de despesas quando o orçamento for excedido",
+         "label": "Bloquear ao exceder"
+      },
+      "description": {
+         "label": "Descrição",
+         "placeholder": "Descrição opcional do orçamento"
+      },
+      "mode": {
+         "business": "Empresarial",
+         "business-description": "Controle rigoroso com previsão vs realizado",
+         "label": "Modo",
+         "personal": "Pessoal",
+         "personal-description": "Foco em economia e gamificação"
+      },
+      "name": {
+         "label": "Nome",
+         "placeholder": "Ex: Alimentação, Lazer, Marketing..."
+      },
+      "period": {
+         "custom": "Personalizado",
+         "daily": "Diário",
+         "label": "Período",
+         "monthly": "Mensal",
+         "quarterly": "Trimestral",
+         "weekly": "Semanal",
+         "yearly": "Anual"
+      },
+      "periodStartDay": {
+         "label": "Dia de início do período",
+         "placeholder": "1"
+      },
+      "regime": {
+         "accrual": "Regime de competência",
+         "accrual-description": "Consome o orçamento na data da emissão/compra",
+         "cash": "Regime de caixa",
+         "cash-description": "Consome o orçamento na data do pagamento",
+         "label": "Regime de visualização"
+      },
+      "rollover": {
+         "description": "O saldo não utilizado será acumulado para o próximo período",
+         "label": "Acumular saldo (Rollover)"
+      },
+      "rolloverCap": {
+         "label": "Limite de acumulação",
+         "placeholder": "Sem limite"
+      },
+      "target": {
+         "categories": "Múltiplas categorias",
+         "category": "Categoria única",
+         "cost_center": "Centro de custo",
+         "label": "Alvo do orçamento",
+         "tag": "Tag"
+      }
+   },
+   "list-section": {
+      "actions": {
+         "delete": "Excluir",
+         "edit-budget": "Editar",
+         "label": "Ações",
+         "view-details": "Ver detalhes"
+      },
+      "description": "Gerencie seus orçamentos e acompanhe seus gastos",
+      "state": {
+         "empty": {
+            "description": "Crie seu primeiro orçamento para começar a controlar seus gastos",
+            "title": "Nenhum orçamento encontrado"
+         },
+         "error": {
+            "description": "Não foi possível carregar os orçamentos. Tente novamente.",
+            "title": "Erro ao carregar orçamentos"
+         }
+      },
+      "title": "Orçamentos"
+   },
+   "page": {
+      "description": "Gerencie seus orçamentos e acompanhe a evolução dos seus gastos",
+      "title": "Orçamentos"
+   },
+   "progress": {
+      "available": "Disponível",
+      "over-budget": "Acima do limite",
+      "rollover": "Acumulado do período anterior",
+      "scheduled": "Agendado",
+      "spent": "Gasto"
+   },
+   "stats": {
+      "average-utilization": {
+         "description": "Percentual médio de uso dos orçamentos",
+         "title": "Utilização média"
+      },
+      "budgets-near-limit": {
+         "description": "Orçamentos com mais de 80% utilizados",
+         "title": "Próximos do limite"
+      },
+      "budgets-over-limit": {
+         "description": "Orçamentos que ultrapassaram o limite",
+         "title": "Orçamentos estourados"
+      },
+      "total-available": {
+         "description": "Quanto ainda pode ser gasto",
+         "title": "Total disponível"
+      },
+      "total-budgeted": {
+         "description": "Soma de todos os limites",
+         "title": "Total orçado"
+      },
+      "total-budgets": {
+         "description": "Número de orçamentos ativos",
+         "title": "Total de orçamentos"
+      },
+      "total-spent": {
+         "description": "Soma de todos os gastos realizados",
+         "title": "Total gasto"
       }
    }
 }

@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TransactionDetailsPage } from "@/pages/transaction-details/ui/transaction-details-page";
 
 export const Route = createFileRoute(
-   "/_dashboard/$slug/transactions/$transactionId",
+   "/$slug/_dashboard/transactions/$transactionId",
 )({
    component: RouteComponent,
    staticData: {

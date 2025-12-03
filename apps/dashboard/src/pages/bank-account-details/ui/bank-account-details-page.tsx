@@ -16,8 +16,8 @@ import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { BankAccountCharts } from "./bank-account-charts";
-import { BankAccountStats } from "./bank-account-stats";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
+import { BankAccountStats } from "./bank-account-stats";
 
 function BankAccountContent() {
    const params = useParams({ strict: false });
@@ -33,7 +33,7 @@ function BankAccountContent() {
       return (
          <BankAccountPageError
             error={new Error("Invalid bank account ID")}
-            resetErrorBoundary={() => { }}
+            resetErrorBoundary={() => {}}
          />
       );
    }

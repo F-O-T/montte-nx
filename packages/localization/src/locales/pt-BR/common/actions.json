@@ -6,11 +6,13 @@
    "edit": "Editar",
    "first-page": "Primeira página",
    "last-page": "Última página",
+   "loading": "Carregando...",
    "next": "Próximo",
    "next-page": "Próxima página",
    "previous": "Voltar",
    "previous-page": "Página anterior",
    "retry": "Tentar novamente",
    "save": "Salvar",
+   "skip": "Pular",
    "submit": "Enviar"
 }

@@ -43,8 +43,8 @@ function formatDate(date: Date | string | null): string {
 
 function formatCurrency(value: number): string {
    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
+      style: "currency",
    }).format(value);
 }
 
@@ -54,31 +54,31 @@ export function BudgetInformationSection({
    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
 
    const periodLabels: Record<string, string> = {
+      custom: translate("dashboard.routes.budgets.form.period.custom"),
       daily: translate("dashboard.routes.budgets.form.period.daily"),
-      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
       monthly: translate("dashboard.routes.budgets.form.period.monthly"),
       quarterly: translate("dashboard.routes.budgets.form.period.quarterly"),
+      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
       yearly: translate("dashboard.routes.budgets.form.period.yearly"),
-      custom: translate("dashboard.routes.budgets.form.period.custom"),
    };
 
    const modeLabels: Record<string, string> = {
-      personal: translate("dashboard.routes.budgets.form.mode.personal"),
       business: translate("dashboard.routes.budgets.form.mode.business"),
+      personal: translate("dashboard.routes.budgets.form.mode.personal"),
    };
 
    const regimeLabels: Record<string, string> = {
-      cash: translate("dashboard.routes.budgets.form.regime.cash"),
       accrual: translate("dashboard.routes.budgets.form.regime.accrual"),
+      cash: translate("dashboard.routes.budgets.form.regime.cash"),
    };
 
    const targetTypeLabels: Record<string, string> = {
-      category: translate("dashboard.routes.budgets.form.target.category"),
       categories: translate("dashboard.routes.budgets.form.target.categories"),
-      tag: translate("dashboard.routes.budgets.form.target.tag"),
+      category: translate("dashboard.routes.budgets.form.target.category"),
       cost_center: translate(
          "dashboard.routes.budgets.form.target.cost_center",
       ),
+      tag: translate("dashboard.routes.budgets.form.target.tag"),
    };
 
    const target = budget.target as BudgetTarget;

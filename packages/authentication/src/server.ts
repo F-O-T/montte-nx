@@ -141,11 +141,23 @@ export const getAuthOptions = (
             schema: {
                organization: {
                   additionalFields: {
+                     context: {
+                        defaultValue: "personal",
+                        input: true,
+                        required: false,
+                        type: "string",
+                     },
                      description: {
                         defaultValue: "",
                         input: true,
                         required: false,
                         type: "string",
+                     },
+                     onboardingCompleted: {
+                        defaultValue: false,
+                        input: true,
+                        required: false,
+                        type: "boolean",
                      },
                   },
                },

@@ -21,6 +21,11 @@
          "description": "Principais categorias por volume",
          "title": "Visão Geral por Categoria"
       },
+      "expenses-breakdown": {
+         "description": "Distribuição das despesas por categoria",
+         "empty": "Nenhuma despesa encontrada",
+         "title": "Despesas por Categoria"
+      },
       "financial-evolution": {
          "description": "Receitas e despesas ao longo do tempo",
          "title": "Evolução Financeira"
@@ -29,11 +34,6 @@
          "description": "Distribuição das receitas por categoria",
          "empty": "Nenhuma receita encontrada",
          "title": "Receitas por Categoria"
-      },
-      "expenses-breakdown": {
-         "description": "Distribuição das despesas por categoria",
-         "empty": "Nenhuma despesa encontrada",
-         "title": "Despesas por Categoria"
       },
       "payment-status-distribution": {
          "description": "Distribuição dos status de pagamento",
@@ -111,9 +111,9 @@
    },
    "period-filter": {
       "apply": "Aplicar",
-      "custom": "Período Personalizado",
       "current-month": "Mês Atual",
       "current-year": "Ano Atual",
+      "custom": "Período Personalizado",
       "end-date": "Data Final",
       "label": "Período",
       "last-month": "Mês Anterior",

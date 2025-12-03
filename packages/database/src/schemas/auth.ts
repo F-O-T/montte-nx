@@ -90,12 +90,14 @@ export const verification = pgTable(
 );
 
 export const organization = pgTable("organization", {
+   context: text("context").default("personal"),
    createdAt: timestamp("created_at").notNull(),
    description: text("description").default(""),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    logo: text("logo"),
    metadata: text("metadata"),
    name: text("name").notNull(),
+   onboardingCompleted: boolean("onboarding_completed").default(false),
    slug: text("slug").notNull().unique(),
 });
 

@@ -96,9 +96,11 @@ export async function createDefaultOrganization(
       const [createdOrganization] = await dbClient
          .insert(organization)
          .values({
+            context: "personal",
             createdAt: now,
             description: orgName,
             name: orgName,
+            onboardingCompleted: false,
             slug: orgSlug,
          })
          .returning();
@@ -189,7 +191,7 @@ export async function getOrganizationMembership(
       });
 
       if (!org) {
-         return { organization: null, membership: null };
+         return { membership: null, organization: null };
       }
 
       const membership = await dbClient.query.member.findFirst({
@@ -197,7 +199,7 @@ export async function getOrganizationMembership(
             and(eq(member.organizationId, org.id), eq(member.userId, userId)),
       });
 
-      return { organization: org, membership };
+      return { membership, organization: org };
    } catch (err) {
       propagateError(err);
       throw AppError.database(

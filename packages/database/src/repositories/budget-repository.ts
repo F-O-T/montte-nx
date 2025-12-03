@@ -1,11 +1,11 @@
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { budget, budgetPeriod, type BudgetTarget } from "../schemas/budgets";
-import { transaction } from "../schemas/transactions";
+import { bill } from "../schemas/bills";
+import { type BudgetTarget, budget, budgetPeriod } from "../schemas/budgets";
 import { transactionCategory } from "../schemas/categories";
 import { transactionTag } from "../schemas/tags";
-import { bill } from "../schemas/bills";
+import { transaction } from "../schemas/transactions";
 
 export type Budget = typeof budget.$inferSelect;
 export type NewBudget = typeof budget.$inferInsert;
@@ -45,8 +45,8 @@ export async function findBudgetById(
          where: (budget, { eq }) => eq(budget.id, budgetId),
          with: {
             periods: {
-               orderBy: (period, { desc }) => desc(period.periodStart),
                limit: 1,
+               orderBy: (period, { desc }) => desc(period.periodStart),
             },
          },
       });
@@ -69,8 +69,8 @@ export async function findBudgetsByOrganizationId(
          where: (budget, { eq }) => eq(budget.organizationId, organizationId),
          with: {
             periods: {
-               orderBy: (period, { desc }) => desc(period.periodStart),
                limit: 1,
+               orderBy: (period, { desc }) => desc(period.periodStart),
             },
          },
       });
@@ -136,8 +136,8 @@ export async function findBudgetsByOrganizationIdPaginated(
             where: whereCondition,
             with: {
                periods: {
-                  orderBy: (period, { desc }) => desc(period.periodStart),
                   limit: 1,
+                  orderBy: (period, { desc }) => desc(period.periodStart),
                },
             },
          }),
@@ -303,9 +303,9 @@ export async function findBudgetPeriods(
 
    try {
       const result = await dbClient.query.budgetPeriod.findMany({
-         where: eq(budgetPeriod.budgetId, budgetId),
-         orderBy: (period, { desc }) => desc(period.periodStart),
          limit,
+         orderBy: (period, { desc }) => desc(period.periodStart),
+         where: eq(budgetPeriod.budgetId, budgetId),
       });
       return result;
    } catch (err) {
@@ -349,8 +349,8 @@ export async function closeBudgetPeriod(
       const result = await dbClient
          .update(budgetPeriod)
          .set({
-            isClosed: true,
             closedAt: new Date(),
+            isClosed: true,
          })
          .where(eq(budgetPeriod.id, periodId))
          .returning();
@@ -472,11 +472,11 @@ export async function calculateBudgetSpent(
             : 0;
 
       return {
-         spent: spentAmount,
-         scheduled: scheduledAmount,
          available,
-         percentage: Math.min(100, percentage),
          forecastPercentage: Math.min(100, forecastPercentage),
+         percentage: Math.min(100, percentage),
+         scheduled: scheduledAmount,
+         spent: spentAmount,
       };
    } catch (err) {
       propagateError(err);
@@ -511,19 +511,19 @@ export async function getBudgetWithProgress(
 
       if (!currentPeriod) {
          currentPeriod = await createBudgetPeriod(dbClient, {
-            budgetId,
-            periodStart,
-            periodEnd,
             baseAmount: budgetData.amount,
+            budgetId,
+            periodEnd,
+            periodStart,
             rolloverAmount: "0",
-            totalAmount: budgetData.amount,
-            spentAmount: String(progress.spent),
             scheduledAmount: String(progress.scheduled),
+            spentAmount: String(progress.spent),
+            totalAmount: budgetData.amount,
          });
       } else {
          await updateBudgetPeriod(dbClient, currentPeriod.id, {
-            spentAmount: String(progress.spent),
             scheduledAmount: String(progress.scheduled),
+            spentAmount: String(progress.spent),
          });
       }
 
@@ -606,7 +606,7 @@ function calculatePeriodDates(budgetData: Budget): {
             999,
          );
          break;
-      case "weekly":
+      case "weekly": {
          const dayOfWeek = now.getDay();
          periodStart = new Date(now);
          periodStart.setDate(now.getDate() - dayOfWeek);
@@ -615,7 +615,8 @@ function calculatePeriodDates(budgetData: Budget): {
          periodEnd.setDate(periodStart.getDate() + 6);
          periodEnd.setHours(23, 59, 59, 999);
          break;
-      case "monthly":
+      }
+      case "monthly": {
          const startDay = Number(budgetData.periodStartDay) || 1;
          if (now.getDate() >= startDay) {
             periodStart = new Date(now.getFullYear(), now.getMonth(), startDay);
@@ -645,7 +646,8 @@ function calculatePeriodDates(budgetData: Budget): {
             );
          }
          break;
-      case "quarterly":
+      }
+      case "quarterly": {
          const quarter = Math.floor(now.getMonth() / 3);
          periodStart = new Date(now.getFullYear(), quarter * 3, 1);
          periodEnd = new Date(
@@ -658,6 +660,7 @@ function calculatePeriodDates(budgetData: Budget): {
             999,
          );
          break;
+      }
       case "yearly":
          periodStart = new Date(now.getFullYear(), 0, 1);
          periodEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
@@ -679,7 +682,7 @@ function calculatePeriodDates(budgetData: Budget): {
          );
    }
 
-   return { periodStart, periodEnd };
+   return { periodEnd, periodStart };
 }
 
 export interface BudgetStats {
@@ -736,15 +739,15 @@ export async function getBudgetStats(
             : 0;
 
       return {
-         totalBudgets: budgetsWithProgress.length,
          activeBudgets: activeBudgets.length,
-         totalBudgeted,
-         totalSpent,
-         totalScheduled,
-         totalAvailable,
          averageUtilization,
-         budgetsOverLimit,
          budgetsNearLimit,
+         budgetsOverLimit,
+         totalAvailable,
+         totalBudgeted,
+         totalBudgets: budgetsWithProgress.length,
+         totalScheduled,
+         totalSpent,
       };
    } catch (err) {
       propagateError(err);
@@ -784,10 +787,10 @@ export async function processRollover(
       const totalAmount = baseAmount + rolloverAmount;
 
       const newPeriod = await createBudgetPeriod(dbClient, {
-         budgetId,
-         periodStart,
-         periodEnd,
          baseAmount: String(baseAmount),
+         budgetId,
+         periodEnd,
+         periodStart,
          rolloverAmount: String(rolloverAmount),
          totalAmount: String(totalAmount),
       });

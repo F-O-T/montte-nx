@@ -11,32 +11,33 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/_dashboard'
+import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
-import { Route as AuthOnboardingRouteImport } from './routes/auth/onboarding'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
-import { Route as DashboardSlugRouteImport } from './routes/_dashboard/$slug'
-import { Route as DashboardSlugReportsRouteImport } from './routes/_dashboard/$slug/reports'
-import { Route as DashboardSlugProfileRouteImport } from './routes/_dashboard/$slug/profile'
-import { Route as DashboardSlugHomeRouteImport } from './routes/_dashboard/$slug/home'
-import { Route as DashboardSlugTransactionsIndexRouteImport } from './routes/_dashboard/$slug/transactions.index'
-import { Route as DashboardSlugTagsIndexRouteImport } from './routes/_dashboard/$slug/tags/index'
-import { Route as DashboardSlugOrganizationIndexRouteImport } from './routes/_dashboard/$slug/organization/index'
-import { Route as DashboardSlugCostCentersIndexRouteImport } from './routes/_dashboard/$slug/cost-centers/index'
-import { Route as DashboardSlugCategoriesIndexRouteImport } from './routes/_dashboard/$slug/categories/index'
-import { Route as DashboardSlugBudgetsIndexRouteImport } from './routes/_dashboard/$slug/budgets/index'
-import { Route as DashboardSlugBillsIndexRouteImport } from './routes/_dashboard/$slug/bills/index'
-import { Route as DashboardSlugBankAccountsIndexRouteImport } from './routes/_dashboard/$slug/bank-accounts.index'
-import { Route as DashboardSlugTransactionsTransactionIdRouteImport } from './routes/_dashboard/$slug/transactions.$transactionId'
-import { Route as DashboardSlugTagsTagIdRouteImport } from './routes/_dashboard/$slug/tags/$tagId'
-import { Route as DashboardSlugOrganizationTeamsRouteImport } from './routes/_dashboard/$slug/organization/teams'
-import { Route as DashboardSlugOrganizationMembersRouteImport } from './routes/_dashboard/$slug/organization/members'
-import { Route as DashboardSlugOrganizationInvitesRouteImport } from './routes/_dashboard/$slug/organization/invites'
-import { Route as DashboardSlugCostCentersCostCenterIdRouteImport } from './routes/_dashboard/$slug/cost-centers/$costCenterId'
-import { Route as DashboardSlugCategoriesCategoryIdRouteImport } from './routes/_dashboard/$slug/categories/$categoryId'
-import { Route as DashboardSlugBudgetsBudgetIdRouteImport } from './routes/_dashboard/$slug/budgets/$budgetId'
-import { Route as DashboardSlugBankAccountsBankAccountIdRouteImport } from './routes/_dashboard/$slug/bank-accounts.$bankAccountId'
+import { Route as SlugOnboardingRouteImport } from './routes/$slug/onboarding'
+import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
+import { Route as SlugDashboardReportsRouteImport } from './routes/$slug/_dashboard/reports'
+import { Route as SlugDashboardProfileRouteImport } from './routes/$slug/_dashboard/profile'
+import { Route as SlugDashboardHomeRouteImport } from './routes/$slug/_dashboard/home'
+import { Route as SlugDashboardTransactionsIndexRouteImport } from './routes/$slug/_dashboard/transactions.index'
+import { Route as SlugDashboardTagsIndexRouteImport } from './routes/$slug/_dashboard/tags/index'
+import { Route as SlugDashboardOrganizationIndexRouteImport } from './routes/$slug/_dashboard/organization/index'
+import { Route as SlugDashboardCostCentersIndexRouteImport } from './routes/$slug/_dashboard/cost-centers/index'
+import { Route as SlugDashboardCategoriesIndexRouteImport } from './routes/$slug/_dashboard/categories/index'
+import { Route as SlugDashboardBudgetsIndexRouteImport } from './routes/$slug/_dashboard/budgets/index'
+import { Route as SlugDashboardBillsIndexRouteImport } from './routes/$slug/_dashboard/bills/index'
+import { Route as SlugDashboardBankAccountsIndexRouteImport } from './routes/$slug/_dashboard/bank-accounts.index'
+import { Route as SlugDashboardTransactionsTransactionIdRouteImport } from './routes/$slug/_dashboard/transactions.$transactionId'
+import { Route as SlugDashboardTagsTagIdRouteImport } from './routes/$slug/_dashboard/tags/$tagId'
+import { Route as SlugDashboardOrganizationTeamsRouteImport } from './routes/$slug/_dashboard/organization/teams'
+import { Route as SlugDashboardOrganizationMembersRouteImport } from './routes/$slug/_dashboard/organization/members'
+import { Route as SlugDashboardOrganizationInvitesRouteImport } from './routes/$slug/_dashboard/organization/invites'
+import { Route as SlugDashboardCostCentersCostCenterIdRouteImport } from './routes/$slug/_dashboard/cost-centers/$costCenterId'
+import { Route as SlugDashboardCategoriesCategoryIdRouteImport } from './routes/$slug/_dashboard/categories/$categoryId'
+import { Route as SlugDashboardBudgetsBudgetIdRouteImport } from './routes/$slug/_dashboard/budgets/$budgetId'
+import { Route as SlugDashboardBankAccountsBankAccountIdRouteImport } from './routes/$slug/_dashboard/bank-accounts.$bankAccountId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -45,6 +46,11 @@ const AuthRoute = AuthRouteImport.update({
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/_dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SlugRoute = SlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignUpRoute = AuthSignUpRouteImport.update({
@@ -57,11 +63,6 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
 } as any)
-const AuthOnboardingRoute = AuthOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => AuthRoute,
-} as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -72,223 +73,228 @@ const AuthEmailVerificationRoute = AuthEmailVerificationRouteImport.update({
   path: '/email-verification',
   getParentRoute: () => AuthRoute,
 } as any)
-const DashboardSlugRoute = DashboardSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => DashboardRoute,
+const SlugOnboardingRoute = SlugOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => SlugRoute,
 } as any)
-const DashboardSlugReportsRoute = DashboardSlugReportsRouteImport.update({
+const SlugDashboardRoute = SlugDashboardRouteImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => SlugRoute,
+} as any)
+const SlugDashboardReportsRoute = SlugDashboardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
-  getParentRoute: () => DashboardSlugRoute,
+  getParentRoute: () => SlugDashboardRoute,
 } as any)
-const DashboardSlugProfileRoute = DashboardSlugProfileRouteImport.update({
+const SlugDashboardProfileRoute = SlugDashboardProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => DashboardSlugRoute,
+  getParentRoute: () => SlugDashboardRoute,
 } as any)
-const DashboardSlugHomeRoute = DashboardSlugHomeRouteImport.update({
+const SlugDashboardHomeRoute = SlugDashboardHomeRouteImport.update({
   id: '/home',
   path: '/home',
-  getParentRoute: () => DashboardSlugRoute,
+  getParentRoute: () => SlugDashboardRoute,
 } as any)
-const DashboardSlugTransactionsIndexRoute =
-  DashboardSlugTransactionsIndexRouteImport.update({
+const SlugDashboardTransactionsIndexRoute =
+  SlugDashboardTransactionsIndexRouteImport.update({
     id: '/transactions/',
     path: '/transactions/',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugTagsIndexRoute = DashboardSlugTagsIndexRouteImport.update({
+const SlugDashboardTagsIndexRoute = SlugDashboardTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
-  getParentRoute: () => DashboardSlugRoute,
+  getParentRoute: () => SlugDashboardRoute,
 } as any)
-const DashboardSlugOrganizationIndexRoute =
-  DashboardSlugOrganizationIndexRouteImport.update({
+const SlugDashboardOrganizationIndexRoute =
+  SlugDashboardOrganizationIndexRouteImport.update({
     id: '/organization/',
     path: '/organization/',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugCostCentersIndexRoute =
-  DashboardSlugCostCentersIndexRouteImport.update({
+const SlugDashboardCostCentersIndexRoute =
+  SlugDashboardCostCentersIndexRouteImport.update({
     id: '/cost-centers/',
     path: '/cost-centers/',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugCategoriesIndexRoute =
-  DashboardSlugCategoriesIndexRouteImport.update({
+const SlugDashboardCategoriesIndexRoute =
+  SlugDashboardCategoriesIndexRouteImport.update({
     id: '/categories/',
     path: '/categories/',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugBudgetsIndexRoute =
-  DashboardSlugBudgetsIndexRouteImport.update({
+const SlugDashboardBudgetsIndexRoute =
+  SlugDashboardBudgetsIndexRouteImport.update({
     id: '/budgets/',
     path: '/budgets/',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugBillsIndexRoute = DashboardSlugBillsIndexRouteImport.update({
+const SlugDashboardBillsIndexRoute = SlugDashboardBillsIndexRouteImport.update({
   id: '/bills/',
   path: '/bills/',
-  getParentRoute: () => DashboardSlugRoute,
+  getParentRoute: () => SlugDashboardRoute,
 } as any)
-const DashboardSlugBankAccountsIndexRoute =
-  DashboardSlugBankAccountsIndexRouteImport.update({
+const SlugDashboardBankAccountsIndexRoute =
+  SlugDashboardBankAccountsIndexRouteImport.update({
     id: '/bank-accounts/',
     path: '/bank-accounts/',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugTransactionsTransactionIdRoute =
-  DashboardSlugTransactionsTransactionIdRouteImport.update({
+const SlugDashboardTransactionsTransactionIdRoute =
+  SlugDashboardTransactionsTransactionIdRouteImport.update({
     id: '/transactions/$transactionId',
     path: '/transactions/$transactionId',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugTagsTagIdRoute = DashboardSlugTagsTagIdRouteImport.update({
+const SlugDashboardTagsTagIdRoute = SlugDashboardTagsTagIdRouteImport.update({
   id: '/tags/$tagId',
   path: '/tags/$tagId',
-  getParentRoute: () => DashboardSlugRoute,
+  getParentRoute: () => SlugDashboardRoute,
 } as any)
-const DashboardSlugOrganizationTeamsRoute =
-  DashboardSlugOrganizationTeamsRouteImport.update({
+const SlugDashboardOrganizationTeamsRoute =
+  SlugDashboardOrganizationTeamsRouteImport.update({
     id: '/organization/teams',
     path: '/organization/teams',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugOrganizationMembersRoute =
-  DashboardSlugOrganizationMembersRouteImport.update({
+const SlugDashboardOrganizationMembersRoute =
+  SlugDashboardOrganizationMembersRouteImport.update({
     id: '/organization/members',
     path: '/organization/members',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugOrganizationInvitesRoute =
-  DashboardSlugOrganizationInvitesRouteImport.update({
+const SlugDashboardOrganizationInvitesRoute =
+  SlugDashboardOrganizationInvitesRouteImport.update({
     id: '/organization/invites',
     path: '/organization/invites',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugCostCentersCostCenterIdRoute =
-  DashboardSlugCostCentersCostCenterIdRouteImport.update({
+const SlugDashboardCostCentersCostCenterIdRoute =
+  SlugDashboardCostCentersCostCenterIdRouteImport.update({
     id: '/cost-centers/$costCenterId',
     path: '/cost-centers/$costCenterId',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugCategoriesCategoryIdRoute =
-  DashboardSlugCategoriesCategoryIdRouteImport.update({
+const SlugDashboardCategoriesCategoryIdRoute =
+  SlugDashboardCategoriesCategoryIdRouteImport.update({
     id: '/categories/$categoryId',
     path: '/categories/$categoryId',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugBudgetsBudgetIdRoute =
-  DashboardSlugBudgetsBudgetIdRouteImport.update({
+const SlugDashboardBudgetsBudgetIdRoute =
+  SlugDashboardBudgetsBudgetIdRouteImport.update({
     id: '/budgets/$budgetId',
     path: '/budgets/$budgetId',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
-const DashboardSlugBankAccountsBankAccountIdRoute =
-  DashboardSlugBankAccountsBankAccountIdRouteImport.update({
+const SlugDashboardBankAccountsBankAccountIdRoute =
+  SlugDashboardBankAccountsBankAccountIdRouteImport.update({
     id: '/bank-accounts/$bankAccountId',
     path: '/bank-accounts/$bankAccountId',
-    getParentRoute: () => DashboardSlugRoute,
+    getParentRoute: () => SlugDashboardRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/$slug': typeof SlugDashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/$slug': typeof DashboardSlugRouteWithChildren
+  '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/$slug/home': typeof DashboardSlugHomeRoute
-  '/$slug/profile': typeof DashboardSlugProfileRoute
-  '/$slug/reports': typeof DashboardSlugReportsRoute
-  '/$slug/bank-accounts/$bankAccountId': typeof DashboardSlugBankAccountsBankAccountIdRoute
-  '/$slug/budgets/$budgetId': typeof DashboardSlugBudgetsBudgetIdRoute
-  '/$slug/categories/$categoryId': typeof DashboardSlugCategoriesCategoryIdRoute
-  '/$slug/cost-centers/$costCenterId': typeof DashboardSlugCostCentersCostCenterIdRoute
-  '/$slug/organization/invites': typeof DashboardSlugOrganizationInvitesRoute
-  '/$slug/organization/members': typeof DashboardSlugOrganizationMembersRoute
-  '/$slug/organization/teams': typeof DashboardSlugOrganizationTeamsRoute
-  '/$slug/tags/$tagId': typeof DashboardSlugTagsTagIdRoute
-  '/$slug/transactions/$transactionId': typeof DashboardSlugTransactionsTransactionIdRoute
-  '/$slug/bank-accounts': typeof DashboardSlugBankAccountsIndexRoute
-  '/$slug/bills': typeof DashboardSlugBillsIndexRoute
-  '/$slug/budgets': typeof DashboardSlugBudgetsIndexRoute
-  '/$slug/categories': typeof DashboardSlugCategoriesIndexRoute
-  '/$slug/cost-centers': typeof DashboardSlugCostCentersIndexRoute
-  '/$slug/organization': typeof DashboardSlugOrganizationIndexRoute
-  '/$slug/tags': typeof DashboardSlugTagsIndexRoute
-  '/$slug/transactions': typeof DashboardSlugTransactionsIndexRoute
+  '/$slug/home': typeof SlugDashboardHomeRoute
+  '/$slug/profile': typeof SlugDashboardProfileRoute
+  '/$slug/reports': typeof SlugDashboardReportsRoute
+  '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
+  '/$slug/budgets/$budgetId': typeof SlugDashboardBudgetsBudgetIdRoute
+  '/$slug/categories/$categoryId': typeof SlugDashboardCategoriesCategoryIdRoute
+  '/$slug/cost-centers/$costCenterId': typeof SlugDashboardCostCentersCostCenterIdRoute
+  '/$slug/organization/invites': typeof SlugDashboardOrganizationInvitesRoute
+  '/$slug/organization/members': typeof SlugDashboardOrganizationMembersRoute
+  '/$slug/organization/teams': typeof SlugDashboardOrganizationTeamsRoute
+  '/$slug/tags/$tagId': typeof SlugDashboardTagsTagIdRoute
+  '/$slug/transactions/$transactionId': typeof SlugDashboardTransactionsTransactionIdRoute
+  '/$slug/bank-accounts': typeof SlugDashboardBankAccountsIndexRoute
+  '/$slug/bills': typeof SlugDashboardBillsIndexRoute
+  '/$slug/budgets': typeof SlugDashboardBudgetsIndexRoute
+  '/$slug/categories': typeof SlugDashboardCategoriesIndexRoute
+  '/$slug/cost-centers': typeof SlugDashboardCostCentersIndexRoute
+  '/$slug/organization': typeof SlugDashboardOrganizationIndexRoute
+  '/$slug/tags': typeof SlugDashboardTagsIndexRoute
+  '/$slug/transactions': typeof SlugDashboardTransactionsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/$slug': typeof SlugDashboardRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/$slug': typeof DashboardSlugRouteWithChildren
+  '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/$slug/home': typeof DashboardSlugHomeRoute
-  '/$slug/profile': typeof DashboardSlugProfileRoute
-  '/$slug/reports': typeof DashboardSlugReportsRoute
-  '/$slug/bank-accounts/$bankAccountId': typeof DashboardSlugBankAccountsBankAccountIdRoute
-  '/$slug/budgets/$budgetId': typeof DashboardSlugBudgetsBudgetIdRoute
-  '/$slug/categories/$categoryId': typeof DashboardSlugCategoriesCategoryIdRoute
-  '/$slug/cost-centers/$costCenterId': typeof DashboardSlugCostCentersCostCenterIdRoute
-  '/$slug/organization/invites': typeof DashboardSlugOrganizationInvitesRoute
-  '/$slug/organization/members': typeof DashboardSlugOrganizationMembersRoute
-  '/$slug/organization/teams': typeof DashboardSlugOrganizationTeamsRoute
-  '/$slug/tags/$tagId': typeof DashboardSlugTagsTagIdRoute
-  '/$slug/transactions/$transactionId': typeof DashboardSlugTransactionsTransactionIdRoute
-  '/$slug/bank-accounts': typeof DashboardSlugBankAccountsIndexRoute
-  '/$slug/bills': typeof DashboardSlugBillsIndexRoute
-  '/$slug/budgets': typeof DashboardSlugBudgetsIndexRoute
-  '/$slug/categories': typeof DashboardSlugCategoriesIndexRoute
-  '/$slug/cost-centers': typeof DashboardSlugCostCentersIndexRoute
-  '/$slug/organization': typeof DashboardSlugOrganizationIndexRoute
-  '/$slug/tags': typeof DashboardSlugTagsIndexRoute
-  '/$slug/transactions': typeof DashboardSlugTransactionsIndexRoute
+  '/$slug/home': typeof SlugDashboardHomeRoute
+  '/$slug/profile': typeof SlugDashboardProfileRoute
+  '/$slug/reports': typeof SlugDashboardReportsRoute
+  '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
+  '/$slug/budgets/$budgetId': typeof SlugDashboardBudgetsBudgetIdRoute
+  '/$slug/categories/$categoryId': typeof SlugDashboardCategoriesCategoryIdRoute
+  '/$slug/cost-centers/$costCenterId': typeof SlugDashboardCostCentersCostCenterIdRoute
+  '/$slug/organization/invites': typeof SlugDashboardOrganizationInvitesRoute
+  '/$slug/organization/members': typeof SlugDashboardOrganizationMembersRoute
+  '/$slug/organization/teams': typeof SlugDashboardOrganizationTeamsRoute
+  '/$slug/tags/$tagId': typeof SlugDashboardTagsTagIdRoute
+  '/$slug/transactions/$transactionId': typeof SlugDashboardTransactionsTransactionIdRoute
+  '/$slug/bank-accounts': typeof SlugDashboardBankAccountsIndexRoute
+  '/$slug/bills': typeof SlugDashboardBillsIndexRoute
+  '/$slug/budgets': typeof SlugDashboardBudgetsIndexRoute
+  '/$slug/categories': typeof SlugDashboardCategoriesIndexRoute
+  '/$slug/cost-centers': typeof SlugDashboardCostCentersIndexRoute
+  '/$slug/organization': typeof SlugDashboardOrganizationIndexRoute
+  '/$slug/tags': typeof SlugDashboardTagsIndexRoute
+  '/$slug/transactions': typeof SlugDashboardTransactionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_dashboard': typeof DashboardRouteWithChildren
+  '/$slug': typeof SlugRouteWithChildren
+  '/_dashboard': typeof DashboardRoute
   '/auth': typeof AuthRouteWithChildren
-  '/_dashboard/$slug': typeof DashboardSlugRouteWithChildren
+  '/$slug/_dashboard': typeof SlugDashboardRouteWithChildren
+  '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/auth/onboarding': typeof AuthOnboardingRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/_dashboard/$slug/home': typeof DashboardSlugHomeRoute
-  '/_dashboard/$slug/profile': typeof DashboardSlugProfileRoute
-  '/_dashboard/$slug/reports': typeof DashboardSlugReportsRoute
-  '/_dashboard/$slug/bank-accounts/$bankAccountId': typeof DashboardSlugBankAccountsBankAccountIdRoute
-  '/_dashboard/$slug/budgets/$budgetId': typeof DashboardSlugBudgetsBudgetIdRoute
-  '/_dashboard/$slug/categories/$categoryId': typeof DashboardSlugCategoriesCategoryIdRoute
-  '/_dashboard/$slug/cost-centers/$costCenterId': typeof DashboardSlugCostCentersCostCenterIdRoute
-  '/_dashboard/$slug/organization/invites': typeof DashboardSlugOrganizationInvitesRoute
-  '/_dashboard/$slug/organization/members': typeof DashboardSlugOrganizationMembersRoute
-  '/_dashboard/$slug/organization/teams': typeof DashboardSlugOrganizationTeamsRoute
-  '/_dashboard/$slug/tags/$tagId': typeof DashboardSlugTagsTagIdRoute
-  '/_dashboard/$slug/transactions/$transactionId': typeof DashboardSlugTransactionsTransactionIdRoute
-  '/_dashboard/$slug/bank-accounts/': typeof DashboardSlugBankAccountsIndexRoute
-  '/_dashboard/$slug/bills/': typeof DashboardSlugBillsIndexRoute
-  '/_dashboard/$slug/budgets/': typeof DashboardSlugBudgetsIndexRoute
-  '/_dashboard/$slug/categories/': typeof DashboardSlugCategoriesIndexRoute
-  '/_dashboard/$slug/cost-centers/': typeof DashboardSlugCostCentersIndexRoute
-  '/_dashboard/$slug/organization/': typeof DashboardSlugOrganizationIndexRoute
-  '/_dashboard/$slug/tags/': typeof DashboardSlugTagsIndexRoute
-  '/_dashboard/$slug/transactions/': typeof DashboardSlugTransactionsIndexRoute
+  '/$slug/_dashboard/home': typeof SlugDashboardHomeRoute
+  '/$slug/_dashboard/profile': typeof SlugDashboardProfileRoute
+  '/$slug/_dashboard/reports': typeof SlugDashboardReportsRoute
+  '/$slug/_dashboard/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
+  '/$slug/_dashboard/budgets/$budgetId': typeof SlugDashboardBudgetsBudgetIdRoute
+  '/$slug/_dashboard/categories/$categoryId': typeof SlugDashboardCategoriesCategoryIdRoute
+  '/$slug/_dashboard/cost-centers/$costCenterId': typeof SlugDashboardCostCentersCostCenterIdRoute
+  '/$slug/_dashboard/organization/invites': typeof SlugDashboardOrganizationInvitesRoute
+  '/$slug/_dashboard/organization/members': typeof SlugDashboardOrganizationMembersRoute
+  '/$slug/_dashboard/organization/teams': typeof SlugDashboardOrganizationTeamsRoute
+  '/$slug/_dashboard/tags/$tagId': typeof SlugDashboardTagsTagIdRoute
+  '/$slug/_dashboard/transactions/$transactionId': typeof SlugDashboardTransactionsTransactionIdRoute
+  '/$slug/_dashboard/bank-accounts/': typeof SlugDashboardBankAccountsIndexRoute
+  '/$slug/_dashboard/bills/': typeof SlugDashboardBillsIndexRoute
+  '/$slug/_dashboard/budgets/': typeof SlugDashboardBudgetsIndexRoute
+  '/$slug/_dashboard/categories/': typeof SlugDashboardCategoriesIndexRoute
+  '/$slug/_dashboard/cost-centers/': typeof SlugDashboardCostCentersIndexRoute
+  '/$slug/_dashboard/organization/': typeof SlugDashboardOrganizationIndexRoute
+  '/$slug/_dashboard/tags/': typeof SlugDashboardTagsIndexRoute
+  '/$slug/_dashboard/transactions/': typeof SlugDashboardTransactionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/auth'
     | '/$slug'
+    | '/auth'
+    | '/$slug/onboarding'
     | '/auth/email-verification'
     | '/auth/forgot-password'
-    | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/home'
@@ -313,11 +319,11 @@ export interface FileRouteTypes {
     | '/$slug/transactions'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/auth'
     | '/$slug'
+    | '/auth'
+    | '/$slug/onboarding'
     | '/auth/email-verification'
     | '/auth/forgot-password'
-    | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/home'
@@ -342,38 +348,40 @@ export interface FileRouteTypes {
     | '/$slug/transactions'
   id:
     | '__root__'
+    | '/$slug'
     | '/_dashboard'
     | '/auth'
-    | '/_dashboard/$slug'
+    | '/$slug/_dashboard'
+    | '/$slug/onboarding'
     | '/auth/email-verification'
     | '/auth/forgot-password'
-    | '/auth/onboarding'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/_dashboard/$slug/home'
-    | '/_dashboard/$slug/profile'
-    | '/_dashboard/$slug/reports'
-    | '/_dashboard/$slug/bank-accounts/$bankAccountId'
-    | '/_dashboard/$slug/budgets/$budgetId'
-    | '/_dashboard/$slug/categories/$categoryId'
-    | '/_dashboard/$slug/cost-centers/$costCenterId'
-    | '/_dashboard/$slug/organization/invites'
-    | '/_dashboard/$slug/organization/members'
-    | '/_dashboard/$slug/organization/teams'
-    | '/_dashboard/$slug/tags/$tagId'
-    | '/_dashboard/$slug/transactions/$transactionId'
-    | '/_dashboard/$slug/bank-accounts/'
-    | '/_dashboard/$slug/bills/'
-    | '/_dashboard/$slug/budgets/'
-    | '/_dashboard/$slug/categories/'
-    | '/_dashboard/$slug/cost-centers/'
-    | '/_dashboard/$slug/organization/'
-    | '/_dashboard/$slug/tags/'
-    | '/_dashboard/$slug/transactions/'
+    | '/$slug/_dashboard/home'
+    | '/$slug/_dashboard/profile'
+    | '/$slug/_dashboard/reports'
+    | '/$slug/_dashboard/bank-accounts/$bankAccountId'
+    | '/$slug/_dashboard/budgets/$budgetId'
+    | '/$slug/_dashboard/categories/$categoryId'
+    | '/$slug/_dashboard/cost-centers/$costCenterId'
+    | '/$slug/_dashboard/organization/invites'
+    | '/$slug/_dashboard/organization/members'
+    | '/$slug/_dashboard/organization/teams'
+    | '/$slug/_dashboard/tags/$tagId'
+    | '/$slug/_dashboard/transactions/$transactionId'
+    | '/$slug/_dashboard/bank-accounts/'
+    | '/$slug/_dashboard/bills/'
+    | '/$slug/_dashboard/budgets/'
+    | '/$slug/_dashboard/categories/'
+    | '/$slug/_dashboard/cost-centers/'
+    | '/$slug/_dashboard/organization/'
+    | '/$slug/_dashboard/tags/'
+    | '/$slug/_dashboard/transactions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  DashboardRoute: typeof DashboardRouteWithChildren
+  SlugRoute: typeof SlugRouteWithChildren
+  DashboardRoute: typeof DashboardRoute
   AuthRoute: typeof AuthRouteWithChildren
 }
 
@@ -393,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$slug': {
+      id: '/$slug'
+      path: '/$slug'
+      fullPath: '/$slug'
+      preLoaderRoute: typeof SlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/sign-up': {
       id: '/auth/sign-up'
       path: '/sign-up'
@@ -405,13 +420,6 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/auth/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/onboarding': {
-      id: '/auth/onboarding'
-      path: '/onboarding'
-      fullPath: '/auth/onboarding'
-      preLoaderRoute: typeof AuthOnboardingRouteImport
       parentRoute: typeof AuthRoute
     }
     '/auth/forgot-password': {
@@ -428,226 +436,232 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthEmailVerificationRouteImport
       parentRoute: typeof AuthRoute
     }
-    '/_dashboard/$slug': {
-      id: '/_dashboard/$slug'
-      path: '/$slug'
-      fullPath: '/$slug'
-      preLoaderRoute: typeof DashboardSlugRouteImport
-      parentRoute: typeof DashboardRoute
+    '/$slug/onboarding': {
+      id: '/$slug/onboarding'
+      path: '/onboarding'
+      fullPath: '/$slug/onboarding'
+      preLoaderRoute: typeof SlugOnboardingRouteImport
+      parentRoute: typeof SlugRoute
     }
-    '/_dashboard/$slug/reports': {
-      id: '/_dashboard/$slug/reports'
+    '/$slug/_dashboard': {
+      id: '/$slug/_dashboard'
+      path: ''
+      fullPath: '/$slug'
+      preLoaderRoute: typeof SlugDashboardRouteImport
+      parentRoute: typeof SlugRoute
+    }
+    '/$slug/_dashboard/reports': {
+      id: '/$slug/_dashboard/reports'
       path: '/reports'
       fullPath: '/$slug/reports'
-      preLoaderRoute: typeof DashboardSlugReportsRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardReportsRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/profile': {
-      id: '/_dashboard/$slug/profile'
+    '/$slug/_dashboard/profile': {
+      id: '/$slug/_dashboard/profile'
       path: '/profile'
       fullPath: '/$slug/profile'
-      preLoaderRoute: typeof DashboardSlugProfileRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardProfileRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/home': {
-      id: '/_dashboard/$slug/home'
+    '/$slug/_dashboard/home': {
+      id: '/$slug/_dashboard/home'
       path: '/home'
       fullPath: '/$slug/home'
-      preLoaderRoute: typeof DashboardSlugHomeRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardHomeRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/transactions/': {
-      id: '/_dashboard/$slug/transactions/'
+    '/$slug/_dashboard/transactions/': {
+      id: '/$slug/_dashboard/transactions/'
       path: '/transactions'
       fullPath: '/$slug/transactions'
-      preLoaderRoute: typeof DashboardSlugTransactionsIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardTransactionsIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/tags/': {
-      id: '/_dashboard/$slug/tags/'
+    '/$slug/_dashboard/tags/': {
+      id: '/$slug/_dashboard/tags/'
       path: '/tags'
       fullPath: '/$slug/tags'
-      preLoaderRoute: typeof DashboardSlugTagsIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardTagsIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/organization/': {
-      id: '/_dashboard/$slug/organization/'
+    '/$slug/_dashboard/organization/': {
+      id: '/$slug/_dashboard/organization/'
       path: '/organization'
       fullPath: '/$slug/organization'
-      preLoaderRoute: typeof DashboardSlugOrganizationIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardOrganizationIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/cost-centers/': {
-      id: '/_dashboard/$slug/cost-centers/'
+    '/$slug/_dashboard/cost-centers/': {
+      id: '/$slug/_dashboard/cost-centers/'
       path: '/cost-centers'
       fullPath: '/$slug/cost-centers'
-      preLoaderRoute: typeof DashboardSlugCostCentersIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardCostCentersIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/categories/': {
-      id: '/_dashboard/$slug/categories/'
+    '/$slug/_dashboard/categories/': {
+      id: '/$slug/_dashboard/categories/'
       path: '/categories'
       fullPath: '/$slug/categories'
-      preLoaderRoute: typeof DashboardSlugCategoriesIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardCategoriesIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/budgets/': {
-      id: '/_dashboard/$slug/budgets/'
+    '/$slug/_dashboard/budgets/': {
+      id: '/$slug/_dashboard/budgets/'
       path: '/budgets'
       fullPath: '/$slug/budgets'
-      preLoaderRoute: typeof DashboardSlugBudgetsIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardBudgetsIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/bills/': {
-      id: '/_dashboard/$slug/bills/'
+    '/$slug/_dashboard/bills/': {
+      id: '/$slug/_dashboard/bills/'
       path: '/bills'
       fullPath: '/$slug/bills'
-      preLoaderRoute: typeof DashboardSlugBillsIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardBillsIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/bank-accounts/': {
-      id: '/_dashboard/$slug/bank-accounts/'
+    '/$slug/_dashboard/bank-accounts/': {
+      id: '/$slug/_dashboard/bank-accounts/'
       path: '/bank-accounts'
       fullPath: '/$slug/bank-accounts'
-      preLoaderRoute: typeof DashboardSlugBankAccountsIndexRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardBankAccountsIndexRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/transactions/$transactionId': {
-      id: '/_dashboard/$slug/transactions/$transactionId'
+    '/$slug/_dashboard/transactions/$transactionId': {
+      id: '/$slug/_dashboard/transactions/$transactionId'
       path: '/transactions/$transactionId'
       fullPath: '/$slug/transactions/$transactionId'
-      preLoaderRoute: typeof DashboardSlugTransactionsTransactionIdRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardTransactionsTransactionIdRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/tags/$tagId': {
-      id: '/_dashboard/$slug/tags/$tagId'
+    '/$slug/_dashboard/tags/$tagId': {
+      id: '/$slug/_dashboard/tags/$tagId'
       path: '/tags/$tagId'
       fullPath: '/$slug/tags/$tagId'
-      preLoaderRoute: typeof DashboardSlugTagsTagIdRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardTagsTagIdRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/organization/teams': {
-      id: '/_dashboard/$slug/organization/teams'
+    '/$slug/_dashboard/organization/teams': {
+      id: '/$slug/_dashboard/organization/teams'
       path: '/organization/teams'
       fullPath: '/$slug/organization/teams'
-      preLoaderRoute: typeof DashboardSlugOrganizationTeamsRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardOrganizationTeamsRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/organization/members': {
-      id: '/_dashboard/$slug/organization/members'
+    '/$slug/_dashboard/organization/members': {
+      id: '/$slug/_dashboard/organization/members'
       path: '/organization/members'
       fullPath: '/$slug/organization/members'
-      preLoaderRoute: typeof DashboardSlugOrganizationMembersRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardOrganizationMembersRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/organization/invites': {
-      id: '/_dashboard/$slug/organization/invites'
+    '/$slug/_dashboard/organization/invites': {
+      id: '/$slug/_dashboard/organization/invites'
       path: '/organization/invites'
       fullPath: '/$slug/organization/invites'
-      preLoaderRoute: typeof DashboardSlugOrganizationInvitesRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardOrganizationInvitesRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/cost-centers/$costCenterId': {
-      id: '/_dashboard/$slug/cost-centers/$costCenterId'
+    '/$slug/_dashboard/cost-centers/$costCenterId': {
+      id: '/$slug/_dashboard/cost-centers/$costCenterId'
       path: '/cost-centers/$costCenterId'
       fullPath: '/$slug/cost-centers/$costCenterId'
-      preLoaderRoute: typeof DashboardSlugCostCentersCostCenterIdRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardCostCentersCostCenterIdRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/categories/$categoryId': {
-      id: '/_dashboard/$slug/categories/$categoryId'
+    '/$slug/_dashboard/categories/$categoryId': {
+      id: '/$slug/_dashboard/categories/$categoryId'
       path: '/categories/$categoryId'
       fullPath: '/$slug/categories/$categoryId'
-      preLoaderRoute: typeof DashboardSlugCategoriesCategoryIdRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardCategoriesCategoryIdRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/budgets/$budgetId': {
-      id: '/_dashboard/$slug/budgets/$budgetId'
+    '/$slug/_dashboard/budgets/$budgetId': {
+      id: '/$slug/_dashboard/budgets/$budgetId'
       path: '/budgets/$budgetId'
       fullPath: '/$slug/budgets/$budgetId'
-      preLoaderRoute: typeof DashboardSlugBudgetsBudgetIdRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardBudgetsBudgetIdRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
-    '/_dashboard/$slug/bank-accounts/$bankAccountId': {
-      id: '/_dashboard/$slug/bank-accounts/$bankAccountId'
+    '/$slug/_dashboard/bank-accounts/$bankAccountId': {
+      id: '/$slug/_dashboard/bank-accounts/$bankAccountId'
       path: '/bank-accounts/$bankAccountId'
       fullPath: '/$slug/bank-accounts/$bankAccountId'
-      preLoaderRoute: typeof DashboardSlugBankAccountsBankAccountIdRouteImport
-      parentRoute: typeof DashboardSlugRoute
+      preLoaderRoute: typeof SlugDashboardBankAccountsBankAccountIdRouteImport
+      parentRoute: typeof SlugDashboardRoute
     }
   }
 }
 
-interface DashboardSlugRouteChildren {
-  DashboardSlugHomeRoute: typeof DashboardSlugHomeRoute
-  DashboardSlugProfileRoute: typeof DashboardSlugProfileRoute
-  DashboardSlugReportsRoute: typeof DashboardSlugReportsRoute
-  DashboardSlugBankAccountsBankAccountIdRoute: typeof DashboardSlugBankAccountsBankAccountIdRoute
-  DashboardSlugBudgetsBudgetIdRoute: typeof DashboardSlugBudgetsBudgetIdRoute
-  DashboardSlugCategoriesCategoryIdRoute: typeof DashboardSlugCategoriesCategoryIdRoute
-  DashboardSlugCostCentersCostCenterIdRoute: typeof DashboardSlugCostCentersCostCenterIdRoute
-  DashboardSlugOrganizationInvitesRoute: typeof DashboardSlugOrganizationInvitesRoute
-  DashboardSlugOrganizationMembersRoute: typeof DashboardSlugOrganizationMembersRoute
-  DashboardSlugOrganizationTeamsRoute: typeof DashboardSlugOrganizationTeamsRoute
-  DashboardSlugTagsTagIdRoute: typeof DashboardSlugTagsTagIdRoute
-  DashboardSlugTransactionsTransactionIdRoute: typeof DashboardSlugTransactionsTransactionIdRoute
-  DashboardSlugBankAccountsIndexRoute: typeof DashboardSlugBankAccountsIndexRoute
-  DashboardSlugBillsIndexRoute: typeof DashboardSlugBillsIndexRoute
-  DashboardSlugBudgetsIndexRoute: typeof DashboardSlugBudgetsIndexRoute
-  DashboardSlugCategoriesIndexRoute: typeof DashboardSlugCategoriesIndexRoute
-  DashboardSlugCostCentersIndexRoute: typeof DashboardSlugCostCentersIndexRoute
-  DashboardSlugOrganizationIndexRoute: typeof DashboardSlugOrganizationIndexRoute
-  DashboardSlugTagsIndexRoute: typeof DashboardSlugTagsIndexRoute
-  DashboardSlugTransactionsIndexRoute: typeof DashboardSlugTransactionsIndexRoute
+interface SlugDashboardRouteChildren {
+  SlugDashboardHomeRoute: typeof SlugDashboardHomeRoute
+  SlugDashboardProfileRoute: typeof SlugDashboardProfileRoute
+  SlugDashboardReportsRoute: typeof SlugDashboardReportsRoute
+  SlugDashboardBankAccountsBankAccountIdRoute: typeof SlugDashboardBankAccountsBankAccountIdRoute
+  SlugDashboardBudgetsBudgetIdRoute: typeof SlugDashboardBudgetsBudgetIdRoute
+  SlugDashboardCategoriesCategoryIdRoute: typeof SlugDashboardCategoriesCategoryIdRoute
+  SlugDashboardCostCentersCostCenterIdRoute: typeof SlugDashboardCostCentersCostCenterIdRoute
+  SlugDashboardOrganizationInvitesRoute: typeof SlugDashboardOrganizationInvitesRoute
+  SlugDashboardOrganizationMembersRoute: typeof SlugDashboardOrganizationMembersRoute
+  SlugDashboardOrganizationTeamsRoute: typeof SlugDashboardOrganizationTeamsRoute
+  SlugDashboardTagsTagIdRoute: typeof SlugDashboardTagsTagIdRoute
+  SlugDashboardTransactionsTransactionIdRoute: typeof SlugDashboardTransactionsTransactionIdRoute
+  SlugDashboardBankAccountsIndexRoute: typeof SlugDashboardBankAccountsIndexRoute
+  SlugDashboardBillsIndexRoute: typeof SlugDashboardBillsIndexRoute
+  SlugDashboardBudgetsIndexRoute: typeof SlugDashboardBudgetsIndexRoute
+  SlugDashboardCategoriesIndexRoute: typeof SlugDashboardCategoriesIndexRoute
+  SlugDashboardCostCentersIndexRoute: typeof SlugDashboardCostCentersIndexRoute
+  SlugDashboardOrganizationIndexRoute: typeof SlugDashboardOrganizationIndexRoute
+  SlugDashboardTagsIndexRoute: typeof SlugDashboardTagsIndexRoute
+  SlugDashboardTransactionsIndexRoute: typeof SlugDashboardTransactionsIndexRoute
 }
 
-const DashboardSlugRouteChildren: DashboardSlugRouteChildren = {
-  DashboardSlugHomeRoute: DashboardSlugHomeRoute,
-  DashboardSlugProfileRoute: DashboardSlugProfileRoute,
-  DashboardSlugReportsRoute: DashboardSlugReportsRoute,
-  DashboardSlugBankAccountsBankAccountIdRoute:
-    DashboardSlugBankAccountsBankAccountIdRoute,
-  DashboardSlugBudgetsBudgetIdRoute: DashboardSlugBudgetsBudgetIdRoute,
-  DashboardSlugCategoriesCategoryIdRoute:
-    DashboardSlugCategoriesCategoryIdRoute,
-  DashboardSlugCostCentersCostCenterIdRoute:
-    DashboardSlugCostCentersCostCenterIdRoute,
-  DashboardSlugOrganizationInvitesRoute: DashboardSlugOrganizationInvitesRoute,
-  DashboardSlugOrganizationMembersRoute: DashboardSlugOrganizationMembersRoute,
-  DashboardSlugOrganizationTeamsRoute: DashboardSlugOrganizationTeamsRoute,
-  DashboardSlugTagsTagIdRoute: DashboardSlugTagsTagIdRoute,
-  DashboardSlugTransactionsTransactionIdRoute:
-    DashboardSlugTransactionsTransactionIdRoute,
-  DashboardSlugBankAccountsIndexRoute: DashboardSlugBankAccountsIndexRoute,
-  DashboardSlugBillsIndexRoute: DashboardSlugBillsIndexRoute,
-  DashboardSlugBudgetsIndexRoute: DashboardSlugBudgetsIndexRoute,
-  DashboardSlugCategoriesIndexRoute: DashboardSlugCategoriesIndexRoute,
-  DashboardSlugCostCentersIndexRoute: DashboardSlugCostCentersIndexRoute,
-  DashboardSlugOrganizationIndexRoute: DashboardSlugOrganizationIndexRoute,
-  DashboardSlugTagsIndexRoute: DashboardSlugTagsIndexRoute,
-  DashboardSlugTransactionsIndexRoute: DashboardSlugTransactionsIndexRoute,
+const SlugDashboardRouteChildren: SlugDashboardRouteChildren = {
+  SlugDashboardHomeRoute: SlugDashboardHomeRoute,
+  SlugDashboardProfileRoute: SlugDashboardProfileRoute,
+  SlugDashboardReportsRoute: SlugDashboardReportsRoute,
+  SlugDashboardBankAccountsBankAccountIdRoute:
+    SlugDashboardBankAccountsBankAccountIdRoute,
+  SlugDashboardBudgetsBudgetIdRoute: SlugDashboardBudgetsBudgetIdRoute,
+  SlugDashboardCategoriesCategoryIdRoute:
+    SlugDashboardCategoriesCategoryIdRoute,
+  SlugDashboardCostCentersCostCenterIdRoute:
+    SlugDashboardCostCentersCostCenterIdRoute,
+  SlugDashboardOrganizationInvitesRoute: SlugDashboardOrganizationInvitesRoute,
+  SlugDashboardOrganizationMembersRoute: SlugDashboardOrganizationMembersRoute,
+  SlugDashboardOrganizationTeamsRoute: SlugDashboardOrganizationTeamsRoute,
+  SlugDashboardTagsTagIdRoute: SlugDashboardTagsTagIdRoute,
+  SlugDashboardTransactionsTransactionIdRoute:
+    SlugDashboardTransactionsTransactionIdRoute,
+  SlugDashboardBankAccountsIndexRoute: SlugDashboardBankAccountsIndexRoute,
+  SlugDashboardBillsIndexRoute: SlugDashboardBillsIndexRoute,
+  SlugDashboardBudgetsIndexRoute: SlugDashboardBudgetsIndexRoute,
+  SlugDashboardCategoriesIndexRoute: SlugDashboardCategoriesIndexRoute,
+  SlugDashboardCostCentersIndexRoute: SlugDashboardCostCentersIndexRoute,
+  SlugDashboardOrganizationIndexRoute: SlugDashboardOrganizationIndexRoute,
+  SlugDashboardTagsIndexRoute: SlugDashboardTagsIndexRoute,
+  SlugDashboardTransactionsIndexRoute: SlugDashboardTransactionsIndexRoute,
 }
 
-const DashboardSlugRouteWithChildren = DashboardSlugRoute._addFileChildren(
-  DashboardSlugRouteChildren,
+const SlugDashboardRouteWithChildren = SlugDashboardRoute._addFileChildren(
+  SlugDashboardRouteChildren,
 )
 
-interface DashboardRouteChildren {
-  DashboardSlugRoute: typeof DashboardSlugRouteWithChildren
+interface SlugRouteChildren {
+  SlugDashboardRoute: typeof SlugDashboardRouteWithChildren
+  SlugOnboardingRoute: typeof SlugOnboardingRoute
 }
 
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardSlugRoute: DashboardSlugRouteWithChildren,
+const SlugRouteChildren: SlugRouteChildren = {
+  SlugDashboardRoute: SlugDashboardRouteWithChildren,
+  SlugOnboardingRoute: SlugOnboardingRoute,
 }
 
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
-)
+const SlugRouteWithChildren = SlugRoute._addFileChildren(SlugRouteChildren)
 
 interface AuthRouteChildren {
   AuthEmailVerificationRoute: typeof AuthEmailVerificationRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
-  AuthOnboardingRoute: typeof AuthOnboardingRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
 }
@@ -655,7 +669,6 @@ interface AuthRouteChildren {
 const AuthRouteChildren: AuthRouteChildren = {
   AuthEmailVerificationRoute: AuthEmailVerificationRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
-  AuthOnboardingRoute: AuthOnboardingRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
 }
@@ -663,7 +676,8 @@ const AuthRouteChildren: AuthRouteChildren = {
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  DashboardRoute: DashboardRouteWithChildren,
+  SlugRoute: SlugRouteWithChildren,
+  DashboardRoute: DashboardRoute,
   AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport

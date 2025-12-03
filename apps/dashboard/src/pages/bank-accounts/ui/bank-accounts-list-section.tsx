@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -34,6 +33,7 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus, Search } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
@@ -156,14 +156,19 @@ function BankAccountsListContent() {
                      "dashboard.routes.bank-accounts.list-section.description",
                   )}
                </CardDescription>
-               {!isMobile && (<CardAction >
-                  <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.bank-accounts.list-section.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>)}
+               {!isMobile && (
+                  <CardAction>
+                     <Button
+                        onClick={() => setIsCreateSheetOpen(true)}
+                        size="sm"
+                     >
+                        <Plus className="size-4 mr-2" />
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.actions.add-new",
+                        )}
+                     </Button>
+                  </CardAction>
+               )}
             </CardHeader>
             <CardContent>
                <Empty>
@@ -217,14 +222,18 @@ function BankAccountsListContent() {
                      "dashboard.routes.bank-accounts.list-section.description",
                   )}
                </CardDescription>
-               {!isMobile && (<CardAction >
-                  <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.bank-accounts.list-section.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>
+               {!isMobile && (
+                  <CardAction>
+                     <Button
+                        onClick={() => setIsCreateSheetOpen(true)}
+                        size="sm"
+                     >
+                        <Plus className="size-4 mr-2" />
+                        {translate(
+                           "dashboard.routes.bank-accounts.list-section.actions.add-new",
+                        )}
+                     </Button>
+                  </CardAction>
                )}
             </CardHeader>
             <CardContent className="grid gap-2">
@@ -254,7 +263,7 @@ function BankAccountsListContent() {
                      <ItemGroup>
                         {bankAccounts.map((account, index) => (
                            <Fragment key={account.id}>
-                              <BankAccountItem solid account={account} />
+                              <BankAccountItem account={account} solid />
                               {index !== bankAccounts.length - 1 && (
                                  <ItemSeparator />
                               )}

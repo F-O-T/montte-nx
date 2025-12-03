@@ -7,7 +7,7 @@ const billsSearchSchema = z.object({
    type: z.enum(["payable", "receivable"]).optional(),
 });
 
-export const Route = createFileRoute("/_dashboard/$slug/bills/")({
+export const Route = createFileRoute("/$slug/_dashboard/bills/")({
    component: RouteComponent,
    staticData: {
       breadcrumb: translate("dashboard.layout.breadcrumbs.bills"),

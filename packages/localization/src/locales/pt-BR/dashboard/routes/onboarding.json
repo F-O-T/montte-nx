@@ -5,6 +5,8 @@
       "previous": "Passo Anterior"
    },
    "bank-account": {
+      "create-default": "Criar conta padrão",
+      "create-default-prompt": "Vamos criar uma conta padrão para você começar a registrar suas transações.",
       "description": "Vamos começar configurando sua conta bancária principal.",
       "form": {
          "bank": {
@@ -74,11 +76,13 @@
    "default-account-created": {
       "add-additional-account": "Desejo criar uma conta adicional",
       "business": {
-         "message": "A conta 'Caixa' foi criada automaticamente para você."
+         "description": "A conta 'Caixa' foi criada e está pronta para uso. Você pode adicionar mais contas a qualquer momento.",
+         "title": "Conta 'Caixa' criada com sucesso"
       },
       "description": "Sua conta padrão foi criada com sucesso.",
       "personal": {
-         "message": "A conta 'Carteira' foi criada automaticamente para você."
+         "description": "A conta 'Carteira' foi criada e está pronta para uso. Você pode adicionar mais contas a qualquer momento.",
+         "title": "Conta 'Carteira' criada com sucesso"
       },
       "title": "Conta Criada"
    },
@@ -89,6 +93,7 @@
             "label": "Banco"
          },
          "name": {
+            "description": "Um nome para identificar esta conta. Se não informado, usaremos o nome do banco.",
             "label": "Nome da Conta",
             "placeholder": "Ex: Conta Principal"
          },
@@ -124,11 +129,30 @@
       },
       "title": "Configurar Organização"
    },
+   "step-indicator": "Passo {{current}} de {{total}}",
    "validation": {
       "account-name-required": "Nome da conta é obrigatório",
       "account-type-required": "Tipo de conta é obrigatório",
       "bank-required": "Banco é obrigatório",
       "category-name-required": "Nome da categoria é obrigatório",
       "organization-name-required": "Nome da empresa é obrigatório"
+   },
+   "welcome": {
+      "description": "Gerencie suas finanças pessoais de forma simples e eficiente.",
+      "features": {
+         "budgets": {
+            "description": "Defina orçamentos mensais e acompanhe seus gastos.",
+            "title": "Orçamentos"
+         },
+         "insights": {
+            "description": "Visualize relatórios detalhados das suas finanças.",
+            "title": "Relatórios"
+         },
+         "wallet": {
+            "description": "Organize suas contas e transações em um só lugar.",
+            "title": "Carteira Digital"
+         }
+      },
+      "title": "Bem-vindo ao Montte"
    }
 }

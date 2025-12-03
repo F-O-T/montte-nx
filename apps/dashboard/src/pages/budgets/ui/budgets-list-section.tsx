@@ -63,8 +63,8 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { BudgetFilterSheet } from "../features/budget-filter-sheet";
-import { DeleteBudget } from "../features/delete-budget";
 import { useBudgetList } from "../features/budget-list-context";
+import { DeleteBudget } from "../features/delete-budget";
 import { ManageBudgetSheet } from "../features/manage-budget-sheet";
 import { BudgetProgressBar } from "./budget-progress-bar";
 import type { Budget } from "./budgets-page";
@@ -218,8 +218,8 @@ function BudgetsListSkeleton() {
 
 function formatCurrency(value: number): string {
    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
+      style: "currency",
    }).format(value);
 }
 
@@ -238,12 +238,12 @@ function BudgetItem({ budget }: { budget: Budget }) {
       totalAmount > 0 ? ((spent + scheduled) / totalAmount) * 100 : 0;
 
    const periodLabels: Record<string, string> = {
+      custom: translate("dashboard.routes.budgets.form.period.custom"),
       daily: translate("dashboard.routes.budgets.form.period.daily"),
-      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
       monthly: translate("dashboard.routes.budgets.form.period.monthly"),
       quarterly: translate("dashboard.routes.budgets.form.period.quarterly"),
+      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
       yearly: translate("dashboard.routes.budgets.form.period.yearly"),
-      custom: translate("dashboard.routes.budgets.form.period.custom"),
    };
 
    return (
@@ -326,13 +326,13 @@ function BudgetsListContent() {
    const { data: paginatedData } = useSuspenseQuery(
       trpc.budgets.getAllPaginated.queryOptions(
          {
+            isActive: activeFilter,
             limit: pageSize,
+            mode: modeFilter,
             orderBy,
             orderDirection,
             page: currentPage,
             search: debouncedSearchTerm || undefined,
-            mode: modeFilter,
-            isActive: activeFilter,
          },
          {
             placeholderData: keepPreviousData,

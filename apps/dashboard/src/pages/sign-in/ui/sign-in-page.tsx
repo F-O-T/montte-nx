@@ -187,7 +187,7 @@ export function SignInPage() {
                            field.state.meta.isTouched &&
                            !field.state.meta.isValid;
                         return (
-                           <Field data-invalid={isInvalid}>
+                           <Field aria-required data-invalid={isInvalid}>
                               <div className="flex justify-between items-center">
                                  <FieldLabel htmlFor={field.name}>
                                     {translate("common.form.password.label")}

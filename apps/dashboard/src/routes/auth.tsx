@@ -1,4 +1,3 @@
-import { translate } from "@packages/localization";
 import { createFileRoute, Outlet, useLocation } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/auth")({

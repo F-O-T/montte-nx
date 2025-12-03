@@ -4,13 +4,9 @@
       "builder": "DOCKERFILE",
       "dockerfilePath": "/apps/server/Dockerfile",
       "nixpacksPlan": {
-         "providers": [
-            "..."
-         ]
+         "providers": ["..."]
       },
-      "watchPatterns": [
-         "/packages/**"
-      ]
+      "watchPatterns": ["/packages/**"]
    },
    "deploy": {
       "multiRegionConfig": {

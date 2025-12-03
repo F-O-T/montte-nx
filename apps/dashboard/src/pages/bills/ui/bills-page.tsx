@@ -10,7 +10,7 @@ type BillsSearch = {
 
 export function BillsPage() {
    const search = useSearch({
-      from: "/_dashboard/$slug/bills/",
+      from: "/$slug/_dashboard/bills/",
    }) as BillsSearch;
    const billType = search.type;
 

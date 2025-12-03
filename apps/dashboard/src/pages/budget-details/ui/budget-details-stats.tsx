@@ -10,8 +10,8 @@ interface BudgetDetailsStatsProps {
 
 function formatCurrency(value: number): string {
    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
+      style: "currency",
    }).format(value);
 }
 
@@ -23,12 +23,12 @@ export function BudgetDetailsStats({ budget }: BudgetDetailsStatsProps) {
    const available = progress.available;
 
    const periodLabels: Record<string, string> = {
+      custom: translate("dashboard.routes.budgets.form.period.custom"),
       daily: translate("dashboard.routes.budgets.form.period.daily"),
-      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
       monthly: translate("dashboard.routes.budgets.form.period.monthly"),
       quarterly: translate("dashboard.routes.budgets.form.period.quarterly"),
+      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
       yearly: translate("dashboard.routes.budgets.form.period.yearly"),
-      custom: translate("dashboard.routes.budgets.form.period.custom"),
    };
 
    const daysRemaining = currentPeriod
