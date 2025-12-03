@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { cn } from "@packages/ui/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
@@ -26,8 +27,8 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
       ...props
    }: Omit<React.ComponentProps<"div">, "children"> & {
       children:
-         | React.ReactNode
-         | ((props: { methods: Stepperize.Stepper<Steps> }) => React.ReactNode);
+      | React.ReactNode
+      | ((props: { methods: Stepperize.Stepper<Steps> }) => React.ReactNode);
    }) => {
       const methods = useStepper();
 
@@ -87,7 +88,10 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
                            className="text-sm text-muted-foreground whitespace-nowrap"
                            date-component="stepper-step-counter"
                         >
-                           Step {currentIndex + 1} of {totalSteps}
+                           {translate("common.actions.step-indicator", {
+                              current: currentIndex + 1,
+                              total: totalSteps,
+                           })}
                         </span>
                      </div>
                   </nav>
@@ -171,14 +175,14 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             if (variant === "line") {
                return (
                   <li
-                     className={cn("flex-1", className)}
+                     className={cn(className)}
                      data-state={dataState}
                      date-component="stepper-step"
                   >
                      <button
                         aria-current={isActive ? "step" : undefined}
                         className={cn(
-                           "h-1 w-full rounded-full transition-colors duration-300",
+                           "h-1 w-8 rounded-full transition-colors duration-300",
                            dataState === "completed" || dataState === "active"
                               ? "bg-primary"
                               : "bg-muted",
@@ -560,10 +564,10 @@ namespace Stepper {
                Omit<React.ComponentProps<"div">, "children"> &
                Stepper.ConfigProps & {
                   children:
-                     | React.ReactNode
-                     | ((props: {
-                          methods: Stepperize.Stepper<Steps>;
-                       }) => React.ReactNode);
+                  | React.ReactNode
+                  | ((props: {
+                     methods: Stepperize.Stepper<Steps>;
+                  }) => React.ReactNode);
                },
          ) => React.ReactElement;
          Navigation: (props: React.ComponentProps<"nav">) => React.ReactElement;

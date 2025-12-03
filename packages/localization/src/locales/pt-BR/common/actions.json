@@ -14,5 +14,6 @@
    "retry": "Tentar novamente",
    "save": "Salvar",
    "skip": "Pular",
+   "step-indicator": "Passo {{current}} de {{total}}",
    "submit": "Enviar"
 }

@@ -308,20 +308,20 @@ export function ForgotPasswordPage() {
                   <p className="text-muted-foreground text-sm">
                      {methods.current.id === "enter-email"
                         ? translate(
-                             "dashboard.routes.forgot-password.descriptions.enter-email",
-                          )
+                           "dashboard.routes.forgot-password.descriptions.enter-email",
+                        )
                         : methods.current.id === "enter-otp"
-                          ? translate(
-                               "dashboard.routes.forgot-password.descriptions.enter-otp",
-                            )
-                          : translate(
-                               "dashboard.routes.forgot-password.descriptions.enter-password",
-                            )}
+                           ? translate(
+                              "dashboard.routes.forgot-password.descriptions.enter-otp",
+                           )
+                           : translate(
+                              "dashboard.routes.forgot-password.descriptions.enter-password",
+                           )}
                   </p>
                </div>
 
                <div className="space-y-6">
-                  <Stepper.Navigation>
+                  <Stepper.Navigation className="w-full">
                      {steps.map((step) => (
                         <Stepper.Step key={step.id} of={step.id} />
                      ))}
