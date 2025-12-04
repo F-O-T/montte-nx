@@ -20,8 +20,10 @@ export async function createTransferLog(
          throw AppError.database("Failed to create transfer log");
       }
 
+      const createdId = result[0].id;
+
       const createdLog = await dbClient.query.transferLog.findFirst({
-         where: (log, { eq }) => eq(log.id, result[0]?.id),
+         where: (log, { eq }) => eq(log.id, createdId),
          with: {
             fromBankAccount: true,
             fromTransaction: true,
