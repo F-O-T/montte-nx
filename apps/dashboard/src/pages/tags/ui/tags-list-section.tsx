@@ -174,7 +174,10 @@ function TagsListContent() {
    );
 
    const { deleteSelected, isLoading } = useTagBulkActions({
-      onSuccess: () => setRowSelection({}),
+      onSuccess: () => {
+         setRowSelection({});
+         setIsDeleteDialogOpen(false);
+      },
    });
 
    const handleClearSelection = () => {
@@ -356,14 +359,14 @@ function TagsListContent() {
                   </AlertDialogDescription>
                </AlertDialogHeader>
                <AlertDialogFooter>
-                  <AlertDialogCancel>
+                  <AlertDialogCancel disabled={isLoading}>
                      {translate("common.actions.cancel")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                     disabled={isLoading}
                      onClick={() => {
                         deleteSelected(selectedIds);
-                        setIsDeleteDialogOpen(false);
                      }}
                   >
                      {translate("dashboard.routes.tags.bulk-actions.delete")}

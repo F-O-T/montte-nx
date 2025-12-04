@@ -387,9 +387,6 @@ export async function calculateBudgetSpent(
       let spentAmount = 0;
       let scheduledAmount = 0;
 
-      const _dateField =
-         budgetData.regime === "cash" ? transaction.date : transaction.date;
-
       if (target.type === "category") {
          const spentResult = await dbClient.execute<{ total: string }>(sql`
             SELECT COALESCE(SUM(ABS(CAST(t.amount AS DECIMAL))), 0) as total
@@ -562,11 +559,11 @@ export async function getBudgetsWithProgress(
                periodEnd,
             );
 
-            const { periods, ...budgetWithoutPeriods } = b;
+            const { periods: _periods, ...budgetWithoutPeriods } = b;
 
             return {
                ...budgetWithoutPeriods,
-               currentPeriod: periods?.[0] ?? null,
+               currentPeriod: _periods?.[0] ?? null,
                progress,
             };
          }),

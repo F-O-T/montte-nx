@@ -189,7 +189,10 @@ function CategoriesListContent() {
    );
 
    const { deleteSelected, isLoading } = useCategoryBulkActions({
-      onSuccess: () => setRowSelection({}),
+      onSuccess: () => {
+         setRowSelection({});
+         setIsDeleteDialogOpen(false);
+      },
    });
 
    const handleClearSelection = () => {
@@ -391,14 +394,14 @@ function CategoriesListContent() {
                   </AlertDialogDescription>
                </AlertDialogHeader>
                <AlertDialogFooter>
-                  <AlertDialogCancel>
+                  <AlertDialogCancel disabled={isLoading}>
                      {translate("common.actions.cancel")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                     disabled={isLoading}
                      onClick={() => {
                         deleteSelected(selectedIds);
-                        setIsDeleteDialogOpen(false);
                      }}
                   >
                      {translate(
