@@ -226,7 +226,11 @@ function RouteComponent() {
    };
 
    const handleWelcomeNext = () => {
-      createDefaultPersonalAccount.mutate();
+      const defaultName =
+         onboardingStatus?.organizationContext === "business"
+            ? translate("dashboard.routes.onboarding.default-account.business")
+            : translate("dashboard.routes.onboarding.default-account.personal");
+      createDefaultPersonalAccount.mutate({ name: defaultName });
    };
 
    const bankAccountForm = useForm({
@@ -631,7 +635,7 @@ function RouteComponent() {
    );
 
    return (
-      <div className="min-h-screen flex flex-col -m-4">
+      <div className="min-h-screen flex flex-col p-4">
          <header className="p-4">
             <div className="max-w-2xl mx-auto flex items-center justify-between">
                <div className="w-10" />
@@ -714,27 +718,18 @@ function RouteComponent() {
                      </>
                   )}
                   {step === "categories" && (
-                     <>
-                        <Button
-                           disabled={completeOnboarding.isPending}
-                           onClick={() => completeOnboarding.mutate()}
-                           variant="outline"
-                        >
-                           {translate("common.actions.skip")}
-                        </Button>
-                        <Button
-                           className="gap-2"
-                           disabled={
-                              selectedDefaultCategories.length === 0 ||
-                              createCategory.isPending ||
-                              completeOnboarding.isPending
-                           }
-                           onClick={handleFinishOnboarding}
-                        >
-                           {translate("common.actions.submit")}
-                           <ChevronRightIcon className="size-4" />
-                        </Button>
-                     </>
+                     <Button
+                        className="gap-2"
+                        disabled={
+                           selectedDefaultCategories.length === 0 ||
+                           createCategory.isPending ||
+                           completeOnboarding.isPending
+                        }
+                        onClick={handleFinishOnboarding}
+                     >
+                        {translate("common.actions.submit")}
+                        <ChevronRightIcon className="size-4" />
+                     </Button>
                   )}
                </div>
             </div>

@@ -36,9 +36,10 @@ export const Route = createFileRoute("/$slug/_dashboard")({
             return;
          }
 
-         const status = await queryClient.fetchQuery(
-            trpc.onboarding.getOnboardingStatus.queryOptions(),
-         );
+         const status = await queryClient.fetchQuery({
+            ...trpc.onboarding.getOnboardingStatus.queryOptions(),
+            staleTime: 0,
+         });
 
          if (status.needsOnboarding) {
             throw redirect({

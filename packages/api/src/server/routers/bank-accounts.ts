@@ -22,7 +22,7 @@ import { protectedProcedure, router } from "../trpc";
 
 const createBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required"),
-   name: z.string().min(1, "Name is required"),
+   name: z.string().optional(),
    type: z.enum(["checking", "savings", "investment"]),
 });
 
@@ -52,24 +52,37 @@ export const bankAccountRouter = router({
 
          return createBankAccount(resolvedCtx.db, {
             ...input,
+            name: input.name || "Conta Bancária",
             id: crypto.randomUUID(),
             organizationId,
          });
       }),
 
-   createDefaultBusiness: protectedProcedure.mutation(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      const organizationId = resolvedCtx.organizationId;
+   createDefaultBusiness: protectedProcedure
+      .input(z.object({ name: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
 
-      return createDefaultBusinessBankAccount(resolvedCtx.db, organizationId);
-   }),
+         return createDefaultBusinessBankAccount(
+            resolvedCtx.db,
+            organizationId,
+            input.name,
+         );
+      }),
 
-   createDefaultPersonal: protectedProcedure.mutation(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      const organizationId = resolvedCtx.organizationId;
+   createDefaultPersonal: protectedProcedure
+      .input(z.object({ name: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
 
-      return createDefaultWalletBankAccount(resolvedCtx.db, organizationId);
-   }),
+         return createDefaultWalletBankAccount(
+            resolvedCtx.db,
+            organizationId,
+            input.name,
+         );
+      }),
 
    delete: protectedProcedure
       .input(z.object({ id: z.string() }))
