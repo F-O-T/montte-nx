@@ -11,9 +11,9 @@ import {
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Category } from "../ui/categories-page";
 
 interface DeleteCategoryProps {
@@ -31,18 +31,12 @@ export function DeleteCategory({
    onSuccess,
    children,
 }: DeleteCategoryProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isControlled = open !== undefined && setOpen !== undefined;
 
    const deleteCategoryMutation = useMutation(
       trpc.categories.delete.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAll.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAllPaginated.queryKey(),
-            });
             onSuccess?.();
          },
       }),

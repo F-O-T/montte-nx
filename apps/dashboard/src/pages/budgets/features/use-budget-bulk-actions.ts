@@ -1,21 +1,18 @@
 import { translate } from "@packages/localization";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface UseBudgetBulkActionsOptions {
    onSuccess?: () => void;
 }
 
 export function useBudgetBulkActions(options?: UseBudgetBulkActionsOptions) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const activateMutation = useMutation(
       trpc.budgets.bulkActivate.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["budgets"],
-            });
             options?.onSuccess?.();
          },
       }),
@@ -24,9 +21,6 @@ export function useBudgetBulkActions(options?: UseBudgetBulkActionsOptions) {
    const deactivateMutation = useMutation(
       trpc.budgets.bulkDeactivate.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["budgets"],
-            });
             options?.onSuccess?.();
          },
       }),
@@ -35,9 +29,6 @@ export function useBudgetBulkActions(options?: UseBudgetBulkActionsOptions) {
    const deleteMutation = useMutation(
       trpc.budgets.bulkDelete.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["budgets"],
-            });
             options?.onSuccess?.();
          },
       }),

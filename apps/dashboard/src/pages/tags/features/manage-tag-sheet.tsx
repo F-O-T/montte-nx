@@ -33,11 +33,11 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import Color from "color";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type ManageTagSheetProps = {
    onOpen?: boolean;
@@ -52,7 +52,7 @@ export function ManageTagSheet({
    tag,
    asChild = false,
 }: ManageTagSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isEditMode = !!tag;
 
    const modeTexts = useMemo(() => {
@@ -79,10 +79,7 @@ export function ManageTagSheet({
 
    const createTagMutation = useMutation(
       trpc.tags.create.mutationOptions({
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAllPaginated.queryKey(),
-            });
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),
@@ -93,10 +90,7 @@ export function ManageTagSheet({
          onError: (error) => {
             console.error("Failed to update tag:", error);
          },
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAllPaginated.queryKey(),
-            });
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),

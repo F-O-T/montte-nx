@@ -39,7 +39,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { formatDate } from "@packages/utils/date";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowRight, CheckCircle2, Info, Monitor, Trash2 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import type { Session } from "@/integrations/clients";
@@ -54,15 +54,11 @@ export function SessionDetailsSheet({
    session,
    currentSessionId,
 }: SessionDetailsSheetProps) {
-   const queryClient = useQueryClient();
    const trpc = useTRPC();
 
    const revokeSessionMutation = useMutation(
       trpc.session.revokeSessionByToken.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.session.listAllSessions.queryKey(),
-            });
             toast.success("Session revoked");
          },
       }),

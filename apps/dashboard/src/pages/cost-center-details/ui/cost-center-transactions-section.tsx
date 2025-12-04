@@ -65,7 +65,7 @@ import { TransactionFilterSheet } from "@/features/transaction/ui/transaction-fi
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function CostCenterTransactionsErrorFallback(props: FallbackProps) {
    return (
@@ -128,6 +128,7 @@ function CostCenterTransactionsContent({
    startDate: Date | null;
    endDate: Date | null;
 }) {
+   const trpc = useTRPC();
    const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
    const [currentPage, setCurrentPage] = useState(1);

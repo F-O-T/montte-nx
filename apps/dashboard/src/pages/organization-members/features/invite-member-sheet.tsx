@@ -19,11 +19,7 @@ import {
 } from "@packages/ui/components/sheet";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { createContext, Suspense, useContext } from "react";
@@ -83,7 +79,6 @@ function InviteMemberSkeleton() {
 
 const InviteMemberSheetContent = () => {
    const { onOpenChange } = useInviteMemberContext();
-   const queryClient = useQueryClient();
    const trpc = useTRPC();
    const { data: organization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
@@ -95,18 +90,8 @@ const InviteMemberSheetContent = () => {
             console.error("Invitation creation error:", error);
             toast.error("Failed to send invitation");
          },
-         onSuccess: async (_, variables) => {
+         onSuccess: (_, variables) => {
             toast.success(`Invitation sent to ${variables.email}`);
-            await queryClient.invalidateQueries({
-               queryKey:
-                  trpc.organization.getActiveOrganizationMembers.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organizationInvites.listInvitations.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organizationInvites.getInvitationStats.queryKey(),
-            });
             onOpenChange(false);
          },
       }),

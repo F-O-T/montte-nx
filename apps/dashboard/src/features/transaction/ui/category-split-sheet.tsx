@@ -17,12 +17,12 @@ import {
    getRemainingAmount,
    isSplitSumValid,
 } from "@packages/utils/split";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
 type CategorySplitSheetProps = {
@@ -38,7 +38,7 @@ export function CategorySplitSheet({
    transaction,
    onSuccess,
 }: CategorySplitSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
    const [splits, setSplits] = useState<CategorySplit[]>([]);
 
@@ -51,15 +51,7 @@ export function CategorySplitSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao dividir categorias");
          },
-         onSuccess: async () => {
-            await Promise.all([
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-               }),
-            ]);
+         onSuccess: () => {
             toast.success("Divisão de categorias salva com sucesso");
             onSuccess?.();
             handleOpenChange(false);

@@ -50,7 +50,7 @@ import {
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { CategoryFilterSheet } from "../features/category-filter-sheet";
 import { useCategoryList } from "../features/category-list-context";
 import { useCategoryBulkActions } from "../features/use-category-bulk-actions";
@@ -116,6 +116,7 @@ function CategoriesListSkeleton() {
 }
 
 function CategoriesListContent() {
+   const trpc = useTRPC();
    const {
       orderBy,
       setOrderBy,

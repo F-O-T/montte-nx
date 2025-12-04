@@ -22,7 +22,7 @@ import {
 } from "@packages/ui/components/select";
 import { Toggle } from "@packages/ui/components/toggle";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
    BarChart3Icon,
@@ -129,7 +129,6 @@ export const Route = createFileRoute("/$slug/onboarding")({
 
 function RouteComponent() {
    const trpc = useTRPC();
-   const queryClient = useQueryClient();
    const navigate = useNavigate({ from: "/$slug/onboarding" });
    const { slug } = Route.useParams();
    const { step } = Route.useSearch();
@@ -165,9 +164,6 @@ function RouteComponent() {
             toast.error(error.message);
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["bankAccounts"],
-            });
             toast.success(
                translate(
                   "dashboard.routes.onboarding.bank-account.toast.success",
@@ -194,10 +190,7 @@ function RouteComponent() {
          onError: (error) => {
             toast.error(error.message);
          },
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.onboarding.getOnboardingStatus.queryKey(),
-            });
+         onSuccess: () => {
             navigate({ params: { slug }, to: "/$slug/home" });
          },
       }),

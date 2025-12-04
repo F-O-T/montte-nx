@@ -23,7 +23,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function HomeChartsSectionErrorFallback(props: FallbackProps) {
    return (
@@ -54,6 +54,7 @@ function getCurrentMonthDates() {
 }
 
 function HomeChartsSectionContent() {
+   const trpc = useTRPC();
    const { end: endDate, start: startDate } = getCurrentMonthDates();
 
    const { data: cashFlow } = useSuspenseQuery(

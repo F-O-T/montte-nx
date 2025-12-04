@@ -10,9 +10,9 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface DeleteCostCenterDialogProps {
    costCenter: CostCenter;
@@ -27,7 +27,7 @@ export function DeleteCostCenterDialog({
    open,
    setOpen,
 }: DeleteCostCenterDialogProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteCostCenterMutation = useMutation(
       trpc.costCenters.delete.mutationOptions({
@@ -35,9 +35,6 @@ export function DeleteCostCenterDialog({
             toast.error(error.message || "Failed to delete cost center");
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAll.queryKey(),
-            });
             toast.success("Cost center deleted successfully");
             onSuccess?.();
          },

@@ -6,7 +6,7 @@ import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function HomeStatsSectionErrorFallback(props: FallbackProps) {
    return (
@@ -42,6 +42,7 @@ function getCurrentMonthDates() {
 }
 
 function HomeStatsSectionContent() {
+   const trpc = useTRPC();
    const { end: endDate, start: startDate } = getCurrentMonthDates();
 
    const { data: summary } = useSuspenseQuery(

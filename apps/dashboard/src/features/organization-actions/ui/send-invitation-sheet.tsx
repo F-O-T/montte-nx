@@ -21,11 +21,7 @@ import {
 } from "@packages/ui/components/sheet";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { createContext, Suspense, useContext } from "react";
@@ -85,7 +81,6 @@ function SendInvitationSkeleton() {
 
 const SendInvitationSheetContent = () => {
    const { onOpenChange } = useSendInvitationContext();
-   const queryClient = useQueryClient();
    const trpc = useTRPC();
    const { data: organization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
@@ -100,11 +95,8 @@ const SendInvitationSheetContent = () => {
             console.error("Invitation error:", error);
             toast.error("Failed to send invitation");
          },
-         onSuccess: async (_, variables) => {
+         onSuccess: (_, variables) => {
             toast.success(`Invitation sent to ${variables.email}`);
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
             onOpenChange(false);
          },
       }),

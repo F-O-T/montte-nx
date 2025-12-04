@@ -1,7 +1,7 @@
 import { translate } from "@packages/localization";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface UseBankAccountBulkActionsOptions {
    onSuccess?: () => void;
@@ -10,14 +10,11 @@ interface UseBankAccountBulkActionsOptions {
 export function useBankAccountBulkActions(
    options?: UseBankAccountBulkActionsOptions,
 ) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const updateStatusMutation = useMutation(
       trpc.bankAccounts.updateStatus.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["bankAccounts"],
-            });
             options?.onSuccess?.();
          },
       }),
@@ -26,9 +23,6 @@ export function useBankAccountBulkActions(
    const deleteMutation = useMutation(
       trpc.bankAccounts.deleteMany.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["bankAccounts"],
-            });
             options?.onSuccess?.();
          },
       }),

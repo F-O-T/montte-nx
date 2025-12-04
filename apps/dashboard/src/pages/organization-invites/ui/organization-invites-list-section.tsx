@@ -32,11 +32,7 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import {
    Clock,
    Mail,
@@ -55,7 +51,6 @@ function InvitesListContent() {
    const trpc = useTRPC();
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize] = useState(10);
-   const queryClient = useQueryClient();
    const { data: invitesData } = useSuspenseQuery(
       trpc.organizationInvites.listInvitations.queryOptions({
          limit: pageSize,
@@ -69,9 +64,6 @@ function InvitesListContent() {
          },
          onSuccess: () => {
             toast.success("Invitation cancelled successfully");
-            queryClient.invalidateQueries({
-               queryKey: trpc.organizationInvites.listInvitations.queryKey(),
-            });
          },
       }),
    );
@@ -82,9 +74,6 @@ function InvitesListContent() {
          },
          onSuccess: () => {
             toast.success("Invitation resent successfully");
-            queryClient.invalidateQueries({
-               queryKey: trpc.organizationInvites.listInvitations.queryKey(),
-            });
          },
       }),
    );

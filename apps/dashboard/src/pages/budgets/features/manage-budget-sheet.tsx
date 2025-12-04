@@ -27,10 +27,10 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Budget } from "../ui/budgets-page";
 
 type ManageBudgetSheetProps = {
@@ -52,7 +52,7 @@ export function ManageBudgetSheet({
    budget,
    asChild = false,
 }: ManageBudgetSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isEditMode = !!budget;
 
    const modeTexts = useMemo(() => {
@@ -94,15 +94,7 @@ export function ManageBudgetSheet({
 
    const createBudgetMutation = useMutation(
       trpc.budgets.create.mutationOptions({
-         onSuccess: async () => {
-            await Promise.all([
-               queryClient.invalidateQueries({
-                  queryKey: trpc.budgets.getAllPaginated.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.budgets.getStats.queryKey(),
-               }),
-            ]);
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),
@@ -113,18 +105,7 @@ export function ManageBudgetSheet({
          onError: (error) => {
             console.error("Failed to update budget:", error);
          },
-         onSuccess: async () => {
-            await Promise.all([
-               queryClient.invalidateQueries({
-                  queryKey: trpc.budgets.getAllPaginated.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.budgets.getStats.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.budgets.getById.queryKey(),
-               }),
-            ]);
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),

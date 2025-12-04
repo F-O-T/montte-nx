@@ -26,9 +26,14 @@ export const createTrpcClient = ({
    language,
    getOrganizationSlug,
 }: APIClientOptions) => {
+   const isProduction =
+      typeof process !== "undefined" && process.env.NODE_ENV === "production";
+
    return createTRPCClient<AppRouter>({
       links: [
-         loggerLink(),
+         loggerLink({
+            enabled: () => !isProduction,
+         }),
          splitLink({
             // uses the httpSubscriptionLink for subscriptions
             condition: (op) => op.type === "subscription",

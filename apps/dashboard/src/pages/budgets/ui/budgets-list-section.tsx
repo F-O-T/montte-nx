@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { BudgetFilterSheet } from "../features/budget-filter-sheet";
 import { useBudgetList } from "../features/budget-list-context";
 import { useBudgetBulkActions } from "../features/use-budget-bulk-actions";
@@ -121,6 +121,7 @@ function BudgetsListSkeleton() {
 function BudgetsListContent() {
    const isMobile = useIsMobile();
    const { periodType } = useBudgetList();
+   const trpc = useTRPC();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");

@@ -10,10 +10,10 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface DeleteBillDialogProps {
    bill: Bill;
@@ -21,8 +21,8 @@ interface DeleteBillDialogProps {
 }
 
 export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
+   const trpc = useTRPC();
    const [isOpen, setIsOpen] = useState(false);
-   const queryClient = useQueryClient();
 
    const deleteBillMutation = useMutation(
       trpc.bills.delete.mutationOptions({
@@ -35,15 +35,6 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
             );
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getAll.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getAllPaginated.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getStats.queryKey(),
-            });
             toast.success(
                translate("dashboard.routes.bills.features.delete-bill.success"),
             );

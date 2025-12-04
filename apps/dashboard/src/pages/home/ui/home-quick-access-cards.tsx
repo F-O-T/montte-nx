@@ -15,7 +15,7 @@ import {
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function HomeQuickAccessCardsErrorFallback(props: FallbackProps) {
    return (
@@ -51,6 +51,7 @@ function getCurrentMonthDates() {
 }
 
 function HomeQuickAccessCardsContent() {
+   const trpc = useTRPC();
    const router = useRouter();
    const { end: endDate, start: startDate } = getCurrentMonthDates();
    const { activeOrganization } = useActiveOrganization();

@@ -13,7 +13,7 @@ import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type BillsStatsProps = {
    type?: "payable" | "receivable";
@@ -59,6 +59,7 @@ function BillsStatsSkeleton() {
 }
 
 function BillsStatsContent({ type }: BillsStatsProps) {
+   const trpc = useTRPC();
    const { data: stats } = useSuspenseQuery(trpc.bills.getStats.queryOptions());
 
    if (type === "payable") {

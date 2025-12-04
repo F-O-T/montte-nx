@@ -33,7 +33,7 @@ import {
    XAxis,
    YAxis,
 } from "recharts";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function CategoriesChartsErrorFallback(props: FallbackProps) {
    return (
@@ -359,6 +359,7 @@ function CategoryPieChart({
 }
 
 function CategoryMonthlyTrendChart() {
+   const trpc = useTRPC();
    const { data: monthlyTrend } = useSuspenseQuery(
       trpc.categories.getMonthlyTrend.queryOptions({ months: 6 }),
    );
@@ -485,6 +486,7 @@ function CategoryMonthlyTrendChart() {
 }
 
 function TopCategoriesChart() {
+   const trpc = useTRPC();
    const { data: topCategories } = useSuspenseQuery(
       trpc.categories.getTopCategories.queryOptions({
          limit: 5,
@@ -595,6 +597,7 @@ function TopCategoriesChart() {
 }
 
 function CategoryTypeDistributionChart() {
+   const trpc = useTRPC();
    const { data: typeDistribution } = useSuspenseQuery(
       trpc.categories.getTypeDistribution.queryOptions(),
    );
@@ -755,6 +758,7 @@ function CategoryTypeDistributionChart() {
 }
 
 function CategoryUsageFrequencyChart() {
+   const trpc = useTRPC();
    const { data: usageFrequency } = useSuspenseQuery(
       trpc.categories.getUsageFrequency.queryOptions(),
    );
@@ -861,6 +865,7 @@ function CategoryUsageFrequencyChart() {
 }
 
 function CategoriesChartsContent() {
+   const trpc = useTRPC();
    const { data: breakdown } = useSuspenseQuery(
       trpc.categories.getBreakdown.queryOptions(),
    );

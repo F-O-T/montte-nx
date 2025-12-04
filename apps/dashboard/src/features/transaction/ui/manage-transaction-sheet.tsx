@@ -36,6 +36,7 @@ import {
 } from "@packages/ui/components/sheet";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { Textarea } from "@packages/ui/components/textarea";
+import { formatDate } from "@packages/utils/date";
 import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -52,7 +53,7 @@ import { z } from "zod";
 
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type Transaction =
    RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
@@ -119,6 +120,7 @@ export function ManageTransactionSheet({
    defaultCostCenterId = "",
    defaultTagIds = [],
 }: ManageTransactionSheetProps) {
+   const trpc = useTRPC();
    const isEditMode = !!transaction;
 
    const [internalOpen, setInternalOpen] = useState(false);
@@ -243,7 +245,7 @@ export function ManageTransactionSheet({
             bankAccountId: values.bankAccountId || undefined,
             categoryIds: values.categoryIds || [],
             costCenterId: values.costCenterId || undefined,
-            date: values.date.toISOString().split("T")[0] ?? "",
+            date: formatDate(values.date, "YYYY-MM-DD"),
             description: values.description,
             tagIds: values.tagIds || [],
             type: values.type,
@@ -274,7 +276,7 @@ export function ManageTransactionSheet({
                categoryIds: values.categoryIds || [],
                categorySplits: null,
                costCenterId: values.costCenterId || null,
-               date: values.date.toISOString().split("T")[0] ?? "",
+               date: formatDate(values.date, "YYYY-MM-DD"),
                description: values.description,
                tagIds: values.tagIds || [],
                type: values.type,

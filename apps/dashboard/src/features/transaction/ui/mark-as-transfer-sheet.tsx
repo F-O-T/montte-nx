@@ -24,11 +24,11 @@ import {
 } from "@packages/ui/components/sheet";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Loader2, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
 type MarkAsTransferSheetProps = {
@@ -46,7 +46,7 @@ export function MarkAsTransferSheet({
    transactions,
    onSuccess,
 }: MarkAsTransferSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const [selectedBankAccountId, setSelectedBankAccountId] =
       useState<string>("");
    const [step, setStep] = useState<"select-account" | "confirm-match">(
@@ -84,18 +84,7 @@ export function MarkAsTransferSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao marcar como transferência");
          },
-         onSuccess: async (data) => {
-            await Promise.all([
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getStats.queryKey(),
-               }),
-            ]);
+         onSuccess: (data) => {
             toast.success(
                `${data.length} ${data.length === 1 ? "transação marcada" : "transações marcadas"} como transferência`,
             );

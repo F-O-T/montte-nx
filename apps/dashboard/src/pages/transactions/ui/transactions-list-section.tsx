@@ -15,7 +15,7 @@ import {
    TransactionList,
    TransactionListSkeleton,
 } from "@/features/transaction/ui/transaction-list";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function TransactionsListErrorFallback(props: FallbackProps) {
    return (
@@ -43,6 +43,7 @@ function TransactionsListErrorFallback(props: FallbackProps) {
 }
 
 function TransactionsListContent() {
+   const trpc = useTRPC();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [pageSize, setPageSize] = useState(10);

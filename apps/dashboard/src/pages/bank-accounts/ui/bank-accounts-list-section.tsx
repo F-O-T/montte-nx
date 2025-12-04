@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { BankAccountsFilterSheet } from "../features/bank-accounts-filter-sheet";
 import { useBankAccountBulkActions } from "../features/use-bank-account-bulk-actions";
 import {
@@ -121,6 +121,7 @@ function BankAccountsListSkeleton() {
 type SortOption = "name" | "balance" | "createdAt" | "bank";
 
 function BankAccountsListContent() {
+   const trpc = useTRPC();
    const isMobile = useIsMobile();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");

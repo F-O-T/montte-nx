@@ -29,7 +29,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
@@ -46,7 +46,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { DeleteBudget } from "../features/delete-budget";
 import { ManageBudgetSheet } from "../features/manage-budget-sheet";
 
@@ -247,7 +247,7 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
    const [isEditOpen, setIsEditOpen] = useState(false);
    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
    const isMobile = useIsMobile();
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const totalAmount = parseFloat(budget.amount);
    const currentPeriod = budget.periods?.[0];
@@ -268,7 +268,6 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
             );
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["budgets"] });
             toast.success(
                budget.isActive
                   ? translate(

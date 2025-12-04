@@ -17,7 +17,7 @@ import {
 import { Textarea } from "@packages/ui/components/textarea";
 import { createSlug } from "@packages/utils/text";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
@@ -41,7 +41,6 @@ export function ManageOrganizationSheet({
    onOpenChange,
    organization,
 }: ManageOrganizationSheetProps) {
-   const queryClient = useQueryClient();
    const trpc = useTRPC();
    const isEditMode = !!organization;
 
@@ -78,11 +77,8 @@ export function ManageOrganizationSheet({
             console.error("Failed to set active organization:", error);
             toast.error("Failed to set active organization");
          },
-         onSuccess: async () => {
+         onSuccess: () => {
             toast.success("Active organization set successfully");
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
          },
       }),
    );
@@ -92,11 +88,8 @@ export function ManageOrganizationSheet({
             console.error("Failed to update organization:", error);
             toast.error("Failed to update organization");
          },
-         onSuccess: async () => {
+         onSuccess: () => {
             toast.success("Organization updated successfully");
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
             fileUpload.clearFile();
             setIsOpen?.(false);
          },
@@ -116,12 +109,6 @@ export function ManageOrganizationSheet({
                   organizationId: data?.id,
                });
             }
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getOrganizations.queryKey(),
-            });
             fileUpload.clearFile();
             setIsOpen?.(false);
          },
@@ -135,14 +122,8 @@ export function ManageOrganizationSheet({
             toast.error("Failed to upload logo");
             fileUpload.setError("Failed to upload logo");
          },
-         onSuccess: async () => {
+         onSuccess: () => {
             toast.success("Logo uploaded successfully");
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getLogo.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
             fileUpload.clearFile();
          },
       }),

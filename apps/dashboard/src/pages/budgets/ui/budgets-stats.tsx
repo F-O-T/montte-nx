@@ -12,7 +12,7 @@ import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function BudgetsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -63,6 +63,7 @@ function formatCurrency(value: number): string {
 }
 
 function BudgetsStatsContent() {
+   const trpc = useTRPC();
    const { data: stats } = useSuspenseQuery(
       trpc.budgets.getStats.queryOptions(),
    );

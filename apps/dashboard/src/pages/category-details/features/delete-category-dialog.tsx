@@ -9,9 +9,9 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Category } from "../../categories/ui/categories-page";
 
 interface DeleteCategoryDialogProps {
@@ -27,7 +27,7 @@ export function DeleteCategoryDialog({
    open,
    setOpen,
 }: DeleteCategoryDialogProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteCategoryMutation = useMutation(
       trpc.categories.delete.mutationOptions({
@@ -35,9 +35,6 @@ export function DeleteCategoryDialog({
             toast.error(error.message || "Failed to delete category");
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAll.queryKey(),
-            });
             toast.success("Category deleted successfully");
             onSuccess?.();
          },

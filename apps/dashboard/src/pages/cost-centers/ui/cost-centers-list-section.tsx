@@ -50,7 +50,7 @@ import {
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { CostCenterFilterSheet } from "../features/cost-center-filter-sheet";
 import { useCostCenterList } from "../features/cost-center-list-context";
 import { useCostCenterBulkActions } from "../features/use-cost-center-bulk-actions";
@@ -116,6 +116,7 @@ function CostCentersListSkeleton() {
 }
 
 function CostCentersListContent() {
+   const trpc = useTRPC();
    const {
       orderBy,
       setOrderBy,

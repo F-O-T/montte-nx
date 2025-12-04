@@ -11,9 +11,9 @@ import {
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { CostCenter } from "../ui/cost-centers-page";
 
 interface DeleteCostCenterProps {
@@ -31,18 +31,12 @@ export function DeleteCostCenter({
    onSuccess,
    children,
 }: DeleteCostCenterProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isControlled = open !== undefined && setOpen !== undefined;
 
    const deleteCostCenterMutation = useMutation(
       trpc.costCenters.delete.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAll.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAllPaginated.queryKey(),
-            });
             onSuccess?.();
          },
       }),

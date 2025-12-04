@@ -13,7 +13,7 @@ import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function BankAccountsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -54,6 +54,7 @@ function BankAccountsStatsSkeleton() {
 }
 
 function BankAccountsStatsContent() {
+   const trpc = useTRPC();
    const { data: stats } = useSuspenseQuery(
       trpc.bankAccounts.getStats.queryOptions(),
    );

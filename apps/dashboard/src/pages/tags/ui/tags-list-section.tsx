@@ -50,7 +50,7 @@ import {
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { TagFilterSheet } from "../features/tag-filter-sheet";
 import { useTagList } from "../features/tag-list-context";
 import { useTagBulkActions } from "../features/use-tag-bulk-actions";
@@ -116,6 +116,7 @@ function TagsListSkeleton() {
 }
 
 function TagsListContent() {
+   const trpc = useTRPC();
    const {
       orderBy,
       setOrderBy,

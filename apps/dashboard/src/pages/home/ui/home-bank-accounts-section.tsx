@@ -13,7 +13,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
 import { CreateBankAccountItem } from "@/features/bank-account/ui/create-bank-account-item";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function HomeBankAccountsErrorFallback() {
    return (
@@ -65,6 +65,7 @@ function HomeBankAccountsSkeleton() {
 }
 
 function HomeBankAccountsContent() {
+   const trpc = useTRPC();
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const { data: bankAccounts = [] } = useSuspenseQuery(
       trpc.bankAccounts.getAll.queryOptions(),

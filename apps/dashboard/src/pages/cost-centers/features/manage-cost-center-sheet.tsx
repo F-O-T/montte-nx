@@ -20,10 +20,10 @@ import {
 } from "@packages/ui/components/sheet";
 import { createCodeFromName } from "@packages/utils/text";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type ManageCostCenterSheetProps = {
    onOpen?: boolean;
@@ -38,7 +38,7 @@ export function ManageCostCenterSheet({
    costCenter,
    asChild = false,
 }: ManageCostCenterSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isEditMode = !!costCenter;
 
    const modeTexts = useMemo(() => {
@@ -69,10 +69,7 @@ export function ManageCostCenterSheet({
 
    const createCostCenterMutation = useMutation(
       trpc.costCenters.create.mutationOptions({
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAllPaginated.queryKey(),
-            });
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),
@@ -83,10 +80,7 @@ export function ManageCostCenterSheet({
          onError: (error) => {
             console.error("Failed to update cost center:", error);
          },
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAllPaginated.queryKey(),
-            });
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),

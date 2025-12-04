@@ -105,25 +105,27 @@ function NavUserContent() {
       await betterAuthClient.signOut({
          fetchOptions: {
             onError: ({ error }) => {
-               toast.error(error.message);
+               toast.error(error.message, { id: "logout" });
             },
             onRequest: () => {
                toast.loading(
                   translate("dashboard.layout.nav-user.messages.logging-out"),
+                  { id: "logout" },
                );
             },
             onSuccess: async () => {
-               toast.success(
-                  translate(
-                     "dashboard.layout.nav-user.messages.logout-success",
-                  ),
-               );
                await queryClient.invalidateQueries({
                   queryKey: trpc.session.getSession.queryKey(),
                });
                router.navigate({
                   to: "/auth/sign-in",
                });
+               toast.success(
+                  translate(
+                     "dashboard.layout.nav-user.messages.logout-success",
+                     { id: "logout" },
+                  ),
+               );
             },
          },
       });

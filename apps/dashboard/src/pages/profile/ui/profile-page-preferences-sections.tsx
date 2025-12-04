@@ -17,34 +17,20 @@ import {
    ItemTitle,
 } from "@packages/ui/components/item";
 import { Switch } from "@packages/ui/components/switch";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Activity, Globe, Moon } from "lucide-react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { LanguageCommand } from "@/layout/language-command";
 import { ThemeSwitcher } from "@/layout/theme-provider";
 
 export function PreferencesSection() {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const { data: session } = useSuspenseQuery(
       trpc.session.getSession.queryOptions(),
    );
 
    const updateConsentMutation = useMutation(
-      trpc.session.updateTelemetryConsent.mutationOptions({
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.session.getTelemetryConsent.queryKey(),
-            });
-
-            await queryClient.invalidateQueries({
-               queryKey: trpc.session.getSession.queryKey(),
-            });
-         },
-      }),
+      trpc.session.updateTelemetryConsent.mutationOptions(),
    );
 
    const hasConsent = session?.user?.telemetryConsent ?? true;

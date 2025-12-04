@@ -35,7 +35,7 @@ import {
    XAxis,
    YAxis,
 } from "recharts";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { useReports } from "../features/reports-context";
 
 interface CustomTooltipProps {
@@ -352,6 +352,7 @@ function ReportsPieChart({
 }
 
 function FinancialEvolutionChart() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: cashFlow } = useSuspenseQuery(
@@ -446,6 +447,7 @@ function FinancialEvolutionChart() {
 }
 
 function CashFlowAnalysisChart() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: cashFlow } = useSuspenseQuery(
@@ -547,6 +549,7 @@ function CashFlowAnalysisChart() {
 }
 
 function PlannedVsActualChart() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: plannedVsActual } = useSuspenseQuery(
@@ -633,6 +636,7 @@ function PlannedVsActualChart() {
 }
 
 function CategoryBreakdownCharts() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: categoryBreakdown } = useSuspenseQuery(
@@ -717,6 +721,7 @@ function CategoryBreakdownCharts() {
 }
 
 function TopCategoriesChart() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: categoryBreakdown } = useSuspenseQuery(
@@ -837,6 +842,7 @@ function TopCategoriesChart() {
 }
 
 function PaymentStatusChart() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: performance } = useSuspenseQuery(
@@ -1010,6 +1016,7 @@ function PaymentStatusChart() {
 }
 
 function PerformanceStatsCards() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: performance } = useSuspenseQuery(
@@ -1136,6 +1143,7 @@ function PerformanceStatsCards() {
 }
 
 function CashFlowDetailsCards() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: plannedVsActual } = useSuspenseQuery(
@@ -1228,6 +1236,7 @@ function CashFlowDetailsCards() {
 }
 
 function CategoryDetailsTable() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: categoryBreakdown } = useSuspenseQuery(
@@ -1297,6 +1306,7 @@ function CategoryDetailsTable() {
 }
 
 function PerformanceStatsRow() {
+   const trpc = useTRPC();
    const { startDate, endDate } = useReports();
 
    const { data: performance } = useSuspenseQuery(

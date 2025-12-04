@@ -35,13 +35,7 @@ export function DeleteOrganizationDialog({
    );
 
    const setActiveOrganizationMutation = useMutation(
-      trpc.organization.setActiveOrganization.mutationOptions({
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
-         },
-      }),
+      trpc.organization.setActiveOrganization.mutationOptions(),
    );
 
    const deleteOrganizationMutation = useMutation(
@@ -51,14 +45,6 @@ export function DeleteOrganizationDialog({
             toast.error("Failed to delete organization. Please try again.");
          },
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getActiveOrganization.queryKey(),
-            });
-
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getOrganizations.queryKey(),
-            });
-
             const wasActiveOrganization = !!activeOrganization;
             if (!wasActiveOrganization) return;
 

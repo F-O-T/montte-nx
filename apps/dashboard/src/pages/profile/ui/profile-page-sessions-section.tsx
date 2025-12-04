@@ -47,11 +47,7 @@ import {
    TooltipProvider,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Monitor, MoreVertical, Trash2 } from "lucide-react";
 import { Fragment, Suspense, useMemo } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -124,7 +120,6 @@ function SessionsSectionSkeleton() {
 }
 
 function SessionsSectionContent() {
-   const queryClient = useQueryClient();
    const trpc = useTRPC();
    const { data: sessions } = useSuspenseQuery(
       trpc.session.listAllSessions.queryOptions(),
@@ -140,9 +135,6 @@ function SessionsSectionContent() {
             toast.error("Failed to revoke other sessions.");
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.session.listAllSessions.queryKey(),
-            });
             toast.success("Other sessions have been revoked successfully.");
          },
       }),
@@ -153,9 +145,6 @@ function SessionsSectionContent() {
             toast.error("Failed to revoke all sessions.");
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.session.listAllSessions.queryKey(),
-            });
             toast.success("All sessions have been revoked successfully.");
          },
       }),

@@ -13,11 +13,7 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { createContext, Suspense, useContext } from "react";
@@ -79,7 +75,6 @@ function CreateTeamSkeleton() {
 
 const CreateTeamSheetContent = () => {
    const { onOpenChange } = useCreateTeamContext();
-   const queryClient = useQueryClient();
    const trpc = useTRPC();
    const { data: organization } = useSuspenseQuery(
       trpc.organization.getActiveOrganization.queryOptions(),
@@ -91,17 +86,8 @@ const CreateTeamSheetContent = () => {
             console.error("Team creation error:", error);
             toast.error("Failed to create team");
          },
-         onSuccess: async (_, variables) => {
+         onSuccess: (_, variables) => {
             toast.success(`Team "${variables.name}" created successfully`);
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organizationTeams.listTeams.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.listTeams.queryKey(),
-            });
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organizationTeams.getTeamStats.queryKey(),
-            });
             onOpenChange(false);
          },
       }),

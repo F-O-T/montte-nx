@@ -11,9 +11,9 @@ import {
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Budget } from "../ui/budgets-page";
 
 interface DeleteBudgetBaseProps {
@@ -57,17 +57,11 @@ export function DeleteBudget({
    onOpenChange,
    onSuccess,
 }: DeleteBudgetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteBudgetMutation = useMutation(
       trpc.budgets.delete.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.budgets.getAllPaginated.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.budgets.getStats.queryKey(),
-            });
             onOpenChange?.(false);
             onSuccess?.();
          },

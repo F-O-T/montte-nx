@@ -50,7 +50,7 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc, useTRPC } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function DetailsErrorFallback() {
    return (
@@ -78,7 +78,7 @@ function DetailsSkeleton() {
 }
 
 function DetailsContent({ transactionId }: { transactionId: string }) {
-   const trpcClient = useTRPC();
+   const trpc = useTRPC();
    const queryClient = useQueryClient();
    const { activeOrganization } = useActiveOrganization();
    const slug = activeOrganization.slug;
@@ -89,51 +89,33 @@ function DetailsContent({ transactionId }: { transactionId: string }) {
       useState<string>("");
 
    const { data } = useSuspenseQuery(
-      trpcClient.transactions.getById.queryOptions({ id: transactionId }),
+      trpc.transactions.getById.queryOptions({ id: transactionId }),
    );
 
    const { data: attachments } = useQuery({
-      ...trpcClient.transactions.getAttachments.queryOptions({
+      ...trpc.transactions.getAttachments.queryOptions({
          transactionId: transactionId,
       }),
    });
 
    const { data: transferLog } = useQuery({
-      ...trpcClient.transactions.getTransferLog.queryOptions({
+      ...trpc.transactions.getTransferLog.queryOptions({
          transactionId: transactionId,
       }),
       enabled: data.type === "transfer",
    });
 
    const { data: bankAccounts = [] } = useQuery({
-      ...trpcClient.bankAccounts.getAll.queryOptions(),
+      ...trpc.bankAccounts.getAll.queryOptions(),
       enabled: data.type === "transfer" && !transferLog,
    });
 
    const linkTransferMutation = useMutation(
-      trpcClient.transactions.completeTransferLink.mutationOptions({
+      trpc.transactions.completeTransferLink.mutationOptions({
          onError: (error) => {
             toast.error(error.message || "Falha ao vincular transferência");
          },
-         onSuccess: async () => {
-            await Promise.all([
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getById.queryKey({
-                     id: transactionId,
-                  }),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getTransferLog.queryKey({
-                     transactionId,
-                  }),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-               }),
-            ]);
+         onSuccess: () => {
             toast.success("Transferência vinculada com sucesso");
             setSelectedBankAccountId("");
          },
@@ -163,7 +145,7 @@ function DetailsContent({ transactionId }: { transactionId: string }) {
       setLoadingAttachmentId(attachmentId);
       try {
          const attachmentData = await queryClient.fetchQuery(
-            trpcClient.transactions.getAttachmentData.queryOptions({
+            trpc.transactions.getAttachmentData.queryOptions({
                attachmentId,
                transactionId,
             }),

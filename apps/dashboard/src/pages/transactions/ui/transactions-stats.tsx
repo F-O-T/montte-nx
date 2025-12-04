@@ -14,7 +14,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTransactionList } from "@/features/transaction/lib/transaction-list-context";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function TransactionsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -55,6 +55,7 @@ function TransactionsStatsSkeleton() {
 }
 
 function TransactionsStatsContent() {
+   const trpc = useTRPC();
    const { bankAccountFilter, startDate, endDate } = useTransactionList();
 
    const { data: stats } = useSuspenseQuery(

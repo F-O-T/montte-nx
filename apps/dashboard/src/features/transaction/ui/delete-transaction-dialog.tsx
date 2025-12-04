@@ -9,8 +9,8 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { trpc } from "@/integrations/clients";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
 export interface DeleteTransactionProps {
@@ -24,22 +24,11 @@ export function DeleteTransaction({
    onOpen,
    onOpenChange,
 }: DeleteTransactionProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteTransactionMutation = useMutation(
       trpc.transactions.delete.mutationOptions({
-         onSuccess: async () => {
-            await Promise.all([
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getAllPaginated.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.transactions.getStats.queryKey(),
-               }),
-               queryClient.invalidateQueries({
-                  queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-               }),
-            ]);
+         onSuccess: () => {
             onOpenChange?.(false);
          },
       }),

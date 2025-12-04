@@ -21,7 +21,7 @@ import { Receipt } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { TransactionList } from "@/features/transaction/ui/transaction-list";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type Budget = RouterOutput["budgets"]["getById"];
 
@@ -121,6 +121,7 @@ function BudgetTransactionsContent({
    startDate,
    endDate,
 }: BudgetTransactionsSectionProps) {
+   const trpc = useTRPC();
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize, setPageSize] = useState(10);
    const [searchTerm, setSearchTerm] = useState("");

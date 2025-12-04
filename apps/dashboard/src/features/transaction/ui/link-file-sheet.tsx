@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { trpc, useTRPC } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
 type LinkFileSheetProps = {
@@ -68,24 +68,23 @@ export function LinkFileSheet({
    transaction,
    onSuccess,
 }: LinkFileSheetProps) {
+   const trpc = useTRPC();
    const queryClient = useQueryClient();
-   const trpcClient = useTRPC();
    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
    const { data: attachments, isLoading: isLoadingAttachments } = useQuery({
-      ...trpcClient.transactions.getAttachments.queryOptions({
+      ...trpc.transactions.getAttachments.queryOptions({
          transactionId: transaction?.id || "",
       }),
       enabled: isOpen && !!transaction?.id,
    });
 
    const addAttachmentMutation = useMutation(
-      trpcClient.transactions.addAttachment.mutationOptions({
+      trpc.transactions.addAttachment.mutationOptions({
          onError: (error) => {
             toast.error(error.message || "Falha ao anexar arquivo");
          },
-         onSuccess: async () => {
-            await invalidateQueries();
+         onSuccess: () => {
             toast.success("Arquivo anexado com sucesso");
             onSuccess?.();
          },
@@ -93,37 +92,15 @@ export function LinkFileSheet({
    );
 
    const deleteAttachmentMutation = useMutation(
-      trpcClient.transactions.deleteAttachment.mutationOptions({
+      trpc.transactions.deleteAttachment.mutationOptions({
          onError: (error) => {
             toast.error(error.message || "Falha ao remover arquivo");
          },
-         onSuccess: async () => {
-            await invalidateQueries();
+         onSuccess: () => {
             toast.success("Arquivo removido com sucesso");
          },
       }),
    );
-
-   const invalidateQueries = async () => {
-      await Promise.all([
-         queryClient.invalidateQueries({
-            queryKey: trpc.transactions.getAllPaginated.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpcClient.transactions.getAttachments.queryKey({
-               transactionId: transaction?.id || "",
-            }),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpcClient.transactions.getById.queryKey({
-               id: transaction?.id || "",
-            }),
-         }),
-      ]);
-   };
 
    const handleOpenChange = (open: boolean) => {
       if (!open) {
@@ -213,7 +190,7 @@ export function LinkFileSheet({
 
       try {
          const data = await queryClient.fetchQuery(
-            trpcClient.transactions.getAttachmentData.queryOptions({
+            trpc.transactions.getAttachmentData.queryOptions({
                attachmentId,
                transactionId: transaction.id,
             }),

@@ -33,13 +33,13 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import Color from "color";
 import { Pencil, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { IconSelector } from "@/features/icon-selector/icon-selector";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type ManageCategorySheetProps = {
    onOpen?: boolean;
@@ -54,7 +54,7 @@ export function ManageCategorySheet({
    category,
    asChild = false,
 }: ManageCategorySheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isEditMode = !!category;
 
    const modeTexts = useMemo(() => {
@@ -87,10 +87,7 @@ export function ManageCategorySheet({
 
    const createCategoryMutation = useMutation(
       trpc.categories.create.mutationOptions({
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAllPaginated.queryKey(),
-            });
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),
@@ -101,10 +98,7 @@ export function ManageCategorySheet({
          onError: (error) => {
             console.error("Failed to update category:", error);
          },
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAllPaginated.queryKey(),
-            });
+         onSuccess: () => {
             setIsOpen?.(false);
          },
       }),

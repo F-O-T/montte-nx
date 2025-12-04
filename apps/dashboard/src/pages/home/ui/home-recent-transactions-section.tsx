@@ -25,7 +25,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function RecentTransactionsCardHeader() {
    return (
@@ -85,6 +85,7 @@ function HomeRecentTransactionsSkeleton() {
 }
 
 function HomeRecentTransactionsContent() {
+   const trpc = useTRPC();
    const { activeOrganization } = useActiveOrganization();
 
    const { data } = useSuspenseQuery(

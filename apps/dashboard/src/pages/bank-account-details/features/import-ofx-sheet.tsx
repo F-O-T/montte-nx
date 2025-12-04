@@ -13,7 +13,7 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
    AlertCircle,
    CheckCircle2,
@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 type FileToImport = {
    name: string;
@@ -42,7 +42,7 @@ export function ImportOfxSheet({
    onOpenChange,
    bankAccountId,
 }: ImportOfxSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const [files, setFiles] = useState<FileToImport[]>([]);
    const [isReadingFiles, setIsReadingFiles] = useState(false);
    const [importedCount, setImportedCount] = useState(0);
@@ -127,18 +127,6 @@ export function ImportOfxSheet({
             filesProcessed++;
             setImportedCount(filesProcessed);
          }
-
-         await Promise.all([
-            queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAllPaginated.queryKey(),
-            }),
-            queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-            }),
-            queryClient.invalidateQueries({
-               queryKey: trpc.bankAccounts.getById.queryKey(),
-            }),
-         ]);
 
          if (totalTransactionsCreated > 0) {
             toast.success(

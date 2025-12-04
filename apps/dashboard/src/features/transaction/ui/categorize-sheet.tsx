@@ -16,11 +16,11 @@ import {
    TabsList,
    TabsTrigger,
 } from "@packages/ui/components/tabs";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { FolderOpen, Landmark, Tag, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
 const CATEGORY_COLORS = [
@@ -63,7 +63,7 @@ export function CategorizeSheet({
    onSuccess,
    defaultTab = "category",
 }: CategorizeSheetProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const [activeTab, setActiveTab] = useState(defaultTab);
    const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
    const [selectedCostCenterId, setSelectedCostCenterId] = useState<string>("");
@@ -79,27 +79,12 @@ export function CategorizeSheet({
 
    const { data: tags = [] } = useQuery(trpc.tags.getAll.queryOptions());
 
-   const invalidateQueries = async () => {
-      await Promise.all([
-         queryClient.invalidateQueries({
-            queryKey: trpc.transactions.getAllPaginated.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.transactions.getStats.queryKey(),
-         }),
-      ]);
-   };
-
    const updateCategoryMutation = useMutation(
       trpc.transactions.updateCategory.mutationOptions({
          onError: (error) => {
             toast.error(error.message || "Falha ao atualizar categoria");
          },
-         onSuccess: async (data) => {
-            await invalidateQueries();
+         onSuccess: (data) => {
             toast.success(
                `Categoria atualizada para ${data.length} ${data.length === 1 ? "transação" : "transações"}`,
             );
@@ -114,8 +99,7 @@ export function CategorizeSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao atualizar centro de custo");
          },
-         onSuccess: async (data) => {
-            await invalidateQueries();
+         onSuccess: (data) => {
             toast.success(
                `Centro de custo atualizado para ${data.length} ${data.length === 1 ? "transação" : "transações"}`,
             );
@@ -130,8 +114,7 @@ export function CategorizeSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao atualizar tags");
          },
-         onSuccess: async (data) => {
-            await invalidateQueries();
+         onSuccess: (data) => {
             toast.success(
                `Tags atualizadas para ${data.length} ${data.length === 1 ? "transação" : "transações"}`,
             );
@@ -146,11 +129,8 @@ export function CategorizeSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao criar categoria");
          },
-         onSuccess: async (data) => {
+         onSuccess: (data) => {
             if (!data) return;
-            await queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAll.queryKey(),
-            });
             setSelectedCategoryId(data.id);
             toast.success(`Categoria "${data.name}" criada`);
          },
@@ -162,11 +142,8 @@ export function CategorizeSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao criar centro de custo");
          },
-         onSuccess: async (data) => {
+         onSuccess: (data) => {
             if (!data) return;
-            await queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAll.queryKey(),
-            });
             setSelectedCostCenterId(data.id);
             toast.success(`Centro de custo "${data.name}" criado`);
          },
@@ -178,11 +155,8 @@ export function CategorizeSheet({
          onError: (error) => {
             toast.error(error.message || "Falha ao criar tag");
          },
-         onSuccess: async (data) => {
+         onSuccess: (data) => {
             if (!data) return;
-            await queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAll.queryKey(),
-            });
             setSelectedTagIds((prev) => [...prev, data.id]);
             toast.success(`Tag "${data.name}" criada`);
          },

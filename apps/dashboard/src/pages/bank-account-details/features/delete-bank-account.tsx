@@ -10,9 +10,9 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface DeleteBankAccountProps {
    bankAccount: BankAccount;
@@ -27,7 +27,7 @@ export function DeleteBankAccount({
    open,
    setOpen,
 }: DeleteBankAccountProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteBankAccountMutation = useMutation(
       trpc.bankAccounts.delete.mutationOptions({
@@ -35,9 +35,6 @@ export function DeleteBankAccount({
             toast.error(error.message || "Failed to delete bank account");
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["bankAccounts"],
-            });
             toast.success("Bank account deleted successfully");
             onSuccess?.();
          },

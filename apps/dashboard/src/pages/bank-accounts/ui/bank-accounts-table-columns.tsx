@@ -31,7 +31,7 @@ import {
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
@@ -50,7 +50,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { DeleteBankAccount } from "@/pages/bank-account-details/features/delete-bank-account";
 
 function BankAccountActionsCell({ account }: { account: BankAccount }) {
@@ -223,7 +223,7 @@ export function BankAccountExpandedContent({
    const [isEditOpen, setIsEditOpen] = useState(false);
    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
    const isMobile = useIsMobile();
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const updateStatusMutation = useMutation(
       trpc.bankAccounts.update.mutationOptions({
@@ -233,7 +233,6 @@ export function BankAccountExpandedContent({
             );
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["bankAccounts"] });
             toast.success(
                account.status === "active"
                   ? translate(

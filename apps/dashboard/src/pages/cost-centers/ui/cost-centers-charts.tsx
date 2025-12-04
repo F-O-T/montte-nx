@@ -30,7 +30,7 @@ import {
    XAxis,
    YAxis,
 } from "recharts";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function CostCentersChartsErrorFallback(props: FallbackProps) {
    return (
@@ -150,6 +150,7 @@ const CHART_COLORS = [
 ];
 
 function CostCenterDistributionChart() {
+   const trpc = useTRPC();
    const { data: costCenters } = useSuspenseQuery(
       trpc.costCenters.getAllPaginated.queryOptions({
          limit: 100,
@@ -301,6 +302,7 @@ function CostCenterDistributionChart() {
 }
 
 function TopCostCentersChart() {
+   const trpc = useTRPC();
    const { data: costCenters } = useSuspenseQuery(
       trpc.costCenters.getAllPaginated.queryOptions({
          limit: 100,
@@ -433,6 +435,7 @@ function TopCostCentersChart() {
 }
 
 function CostCenterTypeDistributionChart() {
+   const trpc = useTRPC();
    const { data: costCenters } = useSuspenseQuery(
       trpc.costCenters.getAllPaginated.queryOptions({
          limit: 100,

@@ -77,7 +77,7 @@ import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Category } from "@/pages/categories/ui/categories-page";
 import { BillFilterSheet } from "../features/bill-filter-sheet";
 import { useBillList } from "../features/bill-list-context";
@@ -311,6 +311,7 @@ function BillsListSkeleton() {
 }
 
 function BillsListContent({ type }: BillsListSectionProps) {
+   const trpc = useTRPC();
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const {
       setCurrentFilterType,

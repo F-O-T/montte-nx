@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc, useTRPC } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface UseTransactionBulkActionsOptions {
    onSuccess?: () => void;
@@ -11,25 +11,7 @@ export function useTransactionBulkActions({
    onSuccess,
    bankAccountId,
 }: UseTransactionBulkActionsOptions = {}) {
-   const queryClient = useQueryClient();
-   const trpcClient = useTRPC();
-
-   const invalidateQueries = async () => {
-      await queryClient.invalidateQueries({
-         queryKey: trpcClient.transactions.getAllPaginated.queryKey(),
-      });
-      if (bankAccountId) {
-         await queryClient.invalidateQueries({
-            queryKey: trpcClient.bankAccounts.getTransactions.queryKey(),
-         });
-         await queryClient.invalidateQueries({
-            queryKey: trpcClient.bankAccounts.getStats.queryKey(),
-         });
-      }
-      await queryClient.invalidateQueries({
-         queryKey: trpcClient.transactions.getStats.queryKey(),
-      });
-   };
+   const trpc = useTRPC();
 
    const deleteManyMutation = useMutation(
       trpc.transactions.deleteMany.mutationOptions({
@@ -37,7 +19,6 @@ export function useTransactionBulkActions({
             toast.error(error.message || "Falha ao excluir transações");
          },
          onSuccess: async (data) => {
-            await invalidateQueries();
             toast.success(`${data.length} transações excluídas com sucesso`);
             onSuccess?.();
          },
@@ -50,7 +31,6 @@ export function useTransactionBulkActions({
             toast.error(error.message || "Falha ao atualizar categoria");
          },
          onSuccess: async (data) => {
-            await invalidateQueries();
             toast.success(
                `Categoria atualizada para ${data.length} transações`,
             );

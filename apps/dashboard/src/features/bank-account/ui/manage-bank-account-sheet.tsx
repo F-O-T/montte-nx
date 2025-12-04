@@ -25,7 +25,7 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 import { useTRPC } from "@/integrations/clients";
@@ -44,7 +44,6 @@ export function ManageBankAccountSheet({
    asChild = false,
 }: ManageBankAccountSheetProps) {
    const trpc = useTRPC();
-   const queryClient = useQueryClient();
    const isEditMode = !!bankAccount;
 
    const modeTexts = useMemo(() => {
@@ -77,9 +76,6 @@ export function ManageBankAccountSheet({
    const createBankAccountMutation = useMutation(
       trpc.bankAccounts.create.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["bankAccounts"],
-            });
             setIsOpen?.(false);
          },
       }),
@@ -88,9 +84,6 @@ export function ManageBankAccountSheet({
    const updateBankAccountMutation = useMutation(
       trpc.bankAccounts.update.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["bankAccounts"],
-            });
             setIsOpen?.(false);
          },
       }),

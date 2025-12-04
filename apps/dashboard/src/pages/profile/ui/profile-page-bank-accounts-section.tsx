@@ -24,7 +24,7 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface CreateBankAccountItemProps {
    onCreateAccount: () => void;
@@ -111,6 +111,7 @@ function BankAccountsSkeleton() {
 }
 
 function BankAccountsContent() {
+   const trpc = useTRPC();
    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const { data: bankAccounts } = useSuspenseQuery(
       trpc.bankAccounts.getAll.queryOptions(),

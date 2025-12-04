@@ -32,11 +32,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
 import {
@@ -56,7 +52,7 @@ import { DefaultHeader } from "@/default/default-header";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
 import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc, useTRPC } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { DeleteBudget } from "@/pages/budgets/features/delete-budget";
 import { ManageBudgetSheet } from "@/pages/budgets/features/manage-budget-sheet";
 import { BudgetDetailsStats } from "./budget-details-stats";
@@ -67,8 +63,7 @@ import { BudgetTransactionsSection } from "./budget-transactions-section";
 function BudgetContent() {
    const params = useParams({ strict: false });
    const budgetId = (params as { budgetId?: string }).budgetId ?? "";
-   const trpcClient = useTRPC();
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
 
@@ -110,7 +105,7 @@ function BudgetContent() {
    };
 
    const { data: budget } = useSuspenseQuery(
-      trpcClient.budgets.getById.queryOptions({ id: budgetId }),
+      trpc.budgets.getById.queryOptions({ id: budgetId }),
    );
 
    const updateBudgetMutation = useMutation(
@@ -119,11 +114,6 @@ function BudgetContent() {
             toast.error(
                translate("dashboard.routes.budgets.notifications.error"),
             );
-         },
-         onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpcClient.budgets.getById.queryKey({ id: budgetId }),
-            });
          },
       }),
    );

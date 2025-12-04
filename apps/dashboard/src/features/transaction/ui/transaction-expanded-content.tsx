@@ -16,7 +16,7 @@ import {
    Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { CategorizeSheet } from "./categorize-sheet";
 import { CategorySplitSheet } from "./category-split-sheet";
 import { DeleteTransaction } from "./delete-transaction-dialog";
@@ -42,6 +42,7 @@ export function TransactionExpandedContent({
    categories,
    slug,
 }: TransactionExpandedContentProps) {
+   const trpc = useTRPC();
    const transaction = row.original;
    const tags = transaction.transactionTags || [];
    const categorySplits = transaction.categorySplits as CategorySplit[] | null;

@@ -43,14 +43,15 @@ import {
    SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
+import { formatDate } from "@packages/utils/date";
 import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckIcon, ChevronsUpDownIcon, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import { useBillList } from "./bill-list-context";
 
 type ManageBillSheetProps = {
@@ -68,10 +69,10 @@ export function ManageBillSheet({
    bill,
    asChild = false,
 }: ManageBillSheetProps) {
+   const trpc = useTRPC();
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
 
    const { currentFilterType } = useBillList();
-   const queryClient = useQueryClient();
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
@@ -92,12 +93,6 @@ export function ManageBillSheet({
    const updateBillMutation = useMutation(
       trpc.bills.update.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getAll.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getStats.queryKey(),
-            });
             onOpenChange?.(false);
          },
       }),
@@ -153,10 +148,10 @@ export function ManageBillSheet({
                      categoryId: value.category || undefined,
                      counterparty: value.counterparty,
                      description: value.description || undefined,
-                     dueDate: value.dueDate.toISOString().split("T")[0] ?? "",
+                     dueDate: formatDate(value.dueDate, "YYYY-MM-DD"),
                      isRecurring: value.isRecurring,
                      issueDate: value.issueDate
-                        ? (value.issueDate.toISOString().split("T")[0] ?? "")
+                        ? formatDate(value.issueDate, "YYYY-MM-DD")
                         : undefined,
                      notes: value.notes,
                      recurrencePattern: value.recurrencePattern,
@@ -175,7 +170,7 @@ export function ManageBillSheet({
                   dueDate: value.dueDate,
                   isRecurring: value.isRecurring,
                   issueDate: value.issueDate
-                     ? (value.issueDate.toISOString().split("T")[0] ?? "")
+                     ? formatDate(value.issueDate, "YYYY-MM-DD")
                      : undefined,
                   notes: value.notes || undefined,
                   recurrencePattern: value.isRecurring

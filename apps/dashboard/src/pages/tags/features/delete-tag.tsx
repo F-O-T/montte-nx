@@ -11,9 +11,9 @@ import {
    AlertDialogTrigger,
 } from "@packages/ui/components/alert-dialog";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 import type { Tag } from "../ui/tags-page";
 
 interface DeleteTagProps {
@@ -31,18 +31,12 @@ export function DeleteTag({
    onSuccess,
    children,
 }: DeleteTagProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
    const isControlled = open !== undefined && setOpen !== undefined;
 
    const deleteTagMutation = useMutation(
       trpc.tags.delete.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAll.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAllPaginated.queryKey(),
-            });
             onSuccess?.();
          },
       }),

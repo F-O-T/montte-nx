@@ -10,9 +10,9 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@packages/ui/components/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface DeleteTagDialogProps {
    tag: Tag;
@@ -27,7 +27,7 @@ export function DeleteTagDialog({
    open,
    setOpen,
 }: DeleteTagDialogProps) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteTagMutation = useMutation(
       trpc.tags.delete.mutationOptions({
@@ -35,9 +35,6 @@ export function DeleteTagDialog({
             toast.error(error.message || "Failed to delete tag");
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAll.queryKey(),
-            });
             toast.success("Tag deleted successfully");
             onSuccess?.();
          },

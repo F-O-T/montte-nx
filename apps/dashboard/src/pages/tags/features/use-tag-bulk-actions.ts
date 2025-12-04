@@ -1,21 +1,18 @@
 import { translate } from "@packages/localization";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface UseTagBulkActionsOptions {
    onSuccess?: () => void;
 }
 
 export function useTagBulkActions(options?: UseTagBulkActionsOptions) {
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const deleteMutation = useMutation(
       trpc.tags.deleteMany.mutationOptions({
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: ["tags"],
-            });
             options?.onSuccess?.();
          },
       }),
