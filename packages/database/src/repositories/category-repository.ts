@@ -200,6 +200,35 @@ export async function deleteCategory(
    }
 }
 
+export async function deleteManyCategories(
+   dbClient: DatabaseInstance,
+   categoryIds: string[],
+   organizationId: string,
+) {
+   if (categoryIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient
+         .delete(category)
+         .where(
+            and(
+               inArray(category.id, categoryIds),
+               eq(category.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete categories: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function getTotalCategoriesByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,

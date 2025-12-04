@@ -179,14 +179,24 @@ function MonthlyTooltip({
    );
 }
 
-function CategoryTypeDistributionChart({ categoryId }: { categoryId: string }) {
+function CategoryTypeDistributionChart({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
          categoryId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -327,14 +337,24 @@ function CategoryTypeDistributionChart({ categoryId }: { categoryId: string }) {
    );
 }
 
-function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
+function CategoryMonthlyTrendChart({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
          categoryId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -462,20 +482,48 @@ function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
    );
 }
 
-function CategoryChartsContent({ categoryId }: { categoryId: string }) {
+function CategoryChartsContent({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <CategoryMonthlyTrendChart categoryId={categoryId} />
-         <CategoryTypeDistributionChart categoryId={categoryId} />
+         <CategoryMonthlyTrendChart
+            categoryId={categoryId}
+            endDate={endDate}
+            startDate={startDate}
+         />
+         <CategoryTypeDistributionChart
+            categoryId={categoryId}
+            endDate={endDate}
+            startDate={startDate}
+         />
       </div>
    );
 }
 
-export function CategoryCharts({ categoryId }: { categoryId: string }) {
+export function CategoryCharts({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={CategoryChartsErrorFallback}>
          <Suspense fallback={<CategoryChartsSkeleton />}>
-            <CategoryChartsContent categoryId={categoryId} />
+            <CategoryChartsContent
+               categoryId={categoryId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

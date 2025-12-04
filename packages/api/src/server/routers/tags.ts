@@ -1,6 +1,7 @@
 import {
    createTag,
    deleteTag,
+   deleteManyTags,
    findTagById,
    findTagsByOrganizationId,
    findTagsByOrganizationIdPaginated,
@@ -59,6 +60,15 @@ export const tagRouter = router({
          }
 
          return deleteTag(resolvedCtx.db, input.id);
+      }),
+
+   deleteMany: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return deleteManyTags(resolvedCtx.db, input.ids, organizationId);
       }),
 
    getAll: protectedProcedure.query(async ({ ctx }) => {

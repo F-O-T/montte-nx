@@ -1,6 +1,7 @@
 import {
    createCostCenter,
    deleteCostCenter,
+   deleteManyCostCenters,
    findCostCenterById,
    findCostCentersByOrganizationId,
    findCostCentersByOrganizationIdPaginated,
@@ -62,6 +63,19 @@ export const costCenterRouter = router({
          }
 
          return deleteCostCenter(resolvedCtx.db, input.id);
+      }),
+
+   deleteMany: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return deleteManyCostCenters(
+            resolvedCtx.db,
+            input.ids,
+            organizationId,
+         );
       }),
 
    getAll: protectedProcedure.query(async ({ ctx }) => {

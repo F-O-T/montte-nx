@@ -1,27 +1,119 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
+   Card,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
+import { Separator } from "@packages/ui/components/separator";
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipTrigger,
+} from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreVertical, Trash2 } from "lucide-react";
-import { Suspense } from "react";
+import type { ColumnDef, Row } from "@tanstack/react-table";
+import {
+   ArrowDownLeft,
+   ArrowUpRight,
+   Calendar,
+   ChevronDown,
+   Edit,
+   Eye,
+   Trash2,
+} from "lucide-react";
+import { useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import type { Category } from "@/pages/categories/ui/categories-page";
-
 import { DeleteCategory } from "../features/delete-category";
 import { ManageCategorySheet } from "../features/manage-category-sheet";
 
-//TODO: dropdown duplicado aqui
-export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
+function CategoryActionsCell({ category }: { category: Category }) {
+   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const [isEditOpen, setIsEditOpen] = useState(false);
+   const { activeOrganization } = useActiveOrganization();
+
+   return (
+      <>
+         <div className="flex justify-end gap-1">
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button asChild size="icon" variant="outline">
+                     <Link
+                        params={{
+                           categoryId: category.id,
+                           slug: activeOrganization.slug,
+                        }}
+                        to="/$slug/categories/$categoryId"
+                     >
+                        <Eye className="size-4" />
+                     </Link>
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.view-details",
+                  )}
+               </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button
+                     onClick={() => setIsEditOpen(true)}
+                     size="icon"
+                     variant="outline"
+                  >
+                     <Edit className="size-4" />
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.edit-category",
+                  )}
+               </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+               <TooltipTrigger asChild>
+                  <Button
+                     className="text-destructive hover:text-destructive"
+                     onClick={() => setIsDeleteOpen(true)}
+                     size="icon"
+                     variant="outline"
+                  >
+                     <Trash2 className="size-4" />
+                  </Button>
+               </TooltipTrigger>
+               <TooltipContent>
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.delete-category",
+                  )}
+               </TooltipContent>
+            </Tooltip>
+         </div>
+         <ManageCategorySheet
+            category={category}
+            onOpen={isEditOpen}
+            onOpenChange={setIsEditOpen}
+         />
+         <DeleteCategory
+            category={category}
+            open={isDeleteOpen}
+            setOpen={setIsDeleteOpen}
+         />
+      </>
+   );
+}
+
+export function createCategoryColumns(_slug: string): ColumnDef<Category>[] {
    return [
       {
          accessorKey: "name",
@@ -66,68 +158,306 @@ export function createCategoryColumns(slug: string): ColumnDef<Category>[] {
          ),
       },
       {
-         cell: ({ row }) => {
-            const category = row.original;
-
-            return (
-               <div className="flex justify-end">
-                  <DropdownMenu>
-                     <DropdownMenuTrigger asChild>
-                        <Button
-                           aria-label="Actions"
-                           size="icon"
-                           variant="ghost"
-                        >
-                           <MoreVertical className="size-4" />
-                        </Button>
-                     </DropdownMenuTrigger>
-                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>
-                           {translate(
-                              "dashboard.routes.categories.list-section.actions.label",
-                           )}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-
-                        <DropdownMenuItem asChild>
-                           <Link
-                              params={{ categoryId: category.id, slug }}
-                              to="/$slug/categories/$categoryId"
-                           >
-                              <Eye className="size-4 " />
-                              {translate(
-                                 "dashboard.routes.categories.list-section.actions.view-details",
-                              )}
-                           </Link>
-                        </DropdownMenuItem>
-
-                        <Suspense
-                           fallback={
-                              <DropdownMenuItem disabled>
-                                 Loading...
-                              </DropdownMenuItem>
-                           }
-                        >
-                           <ManageCategorySheet asChild category={category} />
-                           <DeleteCategory category={category}>
-                              <DropdownMenuItem
-                                 className="text-destructive focus:text-destructive"
-                                 onSelect={(e) => e.preventDefault()}
-                              >
-                                 <Trash2 className="size-4 mr-2" />
-                                 {translate(
-                                    "dashboard.routes.categories.list-section.actions.delete",
-                                 )}
-                              </DropdownMenuItem>
-                           </DeleteCategory>
-                        </Suspense>
-                     </DropdownMenuContent>
-                  </DropdownMenu>
-               </div>
-            );
-         },
+         cell: ({ row }) => <CategoryActionsCell category={row.original} />,
          header: "",
          id: "actions",
       },
    ];
+}
+
+interface CategoryExpandedContentProps {
+   row: Row<Category>;
+   income: number;
+   expenses: number;
+}
+
+export function CategoryExpandedContent({
+   row,
+   income,
+   expenses,
+}: CategoryExpandedContentProps) {
+   const category = row.original;
+   const { activeOrganization } = useActiveOrganization();
+   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const [isEditOpen, setIsEditOpen] = useState(false);
+   const isMobile = useIsMobile();
+
+   if (isMobile) {
+      return (
+         <div className="p-4 space-y-4">
+            <div className="space-y-3">
+               <div className="flex items-center gap-2">
+                  <ArrowDownLeft className="size-4 text-emerald-500" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.stats-section.total-income.title",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium text-emerald-500">
+                        +{formatDecimalCurrency(income)}
+                     </p>
+                  </div>
+               </div>
+               <Separator />
+               <div className="flex items-center gap-2">
+                  <ArrowUpRight className="size-4 text-destructive" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium text-destructive">
+                        -{formatDecimalCurrency(expenses)}
+                     </p>
+                  </div>
+               </div>
+               <Separator />
+               <div className="flex items-center gap-2">
+                  <Calendar className="size-4 text-muted-foreground" />
+                  <div>
+                     <p className="text-xs text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.categories.table.columns.created-at",
+                        )}
+                     </p>
+                     <p className="text-sm font-medium">
+                        {formatDate(
+                           new Date(category.createdAt),
+                           "DD MMM YYYY",
+                        )}
+                     </p>
+                  </div>
+               </div>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+               <Button
+                  asChild
+                  className="w-full justify-start"
+                  size="sm"
+                  variant="outline"
+               >
+                  <Link
+                     params={{
+                        categoryId: category.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/categories/$categoryId"
+                  >
+                     <Eye className="size-4" />
+                     {translate(
+                        "dashboard.routes.categories.list-section.actions.view-details",
+                     )}
+                  </Link>
+               </Button>
+               <Button
+                  className="w-full justify-start"
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     setIsEditOpen(true);
+                  }}
+                  size="sm"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.edit-category",
+                  )}
+               </Button>
+               <Button
+                  className="w-full justify-start"
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     setIsDeleteOpen(true);
+                  }}
+                  size="sm"
+                  variant="destructive"
+               >
+                  <Trash2 className="size-4" />
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.delete-category",
+                  )}
+               </Button>
+            </div>
+
+            <ManageCategorySheet
+               category={category}
+               onOpen={isEditOpen}
+               onOpenChange={setIsEditOpen}
+            />
+            <DeleteCategory
+               category={category}
+               open={isDeleteOpen}
+               setOpen={setIsDeleteOpen}
+            />
+         </div>
+      );
+   }
+
+   return (
+      <div className="p-4 flex items-center justify-between gap-6">
+         <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+               <ArrowDownLeft className="size-4 text-emerald-500" />
+               <div>
+                  <p className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.bank-accounts.stats-section.total-income.title",
+                     )}
+                  </p>
+                  <p className="text-sm font-medium text-emerald-500">
+                     +{formatDecimalCurrency(income)}
+                  </p>
+               </div>
+            </div>
+            <Separator className="h-8" orientation="vertical" />
+            <div className="flex items-center gap-2">
+               <ArrowUpRight className="size-4 text-destructive" />
+               <div>
+                  <p className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+                     )}
+                  </p>
+                  <p className="text-sm font-medium text-destructive">
+                     -{formatDecimalCurrency(expenses)}
+                  </p>
+               </div>
+            </div>
+            <Separator className="h-8" orientation="vertical" />
+            <div className="flex items-center gap-2">
+               <Calendar className="size-4 text-muted-foreground" />
+               <div>
+                  <p className="text-xs text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.categories.table.columns.created-at",
+                     )}
+                  </p>
+                  <p className="text-sm font-medium">
+                     {formatDate(new Date(category.createdAt), "DD MMM YYYY")}
+                  </p>
+               </div>
+            </div>
+         </div>
+
+         <div className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline">
+               <Link
+                  params={{
+                     categoryId: category.id,
+                     slug: activeOrganization.slug,
+                  }}
+                  to="/$slug/categories/$categoryId"
+               >
+                  <Eye className="size-4" />
+                  {translate(
+                     "dashboard.routes.categories.list-section.actions.view-details",
+                  )}
+               </Link>
+            </Button>
+            <Button
+               onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditOpen(true);
+               }}
+               size="sm"
+               variant="outline"
+            >
+               <Edit className="size-4" />
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.edit-category",
+               )}
+            </Button>
+            <Button
+               onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDeleteOpen(true);
+               }}
+               size="sm"
+               variant="destructive"
+            >
+               <Trash2 className="size-4" />
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.delete-category",
+               )}
+            </Button>
+         </div>
+
+         <ManageCategorySheet
+            category={category}
+            onOpen={isEditOpen}
+            onOpenChange={setIsEditOpen}
+         />
+         <DeleteCategory
+            category={category}
+            open={isDeleteOpen}
+            setOpen={setIsDeleteOpen}
+         />
+      </div>
+   );
+}
+
+interface CategoryMobileCardProps {
+   row: Row<Category>;
+   isExpanded: boolean;
+   toggleExpanded: () => void;
+   income: number;
+   expenses: number;
+}
+
+export function CategoryMobileCard({
+   row,
+   isExpanded,
+   toggleExpanded,
+}: CategoryMobileCardProps) {
+   const category = row.original;
+
+   return (
+      <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
+         <CardHeader>
+            <div className="flex items-center gap-3">
+               <div
+                  className="size-10 rounded-sm flex items-center justify-center"
+                  style={{ backgroundColor: category.color }}
+               >
+                  <IconDisplay
+                     className="text-white"
+                     iconName={(category.icon || "Wallet") as IconName}
+                     size={20}
+                  />
+               </div>
+               <div>
+                  <CardTitle className="text-base">{category.name}</CardTitle>
+                  <CardDescription>
+                     {formatDate(new Date(category.createdAt), "DD MMM YYYY")}
+                  </CardDescription>
+               </div>
+            </div>
+         </CardHeader>
+         <CardContent />
+         <CardFooter>
+            <CollapsibleTrigger asChild>
+               <Button
+                  className="w-full"
+                  onClick={(e) => {
+                     e.stopPropagation();
+                     toggleExpanded();
+                  }}
+                  variant="outline"
+               >
+                  {isExpanded
+                     ? translate("common.actions.less-info")
+                     : translate("common.actions.more-info")}
+                  <ChevronDown
+                     className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                  />
+               </Button>
+            </CollapsibleTrigger>
+         </CardFooter>
+      </Card>
+   );
 }

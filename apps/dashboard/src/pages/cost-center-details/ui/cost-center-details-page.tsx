@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -6,15 +7,27 @@ import {
    EmptyMedia,
    EmptyTitle,
 } from "@packages/ui/components/empty";
+import { MonthSelector } from "@packages/ui/components/month-selector";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   getDateRangeForPeriod,
+   type TimePeriod,
+   TimePeriodChips,
+   type TimePeriodDateRange,
+} from "@packages/ui/components/time-period-chips";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
-import { Home, Landmark } from "lucide-react";
-import { Suspense } from "react";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { Edit, Home, Landmark, Plus, Trash2 } from "lucide-react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
+import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
+import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
+import { DeleteCostCenterDialog } from "../features/delete-cost-center-dialog";
+import { ManageCostCenterSheet } from "../../cost-centers/features/manage-cost-center-sheet";
 import { CostCenterCharts } from "./cost-center-charts";
 import { CostCenterStats } from "./cost-center-stats";
 import { CostCenterTransactions } from "./cost-center-transactions-section";
@@ -24,6 +37,45 @@ function CostCenterContent() {
    const costCenterId =
       (params as { costCenterId?: string }).costCenterId ?? "";
    const trpc = useTRPC();
+   const router = useRouter();
+   const { activeOrganization } = useActiveOrganization();
+
+   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
+      useState(false);
+   const [isEditCostCenterOpen, setIsEditCostCenterOpen] = useState(false);
+   const [isDeleteCostCenterOpen, setIsDeleteCostCenterOpen] = useState(false);
+
+   const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
+      "this-month",
+   );
+   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+   const [dateRange, setDateRange] = useState<{
+      startDate: Date | null;
+      endDate: Date | null;
+   }>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return { endDate: range.endDate, startDate: range.startDate };
+   });
+
+   const handleTimePeriodChange = (
+      period: TimePeriod | null,
+      range: TimePeriodDateRange,
+   ) => {
+      setTimePeriod(period);
+      setDateRange({ endDate: range.endDate, startDate: range.startDate });
+      if (range.selectedMonth) {
+         setSelectedMonth(range.selectedMonth);
+      }
+   };
+
+   const handleMonthChange = (month: Date) => {
+      setSelectedMonth(month);
+      setTimePeriod(null);
+      setDateRange({
+         endDate: endOfMonth(month),
+         startDate: startOfMonth(month),
+      });
+   };
 
    const { data: costCenter } = useSuspenseQuery(
       trpc.costCenters.getById.queryOptions({ id: costCenterId }),
@@ -42,15 +94,94 @@ function CostCenterContent() {
       return null;
    }
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/cost-centers",
+      });
+   };
+
    return (
       <main className="space-y-4">
          <DefaultHeader
-            description="Visualize detalhes e estatisticas do centro de custo"
+            actions={
+               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+                  <Plus className="size-4" />
+                  {translate(
+                     "dashboard.routes.transactions.features.add-new.title",
+                  )}
+               </Button>
+            }
+            description="Visualize detalhes e estatísticas do centro de custo"
             title={costCenter.name}
          />
-         <CostCenterStats costCenterId={costCenterId} />
-         <CostCenterTransactions costCenterId={costCenterId} />
-         <CostCenterCharts costCenterId={costCenterId} />
+
+         <div className="flex flex-wrap items-center gap-2">
+            <Button
+               onClick={() => setIsEditCostCenterOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <Edit className="size-4" />
+               Editar Centro de Custo
+            </Button>
+            <Button
+               className="text-destructive hover:text-destructive"
+               onClick={() => setIsDeleteCostCenterOpen(true)}
+               size="sm"
+               variant="outline"
+            >
+               <Trash2 className="size-4" />
+               Excluir Centro de Custo
+            </Button>
+         </div>
+
+         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <TimePeriodChips
+               onValueChange={handleTimePeriodChange}
+               size="sm"
+               value={timePeriod}
+            />
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <MonthSelector
+               date={selectedMonth}
+               disabled={timePeriod !== null && timePeriod !== "all-time"}
+               onSelect={handleMonthChange}
+            />
+         </div>
+
+         <CostCenterStats
+            costCenterId={costCenterId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
+         <CostCenterCharts
+            costCenterId={costCenterId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
+         <CostCenterTransactions
+            costCenterId={costCenterId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
+
+         <ManageTransactionSheet
+            defaultCostCenterId={costCenterId}
+            onOpen={isCreateTransactionOpen}
+            onOpenChange={setIsCreateTransactionOpen}
+         />
+         <ManageCostCenterSheet
+            costCenter={costCenter}
+            onOpen={isEditCostCenterOpen}
+            onOpenChange={setIsEditCostCenterOpen}
+         />
+         <DeleteCostCenterDialog
+            costCenter={costCenter}
+            onSuccess={handleDeleteSuccess}
+            open={isDeleteCostCenterOpen}
+            setOpen={setIsDeleteCostCenterOpen}
+         />
       </main>
    );
 }
@@ -116,10 +247,12 @@ function CostCenterPageError({ error, resetErrorBoundary }: FallbackProps) {
 
 export function CostCenterDetailsPage() {
    return (
-      <ErrorBoundary FallbackComponent={CostCenterPageError}>
-         <Suspense fallback={<CostCenterPageSkeleton />}>
-            <CostCenterContent />
-         </Suspense>
-      </ErrorBoundary>
+      <TransactionListProvider>
+         <ErrorBoundary FallbackComponent={CostCenterPageError}>
+            <Suspense fallback={<CostCenterPageSkeleton />}>
+               <CostCenterContent />
+            </Suspense>
+         </ErrorBoundary>
+      </TransactionListProvider>
    );
 }

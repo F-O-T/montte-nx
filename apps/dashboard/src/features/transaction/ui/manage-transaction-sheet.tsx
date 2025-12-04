@@ -80,6 +80,9 @@ type ManageTransactionSheetProps = {
    onOpenChange?: (open: boolean) => void;
    transaction?: Transaction;
    asChild?: boolean;
+   defaultCategoryIds?: string[];
+   defaultCostCenterId?: string;
+   defaultTagIds?: string[];
 };
 
 export function ManageTransactionSheet({
@@ -87,6 +90,9 @@ export function ManageTransactionSheet({
    onOpenChange,
    transaction,
    asChild = false,
+   defaultCategoryIds = [],
+   defaultCostCenterId = "",
+   defaultTagIds = [],
 }: ManageTransactionSheetProps) {
    const queryClient = useQueryClient();
    const isEditMode = !!transaction;
@@ -294,11 +300,13 @@ export function ManageTransactionSheet({
          bankAccountId: transaction?.bankAccountId || "",
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
-            [],
-         costCenterId: transaction?.costCenterId || "",
+            defaultCategoryIds,
+         costCenterId: transaction?.costCenterId || defaultCostCenterId,
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
-         tagIds: transaction?.transactionTags?.map((tt) => tt.tag.id) || [],
+         tagIds:
+            transaction?.transactionTags?.map((tt) => tt.tag.id) ||
+            defaultTagIds,
          type: (transaction?.type === "transfer"
             ? "expense"
             : transaction?.type || "expense") as "expense" | "income",

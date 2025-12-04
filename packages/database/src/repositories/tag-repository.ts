@@ -188,6 +188,35 @@ export async function deleteTag(dbClient: DatabaseInstance, tagId: string) {
    }
 }
 
+export async function deleteManyTags(
+   dbClient: DatabaseInstance,
+   tagIds: string[],
+   organizationId: string,
+) {
+   if (tagIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient
+         .delete(tag)
+         .where(
+            and(
+               inArray(tag.id, tagIds),
+               eq(tag.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete tags: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function getTotalTagsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,

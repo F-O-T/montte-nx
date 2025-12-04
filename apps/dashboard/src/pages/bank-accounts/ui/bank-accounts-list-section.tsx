@@ -222,7 +222,7 @@ function BankAccountsListContent() {
       <>
          <Card>
             <CardContent className="pt-6 grid gap-4">
-               <div className="flex flex-col sm:flex-row gap-3">
+               <div className="flex gap-6">
                   <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -352,18 +352,18 @@ function BankAccountsListContent() {
                         <EmptyTitle>
                            {hasActiveFilters
                               ? translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                                )
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                              )
                               : translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                                )}
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                              )}
                         </EmptyTitle>
                         <EmptyDescription>
                            {hasActiveFilters
                               ? "Nenhuma conta encontrada com os filtros aplicados"
                               : translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.description",
-                                )}
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.description",
+                              )}
                         </EmptyDescription>
                      </EmptyContent>
                   </Empty>

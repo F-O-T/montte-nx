@@ -1,23 +1,17 @@
 import { translate } from "@packages/localization";
+import {
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
-import {
-   Card,
-   CardAction,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
+import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
-import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
 import {
    Empty,
    EmptyContent,
@@ -31,171 +25,45 @@ import {
    InputGroupAddon,
    InputGroupInput,
 } from "@packages/ui/components/input-group";
+import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemGroup,
-   ItemMedia,
-   ItemSeparator,
-   ItemTitle,
-} from "@packages/ui/components/item";
-import {
-   Pagination,
-   PaginationContent,
-   PaginationItem,
-   PaginationLink,
-   PaginationNext,
-   PaginationPrevious,
-} from "@packages/ui/components/pagination";
+   SelectionActionBar,
+   SelectionActionButton,
+} from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
-import { formatDate } from "@packages/utils/date";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import type { RowSelectionState } from "@tanstack/react-table";
 import {
-   Eye,
+   ArrowDownAZ,
+   ArrowUpAZ,
    Filter,
    Inbox,
-   MoreVertical,
-   Plus,
    Search,
    Trash2,
+   X,
 } from "lucide-react";
-import { Fragment, Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { CategoryFilterSheet } from "../features/category-filter-sheet";
 import { useCategoryList } from "../features/category-list-context";
-import { DeleteCategory } from "../features/delete-category";
-import { ManageCategorySheet } from "../features/manage-category-sheet";
-import type { Category } from "../ui/categories-page";
-import { createCategoryColumns } from "./categories-table-columns";
-
-function CategoriesCardHeader() {
-   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
-
-   const isMobile = useIsMobile();
-   return (
-      <>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.categories.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.categories.list-section.description",
-               )}
-            </CardDescription>
-            {!isMobile && (
-               <CardAction>
-                  <Button
-                     onClick={() => setIsCategorySheetOpen(true)}
-                     size="sm"
-                  >
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.categories.actions-toolbar.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>
-            )}
-         </CardHeader>
-         <Button
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
-            onClick={() => setIsCategorySheetOpen(true)}
-            size="icon"
-         >
-            <Plus className="size-6" />
-         </Button>
-         <ManageCategorySheet
-            onOpen={isCategorySheetOpen}
-            onOpenChange={setIsCategorySheetOpen}
-         />
-      </>
-   );
-}
-
-function CategoryActionsDropdown({ category }: { category: Category }) {
-   const [isOpen, setIsOpen] = useState(false);
-   const { activeOrganization } = useActiveOrganization();
-
-   return (
-      <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <DropdownMenuTrigger asChild>
-                  <Button
-                     aria-label={translate(
-                        "dashboard.routes.categories.list-section.actions.label",
-                     )}
-                     className="h-8 w-8 p-0"
-                     size="icon"
-                     title="Category actions"
-                     variant="ghost"
-                  >
-                     <MoreVertical className="h-4 w-4" />
-                  </Button>
-               </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.label",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <DropdownMenuContent align="end">
-            <DropdownMenuLabel>
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.label",
-               )}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-               <Link
-                  params={{
-                     categoryId: category.id,
-                     slug: activeOrganization.slug,
-                  }}
-                  to="/$slug/categories/$categoryId"
-               >
-                  <Eye className="size-4" />
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.view-details",
-                  )}
-               </Link>
-            </DropdownMenuItem>
-            <ManageCategorySheet asChild category={category} />
-            <DeleteCategory category={category}>
-               <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onSelect={(e) => e.preventDefault()}
-               >
-                  <Trash2 className="size-4 " />
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.delete",
-                  )}
-               </DropdownMenuItem>
-            </DeleteCategory>
-         </DropdownMenuContent>
-      </DropdownMenu>
-   );
-}
+import { useCategoryBulkActions } from "../features/use-category-bulk-actions";
+import {
+   CategoryExpandedContent,
+   CategoryMobileCard,
+   createCategoryColumns,
+} from "./categories-table-columns";
 
 function CategoriesListErrorFallback(props: FallbackProps) {
    return (
       <Card>
-         <CategoriesCardHeader />
-         <CardContent>
+         <CardContent className="pt-6">
             {createErrorFallback({
                errorDescription: translate(
                   "dashboard.routes.categories.list-section.state.error.description",
@@ -213,33 +81,36 @@ function CategoriesListErrorFallback(props: FallbackProps) {
 function CategoriesListSkeleton() {
    return (
       <Card>
-         <CategoriesCardHeader />
-         <CardContent>
+         <CardContent className="pt-6 grid gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+               <Skeleton className="h-9 w-full sm:max-w-md" />
+               <Skeleton className="h-9 w-9" />
+            </div>
+            <div className="flex gap-2">
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-24" />
+            </div>
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`category-skeleton-${index + 1}`}>
-                     <Item>
-                        <ItemMedia variant="icon">
-                           <div className="size-8 rounded-sm border group relative">
-                              <Skeleton className="size-8 rounded-sm" />
-                           </div>
-                        </ItemMedia>
-                        <ItemContent className="gap-1">
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded-full" />
+                        <div className="space-y-2 flex-1">
                            <Skeleton className="h-4 w-32" />
-                           <Skeleton className="h-3 w-48" />
-                        </ItemContent>
-                        <ItemActions>
-                           <Skeleton className="size-8" />
-                        </ItemActions>
-                     </Item>
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
                      {index !== 4 && <ItemSeparator />}
                   </Fragment>
                ))}
             </ItemGroup>
+            <div className="flex items-center justify-end gap-2 pt-4">
+               <Skeleton className="h-10 w-24" />
+               <Skeleton className="h-10 w-10" />
+               <Skeleton className="h-10 w-24" />
+            </div>
          </CardContent>
-         <CardFooter>
-            <Skeleton className="h-10 w-full" />
-         </CardFooter>
       </Card>
    );
 }
@@ -259,8 +130,11 @@ function CategoriesListContent() {
    } = useCategoryList();
 
    const { activeOrganization } = useActiveOrganization();
+   const isMobile = useIsMobile();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -285,23 +159,55 @@ function CategoriesListContent() {
       ),
    );
 
+   const { data: breakdownData } = useSuspenseQuery(
+      trpc.categories.getBreakdown.queryOptions(),
+   );
+
+   const categoryStatsMap = useMemo(() => {
+      const map: Record<string, { income: number; expenses: number }> = {};
+      for (const item of breakdownData) {
+         map[item.categoryId] = {
+            expenses: item.expenses,
+            income: item.income,
+         };
+      }
+      return map;
+   }, [breakdownData]);
+
    const { categories, pagination } = paginatedData;
-   const { totalPages } = pagination;
+   const { totalPages, totalCount } = pagination;
 
    const handleFilterChange = () => {
       setCurrentPage(1);
    };
 
-   const isMobile = useIsMobile();
-   const hasActiveFilters = orderBy !== "name" || orderDirection !== "asc";
+   const hasActiveFilters =
+      debouncedSearchTerm || orderBy !== "name" || orderDirection !== "asc";
+
+   const selectedIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id],
+   );
+
+   const { deleteSelected, isLoading } = useCategoryBulkActions({
+      onSuccess: () => setRowSelection({}),
+   });
+
+   const handleClearSelection = () => {
+      setRowSelection({});
+   };
+
+   const handleClearFilters = () => {
+      setSearchTerm("");
+      setOrderBy("name");
+      setOrderDirection("asc");
+   };
 
    return (
       <>
          <Card>
-            <CategoriesCardHeader />
-            <CardContent className="grid gap-2">
-               <div className="flex items-center justify-between gap-8">
-                  <InputGroup>
+            <CardContent className="pt-6 grid gap-4">
+               <div className="flex gap-6">
+                  <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
                         onChange={(e) => {
                            setSearchTerm(e.target.value);
@@ -315,90 +221,74 @@ function CategoriesListContent() {
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <Button
-                           onClick={() => setIsFilterSheetOpen(true)}
-                           size="icon"
-                           variant={hasActiveFilters ? "default" : "outline"}
-                        >
-                           <Filter className="size-4" />
-                        </Button>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                        {translate(
-                           "dashboard.routes.categories.features.filter.title",
-                        )}
-                     </TooltipContent>
-                  </Tooltip>
+
+                  {isMobile && (
+                     <Button
+                        onClick={() => setIsFilterSheetOpen(true)}
+                        size="icon"
+                        variant="outline"
+                     >
+                        <Filter className="size-4" />
+                     </Button>
+                  )}
                </div>
 
-               {isMobile ? (
-                  categories.length === 0 && pagination.totalCount === 0 ? (
-                     <Empty>
-                        <EmptyContent>
-                           <EmptyMedia variant="icon">
-                              <Inbox className="size-6" />
-                           </EmptyMedia>
-                           <EmptyTitle>
+               {!isMobile && (
+                  <div className="flex flex-wrap items-center gap-3">
+                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                           {translate("common.form.sort-by.label")}:
+                        </span>
+                        <ToggleGroup
+                           onValueChange={(value) => {
+                              if (value) {
+                                 setOrderDirection(value as "asc" | "desc");
+                                 handleFilterChange();
+                              }
+                           }}
+                           size="sm"
+                           spacing={2}
+                           type="single"
+                           value={orderDirection}
+                           variant="outline"
+                        >
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                              value="asc"
+                           >
+                              <ArrowUpAZ className="size-3.5" />
+                              A-Z
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                              value="desc"
+                           >
+                              <ArrowDownAZ className="size-3.5" />
+                              Z-A
+                           </ToggleGroupItem>
+                        </ToggleGroup>
+                     </div>
+
+                     {hasActiveFilters && (
+                        <>
+                           <div className="h-4 w-px bg-border" />
+                           <Button
+                              className="h-8 text-xs"
+                              onClick={handleClearFilters}
+                              size="sm"
+                              variant="outline"
+                           >
+                              <X className="size-3" />
                               {translate(
-                                 "dashboard.routes.categories.list-section.state.empty.title",
+                                 "dashboard.routes.categories.features.filter.actions.clear-filters",
                               )}
-                           </EmptyTitle>
-                           <EmptyDescription>
-                              {translate(
-                                 "dashboard.routes.categories.list-section.state.empty.description",
-                              )}
-                           </EmptyDescription>
-                        </EmptyContent>
-                     </Empty>
-                  ) : (
-                     <ItemGroup>
-                        {categories.map((category, index) => (
-                           <Fragment key={category.id}>
-                              <Item>
-                                 <ItemMedia variant="icon">
-                                    <div
-                                       className="size-8 rounded-sm border flex items-center justify-center"
-                                       style={{
-                                          backgroundColor: category.color,
-                                       }}
-                                    >
-                                       <IconDisplay
-                                          className="text-white"
-                                          iconName={
-                                             (category.icon ||
-                                                "Wallet") as IconName
-                                          }
-                                          size={16}
-                                       />
-                                    </div>
-                                 </ItemMedia>
-                                 <ItemContent>
-                                    <ItemTitle>{category.name}</ItemTitle>
-                                    <ItemDescription>
-                                       <span className="text-xs text-muted-foreground">
-                                          {formatDate(
-                                             new Date(category.createdAt),
-                                             "DD/MM/YYYY",
-                                          )}
-                                       </span>
-                                    </ItemDescription>
-                                 </ItemContent>
-                                 <ItemActions>
-                                    <CategoryActionsDropdown
-                                       category={category}
-                                    />
-                                 </ItemActions>
-                              </Item>
-                              {index !== categories.length - 1 && (
-                                 <ItemSeparator />
-                              )}
-                           </Fragment>
-                        ))}
-                     </ItemGroup>
-                  )
-               ) : categories.length === 0 && pagination.totalCount === 0 ? (
+                           </Button>
+                        </>
+                     )}
+                  </div>
+               )}
+
+               {categories.length === 0 && pagination.totalCount === 0 ? (
                   <Empty>
                      <EmptyContent>
                         <EmptyMedia variant="icon">
@@ -420,143 +310,104 @@ function CategoriesListContent() {
                   <DataTable
                      columns={createCategoryColumns(activeOrganization.slug)}
                      data={categories}
+                     enableRowSelection
+                     getRowId={(row) => row.id}
+                     onRowSelectionChange={setRowSelection}
+                     pagination={{
+                        currentPage,
+                        onPageChange: setCurrentPage,
+                        onPageSizeChange: setPageSize,
+                        pageSize,
+                        totalCount,
+                        totalPages,
+                     }}
+                     renderMobileCard={(props) => {
+                        const stats = categoryStatsMap[
+                           props.row.original.id
+                        ] ?? {
+                           expenses: 0,
+                           income: 0,
+                        };
+                        return (
+                           <CategoryMobileCard
+                              {...props}
+                              expenses={stats.expenses}
+                              income={stats.income}
+                           />
+                        );
+                     }}
+                     renderSubComponent={(props) => {
+                        const stats = categoryStatsMap[
+                           props.row.original.id
+                        ] ?? {
+                           expenses: 0,
+                           income: 0,
+                        };
+                        return (
+                           <CategoryExpandedContent
+                              {...props}
+                              expenses={stats.expenses}
+                              income={stats.income}
+                           />
+                        );
+                     }}
+                     rowSelection={rowSelection}
                   />
                )}
             </CardContent>
-
-            {/* Pagination Mobile */}
-            {pagination.totalPages > 1 && (
-               <CardFooter className="block md:hidden">
-                  <Pagination>
-                     <PaginationContent>
-                        <PaginationItem>
-                           <PaginationPrevious
-                              className={
-                                 !pagination.hasPreviousPage
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              href="#"
-                              onClick={() =>
-                                 setCurrentPage(Math.max(1, currentPage - 1))
-                              }
-                           />
-                        </PaginationItem>
-
-                        {Array.from(
-                           { length: Math.min(5, pagination.totalPages) },
-                           (_, i: number): number => {
-                              if (pagination.totalPages <= 5) {
-                                 return i + 1;
-                              } else if (currentPage <= 3) {
-                                 return i + 1;
-                              } else if (
-                                 currentPage >=
-                                 pagination.totalPages - 2
-                              ) {
-                                 return pagination.totalPages - 4 + i;
-                              } else {
-                                 return currentPage - 2 + i;
-                              }
-                           },
-                        ).map((pageNum) => (
-                           <PaginationItem key={pageNum}>
-                              <PaginationLink
-                                 isActive={pageNum === currentPage}
-                                 onClick={() => setCurrentPage(pageNum)}
-                              >
-                                 {pageNum}
-                              </PaginationLink>
-                           </PaginationItem>
-                        ))}
-
-                        <PaginationItem>
-                           <PaginationNext
-                              className={
-                                 !pagination.hasNextPage
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              onClick={() =>
-                                 setCurrentPage(
-                                    Math.min(
-                                       pagination.totalPages,
-                                       currentPage + 1,
-                                    ),
-                                 )
-                              }
-                           />
-                        </PaginationItem>
-                     </PaginationContent>
-                  </Pagination>
-               </CardFooter>
-            )}
-
-            {/* Pagination Desktop */}
-            {pagination.totalPages > 1 && (
-               <CardFooter className="hidden md:flex md:items-center md:justify-between">
-                  <div className="text-sm text-muted-foreground">
-                     Mostrando {categories.length} de {pagination.totalCount}{" "}
-                     categorias
-                  </div>
-                  <div className="flex items-center space-x-6 lg:space-x-8">
-                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        Página {currentPage} de {totalPages}
-                     </div>
-                     <div className="flex items-center space-x-2">
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === 1}
-                           onClick={() => setCurrentPage(1)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              Ir para primeira página
-                           </span>
-                           {"<<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === 1}
-                           onClick={() =>
-                              setCurrentPage(Math.max(1, currentPage - 1))
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">Página anterior</span>
-                           {"<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === totalPages}
-                           onClick={() =>
-                              setCurrentPage(
-                                 Math.min(totalPages, currentPage + 1),
-                              )
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">Próxima página</span>
-                           {">"}
-                        </Button>
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === totalPages}
-                           onClick={() => setCurrentPage(totalPages)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              Ir para última página
-                           </span>
-                           {">>"}
-                        </Button>
-                     </div>
-                  </div>
-               </CardFooter>
-            )}
          </Card>
 
-         {/* Mobile Floating Action Button */}
+         <SelectionActionBar
+            onClear={handleClearSelection}
+            selectedCount={selectedIds.length}
+         >
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<Trash2 className="size-3.5" />}
+               onClick={() => setIsDeleteDialogOpen(true)}
+               variant="destructive"
+            >
+               {translate("dashboard.routes.categories.bulk-actions.delete")}
+            </SelectionActionButton>
+         </SelectionActionBar>
+
+         <AlertDialog
+            onOpenChange={setIsDeleteDialogOpen}
+            open={isDeleteDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate(
+                        "dashboard.routes.categories.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "dashboard.routes.categories.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                     onClick={() => {
+                        deleteSelected(selectedIds);
+                        setIsDeleteDialogOpen(false);
+                     }}
+                  >
+                     {translate(
+                        "dashboard.routes.categories.bulk-actions.delete",
+                     )}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
 
          <CategoryFilterSheet
             isOpen={isFilterSheetOpen}

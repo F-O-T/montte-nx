@@ -8,6 +8,13 @@
          "delete-selected": "Excluir selecionados"
       }
    },
+   "bulk-actions": {
+      "delete": "Excluir",
+      "delete-confirm-description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente {count, plural, one {# centro de custo} other {# centros de custo}} e removerá a associação de todas as transações vinculadas.",
+      "delete-confirm-title": "Excluir {count, plural, one {# centro de custo} other {# centros de custo}}?",
+      "deleted-error": "Falha ao excluir centros de custo",
+      "deleted-success": "{count, plural, one {# centro de custo excluído} other {# centros de custo excluídos}} com sucesso"
+   },
    "features": {
       "create-cost-center": {
          "description": "Adicione um novo centro de custo para organizar suas transações.",

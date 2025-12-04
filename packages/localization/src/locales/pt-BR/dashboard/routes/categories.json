@@ -8,6 +8,13 @@
          "delete-selected": "Excluir selecionados"
       }
    },
+   "bulk-actions": {
+      "delete": "Excluir",
+      "delete-confirm-description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente {count, plural, one {# categoria} other {# categorias}} e removerá a associação de todas as transações vinculadas.",
+      "delete-confirm-title": "Excluir {count, plural, one {# categoria} other {# categorias}}?",
+      "deleted-error": "Falha ao excluir categorias",
+      "deleted-success": "{count, plural, one {# categoria excluída} other {# categorias excluídas}} com sucesso"
+   },
    "details-section": {
       "budget": {
          "exceeded": "Excedido",

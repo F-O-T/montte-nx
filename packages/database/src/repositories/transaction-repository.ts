@@ -2,6 +2,7 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, exists, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
+import { transactionTag } from "../schemas/tags";
 import { type CategorySplit, transaction } from "../schemas/transactions";
 import { transferLog } from "../schemas/transfers";
 import { setTransactionCategories } from "./category-repository";
@@ -143,6 +144,8 @@ export async function findTransactionsByOrganizationIdPaginated(
       type,
       bankAccountId,
       categoryId,
+      tagId,
+      costCenterId,
       search,
       orderBy = "date",
       orderDirection = "desc",
@@ -189,6 +192,26 @@ export async function findTransactionsByOrganizationIdPaginated(
                         and(
                            eq(transactionCategory.transactionId, txn.id),
                            eq(transactionCategory.categoryId, categoryId),
+                        ),
+                     ),
+               ),
+            );
+         }
+
+         if (costCenterId) {
+            conditions.push(eqOp(txn.costCenterId, costCenterId));
+         }
+
+         if (tagId) {
+            conditions.push(
+               exists(
+                  dbClient
+                     .select({ one: sql`1` })
+                     .from(transactionTag)
+                     .where(
+                        and(
+                           eq(transactionTag.transactionId, txn.id),
+                           eq(transactionTag.tagId, tagId),
                         ),
                      ),
                ),

@@ -18,14 +18,21 @@ import type { Category } from "../ui/categories-page";
 
 interface DeleteCategoryProps {
    category: Category;
-   children: React.ReactNode;
+   open?: boolean;
+   setOpen?: (open: boolean) => void;
+   onSuccess?: () => void;
+   children?: React.ReactNode;
 }
 
 export function DeleteCategory({
    category,
-   children: _children,
+   open,
+   setOpen,
+   onSuccess,
+   children,
 }: DeleteCategoryProps) {
    const queryClient = useQueryClient();
+   const isControlled = open !== undefined && setOpen !== undefined;
 
    const deleteCategoryMutation = useMutation(
       trpc.categories.delete.mutationOptions({
@@ -33,6 +40,10 @@ export function DeleteCategory({
             queryClient.invalidateQueries({
                queryKey: trpc.categories.getAll.queryKey(),
             });
+            queryClient.invalidateQueries({
+               queryKey: trpc.categories.getAllPaginated.queryKey(),
+            });
+            onSuccess?.();
          },
       }),
    );
@@ -45,43 +56,57 @@ export function DeleteCategory({
       }
    };
 
-   return (
-      <AlertDialog>
-         <AlertDialogTrigger asChild>
-            <DropdownMenuItem
-               className="text-destructive flex items-center gap-2"
-               onSelect={(e) => e.preventDefault()}
+   const dialogContent = (
+      <AlertDialogContent>
+         <AlertDialogHeader>
+            <AlertDialogTitle>
+               {translate("common.headers.delete-confirmation.title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+               {translate("common.headers.delete-confirmation.description")}
+            </AlertDialogDescription>
+         </AlertDialogHeader>
+         <AlertDialogFooter>
+            <AlertDialogCancel>
+               {translate("common.actions.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+               className="bg-destructive text-destructive-foreground"
+               disabled={deleteCategoryMutation.isPending}
+               onClick={handleDelete}
             >
-               <Trash2 className="size-4" />
                {translate(
                   "dashboard.routes.categories.list-section.actions.delete-category",
                )}
-            </DropdownMenuItem>
-         </AlertDialogTrigger>
-         <AlertDialogContent>
-            <AlertDialogHeader>
-               <AlertDialogTitle>
-                  {translate("common.headers.delete-confirmation.title")}
-               </AlertDialogTitle>
-               <AlertDialogDescription>
-                  {translate("common.headers.delete-confirmation.description")}
-               </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-               <AlertDialogCancel>
-                  {translate("common.actions.cancel")}
-               </AlertDialogCancel>
-               <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground"
-                  disabled={deleteCategoryMutation.isPending}
-                  onClick={handleDelete}
+            </AlertDialogAction>
+         </AlertDialogFooter>
+      </AlertDialogContent>
+   );
+
+   if (isControlled) {
+      return (
+         <AlertDialog onOpenChange={setOpen} open={open}>
+            {dialogContent}
+         </AlertDialog>
+      );
+   }
+
+   return (
+      <AlertDialog>
+         <AlertDialogTrigger asChild>
+            {children || (
+               <DropdownMenuItem
+                  className="text-destructive flex items-center gap-2"
+                  onSelect={(e) => e.preventDefault()}
                >
+                  <Trash2 className="size-4" />
                   {translate(
                      "dashboard.routes.categories.list-section.actions.delete-category",
                   )}
-               </AlertDialogAction>
-            </AlertDialogFooter>
-         </AlertDialogContent>
+               </DropdownMenuItem>
+            )}
+         </AlertDialogTrigger>
+         {dialogContent}
       </AlertDialog>
    );
 }

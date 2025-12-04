@@ -23,7 +23,6 @@ import {
 } from "@packages/ui/components/card";
 import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
 import { Separator } from "@packages/ui/components/separator";
-import { Switch } from "@packages/ui/components/switch";
 import {
    Tooltip,
    TooltipContent,
@@ -43,6 +42,7 @@ import {
    CreditCard,
    Edit,
    Eye,
+   Power,
    Trash2,
    Wallet,
 } from "lucide-react";
@@ -262,25 +262,17 @@ export function BankAccountExpandedContent({
          open={isStatusDialogOpen}
       >
          <AlertDialogTrigger asChild>
-            <div
-               className="flex items-center gap-2 cursor-pointer"
+            <Button
+               className="w-full "
+               disabled={updateStatusMutation.isPending}
                onClick={(e) => e.stopPropagation()}
+               variant="outline"
             >
-               <Switch
-                  checked={account.status === "active"}
-                  disabled={updateStatusMutation.isPending}
-                  onCheckedChange={() => setIsStatusDialogOpen(true)}
-               />
-               <span className="text-sm text-muted-foreground">
-                  {account.status === "active"
-                     ? translate(
-                          "dashboard.routes.bank-accounts.status-toggle.active",
-                       )
-                     : translate(
-                          "dashboard.routes.bank-accounts.status-toggle.inactive",
-                       )}
-               </span>
-            </div>
+               <Power className="size-4" />
+               {account.status === "active"
+                  ? translate("dashboard.routes.bank-accounts.status.active")
+                  : translate("dashboard.routes.bank-accounts.status.inactive")}
+            </Button>
          </AlertDialogTrigger>
          <AlertDialogContent>
             <AlertDialogHeader>
@@ -320,7 +312,7 @@ export function BankAccountExpandedContent({
    if (isMobile) {
       return (
          <div className="p-4 space-y-4">
-            <div className="flex items-center justify-between gap-2">
+            <div className="space-y-3">
                <div className="flex items-center gap-2">
                   <Wallet className="size-4 text-muted-foreground" />
                   <div>
@@ -334,7 +326,7 @@ export function BankAccountExpandedContent({
                      </p>
                   </div>
                </div>
-               <Separator className="h-8" orientation="vertical" />
+               <Separator />
                <div className="flex items-center gap-2">
                   <ArrowDownLeft className="size-4 text-emerald-500" />
                   <div>
@@ -348,7 +340,7 @@ export function BankAccountExpandedContent({
                      </p>
                   </div>
                </div>
-               <Separator className="h-8" orientation="vertical" />
+               <Separator />
                <div className="flex items-center gap-2">
                   <ArrowUpRight className="size-4 text-destructive" />
                   <div>
@@ -362,11 +354,7 @@ export function BankAccountExpandedContent({
                      </p>
                   </div>
                </div>
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between gap-2">
+               <Separator />
                <div className="flex items-center gap-2">
                   <CreditCard className="size-4 text-muted-foreground" />
                   <div>
@@ -378,7 +366,7 @@ export function BankAccountExpandedContent({
                      </p>
                   </div>
                </div>
-               <Separator className="h-8" orientation="vertical" />
+               <Separator />
                <div className="flex items-center gap-2">
                   <Calendar className="size-4 text-muted-foreground" />
                   <div>
@@ -392,16 +380,19 @@ export function BankAccountExpandedContent({
                      </p>
                   </div>
                </div>
+               <Separator />
+               {statusToggleElement}
             </div>
 
             <Separator />
 
-            {statusToggleElement}
-
-            <Separator />
-
-            <div className="flex flex-wrap items-center gap-2">
-               <Button asChild size="sm" variant="outline">
+            <div className="space-y-2">
+               <Button
+                  asChild
+                  className="w-full justify-start"
+                  size="sm"
+                  variant="outline"
+               >
                   <Link
                      params={{
                         bankAccountId: account.id,
@@ -416,6 +407,7 @@ export function BankAccountExpandedContent({
                   </Link>
                </Button>
                <Button
+                  className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
                      setIsEditOpen(true);
@@ -429,6 +421,7 @@ export function BankAccountExpandedContent({
                   )}
                </Button>
                <Button
+                  className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
                      setIsDeleteOpen(true);

@@ -228,6 +228,35 @@ export async function deleteCostCenter(
    }
 }
 
+export async function deleteManyCostCenters(
+   dbClient: DatabaseInstance,
+   costCenterIds: string[],
+   organizationId: string,
+) {
+   if (costCenterIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient
+         .delete(costCenter)
+         .where(
+            and(
+               inArray(costCenter.id, costCenterIds),
+               eq(costCenter.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete cost centers: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function getTotalCostCentersByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
