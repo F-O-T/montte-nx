@@ -57,15 +57,15 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useTransactionBulkActions } from "@/features/transaction/lib/use-transaction-bulk-actions";
 import { CategorizeSheet } from "@/features/transaction/ui/categorize-sheet";
 import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
+import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
+import { TransactionFilterSheet } from "@/features/transaction/ui/transaction-filter-sheet";
+import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
+import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
-import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
-import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
-import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
-import { TransactionFilterSheet } from "@/features/transaction/ui/transaction-filter-sheet";
-import { useTransactionBulkActions } from "@/features/transaction/lib/use-transaction-bulk-actions";
 
 function RecentTransactionsErrorFallback(props: FallbackProps) {
    return (

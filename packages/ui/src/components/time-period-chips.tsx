@@ -43,7 +43,11 @@ export interface TimePeriodChipsProps {
    size?: "sm" | "default" | "lg";
 }
 
-const PERIODS: { value: TimePeriod; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+const PERIODS: {
+   value: TimePeriod;
+   label: string;
+   icon: React.ComponentType<{ className?: string }>;
+}[] = [
    { icon: InfinityIcon, label: "Todo Período", value: "all-time" },
    { icon: Clock, label: "Hoje", value: "today" },
    { icon: CalendarRange, label: "Esta Semana", value: "this-week" },
@@ -124,22 +128,22 @@ export function TimePeriodChips({
          disabled={disabled}
          onValueChange={handleValueChange}
          size={size}
+         spacing={2}
          type="single"
          value={value || ""}
          variant="outline"
-         spacing={2}
       >
          {PERIODS.map((period) => {
             const Icon = period.icon;
             return (
                <ToggleGroupItem
+                  aria-label={`Toggle ${period.value}`}
                   className={cn(
                      "gap-1.5 data-[state=on]:bg-transparent data-[state=on]:text-primary data-[state=on]:*:[svg]:stroke-primary",
                      size === "sm" && "text-xs px-2 h-7",
                   )}
                   key={period.value}
                   value={period.value}
-                  aria-label={`Toggle ${period.value}`}
                >
                   <Icon className={cn("size-3.5", size === "sm" && "size-3")} />
                   <span className="hidden sm:inline">{period.label}</span>
@@ -147,12 +151,12 @@ export function TimePeriodChips({
                      {period.value === "all-time"
                         ? "Todos"
                         : period.value === "today"
-                           ? "Hoje"
-                           : period.value === "this-week"
-                              ? "Semana"
-                              : period.value === "this-month"
-                                 ? "Mês"
-                                 : "Anterior"}
+                          ? "Hoje"
+                          : period.value === "this-week"
+                            ? "Semana"
+                            : period.value === "this-month"
+                              ? "Mês"
+                              : "Anterior"}
                   </span>
                </ToggleGroupItem>
             );

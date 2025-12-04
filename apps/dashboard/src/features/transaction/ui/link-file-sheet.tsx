@@ -127,12 +127,12 @@ export function LinkFileSheet({
 
    useEffect(() => {
       if (!isOpen) {
-         pendingFiles.forEach((pf) => {
+         for (const pf of pendingFiles) {
             if (pf.preview) URL.revokeObjectURL(pf.preview);
-         });
+         }
          setPendingFiles([]);
       }
-   }, [isOpen]);
+   }, [isOpen, pendingFiles]);
 
    const handleOpenChange = (open: boolean) => {
       if (!open) {
@@ -378,9 +378,10 @@ export function LinkFileSheet({
                         {pendingFiles.map((pending, index) => {
                            const isPdf =
                               pending.file.type === "application/pdf";
+                           const fileKey = `${pending.file.name}-${pending.file.size}-${pending.file.lastModified}`;
 
                            return (
-                              <div key={`pending-${index}`}>
+                              <div key={fileKey}>
                                  {index > 0 && <ItemSeparator />}
                                  <Item size="sm" variant="default">
                                     <ItemMedia

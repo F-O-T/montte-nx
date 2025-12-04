@@ -467,12 +467,22 @@ export async function getTotalTransactionsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
       const conditions = [eq(transaction.organizationId, organizationId)];
 
       if (bankAccountId && bankAccountId !== "all") {
          conditions.push(eq(transaction.bankAccountId, bankAccountId));
+      }
+
+      if (startDate) {
+         conditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(transaction.date, endDate));
       }
 
       const result = await dbClient
@@ -493,20 +503,12 @@ export async function getTotalIncomeByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
-      const now = new Date();
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(
-         now.getFullYear(),
-         now.getMonth() + 1,
-         0,
-      );
-
       const conditions = [
          eq(transaction.organizationId, organizationId),
-         gte(transaction.date, currentMonthStart),
-         lte(transaction.date, currentMonthEnd),
          eq(transaction.type, "income"),
       ];
 
@@ -514,9 +516,17 @@ export async function getTotalIncomeByOrganizationId(
          conditions.push(eq(transaction.bankAccountId, bankAccountId));
       }
 
+      if (startDate) {
+         conditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(transaction.date, endDate));
+      }
+
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`COALESCE(sum(CAST(${transaction.amount} AS REAL)), 0)`,
          })
          .from(transaction)
          .where(and(...conditions));
@@ -534,22 +544,22 @@ export async function getTotalExpensesByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
-      const now = new Date();
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(
-         now.getFullYear(),
-         now.getMonth() + 1,
-         0,
-      );
-
       const conditions = [
          eq(transaction.organizationId, organizationId),
-         gte(transaction.date, currentMonthStart),
-         lte(transaction.date, currentMonthEnd),
          eq(transaction.type, "expense"),
       ];
+
+      if (startDate) {
+         conditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(transaction.date, endDate));
+      }
 
       if (bankAccountId && bankAccountId !== "all") {
          conditions.push(eq(transaction.bankAccountId, bankAccountId));
@@ -557,7 +567,7 @@ export async function getTotalExpensesByOrganizationId(
 
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`COALESCE(sum(ABS(CAST(${transaction.amount} AS REAL))), 0)`,
          })
          .from(transaction)
          .where(and(...conditions));
@@ -575,32 +585,54 @@ export async function getTotalTransfersByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
-      const now = new Date();
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(
-         now.getFullYear(),
-         now.getMonth() + 1,
-         0,
-      );
+      const conditions = [eq(transferLog.organizationId, organizationId)];
 
-      const conditions = [
-         eq(transaction.organizationId, organizationId),
-         gte(transaction.date, currentMonthStart),
-         lte(transaction.date, currentMonthEnd),
-         eq(transaction.type, "transfer"),
-      ];
+      if (startDate || endDate || bankAccountId) {
+         const transactionConditions = [];
 
-      if (bankAccountId && bankAccountId !== "all") {
-         conditions.push(eq(transaction.bankAccountId, bankAccountId));
+         if (startDate) {
+            transactionConditions.push(gte(transaction.date, startDate));
+         }
+
+         if (endDate) {
+            transactionConditions.push(lte(transaction.date, endDate));
+         }
+
+         if (bankAccountId && bankAccountId !== "all") {
+            conditions.push(
+               sql`(${transferLog.fromBankAccountId} = ${bankAccountId} OR ${transferLog.toBankAccountId} = ${bankAccountId})`,
+            );
+         }
+
+         if (transactionConditions.length > 0) {
+            const result = await dbClient
+               .select({
+                  total: sql<number>`COALESCE(sum(ABS(CAST(${transaction.amount} AS REAL))), 0)`,
+               })
+               .from(transferLog)
+               .innerJoin(
+                  transaction,
+                  eq(transferLog.toTransactionId, transaction.id),
+               )
+               .where(and(...conditions, ...transactionConditions));
+
+            return result[0]?.total || 0;
+         }
       }
 
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'transfer' AND CAST(${transaction.amount} AS REAL) > 0 THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`COALESCE(sum(ABS(CAST(${transaction.amount} AS REAL))), 0)`,
          })
-         .from(transaction)
+         .from(transferLog)
+         .innerJoin(
+            transaction,
+            eq(transferLog.toTransactionId, transaction.id),
+         )
          .where(and(...conditions));
 
       return result[0]?.total || 0;

@@ -36,11 +36,11 @@
             "description": "Data de registro no sistema",
             "title": "Criado em"
          },
+         "description": "Informações detalhadas da transação",
+         "title": "Detalhes",
          "type": {
             "title": "Tipo"
          },
-         "description": "Informações detalhadas da transação",
-         "title": "Detalhes",
          "updated": {
             "description": "Atualizado em"
          }

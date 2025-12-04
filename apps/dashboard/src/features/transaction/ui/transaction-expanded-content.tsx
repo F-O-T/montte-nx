@@ -2,9 +2,9 @@ import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { formatDecimalCurrency } from "@packages/utils/money";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { Row } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
 import {
    ArrowLeftRight,
    ArrowRight,
@@ -16,6 +16,7 @@ import {
    Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/integrations/clients";
 import { CategorizeSheet } from "./categorize-sheet";
 import { CategorySplitSheet } from "./category-split-sheet";
 import { DeleteTransaction } from "./delete-transaction-dialog";
@@ -23,7 +24,6 @@ import { LinkFileSheet } from "./link-file-sheet";
 import { ManageTransactionSheet } from "./manage-transaction-sheet";
 import { MarkAsTransferSheet } from "./mark-as-transfer-sheet";
 import type { Category, Transaction } from "./transaction-list";
-import { trpc } from "@/integrations/clients";
 
 type CategorySplit = {
    categoryId: string;
@@ -112,12 +112,6 @@ export function TransactionExpandedContent({
             (() => {
                const amount = Number.parseFloat(transaction.amount);
                const isIncoming = amount > 0;
-               const sourceAccount = isIncoming
-                  ? transferLog.fromBankAccount
-                  : transferLog.toBankAccount;
-               const destAccount = isIncoming
-                  ? transferLog.toBankAccount
-                  : transferLog.fromBankAccount;
 
                return (
                   <div>
@@ -136,10 +130,10 @@ export function TransactionExpandedContent({
                               Origem
                            </p>
                            <p className="text-sm font-medium">
-                              {sourceAccount?.name}
+                              {transferLog.fromBankAccount?.name}
                            </p>
                            <p className="text-xs text-muted-foreground">
-                              {sourceAccount?.bank}
+                              {transferLog.fromBankAccount?.bank}
                            </p>
                         </div>
                         <ArrowRight className="size-4 text-muted-foreground shrink-0" />
@@ -148,10 +142,10 @@ export function TransactionExpandedContent({
                               Destino
                            </p>
                            <p className="text-sm font-medium">
-                              {destAccount?.name}
+                              {transferLog.toBankAccount?.name}
                            </p>
                            <p className="text-xs text-muted-foreground">
-                              {destAccount?.bank}
+                              {transferLog.toBankAccount?.bank}
                            </p>
                         </div>
                      </div>
