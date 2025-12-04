@@ -231,13 +231,14 @@ export async function deleteBankAccounts(
 export async function createDefaultWalletBankAccount(
    dbClient: DatabaseInstance,
    organizationId: string,
+   name = "Wallet",
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
          where: (bankAccount, { eq, and }) =>
             and(
                eq(bankAccount.organizationId, organizationId),
-               eq(bankAccount.name, "Wallet"),
+               eq(bankAccount.name, name),
             ),
       });
 
@@ -249,7 +250,7 @@ export async function createDefaultWalletBankAccount(
          .insert(bankAccount)
          .values({
             bank: "Default",
-            name: "Wallet",
+            name,
             organizationId,
             type: "checking",
          })
@@ -266,13 +267,14 @@ export async function createDefaultWalletBankAccount(
 export async function createDefaultBusinessBankAccount(
    dbClient: DatabaseInstance,
    organizationId: string,
+   name = "Caixa",
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
          where: (bankAccount, { eq, and }) =>
             and(
                eq(bankAccount.organizationId, organizationId),
-               eq(bankAccount.name, "Caixa"),
+               eq(bankAccount.name, name),
             ),
       });
 
@@ -284,7 +286,7 @@ export async function createDefaultBusinessBankAccount(
          .insert(bankAccount)
          .values({
             bank: "Caixa",
-            name: "Caixa",
+            name,
             organizationId,
             type: "checking",
          })
