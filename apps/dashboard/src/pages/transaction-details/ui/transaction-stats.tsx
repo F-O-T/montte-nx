@@ -66,11 +66,7 @@ function StatsContent({ transactionId }: { transactionId: string }) {
       data.type === "income" || (data.type === "transfer" && amount > 0);
    const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
-   const formattedDate = new Date(data.date).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-   });
+   const formattedDate = formatDate(new Date(data.date), "DD MMMM YYYY");
 
    const typeLabels: Record<string, string> = {
       expense: translate(

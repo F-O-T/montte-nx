@@ -9,6 +9,7 @@ import {
    ItemTitle,
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
@@ -59,11 +60,7 @@ function TransactionContent({ transactionId }: { transactionId: string }) {
    const isPositive =
       data.type === "income" || (data.type === "transfer" && amount > 0);
    const formattedAmount = formatDecimalCurrency(Math.abs(amount));
-   const formattedDate = new Date(data.date).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-   });
+   const formattedDate = formatDate(new Date(data.date), "DD MMMM YYYY");
 
    const typeLabels: Record<string, string> = {
       expense: translate(

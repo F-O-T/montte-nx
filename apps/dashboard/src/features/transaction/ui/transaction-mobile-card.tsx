@@ -13,6 +13,7 @@ import {
 import { Checkbox } from "@packages/ui/components/checkbox";
 import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
 import { ItemMedia } from "@packages/ui/components/item";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import type { Row } from "@tanstack/react-table";
 import { ChevronDown, Split } from "lucide-react";
@@ -62,11 +63,7 @@ export function TransactionMobileCard({
                   )}
                </CardTitle>
                <CardDescription>
-                  {new Date(transaction.date).toLocaleDateString("pt-BR", {
-                     day: "2-digit",
-                     month: "short",
-                     year: "numeric",
-                  })}
+                  {formatDate(new Date(transaction.date), "DD MMM YYYY")}
                </CardDescription>
             </div>
             <CardAction>

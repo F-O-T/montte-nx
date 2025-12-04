@@ -10,13 +10,13 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@packages/ui/components/dropdown-menu";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import {
    getRecurrenceLabel,
    type RecurrencePattern,
 } from "@packages/utils/recurrence";
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
 import {
    AlertCircle,
    CalendarDays,
@@ -89,7 +89,7 @@ export function createBillColumns(categories: Category[]): ColumnDef<Bill>[] {
          accessorKey: "dueDate",
          cell: ({ row }) => {
             const date = new Date(row.getValue("dueDate"));
-            return format(date, "dd/MM/yyyy");
+            return formatDate(date, "DD/MM/YYYY");
          },
          enableSorting: true,
          header: translate("dashboard.routes.bills.table.columns.dueDate"),

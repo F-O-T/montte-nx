@@ -22,6 +22,7 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check, Loader2, Search } from "lucide-react";
@@ -336,10 +337,13 @@ export function MarkAsTransferSheet({
                                           </Badge>
                                        </div>
                                        <p className="text-xs text-muted-foreground mt-1">
-                                          {new Date(
-                                             candidates.exactMatch.transaction
-                                                .date,
-                                          ).toLocaleDateString("pt-BR")}{" "}
+                                          {formatDate(
+                                             new Date(
+                                                candidates.exactMatch
+                                                   .transaction.date,
+                                             ),
+                                             "DD/MM/YYYY",
+                                          )}{" "}
                                           &bull;{" "}
                                           {formatDecimalCurrency(
                                              Math.abs(
@@ -384,9 +388,10 @@ export function MarkAsTransferSheet({
                                           </Badge>
                                        </div>
                                        <p className="text-xs text-muted-foreground mt-1">
-                                          {new Date(
-                                             match.transaction.date,
-                                          ).toLocaleDateString("pt-BR")}{" "}
+                                          {formatDate(
+                                             new Date(match.transaction.date),
+                                             "DD/MM/YYYY",
+                                          )}{" "}
                                           &bull;{" "}
                                           {formatDecimalCurrency(
                                              Math.abs(

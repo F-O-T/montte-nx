@@ -30,6 +30,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -181,13 +182,9 @@ export function createBankAccountColumns(): ColumnDef<BankAccount>[] {
       {
          accessorKey: "createdAt",
          cell: ({ row }) => {
-            return new Date(row.getValue("createdAt")).toLocaleDateString(
-               "pt-BR",
-               {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-               },
+            return formatDate(
+               new Date(row.getValue("createdAt")),
+               "DD MMM YYYY",
             );
          },
          enableSorting: true,
@@ -391,14 +388,7 @@ export function BankAccountExpandedContent({
                         )}
                      </p>
                      <p className="text-sm font-medium">
-                        {new Date(account.createdAt).toLocaleDateString(
-                           "pt-BR",
-                           {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                           },
-                        )}
+                        {formatDate(new Date(account.createdAt), "DD MMM YYYY")}
                      </p>
                   </div>
                </div>

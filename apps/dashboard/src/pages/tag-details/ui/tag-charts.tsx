@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
@@ -352,9 +353,7 @@ function TagMonthlyTrendChart({ tagId }: { tagId: string }) {
       for (const t of transactions) {
          const date = new Date(t.date);
          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-         const monthLabel = date.toLocaleDateString("pt-BR", {
-            month: "short",
-         });
+         const monthLabel = formatDate(date, "MMM");
 
          if (!monthlyData.has(monthKey)) {
             monthlyData.set(monthKey, {

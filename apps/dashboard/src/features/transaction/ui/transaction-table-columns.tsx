@@ -7,6 +7,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -232,11 +233,7 @@ export function createTransactionColumns(
       {
          accessorKey: "date",
          cell: ({ row }) => {
-            return new Date(row.getValue("date")).toLocaleDateString("pt-BR", {
-               day: "2-digit",
-               month: "short",
-               year: "numeric",
-            });
+            return formatDate(new Date(row.getValue("date")), "DD MMM YYYY");
          },
          enableSorting: false,
 

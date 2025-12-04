@@ -139,7 +139,7 @@ function BankAccountsListContent() {
       }, 300);
       return () => clearTimeout(timer);
    }, [searchTerm]);
-
+   //TODO: achar uma forma melhor de fazer isso
    // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
    useEffect(() => {
       setCurrentPage(1);
@@ -352,18 +352,18 @@ function BankAccountsListContent() {
                         <EmptyTitle>
                            {hasActiveFilters
                               ? translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                                )
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                              )
                               : translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                                )}
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                              )}
                         </EmptyTitle>
                         <EmptyDescription>
                            {hasActiveFilters
                               ? "Nenhuma conta encontrada com os filtros aplicados"
                               : translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.description",
-                                )}
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.description",
+                              )}
                         </EmptyDescription>
                      </EmptyContent>
                   </Empty>
