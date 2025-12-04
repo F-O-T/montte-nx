@@ -14,8 +14,8 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      registerType: 'prompt',
+      includeAssets: ['favicon.svg',],
       manifest: {
         id: '/',
         scope: '/',
@@ -23,7 +23,7 @@ export default defineConfig({
         short_name: 'Montte',
         description: 'Gestão financeira completa para você e seus negócios. Simples, transparente e Open Source.',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/auth/sign-in',
         background_color: '#050816',
         theme_color: '#050816',
         orientation: 'portrait',
@@ -33,6 +33,7 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/assets'),
