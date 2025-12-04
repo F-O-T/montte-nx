@@ -1,4 +1,4 @@
-FROM oven/bun:1.2.23 AS builder
+FROM oven/bun:alpine AS builder
 
 
 ARG DATABASE_URL
@@ -85,7 +85,7 @@ RUN bun install
 # ---
 
 # Stage 3: Create the final, small production image
-FROM oven/bun:1.2.23 AS runner
+FROM oven/bun:alpine AS base
 WORKDIR /app
 
 ENV NODE_ENV=production
