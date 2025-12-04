@@ -179,7 +179,8 @@ export async function getCategoryBreakdownByPeriod(
             });
          }
 
-         const stats = categoryStats.get(categoryId)!;
+         const stats = categoryStats.get(categoryId);
+         if (!stats) continue;
          stats.transactionCount++;
 
          if (tx.type === "expense") {

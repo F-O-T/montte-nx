@@ -26,8 +26,8 @@ import { TransactionListProvider } from "@/features/transaction/lib/transaction-
 import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteTagDialog } from "../features/delete-tag-dialog";
 import { ManageTagSheet } from "../../tags/features/manage-tag-sheet";
+import { DeleteTagDialog } from "../features/delete-tag-dialog";
 import { TagCharts } from "./tag-charts";
 import { TagStats } from "./tag-stats";
 import { TagTransactions } from "./tag-transactions-section";

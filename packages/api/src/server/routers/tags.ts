@@ -1,7 +1,7 @@
 import {
    createTag,
-   deleteTag,
    deleteManyTags,
+   deleteTag,
    findTagById,
    findTagsByOrganizationId,
    findTagsByOrganizationIdPaginated,

@@ -151,7 +151,7 @@ function CategoryTransactionsContent({
 
    useEffect(() => {
       setCurrentPage(1);
-   }, [typeFilter, startDate, endDate]);
+   }, []);
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions(

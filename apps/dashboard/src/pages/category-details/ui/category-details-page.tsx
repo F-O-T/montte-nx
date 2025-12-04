@@ -26,8 +26,8 @@ import { TransactionListProvider } from "@/features/transaction/lib/transaction-
 import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteCategoryDialog } from "../features/delete-category-dialog";
 import { ManageCategorySheet } from "../../categories/features/manage-category-sheet";
+import { DeleteCategoryDialog } from "../features/delete-category-dialog";
 import { CategoryCharts } from "./category-charts";
 import { CategoryStats } from "./category-stats";
 import { CategoryTransactions } from "./category-transactions-section";

@@ -3,34 +3,34 @@ import { getAllBrazilianBanks } from "../src/index";
 
 const mockBanks = [
    {
-      name: "BCO DO BRASIL S.A.",
       code: "001",
-      ispb: "00000000",
       fullName: "Banco do Brasil S.A.",
+      ispb: "00000000",
+      name: "BCO DO BRASIL S.A.",
    },
    {
-      name: "BCO BRADESCO S.A.",
       code: "237",
-      ispb: "60746948",
       fullName: "Banco Bradesco S.A.",
+      ispb: "60746948",
+      name: "BCO BRADESCO S.A.",
    },
    {
-      name: "ITAÚ UNIBANCO S.A.",
       code: "341",
-      ispb: "60701190",
       fullName: "Itaú Unibanco S.A.",
+      ispb: "60701190",
+      name: "ITAÚ UNIBANCO S.A.",
    },
    {
-      name: "CAIXA ECONOMICA FEDERAL",
       code: "104",
-      ispb: "00360305",
       fullName: "Caixa Econômica Federal",
+      ispb: "00360305",
+      name: "CAIXA ECONOMICA FEDERAL",
    },
    {
-      name: "BCO SANTANDER (BRASIL) S.A.",
       code: "033",
-      ispb: "90400888",
       fullName: "Banco Santander (Brasil) S.A.",
+      ispb: "90400888",
+      name: "BCO SANTANDER (BRASIL) S.A.",
    },
 ];
 
@@ -136,10 +136,10 @@ describe("brasil-api", () => {
       it("should handle banks with null code", async () => {
          const banksWithNullCode = [
             {
-               name: "PIX",
                code: null,
-               ispb: "00000000",
                fullName: "Sistema de Pagamentos Instantâneos",
+               ispb: "00000000",
+               name: "PIX",
             },
          ];
          fetchSpy.mockImplementation(() =>
@@ -154,10 +154,10 @@ describe("brasil-api", () => {
 
       it("should handle large number of banks", async () => {
          const manyBanks = Array.from({ length: 250 }, (_, i) => ({
-            name: `Bank ${i}`,
             code: String(i).padStart(3, "0"),
-            ispb: String(i).padStart(8, "0"),
             fullName: `Full Name Bank ${i}`,
+            ispb: String(i).padStart(8, "0"),
+            name: `Bank ${i}`,
          }));
          fetchSpy.mockImplementation(() => createMockResponse(manyBanks));
 

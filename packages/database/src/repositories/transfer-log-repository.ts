@@ -21,7 +21,7 @@ export async function createTransferLog(
       }
 
       const createdLog = await dbClient.query.transferLog.findFirst({
-         where: (log, { eq }) => eq(log.id, result[0]!.id),
+         where: (log, { eq }) => eq(log.id, result[0]?.id),
          with: {
             fromBankAccount: true,
             fromTransaction: true,

@@ -26,8 +26,8 @@ import { TransactionListProvider } from "@/features/transaction/lib/transaction-
 import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteCostCenterDialog } from "../features/delete-cost-center-dialog";
 import { ManageCostCenterSheet } from "../../cost-centers/features/manage-cost-center-sheet";
+import { DeleteCostCenterDialog } from "../features/delete-cost-center-dialog";
 import { CostCenterCharts } from "./cost-center-charts";
 import { CostCenterStats } from "./cost-center-stats";
 import { CostCenterTransactions } from "./cost-center-transactions-section";

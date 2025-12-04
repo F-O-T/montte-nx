@@ -70,11 +70,11 @@ describe("ofx parser", () => {
    describe("parseOfxContent", () => {
       it("should parse a single expense transaction", async () => {
          const transaction = createTransaction({
-            fitid: "TXN001",
             amount: "-100.50",
             date: "20231215120000",
-            type: "DEBIT",
+            fitid: "TXN001",
             memo: "Coffee Shop Purchase",
+            type: "DEBIT",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -92,11 +92,11 @@ describe("ofx parser", () => {
 
       it("should parse a single income transaction", async () => {
          const transaction = createTransaction({
-            fitid: "TXN002",
             amount: "2500.00",
             date: "20231201090000",
-            type: "CREDIT",
+            fitid: "TXN002",
             memo: "Salary Deposit",
+            type: "CREDIT",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -114,25 +114,25 @@ describe("ofx parser", () => {
       it("should parse multiple transactions", async () => {
          const transactions = [
             createTransaction({
-               fitid: "TXN001",
                amount: "-50.00",
                date: "20231210100000",
-               type: "DEBIT",
+               fitid: "TXN001",
                memo: "Grocery Store",
+               type: "DEBIT",
             }),
             createTransaction({
-               fitid: "TXN002",
                amount: "1000.00",
                date: "20231211120000",
-               type: "CREDIT",
+               fitid: "TXN002",
                memo: "Payment Received",
+               type: "CREDIT",
             }),
             createTransaction({
-               fitid: "TXN003",
                amount: "-25.99",
                date: "20231212150000",
-               type: "POS",
+               fitid: "TXN003",
                name: "Gas Station",
+               type: "POS",
             }),
          ].join("");
          const ofxContent = createValidOfxContent(transactions);
@@ -147,11 +147,11 @@ describe("ofx parser", () => {
 
       it("should use NAME when MEMO is not available", async () => {
          const transaction = createTransaction({
-            fitid: "TXN003",
             amount: "-75.00",
             date: "20231220140000",
-            type: "DEBIT",
+            fitid: "TXN003",
             name: "Restaurant Payment",
+            type: "DEBIT",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -178,12 +178,12 @@ describe("ofx parser", () => {
 
       it("should prefer MEMO over NAME for description", async () => {
          const transaction = createTransaction({
-            fitid: "TXN005",
             amount: "-30.00",
             date: "20231218110000",
-            type: "DEBIT",
+            fitid: "TXN005",
             memo: "Memo Description",
             name: "Name Description",
+            type: "DEBIT",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -194,11 +194,11 @@ describe("ofx parser", () => {
 
       it("should convert negative amounts to positive for expenses", async () => {
          const transaction = createTransaction({
-            fitid: "TXN006",
             amount: "-999.99",
             date: "20231225000000",
-            type: "DEBIT",
+            fitid: "TXN006",
             memo: "Large Purchase",
+            type: "DEBIT",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -210,11 +210,11 @@ describe("ofx parser", () => {
 
       it("should handle zero amount transactions", async () => {
          const transaction = createTransaction({
-            fitid: "TXN007",
             amount: "0.00",
             date: "20231225120000",
-            type: "OTHER",
+            fitid: "TXN007",
             memo: "Zero Transaction",
+            type: "OTHER",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -226,11 +226,11 @@ describe("ofx parser", () => {
 
       it("should parse date correctly from DTPOSTED", async () => {
          const transaction = createTransaction({
-            fitid: "TXN008",
             amount: "-10.00",
             date: "20231215143022",
-            type: "DEBIT",
+            fitid: "TXN008",
             memo: "Test",
+            type: "DEBIT",
          });
          const ofxContent = createValidOfxContent(transaction);
 
@@ -256,23 +256,23 @@ describe("ofx parser", () => {
 
       it("should handle various transaction types", async () => {
          const transactionTypes = [
-            { type: "CREDIT", expected: "income", amount: "100.00" },
-            { type: "DEBIT", expected: "expense", amount: "-100.00" },
-            { type: "ATM", expected: "expense", amount: "-50.00" },
-            { type: "POS", expected: "expense", amount: "-25.00" },
-            { type: "XFER", expected: "income", amount: "200.00" },
-            { type: "CHECK", expected: "expense", amount: "-75.00" },
+            { amount: "100.00", expected: "income", type: "CREDIT" },
+            { amount: "-100.00", expected: "expense", type: "DEBIT" },
+            { amount: "-50.00", expected: "expense", type: "ATM" },
+            { amount: "-25.00", expected: "expense", type: "POS" },
+            { amount: "200.00", expected: "income", type: "XFER" },
+            { amount: "-75.00", expected: "expense", type: "CHECK" },
          ];
 
          for (let i = 0; i < transactionTypes.length; i++) {
             const txnType = transactionTypes[i];
             if (!txnType) continue;
             const transaction = createTransaction({
-               fitid: `TXN${i}`,
                amount: txnType.amount,
                date: "20231215120000",
-               type: txnType.type,
+               fitid: `TXN${i}`,
                memo: `${txnType.type} transaction`,
+               type: txnType.type,
             });
             const ofxContent = createValidOfxContent(transaction);
 
@@ -309,18 +309,18 @@ DATA:OFXSGML
       it("should handle decimal amounts correctly", async () => {
          const transactions = [
             createTransaction({
-               fitid: "TXN001",
                amount: "-0.01",
                date: "20231215120000",
-               type: "DEBIT",
+               fitid: "TXN001",
                memo: "Tiny expense",
+               type: "DEBIT",
             }),
             createTransaction({
-               fitid: "TXN002",
                amount: "123456.78",
                date: "20231215120000",
-               type: "CREDIT",
+               fitid: "TXN002",
                memo: "Large income",
+               type: "CREDIT",
             }),
          ].join("");
          const ofxContent = createValidOfxContent(transactions);

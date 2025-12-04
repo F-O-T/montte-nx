@@ -52,8 +52,8 @@ export const bankAccountRouter = router({
 
          return createBankAccount(resolvedCtx.db, {
             ...input,
-            name: input.name || "Conta Bancária",
             id: crypto.randomUUID(),
+            name: input.name || "Conta Bancária",
             organizationId,
          });
       }),

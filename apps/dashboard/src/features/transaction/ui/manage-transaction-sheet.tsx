@@ -71,6 +71,7 @@ function getRandomColor(): string {
    const index = Math.floor(Math.random() * CATEGORY_COLORS.length);
    return CATEGORY_COLORS[index] ?? "#3b82f6";
 }
+
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";

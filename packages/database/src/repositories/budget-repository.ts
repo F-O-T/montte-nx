@@ -387,7 +387,7 @@ export async function calculateBudgetSpent(
       let spentAmount = 0;
       let scheduledAmount = 0;
 
-      const dateField =
+      const _dateField =
          budgetData.regime === "cash" ? transaction.date : transaction.date;
 
       if (target.type === "category") {
@@ -527,7 +527,7 @@ export async function getBudgetWithProgress(
          });
       }
 
-      const { periods, ...budgetWithoutPeriods } = budgetData;
+      const { periods: _periods, ...budgetWithoutPeriods } = budgetData;
 
       return {
          ...budgetWithoutPeriods,

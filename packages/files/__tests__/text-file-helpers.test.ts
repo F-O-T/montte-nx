@@ -1,5 +1,5 @@
-import { gunzipSync } from "fflate";
 import { describe, expect, it } from "bun:test";
+import { gunzipSync } from "fflate";
 import { compressMarkdown } from "../src/text-file-helpers";
 
 describe("text file helpers", () => {
