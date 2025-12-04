@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
-import { getAllBrazilianBanks } from "../src/index";
+import { getAllBrazilianBanks, getAllTaxas, getTaxaByName } from "../src/index";
 
 const mockBanks = [
    {
@@ -164,6 +164,125 @@ describe("brasil-api", () => {
          const result = await getAllBrazilianBanks();
 
          expect(result).toHaveLength(250);
+      });
+   });
+
+   describe("getAllTaxas", () => {
+      const mockTaxas = [
+         { nome: "Selic" as const, valor: 15 },
+         { nome: "CDI" as const, valor: 14.9 },
+         { nome: "IPCA" as const, valor: 4.68 },
+      ];
+
+      beforeEach(() => {
+         fetchSpy.mockImplementation(() => createMockResponse(mockTaxas));
+      });
+
+      it("should fetch all taxas from the API", async () => {
+         const result = await getAllTaxas();
+
+         expect(result).toEqual(mockTaxas);
+         expect(fetchSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it("should call the correct API endpoint", async () => {
+         await getAllTaxas();
+
+         expect(fetchSpy).toHaveBeenCalledWith(
+            "https://brasilapi.com.br/api/taxas/v1",
+         );
+      });
+
+      it("should return an array of taxas", async () => {
+         const result = await getAllTaxas();
+
+         expect(Array.isArray(result)).toBe(true);
+         expect(result.length).toBe(3);
+      });
+
+      it("should return taxas with required properties", async () => {
+         const result = await getAllTaxas();
+
+         for (const taxa of result) {
+            expect(taxa).toHaveProperty("nome");
+            expect(taxa).toHaveProperty("valor");
+         }
+      });
+
+      it("should return taxas with correct data types", async () => {
+         const result = await getAllTaxas();
+
+         for (const taxa of result) {
+            expect(typeof taxa.nome).toBe("string");
+            expect(typeof taxa.valor).toBe("number");
+         }
+      });
+
+      it("should throw error on failed response", async () => {
+         fetchSpy.mockImplementation(() =>
+            Promise.resolve({
+               json: () => Promise.resolve({}),
+               ok: false,
+               status: 500,
+               statusText: "Internal Server Error",
+            } as Response),
+         );
+
+         expect(getAllTaxas()).rejects.toThrow(
+            "Failed to fetch taxas: Internal Server Error",
+         );
+      });
+
+      it("should propagate fetch errors", async () => {
+         fetchSpy.mockImplementation(() =>
+            Promise.reject(new Error("Network error")),
+         );
+
+         expect(getAllTaxas()).rejects.toThrow("Network error");
+      });
+   });
+
+   describe("getTaxaByName", () => {
+      const mockTaxas = [
+         { nome: "Selic" as const, valor: 15 },
+         { nome: "CDI" as const, valor: 14.9 },
+         { nome: "IPCA" as const, valor: 4.68 },
+      ];
+
+      beforeEach(() => {
+         fetchSpy.mockImplementation(() => createMockResponse(mockTaxas));
+      });
+
+      it("should return Selic taxa when requested", async () => {
+         const result = await getTaxaByName("Selic");
+
+         expect(result).toEqual({ nome: "Selic", valor: 15 });
+      });
+
+      it("should return CDI taxa when requested", async () => {
+         const result = await getTaxaByName("CDI");
+
+         expect(result).toEqual({ nome: "CDI", valor: 14.9 });
+      });
+
+      it("should return IPCA taxa when requested", async () => {
+         const result = await getTaxaByName("IPCA");
+
+         expect(result).toEqual({ nome: "IPCA", valor: 4.68 });
+      });
+
+      it("should be case-insensitive", async () => {
+         const resultLower = await getTaxaByName("selic" as "Selic");
+         const resultUpper = await getTaxaByName("SELIC" as "Selic");
+
+         expect(resultLower).toEqual({ nome: "Selic", valor: 15 });
+         expect(resultUpper).toEqual({ nome: "Selic", valor: 15 });
+      });
+
+      it("should return null for unknown taxa", async () => {
+         const result = await getTaxaByName("Unknown" as "Selic");
+
+         expect(result).toBeNull();
       });
    });
 });
