@@ -107,6 +107,7 @@
       },
       "description": "Veja todas as suas transações financeiras aqui.",
       "page": "Página {{current}} de {{total}}",
+      "rows-per-page": "Linhas por página",
       "showing": "Mostrando {{count}} de {{total}} transações",
       "state": {
          "empty": {

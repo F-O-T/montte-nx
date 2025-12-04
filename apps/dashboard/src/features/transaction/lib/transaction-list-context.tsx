@@ -1,3 +1,8 @@
+import {
+   getDateRangeForPeriod,
+   type TimePeriod,
+} from "@packages/ui/components/time-period-chips";
+import { endOfMonth, startOfMonth } from "date-fns";
 import type React from "react";
 import { createContext, useCallback, useContext, useState } from "react";
 
@@ -8,12 +13,25 @@ interface TransactionListContextType {
    selectAll: (ids: string[]) => void;
    toggleAll: (ids: string[]) => void;
    selectedCount: number;
-   bankAccountFilter: string;
-   setBankAccountFilter: (value: string) => void;
+
    categoryFilter: string;
    setCategoryFilter: (value: string) => void;
    typeFilter: string;
    setTypeFilter: (value: string) => void;
+   searchTerm: string;
+   setSearchTerm: (term: string) => void;
+   bankAccountFilter: string;
+   setBankAccountFilter: (value: string) => void;
+   selectedMonth: Date;
+   setSelectedMonth: (date: Date) => void;
+
+   timePeriod: TimePeriod | null;
+   setTimePeriod: (period: TimePeriod | null) => void;
+   startDate: Date | null;
+   endDate: Date | null;
+   setDateRange: (startDate: Date | null, endDate: Date | null) => void;
+   handleTimePeriodChange: (period: TimePeriod | null) => void;
+   handleMonthChange: (month: Date) => void;
 }
 
 const TransactionListContext = createContext<
@@ -26,9 +44,23 @@ export function TransactionListProvider({
    children: React.ReactNode;
 }) {
    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-   const [bankAccountFilter, setBankAccountFilter] = useState("all");
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
+   const [searchTerm, setSearchTerm] = useState("");
+   const [bankAccountFilter, setBankAccountFilter] = useState("all");
+   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+
+   const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
+      "this-month",
+   );
+   const [startDate, setStartDate] = useState<Date | null>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return range.startDate;
+   });
+   const [endDate, setEndDate] = useState<Date | null>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return range.endDate;
+   });
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -60,17 +92,55 @@ export function TransactionListProvider({
       });
    }, []);
 
+   const setDateRange = useCallback(
+      (newStartDate: Date | null, newEndDate: Date | null) => {
+         setStartDate(newStartDate);
+         setEndDate(newEndDate);
+      },
+      [],
+   );
+
+   const handleTimePeriodChange = useCallback((period: TimePeriod | null) => {
+      setTimePeriod(period);
+      if (period) {
+         const range = getDateRangeForPeriod(period);
+         setStartDate(range.startDate);
+         setEndDate(range.endDate);
+         if (range.selectedMonth) {
+            setSelectedMonth(range.selectedMonth);
+         }
+      }
+   }, []);
+
+   const handleMonthChange = useCallback((month: Date) => {
+      setSelectedMonth(month);
+      setTimePeriod(null);
+      setStartDate(startOfMonth(month));
+      setEndDate(endOfMonth(month));
+   }, []);
+
    const value = {
       bankAccountFilter,
       categoryFilter,
       clearSelection,
+      endDate,
+      handleMonthChange,
       handleSelectionChange,
+      handleTimePeriodChange,
+      searchTerm,
       selectAll,
       selectedCount: selectedItems.size,
       selectedItems,
+      selectedMonth,
       setBankAccountFilter,
       setCategoryFilter,
+      setDateRange,
+      setSearchTerm,
+      setSelectedMonth,
+      setTimePeriod,
       setTypeFilter,
+      startDate,
+      timePeriod,
       toggleAll,
       typeFilter,
    };

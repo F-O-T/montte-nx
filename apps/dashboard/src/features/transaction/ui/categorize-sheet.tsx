@@ -21,7 +21,7 @@ import { FolderOpen, Landmark, Tag, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/integrations/clients";
-import type { Transaction } from "../ui/transaction-item";
+import type { Transaction } from "./transaction-list";
 
 const CATEGORY_COLORS = [
    "#ef4444",

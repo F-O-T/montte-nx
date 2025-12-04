@@ -16,7 +16,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
+import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { DeleteTransactionDialog } from "../features/delete-transaction-dialog";

@@ -1,3 +1,4 @@
+import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
 import {
    AlertDialog,
@@ -19,7 +20,6 @@ import {
    EmptyMedia,
    EmptyTitle,
 } from "@packages/ui/components/empty";
-import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    InputGroup,
    InputGroupAddon,
@@ -42,7 +42,6 @@ import {
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
    ArrowDownLeft,
@@ -55,34 +54,62 @@ import {
    Wallet,
    X,
 } from "lucide-react";
-import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
-import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { CategorizeSheet } from "@/features/transaction/ui/categorize-sheet";
-import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
+import { Fragment, useMemo, useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { trpc } from "@/integrations/clients";
-import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
-import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
-import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
-import { TransactionFilterSheet } from "@/features/transaction/ui/transaction-filter-sheet";
-import { useTransactionBulkActions } from "@/features/transaction/lib/use-transaction-bulk-actions";
+import { useTransactionBulkActions } from "../lib/use-transaction-bulk-actions";
+import { CategorizeSheet } from "./categorize-sheet";
+import { MarkAsTransferSheet } from "./mark-as-transfer-sheet";
+import { TransactionExpandedContent } from "./transaction-expanded-content";
+import { TransactionFilterSheet } from "./transaction-filter-sheet";
+import { TransactionMobileCard } from "./transaction-mobile-card";
+import { createTransactionColumns } from "./transaction-table-columns";
 
-function RecentTransactionsErrorFallback(props: FallbackProps) {
-   return (
-      <Card>
-         <CardContent className="pt-6">
-            {createErrorFallback({
-               errorDescription:
-                  "Falha ao carregar transações. Tente novamente mais tarde.",
-               errorTitle: "Erro ao carregar transações",
-               retryText: "Tentar novamente",
-            })(props)}
-         </CardContent>
-      </Card>
-   );
-}
+export type Transaction =
+   RouterOutput["transactions"]["getAllPaginated"]["transactions"][number];
 
-function RecentTransactionsSkeleton() {
+export type Category = {
+   id: string;
+   name: string;
+   color: string;
+   icon: string | null;
+};
+
+export type BankAccount = {
+   id: string;
+   name: string | null;
+   bank: string;
+};
+
+type TransactionListProps = {
+   transactions: Transaction[];
+   categories: Category[];
+   bankAccounts?: BankAccount[];
+   pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      pageSize: number;
+      onPageChange: (page: number) => void;
+      onPageSizeChange?: (size: number) => void;
+   };
+   filters: {
+      searchTerm: string;
+      onSearchChange: (value: string) => void;
+      typeFilter: string;
+      onTypeFilterChange: (value: string) => void;
+      categoryFilter: string;
+      onCategoryFilterChange: (value: string) => void;
+      bankAccountFilter?: string;
+      onBankAccountFilterChange?: (value: string) => void;
+      onClearFilters: () => void;
+   };
+   bankAccountId?: string;
+   showTypeToggle?: boolean;
+   emptyStateTitle?: string;
+   emptyStateDescription?: string;
+};
+
+export function TransactionListSkeleton() {
    return (
       <Card>
          <CardContent className="pt-6 grid gap-4">
@@ -119,70 +146,24 @@ function RecentTransactionsSkeleton() {
    );
 }
 
-function RecentTransactionsContent({
+export function TransactionList({
+   transactions,
+   categories,
+   bankAccounts = [],
+   pagination,
+   filters,
    bankAccountId,
-   startDate,
-   endDate,
-}: {
-   bankAccountId: string;
-   startDate: Date | null;
-   endDate: Date | null;
-}) {
+   showTypeToggle = true,
+   emptyStateTitle,
+   emptyStateDescription,
+}: TransactionListProps) {
    const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
-   const [currentPage, setCurrentPage] = useState(1);
-   const pageSize = 10;
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
    const [isTransferOpen, setIsTransferOpen] = useState(false);
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-
-   const [searchTerm, setSearchTerm] = useState("");
-   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [categoryFilter, setCategoryFilter] = useState("all");
-   const [typeFilter, setTypeFilter] = useState<string>("");
-
-   useEffect(() => {
-      const timer = setTimeout(() => {
-         setDebouncedSearchTerm(searchTerm);
-         setCurrentPage(1);
-      }, 300);
-      return () => clearTimeout(timer);
-   }, [searchTerm]);
-
-   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
-   useEffect(() => {
-      setCurrentPage(1);
-   }, [typeFilter, categoryFilter, startDate, endDate]);
-
-   const { data } = useSuspenseQuery(
-      trpc.bankAccounts.getTransactions.queryOptions(
-         {
-            categoryId: categoryFilter === "all" ? undefined : categoryFilter,
-            endDate: endDate?.toISOString(),
-            id: bankAccountId,
-            limit: pageSize,
-            page: currentPage,
-            search: debouncedSearchTerm || undefined,
-            startDate: startDate?.toISOString(),
-            type:
-               typeFilter === ""
-                  ? undefined
-                  : (typeFilter as "income" | "expense" | "transfer"),
-         },
-         {
-            placeholderData: keepPreviousData,
-         },
-      ),
-   );
-
-   const { transactions, pagination } = data;
-   const { totalPages, totalCount } = pagination;
-
-   const { data: categories = [] } = useSuspenseQuery(
-      trpc.categories.getAll.queryOptions(),
-   );
 
    const { deleteSelected, isLoading: isBulkActionLoading } =
       useTransactionBulkActions({
@@ -195,7 +176,10 @@ function RecentTransactionsContent({
       });
 
    const hasActiveFilters =
-      debouncedSearchTerm || typeFilter !== "" || categoryFilter !== "all";
+      filters.searchTerm ||
+      (filters.typeFilter !== "" && filters.typeFilter !== "all") ||
+      filters.categoryFilter !== "all" ||
+      (filters.bankAccountFilter && filters.bankAccountFilter !== "all");
 
    const selectedIds = Object.keys(rowSelection).filter(
       (id) => rowSelection[id],
@@ -214,23 +198,9 @@ function RecentTransactionsContent({
       setRowSelection({});
    };
 
-   const handleClearFilters = () => {
-      setTypeFilter("");
-      setCategoryFilter("all");
-      setSearchTerm("");
-   };
-
    const handleBulkDelete = () => {
       deleteSelected(selectedIds);
       setIsDeleteDialogOpen(false);
-   };
-
-   const handleBulkChangeCategory = () => {
-      setIsCategorizeOpen(true);
-   };
-
-   const handleBulkTransfer = () => {
-      setIsTransferOpen(true);
    };
 
    if (transactions.length === 0 && !hasActiveFilters) {
@@ -243,14 +213,16 @@ function RecentTransactionsContent({
                         <Wallet className="size-12 text-muted-foreground" />
                      </EmptyMedia>
                      <EmptyTitle>
-                        {translate(
-                           "dashboard.routes.transactions.list-section.state.empty.title",
-                        )}
+                        {emptyStateTitle ??
+                           translate(
+                              "dashboard.routes.transactions.list-section.state.empty.title",
+                           )}
                      </EmptyTitle>
                      <EmptyDescription>
-                        {translate(
-                           "dashboard.routes.transactions.list-section.state.empty.description",
-                        )}
+                        {emptyStateDescription ??
+                           translate(
+                              "dashboard.routes.transactions.list-section.state.empty.description",
+                           )}
                      </EmptyDescription>
                   </EmptyContent>
                </Empty>
@@ -266,11 +238,11 @@ function RecentTransactionsContent({
                <div className="flex flex-col sm:flex-row gap-3">
                   <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => filters.onSearchChange(e.target.value)}
                         placeholder={translate(
                            "common.form.search.placeholder",
                         )}
-                        value={searchTerm}
+                        value={filters.searchTerm}
                      />
                      <InputGroupAddon>
                         <Search />
@@ -295,18 +267,18 @@ function RecentTransactionsContent({
                   )}
                </div>
 
-               {!isMobile && (
+               {!isMobile && showTypeToggle && (
                   <div className="flex flex-wrap items-center gap-3">
                      <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
                            Tipo:
                         </span>
                         <ToggleGroup
-                           onValueChange={setTypeFilter}
+                           onValueChange={filters.onTypeFilterChange}
                            size="sm"
                            spacing={2}
                            type="single"
-                           value={typeFilter}
+                           value={filters.typeFilter}
                            variant="outline"
                         >
                            <ToggleGroupItem
@@ -344,7 +316,7 @@ function RecentTransactionsContent({
                            <div className="h-4 w-px bg-border" />
                            <Button
                               className="h-8 text-xs"
-                              onClick={handleClearFilters}
+                              onClick={filters.onClearFilters}
                               size="sm"
                               variant="outline"
                            >
@@ -373,11 +345,12 @@ function RecentTransactionsContent({
                      getRowId={(row) => row.id}
                      onRowSelectionChange={setRowSelection}
                      pagination={{
-                        currentPage,
-                        onPageChange: setCurrentPage,
-                        pageSize,
-                        totalCount,
-                        totalPages,
+                        currentPage: pagination.currentPage,
+                        onPageChange: pagination.onPageChange,
+                        onPageSizeChange: pagination.onPageSizeChange,
+                        pageSize: pagination.pageSize,
+                        totalCount: pagination.totalCount,
+                        totalPages: pagination.totalPages,
                      }}
                      renderMobileCard={(props) => (
                         <TransactionMobileCard
@@ -405,13 +378,13 @@ function RecentTransactionsContent({
          >
             <SelectionActionButton
                icon={<ArrowLeftRight className="size-3.5" />}
-               onClick={handleBulkTransfer}
+               onClick={() => setIsTransferOpen(true)}
             >
                Transferência
             </SelectionActionButton>
             <SelectionActionButton
                icon={<FolderOpen className="size-3.5" />}
-               onClick={handleBulkChangeCategory}
+               onClick={() => setIsCategorizeOpen(true)}
             >
                Categorizar
             </SelectionActionButton>
@@ -458,14 +431,17 @@ function RecentTransactionsContent({
          </AlertDialog>
 
          <TransactionFilterSheet
+            bankAccountFilter={filters.bankAccountFilter}
+            bankAccounts={bankAccounts}
             categories={categories}
-            categoryFilter={categoryFilter}
+            categoryFilter={filters.categoryFilter}
             isOpen={isFilterSheetOpen}
-            onCategoryFilterChange={setCategoryFilter}
-            onClearFilters={handleClearFilters}
+            onBankAccountFilterChange={filters.onBankAccountFilterChange}
+            onCategoryFilterChange={filters.onCategoryFilterChange}
+            onClearFilters={filters.onClearFilters}
             onOpenChange={setIsFilterSheetOpen}
-            onTypeFilterChange={setTypeFilter}
-            typeFilter={typeFilter}
+            onTypeFilterChange={filters.onTypeFilterChange}
+            typeFilter={filters.typeFilter}
          />
 
          <CategorizeSheet
@@ -482,27 +458,5 @@ function RecentTransactionsContent({
             transactions={selectedTransactions}
          />
       </>
-   );
-}
-
-export function RecentTransactions({
-   bankAccountId,
-   startDate,
-   endDate,
-}: {
-   bankAccountId: string;
-   startDate: Date | null;
-   endDate: Date | null;
-}) {
-   return (
-      <ErrorBoundary FallbackComponent={RecentTransactionsErrorFallback}>
-         <Suspense fallback={<RecentTransactionsSkeleton />}>
-            <RecentTransactionsContent
-               bankAccountId={bankAccountId}
-               endDate={endDate}
-               startDate={startDate}
-            />
-         </Suspense>
-      </ErrorBoundary>
    );
 }

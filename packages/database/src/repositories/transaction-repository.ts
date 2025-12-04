@@ -683,6 +683,165 @@ export async function updateTransactionsCategory(
    }
 }
 
+export async function findMatchingTransferTransaction(
+   dbClient: DatabaseInstance,
+   params: {
+      bankAccountId: string;
+      amount: number;
+      date: Date;
+      organizationId: string;
+   },
+): Promise<Transaction | null> {
+   try {
+      const dateStart = new Date(params.date);
+      dateStart.setHours(0, 0, 0, 0);
+      const dateEnd = new Date(params.date);
+      dateEnd.setHours(23, 59, 59, 999);
+
+      const result = await dbClient.query.transaction.findFirst({
+         where: and(
+            eq(transaction.bankAccountId, params.bankAccountId),
+            eq(transaction.organizationId, params.organizationId),
+            eq(transaction.amount, params.amount.toString()),
+            gte(transaction.date, dateStart),
+            lte(transaction.date, dateEnd),
+            sql`${transaction.type} != 'transfer'`,
+         ),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            transactionCategories: {
+               with: {
+                  category: true,
+               },
+            },
+            transactionTags: {
+               with: {
+                  tag: true,
+               },
+            },
+         },
+      });
+      return result || null;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find matching transfer transaction: ${(err as Error).message}`,
+      );
+   }
+}
+
+export type TransferCandidate = {
+   transaction: Transaction;
+   score: number;
+   matchReason: string;
+};
+
+export async function findTransferCandidates(
+   dbClient: DatabaseInstance,
+   params: {
+      bankAccountId: string;
+      amount: number;
+      date: Date;
+      description: string;
+      organizationId: string;
+   },
+): Promise<TransferCandidate[]> {
+   try {
+      const dateStart = new Date(params.date);
+      dateStart.setDate(dateStart.getDate() - 7);
+      const dateEnd = new Date(params.date);
+      dateEnd.setDate(dateEnd.getDate() + 7);
+
+      const candidates = await dbClient.query.transaction.findMany({
+         where: and(
+            eq(transaction.bankAccountId, params.bankAccountId),
+            eq(transaction.organizationId, params.organizationId),
+            eq(transaction.amount, params.amount.toString()),
+            gte(transaction.date, dateStart),
+            lte(transaction.date, dateEnd),
+            sql`${transaction.type} != 'transfer'`,
+         ),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            transactionCategories: {
+               with: {
+                  category: true,
+               },
+            },
+            transactionTags: {
+               with: {
+                  tag: true,
+               },
+            },
+         },
+      });
+
+      return candidates
+         .map((candidate) => {
+            let score = 0;
+            const reasons: string[] = [];
+
+            const daysDiff = Math.abs(
+               Math.floor(
+                  (candidate.date.getTime() - params.date.getTime()) /
+                     (1000 * 60 * 60 * 24),
+               ),
+            );
+            if (daysDiff === 0) {
+               score += 50;
+               reasons.push("Mesma data");
+            } else if (daysDiff === 1) {
+               score += 40;
+               reasons.push("1 dia de diferença");
+            } else if (daysDiff <= 3) {
+               score += 25;
+               reasons.push(`${daysDiff} dias de diferença`);
+            } else if (daysDiff <= 7) {
+               score += 10;
+               reasons.push(`${daysDiff} dias de diferença`);
+            }
+
+            const descLower = candidate.description.toLowerCase();
+            const paramDescLower = params.description.toLowerCase();
+            if (descLower === paramDescLower) {
+               score += 50;
+               reasons.push("Descrição idêntica");
+            } else if (
+               descLower.includes(paramDescLower) ||
+               paramDescLower.includes(descLower)
+            ) {
+               score += 35;
+               reasons.push("Descrição similar");
+            } else {
+               const candidateWords = new Set(descLower.split(/\s+/));
+               const paramWords = paramDescLower.split(/\s+/);
+               const commonWords = paramWords.filter(
+                  (w) => w.length > 3 && candidateWords.has(w),
+               );
+               if (commonWords.length > 0) {
+                  score += 20;
+                  reasons.push("Palavras em comum");
+               }
+            }
+
+            return {
+               matchReason: reasons.join(", "),
+               score,
+               transaction: candidate,
+            };
+         })
+         .filter((c) => c.score >= 50)
+         .sort((a, b) => b.score - a.score);
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transfer candidates: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function createTransfer(
    dbClient: DatabaseInstance,
    data: {

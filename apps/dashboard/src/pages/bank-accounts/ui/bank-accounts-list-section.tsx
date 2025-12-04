@@ -130,7 +130,7 @@ function BankAccountsListContent() {
    const [sortBy, setSortBy] = useState<SortOption>("name");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-   const pageSize = 10;
+   const [pageSize, setPageSize] = useState(10);
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -143,7 +143,7 @@ function BankAccountsListContent() {
    // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
    useEffect(() => {
       setCurrentPage(1);
-   }, [statusFilter, typeFilter]);
+   }, [statusFilter, typeFilter, pageSize]);
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.bankAccounts.getAllPaginated.queryOptions(
@@ -377,6 +377,7 @@ function BankAccountsListContent() {
                      pagination={{
                         currentPage,
                         onPageChange: setCurrentPage,
+                        onPageSizeChange: setPageSize,
                         pageSize,
                         totalCount,
                         totalPages,

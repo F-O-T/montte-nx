@@ -17,16 +17,15 @@ import {
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Wallet } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import type { FallbackProps } from "react-error-boundary";
 import { ErrorBoundary } from "react-error-boundary";
-import { TransactionItem } from "@/features/transaction/ui/transaction-item";
+import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
+import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
-import { createTransactionColumns } from "@/pages/transactions/ui/transactions-table-columns";
 
 function RecentTransactionsCardHeader() {
    return (
@@ -86,7 +85,6 @@ function HomeRecentTransactionsSkeleton() {
 }
 
 function HomeRecentTransactionsContent() {
-   const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
 
    const { data } = useSuspenseQuery(
@@ -126,18 +124,6 @@ function HomeRecentTransactionsContent() {
                      </EmptyDescription>
                   </EmptyContent>
                </Empty>
-            ) : isMobile ? (
-               <ItemGroup>
-                  {transactions.map((transaction, index) => (
-                     <Fragment key={transaction.id}>
-                        <TransactionItem
-                           categories={categories}
-                           transaction={transaction}
-                        />
-                        {index !== transactions.length - 1 && <ItemSeparator />}
-                     </Fragment>
-                  ))}
-               </ItemGroup>
             ) : (
                <DataTable
                   columns={createTransactionColumns(
@@ -145,6 +131,13 @@ function HomeRecentTransactionsContent() {
                      activeOrganization.slug,
                   )}
                   data={transactions}
+                  getRowId={(row) => row.id}
+                  renderMobileCard={(props) => (
+                     <TransactionMobileCard
+                        {...props}
+                        categories={categories}
+                     />
+                  )}
                />
             )}
          </CardContent>

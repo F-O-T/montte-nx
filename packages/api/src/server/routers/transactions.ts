@@ -11,9 +11,11 @@ import {
    createTransfer,
    deleteTransaction,
    deleteTransactions,
+   findMatchingTransferTransaction,
    findTransactionById,
    findTransactionsByOrganizationId,
    findTransactionsByOrganizationIdPaginated,
+   findTransferCandidates,
    getTotalExpensesByOrganizationId,
    getTotalIncomeByOrganizationId,
    getTotalTransactionsByOrganizationId,
@@ -279,6 +281,7 @@ export const transactionRouter = router({
       .input(
          z.object({
             ids: z.array(z.string()).min(1),
+            matchedTransactionIds: z.record(z.string(), z.string()).optional(),
             toBankAccountId: z.string(),
          }),
       )
@@ -300,14 +303,126 @@ export const transactionRouter = router({
 
          const results = await Promise.all(
             validTransactions.map(async (t) => {
+               const amount = Number(t!.amount);
+               const isOutgoing = amount < 0;
+
                await updateTransaction(resolvedCtx.db, t!.id, {
                   type: "transfer",
                });
+
+               let counterpartId: string;
+
+               const userMatchedId = input.matchedTransactionIds?.[t!.id];
+
+               if (userMatchedId) {
+                  await updateTransaction(resolvedCtx.db, userMatchedId, {
+                     type: "transfer",
+                  });
+                  counterpartId = userMatchedId;
+               } else {
+                  const exactMatch = await findMatchingTransferTransaction(
+                     resolvedCtx.db,
+                     {
+                        amount: -amount,
+                        bankAccountId: input.toBankAccountId,
+                        date: t!.date,
+                        organizationId,
+                     },
+                  );
+
+                  if (exactMatch) {
+                     await updateTransaction(resolvedCtx.db, exactMatch.id, {
+                        type: "transfer",
+                     });
+                     counterpartId = exactMatch.id;
+                  } else {
+                     const counterpart = await createTransaction(
+                        resolvedCtx.db,
+                        {
+                           amount: (-amount).toString(),
+                           bankAccountId: input.toBankAccountId,
+                           date: t!.date,
+                           description: t!.description,
+                           id: crypto.randomUUID(),
+                           organizationId,
+                           type: "transfer",
+                        },
+                     );
+                     counterpartId = counterpart.id;
+                  }
+               }
+
+               await createTransferLog(resolvedCtx.db, {
+                  fromBankAccountId: isOutgoing
+                     ? t!.bankAccountId!
+                     : input.toBankAccountId,
+                  fromTransactionId: isOutgoing ? t!.id : counterpartId,
+                  id: crypto.randomUUID(),
+                  notes: null,
+                  organizationId,
+                  toBankAccountId: isOutgoing
+                     ? input.toBankAccountId
+                     : t!.bankAccountId!,
+                  toTransactionId: isOutgoing ? counterpartId : t!.id,
+               });
+
                return t!.id;
             }),
          );
 
          return results;
+      }),
+
+   findTransferCandidates: protectedProcedure
+      .input(
+         z.object({
+            toBankAccountId: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const transaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!transaction || transaction.organizationId !== organizationId) {
+            throw new Error("Transaction not found");
+         }
+
+         const amount = Number(transaction.amount);
+         const inverseAmount = -amount;
+
+         const candidates = await findTransferCandidates(resolvedCtx.db, {
+            amount: inverseAmount,
+            bankAccountId: input.toBankAccountId,
+            date: transaction.date,
+            description: transaction.description,
+            organizationId,
+         });
+
+         const exactMatch = candidates.find((c) => c.score >= 90) || null;
+         const fuzzyMatches = candidates.filter(
+            (c) => c.score < 90 && c.score >= 50,
+         );
+
+         return {
+            exactMatch: exactMatch
+               ? {
+                    matchReason: exactMatch.matchReason,
+                    score: exactMatch.score,
+                    transaction: exactMatch.transaction,
+                 }
+               : null,
+            fuzzyMatches: fuzzyMatches.map((c) => ({
+               matchReason: c.matchReason,
+               score: c.score,
+               transaction: c.transaction,
+            })),
+         };
       }),
 
    transfer: protectedProcedure

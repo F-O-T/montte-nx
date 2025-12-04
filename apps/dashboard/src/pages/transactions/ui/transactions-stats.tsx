@@ -14,7 +14,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { trpc } from "@/integrations/clients";
-import { useTransactionList } from "../features/transaction-list-context";
+import { useTransactionList } from "@/features/transaction/lib/transaction-list-context";
 
 function TransactionsStatsErrorFallback(props: FallbackProps) {
    return (

@@ -38,7 +38,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { trpc, useTRPC } from "@/integrations/clients";
-import type { Transaction } from "../ui/transaction-item";
+import type { Transaction } from "./transaction-list";
 
 type LinkFileSheetProps = {
    isOpen: boolean;
