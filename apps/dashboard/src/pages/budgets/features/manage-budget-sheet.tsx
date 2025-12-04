@@ -26,7 +26,6 @@ import {
    SheetTitle,
    SheetTrigger,
 } from "@packages/ui/components/sheet";
-import { centsToReais, reaisToCents } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus } from "lucide-react";
@@ -140,7 +139,7 @@ export function ManageBudgetSheet({
 
    const form = useForm({
       defaultValues: {
-         amount: budget?.amount ? centsToReais(Number(budget.amount)) : 0,
+         amount: budget?.amount ? Number(budget.amount) : 0,
          categoryId:
             budget?.target &&
             (budget.target as BudgetTarget).type === "category"
@@ -210,7 +209,7 @@ export function ManageBudgetSheet({
          }
 
          const budgetData = {
-            amount: String(reaisToCents(value.amount)),
+            amount: String(value.amount),
             name: value.name,
             periodType: value.periodType,
             target,
@@ -375,6 +374,7 @@ export function ManageBudgetSheet({
                                        "dashboard.routes.budgets.form.amount.placeholder",
                                     )}
                                     value={field.state.value}
+                                    valueInCents={false}
                                  />
                                  {isInvalid && (
                                     <FieldError

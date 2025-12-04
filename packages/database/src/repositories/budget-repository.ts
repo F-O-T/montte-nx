@@ -94,6 +94,13 @@ export async function findBudgetsByOrganizationIdPaginated(
       search?: string;
       mode?: "personal" | "business";
       isActive?: boolean;
+      periodType?:
+         | "daily"
+         | "weekly"
+         | "monthly"
+         | "quarterly"
+         | "yearly"
+         | "custom";
    } = {},
 ) {
    const {
@@ -104,6 +111,7 @@ export async function findBudgetsByOrganizationIdPaginated(
       search,
       mode,
       isActive,
+      periodType,
    } = options;
 
    const offset = (page - 1) * limit;
@@ -121,6 +129,10 @@ export async function findBudgetsByOrganizationIdPaginated(
 
       if (isActive !== undefined) {
          conditions.push(eq(budget.isActive, isActive));
+      }
+
+      if (periodType) {
+         conditions.push(eq(budget.periodType, periodType));
       }
 
       const whereCondition = and(...conditions);
@@ -800,3 +812,529 @@ export async function processRollover(
       );
    }
 }
+
+export interface BudgetTransaction {
+   id: string;
+   description: string;
+   amount: string;
+   date: Date;
+   type: string;
+   bankAccountId: string | null;
+   categoryId?: string;
+   categoryName?: string;
+}
+
+export async function findTransactionsByBudgetTarget(
+   dbClient: DatabaseInstance,
+   budgetData: Budget,
+   options: {
+      periodStart: Date;
+      periodEnd: Date;
+      page?: number;
+      limit?: number;
+      search?: string;
+   },
+): Promise<{
+   transactions: BudgetTransaction[];
+   pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+      limit: number;
+   };
+}> {
+   const { periodStart, periodEnd, page = 1, limit = 10, search } = options;
+   const offset = (page - 1) * limit;
+
+   try {
+      const target = budgetData.target as BudgetTarget;
+      let transactions: BudgetTransaction[] = [];
+      let totalCount = 0;
+
+      if (target.type === "category") {
+         const searchCondition = search
+            ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+            : sql``;
+
+         const countResult = await dbClient.execute<{ count: string }>(sql`
+            SELECT COUNT(*) as count
+            FROM ${transaction} t
+            INNER JOIN ${transactionCategory} tc ON t.id = tc.transaction_id
+            WHERE tc.category_id = ${target.categoryId}
+               AND t.type = 'expense'
+               AND t.date >= ${periodStart}
+               AND t.date <= ${periodEnd}
+               AND t.organization_id = ${budgetData.organizationId}
+               ${searchCondition}
+         `);
+         totalCount = parseInt(countResult.rows[0]?.count || "0");
+
+         const result = await dbClient.execute<{
+            id: string;
+            description: string;
+            amount: string;
+            date: Date;
+            type: string;
+            bank_account_id: string | null;
+            category_id: string;
+         }>(sql`
+            SELECT t.id, t.description, t.amount, t.date, t.type, t.bank_account_id, tc.category_id
+            FROM ${transaction} t
+            INNER JOIN ${transactionCategory} tc ON t.id = tc.transaction_id
+            WHERE tc.category_id = ${target.categoryId}
+               AND t.type = 'expense'
+               AND t.date >= ${periodStart}
+               AND t.date <= ${periodEnd}
+               AND t.organization_id = ${budgetData.organizationId}
+               ${searchCondition}
+            ORDER BY t.date DESC
+            LIMIT ${limit} OFFSET ${offset}
+         `);
+
+         transactions = result.rows.map((row) => ({
+            id: row.id,
+            description: row.description,
+            amount: row.amount,
+            date: row.date,
+            type: row.type,
+            bankAccountId: row.bank_account_id,
+            categoryId: row.category_id,
+         }));
+      } else if (target.type === "categories") {
+         const categoryIds = target.categoryIds;
+         if (categoryIds.length > 0) {
+            const searchCondition = search
+               ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+               : sql``;
+
+            const countResult = await dbClient.execute<{ count: string }>(sql`
+               SELECT COUNT(*) as count
+               FROM ${transaction} t
+               INNER JOIN ${transactionCategory} tc ON t.id = tc.transaction_id
+               WHERE tc.category_id = ANY(ARRAY[${sql.join(
+                  categoryIds.map((id) => sql`${id}::uuid`),
+                  sql`, `,
+               )}])
+                  AND t.type = 'expense'
+                  AND t.date >= ${periodStart}
+                  AND t.date <= ${periodEnd}
+                  AND t.organization_id = ${budgetData.organizationId}
+                  ${searchCondition}
+            `);
+            totalCount = parseInt(countResult.rows[0]?.count || "0");
+
+            const result = await dbClient.execute<{
+               id: string;
+               description: string;
+               amount: string;
+               date: Date;
+               type: string;
+               bank_account_id: string | null;
+               category_id: string;
+            }>(sql`
+               SELECT t.id, t.description, t.amount, t.date, t.type, t.bank_account_id, tc.category_id
+               FROM ${transaction} t
+               INNER JOIN ${transactionCategory} tc ON t.id = tc.transaction_id
+               WHERE tc.category_id = ANY(ARRAY[${sql.join(
+                  categoryIds.map((id) => sql`${id}::uuid`),
+                  sql`, `,
+               )}])
+                  AND t.type = 'expense'
+                  AND t.date >= ${periodStart}
+                  AND t.date <= ${periodEnd}
+                  AND t.organization_id = ${budgetData.organizationId}
+                  ${searchCondition}
+               ORDER BY t.date DESC
+               LIMIT ${limit} OFFSET ${offset}
+            `);
+
+            transactions = result.rows.map((row) => ({
+               id: row.id,
+               description: row.description,
+               amount: row.amount,
+               date: row.date,
+               type: row.type,
+               bankAccountId: row.bank_account_id,
+               categoryId: row.category_id,
+            }));
+         }
+      } else if (target.type === "tag") {
+         const searchCondition = search
+            ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+            : sql``;
+
+         const countResult = await dbClient.execute<{ count: string }>(sql`
+            SELECT COUNT(*) as count
+            FROM ${transaction} t
+            INNER JOIN ${transactionTag} tt ON t.id = tt.transaction_id
+            WHERE tt.tag_id = ${target.tagId}
+               AND t.type = 'expense'
+               AND t.date >= ${periodStart}
+               AND t.date <= ${periodEnd}
+               AND t.organization_id = ${budgetData.organizationId}
+               ${searchCondition}
+         `);
+         totalCount = parseInt(countResult.rows[0]?.count || "0");
+
+         const result = await dbClient.execute<{
+            id: string;
+            description: string;
+            amount: string;
+            date: Date;
+            type: string;
+            bank_account_id: string | null;
+         }>(sql`
+            SELECT t.id, t.description, t.amount, t.date, t.type, t.bank_account_id
+            FROM ${transaction} t
+            INNER JOIN ${transactionTag} tt ON t.id = tt.transaction_id
+            WHERE tt.tag_id = ${target.tagId}
+               AND t.type = 'expense'
+               AND t.date >= ${periodStart}
+               AND t.date <= ${periodEnd}
+               AND t.organization_id = ${budgetData.organizationId}
+               ${searchCondition}
+            ORDER BY t.date DESC
+            LIMIT ${limit} OFFSET ${offset}
+         `);
+
+         transactions = result.rows.map((row) => ({
+            id: row.id,
+            description: row.description,
+            amount: row.amount,
+            date: row.date,
+            type: row.type,
+            bankAccountId: row.bank_account_id,
+         }));
+      } else if (target.type === "cost_center") {
+         const searchCondition = search
+            ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+            : sql``;
+
+         const countResult = await dbClient.execute<{ count: string }>(sql`
+            SELECT COUNT(*) as count
+            FROM ${transaction} t
+            WHERE t.cost_center_id = ${target.costCenterId}
+               AND t.type = 'expense'
+               AND t.date >= ${periodStart}
+               AND t.date <= ${periodEnd}
+               AND t.organization_id = ${budgetData.organizationId}
+               ${searchCondition}
+         `);
+         totalCount = parseInt(countResult.rows[0]?.count || "0");
+
+         const result = await dbClient.execute<{
+            id: string;
+            description: string;
+            amount: string;
+            date: Date;
+            type: string;
+            bank_account_id: string | null;
+         }>(sql`
+            SELECT t.id, t.description, t.amount, t.date, t.type, t.bank_account_id
+            FROM ${transaction} t
+            WHERE t.cost_center_id = ${target.costCenterId}
+               AND t.type = 'expense'
+               AND t.date >= ${periodStart}
+               AND t.date <= ${periodEnd}
+               AND t.organization_id = ${budgetData.organizationId}
+               ${searchCondition}
+            ORDER BY t.date DESC
+            LIMIT ${limit} OFFSET ${offset}
+         `);
+
+         transactions = result.rows.map((row) => ({
+            id: row.id,
+            description: row.description,
+            amount: row.amount,
+            date: row.date,
+            type: row.type,
+            bankAccountId: row.bank_account_id,
+         }));
+      }
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         transactions,
+         pagination: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            limit,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transactions by budget target: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function updateBudgets(
+   dbClient: DatabaseInstance,
+   budgetIds: string[],
+   data: Partial<NewBudget>,
+   organizationId: string,
+) {
+   try {
+      if (budgetIds.length === 0) return [];
+
+      const result = await dbClient
+         .update(budget)
+         .set({ ...data, updatedAt: new Date() })
+         .where(
+            and(
+               sql`${budget.id} = ANY(ARRAY[${sql.join(
+                  budgetIds.map((id) => sql`${id}::uuid`),
+                  sql`, `,
+               )}])`,
+               eq(budget.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update budgets: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteBudgets(
+   dbClient: DatabaseInstance,
+   budgetIds: string[],
+   organizationId: string,
+) {
+   try {
+      if (budgetIds.length === 0) return [];
+
+      const result = await dbClient
+         .delete(budget)
+         .where(
+            and(
+               sql`${budget.id} = ANY(ARRAY[${sql.join(
+                  budgetIds.map((id) => sql`${id}::uuid`),
+                  sql`, `,
+               )}])`,
+               eq(budget.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete budgets: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function duplicateBudget(
+   dbClient: DatabaseInstance,
+   budgetId: string,
+   organizationId: string,
+   newName?: string,
+): Promise<Budget> {
+   try {
+      const existingBudget = await findBudgetById(dbClient, budgetId);
+
+      if (!existingBudget || existingBudget.organizationId !== organizationId) {
+         throw AppError.notFound("Budget not found");
+      }
+
+      const {
+         id: _id,
+         createdAt: _createdAt,
+         updatedAt: _updatedAt,
+         periods: _periods,
+         ...budgetData
+      } = existingBudget;
+
+      const duplicatedBudget = await createBudget(dbClient, {
+         ...budgetData,
+         id: crypto.randomUUID(),
+         name: newName || `${existingBudget.name} (cópia)`,
+         organizationId,
+      });
+
+      if (!duplicatedBudget) {
+         throw AppError.database("Failed to create duplicated budget");
+      }
+
+      return duplicatedBudget;
+   } catch (err) {
+      if (err instanceof AppError) throw err;
+      propagateError(err);
+      throw AppError.database(
+         `Failed to duplicate budget: ${(err as Error).message}`,
+      );
+   }
+}
+
+export interface BudgetImpactWarning {
+   budgetId: string;
+   budgetName: string;
+   budgetColor: string | null;
+   currentSpent: number;
+   currentPercentage: number;
+   projectedSpent: number;
+   projectedPercentage: number;
+   budgetAmount: number;
+   severity: "info" | "warning" | "danger";
+   message: string;
+}
+
+export async function checkBudgetImpact(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   options: {
+      amount: number;
+      categoryId?: string;
+      categoryIds?: string[];
+      tagIds?: string[];
+      costCenterId?: string;
+      excludeTransactionId?: string;
+   },
+): Promise<BudgetImpactWarning[]> {
+   try {
+      const budgetsWithProgress = await getBudgetsWithProgress(
+         dbClient,
+         organizationId,
+      );
+
+      const warnings: BudgetImpactWarning[] = [];
+
+      for (const b of budgetsWithProgress) {
+         if (!b.isActive) continue;
+
+         const target = b.target as BudgetTarget;
+         let isAffected = false;
+
+         if (target.type === "category" && options.categoryId) {
+            isAffected = target.categoryId === options.categoryId;
+         } else if (target.type === "category" && options.categoryIds) {
+            isAffected = options.categoryIds.includes(target.categoryId);
+         } else if (target.type === "categories" && options.categoryId) {
+            isAffected = target.categoryIds.includes(options.categoryId);
+         } else if (target.type === "categories" && options.categoryIds) {
+            isAffected = target.categoryIds.some((id) =>
+               options.categoryIds?.includes(id),
+            );
+         } else if (target.type === "tag" && options.tagIds) {
+            isAffected = options.tagIds.includes(target.tagId);
+         } else if (target.type === "cost_center" && options.costCenterId) {
+            isAffected = target.costCenterId === options.costCenterId;
+         }
+
+         if (!isAffected) continue;
+
+         const budgetAmount = parseFloat(b.amount);
+         const currentSpent = b.progress.spent;
+         const currentPercentage = b.progress.percentage;
+         const projectedSpent = currentSpent + options.amount;
+         const projectedPercentage =
+            budgetAmount > 0 ? (projectedSpent / budgetAmount) * 100 : 0;
+
+         let severity: "info" | "warning" | "danger" = "info";
+         let message = "";
+
+         if (projectedPercentage >= 100) {
+            severity = "danger";
+            message = `Este orçamento será excedido (${projectedPercentage.toFixed(0)}%)`;
+         } else if (projectedPercentage >= 80) {
+            severity = "warning";
+            message = `Este orçamento ficará próximo do limite (${projectedPercentage.toFixed(0)}%)`;
+         } else if (projectedPercentage >= 50) {
+            severity = "info";
+            message = `Este orçamento atingirá ${projectedPercentage.toFixed(0)}% do limite`;
+         }
+
+         if (severity !== "info" || projectedPercentage >= 50) {
+            warnings.push({
+               budgetId: b.id,
+               budgetName: b.name,
+               budgetColor: b.color,
+               currentSpent,
+               currentPercentage,
+               projectedSpent,
+               projectedPercentage,
+               budgetAmount,
+               severity,
+               message,
+            });
+         }
+      }
+
+      return warnings.sort((a, b) => {
+         const severityOrder = { danger: 0, warning: 1, info: 2 };
+         return severityOrder[a.severity] - severityOrder[b.severity];
+      });
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to check budget impact: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findBudgetsByTarget(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   options: {
+      categoryId?: string;
+      categoryIds?: string[];
+      tagIds?: string[];
+      costCenterId?: string;
+   },
+): Promise<BudgetWithProgress[]> {
+   try {
+      const budgetsWithProgress = await getBudgetsWithProgress(
+         dbClient,
+         organizationId,
+      );
+
+      return budgetsWithProgress.filter((b) => {
+         if (!b.isActive) return false;
+
+         const target = b.target as BudgetTarget;
+
+         if (target.type === "category" && options.categoryId) {
+            return target.categoryId === options.categoryId;
+         }
+         if (target.type === "category" && options.categoryIds) {
+            return options.categoryIds.includes(target.categoryId);
+         }
+         if (target.type === "categories" && options.categoryId) {
+            return target.categoryIds.includes(options.categoryId);
+         }
+         if (target.type === "categories" && options.categoryIds) {
+            return target.categoryIds.some((id) =>
+               options.categoryIds?.includes(id),
+            );
+         }
+         if (target.type === "tag" && options.tagIds) {
+            return options.tagIds.includes(target.tagId);
+         }
+         if (target.type === "cost_center" && options.costCenterId) {
+            return target.costCenterId === options.costCenterId;
+         }
+
+         return false;
+      });
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find budgets by target: ${(err as Error).message}`,
+      );
+   }
+}
+
+export { calculatePeriodDates };

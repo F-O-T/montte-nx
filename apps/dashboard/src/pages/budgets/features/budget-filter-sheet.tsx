@@ -21,14 +21,12 @@ type BudgetFilterSheetProps = {
    orderBy: "name" | "createdAt" | "updatedAt" | "amount";
    orderDirection: "asc" | "desc";
    pageSize?: number;
-   modeFilter?: "personal" | "business";
    activeFilter?: boolean;
    onOrderByChange: (
       value: "name" | "createdAt" | "updatedAt" | "amount",
    ) => void;
    onOrderDirectionChange: (value: "asc" | "desc") => void;
    onPageSizeChange?: (value: number) => void;
-   onModeFilterChange?: (value: "personal" | "business" | undefined) => void;
    onActiveFilterChange?: (value: boolean | undefined) => void;
    isOpen: boolean;
    onOpenChange: (open: boolean) => void;
@@ -38,12 +36,10 @@ export function BudgetFilterSheet({
    orderBy,
    orderDirection,
    pageSize,
-   modeFilter,
    activeFilter,
    onOrderByChange,
    onOrderDirectionChange,
    onPageSizeChange,
-   onModeFilterChange,
    onActiveFilterChange,
    isOpen,
    onOpenChange,
@@ -78,27 +74,14 @@ export function BudgetFilterSheet({
       },
    ];
 
-   const modeOptions = [
-      {
-         label: translate("dashboard.routes.budgets.form.mode.personal"),
-         value: "personal" as const,
-      },
-      {
-         label: translate("dashboard.routes.budgets.form.mode.business"),
-         value: "business" as const,
-      },
-   ];
-
    const hasActiveFilters =
       orderBy !== "name" ||
       orderDirection !== "asc" ||
-      modeFilter !== undefined ||
       activeFilter !== undefined;
 
    const clearFilters = () => {
       onOrderByChange("name");
       onOrderDirectionChange("asc");
-      onModeFilterChange?.(undefined);
       onActiveFilterChange?.(undefined);
    };
 
@@ -127,41 +110,6 @@ export function BudgetFilterSheet({
                      </Button>
                   </div>
                )}
-
-               <FieldGroup>
-                  <Field>
-                     <FieldLabel>
-                        {translate("dashboard.routes.budgets.form.mode.label")}
-                     </FieldLabel>
-                     <Select
-                        onValueChange={(value) =>
-                           onModeFilterChange?.(
-                              value === "all"
-                                 ? undefined
-                                 : (value as "personal" | "business"),
-                           )
-                        }
-                        value={modeFilter || "all"}
-                     >
-                        <SelectTrigger>
-                           <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                           <SelectItem value="all">
-                              {translate("common.form.all.label")}
-                           </SelectItem>
-                           {modeOptions.map((option) => (
-                              <SelectItem
-                                 key={option.value}
-                                 value={option.value}
-                              >
-                                 {option.label}
-                              </SelectItem>
-                           ))}
-                        </SelectContent>
-                     </Select>
-                  </Field>
-               </FieldGroup>
 
                <FieldGroup>
                   <Field>

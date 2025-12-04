@@ -122,6 +122,12 @@
          "transfer": "Transferência"
       }
    },
+   "notifications": {
+      "create-error": "Falha ao criar transação",
+      "create-success": "Transação criada com sucesso",
+      "update-error": "Falha ao atualizar transação",
+      "update-success": "Transação atualizada com sucesso"
+   },
    "stats-section": {
       "expense": {
          "description": "Veja o total acumulado de todas as suas despesas.",
