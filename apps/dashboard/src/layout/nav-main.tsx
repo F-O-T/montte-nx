@@ -22,7 +22,7 @@ import {
    Wallet,
 } from "lucide-react";
 import { useState } from "react";
-import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
+import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 
 export function NavMain() {
    const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);

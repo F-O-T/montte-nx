@@ -23,11 +23,11 @@ import {
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
-import { CategorizeSheet } from "@/features/transaction/features/categorize-sheet";
-import { CategorySplitSheet } from "@/features/transaction/features/category-split-sheet";
-import { LinkFileSheet } from "@/features/transaction/features/link-file-sheet";
-import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
-import { MarkAsTransferSheet } from "@/features/transaction/features/mark-as-transfer-sheet";
+import { CategorizeSheet } from "@/features/transaction/ui/categorize-sheet";
+import { CategorySplitSheet } from "@/features/transaction/ui/category-split-sheet";
+import { LinkFileSheet } from "@/features/transaction/ui/link-file-sheet";
+import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { DeleteTransactionDialog } from "../features/delete-transaction-dialog";

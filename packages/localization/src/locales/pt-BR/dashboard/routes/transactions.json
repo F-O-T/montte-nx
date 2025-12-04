@@ -36,11 +36,11 @@
             "description": "Data de registro no sistema",
             "title": "Criado em"
          },
+         "description": "Informações detalhadas da transação",
+         "title": "Detalhes",
          "type": {
             "title": "Tipo"
          },
-         "description": "Informações detalhadas da transação",
-         "title": "Detalhes",
          "updated": {
             "description": "Atualizado em"
          }
@@ -107,6 +107,7 @@
       },
       "description": "Veja todas as suas transações financeiras aqui.",
       "page": "Página {{current}} de {{total}}",
+      "rows-per-page": "Linhas por página",
       "showing": "Mostrando {{count}} de {{total}} transações",
       "state": {
          "empty": {

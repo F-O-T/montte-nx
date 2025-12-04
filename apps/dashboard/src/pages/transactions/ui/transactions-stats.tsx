@@ -13,8 +13,8 @@ import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useTransactionList } from "@/features/transaction/lib/transaction-list-context";
 import { trpc } from "@/integrations/clients";
-import { useTransactionList } from "../features/transaction-list-context";
 
 function TransactionsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -55,12 +55,14 @@ function TransactionsStatsSkeleton() {
 }
 
 function TransactionsStatsContent() {
-   const { bankAccountFilter } = useTransactionList();
+   const { bankAccountFilter, startDate, endDate } = useTransactionList();
 
    const { data: stats } = useSuspenseQuery(
       trpc.transactions.getStats.queryOptions({
          bankAccountId:
             bankAccountFilter === "all" ? undefined : bankAccountFilter,
+         endDate: endDate?.toISOString(),
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -82,7 +84,7 @@ function TransactionsStatsContent() {
             title={translate(
                "dashboard.routes.transactions.stats-section.income.title",
             )}
-            value={`R$ ${stats.totalIncome}`}
+            value={formatDecimalCurrency(stats.totalIncome)}
          />
          <StatsCard
             description={translate(

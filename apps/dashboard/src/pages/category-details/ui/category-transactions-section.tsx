@@ -27,6 +27,7 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -168,9 +169,10 @@ function TransactionsContent({ categoryId }: { categoryId: string }) {
                                     {transaction.description}
                                  </ItemTitle>
                                  <ItemDescription>
-                                    {new Date(
-                                       transaction.date,
-                                    ).toLocaleDateString()}
+                                    {formatDate(
+                                       new Date(transaction.date),
+                                       "DD/MM/YYYY",
+                                    )}
                                  </ItemDescription>
                               </ItemContent>
                               <ItemActions>

@@ -18,8 +18,7 @@ import {
    ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatDate } from "@packages/utils/date";
 import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DeleteBudget } from "@/pages/budgets/features/delete-budget";
@@ -36,9 +35,9 @@ interface BudgetInformationSectionProps {
    budget: Budget;
 }
 
-function formatDate(date: Date | string | null): string {
+function formatBudgetDate(date: Date | string | null): string {
    if (!date) return "-";
-   return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: ptBR });
+   return formatDate(new Date(date), "DD/MM/YYYY HH:mm");
 }
 
 function formatCurrency(value: number): string {
@@ -200,7 +199,7 @@ export function BudgetInformationSection({
                      <ItemContent>
                         <ItemTitle>Criado em</ItemTitle>
                         <ItemDescription>
-                           {formatDate(budget.createdAt)}
+                           {formatBudgetDate(budget.createdAt)}
                         </ItemDescription>
                      </ItemContent>
                   </Item>
@@ -210,7 +209,7 @@ export function BudgetInformationSection({
                      <ItemContent>
                         <ItemTitle>Atualizado em</ItemTitle>
                         <ItemDescription>
-                           {formatDate(budget.updatedAt)}
+                           {formatBudgetDate(budget.updatedAt)}
                         </ItemDescription>
                      </ItemContent>
                   </Item>

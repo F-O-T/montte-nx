@@ -2,6 +2,7 @@
 
 import { Button, buttonVariants } from "@packages/ui/components/button";
 import { cn } from "@packages/ui/lib/utils";
+import { formatDate } from "@packages/utils/date";
 import {
    ChevronDownIcon,
    ChevronLeftIcon,
@@ -177,8 +178,7 @@ function Calendar({
             ...components,
          }}
          formatters={{
-            formatMonthDropdown: (date) =>
-               date.toLocaleString("default", { month: "short" }),
+            formatMonthDropdown: (date) => formatDate(date, "MMM"),
             ...formatters,
          }}
          showOutsideDays={showOutsideDays}
@@ -207,7 +207,7 @@ function CalendarDayButton({
             defaultClassNames.day,
             className,
          )}
-         data-day={day.date.toLocaleDateString()}
+         data-day={formatDate(day.date, "DD/MM/YYYY")}
          data-range-end={modifiers.range_end}
          data-range-middle={modifiers.range_middle}
          data-range-start={modifiers.range_start}

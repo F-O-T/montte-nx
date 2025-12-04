@@ -130,7 +130,7 @@ function BankAccountsListContent() {
    const [sortBy, setSortBy] = useState<SortOption>("name");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-   const pageSize = 10;
+   const [pageSize, setPageSize] = useState(10);
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -139,11 +139,11 @@ function BankAccountsListContent() {
       }, 300);
       return () => clearTimeout(timer);
    }, [searchTerm]);
-
+   //TODO: achar uma forma melhor de fazer isso
    // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
    useEffect(() => {
       setCurrentPage(1);
-   }, [statusFilter, typeFilter]);
+   }, [statusFilter, typeFilter, pageSize]);
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.bankAccounts.getAllPaginated.queryOptions(
@@ -352,18 +352,18 @@ function BankAccountsListContent() {
                         <EmptyTitle>
                            {hasActiveFilters
                               ? translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                                )
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                              )
                               : translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                                )}
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                              )}
                         </EmptyTitle>
                         <EmptyDescription>
                            {hasActiveFilters
                               ? "Nenhuma conta encontrada com os filtros aplicados"
                               : translate(
-                                   "dashboard.routes.bank-accounts.list-section.state.empty.description",
-                                )}
+                                 "dashboard.routes.bank-accounts.list-section.state.empty.description",
+                              )}
                         </EmptyDescription>
                      </EmptyContent>
                   </Empty>
@@ -377,6 +377,7 @@ function BankAccountsListContent() {
                      pagination={{
                         currentPage,
                         onPageChange: setCurrentPage,
+                        onPageSizeChange: setPageSize,
                         pageSize,
                         totalCount,
                         totalPages,

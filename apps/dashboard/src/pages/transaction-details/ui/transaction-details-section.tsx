@@ -192,8 +192,8 @@ function DetailsContent({ transactionId }: { transactionId: string }) {
                      <SendHorizontal className="size-4" />
                      Transferência
                      <Badge
-                        variant={isNegative ? "destructive" : "default"}
                         className="text-xs"
+                        variant={isNegative ? "destructive" : "default"}
                      >
                         {isNegative ? "Saída" : "Entrada"}
                      </Badge>

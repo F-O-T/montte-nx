@@ -7,16 +7,15 @@ import {
    PopoverTrigger,
 } from "@packages/ui/components/popover";
 import { cn } from "@packages/ui/lib/utils";
+import { formatDate } from "@packages/utils/date";
 import {
    addMonths,
-   format,
    getMonth,
    getYear,
    setMonth,
    setYear,
    subMonths,
 } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -125,7 +124,7 @@ export function MonthSelector({
                >
                   <CalendarDays className="size-4" />
                   <span className="capitalize">
-                     {format(date, "MMMM yyyy", { locale: ptBR })}
+                     {formatDate(date, "MMMM YYYY")}
                   </span>
                </Button>
             </PopoverTrigger>

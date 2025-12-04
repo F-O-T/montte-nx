@@ -37,7 +37,8 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
-import { ManageTransactionSheet } from "@/features/transaction/features/manage-transaction-sheet";
+import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
+import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { DeleteBankAccount } from "../features/delete-bank-account";
@@ -99,7 +100,7 @@ function BankAccountContent() {
       return (
          <BankAccountPageError
             error={new Error("Invalid bank account ID")}
-            resetErrorBoundary={() => { }}
+            resetErrorBoundary={() => {}}
          />
       );
    }
@@ -281,10 +282,12 @@ function BankAccountPageError({ error, resetErrorBoundary }: FallbackProps) {
 
 export function BankAccountDetailsPage() {
    return (
-      <ErrorBoundary FallbackComponent={BankAccountPageError}>
-         <Suspense fallback={<BankAccountPageSkeleton />}>
-            <BankAccountContent />
-         </Suspense>
-      </ErrorBoundary>
+      <TransactionListProvider>
+         <ErrorBoundary FallbackComponent={BankAccountPageError}>
+            <Suspense fallback={<BankAccountPageSkeleton />}>
+               <BankAccountContent />
+            </Suspense>
+         </ErrorBoundary>
+      </TransactionListProvider>
    );
 }

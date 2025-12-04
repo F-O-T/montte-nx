@@ -35,10 +35,10 @@ import {
    Upload,
    X,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { trpc, useTRPC } from "@/integrations/clients";
-import type { Transaction } from "../ui/transaction-item";
+import type { Transaction } from "./transaction-list";
 
 type LinkFileSheetProps = {
    isOpen: boolean;
@@ -124,15 +124,6 @@ export function LinkFileSheet({
          }),
       ]);
    };
-
-   useEffect(() => {
-      if (!isOpen) {
-         pendingFiles.forEach((pf) => {
-            if (pf.preview) URL.revokeObjectURL(pf.preview);
-         });
-         setPendingFiles([]);
-      }
-   }, [isOpen]);
 
    const handleOpenChange = (open: boolean) => {
       if (!open) {
@@ -378,9 +369,10 @@ export function LinkFileSheet({
                         {pendingFiles.map((pending, index) => {
                            const isPdf =
                               pending.file.type === "application/pdf";
+                           const fileKey = `${pending.file.name}-${pending.file.size}-${pending.file.lastModified}`;
 
                            return (
-                              <div key={`pending-${index}`}>
+                              <div key={fileKey}>
                                  {index > 0 && <ItemSeparator />}
                                  <Item size="sm" variant="default">
                                     <ItemMedia

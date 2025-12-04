@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
@@ -396,9 +397,7 @@ function CategoryMonthlyTrendChart() {
 
       const data = monthlyTrend.map((month) => {
          const monthData: Record<string, string | number> = {
-            month: new Date(`${month.month}-01`).toLocaleDateString("pt-BR", {
-               month: "short",
-            }),
+            month: formatDate(new Date(`${month.month}-01`), "MMM"),
          };
 
          for (const cat of categories) {

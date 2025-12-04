@@ -57,12 +57,12 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { formatDate } from "@packages/utils/date";
 import {
    getRecurrenceLabel,
    type RecurrencePattern,
 } from "@packages/utils/recurrence";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { format } from "date-fns";
 import {
    Filter,
    MoreVertical,
@@ -145,13 +145,16 @@ function BillItem({ bill, categories }: BillItemProps) {
                <ItemDescription>
                   {translate("dashboard.routes.bills.table.columns.dueDate")}:{" "}
                   {bill.dueDate
-                     ? format(new Date(bill.dueDate), "dd/MM/yyyy")
+                     ? formatDate(new Date(bill.dueDate), "DD/MM/YYYY")
                      : "-"}
                   {bill.completionDate && (
                      <>
                         {" • "}
                         {translate("dashboard.routes.bills.completedOn")}:{" "}
-                        {format(new Date(bill.completionDate), "dd/MM/yyyy")}
+                        {formatDate(
+                           new Date(bill.completionDate),
+                           "DD/MM/YYYY",
+                        )}
                      </>
                   )}
                </ItemDescription>

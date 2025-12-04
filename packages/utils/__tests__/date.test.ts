@@ -39,15 +39,15 @@ describe("date utilities", () => {
 
       it("should accept timezone parameter", () => {
          const date = new Date("2024-01-15T12:00:00Z");
-         const result = formatDate(date, "YYYY-MM-DD", "UTC");
+         const result = formatDate(date, "YYYY-MM-DD", { timezone: "UTC" });
          expect(result).toBe("2024-01-15");
       });
 
       it("should handle different dates", () => {
          const date1 = new Date("2024-01-15T12:00:00Z");
          const date2 = new Date("2024-02-20T15:30:00Z");
-         const result1 = formatDate(date1, "YYYY-MM-DD", "UTC");
-         const result2 = formatDate(date2, "YYYY-MM-DD", "UTC");
+         const result1 = formatDate(date1, "YYYY-MM-DD", { timezone: "UTC" });
+         const result2 = formatDate(date2, "YYYY-MM-DD", { timezone: "UTC" });
          expect(result1).toBe("2024-01-15");
          expect(result2).toBe("2024-02-20");
       });
@@ -66,7 +66,9 @@ describe("date utilities", () => {
 
       it("should replace all format tokens correctly", () => {
          const date = new Date("2024-03-25T12:00:00Z");
-         const result = formatDate(date, "YYYY/MM/DD - YYYY", "UTC");
+         const result = formatDate(date, "YYYY/MM/DD - YYYY", {
+            timezone: "UTC",
+         });
          expect(result).toBe("2024/03/25 - 2024");
       });
    });

@@ -34,6 +34,13 @@ import {
    PaginationPrevious,
 } from "./pagination";
 import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "./select";
+import {
    Table,
    TableBody,
    TableCell,
@@ -48,6 +55,8 @@ interface DataTablePaginationProps {
    totalCount: number;
    pageSize: number;
    onPageChange: (page: number) => void;
+   onPageSizeChange?: (size: number) => void;
+   pageSizeOptions?: number[];
 }
 
 interface DataTableProps<TData, TValue> {
@@ -69,12 +78,16 @@ interface DataTableProps<TData, TValue> {
    getRowId?: (row: TData) => string;
 }
 
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 30, 50, 100];
+
 function DataTablePagination({
    currentPage,
    totalPages,
    totalCount,
    pageSize,
    onPageChange,
+   onPageSizeChange,
+   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: DataTablePaginationProps) {
    const showingCount = Math.min(
       pageSize,
@@ -99,19 +112,48 @@ function DataTablePagination({
 
    return (
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-         <div className="text-sm text-muted-foreground hidden md:block">
-            {translate("dashboard.routes.transactions.list-section.showing", {
-               count: showingCount,
-               total: totalCount,
-            })}
-         </div>
-         <div className="flex-1 flex items-center justify-center md:justify-end space-x-6 lg:space-x-8">
+         <div className="flex items-center gap-4">
+            <div className="text-sm text-muted-foreground hidden md:block">
+               {translate(
+                  "dashboard.routes.transactions.list-section.showing",
+                  {
+                     count: showingCount,
+                     total: totalCount,
+                  },
+               )}
+            </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
                {translate("dashboard.routes.transactions.list-section.page", {
                   current: currentPage,
                   total: Math.max(1, totalPages),
                })}
             </div>
+         </div>
+         <div className="flex items-center gap-4">
+            {onPageSizeChange && (
+               <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground hidden sm:inline">
+                     {translate(
+                        "dashboard.routes.transactions.list-section.rows-per-page",
+                     )}
+                  </span>
+                  <Select
+                     onValueChange={(value) => onPageSizeChange(Number(value))}
+                     value={String(pageSize)}
+                  >
+                     <SelectTrigger className="h-8 w-[70px]" size="sm">
+                        <SelectValue placeholder={String(pageSize)} />
+                     </SelectTrigger>
+                     <SelectContent side="top">
+                        {pageSizeOptions.map((size) => (
+                           <SelectItem key={size} value={String(size)}>
+                              {size}
+                           </SelectItem>
+                        ))}
+                     </SelectContent>
+                  </Select>
+               </div>
+            )}
             <Pagination className="w-auto">
                <PaginationContent>
                   <PaginationItem>

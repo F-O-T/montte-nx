@@ -11,7 +11,7 @@ import {
 } from "@packages/ui/components/alert-dialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { trpc } from "@/integrations/clients";
-import type { Transaction } from "../ui/transaction-item";
+import type { Transaction } from "./transaction-list";
 
 export interface DeleteTransactionProps {
    transaction: Transaction;

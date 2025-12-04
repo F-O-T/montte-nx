@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
-import type { Transaction } from "../ui/transaction-item";
+import type { Transaction } from "./transaction-list";
 
 type CategorySplitSheetProps = {
    isOpen: boolean;
