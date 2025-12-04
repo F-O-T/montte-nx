@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 import { formatWindow } from "../src/numbers";
 
 describe("number utilities", () => {
-
    describe("formatWindow", () => {
       it("should format milliseconds into readable time", () => {
          const result = formatWindow(1000);

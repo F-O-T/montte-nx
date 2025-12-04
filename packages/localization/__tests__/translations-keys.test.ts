@@ -1,6 +1,6 @@
+import { describe, expect, it } from "bun:test";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "bun:test";
 
 const LOCALES_DIR = join(import.meta.dirname, "../src/locales");
 const SUPPORTED_LOCALES = ["pt-BR"];

@@ -66,6 +66,7 @@ const updateTransactionSchema = z.object({
 const paginationSchema = z.object({
    bankAccountId: z.string().optional(),
    categoryId: z.string().optional(),
+   costCenterId: z.string().optional(),
    endDate: z.string().optional(),
    limit: z.coerce.number().min(1).max(100).default(5),
    orderBy: z.enum(["date", "amount"]).default("date"),
@@ -716,7 +717,11 @@ export const transactionRouter = router({
          );
 
          const validTransactions = transactions.filter(
-            (t) => t && t.organizationId === organizationId && t.bankAccountId,
+            (t): t is NonNullable<typeof t> =>
+               t !== null &&
+               t !== undefined &&
+               t.organizationId === organizationId &&
+               t.bankAccountId !== null,
          );
 
          if (validTransactions.length === 0) {
@@ -725,16 +730,16 @@ export const transactionRouter = router({
 
          const results = await Promise.all(
             validTransactions.map(async (t) => {
-               const amount = Number(t!.amount);
+               const amount = Number(t.amount);
                const isOutgoing = amount < 0;
 
-               await updateTransaction(resolvedCtx.db, t!.id, {
+               await updateTransaction(resolvedCtx.db, t.id, {
                   type: "transfer",
                });
 
                let counterpartId: string;
 
-               const userMatchedId = input.matchedTransactionIds?.[t!.id];
+               const userMatchedId = input.matchedTransactionIds?.[t.id];
 
                if (userMatchedId) {
                   await updateTransaction(resolvedCtx.db, userMatchedId, {
@@ -747,7 +752,7 @@ export const transactionRouter = router({
                      {
                         amount: -amount,
                         bankAccountId: input.toBankAccountId,
-                        date: t!.date,
+                        date: t.date,
                         organizationId,
                      },
                   );
@@ -763,8 +768,8 @@ export const transactionRouter = router({
                         {
                            amount: (-amount).toString(),
                            bankAccountId: input.toBankAccountId,
-                           date: t!.date,
-                           description: t!.description,
+                           date: t.date,
+                           description: t.description,
                            id: crypto.randomUUID(),
                            organizationId,
                            type: "transfer",
@@ -776,19 +781,19 @@ export const transactionRouter = router({
 
                await createTransferLog(resolvedCtx.db, {
                   fromBankAccountId: isOutgoing
-                     ? t!.bankAccountId!
+                     ? (t.bankAccountId as string)
                      : input.toBankAccountId,
-                  fromTransactionId: isOutgoing ? t!.id : counterpartId,
+                  fromTransactionId: isOutgoing ? t.id : counterpartId,
                   id: crypto.randomUUID(),
                   notes: null,
                   organizationId,
                   toBankAccountId: isOutgoing
                      ? input.toBankAccountId
-                     : t!.bankAccountId!,
-                  toTransactionId: isOutgoing ? counterpartId : t!.id,
+                     : (t.bankAccountId as string),
+                  toTransactionId: isOutgoing ? counterpartId : t.id,
                });
 
-               return t!.id;
+               return t.id;
             }),
          );
 

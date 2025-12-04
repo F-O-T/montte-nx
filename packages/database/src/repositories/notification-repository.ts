@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { notification } from "../schemas/notifications";
 

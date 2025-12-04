@@ -222,7 +222,7 @@ function BankAccountsListContent() {
       <>
          <Card>
             <CardContent className="pt-6 grid gap-4">
-               <div className="flex flex-col sm:flex-row gap-3">
+               <div className="flex gap-6">
                   <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
                         onChange={(e) => setSearchTerm(e.target.value)}

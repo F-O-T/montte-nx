@@ -1,6 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import {
-   SUPPORTED_CURRENCIES,
    addMoney,
    calculatePercentage,
    centsToReais,
@@ -17,6 +16,7 @@ import {
    parseCurrencyToCents,
    reaisToCents,
    roundToCents,
+   SUPPORTED_CURRENCIES,
    subtractMoney,
 } from "../src/money";
 

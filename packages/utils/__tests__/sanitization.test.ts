@@ -83,7 +83,7 @@ describe("sanitization utilities", () => {
       });
 
       it("should mask keys containing sensitive substrings", () => {
-         const data = { userPassword: "secret", myApiToken: "token123" };
+         const data = { myApiToken: "token123", userPassword: "secret" };
          const result = sanitizeData(data);
          expect(result.userPassword).toBe("********");
          expect(result.myApiToken).toBe("********");

@@ -176,7 +176,8 @@ function CostCenterDistributionChart() {
 
       for (const t of transactions.transactions) {
          if (t.costCenterId && costCenterMap.has(t.costCenterId)) {
-            const cc = costCenterMap.get(t.costCenterId)!;
+            const cc = costCenterMap.get(t.costCenterId);
+            if (!cc) continue;
             cc.total += Math.abs(parseFloat(t.amount));
             cc.count += 1;
          }
@@ -330,7 +331,8 @@ function TopCostCentersChart() {
             costCenterMap.has(t.costCenterId) &&
             t.type === "expense"
          ) {
-            const cc = costCenterMap.get(t.costCenterId)!;
+            const cc = costCenterMap.get(t.costCenterId);
+            if (!cc) continue;
             cc.total += Math.abs(parseFloat(t.amount));
             cc.count += 1;
          }

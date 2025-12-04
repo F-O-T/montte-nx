@@ -65,8 +65,8 @@ describe("environment helpers", () => {
 
       it("should handle optional environment variables", () => {
          const schema = z.object({
-            REQUIRED: z.string(),
             OPTIONAL: z.string().optional(),
+            REQUIRED: z.string(),
          });
 
          const env = {
@@ -76,8 +76,8 @@ describe("environment helpers", () => {
          const result = parseEnv(env as NodeJS.ProcessEnv, schema);
 
          expect(result).toEqual({
-            REQUIRED: "required-value",
             OPTIONAL: undefined,
+            REQUIRED: "required-value",
          });
       });
 

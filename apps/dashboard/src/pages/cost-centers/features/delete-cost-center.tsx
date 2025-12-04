@@ -18,14 +18,21 @@ import type { CostCenter } from "../ui/cost-centers-page";
 
 interface DeleteCostCenterProps {
    costCenter: CostCenter;
-   children: React.ReactNode;
+   open?: boolean;
+   setOpen?: (open: boolean) => void;
+   onSuccess?: () => void;
+   children?: React.ReactNode;
 }
 
 export function DeleteCostCenter({
    costCenter,
-   children: _children,
+   open,
+   setOpen,
+   onSuccess,
+   children,
 }: DeleteCostCenterProps) {
    const queryClient = useQueryClient();
+   const isControlled = open !== undefined && setOpen !== undefined;
 
    const deleteCostCenterMutation = useMutation(
       trpc.costCenters.delete.mutationOptions({
@@ -33,6 +40,10 @@ export function DeleteCostCenter({
             queryClient.invalidateQueries({
                queryKey: trpc.costCenters.getAll.queryKey(),
             });
+            queryClient.invalidateQueries({
+               queryKey: trpc.costCenters.getAllPaginated.queryKey(),
+            });
+            onSuccess?.();
          },
       }),
    );
@@ -45,43 +56,57 @@ export function DeleteCostCenter({
       }
    };
 
-   return (
-      <AlertDialog>
-         <AlertDialogTrigger asChild>
-            <DropdownMenuItem
-               className="text-destructive flex items-center gap-2"
-               onSelect={(e) => e.preventDefault()}
+   const dialogContent = (
+      <AlertDialogContent>
+         <AlertDialogHeader>
+            <AlertDialogTitle>
+               {translate("common.headers.delete-confirmation.title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+               {translate("common.headers.delete-confirmation.description")}
+            </AlertDialogDescription>
+         </AlertDialogHeader>
+         <AlertDialogFooter>
+            <AlertDialogCancel>
+               {translate("common.actions.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+               className="bg-destructive text-destructive-foreground"
+               disabled={deleteCostCenterMutation.isPending}
+               onClick={handleDelete}
             >
-               <Trash2 className="size-4" />
                {translate(
                   "dashboard.routes.cost-centers.list-section.actions.delete-cost-center",
                )}
-            </DropdownMenuItem>
-         </AlertDialogTrigger>
-         <AlertDialogContent>
-            <AlertDialogHeader>
-               <AlertDialogTitle>
-                  {translate("common.headers.delete-confirmation.title")}
-               </AlertDialogTitle>
-               <AlertDialogDescription>
-                  {translate("common.headers.delete-confirmation.description")}
-               </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-               <AlertDialogCancel>
-                  {translate("common.actions.cancel")}
-               </AlertDialogCancel>
-               <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground"
-                  disabled={deleteCostCenterMutation.isPending}
-                  onClick={handleDelete}
+            </AlertDialogAction>
+         </AlertDialogFooter>
+      </AlertDialogContent>
+   );
+
+   if (isControlled) {
+      return (
+         <AlertDialog onOpenChange={setOpen} open={open}>
+            {dialogContent}
+         </AlertDialog>
+      );
+   }
+
+   return (
+      <AlertDialog>
+         <AlertDialogTrigger asChild>
+            {children || (
+               <DropdownMenuItem
+                  className="text-destructive flex items-center gap-2"
+                  onSelect={(e) => e.preventDefault()}
                >
+                  <Trash2 className="size-4" />
                   {translate(
                      "dashboard.routes.cost-centers.list-section.actions.delete-cost-center",
                   )}
-               </AlertDialogAction>
-            </AlertDialogFooter>
-         </AlertDialogContent>
+               </DropdownMenuItem>
+            )}
+         </AlertDialogTrigger>
+         {dialogContent}
       </AlertDialog>
    );
 }

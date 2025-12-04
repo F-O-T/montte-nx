@@ -181,20 +181,22 @@ function MonthlyTooltip({
 
 function CostCenterTypeDistributionChart({
    costCenterId,
+   startDate,
+   endDate,
 }: {
    costCenterId: string;
+   startDate: Date | null;
+   endDate: Date | null;
 }) {
    const trpc = useTRPC();
 
-   const { data: costCenter } = useSuspenseQuery(
-      trpc.costCenters.getById.queryOptions({ id: costCenterId }),
-   );
-
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
+         costCenterId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
-         search: costCenter.name,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -337,20 +339,22 @@ function CostCenterTypeDistributionChart({
 
 function CostCenterMonthlyTrendChart({
    costCenterId,
+   startDate,
+   endDate,
 }: {
    costCenterId: string;
+   startDate: Date | null;
+   endDate: Date | null;
 }) {
    const trpc = useTRPC();
 
-   const { data: costCenter } = useSuspenseQuery(
-      trpc.costCenters.getById.queryOptions({ id: costCenterId }),
-   );
-
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
+         costCenterId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
-         search: costCenter.name,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -379,7 +383,8 @@ function CostCenterMonthlyTrendChart({
             });
          }
 
-         const monthData = monthlyData.get(monthKey)!;
+         const monthData = monthlyData.get(monthKey);
+         if (!monthData) continue;
          const amount = Math.abs(parseFloat(t.amount));
 
          if (t.type === "income") {
@@ -478,20 +483,48 @@ function CostCenterMonthlyTrendChart({
    );
 }
 
-function CostCenterChartsContent({ costCenterId }: { costCenterId: string }) {
+function CostCenterChartsContent({
+   costCenterId,
+   startDate,
+   endDate,
+}: {
+   costCenterId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <CostCenterMonthlyTrendChart costCenterId={costCenterId} />
-         <CostCenterTypeDistributionChart costCenterId={costCenterId} />
+         <CostCenterMonthlyTrendChart
+            costCenterId={costCenterId}
+            endDate={endDate}
+            startDate={startDate}
+         />
+         <CostCenterTypeDistributionChart
+            costCenterId={costCenterId}
+            endDate={endDate}
+            startDate={startDate}
+         />
       </div>
    );
 }
 
-export function CostCenterCharts({ costCenterId }: { costCenterId: string }) {
+export function CostCenterCharts({
+   costCenterId,
+   startDate,
+   endDate,
+}: {
+   costCenterId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={CostCenterChartsErrorFallback}>
          <Suspense fallback={<CostCenterChartsSkeleton />}>
-            <CostCenterChartsContent costCenterId={costCenterId} />
+            <CostCenterChartsContent
+               costCenterId={costCenterId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

@@ -8,6 +8,13 @@
          "delete-selected": "Excluir selecionadas"
       }
    },
+   "bulk-actions": {
+      "delete": "Excluir",
+      "delete-confirm-description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente {count, plural, one {# tag} other {# tags}} e removerá a associação de todas as transações vinculadas.",
+      "delete-confirm-title": "Excluir {count, plural, one {# tag} other {# tags}}?",
+      "deleted-error": "Falha ao excluir tags",
+      "deleted-success": "{count, plural, one {# tag excluída} other {# tags excluídas}} com sucesso"
+   },
    "features": {
       "create-tag": {
          "description": "Adicione uma nova tag para organizar suas transações.",
@@ -60,6 +67,7 @@
    "table": {
       "columns": {
          "color": "Cor",
+         "created-at": "Criado em",
          "name": "Nome"
       }
    }

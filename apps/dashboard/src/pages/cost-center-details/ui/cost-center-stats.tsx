@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Card,
    CardContent,
@@ -7,79 +6,70 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
-function StatErrorFallback() {
+function CostCenterStatsErrorFallback(props: FallbackProps) {
    return (
-      <Alert variant="destructive">
-         <AlertDescription>Failed to load statistics</AlertDescription>
-      </Alert>
+      <div className="grid gap-4 h-min">
+         {createErrorFallback({
+            errorDescription:
+               "Falha ao carregar estatísticas. Por favor, tente novamente.",
+            errorTitle: "Erro ao carregar estatísticas",
+            retryText: "Tentar novamente",
+         })(props)}
+      </div>
    );
 }
 
-function StatSkeleton() {
+function CostCenterStatsSkeleton() {
    return (
-      <Card className="col-span-1 h-full w-full">
-         <CardHeader>
-            <CardTitle>
-               <Skeleton className="h-6 w-24" />
-            </CardTitle>
-            <CardDescription>
-               <Skeleton className="h-4 w-32" />
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
-            <Skeleton className="h-10 w-16" />
-         </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         {[1, 2, 3].map((index) => (
+            <Card
+               className="col-span-1 h-full w-full"
+               key={`stats-skeleton-${index}`}
+            >
+               <CardHeader>
+                  <CardTitle>
+                     <Skeleton className="h-6 w-24" />
+                  </CardTitle>
+                  <CardDescription>
+                     <Skeleton className="h-4 w-32" />
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <Skeleton className="h-10 w-16" />
+               </CardContent>
+            </Card>
+         ))}
+      </div>
    );
 }
 
-function CostCenterTotalStat({ costCenterId }: { costCenterId: string }) {
+function CostCenterStatsContent({
+   costCenterId,
+   startDate,
+   endDate,
+}: {
+   costCenterId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
-
-   const { data: costCenter } = useSuspenseQuery(
-      trpc.costCenters.getById.queryOptions({ id: costCenterId }),
-   );
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
+         costCenterId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
-         search: costCenter.name,
-      }),
-   );
-
-   return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.transactions.stats-section.total.description",
-         )}
-         title={translate(
-            "dashboard.routes.transactions.stats-section.total.title",
-         )}
-         value={data.pagination.totalCount}
-      />
-   );
-}
-
-function CostCenterIncomeStat({ costCenterId }: { costCenterId: string }) {
-   const trpc = useTRPC();
-
-   const { data: costCenter } = useSuspenseQuery(
-      trpc.costCenters.getById.queryOptions({ id: costCenterId }),
-   );
-
-   const { data } = useSuspenseQuery(
-      trpc.transactions.getAllPaginated.queryOptions({
-         limit: 100,
-         page: 1,
-         search: costCenter.name,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -91,81 +81,71 @@ function CostCenterIncomeStat({ costCenterId }: { costCenterId: string }) {
          0,
       );
 
-   return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.transactions.stats-section.income.description",
-         )}
-         title={translate(
-            "dashboard.routes.transactions.stats-section.income.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(income)}
-      />
-   );
-}
-
-function CostCenterExpenseStat({ costCenterId }: { costCenterId: string }) {
-   const trpc = useTRPC();
-
-   const { data: costCenter } = useSuspenseQuery(
-      trpc.costCenters.getById.queryOptions({ id: costCenterId }),
-   );
-
-   const { data } = useSuspenseQuery(
-      trpc.transactions.getAllPaginated.queryOptions({
-         limit: 100,
-         page: 1,
-         search: costCenter.name,
-      }),
-   );
-
    const expense = data.transactions
       .filter((t: { type: string }) => t.type === "expense")
       .reduce(
          (acc: number, curr: { amount: string }) =>
-            acc + parseFloat(curr.amount),
+            acc + Math.abs(parseFloat(curr.amount)),
          0,
       );
 
    return (
-      <StatsCard
-         description={translate(
-            "dashboard.routes.transactions.stats-section.expense.description",
-         )}
-         title={translate(
-            "dashboard.routes.transactions.stats-section.expense.title",
-         )}
-         value={new Intl.NumberFormat("pt-BR", {
-            currency: "BRL",
-            style: "currency",
-         }).format(expense)}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.total.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.total.title",
+            )}
+            value={data.pagination.totalCount}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.income.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.income.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(income)}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.stats-section.expense.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.stats-section.expense.title",
+            )}
+            value={new Intl.NumberFormat("pt-BR", {
+               currency: "BRL",
+               style: "currency",
+            }).format(expense)}
+         />
+      </div>
    );
 }
 
-export function CostCenterStats({ costCenterId }: { costCenterId: string }) {
+export function CostCenterStats({
+   costCenterId,
+   startDate,
+   endDate,
+}: {
+   costCenterId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-min">
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <CostCenterTotalStat costCenterId={costCenterId} />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <CostCenterIncomeStat costCenterId={costCenterId} />
-            </Suspense>
-         </ErrorBoundary>
-
-         <ErrorBoundary FallbackComponent={StatErrorFallback}>
-            <Suspense fallback={<StatSkeleton />}>
-               <CostCenterExpenseStat costCenterId={costCenterId} />
-            </Suspense>
-         </ErrorBoundary>
-      </div>
+      <ErrorBoundary FallbackComponent={CostCenterStatsErrorFallback}>
+         <Suspense fallback={<CostCenterStatsSkeleton />}>
+            <CostCenterStatsContent
+               costCenterId={costCenterId}
+               endDate={endDate}
+               startDate={startDate}
+            />
+         </Suspense>
+      </ErrorBoundary>
    );
 }

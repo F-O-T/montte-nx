@@ -71,6 +71,7 @@ function getRandomColor(): string {
    const index = Math.floor(Math.random() * CATEGORY_COLORS.length);
    return CATEGORY_COLORS[index] ?? "#3b82f6";
 }
+
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
@@ -80,6 +81,9 @@ type ManageTransactionSheetProps = {
    onOpenChange?: (open: boolean) => void;
    transaction?: Transaction;
    asChild?: boolean;
+   defaultCategoryIds?: string[];
+   defaultCostCenterId?: string;
+   defaultTagIds?: string[];
 };
 
 export function ManageTransactionSheet({
@@ -87,6 +91,9 @@ export function ManageTransactionSheet({
    onOpenChange,
    transaction,
    asChild = false,
+   defaultCategoryIds = [],
+   defaultCostCenterId = "",
+   defaultTagIds = [],
 }: ManageTransactionSheetProps) {
    const queryClient = useQueryClient();
    const isEditMode = !!transaction;
@@ -294,11 +301,13 @@ export function ManageTransactionSheet({
          bankAccountId: transaction?.bankAccountId || "",
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
-            [],
-         costCenterId: transaction?.costCenterId || "",
+            defaultCategoryIds,
+         costCenterId: transaction?.costCenterId || defaultCostCenterId,
          date: transaction?.date ? new Date(transaction.date) : new Date(),
          description: transaction?.description || "",
-         tagIds: transaction?.transactionTags?.map((tt) => tt.tag.id) || [],
+         tagIds:
+            transaction?.transactionTags?.map((tt) => tt.tag.id) ||
+            defaultTagIds,
          type: (transaction?.type === "transfer"
             ? "expense"
             : transaction?.type || "expense") as "expense" | "income",

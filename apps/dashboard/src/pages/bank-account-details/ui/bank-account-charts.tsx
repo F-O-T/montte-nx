@@ -381,7 +381,8 @@ function BankAccountMonthlyTrendChart({
             });
          }
 
-         const monthData = monthlyData.get(monthKey)!;
+         const monthData = monthlyData.get(monthKey);
+         if (!monthData) continue;
          const amount = Math.abs(parseFloat(t.amount));
 
          if (t.type === "income") {

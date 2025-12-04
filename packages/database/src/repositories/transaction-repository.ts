@@ -1,10 +1,22 @@
 import { AppError, propagateError } from "@packages/utils/errors";
+import type { SQL } from "drizzle-orm";
 import { and, eq, exists, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
+import { transactionTag } from "../schemas/tags";
 import { type CategorySplit, transaction } from "../schemas/transactions";
 import { transferLog } from "../schemas/transfers";
 import { setTransactionCategories } from "./category-repository";
+
+type TransactionFields = typeof transaction.$inferSelect;
+type TransactionColumns = {
+   [K in keyof TransactionFields]: (typeof transaction)[K];
+};
+type DrizzleOperators = {
+   eq: typeof eq;
+   and: (...conditions: (SQL | undefined)[]) => SQL | undefined;
+   ilike: typeof ilike;
+};
 
 export type Transaction = typeof transaction.$inferSelect;
 export type NewTransaction = typeof transaction.$inferInsert;
@@ -24,8 +36,10 @@ export async function createTransaction(
          throw AppError.database("Failed to create transaction");
       }
 
+      const createdId = result[0].id;
+
       const createdTransaction = await dbClient.query.transaction.findFirst({
-         where: (transaction, { eq }) => eq(transaction.id, result[0]!.id),
+         where: (transaction, { eq }) => eq(transaction.id, createdId),
          with: {
             bankAccount: true,
             costCenter: true,
@@ -143,6 +157,8 @@ export async function findTransactionsByOrganizationIdPaginated(
       type,
       bankAccountId,
       categoryId,
+      tagId,
+      costCenterId,
       search,
       orderBy = "date",
       orderDirection = "desc",
@@ -154,21 +170,23 @@ export async function findTransactionsByOrganizationIdPaginated(
 
    try {
       const buildWhereCondition = (
-         txn: any,
-         { eq: eqOp, and: andOp, ilike }: any,
+         txn: TransactionColumns,
+         { eq: eqOp, and: andOp, ilike: ilikeOp }: DrizzleOperators,
       ) => {
-         const conditions = [eqOp(txn.organizationId, organizationId)];
+         const conditions: (SQL | undefined)[] = [
+            eqOp(txn.organizationId, organizationId),
+         ];
 
          if (bankAccountId && bankAccountId !== "all") {
             conditions.push(eqOp(txn.bankAccountId, bankAccountId));
          }
 
-         if (type && type !== ("all" as any)) {
+         if (type) {
             conditions.push(eqOp(txn.type, type));
          }
 
          if (search) {
-            conditions.push(ilike(txn.description, `%${search}%`));
+            conditions.push(ilikeOp(txn.description, `%${search}%`));
          }
 
          if (startDate) {
@@ -189,6 +207,26 @@ export async function findTransactionsByOrganizationIdPaginated(
                         and(
                            eq(transactionCategory.transactionId, txn.id),
                            eq(transactionCategory.categoryId, categoryId),
+                        ),
+                     ),
+               ),
+            );
+         }
+
+         if (costCenterId) {
+            conditions.push(eqOp(txn.costCenterId, costCenterId));
+         }
+
+         if (tagId) {
+            conditions.push(
+               exists(
+                  dbClient
+                     .select({ one: sql`1` })
+                     .from(transactionTag)
+                     .where(
+                        and(
+                           eq(transactionTag.transactionId, txn.id),
+                           eq(transactionTag.tagId, tagId),
                         ),
                      ),
                ),

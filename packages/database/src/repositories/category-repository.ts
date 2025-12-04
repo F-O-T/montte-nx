@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, count, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
+import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
@@ -200,6 +200,35 @@ export async function deleteCategory(
    }
 }
 
+export async function deleteManyCategories(
+   dbClient: DatabaseInstance,
+   categoryIds: string[],
+   organizationId: string,
+) {
+   if (categoryIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient
+         .delete(category)
+         .where(
+            and(
+               inArray(category.id, categoryIds),
+               eq(category.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete categories: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function getTotalCategoriesByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
@@ -249,7 +278,7 @@ export async function searchCategories(
             LEFT JOIN ${transactionCategory} tc ON c.id = tc.category_id
             WHERE
                c.organization_id = ${organizationId}
-               AND c.name ILIKE ${"%" + query + "%"}
+               AND c.name ILIKE ${`%${query}%`}
             GROUP BY c.id
             ORDER BY c.name ASC
             LIMIT ${limit}
