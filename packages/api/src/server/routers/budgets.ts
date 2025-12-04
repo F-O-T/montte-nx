@@ -1,13 +1,21 @@
 import {
+   calculatePeriodDates,
+   checkBudgetImpact,
    createBudget,
    deleteBudget,
+   deleteBudgets,
+   duplicateBudget,
    findBudgetById,
+   findBudgetPeriods,
    findBudgetsByOrganizationIdPaginated,
+   findBudgetsByTarget,
+   findTransactionsByBudgetTarget,
    getBudgetStats,
    getBudgetsWithProgress,
    getBudgetWithProgress,
    processRollover,
    updateBudget,
+   updateBudgets,
 } from "@packages/database/repositories/budget-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -107,10 +115,75 @@ const paginationSchema = z.object({
       .default("name"),
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),
+   periodType: z
+      .enum(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"])
+      .optional(),
    search: z.string().optional(),
 });
 
 export const budgetRouter = router({
+   bulkActivate: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return updateBudgets(
+            resolvedCtx.db,
+            input.ids,
+            { isActive: true },
+            organizationId,
+         );
+      }),
+
+   bulkDeactivate: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return updateBudgets(
+            resolvedCtx.db,
+            input.ids,
+            { isActive: false },
+            organizationId,
+         );
+      }),
+
+   bulkDelete: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return deleteBudgets(resolvedCtx.db, input.ids, organizationId);
+      }),
+
+   checkBudgetImpact: protectedProcedure
+      .input(
+         z.object({
+            amount: z.number(),
+            categoryId: z.string().optional(),
+            categoryIds: z.array(z.string()).optional(),
+            costCenterId: z.string().optional(),
+            excludeTransactionId: z.string().optional(),
+            tagIds: z.array(z.string()).optional(),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return checkBudgetImpact(resolvedCtx.db, organizationId, {
+            amount: input.amount,
+            categoryId: input.categoryId,
+            categoryIds: input.categoryIds,
+            costCenterId: input.costCenterId,
+            excludeTransactionId: input.excludeTransactionId,
+            tagIds: input.tagIds,
+         });
+      }),
+
    create: protectedProcedure
       .input(createBudgetSchema)
       .mutation(async ({ ctx, input }) => {
@@ -142,6 +215,25 @@ export const budgetRouter = router({
          return deleteBudget(resolvedCtx.db, input.id);
       }),
 
+   duplicate: protectedProcedure
+      .input(
+         z.object({
+            id: z.string(),
+            name: z.string().optional(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return duplicateBudget(
+            resolvedCtx.db,
+            input.id,
+            organizationId,
+            input.name,
+         );
+      }),
+
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
@@ -165,9 +257,31 @@ export const budgetRouter = router({
                orderBy: input.orderBy,
                orderDirection: input.orderDirection,
                page: input.page,
+               periodType: input.periodType,
                search: input.search,
             },
          );
+      }),
+
+   getBudgetsByTarget: protectedProcedure
+      .input(
+         z.object({
+            categoryId: z.string().optional(),
+            categoryIds: z.array(z.string()).optional(),
+            costCenterId: z.string().optional(),
+            tagIds: z.array(z.string()).optional(),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return findBudgetsByTarget(resolvedCtx.db, organizationId, {
+            categoryId: input.categoryId,
+            categoryIds: input.categoryIds,
+            costCenterId: input.costCenterId,
+            tagIds: input.tagIds,
+         });
       }),
 
    getById: protectedProcedure
@@ -185,12 +299,69 @@ export const budgetRouter = router({
          return budget;
       }),
 
+   getPeriodHistory: protectedProcedure
+      .input(
+         z.object({
+            budgetId: z.string(),
+            limit: z.number().default(12),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const budget = await findBudgetById(resolvedCtx.db, input.budgetId);
+
+         if (!budget || budget.organizationId !== organizationId) {
+            throw new Error("Budget not found");
+         }
+
+         return findBudgetPeriods(resolvedCtx.db, input.budgetId, {
+            limit: input.limit,
+         });
+      }),
+
    getStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
 
       return getBudgetStats(resolvedCtx.db, organizationId);
    }),
+
+   getTransactions: protectedProcedure
+      .input(
+         z.object({
+            budgetId: z.string(),
+            limit: z.number().default(10),
+            page: z.number().default(1),
+            periodEnd: z.date().optional(),
+            periodStart: z.date().optional(),
+            search: z.string().optional(),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const budget = await findBudgetById(resolvedCtx.db, input.budgetId);
+
+         if (!budget || budget.organizationId !== organizationId) {
+            throw new Error("Budget not found");
+         }
+
+         const { periodStart, periodEnd } =
+            input.periodStart && input.periodEnd
+               ? { periodEnd: input.periodEnd, periodStart: input.periodStart }
+               : calculatePeriodDates(budget);
+
+         return findTransactionsByBudgetTarget(resolvedCtx.db, budget, {
+            limit: input.limit,
+            page: input.page,
+            periodEnd,
+            periodStart,
+            search: input.search,
+         });
+      }),
 
    processRollover: protectedProcedure
       .input(z.object({ id: z.string() }))

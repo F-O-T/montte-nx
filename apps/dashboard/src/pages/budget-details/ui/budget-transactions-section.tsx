@@ -1,0 +1,271 @@
+import type { RouterOutput } from "@packages/api/client";
+import { translate } from "@packages/localization";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import {
+   Empty,
+   EmptyContent,
+   EmptyDescription,
+   EmptyMedia,
+   EmptyTitle,
+} from "@packages/ui/components/empty";
+import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { keepPreviousData, useSuspenseQueries } from "@tanstack/react-query";
+import { Receipt } from "lucide-react";
+import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { TransactionList } from "@/features/transaction/ui/transaction-list";
+import { trpc } from "@/integrations/clients";
+
+type Budget = RouterOutput["budgets"]["getById"];
+
+type BudgetTransactionsSectionProps = {
+   budget: Budget;
+   startDate: Date | null;
+   endDate: Date | null;
+};
+
+function BudgetTransactionsSkeleton() {
+   return (
+      <Card>
+         <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+         </CardHeader>
+         <CardContent className="grid gap-4">
+            <Skeleton className="h-9 max-w-md" />
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((_, index) => (
+                  <Fragment key={`budget-transaction-skeleton-${index + 1}`}>
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
+               ))}
+            </ItemGroup>
+         </CardContent>
+      </Card>
+   );
+}
+
+function BudgetTransactionsErrorFallback({ error }: FallbackProps) {
+   return (
+      <Card>
+         <CardHeader>
+            <CardTitle>
+               {translate(
+                  "dashboard.routes.budgets.details.transactions.title",
+               )}
+            </CardTitle>
+         </CardHeader>
+         <CardContent>
+            <Empty>
+               <EmptyContent>
+                  <EmptyMedia variant="icon">
+                     <Receipt className="size-12 text-destructive" />
+                  </EmptyMedia>
+                  <EmptyTitle>
+                     {translate(
+                        "dashboard.routes.budgets.details.transactions.error.title",
+                     )}
+                  </EmptyTitle>
+                  <EmptyDescription>{error?.message}</EmptyDescription>
+               </EmptyContent>
+            </Empty>
+         </CardContent>
+      </Card>
+   );
+}
+
+function getBudgetCategoryIds(budget: Budget): string[] | undefined {
+   if (!budget.target) return undefined;
+   if (budget.target.type === "category" && budget.target.categoryId) {
+      return [budget.target.categoryId];
+   }
+   if (budget.target.type === "categories" && budget.target.categoryIds) {
+      return budget.target.categoryIds;
+   }
+   return undefined;
+}
+
+function getBudgetTagId(budget: Budget): string | undefined {
+   if (!budget.target) return undefined;
+   if (budget.target.type === "tag" && budget.target.tagId) {
+      return budget.target.tagId;
+   }
+   return undefined;
+}
+
+function getBudgetCostCenterId(budget: Budget): string | undefined {
+   if (!budget.target) return undefined;
+   if (budget.target.type === "cost_center" && budget.target.costCenterId) {
+      return budget.target.costCenterId;
+   }
+   return undefined;
+}
+
+function BudgetTransactionsContent({
+   budget,
+   startDate,
+   endDate,
+}: BudgetTransactionsSectionProps) {
+   const [currentPage, setCurrentPage] = useState(1);
+   const [pageSize, setPageSize] = useState(10);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [typeFilter, setTypeFilter] = useState("");
+
+   const dateKey = useMemo(
+      () => `${startDate?.getTime()}-${endDate?.getTime()}`,
+      [startDate, endDate],
+   );
+
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setDebouncedSearchTerm(searchTerm);
+         setCurrentPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+   }, [searchTerm]);
+
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when dates change
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [dateKey]);
+
+   const categoryIds = getBudgetCategoryIds(budget);
+   const tagId = getBudgetTagId(budget);
+   const costCenterId = getBudgetCostCenterId(budget);
+
+   const [transactionsQuery, categoriesQuery] = useSuspenseQueries({
+      queries: [
+         trpc.transactions.getAllPaginated.queryOptions(
+            {
+               categoryIds,
+               costCenterId,
+               endDate: endDate?.toISOString(),
+               limit: pageSize,
+               page: currentPage,
+               search: debouncedSearchTerm || undefined,
+               startDate: startDate?.toISOString(),
+               tagId,
+               type:
+                  typeFilter === "all" || typeFilter === ""
+                     ? "expense"
+                     : (typeFilter as "income" | "expense" | "transfer"),
+            },
+            {
+               placeholderData: keepPreviousData,
+            },
+         ),
+         trpc.categories.getAll.queryOptions(),
+      ],
+   });
+
+   const { transactions, pagination } = transactionsQuery.data;
+   const { totalPages, totalCount } = pagination;
+   const categories = categoriesQuery.data ?? [];
+
+   const handleClearFilters = () => {
+      setSearchTerm("");
+      setTypeFilter("");
+   };
+
+   const hasActiveFilters = debouncedSearchTerm.length > 0 || typeFilter !== "";
+
+   if (transactions.length === 0 && !hasActiveFilters) {
+      return (
+         <Card>
+            <CardHeader>
+               <CardTitle>
+                  {translate(
+                     "dashboard.routes.budgets.details.transactions.title",
+                  )}
+               </CardTitle>
+               <CardDescription>
+                  {translate(
+                     "dashboard.routes.budgets.details.transactions.description",
+                  )}
+               </CardDescription>
+            </CardHeader>
+            <CardContent>
+               <Empty>
+                  <EmptyContent>
+                     <EmptyMedia variant="icon">
+                        <Receipt className="size-12 text-muted-foreground" />
+                     </EmptyMedia>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.budgets.details.transactions.empty.title",
+                        )}
+                     </EmptyTitle>
+                     <EmptyDescription>
+                        {translate(
+                           "dashboard.routes.budgets.details.transactions.empty.description",
+                        )}
+                     </EmptyDescription>
+                  </EmptyContent>
+               </Empty>
+            </CardContent>
+         </Card>
+      );
+   }
+
+   return (
+      <TransactionList
+         categories={categories}
+         emptyStateDescription={translate(
+            "dashboard.routes.budgets.details.transactions.empty.description",
+         )}
+         emptyStateTitle={translate(
+            "dashboard.routes.budgets.details.transactions.empty.title",
+         )}
+         filters={{
+            categoryFilter: "all",
+            onCategoryFilterChange: () => {},
+            onClearFilters: handleClearFilters,
+            onSearchChange: setSearchTerm,
+            onTypeFilterChange: setTypeFilter,
+            searchTerm,
+            typeFilter,
+         }}
+         pagination={{
+            currentPage,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (size) => {
+               setPageSize(size);
+               setCurrentPage(1);
+            },
+            pageSize,
+            totalCount,
+            totalPages,
+         }}
+         showTypeToggle={false}
+         transactions={transactions}
+      />
+   );
+}
+
+export function BudgetTransactionsSection(
+   props: BudgetTransactionsSectionProps,
+) {
+   return (
+      <ErrorBoundary FallbackComponent={BudgetTransactionsErrorFallback}>
+         <Suspense fallback={<BudgetTransactionsSkeleton />}>
+            <BudgetTransactionsContent {...props} />
+         </Suspense>
+      </ErrorBoundary>
+   );
+}

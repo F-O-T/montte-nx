@@ -66,6 +66,7 @@ const updateTransactionSchema = z.object({
 const paginationSchema = z.object({
    bankAccountId: z.string().optional(),
    categoryId: z.string().optional(),
+   categoryIds: z.array(z.string()).optional(),
    costCenterId: z.string().optional(),
    endDate: z.string().optional(),
    limit: z.coerce.number().min(1).max(100).default(5),

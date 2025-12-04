@@ -142,6 +142,7 @@ export async function findTransactionsByOrganizationIdPaginated(
       type?: "income" | "expense" | "transfer";
       bankAccountId?: string;
       categoryId?: string;
+      categoryIds?: string[];
       tagId?: string;
       costCenterId?: string;
       search?: string;
@@ -157,6 +158,7 @@ export async function findTransactionsByOrganizationIdPaginated(
       type,
       bankAccountId,
       categoryId,
+      categoryIds,
       tagId,
       costCenterId,
       search,
@@ -197,7 +199,21 @@ export async function findTransactionsByOrganizationIdPaginated(
             conditions.push(lte(txn.date, endDate));
          }
 
-         if (categoryId) {
+         if (categoryIds && categoryIds.length > 0) {
+            conditions.push(
+               exists(
+                  dbClient
+                     .select({ one: sql`1` })
+                     .from(transactionCategory)
+                     .where(
+                        and(
+                           eq(transactionCategory.transactionId, txn.id),
+                           inArray(transactionCategory.categoryId, categoryIds),
+                        ),
+                     ),
+               ),
+            );
+         } else if (categoryId) {
             conditions.push(
                exists(
                   dbClient

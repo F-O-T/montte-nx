@@ -16,16 +16,46 @@ import { Trash2 } from "lucide-react";
 import { trpc } from "@/integrations/clients";
 import type { Budget } from "../ui/budgets-page";
 
-interface DeleteBudgetProps {
+interface DeleteBudgetBaseProps {
    budget: Budget;
    children?: React.ReactNode;
-   asDropdownItem?: boolean;
+   onSuccess?: () => void;
 }
+
+interface DeleteBudgetDropdownProps extends DeleteBudgetBaseProps {
+   asDropdownItem: true;
+   asDialog?: never;
+   open?: never;
+   onOpenChange?: never;
+}
+
+interface DeleteBudgetDialogProps extends DeleteBudgetBaseProps {
+   asDialog: true;
+   asDropdownItem?: never;
+   open: boolean;
+   onOpenChange: (open: boolean) => void;
+}
+
+interface DeleteBudgetDefaultProps extends DeleteBudgetBaseProps {
+   asDropdownItem?: false;
+   asDialog?: false;
+   open?: never;
+   onOpenChange?: never;
+}
+
+type DeleteBudgetProps =
+   | DeleteBudgetDropdownProps
+   | DeleteBudgetDialogProps
+   | DeleteBudgetDefaultProps;
 
 export function DeleteBudget({
    budget,
    children,
    asDropdownItem = false,
+   asDialog = false,
+   open,
+   onOpenChange,
+   onSuccess,
 }: DeleteBudgetProps) {
    const queryClient = useQueryClient();
 
@@ -38,6 +68,8 @@ export function DeleteBudget({
             queryClient.invalidateQueries({
                queryKey: trpc.budgets.getStats.queryKey(),
             });
+            onOpenChange?.(false);
+            onSuccess?.();
          },
       }),
    );
@@ -49,6 +81,47 @@ export function DeleteBudget({
          console.error("Failed to delete budget:", error);
       }
    };
+
+   const dialogContent = (
+      <AlertDialogContent>
+         <AlertDialogHeader>
+            <AlertDialogTitle>
+               {translate(
+                  "dashboard.routes.budgets.features.delete-budget.title",
+               )}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+               {translate(
+                  "dashboard.routes.budgets.features.delete-budget.description",
+               )}
+            </AlertDialogDescription>
+         </AlertDialogHeader>
+         <AlertDialogFooter>
+            <AlertDialogCancel>
+               {translate(
+                  "dashboard.routes.budgets.features.delete-budget.cancel",
+               )}
+            </AlertDialogCancel>
+            <AlertDialogAction
+               className="bg-destructive text-destructive-foreground"
+               disabled={deleteBudgetMutation.isPending}
+               onClick={handleDelete}
+            >
+               {translate(
+                  "dashboard.routes.budgets.features.delete-budget.confirm",
+               )}
+            </AlertDialogAction>
+         </AlertDialogFooter>
+      </AlertDialogContent>
+   );
+
+   if (asDialog) {
+      return (
+         <AlertDialog onOpenChange={onOpenChange} open={open}>
+            {dialogContent}
+         </AlertDialog>
+      );
+   }
 
    const trigger = asDropdownItem ? (
       <DropdownMenuItem
@@ -65,36 +138,7 @@ export function DeleteBudget({
    return (
       <AlertDialog>
          <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-         <AlertDialogContent>
-            <AlertDialogHeader>
-               <AlertDialogTitle>
-                  {translate(
-                     "dashboard.routes.budgets.features.delete-budget.title",
-                  )}
-               </AlertDialogTitle>
-               <AlertDialogDescription>
-                  {translate(
-                     "dashboard.routes.budgets.features.delete-budget.description",
-                  )}
-               </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-               <AlertDialogCancel>
-                  {translate(
-                     "dashboard.routes.budgets.features.delete-budget.cancel",
-                  )}
-               </AlertDialogCancel>
-               <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground"
-                  disabled={deleteBudgetMutation.isPending}
-                  onClick={handleDelete}
-               >
-                  {translate(
-                     "dashboard.routes.budgets.features.delete-budget.confirm",
-                  )}
-               </AlertDialogAction>
-            </AlertDialogFooter>
-         </AlertDialogContent>
+         {dialogContent}
       </AlertDialog>
    );
 }

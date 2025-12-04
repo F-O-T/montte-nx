@@ -1,22 +1,17 @@
 import { translate } from "@packages/localization";
+import {
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
-import {
-   Card,
-   CardAction,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
-import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
+import { Card, CardContent } from "@packages/ui/components/card";
+import { DataTable } from "@packages/ui/components/data-table";
 import {
    Empty,
    EmptyContent,
@@ -30,145 +25,46 @@ import {
    InputGroupAddon,
    InputGroupInput,
 } from "@packages/ui/components/input-group";
+import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemGroup,
-   ItemMedia,
-   ItemSeparator,
-   ItemTitle,
-} from "@packages/ui/components/item";
-import {
-   Pagination,
-   PaginationContent,
-   PaginationItem,
-   PaginationLink,
-   PaginationNext,
-   PaginationPrevious,
-} from "@packages/ui/components/pagination";
+   SelectionActionBar,
+   SelectionActionButton,
+} from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { Eye, Filter, Inbox, MoreVertical, Plus, Search } from "lucide-react";
+import type { RowSelectionState } from "@tanstack/react-table";
+import {
+   Check,
+   CheckCircle,
+   CircleDashed,
+   Filter,
+   Inbox,
+   Search,
+   Trash2,
+   X,
+} from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 import { BudgetFilterSheet } from "../features/budget-filter-sheet";
 import { useBudgetList } from "../features/budget-list-context";
-import { DeleteBudget } from "../features/delete-budget";
-import { ManageBudgetSheet } from "../features/manage-budget-sheet";
-import { BudgetProgressBar } from "./budget-progress-bar";
-import type { Budget } from "./budgets-page";
-
-function BudgetsCardHeader() {
-   const [isBudgetSheetOpen, setIsBudgetSheetOpen] = useState(false);
-   const isMobile = useIsMobile();
-
-   return (
-      <>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.budgets.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate("dashboard.routes.budgets.list-section.description")}
-            </CardDescription>
-            {!isMobile && (
-               <CardAction>
-                  <Button onClick={() => setIsBudgetSheetOpen(true)} size="sm">
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.budgets.actions-toolbar.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>
-            )}
-         </CardHeader>
-         <Button
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
-            onClick={() => setIsBudgetSheetOpen(true)}
-            size="icon"
-         >
-            <Plus className="size-6" />
-         </Button>
-         <ManageBudgetSheet
-            onOpen={isBudgetSheetOpen}
-            onOpenChange={setIsBudgetSheetOpen}
-         />
-      </>
-   );
-}
-
-function BudgetActionsDropdown({ budget }: { budget: Budget }) {
-   const [isOpen, setIsOpen] = useState(false);
-   const { activeOrganization } = useActiveOrganization();
-
-   return (
-      <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <DropdownMenuTrigger asChild>
-                  <Button
-                     aria-label={translate(
-                        "dashboard.routes.budgets.list-section.actions.label",
-                     )}
-                     className="h-8 w-8 p-0"
-                     size="icon"
-                     title="Budget actions"
-                     variant="ghost"
-                  >
-                     <MoreVertical className="h-4 w-4" />
-                  </Button>
-               </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.budgets.list-section.actions.label",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <DropdownMenuContent align="end">
-            <DropdownMenuLabel>
-               {translate(
-                  "dashboard.routes.budgets.list-section.actions.label",
-               )}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-               <Link
-                  params={{
-                     budgetId: budget.id,
-                     slug: activeOrganization.slug,
-                  }}
-                  to="/$slug/budgets/$budgetId"
-               >
-                  <Eye className="size-4" />
-                  {translate(
-                     "dashboard.routes.budgets.list-section.actions.view-details",
-                  )}
-               </Link>
-            </DropdownMenuItem>
-            <ManageBudgetSheet asChild budget={budget} />
-            <DeleteBudget asDropdownItem budget={budget} />
-         </DropdownMenuContent>
-      </DropdownMenu>
-   );
-}
+import { useBudgetBulkActions } from "../features/use-budget-bulk-actions";
+import {
+   BudgetExpandedContent,
+   BudgetMobileCard,
+   createBudgetColumns,
+} from "./budgets-table-columns";
 
 function BudgetsListErrorFallback(props: FallbackProps) {
    return (
       <Card>
-         <BudgetsCardHeader />
-         <CardContent>
+         <CardContent className="pt-6">
             {createErrorFallback({
                errorDescription: translate(
                   "dashboard.routes.budgets.list-section.state.error.description",
@@ -186,134 +82,56 @@ function BudgetsListErrorFallback(props: FallbackProps) {
 function BudgetsListSkeleton() {
    return (
       <Card>
-         <BudgetsCardHeader />
-         <CardContent>
+         <CardContent className="pt-6 grid gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+               <Skeleton className="h-9 w-full sm:max-w-md" />
+               <Skeleton className="h-9 w-9" />
+            </div>
+            <div className="flex gap-2">
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-24" />
+            </div>
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`budget-skeleton-${index + 1}`}>
-                     <Item>
-                        <ItemMedia variant="icon">
-                           <Skeleton className="size-10 rounded-lg" />
-                        </ItemMedia>
-                        <ItemContent className="gap-1">
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded-lg" />
+                        <div className="space-y-2 flex-1">
                            <Skeleton className="h-4 w-32" />
-                           <Skeleton className="h-3 w-48" />
-                           <Skeleton className="h-3 w-full mt-2" />
-                        </ItemContent>
-                        <ItemActions>
-                           <Skeleton className="size-8" />
-                        </ItemActions>
-                     </Item>
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
                      {index !== 4 && <ItemSeparator />}
                   </Fragment>
                ))}
             </ItemGroup>
+            <div className="flex items-center justify-end gap-2 pt-4">
+               <Skeleton className="h-10 w-24" />
+               <Skeleton className="h-10 w-10" />
+               <Skeleton className="h-10 w-24" />
+            </div>
          </CardContent>
-         <CardFooter>
-            <Skeleton className="h-10 w-full" />
-         </CardFooter>
       </Card>
    );
 }
 
-function formatCurrency(value: number): string {
-   return new Intl.NumberFormat("pt-BR", {
-      currency: "BRL",
-      style: "currency",
-   }).format(value);
-}
-
-function BudgetItem({ budget }: { budget: Budget }) {
-   const totalAmount = parseFloat(budget.amount);
-   const currentPeriod = budget.periods?.[0];
-   const spent = currentPeriod
-      ? parseFloat(currentPeriod.spentAmount || "0")
-      : 0;
-   const scheduled = currentPeriod
-      ? parseFloat(currentPeriod.scheduledAmount || "0")
-      : 0;
-   const available = Math.max(0, totalAmount - spent - scheduled);
-   const percentage = totalAmount > 0 ? (spent / totalAmount) * 100 : 0;
-   const forecastPercentage =
-      totalAmount > 0 ? ((spent + scheduled) / totalAmount) * 100 : 0;
-
-   const periodLabels: Record<string, string> = {
-      custom: translate("dashboard.routes.budgets.form.period.custom"),
-      daily: translate("dashboard.routes.budgets.form.period.daily"),
-      monthly: translate("dashboard.routes.budgets.form.period.monthly"),
-      quarterly: translate("dashboard.routes.budgets.form.period.quarterly"),
-      weekly: translate("dashboard.routes.budgets.form.period.weekly"),
-      yearly: translate("dashboard.routes.budgets.form.period.yearly"),
-   };
-
-   return (
-      <Item className="flex-col items-start gap-3 py-4">
-         <div className="flex w-full items-start gap-3">
-            <ItemMedia variant="icon">
-               <div
-                  className="size-10 rounded-lg flex items-center justify-center text-white font-semibold text-sm"
-                  style={{ backgroundColor: budget.color || "#6366f1" }}
-               >
-                  {budget.name.substring(0, 2).toUpperCase()}
-               </div>
-            </ItemMedia>
-            <ItemContent className="flex-1 min-w-0">
-               <div className="flex items-center justify-between">
-                  <ItemTitle className="truncate">{budget.name}</ItemTitle>
-                  <span className="text-sm font-medium text-muted-foreground ml-2">
-                     {formatCurrency(totalAmount)}
-                  </span>
-               </div>
-               <ItemDescription className="flex items-center gap-2">
-                  <span>{periodLabels[budget.periodType]}</span>
-                  {budget.mode === "business" && (
-                     <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                        {translate(
-                           "dashboard.routes.budgets.form.mode.business",
-                        )}
-                     </span>
-                  )}
-               </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-               <BudgetActionsDropdown budget={budget} />
-            </ItemActions>
-         </div>
-         <div className="w-full pl-13">
-            <BudgetProgressBar
-               available={available}
-               forecastPercentage={forecastPercentage}
-               percentage={percentage}
-               scheduled={scheduled}
-               showLabels
-               spent={spent}
-               total={totalAmount}
-            />
-         </div>
-      </Item>
-   );
-}
-
 function BudgetsListContent() {
-   const {
-      orderBy,
-      setOrderBy,
-      orderDirection,
-      setOrderDirection,
-      currentPage,
-      setCurrentPage,
-      pageSize,
-      setPageSize,
-      setIsFilterSheetOpen,
-      isFilterSheetOpen,
-      modeFilter,
-      setModeFilter,
-      activeFilter,
-      setActiveFilter,
-   } = useBudgetList();
-
+   const isMobile = useIsMobile();
+   const { periodType } = useBudgetList();
+   const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [statusFilter, setStatusFilter] = useState<string>("");
+   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+   const [pageSize, setPageSize] = useState(10);
+   const [orderBy, setOrderBy] = useState<
+      "name" | "amount" | "createdAt" | "updatedAt"
+   >("name");
+   const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -321,17 +139,27 @@ function BudgetsListContent() {
          setCurrentPage(1);
       }, 300);
       return () => clearTimeout(timer);
-   }, [searchTerm, setCurrentPage]);
+   }, [searchTerm]);
+
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [statusFilter, periodType, pageSize]);
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.budgets.getAllPaginated.queryOptions(
          {
-            isActive: activeFilter,
+            isActive:
+               statusFilter === "active"
+                  ? true
+                  : statusFilter === "inactive"
+                    ? false
+                    : undefined,
             limit: pageSize,
-            mode: modeFilter,
             orderBy,
             orderDirection,
             page: currentPage,
+            periodType: periodType || undefined,
             search: debouncedSearchTerm || undefined,
          },
          {
@@ -341,29 +169,47 @@ function BudgetsListContent() {
    );
 
    const { budgets, pagination } = paginatedData;
-   const { totalPages } = pagination;
+   const { totalPages, totalCount } = pagination;
 
-   const handleFilterChange = () => {
-      setCurrentPage(1);
+   const hasActiveFilters = debouncedSearchTerm || statusFilter;
+
+   const selectedIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id],
+   );
+   const selectedBudgets = budgets.filter((budget) =>
+      selectedIds.includes(budget.id),
+   );
+   const selectedTotal = selectedBudgets.reduce(
+      (sum, budget) => sum + parseFloat(budget.amount),
+      0,
+   );
+
+   const { markAsActive, markAsInactive, deleteSelected, isLoading } =
+      useBudgetBulkActions({
+         onSuccess: () => setRowSelection({}),
+      });
+
+   const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
+   const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+   const handleClearSelection = () => {
+      setRowSelection({});
    };
 
-   const hasActiveFilters =
-      orderBy !== "name" ||
-      orderDirection !== "asc" ||
-      modeFilter !== undefined ||
-      activeFilter !== undefined;
+   const handleClearFilters = () => {
+      setStatusFilter("");
+      setSearchTerm("");
+   };
 
    return (
       <>
          <Card>
-            <BudgetsCardHeader />
-            <CardContent className="grid gap-2">
-               <div className="flex items-center justify-between gap-8">
-                  <InputGroup>
+            <CardContent className="pt-6 grid gap-4">
+               <div className="flex gap-6">
+                  <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
-                        onChange={(e) => {
-                           setSearchTerm(e.target.value);
-                        }}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder={translate(
                            "common.form.search.placeholder",
                         )}
@@ -373,29 +219,78 @@ function BudgetsListContent() {
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <Button
-                           onClick={() => setIsFilterSheetOpen(true)}
-                           size="icon"
-                           variant={hasActiveFilters ? "default" : "outline"}
-                        >
-                           <Filter className="size-4" />
-                        </Button>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                        {translate(
-                           "dashboard.routes.budgets.features.filter.title",
-                        )}
-                     </TooltipContent>
-                  </Tooltip>
+
+                  {isMobile && (
+                     <Button
+                        onClick={() => setIsFilterSheetOpen(true)}
+                        size="icon"
+                        variant="outline"
+                     >
+                        <Filter className="size-4" />
+                     </Button>
+                  )}
                </div>
 
-               {budgets.length === 0 && pagination.totalCount === 0 ? (
+               {!isMobile && (
+                  <div className="flex flex-wrap items-center gap-3">
+                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                           {translate(
+                              "dashboard.routes.budgets.filters.status",
+                           )}
+                           :
+                        </span>
+                        <ToggleGroup
+                           onValueChange={setStatusFilter}
+                           size="sm"
+                           spacing={2}
+                           type="single"
+                           value={statusFilter}
+                           variant="outline"
+                        >
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                              value="active"
+                           >
+                              <CheckCircle className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.budgets.status.active",
+                              )}
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-muted-foreground data-[state=on]:text-muted-foreground"
+                              value="inactive"
+                           >
+                              <CircleDashed className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.budgets.status.inactive",
+                              )}
+                           </ToggleGroupItem>
+                        </ToggleGroup>
+                     </div>
+
+                     {hasActiveFilters && (
+                        <>
+                           <div className="h-4 w-px bg-border" />
+                           <Button
+                              className="h-8 text-xs"
+                              onClick={handleClearFilters}
+                              size="sm"
+                              variant="outline"
+                           >
+                              <X className="size-3" />
+                              {translate("common.actions.clear-filters")}
+                           </Button>
+                        </>
+                     )}
+                  </div>
+               )}
+
+               {budgets.length === 0 ? (
                   <Empty>
                      <EmptyContent>
                         <EmptyMedia variant="icon">
-                           <Inbox className="size-6" />
+                           <Inbox className="size-12 text-muted-foreground" />
                         </EmptyMedia>
                         <EmptyTitle>
                            {translate(
@@ -410,170 +305,189 @@ function BudgetsListContent() {
                      </EmptyContent>
                   </Empty>
                ) : (
-                  <ItemGroup>
-                     {budgets.map((budget, index) => (
-                        <Fragment key={budget.id}>
-                           <BudgetItem budget={budget} />
-                           {index !== budgets.length - 1 && <ItemSeparator />}
-                        </Fragment>
-                     ))}
-                  </ItemGroup>
+                  <DataTable
+                     columns={createBudgetColumns()}
+                     data={budgets}
+                     enableRowSelection
+                     getRowId={(row) => row.id}
+                     onRowSelectionChange={setRowSelection}
+                     pagination={{
+                        currentPage,
+                        onPageChange: setCurrentPage,
+                        onPageSizeChange: setPageSize,
+                        pageSize,
+                        totalCount,
+                        totalPages,
+                     }}
+                     renderMobileCard={(props) => (
+                        <BudgetMobileCard {...props} />
+                     )}
+                     renderSubComponent={(props) => (
+                        <BudgetExpandedContent {...props} />
+                     )}
+                     rowSelection={rowSelection}
+                  />
                )}
             </CardContent>
-
-            {pagination.totalPages > 1 && (
-               <CardFooter className="block md:hidden">
-                  <Pagination>
-                     <PaginationContent>
-                        <PaginationItem>
-                           <PaginationPrevious
-                              className={
-                                 !pagination.hasPreviousPage
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              href="#"
-                              onClick={() =>
-                                 setCurrentPage(Math.max(1, currentPage - 1))
-                              }
-                           />
-                        </PaginationItem>
-
-                        {Array.from(
-                           { length: Math.min(5, pagination.totalPages) },
-                           (_, i: number): number => {
-                              if (pagination.totalPages <= 5) {
-                                 return i + 1;
-                              }
-                              if (currentPage <= 3) {
-                                 return i + 1;
-                              }
-                              if (currentPage >= pagination.totalPages - 2) {
-                                 return pagination.totalPages - 4 + i;
-                              }
-                              return currentPage - 2 + i;
-                           },
-                        ).map((pageNum) => (
-                           <PaginationItem key={pageNum}>
-                              <PaginationLink
-                                 isActive={pageNum === currentPage}
-                                 onClick={() => setCurrentPage(pageNum)}
-                              >
-                                 {pageNum}
-                              </PaginationLink>
-                           </PaginationItem>
-                        ))}
-
-                        <PaginationItem>
-                           <PaginationNext
-                              className={
-                                 !pagination.hasNextPage
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              onClick={() =>
-                                 setCurrentPage(
-                                    Math.min(
-                                       pagination.totalPages,
-                                       currentPage + 1,
-                                    ),
-                                 )
-                              }
-                           />
-                        </PaginationItem>
-                     </PaginationContent>
-                  </Pagination>
-               </CardFooter>
-            )}
-
-            {pagination.totalPages > 1 && (
-               <CardFooter className="hidden md:flex md:items-center md:justify-between">
-                  <div className="text-sm text-muted-foreground">
-                     Mostrando {budgets.length} de {pagination.totalCount}{" "}
-                     orçamentos
-                  </div>
-                  <div className="flex items-center space-x-6 lg:space-x-8">
-                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        Página {currentPage} de {totalPages}
-                     </div>
-                     <div className="flex items-center space-x-2">
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === 1}
-                           onClick={() => setCurrentPage(1)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              Ir para primeira página
-                           </span>
-                           {"<<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === 1}
-                           onClick={() =>
-                              setCurrentPage(Math.max(1, currentPage - 1))
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">Página anterior</span>
-                           {"<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === totalPages}
-                           onClick={() =>
-                              setCurrentPage(
-                                 Math.min(totalPages, currentPage + 1),
-                              )
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">Próxima página</span>
-                           {">"}
-                        </Button>
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === totalPages}
-                           onClick={() => setCurrentPage(totalPages)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              Ir para última página
-                           </span>
-                           {">>"}
-                        </Button>
-                     </div>
-                  </div>
-               </CardFooter>
-            )}
          </Card>
 
+         <SelectionActionBar
+            onClear={handleClearSelection}
+            selectedCount={selectedIds.length}
+            summary={formatDecimalCurrency(selectedTotal)}
+         >
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<Check className="size-3.5" />}
+               onClick={() => setIsActivateDialogOpen(true)}
+            >
+               {translate("dashboard.routes.budgets.bulk-actions.activate")}
+            </SelectionActionButton>
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<X className="size-3.5" />}
+               onClick={() => setIsDeactivateDialogOpen(true)}
+            >
+               {translate("dashboard.routes.budgets.bulk-actions.deactivate")}
+            </SelectionActionButton>
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<Trash2 className="size-3.5" />}
+               onClick={() => setIsDeleteDialogOpen(true)}
+               variant="destructive"
+            >
+               {translate("dashboard.routes.budgets.bulk-actions.delete")}
+            </SelectionActionButton>
+         </SelectionActionBar>
+
+         <AlertDialog
+            onOpenChange={setIsActivateDialogOpen}
+            open={isActivateDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.activate-confirm-title",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.activate-confirm-description",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     onClick={() => {
+                        markAsActive(selectedIds);
+                        setIsActivateDialogOpen(false);
+                     }}
+                  >
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.confirm",
+                     )}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
+
+         <AlertDialog
+            onOpenChange={setIsDeactivateDialogOpen}
+            open={isDeactivateDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.deactivate-confirm-title",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.deactivate-confirm-description",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     onClick={() => {
+                        markAsInactive(selectedIds);
+                        setIsDeactivateDialogOpen(false);
+                     }}
+                  >
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.confirm",
+                     )}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
+
+         <AlertDialog
+            onOpenChange={setIsDeleteDialogOpen}
+            open={isDeleteDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "dashboard.routes.budgets.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                     onClick={() => {
+                        deleteSelected(selectedIds);
+                        setIsDeleteDialogOpen(false);
+                     }}
+                  >
+                     {translate("dashboard.routes.budgets.bulk-actions.delete")}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
+
          <BudgetFilterSheet
-            activeFilter={activeFilter}
+            activeFilter={
+               statusFilter === "active"
+                  ? true
+                  : statusFilter === "inactive"
+                    ? false
+                    : undefined
+            }
             isOpen={isFilterSheetOpen}
-            modeFilter={modeFilter}
             onActiveFilterChange={(value) => {
-               setActiveFilter(value);
-               handleFilterChange();
-            }}
-            onModeFilterChange={(value) => {
-               setModeFilter(value);
-               handleFilterChange();
+               if (value === true) setStatusFilter("active");
+               else if (value === false) setStatusFilter("inactive");
+               else setStatusFilter("");
             }}
             onOpenChange={setIsFilterSheetOpen}
-            onOrderByChange={(value) => {
-               setOrderBy(value);
-               handleFilterChange();
-            }}
-            onOrderDirectionChange={(value) => {
-               setOrderDirection(value);
-               handleFilterChange();
-            }}
-            onPageSizeChange={(value) => {
-               setPageSize(value);
-               handleFilterChange();
-            }}
+            onOrderByChange={setOrderBy}
+            onOrderDirectionChange={setOrderDirection}
+            onPageSizeChange={setPageSize}
             orderBy={orderBy}
             orderDirection={orderDirection}
             pageSize={pageSize}
