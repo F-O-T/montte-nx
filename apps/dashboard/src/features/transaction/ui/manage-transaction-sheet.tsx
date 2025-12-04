@@ -40,7 +40,13 @@ import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Info, Pencil, Plus, Tag, XCircle } from "lucide-react";
-import { type FormEvent, useCallback, useMemo, useState } from "react";
+import {
+   type FormEvent,
+   useCallback,
+   useEffect,
+   useMemo,
+   useState,
+} from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -122,6 +128,36 @@ export function ManageTransactionSheet({
       tagIds: string[];
       costCenterId: string;
    } | null>(null);
+
+   const [watchedValues, setWatchedValues] = useState<{
+      amount: number;
+      categoryIds: string[];
+      tagIds: string[];
+      costCenterId: string;
+      type: string;
+   } | null>(null);
+
+   useEffect(() => {
+      if (!watchedValues) return;
+
+      const shouldUpdate =
+         watchedValues.type === "expense" &&
+         watchedValues.amount > 0 &&
+         (watchedValues.categoryIds.length > 0 ||
+            watchedValues.tagIds.length > 0 ||
+            !!watchedValues.costCenterId);
+
+      const newParams = shouldUpdate
+         ? {
+              amount: centsToReais(watchedValues.amount),
+              categoryIds: watchedValues.categoryIds || [],
+              costCenterId: watchedValues.costCenterId || "",
+              tagIds: watchedValues.tagIds || [],
+           }
+         : null;
+
+      setBudgetImpactParams(newParams);
+   }, [watchedValues]);
 
    const isOpen = asChild ? internalOpen : onOpen;
    const setIsOpen = asChild ? setInternalOpen : onOpenChange;
@@ -758,29 +794,11 @@ export function ManageTransactionSheet({
                })}
             >
                {(values) => {
-                  const shouldUpdate =
-                     values.type === "expense" &&
-                     values.amount > 0 &&
-                     (values.categoryIds.length > 0 ||
-                        values.tagIds.length > 0 ||
-                        !!values.costCenterId);
-
-                  const newParams = shouldUpdate
-                     ? {
-                          amount: centsToReais(values.amount),
-                          categoryIds: values.categoryIds || [],
-                          costCenterId: values.costCenterId || "",
-                          tagIds: values.tagIds || [],
-                       }
-                     : null;
-
                   if (
-                     JSON.stringify(newParams) !==
-                     JSON.stringify(budgetImpactParams)
+                     JSON.stringify(values) !== JSON.stringify(watchedValues)
                   ) {
-                     setTimeout(() => setBudgetImpactParams(newParams), 0);
+                     setWatchedValues(values);
                   }
-
                   return null;
                }}
             </form.Subscribe>
