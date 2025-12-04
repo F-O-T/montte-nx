@@ -116,5 +116,8 @@
    },
    "updated-at": {
       "label": "Data de Atualização"
+   },
+   "items-per-page": {
+      "label": "Itens por página"
    }
 }

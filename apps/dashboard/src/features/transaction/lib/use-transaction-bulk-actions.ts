@@ -9,7 +9,7 @@ interface UseTransactionBulkActionsOptions {
 
 export function useTransactionBulkActions({
    onSuccess,
-   bankAccountId,
+   bankAccountId: _bankAccountId,
 }: UseTransactionBulkActionsOptions = {}) {
    const trpc = useTRPC();
 

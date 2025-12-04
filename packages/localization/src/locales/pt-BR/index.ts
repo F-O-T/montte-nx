@@ -12,6 +12,8 @@ import billsPtBr from "./dashboard/routes/bills.json";
 import budgetsPtBr from "./dashboard/routes/budgets.json";
 import categoriesPtBr from "./dashboard/routes/categories.json";
 import costCentersPtBr from "./dashboard/routes/cost-centers.json";
+import counterpartiesPtBr from "./dashboard/routes/counterparties.json";
+import interestTemplatesPtBr from "./dashboard/routes/interest-templates.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
 import forgotPasswordPtBr from "./dashboard/routes/forgot-password.json";
 import homePagePtBr from "./dashboard/routes/home.json";
@@ -44,10 +46,12 @@ const resources = {
             bills: billsPtBr,
             budgets: budgetsPtBr,
             categories: categoriesPtBr,
+            counterparties: counterpartiesPtBr,
             "cost-centers": costCentersPtBr,
             "email-verification": emailVerificationPtBr,
             "forgot-password": forgotPasswordPtBr,
             home: homePagePtBr,
+            "interest-templates": interestTemplatesPtBr,
             onboarding: onboardingPtBr,
             organization: organizationPtBr,
             profile: profilePtBr,

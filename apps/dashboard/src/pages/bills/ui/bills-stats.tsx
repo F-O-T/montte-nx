@@ -21,7 +21,7 @@ type BillsStatsProps = {
 
 function BillsStatsErrorFallback(props: FallbackProps) {
    return (
-      <div className="grid gap-4 h-min">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
          {createErrorFallback({
             errorDescription: translate(
                "dashboard.routes.bills.stats.error.description",
@@ -35,8 +35,8 @@ function BillsStatsErrorFallback(props: FallbackProps) {
 
 function BillsStatsSkeleton() {
    return (
-      <div className="grid gap-4 h-min">
-         {[1, 2].map((index) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+         {[1, 2, 3, 4].map((index) => (
             <Card
                className="col-span-1 h-full w-full"
                key={`stats-skeleton-card-${index + 1}`}
@@ -64,7 +64,7 @@ function BillsStatsContent({ type }: BillsStatsProps) {
 
    if (type === "payable") {
       return (
-         <div className="grid gap-4 h-min">
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
             <StatsCard
                description={translate(
                   "dashboard.routes.bills.stats.totalPayables.description",
@@ -74,23 +74,15 @@ function BillsStatsContent({ type }: BillsStatsProps) {
                )}
                value={formatDecimalCurrency(stats?.totalPendingPayables ?? 0)}
             />
-
             <StatsCard
                description={translate(
-                  "dashboard.routes.bills.stats.description",
+                  "dashboard.routes.bills.stats.overduePayables.description",
                )}
                title={translate(
                   "dashboard.routes.bills.stats.overduePayables.title",
                )}
                value={stats?.totalOverduePayables || 0}
             />
-         </div>
-      );
-   }
-
-   if (type === "receivable") {
-      return (
-         <div className="grid gap-4 h-min">
             <StatsCard
                description={translate(
                   "dashboard.routes.bills.stats.totalReceivables.description",
@@ -98,7 +90,36 @@ function BillsStatsContent({ type }: BillsStatsProps) {
                title={translate(
                   "dashboard.routes.bills.stats.totalReceivables.title",
                )}
-               value={`R$ ${stats?.totalPendingReceivables?.toFixed(2) || "0.00"}`}
+               value={formatDecimalCurrency(
+                  stats?.totalPendingReceivables ?? 0,
+               )}
+            />
+            <StatsCard
+               description={translate(
+                  "dashboard.routes.bills.stats.totalOverdue.description",
+               )}
+               title={translate(
+                  "dashboard.routes.bills.stats.totalOverdue.title",
+               )}
+               value={stats?.totalOverdue || 0}
+            />
+         </div>
+      );
+   }
+
+   if (type === "receivable") {
+      return (
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+            <StatsCard
+               description={translate(
+                  "dashboard.routes.bills.stats.totalReceivables.description",
+               )}
+               title={translate(
+                  "dashboard.routes.bills.stats.totalReceivables.title",
+               )}
+               value={formatDecimalCurrency(
+                  stats?.totalPendingReceivables ?? 0,
+               )}
             />
             <StatsCard
                description={translate(
@@ -109,13 +130,30 @@ function BillsStatsContent({ type }: BillsStatsProps) {
                )}
                value={stats?.totalOverdueReceivables || 0}
             />
+            <StatsCard
+               description={translate(
+                  "dashboard.routes.bills.stats.totalPayables.description",
+               )}
+               title={translate(
+                  "dashboard.routes.bills.stats.totalPayables.title",
+               )}
+               value={formatDecimalCurrency(stats?.totalPendingPayables ?? 0)}
+            />
+            <StatsCard
+               description={translate(
+                  "dashboard.routes.bills.stats.totalOverdue.description",
+               )}
+               title={translate(
+                  "dashboard.routes.bills.stats.totalOverdue.title",
+               )}
+               value={stats?.totalOverdue || 0}
+            />
          </div>
       );
    }
 
-   // Unified view - show all stats
    return (
-      <div className="grid gap-4 h-min">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
          <StatsCard
             description={translate(
                "dashboard.routes.bills.stats.totalPayables.description",
@@ -135,12 +173,22 @@ function BillsStatsContent({ type }: BillsStatsProps) {
             value={formatDecimalCurrency(stats?.totalPendingReceivables ?? 0)}
          />
          <StatsCard
-            description={translate("dashboard.routes.bills.stats.totalOverdue")}
-            title={translate("dashboard.routes.bills.stats.overdueBills.title")}
-            value={
-               (stats?.totalOverduePayables || 0) +
-               (stats?.totalOverdueReceivables || 0)
-            }
+            description={translate(
+               "dashboard.routes.bills.stats.overduePayables.description",
+            )}
+            title={translate(
+               "dashboard.routes.bills.stats.overduePayables.title",
+            )}
+            value={stats?.totalOverduePayables || 0}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.bills.stats.overdueReceivables.description",
+            )}
+            title={translate(
+               "dashboard.routes.bills.stats.overdueReceivables.title",
+            )}
+            value={stats?.totalOverdueReceivables || 0}
          />
       </div>
    );

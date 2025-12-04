@@ -16,6 +16,51 @@
    "copy": {
       "tooltip": "Copiar informações"
    },
+   "details": {
+      "title": "Detalhes da Conta",
+      "description": "Visualize e gerencie os detalhes desta conta",
+      "info": {
+         "title": "Informações"
+      },
+      "related-transaction": {
+         "title": "Transação Vinculada"
+      },
+      "attachments": {
+         "title": "Anexos",
+         "upload": "Anexar arquivo",
+         "download": "Baixar",
+         "delete": "Remover",
+         "empty": "Nenhum anexo",
+         "uploading": "Enviando...",
+         "deleting": "Removendo...",
+         "error": "Erro ao processar arquivo"
+      },
+      "interest": {
+         "title": "Juros e Correção",
+         "template": "Modelo",
+         "daysOverdue": "Dias em atraso",
+         "originalAmount": "Valor Original",
+         "penalty": "Multa",
+         "interest": "Juros",
+         "correction": "Correção",
+         "updatedAmount": "Valor Atualizado",
+         "apply": "Aplicar Juros",
+         "lastUpdate": "Atualizado em",
+         "noTemplate": "Sem modelo de juros"
+      },
+      "installments": {
+         "title": "Parcelas",
+         "current": "Atual",
+         "paid": "Paga",
+         "pending": "Pendente",
+         "viewAll": "Ver todas as parcelas"
+      },
+      "error": {
+         "title": "Erro ao carregar conta",
+         "back": "Voltar para Contas",
+         "retry": "Tentar novamente"
+      }
+   },
    "features": {
       "complete-bill": {
          "description": "Marque a conta como paga ou recebida",
@@ -32,8 +77,11 @@
             "counterparty": "Fornecedor/Cliente",
             "description": "Descrição",
             "dueDate": "Data de Vencimento",
+            "interestTemplate": "Modelo de Juros",
+            "isRecurring": "Conta recorrente",
             "issueDate": "Data de Emissão",
             "notes": "Observações",
+            "recurrencePattern": "Padrão de recorrência",
             "type": "Tipo"
          },
          "noCategoryFound": "Nenhuma categoria encontrada",
@@ -43,9 +91,37 @@
             "counterparty": "Nome do fornecedor ou cliente",
             "description": "Digite a descrição da conta...",
             "dueDate": "Selecione uma data",
+            "interestTemplate": "Selecione um modelo de juros",
             "issueDate": "Selecione uma data",
             "notes": "Observações adicionais...",
+            "recurrencePattern": "Selecione o período",
             "searchCategory": "Buscar categorias..."
+         },
+         "quick-create-counterparty": "Criar",
+         "recurrence": {
+            "annual": "Anual",
+            "monthly": "Mensal",
+            "quarterly": "Trimestral",
+            "semiannual": "Semestral"
+         },
+         "installments": {
+            "title": "Parcelamento",
+            "enable": "Parcelar esta conta",
+            "count": "Número de parcelas",
+            "interval": "Intervalo entre parcelas",
+            "intervalOptions": {
+               "monthly": "Mensal (30 dias)",
+               "biweekly": "Quinzenal (15 dias)",
+               "weekly": "Semanal (7 dias)",
+               "custom": "Personalizado"
+            },
+            "customDays": "Dias personalizados",
+            "amountType": "Valores das parcelas",
+            "amountEqual": "Iguais",
+            "amountCustom": "Personalizados",
+            "installmentLabel": "Parcela {{number}}",
+            "totalAmount": "Total: {{amount}}",
+            "eachAmount": "({{amount}} cada)"
          },
          "submit": "Criar Conta",
          "success": "Conta criada com sucesso",
@@ -97,8 +173,22 @@
    "filter": {
       "tooltip": "Filtrar contas"
    },
+   "bulk-actions": {
+      "complete": "Pagar/Receber",
+      "complete-confirm-title": "Confirmar pagamento de {{count}} conta(s)",
+      "complete-confirm-description": "Deseja marcar {{count}} conta(s) como paga(s)? Serão criadas transações para cada conta.",
+      "completed-success": "{{count}} conta(s) marcada(s) como paga(s)",
+      "completed-error": "Erro ao marcar contas como pagas",
+      "delete": "Excluir",
+      "delete-confirm-title": "Excluir {{count}} conta(s)",
+      "delete-confirm-description": "Tem certeza que deseja excluir {{count}} conta(s)? Esta ação não pode ser desfeita.",
+      "deleted-success": "{{count}} conta(s) excluída(s) com sucesso",
+      "deleted-error": "Erro ao excluir contas",
+      "confirm": "Confirmar"
+   },
    "list-section": {
       "actions": {
+         "add-new": "Nova Conta",
          "cancel": "Cancelar",
          "delete": "Excluir",
          "edit": "Editar",
@@ -106,7 +196,8 @@
          "markAsPaid": "Marcar como Paga",
          "markAsReceived": "Marcar como Recebida",
          "pay": "Pagar",
-         "receive": "Receber"
+         "receive": "Receber",
+         "view-details": "Ver Detalhes"
       },
       "description": "Gerencie suas contas futuras e planejadas",
       "state": {
@@ -136,19 +227,26 @@
       },
       "overduePayables": {
          "count": "0",
-         "description": "Total de contas a pagar vencidas",
-         "title": "Vencidas"
+         "description": "Contas a pagar vencidas",
+         "title": "Vencidas a Pagar"
       },
       "overdueReceivables": {
-         "description": "Total de contas a receber vencidas",
-         "title": "Vencidas"
+         "description": "Contas a receber vencidas",
+         "title": "Vencidas a Receber"
       },
       "pendingReceivables": {
          "description": "Total de contas a receber pendentes",
          "title": "A Receber"
       },
       "title": "Estatísticas",
-      "totalOverdue": "Total vencido",
+      "totalBills": {
+         "description": "Total de contas cadastradas",
+         "title": "Total de Contas"
+      },
+      "totalOverdue": {
+         "description": "Total de contas vencidas",
+         "title": "Total Vencido"
+      },
       "totalPayables": {
          "description": "Total de contas a pagar",
          "title": "A Pagar"

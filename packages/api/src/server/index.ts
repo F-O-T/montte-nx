@@ -8,6 +8,8 @@ import { brasilApiRouter } from "./routers/brasil-api";
 import { budgetRouter } from "./routers/budgets";
 import { categoryRouter } from "./routers/categories";
 import { costCenterRouter } from "./routers/cost-centers";
+import { counterpartyRouter } from "./routers/counterparties";
+import { interestTemplateRouter } from "./routers/interest-templates";
 import { notificationRouter } from "./routers/notifications";
 import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
@@ -26,6 +28,8 @@ export const appRouter = router({
    budgets: budgetRouter,
    categories: categoryRouter,
    costCenters: costCenterRouter,
+   counterparties: counterpartyRouter,
+   interestTemplates: interestTemplateRouter,
    notifications: notificationRouter,
    onboarding: onboardingRouter,
    organization: organizationRouter,

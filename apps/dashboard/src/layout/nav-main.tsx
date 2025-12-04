@@ -17,8 +17,11 @@ import {
    CirclePlus,
    FileText,
    Landmark,
+   Percent,
+   Receipt,
    Tag,
    TrendingUp,
+   Users,
    Wallet,
 } from "lucide-react";
 import { useState } from "react";
@@ -38,7 +41,7 @@ export function NavMain() {
          return pathname === path && searchStr === `?${params}`;
       }
 
-      return pathname === resolvedUrl;
+      return pathname === resolvedUrl && !searchStr;
    };
 
    const financeItems = [
@@ -55,18 +58,6 @@ export function NavMain() {
          url: "/$slug/bank-accounts",
       },
       {
-         icon: ArrowDownRight,
-         id: "payables",
-         title: translate("dashboard.layout.nav-main.finance.payables"),
-         url: "/$slug/bills?type=payable",
-      },
-      {
-         icon: ArrowUpRight,
-         id: "receivables",
-         title: translate("dashboard.layout.nav-main.finance.receivables"),
-         url: "/$slug/bills?type=receivable",
-      },
-      {
          icon: BarChart3,
          id: "reports",
          title: translate("dashboard.layout.nav-main.finance.reports"),
@@ -77,6 +68,39 @@ export function NavMain() {
          id: "budgets",
          title: translate("dashboard.layout.nav-main.finance.budgets"),
          url: "/$slug/budgets",
+      },
+   ];
+
+   const billsItems = [
+      {
+         icon: Receipt,
+         id: "bills-overview",
+         title: translate("dashboard.layout.nav-main.bills.overview"),
+         url: "/$slug/bills",
+      },
+      {
+         icon: ArrowDownRight,
+         id: "payables",
+         title: translate("dashboard.layout.nav-main.bills.payables"),
+         url: "/$slug/bills?type=payable",
+      },
+      {
+         icon: ArrowUpRight,
+         id: "receivables",
+         title: translate("dashboard.layout.nav-main.bills.receivables"),
+         url: "/$slug/bills?type=receivable",
+      },
+      {
+         icon: Users,
+         id: "counterparties",
+         title: translate("dashboard.layout.nav-main.bills.counterparties"),
+         url: "/$slug/counterparties",
+      },
+      {
+         icon: Percent,
+         id: "interest-templates",
+         title: translate("dashboard.layout.nav-main.bills.interest-templates"),
+         url: "/$slug/interest-templates",
       },
    ];
 
@@ -131,6 +155,35 @@ export function NavMain() {
             )}
             <SidebarMenu>
                {financeItems.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                     <SidebarMenuButton
+                        asChild
+                        className={
+                           isActive(item.url)
+                              ? "bg-primary/10 text-primary rounded-lg"
+                              : ""
+                        }
+                        tooltip={item.title}
+                     >
+                        <Link
+                           onClick={() => setOpenMobile(false)}
+                           params={{}}
+                           to={item.url}
+                        >
+                           <item.icon />
+                           <span>{item.title}</span>
+                        </Link>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+               ))}
+            </SidebarMenu>
+            {state === "expanded" && (
+               <SidebarGroupLabel>
+                  {translate("dashboard.layout.nav-main.bills.title")}
+               </SidebarGroupLabel>
+            )}
+            <SidebarMenu>
+               {billsItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
                      <SidebarMenuButton
                         asChild

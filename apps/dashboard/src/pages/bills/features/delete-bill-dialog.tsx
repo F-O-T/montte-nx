@@ -17,12 +17,25 @@ import { useTRPC } from "@/integrations/clients";
 
 interface DeleteBillDialogProps {
    bill: Bill;
-   children: React.ReactNode;
+   children?: React.ReactNode;
+   open?: boolean;
+   onOpenChange?: (open: boolean) => void;
 }
 
-export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
+export function DeleteBillDialog({
+   bill,
+   children,
+   open: controlledOpen,
+   onOpenChange: controlledOnOpenChange,
+}: DeleteBillDialogProps) {
    const trpc = useTRPC();
-   const [isOpen, setIsOpen] = useState(false);
+   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+
+   const isControlled = controlledOpen !== undefined;
+   const isOpen = isControlled ? controlledOpen : uncontrolledOpen;
+   const setIsOpen = isControlled
+      ? (controlledOnOpenChange ?? (() => {}))
+      : setUncontrolledOpen;
 
    const deleteBillMutation = useMutation(
       trpc.bills.delete.mutationOptions({
@@ -55,7 +68,7 @@ export function DeleteBillDialog({ bill, children }: DeleteBillDialogProps) {
 
    return (
       <AlertDialog onOpenChange={setIsOpen} open={isOpen}>
-         <div onClick={() => setIsOpen(true)}>{children}</div>
+         {children && <div onClick={() => setIsOpen(true)}>{children}</div>}
          <AlertDialogContent>
             <AlertDialogHeader>
                <AlertDialogTitle>

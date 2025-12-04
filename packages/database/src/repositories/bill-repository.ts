@@ -2,9 +2,24 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { bill } from "../schemas/bills";
+import type { counterparty } from "../schemas/counterparties";
+import type { interestTemplate } from "../schemas/interest-templates";
+import { transaction } from "../schemas/transactions";
+import type { bankAccount } from "../schemas/bank-accounts";
 
 export type Bill = typeof bill.$inferSelect;
 export type NewBill = typeof bill.$inferInsert;
+export type BankAccount = typeof bankAccount.$inferSelect;
+export type Transaction = typeof transaction.$inferSelect;
+export type Counterparty = typeof counterparty.$inferSelect;
+export type InterestTemplate = typeof interestTemplate.$inferSelect;
+
+export type BillWithRelations = Bill & {
+   bankAccount: BankAccount | null;
+   counterparty: Counterparty | null;
+   interestTemplate: InterestTemplate | null;
+   transaction: Transaction | null;
+};
 
 export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
    try {
@@ -19,6 +34,8 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
          where: (bill, { eq }) => eq(bill.id, createdBillId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -42,6 +59,8 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -64,6 +83,8 @@ export async function findBillsByUserId(
          where: (bill, { eq }) => eq(bill.userId, userId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -122,6 +143,8 @@ export async function findBillsByUserIdFiltered(
          where: buildWhereCondition,
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -208,6 +231,8 @@ export async function findBillsByUserIdPaginated(
             where: buildWhereCondition,
             with: {
                bankAccount: true,
+               counterparty: true,
+               interestTemplate: true,
                transaction: true,
             },
          }),
@@ -251,6 +276,8 @@ export async function findBillsByUserIdAndType(
             and(eq(bill.userId, userId), eq(bill.type, type)),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -281,6 +308,8 @@ export async function findPendingBillsByUserId(
             ),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -311,6 +340,8 @@ export async function findOverdueBillsByUserId(
             ),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -334,6 +365,8 @@ export async function findCompletedBillsByUserId(
             and(eq(bill.userId, userId), isNotNull(bill.completionDate)),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -366,6 +399,8 @@ export async function updateBill(
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -543,6 +578,257 @@ export async function getTotalOverdueReceivablesByUserId(
       propagateError(err);
       throw AppError.database(
          `Failed to get total overdue receivables count: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteManyBills(
+   dbClient: DatabaseInstance,
+   billIds: string[],
+   userId: string,
+) {
+   try {
+      if (billIds.length === 0) {
+         return { deletedCount: 0 };
+      }
+
+      const billsToDelete = await dbClient.query.bill.findMany({
+         where: (bill, { and, eq, inArray }) =>
+            and(eq(bill.userId, userId), inArray(bill.id, billIds)),
+      });
+
+      const completedBills = billsToDelete.filter((b) => b.completionDate);
+      if (completedBills.length > 0) {
+         throw AppError.validation(
+            "Cannot delete completed bills. Delete the associated transactions first.",
+         );
+      }
+
+      const validIds = billsToDelete.map((b) => b.id);
+      if (validIds.length === 0) {
+         return { deletedCount: 0 };
+      }
+
+      const result = await dbClient
+         .delete(bill)
+         .where(and(eq(bill.userId, userId), sql`${bill.id} IN ${validIds}`))
+         .returning();
+
+      return { deletedCount: result.length };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete multiple bills: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function completeManyBills(
+   dbClient: DatabaseInstance,
+   billIds: string[],
+   userId: string,
+   completionDate: Date,
+) {
+   try {
+      if (billIds.length === 0) {
+         return { completedCount: 0, transactionIds: [] as string[] };
+      }
+
+      const billsToComplete = await dbClient.query.bill.findMany({
+         where: (bill, { and, eq, isNull, inArray }) =>
+            and(
+               eq(bill.userId, userId),
+               inArray(bill.id, billIds),
+               isNull(bill.completionDate),
+            ),
+         with: {
+            bankAccount: true,
+         },
+      });
+
+      if (billsToComplete.length === 0) {
+         return { completedCount: 0, transactionIds: [] as string[] };
+      }
+
+      const transactionIds: string[] = [];
+
+      for (const billItem of billsToComplete) {
+         const transactionId = crypto.randomUUID();
+         transactionIds.push(transactionId);
+
+         await dbClient.transaction(async (tx) => {
+            await tx.insert(transaction).values({
+               amount: billItem.amount,
+               bankAccountId: billItem.bankAccountId,
+               date: completionDate,
+               description: billItem.description,
+               id: transactionId,
+               organizationId: userId,
+               type: billItem.type as "income" | "expense",
+            });
+
+            await tx
+               .update(bill)
+               .set({
+                  completionDate,
+                  transactionId,
+               })
+               .where(eq(bill.id, billItem.id));
+         });
+      }
+
+      return { completedCount: billsToComplete.length, transactionIds };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to complete multiple bills: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findBillsByInstallmentGroupId(
+   dbClient: DatabaseInstance,
+   installmentGroupId: string,
+) {
+   try {
+      const result = await dbClient.query.bill.findMany({
+         orderBy: (bill, { asc }) => asc(bill.installmentNumber),
+         where: (bill, { eq }) =>
+            eq(bill.installmentGroupId, installmentGroupId),
+         with: {
+            bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
+            transaction: true,
+         },
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bills by installment group id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function updateBillInterest(
+   dbClient: DatabaseInstance,
+   billId: string,
+   data: {
+      appliedPenalty?: string;
+      appliedInterest?: string;
+      appliedCorrection?: string;
+      lastInterestUpdate?: Date;
+   },
+) {
+   try {
+      const result = await dbClient
+         .update(bill)
+         .set(data)
+         .where(eq(bill.id, billId))
+         .returning();
+
+      if (!result.length) {
+         throw AppError.database("Bill not found");
+      }
+
+      return result[0];
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update bill interest: ${(err as Error).message}`,
+      );
+   }
+}
+
+export type InstallmentConfig = {
+   totalInstallments: number;
+   intervalDays: number;
+   amounts: number[] | "equal";
+};
+
+export type CreateBillWithInstallmentsInput = Omit<
+   NewBill,
+   | "installmentGroupId"
+   | "installmentNumber"
+   | "totalInstallments"
+   | "installmentIntervalDays"
+> & {
+   installments: InstallmentConfig;
+};
+
+export async function createBillWithInstallments(
+   dbClient: DatabaseInstance,
+   data: CreateBillWithInstallmentsInput,
+) {
+   try {
+      const { installments, ...billData } = data;
+      const { totalInstallments, intervalDays, amounts } = installments;
+
+      const installmentGroupId = crypto.randomUUID();
+      const baseAmount = Number(billData.amount);
+      const baseDueDate = new Date(billData.dueDate);
+
+      const installmentAmounts: number[] =
+         amounts === "equal"
+            ? Array(totalInstallments).fill(baseAmount / totalInstallments)
+            : amounts;
+
+      if (installmentAmounts.length !== totalInstallments) {
+         throw AppError.validation(
+            "Number of amounts must match total installments",
+         );
+      }
+
+      const createdBills: BillWithRelations[] = [];
+
+      await dbClient.transaction(async (tx) => {
+         for (let i = 0; i < totalInstallments; i++) {
+            const installmentDueDate = new Date(baseDueDate);
+            installmentDueDate.setDate(
+               baseDueDate.getDate() + i * intervalDays,
+            );
+
+            const installmentAmount = installmentAmounts[i];
+            const billId = crypto.randomUUID();
+
+            await tx.insert(bill).values({
+               ...billData,
+               amount: String(installmentAmount),
+               dueDate: installmentDueDate,
+               id: billId,
+               installmentGroupId,
+               installmentIntervalDays: intervalDays,
+               installmentNumber: i + 1,
+               originalAmount: String(installmentAmount),
+               totalInstallments,
+            });
+
+            const createdBill = await tx.query.bill.findFirst({
+               where: (bill, { eq }) => eq(bill.id, billId),
+               with: {
+                  bankAccount: true,
+                  counterparty: true,
+                  interestTemplate: true,
+                  transaction: true,
+               },
+            });
+
+            if (createdBill) {
+               createdBills.push(createdBill);
+            }
+         }
+      });
+
+      return {
+         bills: createdBills,
+         installmentGroupId,
+         totalInstallments,
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create bill with installments: ${(err as Error).message}`,
       );
    }
 }

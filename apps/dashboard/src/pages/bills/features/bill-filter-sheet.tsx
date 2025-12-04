@@ -73,12 +73,12 @@ export function BillFilterSheet({
    };
 
    const handleStartDateChange = (date: Date | undefined) => {
-      setStartDate(date);
+      setStartDate(date ?? null);
       handleFilterChange();
    };
 
    const handleEndDateChange = (date: Date | undefined) => {
-      setEndDate(date);
+      setEndDate(date ?? null);
       handleFilterChange();
    };
 
@@ -156,8 +156,8 @@ export function BillFilterSheet({
       categoryFilter !== "all" ||
       statusFilter !== "all" ||
       typeFilter !== "all" ||
-      startDate !== undefined ||
-      endDate !== undefined;
+      startDate !== null ||
+      endDate !== null;
 
    const clearFilters = () => {
       handleCategoryFilterChange("all");
@@ -284,7 +284,7 @@ export function BillFilterSheet({
                         )}
                      </FieldLabel>
                      <DatePicker
-                        date={startDate}
+                        date={startDate ?? undefined}
                         onSelect={handleStartDateChange}
                         placeholder={translate(
                            "dashboard.routes.transactions.features.filter.start-date.placeholder",
@@ -301,7 +301,7 @@ export function BillFilterSheet({
                         )}
                      </FieldLabel>
                      <DatePicker
-                        date={endDate}
+                        date={endDate ?? undefined}
                         onSelect={handleEndDateChange}
                         placeholder={translate(
                            "dashboard.routes.transactions.features.filter.end-date.placeholder",

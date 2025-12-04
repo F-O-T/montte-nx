@@ -1,6 +1,13 @@
+import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import { MonthSelector } from "@packages/ui/components/month-selector";
+import { TimePeriodChips } from "@packages/ui/components/time-period-chips";
 import { useSearch } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+import { useState } from "react";
 import { DefaultHeader } from "@/default/default-header";
-import { BillListProvider } from "../features/bill-list-context";
+import { BillListProvider, useBillList } from "../features/bill-list-context";
+import { ManageBillSheet } from "../features/manage-bill-sheet";
 import { BillsListSection } from "./bills-list-section";
 import { BillsStats } from "./bills-stats";
 
@@ -8,44 +15,90 @@ type BillsSearch = {
    type?: "payable" | "receivable";
 };
 
-export function BillsPage() {
+function BillsPageContent() {
+   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
    const search = useSearch({
       from: "/$slug/_dashboard/bills/",
    }) as BillsSearch;
    const billType = search.type;
 
+   const {
+      timePeriod,
+      handleTimePeriodChange,
+      selectedMonth,
+      handleMonthChange,
+   } = useBillList();
+
    const getHeaderContent = () => {
       if (billType === "payable") {
          return {
-            description: "Gerencie suas despesas futuras",
-            title: "Contas a Pagar",
+            description: translate(
+               "dashboard.routes.bills.views.payables.description",
+            ),
+            title: translate("dashboard.routes.bills.views.payables.title"),
          };
       }
       if (billType === "receivable") {
          return {
-            description: "Gerencie suas receitas futuras",
-            title: "Contas a Receber",
+            description: translate(
+               "dashboard.routes.bills.views.receivables.description",
+            ),
+            title: translate("dashboard.routes.bills.views.receivables.title"),
          };
       }
       return {
-         description: "Gerencie suas contas a pagar e receber",
-         title: "Contas a Pagar e Receber",
+         description: translate(
+            "dashboard.routes.bills.views.allBills.description",
+         ),
+         title: translate("dashboard.routes.bills.views.allBills.title"),
       };
    };
 
    const { title, description } = getHeaderContent();
 
    return (
+      <main className="space-y-4">
+         <DefaultHeader
+            actions={
+               <Button onClick={() => setIsCreateSheetOpen(true)}>
+                  <Plus className="size-4" />
+                  {translate(
+                     "dashboard.routes.bills.list-section.actions.add-new",
+                  )}
+               </Button>
+            }
+            description={description}
+            title={title}
+         />
+
+         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <TimePeriodChips
+               onValueChange={(period) => handleTimePeriodChange(period)}
+               size="sm"
+               value={timePeriod}
+            />
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <MonthSelector
+               date={selectedMonth}
+               disabled={timePeriod !== null && timePeriod !== "all-time"}
+               onSelect={handleMonthChange}
+            />
+         </div>
+
+         <BillsStats type={billType} />
+         <BillsListSection type={billType} />
+         <ManageBillSheet
+            onOpen={isCreateSheetOpen}
+            onOpenChange={setIsCreateSheetOpen}
+         />
+      </main>
+   );
+}
+
+export function BillsPage() {
+   return (
       <BillListProvider>
-         <main className="grid gap-4">
-            <DefaultHeader description={description} title={title} />
-            <div className="grid md:grid-cols-3 gap-4">
-               <div className="h-min col-span-1 md:col-span-2 grid gap-4">
-                  <BillsListSection type={billType} />
-               </div>
-               <BillsStats type={billType} />
-            </div>
-         </main>
+         <BillsPageContent />
       </BillListProvider>
    );
 }

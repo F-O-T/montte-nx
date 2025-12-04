@@ -1,0 +1,492 @@
+import type { InterestTemplate } from "@packages/database/repositories/interest-template-repository";
+import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
+import {
+   Field,
+   FieldError,
+   FieldGroup,
+   FieldLabel,
+} from "@packages/ui/components/field";
+import { Input } from "@packages/ui/components/input";
+import {
+   Select,
+   SelectContent,
+   SelectItem,
+   SelectTrigger,
+   SelectValue,
+} from "@packages/ui/components/select";
+import {
+   Sheet,
+   SheetContent,
+   SheetDescription,
+   SheetFooter,
+   SheetHeader,
+   SheetTitle,
+   SheetTrigger,
+} from "@packages/ui/components/sheet";
+import { Switch } from "@packages/ui/components/switch";
+import { useForm } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+import { Pencil, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useTRPC } from "@/integrations/clients";
+
+type ManageInterestTemplateSheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
+   template?: InterestTemplate;
+   asChild?: boolean;
+};
+
+export function ManageInterestTemplateSheet({
+   onOpen,
+   onOpenChange,
+   template,
+   asChild = false,
+}: ManageInterestTemplateSheetProps) {
+   const trpc = useTRPC();
+   const isEditMode = !!template;
+
+   const modeTexts = useMemo(() => {
+      const createTexts = {
+         description: translate(
+            "dashboard.routes.interest-templates.features.create-template.description",
+         ),
+         title: translate(
+            "dashboard.routes.interest-templates.features.create-template.title",
+         ),
+      };
+
+      const editTexts = {
+         description: translate(
+            "dashboard.routes.interest-templates.features.edit-template.description",
+            { name: template?.name || "" },
+         ),
+         title: translate(
+            "dashboard.routes.interest-templates.features.edit-template.title",
+         ),
+      };
+
+      return isEditMode ? editTexts : createTexts;
+   }, [isEditMode, template?.name]);
+
+   const [internalOpen, setInternalOpen] = useState(false);
+   const isOpen = asChild ? internalOpen : onOpen;
+   const setIsOpen = asChild ? setInternalOpen : onOpenChange;
+
+   const createTemplateMutation = useMutation(
+      trpc.interestTemplates.create.mutationOptions({
+         onSuccess: () => {
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
+   const updateTemplateMutation = useMutation(
+      trpc.interestTemplates.update.mutationOptions({
+         onError: (error) => {
+            console.error("Failed to update interest template:", error);
+         },
+         onSuccess: () => {
+            setIsOpen?.(false);
+         },
+      }),
+   );
+
+   const form = useForm({
+      defaultValues: {
+         gracePeriodDays: template?.gracePeriodDays ?? 0,
+         interestType: (template?.interestType || "none") as
+            | "none"
+            | "daily"
+            | "monthly",
+         interestValue: template?.interestValue || "",
+         isDefault: template?.isDefault ?? false,
+         monetaryCorrectionIndex: (template?.monetaryCorrectionIndex ||
+            "none") as "none" | "ipca" | "selic" | "cdi",
+         name: template?.name || "",
+         penaltyType: (template?.penaltyType || "none") as
+            | "none"
+            | "percentage"
+            | "fixed",
+         penaltyValue: template?.penaltyValue || "",
+      },
+      onSubmit: async ({ value }) => {
+         if (!value.name) {
+            return;
+         }
+
+         try {
+            if (isEditMode && template) {
+               await updateTemplateMutation.mutateAsync({
+                  data: {
+                     gracePeriodDays: value.gracePeriodDays,
+                     interestType: value.interestType,
+                     interestValue: value.interestValue || undefined,
+                     isDefault: value.isDefault,
+                     monetaryCorrectionIndex: value.monetaryCorrectionIndex,
+                     name: value.name,
+                     penaltyType: value.penaltyType,
+                     penaltyValue: value.penaltyValue || undefined,
+                  },
+                  id: template.id,
+               });
+            } else {
+               await createTemplateMutation.mutateAsync({
+                  gracePeriodDays: value.gracePeriodDays,
+                  interestType: value.interestType,
+                  interestValue: value.interestValue || undefined,
+                  isDefault: value.isDefault,
+                  monetaryCorrectionIndex: value.monetaryCorrectionIndex,
+                  name: value.name,
+                  penaltyType: value.penaltyType,
+                  penaltyValue: value.penaltyValue || undefined,
+               });
+            }
+         } catch (error) {
+            console.error(
+               `Failed to ${isEditMode ? "update" : "create"} interest template:`,
+               error,
+            );
+         }
+      },
+   });
+
+   const TriggerComponent = (
+      <DropdownMenuItem
+         className="flex items-center gap-2"
+         onSelect={(e) => {
+            e.preventDefault();
+            setIsOpen?.(true);
+         }}
+      >
+         {isEditMode ? (
+            <>
+               <Pencil className="size-4" />
+               {translate(
+                  "dashboard.routes.interest-templates.list-section.actions.edit-template",
+               )}
+            </>
+         ) : (
+            <>
+               <Plus className="size-4" />
+               {translate(
+                  "dashboard.routes.interest-templates.actions.add-template",
+               )}
+            </>
+         )}
+      </DropdownMenuItem>
+   );
+
+   return (
+      <Sheet onOpenChange={setIsOpen} open={isOpen}>
+         {asChild && <SheetTrigger asChild>{TriggerComponent}</SheetTrigger>}
+         <SheetContent>
+            <form
+               className="h-full flex flex-col"
+               onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+               }}
+            >
+               <SheetHeader>
+                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetDescription>{modeTexts.description}</SheetDescription>
+               </SheetHeader>
+               <div className="grid gap-4 px-4 overflow-y-auto flex-1">
+                  <FieldGroup>
+                     <form.Field name="name">
+                        {(field) => {
+                           const isInvalid =
+                              field.state.meta.isTouched &&
+                              !field.state.meta.isValid;
+                           return (
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.interest-templates.form.name.label",
+                                    )}
+                                 </FieldLabel>
+                                 <Input
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.interest-templates.form.name.placeholder",
+                                    )}
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
+                                 )}
+                              </Field>
+                           );
+                        }}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="penaltyType">
+                        {(field) => (
+                           <Field>
+                              <FieldLabel>
+                                 {translate(
+                                    "dashboard.routes.interest-templates.form.penalty-type.label",
+                                 )}
+                              </FieldLabel>
+                              <Select
+                                 onValueChange={(value) =>
+                                    field.handleChange(
+                                       value as "none" | "percentage" | "fixed",
+                                    )
+                                 }
+                                 value={field.state.value}
+                              >
+                                 <SelectTrigger>
+                                    <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectItem value="none">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.penalty-type.none",
+                                       )}
+                                    </SelectItem>
+                                    <SelectItem value="percentage">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.penalty-type.percentage",
+                                       )}
+                                    </SelectItem>
+                                    <SelectItem value="fixed">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.penalty-type.fixed",
+                                       )}
+                                    </SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <form.Subscribe
+                     selector={(state) => state.values.penaltyType}
+                  >
+                     {(penaltyType) =>
+                        penaltyType !== "none" && (
+                           <FieldGroup>
+                              <form.Field name="penaltyValue">
+                                 {(field) => (
+                                    <Field>
+                                       <FieldLabel>
+                                          {translate(
+                                             "dashboard.routes.interest-templates.form.penalty-value.label",
+                                          )}
+                                       </FieldLabel>
+                                       <Input
+                                          onBlur={field.handleBlur}
+                                          onChange={(e) =>
+                                             field.handleChange(e.target.value)
+                                          }
+                                          placeholder={
+                                             penaltyType === "percentage"
+                                                ? "2.00"
+                                                : "100.00"
+                                          }
+                                          type="number"
+                                          value={field.state.value}
+                                       />
+                                    </Field>
+                                 )}
+                              </form.Field>
+                           </FieldGroup>
+                        )
+                     }
+                  </form.Subscribe>
+
+                  <FieldGroup>
+                     <form.Field name="interestType">
+                        {(field) => (
+                           <Field>
+                              <FieldLabel>
+                                 {translate(
+                                    "dashboard.routes.interest-templates.form.interest-type.label",
+                                 )}
+                              </FieldLabel>
+                              <Select
+                                 onValueChange={(value) =>
+                                    field.handleChange(
+                                       value as "none" | "daily" | "monthly",
+                                    )
+                                 }
+                                 value={field.state.value}
+                              >
+                                 <SelectTrigger>
+                                    <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectItem value="none">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.interest-type.none",
+                                       )}
+                                    </SelectItem>
+                                    <SelectItem value="daily">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.interest-type.daily",
+                                       )}
+                                    </SelectItem>
+                                    <SelectItem value="monthly">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.interest-type.monthly",
+                                       )}
+                                    </SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <form.Subscribe
+                     selector={(state) => state.values.interestType}
+                  >
+                     {(interestType) =>
+                        interestType !== "none" && (
+                           <FieldGroup>
+                              <form.Field name="interestValue">
+                                 {(field) => (
+                                    <Field>
+                                       <FieldLabel>
+                                          {translate(
+                                             "dashboard.routes.interest-templates.form.interest-value.label",
+                                          )}
+                                       </FieldLabel>
+                                       <Input
+                                          onBlur={field.handleBlur}
+                                          onChange={(e) =>
+                                             field.handleChange(e.target.value)
+                                          }
+                                          placeholder="1.00"
+                                          type="number"
+                                          value={field.state.value}
+                                       />
+                                    </Field>
+                                 )}
+                              </form.Field>
+                           </FieldGroup>
+                        )
+                     }
+                  </form.Subscribe>
+
+                  <FieldGroup>
+                     <form.Field name="monetaryCorrectionIndex">
+                        {(field) => (
+                           <Field>
+                              <FieldLabel>
+                                 {translate(
+                                    "dashboard.routes.interest-templates.form.monetary-correction.label",
+                                 )}
+                              </FieldLabel>
+                              <Select
+                                 onValueChange={(value) =>
+                                    field.handleChange(
+                                       value as
+                                          | "none"
+                                          | "ipca"
+                                          | "selic"
+                                          | "cdi",
+                                    )
+                                 }
+                                 value={field.state.value}
+                              >
+                                 <SelectTrigger>
+                                    <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectItem value="none">
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.monetary-correction.none",
+                                       )}
+                                    </SelectItem>
+                                    <SelectItem value="ipca">IPCA</SelectItem>
+                                    <SelectItem value="selic">SELIC</SelectItem>
+                                    <SelectItem value="cdi">CDI</SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="gracePeriodDays">
+                        {(field) => (
+                           <Field>
+                              <FieldLabel>
+                                 {translate(
+                                    "dashboard.routes.interest-templates.form.grace-period.label",
+                                 )}
+                              </FieldLabel>
+                              <Input
+                                 min={0}
+                                 onBlur={field.handleBlur}
+                                 onChange={(e) =>
+                                    field.handleChange(Number(e.target.value))
+                                 }
+                                 placeholder="0"
+                                 type="number"
+                                 value={field.state.value}
+                              />
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+
+                  <FieldGroup>
+                     <form.Field name="isDefault">
+                        {(field) => (
+                           <Field>
+                              <div className="flex items-center justify-between">
+                                 <FieldLabel>
+                                    {translate(
+                                       "dashboard.routes.interest-templates.form.is-default.label",
+                                    )}
+                                 </FieldLabel>
+                                 <Switch
+                                    checked={field.state.value}
+                                    onCheckedChange={field.handleChange}
+                                 />
+                              </div>
+                           </Field>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
+               </div>
+
+               <SheetFooter>
+                  <form.Subscribe>
+                     {(state) => (
+                        <Button
+                           className="w-full"
+                           disabled={
+                              !state.canSubmit ||
+                              state.isSubmitting ||
+                              createTemplateMutation.isPending ||
+                              updateTemplateMutation.isPending
+                           }
+                           type="submit"
+                        >
+                           {modeTexts.title}
+                        </Button>
+                     )}
+                  </form.Subscribe>
+               </SheetFooter>
+            </form>
+         </SheetContent>
+      </Sheet>
+   );
+}

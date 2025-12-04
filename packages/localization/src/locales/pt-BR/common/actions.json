@@ -17,5 +17,6 @@
    "save": "Salvar",
    "skip": "Pular",
    "step-indicator": "Passo {{current}} de {{total}}",
-   "submit": "Enviar"
+   "submit": "Enviar",
+   "close": "Fechar"
 }

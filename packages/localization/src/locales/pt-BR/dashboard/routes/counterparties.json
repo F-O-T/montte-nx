@@ -1,0 +1,121 @@
+{
+   "actions": {
+      "add-counterparty": "Adicionar Contraparte",
+      "add-new": "Adicionar Contraparte"
+   },
+   "bulk-actions": {
+      "delete": "Excluir",
+      "delete-confirm-description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente {count, plural, one {# contraparte} other {# contrapartes}} e removerá a associação de todas as contas vinculadas.",
+      "delete-confirm-title": "Excluir {count, plural, one {# contraparte} other {# contrapartes}}?",
+      "deleted-error": "Falha ao excluir contrapartes",
+      "deleted-success": "{count, plural, one {# contraparte excluída} other {# contrapartes excluídas}} com sucesso"
+   },
+   "delete": {
+      "confirm-description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente esta contraparte e removerá a associação de todas as contas vinculadas.",
+      "confirm-title": "Excluir contraparte?",
+      "error": "Falha ao excluir contraparte",
+      "success": "Contraparte excluída com sucesso"
+   },
+   "description": "Gerencie seus clientes e fornecedores",
+   "features": {
+      "create-counterparty": {
+         "description": "Adicione um novo cliente ou fornecedor.",
+         "title": "Criar Contraparte"
+      },
+      "edit-counterparty": {
+         "description": "Atualize os detalhes de {name}.",
+         "title": "Editar Contraparte"
+      },
+      "filter": {
+         "actions": {
+            "clear-filters": "Limpar Filtros"
+         },
+         "description": "Refine a lista de contrapartes com base em critérios específicos.",
+         "title": "Filtrar Contrapartes"
+      }
+   },
+   "form": {
+      "document": {
+         "label": "CPF/CNPJ",
+         "placeholder": "Digite o documento"
+      },
+      "email": {
+         "label": "E-mail",
+         "placeholder": "Digite o e-mail"
+      },
+      "name": {
+         "label": "Nome",
+         "placeholder": "Digite o nome"
+      },
+      "notes": {
+         "label": "Observações",
+         "placeholder": "Digite observações"
+      },
+      "phone": {
+         "label": "Telefone",
+         "placeholder": "Digite o telefone"
+      },
+      "type": {
+         "both": "Ambos",
+         "client": "Cliente",
+         "label": "Tipo",
+         "supplier": "Fornecedor"
+      }
+   },
+   "list-section": {
+      "actions": {
+         "delete-counterparty": "Excluir contraparte",
+         "edit-counterparty": "Editar contraparte",
+         "view-details": "Ver detalhes"
+      },
+      "state": {
+         "empty": {
+            "description": "Crie sua primeira contraparte usando o botão acima para começar a organizar seus clientes e fornecedores.",
+            "title": "Nenhuma contraparte ainda"
+         },
+         "error": {
+            "description": "Falha ao carregar contrapartes. Tente novamente mais tarde.",
+            "title": "Erro ao carregar contrapartes"
+         }
+      }
+   },
+   "stats": {
+      "active": {
+         "description": "Contrapartes ativas no sistema",
+         "title": "Ativos"
+      },
+      "clients": {
+         "description": "Número de clientes cadastrados",
+         "title": "Clientes"
+      },
+      "error": {
+         "description": "Falha ao carregar estatísticas",
+         "title": "Erro"
+      },
+      "suppliers": {
+         "description": "Número de fornecedores cadastrados",
+         "title": "Fornecedores"
+      },
+      "total": {
+         "description": "Número total de contrapartes cadastradas",
+         "title": "Total de Contrapartes"
+      }
+   },
+   "table": {
+      "columns": {
+         "created-at": "Criado em",
+         "document": "Documento",
+         "email": "E-mail",
+         "name": "Nome",
+         "phone": "Telefone",
+         "type": "Tipo"
+      }
+   },
+   "title": "Contrapartes",
+   "type-filter": {
+      "all": "Todos",
+      "both": "Ambos",
+      "client": "Clientes",
+      "supplier": "Fornecedores"
+   }
+}

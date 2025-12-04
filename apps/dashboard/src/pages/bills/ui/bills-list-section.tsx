@@ -1,25 +1,18 @@
-import type { Bill } from "@packages/database/repositories/bill-repository";
+import type { BillWithRelations } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
-import { Badge } from "@packages/ui/components/badge";
+import {
+   AlertDialog,
+   AlertDialogAction,
+   AlertDialogCancel,
+   AlertDialogContent,
+   AlertDialogDescription,
+   AlertDialogFooter,
+   AlertDialogHeader,
+   AlertDialogTitle,
+} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
-import {
-   Card,
-   CardAction,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
+import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
-import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
 import {
    Empty,
    EmptyContent,
@@ -33,221 +26,51 @@ import {
    InputGroupAddon,
    InputGroupInput,
 } from "@packages/ui/components/input-group";
+import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemGroup,
-   ItemMedia,
-   ItemSeparator,
-   ItemTitle,
-} from "@packages/ui/components/item";
-import {
-   Pagination,
-   PaginationContent,
-   PaginationItem,
-   PaginationLink,
-   PaginationNext,
-   PaginationPrevious,
-} from "@packages/ui/components/pagination";
+   SelectionActionBar,
+   SelectionActionButton,
+} from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
-import { formatDate } from "@packages/utils/date";
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDecimalCurrency } from "@packages/utils/money";
+import { keepPreviousData, useSuspenseQueries } from "@tanstack/react-query";
+import type { RowSelectionState } from "@tanstack/react-table";
 import {
-   getRecurrenceLabel,
-   type RecurrencePattern,
-} from "@packages/utils/recurrence";
-import { useSuspenseQueries } from "@tanstack/react-query";
-import {
+   AlertCircle,
+   CheckCircle2,
+   Clock,
    Filter,
-   MoreVertical,
-   Pencil,
-   Plus,
    Receipt,
    Search,
    Trash2,
    Wallet,
+   X,
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useTRPC } from "@/integrations/clients";
-import type { Category } from "@/pages/categories/ui/categories-page";
 import { BillFilterSheet } from "../features/bill-filter-sheet";
 import { useBillList } from "../features/bill-list-context";
-import { CompleteBillDialog } from "../features/complete-bill-dialog";
-import { DeleteBillDialog } from "../features/delete-bill-dialog";
-import { ManageBillSheet } from "../features/manage-bill-sheet";
-import { createBillColumns } from "./bills-table-columns";
+import { useBillBulkActions } from "../features/use-bill-bulk-actions";
+import {
+   BillExpandedContent,
+   BillMobileCard,
+   createBillColumns,
+} from "./bills-table-columns";
 
 type BillsListSectionProps = {
    type?: "payable" | "receivable";
 };
 
-type BillItemProps = {
-   bill: Bill;
-   categories: Category[];
-};
-
-function BillItem({ bill, categories }: BillItemProps) {
-   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-   const today = new Date();
-   today.setHours(0, 0, 0, 0);
-
-   const isOverdue =
-      bill.dueDate && !bill.completionDate && new Date(bill.dueDate) < today;
-   const statusColor = isOverdue
-      ? "destructive"
-      : bill.type === "expense"
-        ? "secondary"
-        : "default";
-
-   const categoryDetails = categories.find((cat) => cat.id === bill.categoryId);
-   const categoryColor = categoryDetails?.color || "#6b7280";
-   const categoryIcon = categoryDetails?.icon || "Wallet";
-
-   return (
-      <>
-         <Item>
-            <ItemMedia
-               style={{
-                  backgroundColor: categoryColor,
-               }}
-               variant="icon"
-            >
-               <IconDisplay iconName={categoryIcon as IconName} size={16} />
-            </ItemMedia>
-            <ItemContent>
-               <ItemTitle className="truncate flex items-center gap-2">
-                  {bill.description}
-                  {bill.isRecurring && bill.recurrencePattern && (
-                     <Badge className="text-[10px] h-5 px-1" variant="outline">
-                        {getRecurrenceLabel(
-                           bill.recurrencePattern as RecurrencePattern,
-                        )}
-                     </Badge>
-                  )}
-                  {isOverdue && (
-                     <Badge
-                        className="text-[10px] h-5 px-1"
-                        variant="destructive"
-                     >
-                        {translate("dashboard.routes.bills.status.overdue")}
-                     </Badge>
-                  )}
-               </ItemTitle>
-               <ItemDescription>
-                  {translate("dashboard.routes.bills.table.columns.dueDate")}:{" "}
-                  {bill.dueDate
-                     ? formatDate(new Date(bill.dueDate), "DD/MM/YYYY")
-                     : "-"}
-                  {bill.completionDate && (
-                     <>
-                        {" • "}
-                        {translate("dashboard.routes.bills.completedOn")}:{" "}
-                        {formatDate(
-                           new Date(bill.completionDate),
-                           "DD/MM/YYYY",
-                        )}
-                     </>
-                  )}
-               </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-               <Badge
-                  className={bill.completionDate ? "opacity-60" : ""}
-                  variant={statusColor}
-               >
-                  {bill.type === "expense" ? "-" : "+"}
-                  {parseFloat(bill.amount).toFixed(2)}
-               </Badge>
-               <DropdownMenu>
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                           <Button
-                              aria-label={translate(
-                                 "dashboard.routes.bills.actions.label",
-                              )}
-                              size="icon"
-                              variant="ghost"
-                           >
-                              <MoreVertical className="size-4" />
-                           </Button>
-                        </DropdownMenuTrigger>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                        {translate("dashboard.routes.bills.actions.label")}
-                     </TooltipContent>
-                  </Tooltip>
-                  <DropdownMenuContent align="end">
-                     <DropdownMenuLabel>
-                        {translate("dashboard.routes.bills.actions.label")}
-                     </DropdownMenuLabel>
-                     <DropdownMenuSeparator />
-                     {!bill.completionDate && (
-                        <CompleteBillDialog bill={bill}>
-                           <DropdownMenuItem
-                              onSelect={(e) => e.preventDefault()}
-                           >
-                              <Wallet className="size-4 mr-2" />
-                              {bill.type === "expense"
-                                 ? translate(
-                                      "dashboard.routes.bills.actions.pay",
-                                   )
-                                 : translate(
-                                      "dashboard.routes.bills.actions.receive",
-                                   )}
-                           </DropdownMenuItem>
-                        </CompleteBillDialog>
-                     )}
-                     <DropdownMenuItem
-                        onClick={() => setIsEditSheetOpen(true)}
-                        onSelect={(e) => e.preventDefault()}
-                     >
-                        <Pencil className="size-4 mr-2" />
-                        {translate("dashboard.routes.bills.actions.edit")}
-                     </DropdownMenuItem>
-                     <DeleteBillDialog bill={bill}>
-                        <DropdownMenuItem
-                           className="text-destructive focus:text-destructive"
-                           onSelect={(e) => e.preventDefault()}
-                        >
-                           <Trash2 className="size-4 mr-2" />
-                           {translate("dashboard.routes.bills.actions.delete")}
-                        </DropdownMenuItem>
-                     </DeleteBillDialog>
-                  </DropdownMenuContent>
-               </DropdownMenu>
-            </ItemActions>
-         </Item>
-         <ManageBillSheet
-            bill={bill}
-            onOpen={isEditSheetOpen}
-            onOpenChange={setIsEditSheetOpen}
-         />
-      </>
-   );
-}
-
 function BillsListErrorFallback(props: FallbackProps) {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.bills.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate("dashboard.routes.bills.list-section.description")}
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
+         <CardContent className="pt-6">
             {createErrorFallback({
                errorDescription:
                   "Failed to load bills. Please try again later.",
@@ -262,57 +85,47 @@ function BillsListErrorFallback(props: FallbackProps) {
 function BillsListSkeleton() {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.bills.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate("dashboard.routes.bills.list-section.description")}
-            </CardDescription>
-            <div className="flex items-center gap-3 pt-4">
-               <div className="relative flex-1 max-w-md">
-                  <Skeleton className="h-10 w-full" />
-               </div>
-               <Skeleton className="ml-auto h-10 w-10" />
+         <CardContent className="pt-6 grid gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+               <Skeleton className="h-9 w-full sm:max-w-md" />
+               <Skeleton className="h-9 w-9" />
             </div>
-         </CardHeader>
-         <CardContent>
+            <div className="flex gap-2">
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-24" />
+            </div>
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`bill-skeleton-${index + 1}`}>
-                     <Item>
-                        <ItemMedia variant="icon">
-                           <div className="size-8 rounded-sm border group relative">
-                              <Skeleton className="size-8 rounded-sm" />
-                              <Skeleton className="absolute -top-1 -right-1 size-4 rounded opacity-0 group-hover:opacity-100 transition-opacity" />
-                           </div>
-                        </ItemMedia>
-                        <ItemContent className="gap-1">
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded" />
+                        <div className="space-y-2 flex-1">
                            <Skeleton className="h-4 w-32" />
-                           <Skeleton className="h-3 w-48" />
-                        </ItemContent>
-                        <ItemActions>
-                           <div className="text-right">
-                              <Skeleton className="h-4 w-16 ml-auto mb-2" />
-                           </div>
-                           <Skeleton className="size-8" />
-                        </ItemActions>
-                     </Item>
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
                      {index !== 4 && <ItemSeparator />}
                   </Fragment>
                ))}
             </ItemGroup>
+            <div className="flex items-center justify-end gap-2 pt-4">
+               <Skeleton className="h-10 w-24" />
+               <Skeleton className="h-10 w-10" />
+               <Skeleton className="h-10 w-24" />
+            </div>
          </CardContent>
-         <CardFooter>
-            <Skeleton className="h-10 w-full" />
-         </CardFooter>
       </Card>
    );
 }
 
 function BillsListContent({ type }: BillsListSectionProps) {
    const trpc = useTRPC();
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const isMobile = useIsMobile();
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+   const [pageSize, setPageSize] = useState(10);
+
    const {
       setCurrentFilterType,
       currentPage,
@@ -321,11 +134,15 @@ function BillsListContent({ type }: BillsListSectionProps) {
       setSearchTerm,
       categoryFilter,
       statusFilter,
+      setStatusFilter,
       typeFilter,
+      setTypeFilter,
       setIsFilterSheetOpen,
       startDate,
       endDate,
-      pageSize,
+      setCategoryFilter,
+      timePeriod,
+      handleTimePeriodChange,
    } = useBillList();
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -337,10 +154,14 @@ function BillsListContent({ type }: BillsListSectionProps) {
       return () => clearTimeout(timer);
    }, [searchTerm, setCurrentPage]);
 
-   // Set the context filter type based on the component prop
    useEffect(() => {
       setCurrentFilterType(type);
    }, [type, setCurrentFilterType]);
+
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [statusFilter, typeFilter, pageSize, startDate, endDate]);
 
    const billType =
       type === "payable"
@@ -351,27 +172,32 @@ function BillsListContent({ type }: BillsListSectionProps) {
 
    const [billsQuery, categoriesQuery] = useSuspenseQueries({
       queries: [
-         trpc.bills.getAllPaginated.queryOptions({
-            endDate: endDate?.toISOString(),
-            limit: pageSize,
-            month: undefined, // We use startDate/endDate now
-            orderBy: "dueDate",
-            orderDirection: "asc",
-            page: currentPage,
-            search: debouncedSearchTerm || undefined,
-            startDate: startDate?.toISOString(),
-            type:
-               billType ??
-               (typeFilter !== "all"
-                  ? (typeFilter as "income" | "expense")
-                  : undefined),
-         }),
+         trpc.bills.getAllPaginated.queryOptions(
+            {
+               endDate: endDate?.toISOString(),
+               limit: pageSize,
+               month: undefined,
+               orderBy: "dueDate",
+               orderDirection: "asc",
+               page: currentPage,
+               search: debouncedSearchTerm || undefined,
+               startDate: startDate?.toISOString(),
+               type:
+                  billType ??
+                  (typeFilter !== "all"
+                     ? (typeFilter as "income" | "expense")
+                     : undefined),
+            },
+            {
+               placeholderData: keepPreviousData,
+            },
+         ),
          trpc.categories.getAll.queryOptions(),
       ],
    });
 
    const { bills, pagination } = billsQuery.data;
-   const { totalPages } = pagination;
+   const { totalPages, totalCount } = pagination;
    const categories = categoriesQuery.data ?? [];
 
    const filteredBills = bills.filter((bill) => {
@@ -396,62 +222,55 @@ function BillsListContent({ type }: BillsListSectionProps) {
       return matchesCategory && matchesStatus;
    });
 
-   const { title, description } = (() => {
-      if (type === "payable") {
-         return {
-            description: translate(
-               "dashboard.routes.bills.views.payables.description",
-            ),
-            title: translate("dashboard.routes.bills.views.payables.title"),
-         };
-      }
-
-      if (type === "receivable") {
-         return {
-            description: translate(
-               "dashboard.routes.bills.views.receivables.description",
-            ),
-            title: translate("dashboard.routes.bills.views.receivables.title"),
-         };
-      }
-
-      return {
-         description: translate(
-            "dashboard.routes.bills.views.allBills.description",
-         ),
-         title: translate("dashboard.routes.bills.views.allBills.title"),
-      };
-   })();
-
    const hasActiveFilters =
+      debouncedSearchTerm ||
       categoryFilter !== "all" ||
       statusFilter !== "all" ||
-      typeFilter !== "all" ||
-      startDate !== undefined ||
-      endDate !== undefined;
+      (typeFilter !== "all" && !type) ||
+      (timePeriod !== "this-month" && timePeriod !== null);
+
+   const selectedIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id],
+   );
+   const selectedBills = filteredBills.filter((bill) =>
+      selectedIds.includes(bill.id),
+   );
+   const selectedTotal = selectedBills.reduce(
+      (sum, bill) => sum + Number(bill.amount),
+      0,
+   );
+
+   const { completeSelected, deleteSelected, isLoading } = useBillBulkActions({
+      onSuccess: () => setRowSelection({}),
+   });
+
+   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+   const handleClearSelection = () => {
+      setRowSelection({});
+   };
+
+   const handleClearFilters = () => {
+      setStatusFilter("all");
+      setTypeFilter("all");
+      setCategoryFilter("all");
+      setSearchTerm("");
+      handleTimePeriodChange("this-month");
+   };
+
+   const pendingSelectedBills = selectedBills.filter(
+      (bill) => !bill.completionDate,
+   );
 
    return (
       <>
          <Card>
-            <CardHeader>
-               <CardTitle>{title}</CardTitle>
-               <CardDescription>{description}</CardDescription>
-               <CardAction className="hidden md:flex">
-                  <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.bills.actions-toolbar.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>
-            </CardHeader>
-            <CardContent className="grid gap-2">
-               <div className="flex items-center justify-between gap-8">
-                  <InputGroup>
+            <CardContent className="pt-6 grid gap-4">
+               <div className="flex gap-6">
+                  <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
-                        onChange={(e) => {
-                           setSearchTerm(e.target.value);
-                        }}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder={translate(
                            "common.form.search.placeholder",
                         )}
@@ -461,232 +280,271 @@ function BillsListContent({ type }: BillsListSectionProps) {
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
-                  <Tooltip>
-                     <TooltipTrigger asChild>
-                        <Button
-                           onClick={() => setIsFilterSheetOpen(true)}
-                           size="icon"
-                           variant={hasActiveFilters ? "default" : "outline"}
+
+                  {isMobile && (
+                     <Button
+                        onClick={() => setIsFilterSheetOpen(true)}
+                        size="icon"
+                        variant="outline"
+                     >
+                        <Filter className="size-4" />
+                     </Button>
+                  )}
+               </div>
+
+               {!isMobile && (
+                  <div className="flex flex-wrap items-center gap-3">
+                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                           Status:
+                        </span>
+                        <ToggleGroup
+                           onValueChange={(value) =>
+                              setStatusFilter(value || "all")
+                           }
+                           size="sm"
+                           spacing={2}
+                           type="single"
+                           value={statusFilter === "all" ? "" : statusFilter}
+                           variant="outline"
                         >
-                           <Filter className="size-4" />
-                        </Button>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                        <p>Filter bills</p>
-                     </TooltipContent>
-                  </Tooltip>
-               </div>
-
-               {/* Mobile View */}
-               <div className="block md:hidden">
-                  {filteredBills.length === 0 ? (
-                     <Empty>
-                        <EmptyContent>
-                           <EmptyMedia variant="icon">
-                              <Receipt />
-                           </EmptyMedia>
-                           <EmptyTitle>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-amber-500 data-[state=on]:text-amber-600"
+                              value="pending"
+                           >
+                              <Clock className="size-3.5" />
                               {translate(
-                                 "dashboard.routes.bills.list-section.state.empty.title",
+                                 "dashboard.routes.bills.features.filter.items.status-pending",
                               )}
-                           </EmptyTitle>
-                           <EmptyDescription>
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-destructive data-[state=on]:text-destructive"
+                              value="overdue"
+                           >
+                              <AlertCircle className="size-3.5" />
                               {translate(
-                                 "dashboard.routes.bills.list-section.state.empty.description",
+                                 "dashboard.routes.bills.features.filter.items.status-overdue",
                               )}
-                           </EmptyDescription>
-                        </EmptyContent>
-                     </Empty>
-                  ) : (
-                     <ItemGroup>
-                        {filteredBills.map((bill, index) => (
-                           <Fragment key={bill.id}>
-                              <BillItem bill={bill} categories={categories} />
-                              {index !== filteredBills.length - 1 && (
-                                 <ItemSeparator />
-                              )}
-                           </Fragment>
-                        ))}
-                     </ItemGroup>
-                  )}
-               </div>
-
-               <div className="hidden md:block">
-                  {filteredBills.length === 0 ? (
-                     <Empty>
-                        <EmptyContent>
-                           <EmptyMedia variant="icon">
-                              <Receipt />
-                           </EmptyMedia>
-                           <EmptyTitle>
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                              value="completed"
+                           >
+                              <CheckCircle2 className="size-3.5" />
                               {translate(
-                                 "dashboard.routes.bills.list-section.state.empty.title",
+                                 "dashboard.routes.bills.features.filter.items.status-completed",
                               )}
-                           </EmptyTitle>
-                           <EmptyDescription>
-                              {translate(
-                                 "dashboard.routes.bills.list-section.state.empty.description",
-                              )}
-                           </EmptyDescription>
-                        </EmptyContent>
-                     </Empty>
-                  ) : (
-                     <DataTable
-                        columns={createBillColumns(categories)}
-                        data={filteredBills}
-                     />
-                  )}
-               </div>
-            </CardContent>
+                           </ToggleGroupItem>
+                        </ToggleGroup>
+                     </div>
 
-            {/* Pagination Mobile */}
-            {totalPages > 1 && (
-               <CardFooter className="block md:hidden">
-                  <Pagination>
-                     <PaginationContent>
-                        <PaginationItem>
-                           <PaginationPrevious
-                              className={
-                                 currentPage === 1
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              href="#"
-                              onClick={(e) => {
-                                 e.preventDefault();
-                                 setCurrentPage(Math.max(1, currentPage - 1));
-                              }}
-                           />
-                        </PaginationItem>
+                     {!type && (
+                        <>
+                           <div className="h-4 w-px bg-border" />
 
-                        {Array.from(
-                           { length: Math.min(5, totalPages) },
-                           (_, i: number): number => {
-                              if (totalPages <= 5) {
-                                 return i + 1;
-                              } else if (currentPage <= 3) {
-                                 return i + 1;
-                              } else if (currentPage >= totalPages - 2) {
-                                 return totalPages - 4 + i;
-                              } else {
-                                 return currentPage - 2 + i;
-                              }
-                           },
-                        ).map((pageNum) => (
-                           <PaginationItem key={pageNum}>
-                              <PaginationLink
-                                 href="#"
-                                 isActive={pageNum === currentPage}
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentPage(pageNum);
-                                 }}
+                           <div className="flex items-center gap-2">
+                              <span className="text-sm text-muted-foreground">
+                                 {translate(
+                                    "dashboard.routes.bills.table.columns.type",
+                                 )}
+                                 :
+                              </span>
+                              <ToggleGroup
+                                 onValueChange={(value) =>
+                                    setTypeFilter(value || "all")
+                                 }
+                                 size="sm"
+                                 spacing={2}
+                                 type="single"
+                                 value={typeFilter === "all" ? "" : typeFilter}
+                                 variant="outline"
                               >
-                                 {pageNum}
-                              </PaginationLink>
-                           </PaginationItem>
-                        ))}
+                                 <ToggleGroupItem
+                                    className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-destructive data-[state=on]:text-destructive"
+                                    value="expense"
+                                 >
+                                    {translate(
+                                       "dashboard.routes.bills.features.filter.items.type-payable",
+                                    )}
+                                 </ToggleGroupItem>
+                                 <ToggleGroupItem
+                                    className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                                    value="income"
+                                 >
+                                    {translate(
+                                       "dashboard.routes.bills.features.filter.items.type-receivable",
+                                    )}
+                                 </ToggleGroupItem>
+                              </ToggleGroup>
+                           </div>
+                        </>
+                     )}
 
-                        <PaginationItem>
-                           <PaginationNext
-                              className={
-                                 currentPage === totalPages
-                                    ? "pointer-events-none opacity-50"
-                                    : ""
-                              }
-                              href="#"
-                              onClick={(e) => {
-                                 e.preventDefault();
-                                 setCurrentPage(
-                                    Math.min(totalPages, currentPage + 1),
-                                 );
-                              }}
-                           />
-                        </PaginationItem>
-                     </PaginationContent>
-                  </Pagination>
-               </CardFooter>
-            )}
+                     {hasActiveFilters && (
+                        <>
+                           <div className="h-4 w-px bg-border" />
+                           <Button
+                              className="h-8 text-xs"
+                              onClick={handleClearFilters}
+                              size="sm"
+                              variant="outline"
+                           >
+                              <X className="size-3" />
+                              {translate(
+                                 "dashboard.routes.bills.features.filter.actions.clear-filters",
+                              )}
+                           </Button>
+                        </>
+                     )}
+                  </div>
+               )}
 
-            {/* Pagination Desktop */}
-            {totalPages > 1 && (
-               <CardFooter className="hidden md:flex md:items-center md:justify-between">
-                  <div className="text-sm text-muted-foreground">
-                     Mostrando {filteredBills.length} de {pagination.totalCount}{" "}
-                     contas
-                  </div>
-                  <div className="flex items-center space-x-6 lg:space-x-8">
-                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        Página {currentPage} de {totalPages}
-                     </div>
-                     <div className="flex items-center space-x-2">
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === 1}
-                           onClick={() => setCurrentPage(1)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              Ir para primeira página
-                           </span>
-                           {"<<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === 1}
-                           onClick={() =>
-                              setCurrentPage(Math.max(1, currentPage - 1))
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">Página anterior</span>
-                           {"<"}
-                        </Button>
-                        <Button
-                           className="h-8 w-8 p-0"
-                           disabled={currentPage === totalPages}
-                           onClick={() =>
-                              setCurrentPage(
-                                 Math.min(totalPages, currentPage + 1),
-                              )
-                           }
-                           variant="outline"
-                        >
-                           <span className="sr-only">Próxima página</span>
-                           {">"}
-                        </Button>
-                        <Button
-                           className="hidden h-8 w-8 p-0 lg:flex"
-                           disabled={currentPage === totalPages}
-                           onClick={() => setCurrentPage(totalPages)}
-                           variant="outline"
-                        >
-                           <span className="sr-only">
-                              Ir para última página
-                           </span>
-                           {">>"}
-                        </Button>
-                     </div>
-                  </div>
-               </CardFooter>
-            )}
+               {filteredBills.length === 0 ? (
+                  <Empty>
+                     <EmptyContent>
+                        <EmptyMedia variant="icon">
+                           <Receipt className="size-12 text-muted-foreground" />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                           {translate(
+                              "dashboard.routes.bills.list-section.state.empty.title",
+                           )}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                           {hasActiveFilters
+                              ? "Nenhuma conta encontrada com os filtros aplicados"
+                              : translate(
+                                   "dashboard.routes.bills.list-section.state.empty.description",
+                                )}
+                        </EmptyDescription>
+                     </EmptyContent>
+                  </Empty>
+               ) : (
+                  <DataTable
+                     columns={createBillColumns(categories)}
+                     data={filteredBills as BillWithRelations[]}
+                     enableRowSelection
+                     getRowId={(row) => row.id}
+                     onRowSelectionChange={setRowSelection}
+                     pagination={{
+                        currentPage,
+                        onPageChange: setCurrentPage,
+                        onPageSizeChange: setPageSize,
+                        pageSize,
+                        totalCount,
+                        totalPages,
+                     }}
+                     renderMobileCard={(props) => (
+                        <BillMobileCard {...props} categories={categories} />
+                     )}
+                     renderSubComponent={(props) => (
+                        <BillExpandedContent
+                           {...props}
+                           categories={categories}
+                        />
+                     )}
+                     rowSelection={rowSelection}
+                  />
+               )}
+            </CardContent>
          </Card>
 
-         <BillFilterSheet categories={categories} />
-
-         {/* Mobile Floating Action Button */}
-         <Button
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
-            onClick={() => setIsCreateSheetOpen(true)}
-            size="icon"
+         <SelectionActionBar
+            onClear={handleClearSelection}
+            selectedCount={selectedIds.length}
+            summary={formatDecimalCurrency(selectedTotal)}
          >
-            <Plus className="size-6" />
-         </Button>
+            {pendingSelectedBills.length > 0 && (
+               <SelectionActionButton
+                  disabled={isLoading}
+                  icon={<Wallet className="size-3.5" />}
+                  onClick={() => setIsCompleteDialogOpen(true)}
+               >
+                  {translate("dashboard.routes.bills.bulk-actions.complete")}
+               </SelectionActionButton>
+            )}
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<Trash2 className="size-3.5" />}
+               onClick={() => setIsDeleteDialogOpen(true)}
+               variant="destructive"
+            >
+               {translate("dashboard.routes.bills.bulk-actions.delete")}
+            </SelectionActionButton>
+         </SelectionActionBar>
 
-         <ManageBillSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
+         <AlertDialog
+            onOpenChange={setIsCompleteDialogOpen}
+            open={isCompleteDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate(
+                        "dashboard.routes.bills.bulk-actions.complete-confirm-title",
+                        { count: pendingSelectedBills.length },
+                     )}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "dashboard.routes.bills.bulk-actions.complete-confirm-description",
+                        { count: pendingSelectedBills.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     onClick={() => {
+                        completeSelected(pendingSelectedBills.map((b) => b.id));
+                        setIsCompleteDialogOpen(false);
+                     }}
+                  >
+                     {translate("dashboard.routes.bills.bulk-actions.confirm")}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
+
+         <AlertDialog
+            onOpenChange={setIsDeleteDialogOpen}
+            open={isDeleteDialogOpen}
+         >
+            <AlertDialogContent>
+               <AlertDialogHeader>
+                  <AlertDialogTitle>
+                     {translate(
+                        "dashboard.routes.bills.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                     {translate(
+                        "dashboard.routes.bills.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     )}
+                  </AlertDialogDescription>
+               </AlertDialogHeader>
+               <AlertDialogFooter>
+                  <AlertDialogCancel>
+                     {translate("common.actions.cancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                     onClick={() => {
+                        deleteSelected(selectedIds);
+                        setIsDeleteDialogOpen(false);
+                     }}
+                  >
+                     {translate("dashboard.routes.bills.bulk-actions.delete")}
+                  </AlertDialogAction>
+               </AlertDialogFooter>
+            </AlertDialogContent>
+         </AlertDialog>
+
+         <BillFilterSheet categories={categories} />
       </>
    );
 }

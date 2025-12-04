@@ -56,6 +56,10 @@
       "./text": {
          "default": "./src/text.ts",
          "types": "./dist/src/text.d.ts"
+      },
+      "./interest": {
+         "default": "./src/interest.ts",
+         "types": "./dist/src/interest.d.ts"
       }
    },
    "files": [

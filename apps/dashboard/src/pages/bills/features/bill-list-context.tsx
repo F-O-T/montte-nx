@@ -1,3 +1,8 @@
+import {
+   getDateRangeForPeriod,
+   type TimePeriod,
+} from "@packages/ui/components/time-period-chips";
+import { endOfMonth, startOfMonth } from "date-fns";
 import type React from "react";
 import { createContext, useCallback, useContext, useState } from "react";
 
@@ -13,10 +18,10 @@ interface BillListContextType {
    // Filter state
    selectedMonth: Date;
    setSelectedMonth: (date: Date) => void;
-   startDate?: Date;
-   setStartDate: (date?: Date) => void;
-   endDate?: Date;
-   setEndDate: (date?: Date) => void;
+   startDate: Date | null;
+   setStartDate: (date: Date | null) => void;
+   endDate: Date | null;
+   setEndDate: (date: Date | null) => void;
    currentPage: number;
    setCurrentPage: (page: number) => void;
    pageSize: number;
@@ -31,6 +36,11 @@ interface BillListContextType {
    setTypeFilter: (filter: string) => void;
    isFilterSheetOpen: boolean;
    setIsFilterSheetOpen: (open: boolean) => void;
+   // Time period
+   timePeriod: TimePeriod | null;
+   setTimePeriod: (period: TimePeriod | null) => void;
+   handleTimePeriodChange: (period: TimePeriod | null) => void;
+   handleMonthChange: (month: Date) => void;
 }
 
 const BillListContext = createContext<BillListContextType | undefined>(
@@ -45,8 +55,6 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
 
    // Filter state
    const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-   const [startDate, setStartDate] = useState<Date | undefined>();
-   const [endDate, setEndDate] = useState<Date | undefined>();
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize, setPageSize] = useState(5);
    const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +62,19 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
    const [statusFilter, setStatusFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+   // Time period state
+   const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
+      "this-month",
+   );
+   const [startDate, setStartDate] = useState<Date | null>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return range.startDate;
+   });
+   const [endDate, setEndDate] = useState<Date | null>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return range.endDate;
+   });
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -85,20 +106,40 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
       });
    }, []);
 
+   const handleTimePeriodChange = useCallback((period: TimePeriod | null) => {
+      setTimePeriod(period);
+      if (period) {
+         const range = getDateRangeForPeriod(period);
+         setStartDate(range.startDate);
+         setEndDate(range.endDate);
+         if (range.selectedMonth) {
+            setSelectedMonth(range.selectedMonth);
+         }
+      }
+   }, []);
+
+   const handleMonthChange = useCallback((month: Date) => {
+      setSelectedMonth(month);
+      setTimePeriod(null);
+      setStartDate(startOfMonth(month));
+      setEndDate(endOfMonth(month));
+   }, []);
+
    const value = {
       categoryFilter,
       clearSelection,
       currentFilterType,
       currentPage,
       endDate,
+      handleMonthChange,
       handleSelectionChange,
+      handleTimePeriodChange,
       isFilterSheetOpen,
       pageSize,
       searchTerm,
       selectAll,
       selectedCount: selectedItems.size,
       selectedItems,
-      // Filter state
       selectedMonth,
       setCategoryFilter,
       setCurrentFilterType,
@@ -110,9 +151,11 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
       setSelectedMonth,
       setStartDate,
       setStatusFilter,
+      setTimePeriod,
       setTypeFilter,
       startDate,
       statusFilter,
+      timePeriod,
       toggleAll,
       typeFilter,
    };
@@ -130,4 +173,8 @@ export function useBillList() {
       throw new Error("useBillList must be used within a BillListProvider");
    }
    return context;
+}
+
+export function useBillListOptional() {
+   return useContext(BillListContext);
 }
