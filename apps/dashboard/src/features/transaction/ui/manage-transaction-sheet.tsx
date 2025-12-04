@@ -6,6 +6,7 @@ type Transaction =
 
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import { Combobox } from "@packages/ui/components/combobox";
 import { DatePicker } from "@packages/ui/components/date-picker";
 import { DropdownMenuItem } from "@packages/ui/components/dropdown-menu";
 import {
@@ -45,6 +46,31 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FolderOpen, Landmark, Pencil, Plus, Receipt, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { z } from "zod";
+
+const CATEGORY_COLORS = [
+   "#ef4444",
+   "#f97316",
+   "#f59e0b",
+   "#eab308",
+   "#84cc16",
+   "#22c55e",
+   "#10b981",
+   "#14b8a6",
+   "#06b6d4",
+   "#0ea5e9",
+   "#3b82f6",
+   "#6366f1",
+   "#8b5cf6",
+   "#a855f7",
+   "#d946ef",
+   "#ec4899",
+   "#f43f5e",
+];
+
+function getRandomColor(): string {
+   const index = Math.floor(Math.random() * CATEGORY_COLORS.length);
+   return CATEGORY_COLORS[index] ?? "#3b82f6";
+}
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { trpc } from "@/integrations/clients";
@@ -170,6 +196,85 @@ export function ManageTransactionSheet({
       }),
    );
 
+   const createCategoryMutation = useMutation(
+      trpc.categories.create.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao criar categoria");
+         },
+         onSuccess: async (data) => {
+            if (!data) return;
+            await queryClient.invalidateQueries({
+               queryKey: trpc.categories.getAll.queryKey(),
+            });
+            form.setFieldValue("categoryIds", [
+               ...form.getFieldValue("categoryIds"),
+               data.id,
+            ]);
+            toast.success(`Categoria "${data.name}" criada`);
+         },
+      }),
+   );
+
+   const createCostCenterMutation = useMutation(
+      trpc.costCenters.create.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao criar centro de custo");
+         },
+         onSuccess: async (data) => {
+            if (!data) return;
+            await queryClient.invalidateQueries({
+               queryKey: trpc.costCenters.getAll.queryKey(),
+            });
+            form.setFieldValue("costCenterId", data.id);
+            toast.success(`Centro de custo "${data.name}" criado`);
+         },
+      }),
+   );
+
+   const createTagMutation = useMutation(
+      trpc.tags.create.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao criar tag");
+         },
+         onSuccess: async (data) => {
+            if (!data) return;
+            await queryClient.invalidateQueries({
+               queryKey: trpc.tags.getAll.queryKey(),
+            });
+            form.setFieldValue("tagIds", [
+               ...form.getFieldValue("tagIds"),
+               data.id,
+            ]);
+            toast.success(`Tag "${data.name}" criada`);
+         },
+      }),
+   );
+
+   const handleCreateCategory = (name: string) => {
+      createCategoryMutation.mutate({
+         color: getRandomColor(),
+         name,
+      });
+   };
+
+   const handleCreateCostCenter = (name: string) => {
+      createCostCenterMutation.mutate({
+         name,
+      });
+   };
+
+   const handleCreateTag = (name: string) => {
+      createTagMutation.mutate({
+         color: getRandomColor(),
+         name,
+      });
+   };
+
+   const isCreating =
+      createCategoryMutation.isPending ||
+      createCostCenterMutation.isPending ||
+      createTagMutation.isPending;
+
    const transactionSchema = z.object({
       amount: z.number().min(1, translate("common.validation.required")),
       bankAccountId: z.string().min(1, translate("common.validation.required")),
@@ -288,6 +393,14 @@ export function ManageTransactionSheet({
       label: tag.name,
       value: tag.id,
    }));
+
+   const costCenterOptions = [
+      { label: translate("common.form.cost-center.none"), value: "" },
+      ...costCenters.map((cc) => ({
+         label: cc.code ? `${cc.name} (${cc.code})` : cc.name,
+         value: cc.id,
+      })),
+   ];
 
    return (
       <Sheet onOpenChange={setIsOpen} open={isOpen}>
@@ -563,12 +676,14 @@ export function ManageTransactionSheet({
                                              </FieldLabel>
                                              <MultiSelect
                                                 className="flex-1"
+                                                createLabel="Criar categoria"
                                                 emptyMessage={translate(
                                                    "common.form.search.no-results",
                                                 )}
                                                 onChange={(val) =>
                                                    field.handleChange(val)
                                                 }
+                                                onCreate={handleCreateCategory}
                                                 options={categoryOptions}
                                                 placeholder={translate(
                                                    "common.form.category.placeholder",
@@ -603,43 +718,26 @@ export function ManageTransactionSheet({
                                                 "common.form.cost-center.label",
                                              )}
                                           </FieldLabel>
-                                          <Select
+                                          <Combobox
+                                             className="w-full justify-between"
+                                             createLabel="Criar centro de custo"
+                                             disabled={isCreating}
+                                             emptyMessage={translate(
+                                                "common.form.search.no-results",
+                                             )}
+                                             onCreate={handleCreateCostCenter}
                                              onValueChange={(value) =>
-                                                field.handleChange(
-                                                   value === "none"
-                                                      ? ""
-                                                      : value,
-                                                )
+                                                field.handleChange(value)
                                              }
-                                             value={field.state.value || "none"}
-                                          >
-                                             <SelectTrigger>
-                                                <SelectValue
-                                                   placeholder={translate(
-                                                      "common.form.cost-center.placeholder",
-                                                   )}
-                                                />
-                                             </SelectTrigger>
-                                             <SelectContent>
-                                                <SelectItem value="none">
-                                                   {translate(
-                                                      "common.form.cost-center.none",
-                                                   )}
-                                                </SelectItem>
-                                                {costCenters.map(
-                                                   (costCenter) => (
-                                                      <SelectItem
-                                                         key={costCenter.id}
-                                                         value={costCenter.id}
-                                                      >
-                                                         {costCenter.name}
-                                                         {costCenter.code &&
-                                                            ` (${costCenter.code})`}
-                                                      </SelectItem>
-                                                   ),
-                                                )}
-                                             </SelectContent>
-                                          </Select>
+                                             options={costCenterOptions}
+                                             placeholder={translate(
+                                                "common.form.cost-center.placeholder",
+                                             )}
+                                             searchPlaceholder={translate(
+                                                "common.form.search.label",
+                                             )}
+                                             value={field.state.value}
+                                          />
                                        </Field>
                                     )}
                                  </form.Field>
@@ -658,12 +756,14 @@ export function ManageTransactionSheet({
                                           </FieldLabel>
                                           <MultiSelect
                                              className="flex-1"
+                                             createLabel="Criar tag"
                                              emptyMessage={translate(
                                                 "common.form.search.no-results",
                                              )}
                                              onChange={(val) =>
                                                 field.handleChange(val)
                                              }
+                                             onCreate={handleCreateTag}
                                              options={tagOptions}
                                              placeholder={translate(
                                                 "common.form.tags.placeholder",
@@ -692,6 +792,7 @@ export function ManageTransactionSheet({
                            disabled={
                               !state.canSubmit ||
                               state.isSubmitting ||
+                              isCreating ||
                               createTransactionMutation.isPending ||
                               updateTransactionMutation.isPending
                            }
