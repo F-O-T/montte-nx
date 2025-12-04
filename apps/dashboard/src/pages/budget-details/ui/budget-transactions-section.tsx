@@ -7,7 +7,6 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
-import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    Empty,
    EmptyContent,
@@ -16,9 +15,10 @@ import {
    EmptyTitle,
 } from "@packages/ui/components/empty";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
+import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQueries } from "@tanstack/react-query";
 import { Receipt } from "lucide-react";
-import { Fragment, Suspense, useEffect, useState } from "react";
+import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { TransactionList } from "@/features/transaction/ui/transaction-list";
 import { trpc } from "@/integrations/clients";
@@ -127,6 +127,11 @@ function BudgetTransactionsContent({
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [typeFilter, setTypeFilter] = useState("");
 
+   const dateKey = useMemo(
+      () => `${startDate?.getTime()}-${endDate?.getTime()}`,
+      [startDate, endDate],
+   );
+
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
@@ -135,9 +140,10 @@ function BudgetTransactionsContent({
       return () => clearTimeout(timer);
    }, [searchTerm]);
 
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when dates change
    useEffect(() => {
       setCurrentPage(1);
-   }, [startDate, endDate]);
+   }, [dateKey]);
 
    const categoryIds = getBudgetCategoryIds(budget);
    const tagId = getBudgetTagId(budget);
@@ -220,11 +226,11 @@ function BudgetTransactionsContent({
    return (
       <TransactionList
          categories={categories}
-         emptyStateTitle={translate(
-            "dashboard.routes.budgets.details.transactions.empty.title",
-         )}
          emptyStateDescription={translate(
             "dashboard.routes.budgets.details.transactions.empty.description",
+         )}
+         emptyStateTitle={translate(
+            "dashboard.routes.budgets.details.transactions.empty.title",
          )}
          filters={{
             categoryFilter: "all",

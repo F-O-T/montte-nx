@@ -11,14 +11,14 @@ import {
    CalendarDays,
    CalendarRange,
    Infinity as InfinityIcon,
+   Plus,
    RotateCcw,
 } from "lucide-react";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { DefaultHeader } from "@/default/default-header";
 import {
-   type BudgetPeriodType,
    BudgetListProvider,
+   type BudgetPeriodType,
    useBudgetList,
 } from "../features/budget-list-context";
 import { ManageBudgetSheet } from "../features/manage-budget-sheet";
@@ -33,34 +33,34 @@ function BudgetsPageContent() {
 
    const periodChips = [
       {
-         value: "" as const,
-         label: translate("dashboard.routes.budgets.filters.all"),
          icon: InfinityIcon,
+         label: translate("dashboard.routes.budgets.filters.all"),
+         value: "" as const,
       },
       {
-         value: "daily" as const,
-         label: translate("dashboard.routes.budgets.form.period.daily"),
          icon: Calendar,
+         label: translate("dashboard.routes.budgets.form.period.daily"),
+         value: "daily" as const,
       },
       {
-         value: "weekly" as const,
-         label: translate("dashboard.routes.budgets.form.period.weekly"),
          icon: CalendarRange,
+         label: translate("dashboard.routes.budgets.form.period.weekly"),
+         value: "weekly" as const,
       },
       {
-         value: "monthly" as const,
+         icon: CalendarDays,
          label: translate("dashboard.routes.budgets.form.period.monthly"),
-         icon: CalendarDays,
+         value: "monthly" as const,
       },
       {
-         value: "quarterly" as const,
-         label: translate("dashboard.routes.budgets.form.period.quarterly"),
          icon: RotateCcw,
+         label: translate("dashboard.routes.budgets.form.period.quarterly"),
+         value: "quarterly" as const,
       },
       {
-         value: "yearly" as const,
-         label: translate("dashboard.routes.budgets.form.period.yearly"),
          icon: CalendarDays,
+         label: translate("dashboard.routes.budgets.form.period.yearly"),
+         value: "yearly" as const,
       },
    ];
 

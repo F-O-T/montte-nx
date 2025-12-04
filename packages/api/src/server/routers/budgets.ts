@@ -1,4 +1,5 @@
 import {
+   calculatePeriodDates,
    checkBudgetImpact,
    createBudget,
    deleteBudget,
@@ -15,7 +16,6 @@ import {
    processRollover,
    updateBudget,
    updateBudgets,
-   calculatePeriodDates,
 } from "@packages/database/repositories/budget-repository";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -165,9 +165,9 @@ export const budgetRouter = router({
             amount: z.number(),
             categoryId: z.string().optional(),
             categoryIds: z.array(z.string()).optional(),
-            tagIds: z.array(z.string()).optional(),
             costCenterId: z.string().optional(),
             excludeTransactionId: z.string().optional(),
+            tagIds: z.array(z.string()).optional(),
          }),
       )
       .query(async ({ ctx, input }) => {
@@ -178,9 +178,9 @@ export const budgetRouter = router({
             amount: input.amount,
             categoryId: input.categoryId,
             categoryIds: input.categoryIds,
-            tagIds: input.tagIds,
             costCenterId: input.costCenterId,
             excludeTransactionId: input.excludeTransactionId,
+            tagIds: input.tagIds,
          });
       }),
 
@@ -268,8 +268,8 @@ export const budgetRouter = router({
          z.object({
             categoryId: z.string().optional(),
             categoryIds: z.array(z.string()).optional(),
-            tagIds: z.array(z.string()).optional(),
             costCenterId: z.string().optional(),
+            tagIds: z.array(z.string()).optional(),
          }),
       )
       .query(async ({ ctx, input }) => {
@@ -279,8 +279,8 @@ export const budgetRouter = router({
          return findBudgetsByTarget(resolvedCtx.db, organizationId, {
             categoryId: input.categoryId,
             categoryIds: input.categoryIds,
-            tagIds: input.tagIds,
             costCenterId: input.costCenterId,
+            tagIds: input.tagIds,
          });
       }),
 
@@ -332,10 +332,10 @@ export const budgetRouter = router({
       .input(
          z.object({
             budgetId: z.string(),
-            periodStart: z.date().optional(),
-            periodEnd: z.date().optional(),
-            page: z.number().default(1),
             limit: z.number().default(10),
+            page: z.number().default(1),
+            periodEnd: z.date().optional(),
+            periodStart: z.date().optional(),
             search: z.string().optional(),
          }),
       )
@@ -351,14 +351,14 @@ export const budgetRouter = router({
 
          const { periodStart, periodEnd } =
             input.periodStart && input.periodEnd
-               ? { periodStart: input.periodStart, periodEnd: input.periodEnd }
+               ? { periodEnd: input.periodEnd, periodStart: input.periodStart }
                : calculatePeriodDates(budget);
 
          return findTransactionsByBudgetTarget(resolvedCtx.db, budget, {
-            periodStart,
-            periodEnd,
-            page: input.page,
             limit: input.limit,
+            page: input.page,
+            periodEnd,
+            periodStart,
             search: input.search,
          });
       }),

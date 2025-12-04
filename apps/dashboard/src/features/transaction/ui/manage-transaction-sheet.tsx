@@ -38,7 +38,7 @@ import { defineStepper } from "@packages/ui/components/stepper";
 import { Textarea } from "@packages/ui/components/textarea";
 import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Info, Pencil, Plus, Tag, XCircle } from "lucide-react";
 import { type FormEvent, useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -113,7 +113,6 @@ export function ManageTransactionSheet({
    defaultCostCenterId = "",
    defaultTagIds = [],
 }: ManageTransactionSheetProps) {
-   const queryClient = useQueryClient();
    const isEditMode = !!transaction;
 
    const [internalOpen, setInternalOpen] = useState(false);
@@ -160,35 +159,6 @@ export function ManageTransactionSheet({
    const { data: costCenters = [] } = useQuery(
       trpc.costCenters.getAll.queryOptions(),
    );
-
-   const invalidateTransactionQueries = useCallback(async () => {
-      await Promise.all([
-         queryClient.invalidateQueries({
-            queryKey: trpc.transactions.getAllPaginated.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.bankAccounts.getTransactions.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.categories.getBreakdown.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.categories.getMonthlyTrend.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.categories.getTopCategories.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.categories.getTypeDistribution.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.categories.getUsageFrequency.queryKey(),
-         }),
-         queryClient.invalidateQueries({
-            queryKey: trpc.budgets.getById.queryKey(),
-         }),
-      ]);
-   }, [queryClient]);
 
    const createTransactionMutation = useMutation(
       trpc.transactions.create.mutationOptions(),
@@ -243,7 +213,6 @@ export function ManageTransactionSheet({
             type: values.type,
          });
 
-         await invalidateTransactionQueries();
          toast.success(
             translate(
                "dashboard.routes.transactions.notifications.create-success",
@@ -253,7 +222,7 @@ export function ManageTransactionSheet({
          setBudgetImpactParams(null);
          setIsOpen?.(false);
       },
-      [createTransactionMutation, invalidateTransactionQueries, setIsOpen],
+      [createTransactionMutation, setIsOpen],
    );
 
    const handleUpdateTransaction = useCallback(
@@ -277,7 +246,6 @@ export function ManageTransactionSheet({
             id: transaction.id,
          });
 
-         await invalidateTransactionQueries();
          toast.success(
             translate(
                "dashboard.routes.transactions.notifications.update-success",
@@ -285,12 +253,7 @@ export function ManageTransactionSheet({
          );
          setIsOpen?.(false);
       },
-      [
-         transaction,
-         updateTransactionMutation,
-         invalidateTransactionQueries,
-         setIsOpen,
-      ],
+      [transaction, updateTransactionMutation, setIsOpen],
    );
 
    const form = useForm({
@@ -361,10 +324,6 @@ export function ManageTransactionSheet({
 
             if (!data) return;
 
-            await queryClient.invalidateQueries({
-               queryKey: trpc.categories.getAll.queryKey(),
-            });
-
             form.setFieldValue("categoryIds", [
                ...form.getFieldValue("categoryIds"),
                data.id,
@@ -375,7 +334,7 @@ export function ManageTransactionSheet({
             toast.error((error as Error).message || "Falha ao criar categoria");
          }
       },
-      [createCategoryMutation, queryClient, form],
+      [createCategoryMutation, form],
    );
 
    const handleCreateCostCenter = useCallback(
@@ -385,10 +344,6 @@ export function ManageTransactionSheet({
 
             if (!data) return;
 
-            await queryClient.invalidateQueries({
-               queryKey: trpc.costCenters.getAll.queryKey(),
-            });
-
             form.setFieldValue("costCenterId", data.id);
             toast.success(`Centro de custo "${data.name}" criado`);
          } catch (error) {
@@ -397,7 +352,7 @@ export function ManageTransactionSheet({
             );
          }
       },
-      [createCostCenterMutation, queryClient, form],
+      [createCostCenterMutation, form],
    );
 
    const handleCreateTag = useCallback(
@@ -410,10 +365,6 @@ export function ManageTransactionSheet({
 
             if (!data) return;
 
-            await queryClient.invalidateQueries({
-               queryKey: trpc.tags.getAll.queryKey(),
-            });
-
             form.setFieldValue("tagIds", [
                ...form.getFieldValue("tagIds"),
                data.id,
@@ -424,7 +375,7 @@ export function ManageTransactionSheet({
             toast.error((error as Error).message || "Falha ao criar tag");
          }
       },
-      [createTagMutation, queryClient, form],
+      [createTagMutation, form],
    );
 
    const shouldCheckBudgetImpact =

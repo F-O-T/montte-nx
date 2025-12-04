@@ -894,13 +894,13 @@ export async function findTransactionsByBudgetTarget(
          `);
 
          transactions = result.rows.map((row) => ({
-            id: row.id,
-            description: row.description,
             amount: row.amount,
-            date: row.date,
-            type: row.type,
             bankAccountId: row.bank_account_id,
             categoryId: row.category_id,
+            date: row.date,
+            description: row.description,
+            id: row.id,
+            type: row.type,
          }));
       } else if (target.type === "categories") {
          const categoryIds = target.categoryIds;
@@ -951,13 +951,13 @@ export async function findTransactionsByBudgetTarget(
             `);
 
             transactions = result.rows.map((row) => ({
-               id: row.id,
-               description: row.description,
                amount: row.amount,
-               date: row.date,
-               type: row.type,
                bankAccountId: row.bank_account_id,
                categoryId: row.category_id,
+               date: row.date,
+               description: row.description,
+               id: row.id,
+               type: row.type,
             }));
          }
       } else if (target.type === "tag") {
@@ -1000,12 +1000,12 @@ export async function findTransactionsByBudgetTarget(
          `);
 
          transactions = result.rows.map((row) => ({
-            id: row.id,
-            description: row.description,
             amount: row.amount,
-            date: row.date,
-            type: row.type,
             bankAccountId: row.bank_account_id,
+            date: row.date,
+            description: row.description,
+            id: row.id,
+            type: row.type,
          }));
       } else if (target.type === "cost_center") {
          const searchCondition = search
@@ -1045,27 +1045,27 @@ export async function findTransactionsByBudgetTarget(
          `);
 
          transactions = result.rows.map((row) => ({
-            id: row.id,
-            description: row.description,
             amount: row.amount,
-            date: row.date,
-            type: row.type,
             bankAccountId: row.bank_account_id,
+            date: row.date,
+            description: row.description,
+            id: row.id,
+            type: row.type,
          }));
       }
 
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         transactions,
          pagination: {
             currentPage: page,
-            totalPages,
-            totalCount,
             hasNextPage: page < totalPages,
             hasPreviousPage: page > 1,
             limit,
+            totalCount,
+            totalPages,
          },
+         transactions,
       };
    } catch (err) {
       propagateError(err);
@@ -1259,22 +1259,22 @@ export async function checkBudgetImpact(
 
          if (severity !== "info" || projectedPercentage >= 50) {
             warnings.push({
+               budgetAmount,
+               budgetColor: b.color,
                budgetId: b.id,
                budgetName: b.name,
-               budgetColor: b.color,
-               currentSpent,
                currentPercentage,
-               projectedSpent,
-               projectedPercentage,
-               budgetAmount,
-               severity,
+               currentSpent,
                message,
+               projectedPercentage,
+               projectedSpent,
+               severity,
             });
          }
       }
 
       return warnings.sort((a, b) => {
-         const severityOrder = { danger: 0, warning: 1, info: 2 };
+         const severityOrder = { danger: 0, info: 2, warning: 1 };
          return severityOrder[a.severity] - severityOrder[b.severity];
       });
    } catch (err) {

@@ -15,9 +15,9 @@ import {
    ChartTooltip,
 } from "@packages/ui/components/chart";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { formatDate } from "@packages/utils/date";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {

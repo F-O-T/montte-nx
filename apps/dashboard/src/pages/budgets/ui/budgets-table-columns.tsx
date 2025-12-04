@@ -138,8 +138,8 @@ function BudgetActionsCell({ budget }: { budget: Budget }) {
          <DeleteBudget
             asDialog
             budget={budget}
-            open={isDeleteOpen}
             onOpenChange={setIsDeleteOpen}
+            open={isDeleteOpen}
          />
       </>
    );
@@ -456,8 +456,8 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
             <DeleteBudget
                asDialog
                budget={budget}
-               open={isDeleteOpen}
                onOpenChange={setIsDeleteOpen}
+               open={isDeleteOpen}
             />
          </div>
       );
@@ -554,8 +554,8 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
          <DeleteBudget
             asDialog
             budget={budget}
-            open={isDeleteOpen}
             onOpenChange={setIsDeleteOpen}
+            open={isDeleteOpen}
          />
       </div>
    );
