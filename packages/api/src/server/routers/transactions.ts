@@ -345,7 +345,7 @@ export const transactionRouter = router({
 
          const validIds = transactions
             .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t?.id);
+            .map((t) => t!.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
@@ -717,7 +717,11 @@ export const transactionRouter = router({
          );
 
          const validTransactions = transactions.filter(
-            (t) => t && t.organizationId === organizationId && t.bankAccountId,
+            (t): t is NonNullable<typeof t> =>
+               t !== null &&
+               t !== undefined &&
+               t.organizationId === organizationId &&
+               t.bankAccountId !== null,
          );
 
          if (validTransactions.length === 0) {
@@ -726,16 +730,16 @@ export const transactionRouter = router({
 
          const results = await Promise.all(
             validTransactions.map(async (t) => {
-               const amount = Number(t?.amount);
+               const amount = Number(t.amount);
                const isOutgoing = amount < 0;
 
-               await updateTransaction(resolvedCtx.db, t?.id, {
+               await updateTransaction(resolvedCtx.db, t.id, {
                   type: "transfer",
                });
 
                let counterpartId: string;
 
-               const userMatchedId = input.matchedTransactionIds?.[t?.id];
+               const userMatchedId = input.matchedTransactionIds?.[t.id];
 
                if (userMatchedId) {
                   await updateTransaction(resolvedCtx.db, userMatchedId, {
@@ -748,7 +752,7 @@ export const transactionRouter = router({
                      {
                         amount: -amount,
                         bankAccountId: input.toBankAccountId,
-                        date: t?.date,
+                        date: t.date,
                         organizationId,
                      },
                   );
@@ -764,8 +768,8 @@ export const transactionRouter = router({
                         {
                            amount: (-amount).toString(),
                            bankAccountId: input.toBankAccountId,
-                           date: t?.date,
-                           description: t?.description,
+                           date: t.date,
+                           description: t.description,
                            id: crypto.randomUUID(),
                            organizationId,
                            type: "transfer",
@@ -779,17 +783,17 @@ export const transactionRouter = router({
                   fromBankAccountId: isOutgoing
                      ? (t.bankAccountId as string)
                      : input.toBankAccountId,
-                  fromTransactionId: isOutgoing ? t?.id : counterpartId,
+                  fromTransactionId: isOutgoing ? t.id : counterpartId,
                   id: crypto.randomUUID(),
                   notes: null,
                   organizationId,
                   toBankAccountId: isOutgoing
                      ? input.toBankAccountId
                      : (t.bankAccountId as string),
-                  toTransactionId: isOutgoing ? counterpartId : t?.id,
+                  toTransactionId: isOutgoing ? counterpartId : t.id,
                });
 
-               return t?.id;
+               return t.id;
             }),
          );
 
@@ -978,7 +982,7 @@ export const transactionRouter = router({
 
          const validIds = transactions
             .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t?.id);
+            .map((t) => t!.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
@@ -1008,7 +1012,7 @@ export const transactionRouter = router({
 
          const validIds = transactions
             .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t?.id);
+            .map((t) => t!.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
@@ -1042,7 +1046,7 @@ export const transactionRouter = router({
 
          const validIds = transactions
             .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t?.id);
+            .map((t) => t!.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
