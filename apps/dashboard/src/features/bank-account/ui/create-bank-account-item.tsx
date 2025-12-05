@@ -27,7 +27,7 @@ export function CreateBankAccountItem({
          variant={solid ? "outline" : "default"}
       >
          <ItemMedia variant="icon">
-            <Plus className="size-4 " />
+            <Plus className="size-6 " />
          </ItemMedia>
          <ItemContent>
             <ItemTitle>
@@ -42,7 +42,7 @@ export function CreateBankAccountItem({
             </ItemDescription>
          </ItemContent>
          <ItemActions>
-            <ArrowRight className="size-4" />
+            <ArrowRight className="size-6" />
          </ItemActions>
       </Item>
    );

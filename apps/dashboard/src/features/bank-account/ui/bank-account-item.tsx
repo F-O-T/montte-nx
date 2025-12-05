@@ -39,7 +39,7 @@ export function BankAccountItem({ account, solid }: BankAccountItemProps) {
             variant={solid ? "outline" : "default"}
          >
             <ItemMedia variant="icon">
-               <Building2 className="size-4" />
+               <Building2 className="size-6" />
             </ItemMedia>
             <ItemContent>
                <ItemTitle className="flex items-center gap-2">
@@ -51,7 +51,7 @@ export function BankAccountItem({ account, solid }: BankAccountItemProps) {
                </ItemDescription>
             </ItemContent>
             <ItemActions>
-               <ArrowRight className="size-4" />
+               <ArrowRight className="size-6" />
             </ItemActions>
          </Item>
       </Link>

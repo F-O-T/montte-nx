@@ -76,18 +76,28 @@ function HomeBankAccountsContent() {
    const shouldShowCreateTile = visibleAccounts.length < 3;
 
    return (
-      <div className="grid gap-4 md:grid-cols-3">
-         {visibleAccounts.map((account) => (
-            <BankAccountItem account={account} key={account.id} solid />
-         ))}
-         {shouldShowCreateTile && (
-            <CreateBankAccountItem
-               onCreateAccount={() =>
-                  openSheet({ children: <ManageBankAccountForm /> })
-               }
-               solid
-            />
-         )}
+      <div className="space-y-4">
+         <div>
+            <h2 className="text-lg font-semibold">
+               {translate("dashboard.routes.home.bank-accounts.title")}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+               {translate("dashboard.routes.home.bank-accounts.description")}
+            </p>
+         </div>
+         <div className="grid gap-4 md:grid-cols-3">
+            {visibleAccounts.map((account) => (
+               <BankAccountItem account={account} key={account.id} solid />
+            ))}
+            {shouldShowCreateTile && (
+               <CreateBankAccountItem
+                  onCreateAccount={() =>
+                     openSheet({ children: <ManageBankAccountForm /> })
+                  }
+                  solid
+               />
+            )}
+         </div>
       </div>
    );
 }
