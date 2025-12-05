@@ -47,18 +47,25 @@ export function Autocomplete({
    const [parentNode, setParentNode] = useState<HTMLDivElement | null>(null);
 
    const [isOpen, setOpen] = useState(false);
-   const [selected, setSelected] = useState<AutocompleteOption | undefined>(
-      value,
+   const [internalSelected, setInternalSelected] = useState<
+      AutocompleteOption | undefined
+   >(value);
+   const [searchValue, setSearchValue] = useState<string>(value?.label || "");
+   const pendingSelectionRef = useRef<AutocompleteOption | undefined>(
+      undefined,
    );
-   const [inputValue, setInputValue] = useState<string>(value?.label || "");
+
+   const isControlled = onValueChange !== undefined;
+   const selected = isControlled ? value : internalSelected;
+   const inputValue = isOpen ? searchValue : selected?.label || "";
 
    const filteredOptions = useMemo(() => {
-      const searchTerm = inputValue.trim().toLowerCase();
+      const searchTerm = searchValue.trim().toLowerCase();
       if (!searchTerm) return options;
       return options.filter((option) =>
          option.label.toLowerCase().includes(searchTerm),
       );
-   }, [options, inputValue]);
+   }, [options, searchValue]);
 
    const virtualizer = useVirtualizer({
       count: filteredOptions.length,
@@ -77,7 +84,7 @@ export function Autocomplete({
 
    const handleInputValueChange = useCallback(
       (newValue: string) => {
-         setInputValue(newValue);
+         setSearchValue(newValue);
          if (parentNode) {
             parentNode.scrollTop = 0;
          }
@@ -101,7 +108,9 @@ export function Autocomplete({
                (option) => option.label === input.value,
             );
             if (optionToSelect) {
-               setSelected(optionToSelect);
+               if (!isControlled) {
+                  setInternalSelected(optionToSelect);
+               }
                onValueChange?.(optionToSelect);
             }
          }
@@ -110,28 +119,46 @@ export function Autocomplete({
             input.blur();
          }
       },
-      [isOpen, filteredOptions, onValueChange],
+      [isOpen, filteredOptions, onValueChange, isControlled],
    );
 
    const handleBlur = useCallback(() => {
       setOpen(false);
-      setInputValue(selected?.label || "");
-      onBlur?.();
+      const finalSelected = pendingSelectionRef.current || selected;
+      setSearchValue(finalSelected?.label || "");
+      const hadPendingSelection = !!pendingSelectionRef.current;
+      pendingSelectionRef.current = undefined;
+
+      if (hadPendingSelection) {
+         setTimeout(() => {
+            onBlur?.();
+         }, 0);
+      } else {
+         onBlur?.();
+      }
    }, [selected, onBlur]);
 
    const handleSelectOption = useCallback(
       (selectedOption: AutocompleteOption) => {
-         setInputValue(selectedOption.label);
+         setSearchValue(selectedOption.label);
+         pendingSelectionRef.current = selectedOption;
 
-         setSelected(selectedOption);
+         if (!isControlled) {
+            setInternalSelected(selectedOption);
+         }
          onValueChange?.(selectedOption);
 
          setTimeout(() => {
             inputRef?.current?.blur();
          }, 0);
       },
-      [onValueChange],
+      [onValueChange, isControlled],
    );
+
+   const handleFocus = useCallback(() => {
+      setOpen(true);
+      setSearchValue(selected?.label || "");
+   }, [selected]);
 
    return (
       <CommandPrimitive onKeyDown={handleKeyDown}>
@@ -140,7 +167,7 @@ export function Autocomplete({
                className="text-base border-0"
                disabled={disabled}
                onBlur={handleBlur}
-               onFocus={() => setOpen(true)}
+               onFocus={handleFocus}
                onValueChange={isLoading ? undefined : handleInputValueChange}
                placeholder={placeholder}
                ref={inputRef}

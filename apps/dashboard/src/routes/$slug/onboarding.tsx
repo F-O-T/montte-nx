@@ -628,7 +628,7 @@ function RouteComponent() {
    );
 
    return (
-      <div className="min-h-screen flex flex-col p-4">
+      <div className="min-h-screen flex flex-col">
          <header className="p-4">
             <div className="max-w-2xl mx-auto flex items-center justify-between">
                <div className="w-10" />
@@ -648,12 +648,12 @@ function RouteComponent() {
                   </p>
                </div>
 
-               <div className="space-y-6">{renderStep()}</div>
+               <div className="space-y-4">{renderStep()}</div>
             </div>
          </div>
 
          <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div className="max-w-2xl mx-auto p-4 flex items-center justify-between">
                <Button
                   className="gap-2"
                   disabled={currentStepIndex === 0}
@@ -696,18 +696,27 @@ function RouteComponent() {
                         >
                            {translate("common.actions.skip")}
                         </Button>
-                        <Button
-                           className="gap-2"
-                           disabled={
-                              !bankAccountForm.state.values.bank ||
-                              bankAccountForm.state.isSubmitting ||
-                              createBankAccount.isPending
-                           }
-                           onClick={() => bankAccountForm.handleSubmit()}
+                        <bankAccountForm.Subscribe
+                           selector={(state) => ({
+                              bank: state.values.bank,
+                              isSubmitting: state.isSubmitting,
+                           })}
                         >
-                           {translate("common.actions.next")}
-                           <ChevronRightIcon className="size-4" />
-                        </Button>
+                           {({ bank, isSubmitting }) => (
+                              <Button
+                                 className="gap-2"
+                                 disabled={
+                                    !bank ||
+                                    isSubmitting ||
+                                    createBankAccount.isPending
+                                 }
+                                 onClick={() => bankAccountForm.handleSubmit()}
+                              >
+                                 {translate("common.actions.next")}
+                                 <ChevronRightIcon className="size-4" />
+                              </Button>
+                           )}
+                        </bankAccountForm.Subscribe>
                      </>
                   )}
                   {step === "categories" && (
