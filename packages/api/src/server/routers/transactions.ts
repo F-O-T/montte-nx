@@ -32,6 +32,7 @@ import { streamFileForProxy, uploadFile } from "@packages/files/client";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
+import { checkBudgetAlertsAfterTransaction } from "../services/budget-alert-service";
 
 const categorySplitSchema = z.object({
    categoryId: z.string().uuid(),
@@ -270,6 +271,22 @@ export const transactionRouter = router({
             resolvedCtx.db,
             transaction.id,
          );
+
+         if (input.type === "expense") {
+            const userId = resolvedCtx.session?.user.id;
+            if (userId) {
+               checkBudgetAlertsAfterTransaction({
+                  db: resolvedCtx.db,
+                  organizationId,
+                  userId,
+                  vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
+                  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
+                  vapidSubject: process.env.VAPID_SUBJECT,
+               }).catch((err) => {
+                  console.error("Error checking budget alerts:", err);
+               });
+            }
+         }
 
          return {
             transaction: createdTransaction,

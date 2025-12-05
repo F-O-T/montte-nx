@@ -4,6 +4,7 @@ import { cn } from "@packages/ui/lib/utils";
 import type * as React from "react";
 import { useEffect } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useBillReminderCheck } from "@/hooks/use-bill-reminder-check";
 import { useLastOrganization } from "@/hooks/use-last-organization";
 import { useIsStandalone } from "@/hooks/use-standalone";
 import { AppSidebar } from "./app-sidebar";
@@ -17,6 +18,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
    const { activeOrganization } = useActiveOrganization();
    const { setLastSlug } = useLastOrganization();
+
+   useBillReminderCheck();
 
    useEffect(() => {
       if (activeOrganization?.slug) {

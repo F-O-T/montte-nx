@@ -1,0 +1,324 @@
+/// <reference lib="webworker" />
+import {
+   cleanupOutdatedCaches,
+   createHandlerBoundToURL,
+   precacheAndRoute,
+} from "workbox-precaching";
+import { NavigationRoute, registerRoute } from "workbox-routing";
+import {
+   CacheFirst,
+   NetworkFirst,
+   StaleWhileRevalidate,
+} from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
+import { CacheableResponsePlugin } from "workbox-cacheable-response";
+import { BackgroundSyncPlugin } from "workbox-background-sync";
+
+declare let self: ServiceWorkerGlobalScope;
+
+const CACHE_VERSION = "v1";
+const APP_SHELL_CACHE = `app-shell-${CACHE_VERSION}`;
+const API_CACHE = `api-${CACHE_VERSION}`;
+
+precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
+
+const navigationHandler = createHandlerBoundToURL("/index.html");
+const navigationRoute = new NavigationRoute(navigationHandler, {
+   denylist: [/^\/api\//, /^\/trpc\//, /^\/share-target/, /^\/file-handler/],
+});
+registerRoute(navigationRoute);
+
+registerRoute(
+   ({ url }) =>
+      url.origin === "https://fonts.googleapis.com" ||
+      url.origin === "https://fonts.gstatic.com",
+   new CacheFirst({
+      cacheName: "google-fonts-cache",
+      plugins: [
+         new CacheableResponsePlugin({ statuses: [0, 200] }),
+         new ExpirationPlugin({
+            maxEntries: 30,
+            maxAgeSeconds: 60 * 60 * 24 * 365,
+         }),
+      ],
+   }),
+);
+
+registerRoute(
+   ({ request }) => request.destination === "image",
+   new CacheFirst({
+      cacheName: "images-cache",
+      plugins: [
+         new CacheableResponsePlugin({ statuses: [0, 200] }),
+         new ExpirationPlugin({
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30,
+         }),
+      ],
+   }),
+);
+
+registerRoute(
+   ({ request }) =>
+      request.destination === "style" || request.destination === "script",
+   new StaleWhileRevalidate({
+      cacheName: "static-resources",
+      plugins: [
+         new CacheableResponsePlugin({ statuses: [0, 200] }),
+         new ExpirationPlugin({
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 60 * 24 * 7,
+         }),
+      ],
+   }),
+);
+
+const bgSyncPlugin = new BackgroundSyncPlugin("api-queue", {
+   maxRetentionTime: 24 * 60,
+   onSync: async ({ queue }) => {
+      let entry;
+      while ((entry = await queue.shiftRequest())) {
+         try {
+            await fetch(entry.request);
+         } catch (error) {
+            await queue.unshiftRequest(entry);
+            throw error;
+         }
+      }
+   },
+});
+
+registerRoute(
+   ({ url }) =>
+      url.pathname.startsWith("/trpc/") || url.pathname.startsWith("/api/"),
+   new NetworkFirst({
+      cacheName: API_CACHE,
+      networkTimeoutSeconds: 10,
+      plugins: [
+         new CacheableResponsePlugin({ statuses: [0, 200] }),
+         new ExpirationPlugin({
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 5,
+         }),
+         bgSyncPlugin,
+      ],
+   }),
+   "GET",
+);
+
+registerRoute(
+   ({ url }) =>
+      url.pathname.startsWith("/trpc/") || url.pathname.startsWith("/api/"),
+   async ({ request }) => {
+      try {
+         return await fetch(request);
+      } catch {
+         return new Response(
+            JSON.stringify({
+               error: "offline",
+               message:
+                  "Você está offline. A requisição será enviada quando voltar online.",
+            }),
+            {
+               status: 503,
+               headers: { "Content-Type": "application/json" },
+            },
+         );
+      }
+   },
+   "POST",
+);
+
+interface PushNotificationData {
+   title?: string;
+   body?: string;
+   icon?: string;
+   badge?: string;
+   tag?: string;
+   data?: {
+      url?: string;
+      type?: string;
+      [key: string]: unknown;
+   };
+   actions?: Array<{
+      action: string;
+      title: string;
+      icon?: string;
+   }>;
+   requireInteraction?: boolean;
+   silent?: boolean;
+   vibrate?: number[];
+}
+
+self.addEventListener("push", (event: PushEvent) => {
+   if (!event.data) {
+      console.warn("Push event received without data");
+      return;
+   }
+
+   let payload: PushNotificationData;
+   try {
+      payload = event.data.json();
+   } catch {
+      payload = { body: event.data.text() };
+   }
+
+   const title = payload.title || "Montte";
+   const options: NotificationOptions & { vibrate?: number[] } = {
+      body: payload.body || "Você tem uma nova notificação",
+      icon: payload.icon || "/android/android-launchericon-192-192.png",
+      badge: payload.badge || "/android/android-launchericon-96-96.png",
+      tag: payload.tag || `montte-${Date.now()}`,
+      data: payload.data || {},
+      requireInteraction: payload.requireInteraction ?? false,
+      silent: payload.silent ?? false,
+      vibrate: payload.vibrate || [100, 50, 100],
+   };
+
+   event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event: NotificationEvent) => {
+   event.notification.close();
+
+   const notificationData = event.notification.data || {};
+   let targetUrl = "/";
+
+   if (event.action) {
+      switch (event.action) {
+         case "view":
+            targetUrl = notificationData.url || "/";
+            break;
+         case "dismiss":
+            return;
+         default:
+            targetUrl = notificationData.url || "/";
+      }
+   } else {
+      targetUrl = notificationData.url || "/";
+   }
+
+   event.waitUntil(
+      self.clients
+         .matchAll({ type: "window", includeUncontrolled: true })
+         .then((clientList) => {
+            for (const client of clientList) {
+               if (
+                  client.url.includes(self.location.origin) &&
+                  "focus" in client
+               ) {
+                  client.postMessage({
+                     type: "NOTIFICATION_CLICK",
+                     url: targetUrl,
+                     data: notificationData,
+                  });
+                  return client.focus();
+               }
+            }
+            if (self.clients.openWindow) {
+               return self.clients.openWindow(targetUrl);
+            }
+         }),
+   );
+});
+
+self.addEventListener("notificationclose", (event: NotificationEvent) => {
+   const notificationData = event.notification.data || {};
+
+   self.clients.matchAll({ type: "window" }).then((clients) => {
+      clients.forEach((client) => {
+         client.postMessage({
+            type: "NOTIFICATION_CLOSED",
+            data: notificationData,
+         });
+      });
+   });
+});
+
+self.addEventListener("pushsubscriptionchange", (event: Event) => {
+   const pushEvent = event as ExtendableEvent & {
+      oldSubscription?: PushSubscription;
+      newSubscription?: PushSubscription;
+   };
+
+   pushEvent.waitUntil(
+      self.clients.matchAll({ type: "window" }).then((clients) => {
+         clients.forEach((client) => {
+            client.postMessage({
+               type: "PUSH_SUBSCRIPTION_CHANGE",
+               oldSubscription: pushEvent.oldSubscription?.toJSON(),
+               newSubscription: pushEvent.newSubscription?.toJSON(),
+            });
+         });
+      }),
+   );
+});
+
+self.addEventListener("message", (event: ExtendableMessageEvent) => {
+   if (event.data?.type === "SKIP_WAITING") {
+      self.skipWaiting();
+   }
+
+   if (event.data?.type === "GET_VERSION") {
+      event.ports[0]?.postMessage({ version: CACHE_VERSION });
+   }
+
+   if (event.data?.type === "CLEAR_CACHE") {
+      event.waitUntil(
+         caches.keys().then((cacheNames) => {
+            return Promise.all(
+               cacheNames.map((cacheName) => caches.delete(cacheName)),
+            );
+         }),
+      );
+   }
+});
+
+self.addEventListener("install", (event: ExtendableEvent) => {
+   console.log("Service Worker installing...");
+   event.waitUntil(
+      caches.open(APP_SHELL_CACHE).then((cache) => {
+         return cache.addAll(["/", "/offline.html", "/favicon.svg"]);
+      }),
+   );
+});
+
+self.addEventListener("activate", (event: ExtendableEvent) => {
+   console.log("Service Worker activating...");
+   event.waitUntil(
+      caches
+         .keys()
+         .then((cacheNames) => {
+            return Promise.all(
+               cacheNames
+                  .filter((cacheName) => {
+                     return (
+                        (cacheName.startsWith("app-shell-") ||
+                           cacheName.startsWith("static-") ||
+                           cacheName.startsWith("dynamic-") ||
+                           cacheName.startsWith("api-")) &&
+                        !cacheName.includes(CACHE_VERSION)
+                     );
+                  })
+                  .map((cacheName) => {
+                     console.log("Deleting old cache:", cacheName);
+                     return caches.delete(cacheName);
+                  }),
+            );
+         })
+         .then(() => self.clients.claim()),
+   );
+});
+
+self.addEventListener("fetch", (event: FetchEvent) => {
+   if (event.request.method !== "GET") return;
+
+   if (event.request.mode === "navigate") {
+      event.respondWith(
+         fetch(event.request).catch(() => {
+            return caches.match("/offline.html") as Promise<Response>;
+         }),
+      );
+   }
+});

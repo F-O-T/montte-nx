@@ -14,7 +14,11 @@ export default defineConfig({
          autoCodeSplitting: true,
       }),
       VitePWA({
+         strategies: "injectManifest",
+         srcDir: "src",
+         filename: "sw.ts",
          registerType: "autoUpdate",
+         injectRegister: "auto",
          includeAssets: [
             "favicon.svg",
             "android/**/*",
@@ -173,67 +177,8 @@ export default defineConfig({
                },
             ],
          },
-         workbox: {
+         injectManifest: {
             globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,webp}"],
-            cleanupOutdatedCaches: true,
-            navigateFallback: "index.html",
-            navigateFallbackDenylist: [/^\/api\//, /^\/share-target/],
-            runtimeCaching: [
-               {
-                  urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-                  handler: "CacheFirst",
-                  options: {
-                     cacheName: "google-fonts-cache",
-                     expiration: {
-                        maxEntries: 10,
-                        maxAgeSeconds: 60 * 60 * 24 * 365,
-                     },
-                     cacheableResponse: {
-                        statuses: [0, 200],
-                     },
-                  },
-               },
-               {
-                  urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-                  handler: "CacheFirst",
-                  options: {
-                     cacheName: "gstatic-fonts-cache",
-                     expiration: {
-                        maxEntries: 10,
-                        maxAgeSeconds: 60 * 60 * 24 * 365,
-                     },
-                     cacheableResponse: {
-                        statuses: [0, 200],
-                     },
-                  },
-               },
-               {
-                  urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-                  handler: "CacheFirst",
-                  options: {
-                     cacheName: "images-cache",
-                     expiration: {
-                        maxEntries: 50,
-                        maxAgeSeconds: 60 * 60 * 24 * 30,
-                     },
-                  },
-               },
-               {
-                  urlPattern: /^https:\/\/api\.montte\.co\/.*/i,
-                  handler: "NetworkFirst",
-                  options: {
-                     cacheName: "api-cache",
-                     expiration: {
-                        maxEntries: 50,
-                        maxAgeSeconds: 60 * 5,
-                     },
-                     networkTimeoutSeconds: 10,
-                     cacheableResponse: {
-                        statuses: [0, 200],
-                     },
-                  },
-               },
-            ],
          },
          devOptions: {
             enabled: true,

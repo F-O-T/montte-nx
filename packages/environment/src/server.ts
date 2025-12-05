@@ -14,6 +14,9 @@ const EnvSchema = z.object({
    POSTHOG_HOST: z.string(),
    POSTHOG_KEY: z.string(),
    RESEND_API_KEY: z.string(),
+   VAPID_PUBLIC_KEY: z.string().optional(),
+   VAPID_PRIVATE_KEY: z.string().optional(),
+   VAPID_SUBJECT: z.string().optional().default("mailto:contato@montte.co"),
 });
 export type ServerEnv = z.infer<typeof EnvSchema>;
 export const serverEnv: ServerEnv = parseEnv(process.env, EnvSchema);

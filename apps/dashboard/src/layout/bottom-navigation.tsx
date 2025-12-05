@@ -1,10 +1,12 @@
 import { cn } from "@packages/ui/lib/utils";
 import { Link, useLocation } from "@tanstack/react-router";
-import { BarChart3, CirclePlus, Home, Receipt, TrendingUp } from "lucide-react";
+import { CirclePlus, Home, Menu, Receipt, TrendingUp } from "lucide-react";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useHaptic } from "@/hooks/use-haptic";
 import { useSheet } from "@/hooks/use-sheet";
+import { MoreMenuCredenza } from "./more-menu-credenza";
 
 const navItems = [
    {
@@ -32,10 +34,10 @@ const navItems = [
       to: "/$slug/bills",
    },
    {
-      icon: BarChart3,
-      id: "reports",
-      label: "Relatórios",
-      to: "/$slug/reports",
+      icon: Menu,
+      id: "more",
+      label: "Mais",
+      to: null,
    },
 ] as const;
 
@@ -43,6 +45,7 @@ export function BottomNavigation() {
    const { pathname } = useLocation();
    const { activeOrganization } = useActiveOrganization();
    const { openSheet } = useSheet();
+   const { openCredenza } = useCredenza();
    const { trigger: haptic } = useHaptic();
 
    const isActive = (to: string | null) => {
@@ -56,11 +59,16 @@ export function BottomNavigation() {
       openSheet({ children: <ManageTransactionForm /> });
    };
 
+   const handleMoreClick = () => {
+      haptic("light");
+      openCredenza({ children: <MoreMenuCredenza /> });
+   };
+
    return (
       <nav
          className={cn(
             "fixed bottom-0 left-0 right-0 z-50",
-            "bg-background/80 backdrop-blur-lg border-t",
+            "bg-background/95 backdrop-blur-xl border-t border-border/50",
             "pb-[env(safe-area-inset-bottom)]",
          )}
       >
@@ -81,12 +89,33 @@ export function BottomNavigation() {
                            className={cn(
                               "flex size-14 items-center justify-center",
                               "rounded-full bg-primary text-primary-foreground",
-                              "shadow-lg shadow-primary/25",
+                              "shadow-lg shadow-primary/30",
                               "active:scale-95 transition-transform",
                            )}
                         >
                            <CirclePlus className="size-7" />
                         </div>
+                     </button>
+                  );
+               }
+
+               if (item.id === "more") {
+                  return (
+                     <button
+                        className={cn(
+                           "flex flex-col items-center justify-center gap-1",
+                           "min-w-[4rem] py-2",
+                           "transition-colors",
+                           "text-muted-foreground active:text-primary",
+                        )}
+                        key={item.id}
+                        onClick={handleMoreClick}
+                        type="button"
+                     >
+                        <Menu className="size-6" />
+                        <span className="text-xs font-medium">
+                           {item.label}
+                        </span>
                      </button>
                   );
                }

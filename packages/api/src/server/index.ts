@@ -15,11 +15,14 @@ import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
+import { pushNotificationRouter } from "./routers/push-notifications";
 import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
 import { tagRouter } from "./routers/tags";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
+
+export type { ReminderResult } from "./services/bill-reminder-service";
 
 export const appRouter = router({
    bankAccounts: bankAccountRouter,
@@ -35,6 +38,7 @@ export const appRouter = router({
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
+   pushNotifications: pushNotificationRouter,
    reports: reportRouter,
    session: sessionRouter,
    tags: tagRouter,

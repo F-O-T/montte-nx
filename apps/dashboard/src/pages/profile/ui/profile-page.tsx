@@ -13,6 +13,7 @@ import { AlertCircle, Building2, FolderOpen } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { NotificationSettingsCard } from "@/features/notifications/ui/notification-settings-card";
 import { BankAccountsSection } from "./profile-page-bank-accounts-section";
 import { ProfilePageBilling } from "./profile-page-billing";
 import { ProfileInformation } from "./profile-page-informations-section";
@@ -162,6 +163,10 @@ export function ProfilePage() {
             <div className="md:col-span-3 grid md:grid-cols-2 gap-4">
                <BankAccountsSection />
                <PreferencesSection />
+            </div>
+
+            <div className="md:col-span-3">
+               <NotificationSettingsCard />
             </div>
          </div>
          <ProfilePageSessionsSection />
