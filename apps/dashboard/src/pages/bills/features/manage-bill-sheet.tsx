@@ -38,13 +38,10 @@ import {
    SelectValue,
 } from "@packages/ui/components/select";
 import {
-   Sheet,
-   SheetContent,
    SheetDescription,
    SheetFooter,
    SheetHeader,
    SheetTitle,
-   SheetTrigger,
 } from "@packages/ui/components/sheet";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { Textarea } from "@packages/ui/components/textarea";
@@ -53,18 +50,16 @@ import { formatCurrency } from "@packages/utils/money";
 import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CheckIcon, ChevronsUpDownIcon, Pencil, Plus } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, Plus } from "lucide-react";
 import { type FormEvent, useCallback, useMemo, useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { useBillListOptional } from "./bill-list-context";
 
 type ManageBillSheetProps = {
-   onOpen?: boolean;
-   onOpenChange?: (open: boolean) => void;
    bill?: Bill;
-   asChild?: boolean;
 };
 
 const steps = [
@@ -75,12 +70,8 @@ const steps = [
 
 const { Stepper } = defineStepper(...steps);
 
-export function ManageBillSheet({
-   onOpen,
-   onOpenChange,
-   bill,
-   asChild = false,
-}: ManageBillSheetProps) {
+export function ManageBillForm({ bill }: ManageBillSheetProps) {
+   const { closeSheet } = useSheet();
    const trpc = useTRPC();
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
    const [counterpartyComboboxOpen, setCounterpartyComboboxOpen] =
@@ -112,13 +103,12 @@ export function ManageBillSheet({
    );
 
    const isEditMode = !!bill;
-   const isOpen = onOpen ?? false;
 
    const createBillMutation = useMutation(
       trpc.bills.create.mutationOptions({
          onSuccess: async () => {
             form.reset();
-            onOpenChange?.(false);
+            closeSheet();
          },
       }),
    );
@@ -126,7 +116,7 @@ export function ManageBillSheet({
    const updateBillMutation = useMutation(
       trpc.bills.update.mutationOptions({
          onSuccess: () => {
-            onOpenChange?.(false);
+            closeSheet();
          },
       }),
    );
@@ -139,7 +129,7 @@ export function ManageBillSheet({
       trpc.bills.createWithInstallments.mutationOptions({
          onSuccess: async () => {
             form.reset();
-            onOpenChange?.(false);
+            closeSheet();
          },
       }),
    );
@@ -152,6 +142,16 @@ export function ManageBillSheet({
            counterpartyId: bill.counterpartyId || "",
            description: bill.description,
            dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
+           hasInstallments: false,
+           installmentAmountType: "equal" as "equal" | "custom",
+           installmentCount: 2,
+           installmentCustomAmounts: [] as number[],
+           installmentCustomDays: 30,
+           installmentIntervalType: "monthly" as
+              | "monthly"
+              | "biweekly"
+              | "weekly"
+              | "custom",
            interestTemplateId: bill.interestTemplateId || "",
            isRecurring: bill.isRecurring,
            issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
@@ -160,16 +160,6 @@ export function ManageBillSheet({
               | RecurrencePattern
               | undefined,
            type: bill.type as "expense" | "income",
-           hasInstallments: false,
-           installmentCount: 2,
-           installmentIntervalType: "monthly" as
-              | "monthly"
-              | "biweekly"
-              | "weekly"
-              | "custom",
-           installmentCustomDays: 30,
-           installmentAmountType: "equal" as "equal" | "custom",
-           installmentCustomAmounts: [] as number[],
         }
       : {
            amount: 0,
@@ -178,6 +168,16 @@ export function ManageBillSheet({
            counterpartyId: "",
            description: "",
            dueDate: new Date(),
+           hasInstallments: false,
+           installmentAmountType: "equal" as "equal" | "custom",
+           installmentCount: 2,
+           installmentCustomAmounts: [] as number[],
+           installmentCustomDays: 30,
+           installmentIntervalType: "monthly" as
+              | "monthly"
+              | "biweekly"
+              | "weekly"
+              | "custom",
            interestTemplateId: "",
            isRecurring: false,
            issueDate: undefined as Date | undefined,
@@ -188,16 +188,6 @@ export function ManageBillSheet({
               : currentFilterType === "receivable"
                 ? "income"
                 : "expense") as "expense" | "income",
-           hasInstallments: false,
-           installmentCount: 2,
-           installmentIntervalType: "monthly" as
-              | "monthly"
-              | "biweekly"
-              | "weekly"
-              | "custom",
-           installmentCustomDays: 30,
-           installmentAmountType: "equal" as "equal" | "custom",
-           installmentCustomAmounts: [] as number[],
         };
 
    const form = useForm({
@@ -271,7 +261,7 @@ export function ManageBillSheet({
                   interestTemplateId: value.interestTemplateId || undefined,
                   isRecurring: value.isRecurring,
                   issueDate: value.issueDate
-                     ? formatDate(value.issueDate, "YYYY-MM-DD")
+                     ? new Date(value.issueDate)
                      : undefined,
                   notes: value.notes || undefined,
                   recurrencePattern: value.isRecurring
@@ -317,6 +307,7 @@ export function ManageBillSheet({
       (e: FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
+
          form.handleSubmit();
       },
       [form],
@@ -733,7 +724,9 @@ export function ManageBillSheet({
                                              {Array.from({
                                                 length: installmentCount,
                                              }).map((_, index) => (
-                                                <FieldGroup key={index}>
+                                                <FieldGroup
+                                                   key={`installment-${index + 1}`}
+                                                >
                                                    <form.Field name="installmentCustomAmounts">
                                                       {(field) => (
                                                          <Field>
@@ -1255,7 +1248,9 @@ export function ManageBillSheet({
                            </FieldLabel>
                            <DatePicker
                               date={field.state.value}
-                              onSelect={(date) => field.handleChange(date)}
+                              onSelect={(date) => {
+                                 field.handleChange(date);
+                              }}
                               placeholder={translate(
                                  "common.form.date.placeholder",
                               )}
@@ -1302,110 +1297,57 @@ export function ManageBillSheet({
       );
    }
 
-   const sheetContent = (
-      <SheetContent>
-         <Stepper.Provider className="h-full">
-            {({ methods }) => (
-               <form className="h-full flex flex-col" onSubmit={handleSubmit}>
-                  <SheetHeader>
-                     <SheetTitle>{modeTexts.title}</SheetTitle>
-                     <SheetDescription>
-                        {modeTexts.description}
-                     </SheetDescription>
-                  </SheetHeader>
+   return (
+      <Stepper.Provider className="h-full">
+         {({ methods }) => (
+            <form className="h-full flex flex-col" onSubmit={handleSubmit}>
+               <SheetHeader>
+                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetDescription>{modeTexts.description}</SheetDescription>
+               </SheetHeader>
 
-                  <div className="px-4 py-2">
-                     <Stepper.Navigation>
-                        {steps.map((step) => (
-                           <Stepper.Step key={step.id} of={step.id} />
-                        ))}
-                     </Stepper.Navigation>
-                  </div>
+               <div className="px-4 py-2">
+                  <Stepper.Navigation>
+                     {steps.map((step) => (
+                        <Stepper.Step key={step.id} of={step.id} />
+                     ))}
+                  </Stepper.Navigation>
+               </div>
 
-                  <div className="px-4 flex-1 overflow-y-auto">
-                     {methods.switch({
-                        additional: () => <AdditionalStep />,
-                        categorization: () => <CategorizationStep />,
-                        details: () => <DetailsStep />,
-                     })}
-                  </div>
+               <div className="px-4 flex-1 overflow-y-auto">
+                  {methods.switch({
+                     additional: () => <AdditionalStep />,
+                     categorization: () => <CategorizationStep />,
+                     details: () => <DetailsStep />,
+                  })}
+               </div>
 
-                  <SheetFooter className="px-4">
-                     <Stepper.Controls className="flex flex-col w-full gap-2">
-                        {methods.isFirst ? (
-                           <form.Subscribe
-                              selector={(state) => ({
-                                 amountValid: state.fieldMeta.amount?.isValid,
-                                 descriptionValid:
-                                    state.fieldMeta.description?.isValid,
-                                 dueDateValid: state.fieldMeta.dueDate?.isValid,
-                                 typeValid: state.fieldMeta.type?.isValid,
-                              })}
-                           >
-                              {({
-                                 amountValid,
-                                 descriptionValid,
-                                 dueDateValid,
-                                 typeValid,
-                              }) => (
-                                 <Button
-                                    className="w-full"
-                                    disabled={
-                                       !amountValid ||
-                                       !descriptionValid ||
-                                       !dueDateValid ||
-                                       !typeValid
-                                    }
-                                    onClick={(e) => {
-                                       e.preventDefault();
-                                       e.stopPropagation();
-                                       methods.next();
-                                    }}
-                                    type="button"
-                                 >
-                                    {translate("common.actions.next")}
-                                 </Button>
-                              )}
-                           </form.Subscribe>
-                        ) : methods.isLast ? (
-                           <form.Subscribe
-                              selector={(state) => ({
-                                 canSubmit: state.canSubmit,
-                                 isSubmitting: state.isSubmitting,
-                              })}
-                           >
-                              {({ canSubmit, isSubmitting }) => (
-                                 <>
-                                    <Button
-                                       className="w-full"
-                                       disabled={
-                                          !canSubmit ||
-                                          isSubmitting ||
-                                          isPending
-                                       }
-                                       type="submit"
-                                    >
-                                       {translate("common.actions.submit")}
-                                    </Button>
-                                    <Button
-                                       className="w-full"
-                                       onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          methods.prev();
-                                       }}
-                                       type="button"
-                                       variant="ghost"
-                                    >
-                                       {translate("common.actions.previous")}
-                                    </Button>
-                                 </>
-                              )}
-                           </form.Subscribe>
-                        ) : (
-                           <>
+               <SheetFooter className="px-4">
+                  <Stepper.Controls className="flex flex-col w-full gap-2">
+                     {methods.isFirst ? (
+                        <form.Subscribe
+                           selector={(state) => ({
+                              amountValid: state.fieldMeta.amount?.isValid,
+                              descriptionValid:
+                                 state.fieldMeta.description?.isValid,
+                              dueDateValid: state.fieldMeta.dueDate?.isValid,
+                              typeValid: state.fieldMeta.type?.isValid,
+                           })}
+                        >
+                           {({
+                              amountValid,
+                              descriptionValid,
+                              dueDateValid,
+                              typeValid,
+                           }) => (
                               <Button
                                  className="w-full"
+                                 disabled={
+                                    !amountValid ||
+                                    !descriptionValid ||
+                                    !dueDateValid ||
+                                    !typeValid
+                                 }
                                  onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -1415,67 +1357,72 @@ export function ManageBillSheet({
                               >
                                  {translate("common.actions.next")}
                               </Button>
-                              <Button
-                                 className="w-full"
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    methods.prev();
-                                 }}
-                                 type="button"
-                                 variant="ghost"
-                              >
-                                 {translate("common.actions.previous")}
-                              </Button>
-                           </>
-                        )}
-                     </Stepper.Controls>
-                  </SheetFooter>
-               </form>
-            )}
-         </Stepper.Provider>
-      </SheetContent>
-   );
-
-   if (asChild) {
-      return (
-         <Sheet
-            onOpenChange={(open) => {
-               onOpenChange?.(open);
-               if (!open && !isEditMode) {
-                  form.reset();
-               }
-            }}
-            open={isOpen}
-         >
-            <SheetTrigger asChild>
-               <Button>
-                  {isEditMode ? (
-                     <Pencil className="h-4 w-4 mr-2" />
-                  ) : (
-                     <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  {isEditMode
-                     ? translate("common.actions.edit")
-                     : translate("common.actions.add")}
-               </Button>
-            </SheetTrigger>
-            {sheetContent}
-         </Sheet>
-      );
-   }
-
-   return (
-      <Sheet
-         onOpenChange={(open) => {
-            onOpenChange?.(open);
-            if (!open && !isEditMode) {
-               form.reset();
-            }
-         }}
-         open={isOpen}
-      >
-         {sheetContent}
-      </Sheet>
+                           )}
+                        </form.Subscribe>
+                     ) : methods.isLast ? (
+                        <form.Subscribe
+                           selector={(state) => ({
+                              canSubmit: state.canSubmit,
+                              isSubmitting: state.isSubmitting,
+                           })}
+                        >
+                           {({ canSubmit, isSubmitting }) => (
+                              <>
+                                 <Button
+                                    className="w-full"
+                                    disabled={
+                                       !canSubmit || isSubmitting || isPending
+                                    }
+                                    type="submit"
+                                 >
+                                    {translate("common.actions.submit")}
+                                 </Button>
+                                 <Button
+                                    className="w-full"
+                                    onClick={(e) => {
+                                       e.preventDefault();
+                                       e.stopPropagation();
+                                       methods.prev();
+                                    }}
+                                    type="button"
+                                    variant="ghost"
+                                 >
+                                    {translate("common.actions.previous")}
+                                 </Button>
+                              </>
+                           )}
+                        </form.Subscribe>
+                     ) : (
+                        <>
+                           <Button
+                              className="w-full"
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 methods.next();
+                              }}
+                              type="button"
+                           >
+                              {translate("common.actions.next")}
+                           </Button>
+                           <Button
+                              className="w-full"
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 methods.prev();
+                              }}
+                              type="button"
+                              variant="ghost"
+                           >
+                              {translate("common.actions.previous")}
+                           </Button>
+                        </>
+                     )}
+                  </Stepper.Controls>
+               </SheetFooter>
+            </form>
+         )}
+      </Stepper.Provider>
    );
 }

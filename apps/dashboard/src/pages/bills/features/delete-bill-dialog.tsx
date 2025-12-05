@@ -1,41 +1,19 @@
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useTRPC } from "@/integrations/clients";
 
-interface DeleteBillDialogProps {
-   bill: Bill;
-   children?: React.ReactNode;
-   open?: boolean;
-   onOpenChange?: (open: boolean) => void;
-}
-
-export function DeleteBillDialog({
+export function useDeleteBillDialog({
    bill,
-   children,
-   open: controlledOpen,
-   onOpenChange: controlledOnOpenChange,
-}: DeleteBillDialogProps) {
+   onSuccess,
+}: {
+   bill: Bill;
+   onSuccess?: () => void;
+}) {
+   const { openAlertDialog, closeAlertDialog } = useAlertDialog();
    const trpc = useTRPC();
-   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-
-   const isControlled = controlledOpen !== undefined;
-   const isOpen = isControlled ? controlledOpen : uncontrolledOpen;
-   const setIsOpen = isControlled
-      ? (controlledOnOpenChange ?? (() => {}))
-      : setUncontrolledOpen;
 
    const deleteBillMutation = useMutation(
       trpc.bills.delete.mutationOptions({
@@ -51,65 +29,28 @@ export function DeleteBillDialog({
             toast.success(
                translate("dashboard.routes.bills.features.delete-bill.success"),
             );
-            setIsOpen(false);
+            closeAlertDialog();
+            onSuccess?.();
          },
       }),
    );
 
-   const handleDelete = async () => {
-      try {
-         await deleteBillMutation.mutateAsync({
-            id: bill.id,
-         });
-      } catch (error) {
-         console.error("Failed to delete bill:", error);
-      }
+   const handleDelete = () => {
+      openAlertDialog({
+         description: translate(
+            "dashboard.routes.bills.features.delete-bill.description",
+            { description: bill.description },
+         ),
+
+         onAction: async () => {
+            await deleteBillMutation.mutateAsync({
+               id: bill.id,
+            });
+         },
+         title: translate("dashboard.routes.bills.features.delete-bill.title"),
+      });
    };
-
-   return (
-      <AlertDialog onOpenChange={setIsOpen} open={isOpen}>
-         {children && <div onClick={() => setIsOpen(true)}>{children}</div>}
-         <AlertDialogContent>
-            <AlertDialogHeader>
-               <AlertDialogTitle>
-                  {translate(
-                     "dashboard.routes.bills.features.delete-bill.title",
-                  )}
-               </AlertDialogTitle>
-               <AlertDialogDescription>
-                  {translate(
-                     "dashboard.routes.bills.features.delete-bill.description",
-                     {
-                        description: bill.description,
-                     },
-                  )}
-               </AlertDialogDescription>
-            </AlertDialogHeader>
-
-            <AlertDialogFooter>
-               <AlertDialogCancel>
-                  {translate(
-                     "dashboard.routes.bills.features.delete-bill.cancel",
-                  )}
-               </AlertDialogCancel>
-               <AlertDialogAction
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  disabled={deleteBillMutation.isPending}
-                  onClick={(e) => {
-                     e.preventDefault();
-                     handleDelete();
-                  }}
-               >
-                  {deleteBillMutation.isPending
-                     ? translate(
-                          "dashboard.routes.bills.features.delete-bill.deleting",
-                       )
-                     : translate(
-                          "dashboard.routes.bills.features.delete-bill.confirm",
-                       )}
-               </AlertDialogAction>
-            </AlertDialogFooter>
-         </AlertDialogContent>
-      </AlertDialog>
-   );
+   return {
+      handleDeleteBill: handleDelete,
+   };
 }

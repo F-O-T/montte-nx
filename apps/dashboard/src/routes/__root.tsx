@@ -14,6 +14,8 @@ import {
    redirect,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { GlobalAlertDialog } from "@/hooks/use-alert-dialog";
+import { GlobalSheet } from "@/hooks/use-sheet";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {
@@ -81,6 +83,8 @@ function RootComponent() {
          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <QueryProvider>
                <TelemetryAwarePostHogWrapper>
+                  <GlobalAlertDialog />
+                  <GlobalSheet />
                   <Toaster />
                   <Outlet />
                   <TanStackRouterDevtools position="bottom-left" />

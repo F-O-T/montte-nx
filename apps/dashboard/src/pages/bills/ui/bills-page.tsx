@@ -4,10 +4,10 @@ import { MonthSelector } from "@packages/ui/components/month-selector";
 import { TimePeriodChips } from "@packages/ui/components/time-period-chips";
 import { useSearch } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import { DefaultHeader } from "@/default/default-header";
+import { useSheet } from "@/hooks/use-sheet";
 import { BillListProvider, useBillList } from "../features/bill-list-context";
-import { ManageBillSheet } from "../features/manage-bill-sheet";
+import { ManageBillForm } from "../features/manage-bill-sheet";
 import { BillsListSection } from "./bills-list-section";
 import { BillsStats } from "./bills-stats";
 
@@ -16,7 +16,7 @@ type BillsSearch = {
 };
 
 function BillsPageContent() {
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
    const search = useSearch({
       from: "/$slug/_dashboard/bills/",
    }) as BillsSearch;
@@ -60,7 +60,13 @@ function BillsPageContent() {
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateSheetOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: <ManageBillForm />,
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.bills.list-section.actions.add-new",
@@ -87,10 +93,6 @@ function BillsPageContent() {
 
          <BillsStats type={billType} />
          <BillsListSection type={billType} />
-         <ManageBillSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
       </main>
    );
 }

@@ -16,7 +16,7 @@ import {
 import { FilePlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useBillList } from "../features/bill-list-context";
-import { ManageBillSheet } from "../features/manage-bill-sheet";
+import { ManageBillForm } from "../features/manage-bill-sheet";
 
 type BillsQuickActionsToolbarProps = {
    type?: "payable" | "receivable";
@@ -75,7 +75,7 @@ export function BillsQuickActionsToolbar({
             </ItemActions>
          </Item>
 
-         <ManageBillSheet
+         <ManageBillForm
             onOpen={isCreateSheetOpen}
             onOpenChange={setIsCreateSheetOpen}
          />
