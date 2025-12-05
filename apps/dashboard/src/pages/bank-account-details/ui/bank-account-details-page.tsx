@@ -34,13 +34,14 @@ import {
    Trash2,
    Upload,
 } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { usePendingOfxImport } from "@/hooks/use-pending-ofx-import";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { ExportOfxForm } from "../features/export-ofx-form";
@@ -58,6 +59,7 @@ function BankAccountContent() {
    const { openSheet } = useSheet();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
+   const { getPending, clearPending } = usePendingOfxImport();
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -97,6 +99,16 @@ function BankAccountContent() {
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
+
+   useEffect(() => {
+      const pending = getPending();
+      if (pending && bankAccountId) {
+         clearPending();
+         openSheet({
+            children: <ImportOfxForm bankAccountId={bankAccountId} />,
+         });
+      }
+   }, [bankAccountId, getPending, clearPending, openSheet]);
 
    const handleDeleteSuccess = () => {
       router.navigate({
