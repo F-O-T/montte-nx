@@ -1,7 +1,7 @@
+import { registerSW } from "virtual:pwa-register";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { registerSW } from "virtual:pwa-register";
 import { routeTree } from "./routeTree.gen";
 import "@packages/localization";
 import i18n from "@packages/localization";

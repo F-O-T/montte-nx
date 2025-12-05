@@ -262,9 +262,9 @@ export function BankAccountExpandedContent({
       >
          <AlertDialogTrigger asChild>
             <Button
-               className="w-full "
                disabled={updateStatusMutation.isPending}
                onClick={(e) => e.stopPropagation()}
+               size="sm"
                variant="outline"
             >
                <Power className="size-4" />
@@ -493,11 +493,10 @@ export function BankAccountExpandedContent({
                   </p>
                </div>
             </div>
-            <Separator className="h-8" orientation="vertical" />
-            {statusToggleElement}
          </div>
 
          <div className="flex items-center gap-2">
+            {statusToggleElement}
             <Button asChild size="sm" variant="outline">
                <Link
                   params={{

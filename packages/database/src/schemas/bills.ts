@@ -15,6 +15,19 @@ import { transaction } from "./transactions";
 
 export const bill = pgTable("bill", {
    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+   appliedCorrection: decimal("applied_correction", {
+      precision: 10,
+      scale: 2,
+   }).default("0"),
+   appliedInterest: decimal("applied_interest", {
+      precision: 10,
+      scale: 2,
+   }).default("0"),
+   appliedPenalty: decimal("applied_penalty", {
+      precision: 10,
+      scale: 2,
+   }).default("0"),
+   autoCreateNext: boolean("auto_create_next").default(true),
    bankAccountId: uuid("bank_account_id").references(() => bankAccount.id, {
       onDelete: "set null",
    }),
@@ -25,12 +38,18 @@ export const bill = pgTable("bill", {
    description: text("description").notNull(),
    dueDate: timestamp("due_date").notNull(),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+   installmentGroupId: uuid("installment_group_id"),
+   installmentIntervalDays: integer("installment_interval_days"),
+   installmentNumber: integer("installment_number"),
    interestTemplateId: uuid("interest_template_id"),
    isRecurring: boolean("is_recurring").default(false).notNull(),
    issueDate: timestamp("issue_date"),
+   lastInterestUpdate: timestamp("last_interest_update"),
    notes: text("notes"),
+   originalAmount: decimal("original_amount", { precision: 10, scale: 2 }),
    parentBillId: uuid("parent_bill_id"),
    recurrencePattern: text("recurrence_pattern"),
+   totalInstallments: integer("total_installments"),
    transactionId: uuid("transaction_id").references(() => transaction.id, {
       onDelete: "set null",
    }),
@@ -40,37 +59,18 @@ export const bill = pgTable("bill", {
       .$onUpdate(() => new Date())
       .notNull(),
    userId: uuid("user_id").notNull(),
-   installmentGroupId: uuid("installment_group_id"),
-   installmentNumber: integer("installment_number"),
-   totalInstallments: integer("total_installments"),
-   installmentIntervalDays: integer("installment_interval_days"),
-   originalAmount: decimal("original_amount", { precision: 10, scale: 2 }),
-   appliedPenalty: decimal("applied_penalty", {
-      precision: 10,
-      scale: 2,
-   }).default("0"),
-   appliedInterest: decimal("applied_interest", {
-      precision: 10,
-      scale: 2,
-   }).default("0"),
-   appliedCorrection: decimal("applied_correction", {
-      precision: 10,
-      scale: 2,
-   }).default("0"),
-   lastInterestUpdate: timestamp("last_interest_update"),
-   autoCreateNext: boolean("auto_create_next").default(true),
 });
 
 export const billAttachment = pgTable("bill_attachment", {
+   billId: uuid("bill_id")
+      .notNull()
+      .references(() => bill.id, { onDelete: "cascade" }),
    contentType: text("content_type").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
    fileName: text("file_name").notNull(),
    fileSize: integer("file_size"),
    id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
    storageKey: text("storage_key").notNull(),
-   billId: uuid("bill_id")
-      .notNull()
-      .references(() => bill.id, { onDelete: "cascade" }),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date())

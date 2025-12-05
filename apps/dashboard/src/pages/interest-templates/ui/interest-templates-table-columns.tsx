@@ -33,9 +33,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import type { InterestTemplate } from "./interest-templates-page";
 import { DeleteInterestTemplateDialog } from "../features/delete-interest-template-dialog";
 import { ManageInterestTemplateSheet } from "../features/manage-interest-template-sheet";
+import type { InterestTemplate } from "./interest-templates-page";
 
 function getPenaltyTypeLabel(type: string) {
    switch (type) {

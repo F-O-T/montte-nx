@@ -55,9 +55,9 @@ import { InterestTemplateFilterSheet } from "../features/interest-template-filte
 import { useInterestTemplateList } from "../features/interest-template-list-context";
 import { useInterestTemplateBulkActions } from "../features/use-interest-template-bulk-actions";
 import {
+   createInterestTemplateColumns,
    InterestTemplateExpandedContent,
    InterestTemplateMobileCard,
-   createInterestTemplateColumns,
 } from "./interest-templates-table-columns";
 
 function InterestTemplatesListErrorFallback(props: FallbackProps) {

@@ -27,11 +27,12 @@ import { endOfMonth, startOfMonth } from "date-fns";
 import {
    Building,
    ChevronDown,
+   Download,
    Edit,
-   FileSpreadsheet,
    Home,
    Plus,
    Trash2,
+   Upload,
 } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -42,6 +43,7 @@ import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transac
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { DeleteBankAccount } from "../features/delete-bank-account";
+import { ExportOfxSheet } from "../features/export-ofx-sheet";
 import { ImportOfxSheet } from "../features/import-ofx-sheet";
 import { BankAccountCharts } from "./bank-account-charts";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
@@ -57,6 +59,7 @@ function BankAccountContent() {
    const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
    const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
    const [isImportOfxOpen, setIsImportOfxOpen] = useState(false);
+   const [isExportOfxOpen, setIsExportOfxOpen] = useState(false);
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
 
@@ -91,6 +94,9 @@ function BankAccountContent() {
          startDate: startOfMonth(month),
       });
    };
+
+   const chartGranularity =
+      timePeriod === "all-time" ? ("monthly" as const) : ("daily" as const);
 
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
@@ -137,14 +143,30 @@ function BankAccountContent() {
             <DropdownMenu>
                <DropdownMenuTrigger asChild>
                   <Button size="sm" variant="outline">
-                     Importar extrato
+                     <Upload className="size-4" />
+                     Importar Extrato
                      <ChevronDown className="size-4" />
                   </Button>
                </DropdownMenuTrigger>
                <DropdownMenuContent align="start">
                   <DropdownMenuItem onClick={() => setIsImportOfxOpen(true)}>
-                     <FileSpreadsheet className="size-4" />
+                     <Upload className="size-4" />
                      Importar OFX
+                  </DropdownMenuItem>
+               </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline">
+                     <Download className="size-4" />
+                     Exportar Extrato
+                     <ChevronDown className="size-4" />
+                  </Button>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => setIsExportOfxOpen(true)}>
+                     <Download className="size-4" />
+                     Exportar OFX
                   </DropdownMenuItem>
                </DropdownMenuContent>
             </DropdownMenu>
@@ -189,6 +211,7 @@ function BankAccountContent() {
          <BankAccountCharts
             bankAccountId={bankAccountId}
             endDate={dateRange.endDate}
+            granularity={chartGranularity}
             startDate={dateRange.startDate}
          />
          <RecentTransactions
@@ -216,6 +239,13 @@ function BankAccountContent() {
             bankAccountId={bankAccountId}
             isOpen={isImportOfxOpen}
             onOpenChange={setIsImportOfxOpen}
+         />
+         <ExportOfxSheet
+            bankAccountId={bankAccountId}
+            endDate={dateRange.endDate}
+            isOpen={isExportOfxOpen}
+            onOpenChange={setIsExportOfxOpen}
+            startDate={dateRange.startDate}
          />
       </main>
    );
