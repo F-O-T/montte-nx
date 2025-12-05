@@ -337,6 +337,48 @@ export async function findTransactionsByBankAccountId(
    }
 }
 
+export async function findTransactionsForExport(
+   dbClient: DatabaseInstance,
+   bankAccountId: string,
+   options: {
+      startDate?: Date;
+      endDate?: Date;
+      type?: "income" | "expense" | "transfer";
+   } = {},
+) {
+   const { startDate, endDate, type } = options;
+
+   try {
+      const baseConditions = [eq(transaction.bankAccountId, bankAccountId)];
+
+      if (startDate) {
+         baseConditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         baseConditions.push(lte(transaction.date, endDate));
+      }
+
+      if (type) {
+         baseConditions.push(eq(transaction.type, type));
+      }
+
+      const whereClause = and(...baseConditions);
+
+      const transactions = await dbClient.query.transaction.findMany({
+         orderBy: (txn, { desc }) => desc(txn.date),
+         where: whereClause,
+      });
+
+      return transactions;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transactions for export: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findTransactionsByBankAccountIdPaginated(
    dbClient: DatabaseInstance,
    bankAccountId: string,

@@ -15,8 +15,9 @@ import {
 import {
    createTransaction,
    findTransactionsByBankAccountIdPaginated,
+   findTransactionsForExport,
 } from "@packages/database/repositories/transaction-repository";
-import { parseOfxContent } from "@packages/ofx";
+import { generateOfxContent, parseOfxContent } from "@packages/ofx";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -112,6 +113,77 @@ export const bankAccountRouter = router({
          const organizationId = resolvedCtx.organizationId;
 
          return deleteBankAccounts(resolvedCtx.db, input.ids, organizationId);
+      }),
+
+   exportOfx: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            endDate: z.string().optional(),
+            startDate: z.string().optional(),
+            type: z.enum(["income", "expense", "transfer"]).optional(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
+
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw new Error("Bank account not found");
+         }
+
+         const startDate = input.startDate
+            ? new Date(input.startDate)
+            : undefined;
+         const endDate = input.endDate ? new Date(input.endDate) : undefined;
+
+         const transactions = await findTransactionsForExport(
+            resolvedCtx.db,
+            input.bankAccountId,
+            {
+               endDate,
+               startDate,
+               type: input.type,
+            },
+         );
+
+         const exportTransactions = transactions.map((trn) => ({
+            amount: trn.amount,
+            date: trn.date,
+            description: trn.description,
+            externalId: trn.externalId,
+            id: trn.id,
+            type: trn.type as "income" | "expense" | "transfer",
+         }));
+
+         const content = generateOfxContent(exportTransactions, {
+            accountId: bankAccount.id,
+            accountType: bankAccount.type as
+               | "checking"
+               | "savings"
+               | "investment",
+            bankId: bankAccount.bank ?? "000",
+            currency: "BRL",
+            endDate: endDate ?? new Date(),
+            startDate: startDate ?? new Date(0),
+         });
+
+         const formatDate = (d: Date) =>
+            d.toISOString().split("T")[0]?.replace(/-/g, "") ?? "";
+         const accountName =
+            bankAccount.name?.replace(/[^a-zA-Z0-9]/g, "_") ?? "conta";
+         const filename = `${accountName}_${formatDate(startDate ?? new Date())}_${formatDate(endDate ?? new Date())}.ofx`;
+
+         return {
+            content,
+            filename,
+            transactionCount: transactions.length,
+         };
       }),
 
    getAll: protectedProcedure.query(async ({ ctx }) => {

@@ -1,11 +1,11 @@
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
+import type { bankAccount } from "../schemas/bank-accounts";
 import { bill } from "../schemas/bills";
 import type { counterparty } from "../schemas/counterparties";
 import type { interestTemplate } from "../schemas/interest-templates";
 import { transaction } from "../schemas/transactions";
-import type { bankAccount } from "../schemas/bank-accounts";
 
 export type Bill = typeof bill.$inferSelect;
 export type NewBill = typeof bill.$inferInsert;

@@ -564,3 +564,275 @@ export function getBalance(document: OFXDocument): BalanceInfo[] {
 export function getSignOnInfo(document: OFXDocument): OFXSignOnResponse {
    return document.OFX.SIGNONMSGSRSV1.SONRS;
 }
+
+const pad = (n: number, width = 2): string => n.toString().padStart(width, "0");
+
+export function formatOfxDate(
+   date: Date,
+   timezone?: { offset: number; name: string },
+): string {
+   const tz = timezone ?? { name: "GMT", offset: 0 };
+   const offsetMs = tz.offset * 60 * 60 * 1000;
+   const adjustedDate = new Date(date.getTime() + offsetMs);
+
+   const year = adjustedDate.getUTCFullYear();
+   const month = pad(adjustedDate.getUTCMonth() + 1);
+   const day = pad(adjustedDate.getUTCDate());
+   const hour = pad(adjustedDate.getUTCHours());
+   const minute = pad(adjustedDate.getUTCMinutes());
+   const second = pad(adjustedDate.getUTCSeconds());
+
+   const sign = tz.offset >= 0 ? "+" : "";
+   return `${year}${month}${day}${hour}${minute}${second}[${sign}${tz.offset}:${tz.name}]`;
+}
+
+function escapeOfxText(text: string): string {
+   return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+}
+
+function formatAmount(amount: number): string {
+   return amount.toFixed(2);
+}
+
+export interface GenerateHeaderOptions {
+   version?: string;
+   encoding?: string;
+   charset?: string;
+}
+
+export function generateHeader(options?: GenerateHeaderOptions): string {
+   const version = options?.version ?? "100";
+   const encoding = options?.encoding ?? "USASCII";
+   const charset = options?.charset ?? "1252";
+
+   return [
+      "OFXHEADER:100",
+      "DATA:OFXSGML",
+      `VERSION:${version}`,
+      "SECURITY:NONE",
+      `ENCODING:${encoding}`,
+      `CHARSET:${charset}`,
+      "COMPRESSION:NONE",
+      "OLDFILEUID:NONE",
+      "NEWFILEUID:NONE",
+      "",
+   ].join("\n");
+}
+
+export interface GenerateTransactionInput {
+   type: OFXTransactionType;
+   datePosted: Date;
+   amount: number;
+   fitId: string;
+   name?: string;
+   memo?: string;
+   checkNum?: string;
+   refNum?: string;
+}
+
+function generateTransaction(trn: GenerateTransactionInput): string {
+   const lines: string[] = [
+      "<STMTTRN>",
+      `<TRNTYPE>${trn.type}`,
+      `<DTPOSTED>${formatOfxDate(trn.datePosted)}`,
+      `<TRNAMT>${formatAmount(trn.amount)}`,
+      `<FITID>${escapeOfxText(trn.fitId)}`,
+   ];
+
+   if (trn.name) {
+      lines.push(`<NAME>${escapeOfxText(trn.name)}`);
+   }
+   if (trn.memo) {
+      lines.push(`<MEMO>${escapeOfxText(trn.memo)}`);
+   }
+   if (trn.checkNum) {
+      lines.push(`<CHECKNUM>${escapeOfxText(trn.checkNum)}`);
+   }
+   if (trn.refNum) {
+      lines.push(`<REFNUM>${escapeOfxText(trn.refNum)}`);
+   }
+
+   lines.push("</STMTTRN>");
+   return lines.join("\n");
+}
+
+export interface GenerateBankStatementOptions {
+   bankId: string;
+   accountId: string;
+   accountType: OFXAccountType;
+   currency: string;
+   startDate: Date;
+   endDate: Date;
+   transactions: GenerateTransactionInput[];
+   ledgerBalance?: { amount: number; asOfDate: Date };
+   availableBalance?: { amount: number; asOfDate: Date };
+   financialInstitution?: { org?: string; fid?: string };
+   language?: string;
+}
+
+export function generateBankStatement(
+   options: GenerateBankStatementOptions,
+): string {
+   const header = generateHeader();
+   const serverDate = formatOfxDate(new Date());
+   const language = options.language ?? "POR";
+
+   const transactionsContent = options.transactions
+      .map((trn) => generateTransaction(trn))
+      .join("\n");
+
+   let fiContent = "";
+   if (options.financialInstitution) {
+      fiContent = "<FI>\n";
+      if (options.financialInstitution.org) {
+         fiContent += `<ORG>${escapeOfxText(options.financialInstitution.org)}\n`;
+      }
+      if (options.financialInstitution.fid) {
+         fiContent += `<FID>${escapeOfxText(options.financialInstitution.fid)}\n`;
+      }
+      fiContent += "</FI>\n";
+   }
+
+   let ledgerBalContent = "";
+   if (options.ledgerBalance) {
+      ledgerBalContent = `<LEDGERBAL>
+<BALAMT>${formatAmount(options.ledgerBalance.amount)}
+<DTASOF>${formatOfxDate(options.ledgerBalance.asOfDate)}
+</LEDGERBAL>
+`;
+   }
+
+   let availBalContent = "";
+   if (options.availableBalance) {
+      availBalContent = `<AVAILBAL>
+<BALAMT>${formatAmount(options.availableBalance.amount)}
+<DTASOF>${formatOfxDate(options.availableBalance.asOfDate)}
+</AVAILBAL>
+`;
+   }
+
+   return `${header}<OFX>
+<SIGNONMSGSRSV1>
+<SONRS>
+<STATUS>
+<CODE>0
+<SEVERITY>INFO
+</STATUS>
+<DTSERVER>${serverDate}
+<LANGUAGE>${language}
+${fiContent}</SONRS>
+</SIGNONMSGSRSV1>
+<BANKMSGSRSV1>
+<STMTTRNRS>
+<TRNUID>0
+<STATUS>
+<CODE>0
+<SEVERITY>INFO
+</STATUS>
+<STMTRS>
+<CURDEF>${options.currency}
+<BANKACCTFROM>
+<BANKID>${escapeOfxText(options.bankId)}
+<ACCTID>${escapeOfxText(options.accountId)}
+<ACCTTYPE>${options.accountType}
+</BANKACCTFROM>
+<BANKTRANLIST>
+<DTSTART>${formatOfxDate(options.startDate)}
+<DTEND>${formatOfxDate(options.endDate)}
+${transactionsContent}
+</BANKTRANLIST>
+${ledgerBalContent}${availBalContent}</STMTRS>
+</STMTTRNRS>
+</BANKMSGSRSV1>
+</OFX>`;
+}
+
+export interface GenerateCreditCardStatementOptions {
+   accountId: string;
+   currency: string;
+   startDate: Date;
+   endDate: Date;
+   transactions: GenerateTransactionInput[];
+   ledgerBalance?: { amount: number; asOfDate: Date };
+   availableBalance?: { amount: number; asOfDate: Date };
+   financialInstitution?: { org?: string; fid?: string };
+   language?: string;
+}
+
+export function generateCreditCardStatement(
+   options: GenerateCreditCardStatementOptions,
+): string {
+   const header = generateHeader();
+   const serverDate = formatOfxDate(new Date());
+   const language = options.language ?? "POR";
+
+   const transactionsContent = options.transactions
+      .map((trn) => generateTransaction(trn))
+      .join("\n");
+
+   let fiContent = "";
+   if (options.financialInstitution) {
+      fiContent = "<FI>\n";
+      if (options.financialInstitution.org) {
+         fiContent += `<ORG>${escapeOfxText(options.financialInstitution.org)}\n`;
+      }
+      if (options.financialInstitution.fid) {
+         fiContent += `<FID>${escapeOfxText(options.financialInstitution.fid)}\n`;
+      }
+      fiContent += "</FI>\n";
+   }
+
+   let ledgerBalContent = "";
+   if (options.ledgerBalance) {
+      ledgerBalContent = `<LEDGERBAL>
+<BALAMT>${formatAmount(options.ledgerBalance.amount)}
+<DTASOF>${formatOfxDate(options.ledgerBalance.asOfDate)}
+</LEDGERBAL>
+`;
+   }
+
+   let availBalContent = "";
+   if (options.availableBalance) {
+      availBalContent = `<AVAILBAL>
+<BALAMT>${formatAmount(options.availableBalance.amount)}
+<DTASOF>${formatOfxDate(options.availableBalance.asOfDate)}
+</AVAILBAL>
+`;
+   }
+
+   return `${header}<OFX>
+<SIGNONMSGSRSV1>
+<SONRS>
+<STATUS>
+<CODE>0
+<SEVERITY>INFO
+</STATUS>
+<DTSERVER>${serverDate}
+<LANGUAGE>${language}
+${fiContent}</SONRS>
+</SIGNONMSGSRSV1>
+<CREDITCARDMSGSRSV1>
+<CCSTMTTRNRS>
+<TRNUID>0
+<STATUS>
+<CODE>0
+<SEVERITY>INFO
+</STATUS>
+<CCSTMTRS>
+<CURDEF>${options.currency}
+<CCACCTFROM>
+<ACCTID>${escapeOfxText(options.accountId)}
+</CCACCTFROM>
+<BANKTRANLIST>
+<DTSTART>${formatOfxDate(options.startDate)}
+<DTEND>${formatOfxDate(options.endDate)}
+${transactionsContent}
+</BANKTRANLIST>
+${ledgerBalContent}${availBalContent}</CCSTMTRS>
+</CCSTMTTRNRS>
+</CREDITCARDMSGSRSV1>
+</OFX>`;
+}

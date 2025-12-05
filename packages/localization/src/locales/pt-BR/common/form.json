@@ -61,6 +61,9 @@
       "label": "Ícone ",
       "placeholder": "Selecione um ícone"
    },
+   "items-per-page": {
+      "label": "Itens por página"
+   },
    "name": {
       "label": "Nome",
       "placeholder": "Digite seu nome completo"
@@ -116,8 +119,5 @@
    },
    "updated-at": {
       "label": "Data de Atualização"
-   },
-   "items-per-page": {
-      "label": "Itens por página"
    }
 }
