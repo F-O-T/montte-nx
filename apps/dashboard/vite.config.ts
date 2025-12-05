@@ -2,31 +2,33 @@ import { defineConfig } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { VitePWA } from 'vite-plugin-pwa'
-import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import { VitePWA } from "vite-plugin-pwa";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 export default defineConfig({
   plugins: [
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
     tanstackRouter({
-      target: 'react',
+      target: "react",
       autoCodeSplitting: true,
     }),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
+      injectRegister: "auto",
       includeAssets: ["favicon.svg", "android/**/*", "ios/**/*"],
       manifest: {
         id: "/",
         scope: "/",
         name: "Montte - Gestão Financeira",
         short_name: "Montte",
-        description: "Gestão financeira completa para você e seus negócios. Simples, transparente e Open Source.",
+        description:
+          "Gestão financeira completa para você e seus negócios. Simples, transparente e Open Source.",
         lang: "pt-BR",
         dir: "ltr",
-        display: "fullscreen",
+        display: "standalone",
         display_override: ["standalone", "minimal-ui"],
-        start_url: "/auth/sign-in",
+        start_url: "/",
         background_color: "#050816",
         theme_color: "#050816",
         orientation: "portrait-primary",
@@ -93,9 +95,11 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,webp}"],
         cleanupOutdatedCaches: true,
-        skipWaiting: false,
+        skipWaiting: true,
         clientsClaim: true,
         navigationPreload: true,
+        navigateFallback: "index.html",
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -181,5 +185,5 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
-  }
+  },
 });
