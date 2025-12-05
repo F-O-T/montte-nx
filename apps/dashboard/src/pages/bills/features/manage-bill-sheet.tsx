@@ -58,7 +58,9 @@ import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { useBillListOptional } from "./bill-list-context";
 
-type ManageBillSheetProps = {
+export type ManageBillSheetProps = {
+   onOpen?: boolean;
+   onOpenChange?: (open: boolean) => void;
    bill?: Bill;
 };
 
