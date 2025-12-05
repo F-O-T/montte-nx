@@ -38,7 +38,37 @@ function getDateParts(
    date: Date,
    locale: DateLocale,
    timezone?: string,
+   useUTC = false,
 ): DateParts {
+   if (useUTC) {
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const year = String(date.getUTCFullYear());
+      const hours = String(date.getUTCHours()).padStart(2, "0");
+      const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+      const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+      const monthLongFormatter = new Intl.DateTimeFormat(locale, {
+         month: "long",
+         timeZone: "UTC",
+      });
+      const monthShortFormatter = new Intl.DateTimeFormat(locale, {
+         month: "short",
+         timeZone: "UTC",
+      });
+
+      return {
+         day,
+         hours,
+         minutes,
+         month,
+         monthLong: monthLongFormatter.format(date),
+         monthShort: monthShortFormatter.format(date),
+         seconds,
+         year,
+      };
+   }
+
    const options: Intl.DateTimeFormatOptions = {
       day: "2-digit",
       hour: "2-digit",
@@ -80,7 +110,7 @@ function getDateParts(
 export function formatDate(
    date: Date,
    format: string = "MM/DD/YYYY",
-   options?: { locale?: DateLocale; timezone?: string },
+   options?: { locale?: DateLocale; timezone?: string; useUTC?: boolean },
 ): string {
    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
       throw new Error("Invalid date provided");
@@ -88,8 +118,9 @@ export function formatDate(
 
    const locale = options?.locale ?? "pt-BR";
    const timezone = options?.timezone;
+   const useUTC = options?.useUTC ?? false;
 
-   const parts = getDateParts(date, locale, timezone);
+   const parts = getDateParts(date, locale, timezone, useUTC);
 
    return format
       .replace(/YYYY/g, parts.year)
