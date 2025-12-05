@@ -95,6 +95,9 @@ function BankAccountContent() {
       });
    };
 
+   const chartGranularity =
+      timePeriod === "all-time" ? ("monthly" as const) : ("daily" as const);
+
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
@@ -208,6 +211,7 @@ function BankAccountContent() {
          <BankAccountCharts
             bankAccountId={bankAccountId}
             endDate={dateRange.endDate}
+            granularity={chartGranularity}
             startDate={dateRange.startDate}
          />
          <RecentTransactions

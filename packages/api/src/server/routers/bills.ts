@@ -219,9 +219,9 @@ export const billRouter = router({
             );
             const futureIssueDates = input.issueDate
                ? generateFutureDates(
-                  new Date(input.issueDate),
-                  input.recurrencePattern,
-               )
+                    new Date(input.issueDate),
+                    input.recurrencePattern,
+                 )
                : [];
 
             const futureBillsPromises = futureDueDates.map((dueDate, index) => {
@@ -365,21 +365,21 @@ export const billRouter = router({
          const nextDueDate = getNextDueDate(
             existingBill.dueDate,
             existingBill.recurrencePattern as
-            | "monthly"
-            | "quarterly"
-            | "semiannual"
-            | "annual",
-         );
-
-         const nextIssueDate = existingBill.issueDate
-            ? getNextDueDate(
-               existingBill.issueDate,
-               existingBill.recurrencePattern as
                | "monthly"
                | "quarterly"
                | "semiannual"
                | "annual",
-            )
+         );
+
+         const nextIssueDate = existingBill.issueDate
+            ? getNextDueDate(
+                 existingBill.issueDate,
+                 existingBill.recurrencePattern as
+                    | "monthly"
+                    | "quarterly"
+                    | "semiannual"
+                    | "annual",
+              )
             : nextDueDate;
 
          return createBill(resolvedCtx.db, {
