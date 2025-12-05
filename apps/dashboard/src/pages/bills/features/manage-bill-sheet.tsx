@@ -60,7 +60,7 @@ import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useTRPC } from "@/integrations/clients";
 import { useBillListOptional } from "./bill-list-context";
 
-type ManageBillSheetProps = {
+export type ManageBillSheetProps = {
    onOpen?: boolean;
    onOpenChange?: (open: boolean) => void;
    bill?: Bill;
