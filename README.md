@@ -9,14 +9,39 @@
 
 ## ✨ Key Features
 
--   **Transaction Management**: Log income, expenses, and transfers. Support for **split categories** within a single transaction.
--   **Bill Tracking**: Manage accounts payable and receivable with recurrence patterns (monthly, quarterly, annual) and overdue tracking.
--   **Bank Accounts & OFX**: Manage multiple bank accounts and import transactions directly using **OFX file upload**.
--   **Advanced Categorization**: Organize finances with **Categories**, **Tags**, and **Cost Centers**.
--   **Organizations & Teams**: Multi-tenant architecture allowing you to invite members, create teams, assign roles (Owner, Admin, Member), and manage finances collaboratively.
--   **Financial Insights**: Dashboard with cash flow charts, monthly trends, category breakdowns, and planned vs. actual reports.
--   **Secure Authentication**: Powered by **Better Auth** with support for Email/Password and Google OAuth, including session management and device tracking.
--   **Internationalization**: Built-in support for localization (currently optimized for pt-BR).
+-   **Smart Transaction Management**:
+    -   Log income, expenses, and transfers with ease.
+    -   **Split Categorization**: Divide a single transaction amount across multiple categories.
+    -   **Attachments**: Upload and store receipts/documents (PDF, Images) securely.
+    -   **Transfer Matching**: Intelligent linking of transfers between accounts.
+-   **Comprehensive Bill Tracking**:
+    -   Manage accounts payable and receivable.
+    -   **Installments**: Native support for creating bills with installments (equal or custom amounts).
+    -   **Recurrence**: Robust recurrence patterns (monthly, quarterly, semiannual, annual).
+    -   **Interest & Penalties**: Configurable templates for calculating fines, daily/monthly interest, and monetary correction on overdue bills.
+-   **Bank Accounts & Integration**:
+    -   Manage multiple account types (Checking, Savings, Investment).
+    -   **OFX Import**: Parse and import bank statements via OFX files.
+    -   **BrasilAPI**: Integrated bank list retrieval.
+-   **Advanced Budgeting**:
+    -   Create budgets targeting Categories, Tags, or Cost Centers.
+    -   **Rollover**: Option to carry over unused balances to the next period.
+    -   Visual progress tracking and forecasting.
+-   **Organization & Taxonomy**:
+    -   **Categorization**: Organize via Categories, Tags, and Cost Centers.
+    -   **Counterparties**: Manage a directory of Clients and Suppliers.
+-   **Collaborative Workspaces**:
+    -   Multi-tenant Organization structure.
+    -   Team management and Member invites.
+    -   Role-based access control (Owner, Admin, Member).
+-   **Financial Reports**:
+    -   Interactive Cash Flow charts.
+    -   Financial Evolution & Planned vs. Actual analysis.
+    -   Payment Performance metrics (on-time vs. overdue stats).
+-   **Platform & Security**:
+    -   **Authentication**: Secure Email/Password and Google OAuth (via Better Auth).
+    -   **Session Management**: Monitor and revoke active device sessions.
+    -   **Internationalization**: Native support for localization (currently pt-BR).
 
 ## 🚀 Tech Stack
 
@@ -42,9 +67,6 @@ The deployable applications and websites.
 
 -   **`dashboard`**: The core finance tracking single-page application (SPA) built with React.
 -   **`server`**: The ElysiaJS backend server providing the tRPC API and authentication endpoints.
--   **`docs`**: Documentation site built with Astro Starlight.
--   **`landing-page`**: Public landing page built with Astro.
--   **`blog`**: Blog site built with Astro.
 
 ### Packages (`packages/`)
 Shared internal libraries used to modularize the application logic.
