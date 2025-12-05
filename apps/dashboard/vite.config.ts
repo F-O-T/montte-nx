@@ -24,7 +24,7 @@ export default defineConfig({
         description: "Gestão financeira completa para você e seus negócios. Simples, transparente e Open Source.",
         lang: "pt-BR",
         dir: "ltr",
-        display: "standalone",
+        display: "fullscreen",
         display_override: ["standalone", "minimal-ui"],
         start_url: "/auth/sign-in",
         background_color: "#050816",
