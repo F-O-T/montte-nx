@@ -1,14 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -51,8 +41,10 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
-import { BudgetFilterSheet } from "../features/budget-filter-sheet";
+import { BudgetFilterCredenza } from "../features/budget-filter-credenza";
 import { useBudgetList } from "../features/budget-list-context";
 import { useBudgetBulkActions } from "../features/use-budget-bulk-actions";
 import {
@@ -122,11 +114,12 @@ function BudgetsListContent() {
    const isMobile = useIsMobile();
    const { periodType } = useBudgetList();
    const trpc = useTRPC();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [statusFilter, setStatusFilter] = useState<string>("");
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
    const [pageSize, setPageSize] = useState(10);
    const [orderBy, setOrderBy] = useState<
@@ -190,10 +183,6 @@ function BudgetsListContent() {
          onSuccess: () => setRowSelection({}),
       });
 
-   const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
-   const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
    const handleClearSelection = () => {
       setRowSelection({});
    };
@@ -223,7 +212,34 @@ function BudgetsListContent() {
 
                   {isMobile && (
                      <Button
-                        onClick={() => setIsFilterSheetOpen(true)}
+                        onClick={() =>
+                           openCredenza({
+                              children: (
+                                 <BudgetFilterCredenza
+                                    activeFilter={
+                                       statusFilter === "active"
+                                          ? true
+                                          : statusFilter === "inactive"
+                                            ? false
+                                            : undefined
+                                    }
+                                    onActiveFilterChange={(value) => {
+                                       if (value === true)
+                                          setStatusFilter("active");
+                                       else if (value === false)
+                                          setStatusFilter("inactive");
+                                       else setStatusFilter("");
+                                    }}
+                                    onOrderByChange={setOrderBy}
+                                    onOrderDirectionChange={setOrderDirection}
+                                    onPageSizeChange={setPageSize}
+                                    orderBy={orderBy}
+                                    orderDirection={orderDirection}
+                                    pageSize={pageSize}
+                                 />
+                              ),
+                           })
+                        }
                         size="icon"
                         variant="outline"
                      >
@@ -340,159 +356,78 @@ function BudgetsListContent() {
             <SelectionActionButton
                disabled={isLoading}
                icon={<Check className="size-3.5" />}
-               onClick={() => setIsActivateDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.budgets.bulk-actions.confirm",
+                     ),
+                     description: translate(
+                        "dashboard.routes.budgets.bulk-actions.activate-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: async () => {
+                        await markAsActive(selectedIds);
+                     },
+                     title: translate(
+                        "dashboard.routes.budgets.bulk-actions.activate-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                  })
+               }
             >
                {translate("dashboard.routes.budgets.bulk-actions.activate")}
             </SelectionActionButton>
             <SelectionActionButton
                disabled={isLoading}
                icon={<X className="size-3.5" />}
-               onClick={() => setIsDeactivateDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.budgets.bulk-actions.confirm",
+                     ),
+                     description: translate(
+                        "dashboard.routes.budgets.bulk-actions.deactivate-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: async () => {
+                        await markAsInactive(selectedIds);
+                     },
+                     title: translate(
+                        "dashboard.routes.budgets.bulk-actions.deactivate-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                  })
+               }
             >
                {translate("dashboard.routes.budgets.bulk-actions.deactivate")}
             </SelectionActionButton>
             <SelectionActionButton
                disabled={isLoading}
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.budgets.bulk-actions.delete",
+                     ),
+                     description: translate(
+                        "dashboard.routes.budgets.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: async () => {
+                        await deleteSelected(selectedIds);
+                     },
+                     title: translate(
+                        "dashboard.routes.budgets.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                     variant: "destructive",
+                  })
+               }
                variant="destructive"
             >
                {translate("dashboard.routes.budgets.bulk-actions.delete")}
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsActivateDialogOpen}
-            open={isActivateDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.activate-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.activate-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     onClick={() => {
-                        markAsActive(selectedIds);
-                        setIsActivateDialogOpen(false);
-                     }}
-                  >
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.confirm",
-                     )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <AlertDialog
-            onOpenChange={setIsDeactivateDialogOpen}
-            open={isDeactivateDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.deactivate-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.deactivate-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     onClick={() => {
-                        markAsInactive(selectedIds);
-                        setIsDeactivateDialogOpen(false);
-                     }}
-                  >
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.confirm",
-                     )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.delete-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.budgets.bulk-actions.delete-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     onClick={() => {
-                        deleteSelected(selectedIds);
-                        setIsDeleteDialogOpen(false);
-                     }}
-                  >
-                     {translate("dashboard.routes.budgets.bulk-actions.delete")}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <BudgetFilterSheet
-            activeFilter={
-               statusFilter === "active"
-                  ? true
-                  : statusFilter === "inactive"
-                    ? false
-                    : undefined
-            }
-            isOpen={isFilterSheetOpen}
-            onActiveFilterChange={(value) => {
-               if (value === true) setStatusFilter("active");
-               else if (value === false) setStatusFilter("inactive");
-               else setStatusFilter("");
-            }}
-            onOpenChange={setIsFilterSheetOpen}
-            onOrderByChange={setOrderBy}
-            onOrderDirectionChange={setOrderDirection}
-            onPageSizeChange={setPageSize}
-            orderBy={orderBy}
-            orderDirection={orderDirection}
-            pageSize={pageSize}
-         />
       </>
    );
 }

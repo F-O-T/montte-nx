@@ -1,15 +1,5 @@
 import type { BillWithRelations } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -53,8 +43,10 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
-import { BillFilterSheet } from "../features/bill-filter-sheet";
+import { BillFilterCredenza } from "../features/bill-filter-credenza";
 import { useBillList } from "../features/bill-list-context";
 import { useBillBulkActions } from "../features/use-bill-bulk-actions";
 import {
@@ -123,6 +115,8 @@ function BillsListSkeleton() {
 function BillsListContent({ type }: BillsListSectionProps) {
    const trpc = useTRPC();
    const isMobile = useIsMobile();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
    const [pageSize, setPageSize] = useState(10);
 
@@ -137,9 +131,10 @@ function BillsListContent({ type }: BillsListSectionProps) {
       setStatusFilter,
       typeFilter,
       setTypeFilter,
-      setIsFilterSheetOpen,
       startDate,
       endDate,
+      setStartDate,
+      setEndDate,
       setCategoryFilter,
       timePeriod,
       handleTimePeriodChange,
@@ -244,9 +239,6 @@ function BillsListContent({ type }: BillsListSectionProps) {
       onSuccess: () => setRowSelection({}),
    });
 
-   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
    const handleClearSelection = () => {
       setRowSelection({});
    };
@@ -283,7 +275,45 @@ function BillsListContent({ type }: BillsListSectionProps) {
 
                   {isMobile && (
                      <Button
-                        onClick={() => setIsFilterSheetOpen(true)}
+                        onClick={() =>
+                           openCredenza({
+                              children: (
+                                 <BillFilterCredenza
+                                    categories={categories}
+                                    categoryFilter={categoryFilter}
+                                    endDate={endDate}
+                                    onCategoryFilterChange={(value) => {
+                                       setCategoryFilter(value);
+                                       setCurrentPage(1);
+                                    }}
+                                    onEndDateChange={(date) => {
+                                       setEndDate(date ?? null);
+                                       setCurrentPage(1);
+                                    }}
+                                    onPageSizeChange={(size) => {
+                                       setPageSize(size);
+                                       setCurrentPage(1);
+                                    }}
+                                    onStartDateChange={(date) => {
+                                       setStartDate(date ?? null);
+                                       setCurrentPage(1);
+                                    }}
+                                    onStatusFilterChange={(value) => {
+                                       setStatusFilter(value);
+                                       setCurrentPage(1);
+                                    }}
+                                    onTypeFilterChange={(value) => {
+                                       setTypeFilter(value);
+                                       setCurrentPage(1);
+                                    }}
+                                    pageSize={pageSize}
+                                    startDate={startDate}
+                                    statusFilter={statusFilter}
+                                    typeFilter={typeFilter}
+                                 />
+                              ),
+                           })
+                        }
                         size="icon"
                         variant="outline"
                      >
@@ -458,7 +488,26 @@ function BillsListContent({ type }: BillsListSectionProps) {
                <SelectionActionButton
                   disabled={isLoading}
                   icon={<Wallet className="size-3.5" />}
-                  onClick={() => setIsCompleteDialogOpen(true)}
+                  onClick={() =>
+                     openAlertDialog({
+                        actionLabel: translate(
+                           "dashboard.routes.bills.bulk-actions.confirm",
+                        ),
+                        description: translate(
+                           "dashboard.routes.bills.bulk-actions.complete-confirm-description",
+                           { count: pendingSelectedBills.length },
+                        ),
+                        onAction: async () => {
+                           await completeSelected(
+                              pendingSelectedBills.map((b) => b.id),
+                           );
+                        },
+                        title: translate(
+                           "dashboard.routes.bills.bulk-actions.complete-confirm-title",
+                           { count: pendingSelectedBills.length },
+                        ),
+                     })
+                  }
                >
                   {translate("dashboard.routes.bills.bulk-actions.complete")}
                </SelectionActionButton>
@@ -466,85 +515,30 @@ function BillsListContent({ type }: BillsListSectionProps) {
             <SelectionActionButton
                disabled={isLoading}
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.bills.bulk-actions.delete",
+                     ),
+                     description: translate(
+                        "dashboard.routes.bills.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: async () => {
+                        await deleteSelected(selectedIds);
+                     },
+                     title: translate(
+                        "dashboard.routes.bills.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                     variant: "destructive",
+                  })
+               }
                variant="destructive"
             >
                {translate("dashboard.routes.bills.bulk-actions.delete")}
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsCompleteDialogOpen}
-            open={isCompleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.bills.bulk-actions.complete-confirm-title",
-                        { count: pendingSelectedBills.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.bills.bulk-actions.complete-confirm-description",
-                        { count: pendingSelectedBills.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     onClick={() => {
-                        completeSelected(pendingSelectedBills.map((b) => b.id));
-                        setIsCompleteDialogOpen(false);
-                     }}
-                  >
-                     {translate("dashboard.routes.bills.bulk-actions.confirm")}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.bills.bulk-actions.delete-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.bills.bulk-actions.delete-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     onClick={() => {
-                        deleteSelected(selectedIds);
-                        setIsDeleteDialogOpen(false);
-                     }}
-                  >
-                     {translate("dashboard.routes.bills.bulk-actions.delete")}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <BillFilterSheet categories={categories} />
       </>
    );
 }

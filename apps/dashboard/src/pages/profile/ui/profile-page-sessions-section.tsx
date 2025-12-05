@@ -1,15 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-   AlertDialogTrigger,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -40,19 +29,23 @@ import {
    ItemTitle,
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { toast } from "@packages/ui/components/sonner";
 import {
    Tooltip,
    TooltipContent,
    TooltipProvider,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { Monitor, MoreVertical, Trash2 } from "lucide-react";
-import { Fragment, Suspense, useMemo } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ChevronRight, Monitor, MoreVertical, Trash2 } from "lucide-react";
+import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { SessionDetailsSheet } from "../features/session-details-sheet";
+import { SessionDetailsForm } from "../features/session-details-form";
+import {
+   useRevokeAllSessions,
+   useRevokeOtherSessions,
+} from "../features/use-session-actions";
 
 function SessionsSectionErrorFallback(props: FallbackProps) {
    return (
@@ -121,6 +114,7 @@ function SessionsSectionSkeleton() {
 
 function SessionsSectionContent() {
    const trpc = useTRPC();
+   const { openSheet } = useSheet();
    const { data: sessions } = useSuspenseQuery(
       trpc.session.listAllSessions.queryOptions(),
    );
@@ -128,59 +122,10 @@ function SessionsSectionContent() {
       trpc.session.getSession.queryOptions(),
    );
 
-   // Mutations
-   const revokeOtherSessionsMutation = useMutation(
-      trpc.session.revokeOtherSessions.mutationOptions({
-         onError: () => {
-            toast.error("Failed to revoke other sessions.");
-         },
-         onSuccess: () => {
-            toast.success("Other sessions have been revoked successfully.");
-         },
-      }),
-   );
-   const revokeAllSessionsMutation = useMutation(
-      trpc.session.revokeSessions.mutationOptions({
-         onError: () => {
-            toast.error("Failed to revoke all sessions.");
-         },
-         onSuccess: () => {
-            toast.success("All sessions have been revoked successfully.");
-         },
-      }),
-   );
-
-   // Memoize dropdown menu items
-   const dropdownMenuItems = useMemo(
-      () => [
-         {
-            action: async () => await revokeOtherSessionsMutation.mutateAsync(),
-            disabled: revokeOtherSessionsMutation.isPending,
-            icon: <Trash2 className="w-4 h-4 mr-2" />,
-            id: "revoke-others",
-            label: translate(
-               "dashboard.routes.profile.sessions.actions.revoke-others",
-            ),
-            variant: "destructive" as const,
-         },
-         {
-            action: async () => await revokeAllSessionsMutation.mutateAsync(),
-            disabled: revokeAllSessionsMutation.isPending,
-            icon: <Trash2 className="w-4 h-4 mr-2 text-destructive" />,
-            id: "revoke-all",
-            label: translate(
-               "dashboard.routes.profile.sessions.actions.revoke-all",
-            ),
-            variant: "destructive" as const,
-         },
-      ],
-      [
-         revokeOtherSessionsMutation.isPending,
-         revokeAllSessionsMutation.isPending,
-         revokeOtherSessionsMutation.mutateAsync,
-         revokeAllSessionsMutation.mutateAsync,
-      ],
-   );
+   const { revokeOtherSessions, isRevoking: isRevokingOthers } =
+      useRevokeOtherSessions();
+   const { revokeAllSessions, isRevoking: isRevokingAll } =
+      useRevokeAllSessions();
 
    return (
       <TooltipProvider>
@@ -222,45 +167,26 @@ function SessionsSectionContent() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                           {dropdownMenuItems.map((item) => (
-                              <AlertDialog key={item.id}>
-                                 <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem
-                                       disabled={item.disabled}
-                                       onSelect={(e) => e.preventDefault()}
-                                       variant={item.variant}
-                                    >
-                                       {item.icon}
-                                       {item.label}
-                                    </DropdownMenuItem>
-                                 </AlertDialogTrigger>
-                                 <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                       <AlertDialogTitle>
-                                          {translate(
-                                             "common.headers.delete-confirmation.title",
-                                          )}
-                                       </AlertDialogTitle>
-                                       <AlertDialogDescription>
-                                          {translate(
-                                             "common.headers.delete-confirmation.description",
-                                          )}
-                                       </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                       <AlertDialogCancel>
-                                          {translate("common.actions.cancel")}
-                                       </AlertDialogCancel>
-                                       <AlertDialogAction
-                                          disabled={item.disabled}
-                                          onClick={item.action}
-                                       >
-                                          {item.label}
-                                       </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                 </AlertDialogContent>
-                              </AlertDialog>
-                           ))}
+                           <DropdownMenuItem
+                              disabled={isRevokingOthers}
+                              onClick={revokeOtherSessions}
+                              variant="destructive"
+                           >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              {translate(
+                                 "dashboard.routes.profile.sessions.actions.revoke-others",
+                              )}
+                           </DropdownMenuItem>
+                           <DropdownMenuItem
+                              disabled={isRevokingAll}
+                              onClick={revokeAllSessions}
+                              variant="destructive"
+                           >
+                              <Trash2 className="w-4 h-4 mr-2 text-destructive" />
+                              {translate(
+                                 "dashboard.routes.profile.sessions.actions.revoke-all",
+                              )}
+                           </DropdownMenuItem>
                         </DropdownMenuGroup>
                      </DropdownMenuContent>
                   </DropdownMenu>
@@ -292,12 +218,24 @@ function SessionsSectionContent() {
                               </ItemDescription>
                            </ItemContent>
                            <ItemActions>
-                              <SessionDetailsSheet
-                                 currentSessionId={
-                                    currentSession?.session.id || ""
+                              <Button
+                                 onClick={() =>
+                                    openSheet({
+                                       children: (
+                                          <SessionDetailsForm
+                                             currentSessionId={
+                                                currentSession?.session.id || ""
+                                             }
+                                             session={session}
+                                          />
+                                       ),
+                                    })
                                  }
-                                 session={session}
-                              />
+                                 size="icon"
+                                 variant="ghost"
+                              >
+                                 <ChevronRight className="size-4" />
+                              </Button>
                            </ItemActions>
                         </Item>
                         {index !== sessions.length - 1 && <ItemSeparator />}

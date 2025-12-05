@@ -1,14 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -50,8 +40,10 @@ import {
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
-import { InterestTemplateFilterSheet } from "../features/interest-template-filter-sheet";
+import { InterestTemplateFilterCredenza } from "../features/interest-template-filter-credenza";
 import { useInterestTemplateList } from "../features/interest-template-list-context";
 import { useInterestTemplateBulkActions } from "../features/use-interest-template-bulk-actions";
 import {
@@ -126,16 +118,15 @@ function InterestTemplatesListContent() {
       setCurrentPage,
       pageSize,
       setPageSize,
-      setIsFilterSheetOpen,
-      isFilterSheetOpen,
    } = useInterestTemplateList();
 
    const { activeOrganization } = useActiveOrganization();
    const isMobile = useIsMobile();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -177,7 +168,6 @@ function InterestTemplatesListContent() {
    const { deleteSelected, isLoading } = useInterestTemplateBulkActions({
       onSuccess: () => {
          setRowSelection({});
-         setIsDeleteDialogOpen(false);
       },
    });
 
@@ -213,7 +203,24 @@ function InterestTemplatesListContent() {
 
                   {isMobile && (
                      <Button
-                        onClick={() => setIsFilterSheetOpen(true)}
+                        onClick={() =>
+                           openCredenza({
+                              children: (
+                                 <InterestTemplateFilterCredenza
+                                    onOrderDirectionChange={(value) => {
+                                       setOrderDirection(value);
+                                       handleFilterChange();
+                                    }}
+                                    onPageSizeChange={(value) => {
+                                       setPageSize(value);
+                                       handleFilterChange();
+                                    }}
+                                    orderDirection={orderDirection}
+                                    pageSize={pageSize}
+                                 />
+                              ),
+                           })
+                        }
                         size="icon"
                         variant="outline"
                      >
@@ -331,7 +338,24 @@ function InterestTemplatesListContent() {
             <SelectionActionButton
                disabled={isLoading}
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.interest-templates.bulk-actions.delete",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "dashboard.routes.interest-templates.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => deleteSelected(selectedIds),
+                     title: translate(
+                        "dashboard.routes.interest-templates.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                     variant: "destructive",
+                  })
+               }
                variant="destructive"
             >
                {translate(
@@ -339,59 +363,6 @@ function InterestTemplatesListContent() {
                )}
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.interest-templates.bulk-actions.delete-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.interest-templates.bulk-actions.delete-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isLoading}>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     disabled={isLoading}
-                     onClick={() => {
-                        deleteSelected(selectedIds);
-                     }}
-                  >
-                     {translate(
-                        "dashboard.routes.interest-templates.bulk-actions.delete",
-                     )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <InterestTemplateFilterSheet
-            isOpen={isFilterSheetOpen}
-            onOpenChange={setIsFilterSheetOpen}
-            onOrderDirectionChange={(value) => {
-               setOrderDirection(value);
-               handleFilterChange();
-            }}
-            onPageSizeChange={(value) => {
-               setPageSize(value);
-               handleFilterChange();
-            }}
-            orderDirection={orderDirection}
-            pageSize={pageSize}
-         />
       </>
    );
 }

@@ -18,8 +18,6 @@ interface CostCenterListContextType {
    setCurrentPage: (page: number) => void;
    pageSize: number;
    setPageSize: (size: number) => void;
-   isFilterSheetOpen: boolean;
-   setIsFilterSheetOpen: (open: boolean) => void;
 }
 
 const CostCenterListContext = createContext<
@@ -39,7 +37,6 @@ export function CostCenterListProvider({
    const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize, setPageSize] = useState(5);
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -75,7 +72,6 @@ export function CostCenterListProvider({
       clearSelection,
       currentPage,
       handleSelectionChange,
-      isFilterSheetOpen,
       nameFilter,
       orderBy,
       orderDirection,
@@ -84,7 +80,6 @@ export function CostCenterListProvider({
       selectedCount: selectedItems.size,
       selectedItems,
       setCurrentPage,
-      setIsFilterSheetOpen,
       setNameFilter,
       setOrderBy,
       setOrderDirection,

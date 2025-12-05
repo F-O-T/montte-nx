@@ -32,13 +32,13 @@ import {
 import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import type { CostCenter } from "@/pages/cost-centers/ui/cost-centers-page";
-import { DeleteCostCenter } from "../features/delete-cost-center";
 import { ManageCostCenterSheet } from "../features/manage-cost-center-sheet";
+import { useDeleteCostCenter } from "../features/use-delete-cost-center";
 
 function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { deleteCostCenter } = useDeleteCostCenter({ costCenter });
 
    return (
       <>
@@ -83,7 +83,7 @@ function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
                <TooltipTrigger asChild>
                   <Button
                      className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
+                     onClick={deleteCostCenter}
                      size="icon"
                      variant="outline"
                   >
@@ -101,11 +101,6 @@ function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
             costCenter={costCenter}
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-         />
-         <DeleteCostCenter
-            costCenter={costCenter}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
          />
       </>
    );
@@ -172,9 +167,9 @@ export function CostCenterExpandedContent({
 }: CostCenterExpandedContentProps) {
    const costCenter = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isEditOpen, setIsEditOpen] = useState(false);
    const isMobile = useIsMobile();
+   const { deleteCostCenter } = useDeleteCostCenter({ costCenter });
 
    if (isMobile) {
       return (
@@ -267,7 +262,7 @@ export function CostCenterExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsDeleteOpen(true);
+                     deleteCostCenter();
                   }}
                   size="sm"
                   variant="destructive"
@@ -283,11 +278,6 @@ export function CostCenterExpandedContent({
                costCenter={costCenter}
                onOpen={isEditOpen}
                onOpenChange={setIsEditOpen}
-            />
-            <DeleteCostCenter
-               costCenter={costCenter}
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
             />
          </div>
       );
@@ -372,7 +362,7 @@ export function CostCenterExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsDeleteOpen(true);
+                  deleteCostCenter();
                }}
                size="sm"
                variant="destructive"
@@ -388,11 +378,6 @@ export function CostCenterExpandedContent({
             costCenter={costCenter}
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-         />
-         <DeleteCostCenter
-            costCenter={costCenter}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
          />
       </div>
    );

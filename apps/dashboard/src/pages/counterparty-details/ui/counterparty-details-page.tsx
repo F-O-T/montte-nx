@@ -36,8 +36,8 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteCounterpartyDialog } from "../../counterparties/features/delete-counterparty-dialog";
 import { ManageCounterpartySheet } from "../../counterparties/features/manage-counterparty-sheet";
+import { useDeleteCounterparty } from "../../counterparties/features/use-delete-counterparty";
 
 function getTypeIcon(type: string) {
    switch (type) {
@@ -74,11 +74,22 @@ function CounterpartyContent() {
    const { activeOrganization } = useActiveOrganization();
 
    const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
    const { data: counterparty } = useSuspenseQuery(
       trpc.counterparties.getById.queryOptions({ id: counterpartyId }),
    );
+
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/counterparties",
+      });
+   };
+
+   const { deleteCounterparty } = useDeleteCounterparty({
+      counterparty: counterparty!,
+      onSuccess: handleDeleteSuccess,
+   });
 
    if (!counterpartyId) {
       return (
@@ -92,13 +103,6 @@ function CounterpartyContent() {
    if (!counterparty) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/counterparties",
-      });
-   };
 
    return (
       <main className="space-y-4">
@@ -133,7 +137,7 @@ function CounterpartyContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteOpen(true)}
+               onClick={deleteCounterparty}
                size="sm"
                variant="outline"
             >
@@ -241,12 +245,6 @@ function CounterpartyContent() {
             counterparty={counterparty}
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-         />
-         <DeleteCounterpartyDialog
-            counterparty={counterparty}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
          />
       </main>
    );

@@ -1,15 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -56,11 +46,14 @@ import {
 } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTransactionBulkActions } from "../lib/use-transaction-bulk-actions";
-import { CategorizeSheet } from "./categorize-sheet";
-import { MarkAsTransferSheet } from "./mark-as-transfer-sheet";
+import { CategorizeForm } from "./categorize-form";
+import { MarkAsTransferForm } from "./mark-as-transfer-form";
 import { TransactionExpandedContent } from "./transaction-expanded-content";
-import { TransactionFilterSheet } from "./transaction-filter-sheet";
+import { TransactionFilterCredenza } from "./transaction-filter-credenza";
 import { TransactionMobileCard } from "./transaction-mobile-card";
 import { createTransactionColumns } from "./transaction-table-columns";
 
@@ -159,21 +152,17 @@ export function TransactionList({
 }: TransactionListProps) {
    const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
-   const [isTransferOpen, setIsTransferOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
+   const { openSheet } = useSheet();
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-   const { deleteSelected, isLoading: isBulkActionLoading } =
-      useTransactionBulkActions({
-         bankAccountId,
-         onSuccess: () => {
-            setRowSelection({});
-            setIsCategorizeOpen(false);
-            setIsTransferOpen(false);
-         },
-      });
+   const { deleteSelected } = useTransactionBulkActions({
+      bankAccountId,
+      onSuccess: () => {
+         setRowSelection({});
+      },
+   });
 
    const hasActiveFilters =
       filters.searchTerm ||
@@ -196,11 +185,6 @@ export function TransactionList({
 
    const handleClearSelection = () => {
       setRowSelection({});
-   };
-
-   const handleBulkDelete = () => {
-      deleteSelected(selectedIds);
-      setIsDeleteDialogOpen(false);
    };
 
    if (transactions.length === 0 && !hasActiveFilters) {
@@ -253,7 +237,35 @@ export function TransactionList({
                      <Tooltip>
                         <TooltipTrigger asChild>
                            <Button
-                              onClick={() => setIsFilterSheetOpen(true)}
+                              onClick={() =>
+                                 openCredenza({
+                                    children: (
+                                       <TransactionFilterCredenza
+                                          bankAccountFilter={
+                                             filters.bankAccountFilter
+                                          }
+                                          bankAccounts={bankAccounts}
+                                          categories={categories}
+                                          categoryFilter={
+                                             filters.categoryFilter
+                                          }
+                                          onBankAccountFilterChange={
+                                             filters.onBankAccountFilterChange
+                                          }
+                                          onCategoryFilterChange={
+                                             filters.onCategoryFilterChange
+                                          }
+                                          onClearFilters={
+                                             filters.onClearFilters
+                                          }
+                                          onTypeFilterChange={
+                                             filters.onTypeFilterChange
+                                          }
+                                          typeFilter={filters.typeFilter}
+                                       />
+                                    ),
+                                 })
+                              }
                               size="icon"
                               variant={hasActiveFilters ? "default" : "outline"}
                            >
@@ -378,85 +390,58 @@ export function TransactionList({
          >
             <SelectionActionButton
                icon={<ArrowLeftRight className="size-3.5" />}
-               onClick={() => setIsTransferOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <MarkAsTransferForm
+                           onSuccess={() => setRowSelection({})}
+                           transactions={selectedTransactions}
+                        />
+                     ),
+                  })
+               }
             >
                Transferência
             </SelectionActionButton>
             <SelectionActionButton
                icon={<FolderOpen className="size-3.5" />}
-               onClick={() => setIsCategorizeOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <CategorizeForm
+                           onSuccess={() => setRowSelection({})}
+                           transactions={selectedTransactions}
+                        />
+                     ),
+                  })
+               }
             >
                Categorizar
             </SelectionActionButton>
             <SelectionActionButton
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.transactions.list-section.actions.delete",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "common.headers.delete-confirmation.description-bulk",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => deleteSelected(selectedIds),
+                     title: translate(
+                        "common.headers.delete-confirmation.title",
+                     ),
+                     variant: "destructive",
+                  })
+               }
                variant="destructive"
             >
                Excluir
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate("common.headers.delete-confirmation.title")}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "common.headers.delete-confirmation.description-bulk",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     disabled={isBulkActionLoading}
-                     onClick={handleBulkDelete}
-                  >
-                     {translate(
-                        "dashboard.routes.transactions.list-section.actions.delete",
-                     )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <TransactionFilterSheet
-            bankAccountFilter={filters.bankAccountFilter}
-            bankAccounts={bankAccounts}
-            categories={categories}
-            categoryFilter={filters.categoryFilter}
-            isOpen={isFilterSheetOpen}
-            onBankAccountFilterChange={filters.onBankAccountFilterChange}
-            onCategoryFilterChange={filters.onCategoryFilterChange}
-            onClearFilters={filters.onClearFilters}
-            onOpenChange={setIsFilterSheetOpen}
-            onTypeFilterChange={filters.onTypeFilterChange}
-            typeFilter={filters.typeFilter}
-         />
-
-         <CategorizeSheet
-            isOpen={isCategorizeOpen}
-            onOpenChange={setIsCategorizeOpen}
-            onSuccess={() => setRowSelection({})}
-            transactions={selectedTransactions}
-         />
-
-         <MarkAsTransferSheet
-            isOpen={isTransferOpen}
-            onOpenChange={setIsTransferOpen}
-            onSuccess={() => setRowSelection({})}
-            transactions={selectedTransactions}
-         />
       </>
    );
 }

@@ -29,81 +29,73 @@ import {
    Eye,
    Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import type { Tag } from "@/pages/tags/ui/tags-page";
-import { DeleteTag } from "../features/delete-tag";
-import { ManageTagSheet } from "../features/manage-tag-sheet";
+import { ManageTagForm } from "../features/manage-tag-form";
+import { useDeleteTag } from "../features/use-delete-tag";
 
 function TagActionsCell({ tag }: { tag: Tag }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { openSheet } = useSheet();
+   const { deleteTag } = useDeleteTag({ tag });
 
    return (
-      <>
-         <div className="flex justify-end gap-1">
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button asChild size="icon" variant="outline">
-                     <Link
-                        params={{
-                           slug: activeOrganization.slug,
-                           tagId: tag.id,
-                        }}
-                        to="/$slug/tags/$tagId"
-                     >
-                        <Eye className="size-4" />
-                     </Link>
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.tags.list-section.actions.view-details",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsEditOpen(true)}
-                     size="icon"
-                     variant="outline"
+      <div className="flex justify-end gap-1">
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button asChild size="icon" variant="outline">
+                  <Link
+                     params={{
+                        slug: activeOrganization.slug,
+                        tagId: tag.id,
+                     }}
+                     to="/$slug/tags/$tagId"
                   >
-                     <Edit className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.tags.list-section.actions.edit-tag",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.tags.list-section.actions.delete",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-         </div>
-         <ManageTagSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            tag={tag}
-         />
-         <DeleteTag open={isDeleteOpen} setOpen={setIsDeleteOpen} tag={tag} />
-      </>
+                     <Eye className="size-4" />
+                  </Link>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.tags.list-section.actions.view-details",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  onClick={() =>
+                     openSheet({ children: <ManageTagForm tag={tag} /> })
+                  }
+                  size="icon"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.tags.list-section.actions.edit-tag",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => deleteTag()}
+                  size="icon"
+                  variant="outline"
+               >
+                  <Trash2 className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate("dashboard.routes.tags.list-section.actions.delete")}
+            </TooltipContent>
+         </Tooltip>
+      </div>
    );
 }
 
@@ -164,9 +156,19 @@ export function TagExpandedContent({
 }: TagExpandedContentProps) {
    const tag = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
+   const { openSheet } = useSheet();
+   const { deleteTag } = useDeleteTag({ tag });
    const isMobile = useIsMobile();
+
+   const handleEdit = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      openSheet({ children: <ManageTagForm tag={tag} /> });
+   };
+
+   const handleDelete = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      deleteTag();
+   };
 
    if (isMobile) {
       return (
@@ -239,10 +241,7 @@ export function TagExpandedContent({
                </Button>
                <Button
                   className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsEditOpen(true);
-                  }}
+                  onClick={handleEdit}
                   size="sm"
                   variant="outline"
                >
@@ -253,10 +252,7 @@ export function TagExpandedContent({
                </Button>
                <Button
                   className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsDeleteOpen(true);
-                  }}
+                  onClick={handleDelete}
                   size="sm"
                   variant="destructive"
                >
@@ -266,17 +262,6 @@ export function TagExpandedContent({
                   )}
                </Button>
             </div>
-
-            <ManageTagSheet
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-               tag={tag}
-            />
-            <DeleteTag
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
-               tag={tag}
-            />
          </div>
       );
    }
@@ -342,38 +327,17 @@ export function TagExpandedContent({
                   )}
                </Link>
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditOpen(true);
-               }}
-               size="sm"
-               variant="outline"
-            >
+            <Button onClick={handleEdit} size="sm" variant="outline">
                <Edit className="size-4" />
                {translate(
                   "dashboard.routes.tags.list-section.actions.edit-tag",
                )}
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleteOpen(true);
-               }}
-               size="sm"
-               variant="destructive"
-            >
+            <Button onClick={handleDelete} size="sm" variant="destructive">
                <Trash2 className="size-4" />
                {translate("dashboard.routes.tags.list-section.actions.delete")}
             </Button>
          </div>
-
-         <ManageTagSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            tag={tag}
-         />
-         <DeleteTag open={isDeleteOpen} setOpen={setIsDeleteOpen} tag={tag} />
       </div>
    );
 }

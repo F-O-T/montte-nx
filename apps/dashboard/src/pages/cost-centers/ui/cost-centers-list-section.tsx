@@ -1,14 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -50,8 +40,10 @@ import {
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
-import { CostCenterFilterSheet } from "../features/cost-center-filter-sheet";
+import { CostCenterFilterCredenza } from "../features/cost-center-filter-credenza";
 import { useCostCenterList } from "../features/cost-center-list-context";
 import { useCostCenterBulkActions } from "../features/use-cost-center-bulk-actions";
 import {
@@ -126,16 +118,15 @@ function CostCentersListContent() {
       setCurrentPage,
       pageSize,
       setPageSize,
-      setIsFilterSheetOpen,
-      isFilterSheetOpen,
    } = useCostCenterList();
 
    const { activeOrganization } = useActiveOrganization();
    const isMobile = useIsMobile();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -210,7 +201,29 @@ function CostCentersListContent() {
 
                   {isMobile && (
                      <Button
-                        onClick={() => setIsFilterSheetOpen(true)}
+                        onClick={() =>
+                           openCredenza({
+                              children: (
+                                 <CostCenterFilterCredenza
+                                    onOrderByChange={(value) => {
+                                       setOrderBy(value);
+                                       handleFilterChange();
+                                    }}
+                                    onOrderDirectionChange={(value) => {
+                                       setOrderDirection(value);
+                                       handleFilterChange();
+                                    }}
+                                    onPageSizeChange={(value) => {
+                                       setPageSize(value);
+                                       handleFilterChange();
+                                    }}
+                                    orderBy={orderBy}
+                                    orderDirection={orderDirection}
+                                    pageSize={pageSize}
+                                 />
+                              ),
+                           })
+                        }
                         size="icon"
                         variant="outline"
                      >
@@ -334,70 +347,29 @@ function CostCentersListContent() {
             <SelectionActionButton
                disabled={isLoading}
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.cost-centers.bulk-actions.delete",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "dashboard.routes.cost-centers.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => deleteSelected(selectedIds),
+                     title: translate(
+                        "dashboard.routes.cost-centers.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                     variant: "destructive",
+                  })
+               }
                variant="destructive"
             >
                {translate("dashboard.routes.cost-centers.bulk-actions.delete")}
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.cost-centers.bulk-actions.delete-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.cost-centers.bulk-actions.delete-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     onClick={() => {
-                        deleteSelected(selectedIds);
-                        setIsDeleteDialogOpen(false);
-                     }}
-                  >
-                     {translate(
-                        "dashboard.routes.cost-centers.bulk-actions.delete",
-                     )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <CostCenterFilterSheet
-            isOpen={isFilterSheetOpen}
-            onOpenChange={setIsFilterSheetOpen}
-            onOrderByChange={(value) => {
-               setOrderBy(value);
-               handleFilterChange();
-            }}
-            onOrderDirectionChange={(value) => {
-               setOrderDirection(value);
-               handleFilterChange();
-            }}
-            onPageSizeChange={(value) => {
-               setPageSize(value);
-               handleFilterChange();
-            }}
-            orderBy={orderBy}
-            orderDirection={orderDirection}
-            pageSize={pageSize}
-         />
       </>
    );
 }

@@ -1,14 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -61,10 +51,12 @@ import { useTransactionBulkActions } from "@/features/transaction/lib/use-transa
 import { CategorizeSheet } from "@/features/transaction/ui/categorize-sheet";
 import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
 import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
-import { TransactionFilterSheet } from "@/features/transaction/ui/transaction-filter-sheet";
+import { TransactionFilterCredenza } from "@/features/transaction/ui/transaction-filter-credenza";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
 
 function RecentTransactionsErrorFallback(props: FallbackProps) {
@@ -131,12 +123,12 @@ function RecentTransactionsContent({
    const trpc = useTRPC();
    const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const [currentPage, setCurrentPage] = useState(1);
    const pageSize = 10;
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
    const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
    const [isTransferOpen, setIsTransferOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
    const [searchTerm, setSearchTerm] = useState("");
@@ -185,15 +177,14 @@ function RecentTransactionsContent({
       trpc.categories.getAll.queryOptions(),
    );
 
-   const { deleteSelected, isLoading: isBulkActionLoading } =
-      useTransactionBulkActions({
-         bankAccountId,
-         onSuccess: () => {
-            setRowSelection({});
-            setIsCategorizeOpen(false);
-            setIsTransferOpen(false);
-         },
-      });
+   const { deleteSelected } = useTransactionBulkActions({
+      bankAccountId,
+      onSuccess: () => {
+         setRowSelection({});
+         setIsCategorizeOpen(false);
+         setIsTransferOpen(false);
+      },
+   });
 
    const hasActiveFilters =
       debouncedSearchTerm || typeFilter !== "" || categoryFilter !== "all";
@@ -219,11 +210,6 @@ function RecentTransactionsContent({
       setTypeFilter("");
       setCategoryFilter("all");
       setSearchTerm("");
-   };
-
-   const handleBulkDelete = () => {
-      deleteSelected(selectedIds);
-      setIsDeleteDialogOpen(false);
    };
 
    const handleBulkChangeCategory = () => {
@@ -282,7 +268,22 @@ function RecentTransactionsContent({
                      <Tooltip>
                         <TooltipTrigger asChild>
                            <Button
-                              onClick={() => setIsFilterSheetOpen(true)}
+                              onClick={() =>
+                                 openCredenza({
+                                    children: (
+                                       <TransactionFilterCredenza
+                                          categories={categories}
+                                          categoryFilter={categoryFilter}
+                                          onCategoryFilterChange={
+                                             setCategoryFilter
+                                          }
+                                          onClearFilters={handleClearFilters}
+                                          onTypeFilterChange={setTypeFilter}
+                                          typeFilter={typeFilter}
+                                       />
+                                    ),
+                                 })
+                              }
                               size="icon"
                               variant={hasActiveFilters ? "default" : "outline"}
                            >
@@ -418,56 +419,28 @@ function RecentTransactionsContent({
             </SelectionActionButton>
             <SelectionActionButton
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.transactions.list-section.actions.delete",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "common.headers.delete-confirmation.description-bulk",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => deleteSelected(selectedIds),
+                     title: translate(
+                        "common.headers.delete-confirmation.title",
+                     ),
+                     variant: "destructive",
+                  })
+               }
                variant="destructive"
             >
                Excluir
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate("common.headers.delete-confirmation.title")}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "common.headers.delete-confirmation.description-bulk",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     disabled={isBulkActionLoading}
-                     onClick={handleBulkDelete}
-                  >
-                     {translate(
-                        "dashboard.routes.transactions.list-section.actions.delete",
-                     )}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <TransactionFilterSheet
-            categories={categories}
-            categoryFilter={categoryFilter}
-            isOpen={isFilterSheetOpen}
-            onCategoryFilterChange={setCategoryFilter}
-            onClearFilters={handleClearFilters}
-            onOpenChange={setIsFilterSheetOpen}
-            onTypeFilterChange={setTypeFilter}
-            typeFilter={typeFilter}
-         />
 
          <CategorizeSheet
             isOpen={isCategorizeOpen}

@@ -49,7 +49,7 @@ import { useSheet } from "@/hooks/use-sheet";
 import type { Category } from "@/pages/categories/ui/categories-page";
 import { CompleteBillDialog } from "../features/complete-bill-dialog";
 import { useDeleteBillDialog } from "../features/delete-bill-dialog";
-import { ManageBillForm } from "../features/manage-bill-sheet";
+import { ManageBillForm } from "../features/manage-bill-form";
 
 type Bill = BillWithRelations;
 

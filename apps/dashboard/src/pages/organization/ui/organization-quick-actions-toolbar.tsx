@@ -18,7 +18,7 @@ import { useState } from "react";
 import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
 import { SendInvitationSheet } from "@/features/organization-actions/ui/send-invitation-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteOrganizationDialog } from "../features/delete-organization-dialog";
+import { useDeleteOrganization } from "../features/use-delete-organization";
 export function QuickActionsToolbar() {
    const trpc = useTRPC();
    const { data: activeOrganization } = useSuspenseQuery(
@@ -26,7 +26,9 @@ export function QuickActionsToolbar() {
    );
    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
    const [isInvitationSheetOpen, setIsInvitationSheetOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const { deleteOrganization } = useDeleteOrganization({
+      organization: activeOrganization,
+   });
 
    const quickActions = [
       {
@@ -50,7 +52,7 @@ export function QuickActionsToolbar() {
          label: translate(
             "dashboard.routes.organization.toolbar-section.actions.delete-organization",
          ),
-         onClick: () => setIsDeleteDialogOpen(true),
+         onClick: deleteOrganization,
          variant: "destructive" as const,
       },
    ];
@@ -96,10 +98,6 @@ export function QuickActionsToolbar() {
          <SendInvitationSheet
             onOpenChange={setIsInvitationSheetOpen}
             open={isInvitationSheetOpen}
-         />
-         <DeleteOrganizationDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
          />
       </>
    );

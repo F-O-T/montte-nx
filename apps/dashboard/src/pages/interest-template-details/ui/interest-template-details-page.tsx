@@ -35,8 +35,8 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteInterestTemplateDialog } from "../../interest-templates/features/delete-interest-template-dialog";
 import { ManageInterestTemplateSheet } from "../../interest-templates/features/manage-interest-template-sheet";
+import { useDeleteInterestTemplate } from "../../interest-templates/features/use-delete-interest-template";
 
 function getPenaltyTypeLabel(type: string) {
    switch (type) {
@@ -81,11 +81,22 @@ function InterestTemplateContent() {
    const { activeOrganization } = useActiveOrganization();
 
    const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
    const { data: template } = useSuspenseQuery(
       trpc.interestTemplates.getById.queryOptions({ id: interestTemplateId }),
    );
+
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/interest-templates",
+      });
+   };
+
+   const { deleteInterestTemplate } = useDeleteInterestTemplate({
+      onSuccess: handleDeleteSuccess,
+      template: template!,
+   });
 
    if (!interestTemplateId) {
       return (
@@ -99,13 +110,6 @@ function InterestTemplateContent() {
    if (!template) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/interest-templates",
-      });
-   };
 
    return (
       <main className="space-y-4">
@@ -142,7 +146,7 @@ function InterestTemplateContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteOpen(true)}
+               onClick={deleteInterestTemplate}
                size="sm"
                variant="outline"
             >
@@ -312,12 +316,6 @@ function InterestTemplateContent() {
          <ManageInterestTemplateSheet
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-            template={template}
-         />
-         <DeleteInterestTemplateDialog
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
             template={template}
          />
       </main>

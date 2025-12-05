@@ -15,15 +15,15 @@ import {
    Split,
    Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { CategorizeSheet } from "./categorize-sheet";
-import { CategorySplitSheet } from "./category-split-sheet";
-import { DeleteTransaction } from "./delete-transaction-dialog";
-import { LinkFileSheet } from "./link-file-sheet";
-import { ManageTransactionSheet } from "./manage-transaction-sheet";
-import { MarkAsTransferSheet } from "./mark-as-transfer-sheet";
+import { CategorizeForm } from "./categorize-form";
+import { CategorySplitForm } from "./category-split-form";
+import { LinkFileForm } from "./link-file-form";
+import { ManageTransactionForm } from "./manage-transaction-form";
+import { MarkAsTransferForm } from "./mark-as-transfer-form";
 import type { Category, Transaction } from "./transaction-list";
+import { useDeleteTransaction } from "./use-delete-transaction";
 
 type CategorySplit = {
    categoryId: string;
@@ -43,17 +43,13 @@ export function TransactionExpandedContent({
    slug,
 }: TransactionExpandedContentProps) {
    const trpc = useTRPC();
+   const { openSheet } = useSheet();
    const transaction = row.original;
    const tags = transaction.transactionTags || [];
    const categorySplits = transaction.categorySplits as CategorySplit[] | null;
    const hasSplit = categorySplits && categorySplits.length > 0;
 
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isTransferOpen, setIsTransferOpen] = useState(false);
-   const [isSplitOpen, setIsSplitOpen] = useState(false);
-   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
-   const [isLinkFileOpen, setIsLinkFileOpen] = useState(false);
+   const { deleteTransaction } = useDeleteTransaction({ transaction });
 
    const isTransfer = transaction.type === "transfer";
    const isNotTransfer = !isTransfer;
@@ -213,7 +209,13 @@ export function TransactionExpandedContent({
          <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
             {isNotTransfer && (
                <Button
-                  onClick={() => setIsTransferOpen(true)}
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <MarkAsTransferForm transactions={[transaction]} />
+                        ),
+                     })
+                  }
                   size="sm"
                   variant="outline"
                >
@@ -223,7 +225,11 @@ export function TransactionExpandedContent({
             )}
 
             <Button
-               onClick={() => setIsSplitOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <CategorySplitForm transaction={transaction} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -232,7 +238,11 @@ export function TransactionExpandedContent({
             </Button>
 
             <Button
-               onClick={() => setIsCategorizeOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <CategorizeForm transactions={[transaction]} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -241,7 +251,11 @@ export function TransactionExpandedContent({
             </Button>
 
             <Button
-               onClick={() => setIsLinkFileOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <LinkFileForm transaction={transaction} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -262,7 +276,13 @@ export function TransactionExpandedContent({
             </Button>
 
             <Button
-               onClick={() => setIsEditOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <ManageTransactionForm transaction={transaction} />
+                     ),
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -270,46 +290,11 @@ export function TransactionExpandedContent({
                Editar
             </Button>
 
-            <Button
-               onClick={() => setIsDeleteOpen(true)}
-               size="sm"
-               variant="destructive"
-            >
+            <Button onClick={deleteTransaction} size="sm" variant="destructive">
                <Trash2 className="size-4" />
                Excluir
             </Button>
          </div>
-
-         <ManageTransactionSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            transaction={transaction}
-         />
-         <DeleteTransaction
-            onOpen={isDeleteOpen}
-            onOpenChange={setIsDeleteOpen}
-            transaction={transaction}
-         />
-         <MarkAsTransferSheet
-            isOpen={isTransferOpen}
-            onOpenChange={setIsTransferOpen}
-            transactions={[transaction]}
-         />
-         <CategorySplitSheet
-            isOpen={isSplitOpen}
-            onOpenChange={setIsSplitOpen}
-            transaction={transaction}
-         />
-         <CategorizeSheet
-            isOpen={isCategorizeOpen}
-            onOpenChange={setIsCategorizeOpen}
-            transactions={[transaction]}
-         />
-         <LinkFileSheet
-            isOpen={isLinkFileOpen}
-            onOpenChange={setIsLinkFileOpen}
-            transaction={transaction}
-         />
       </div>
    );
 }

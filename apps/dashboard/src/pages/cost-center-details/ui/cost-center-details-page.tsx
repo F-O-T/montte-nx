@@ -27,7 +27,7 @@ import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transac
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 import { ManageCostCenterSheet } from "../../cost-centers/features/manage-cost-center-sheet";
-import { DeleteCostCenterDialog } from "../features/delete-cost-center-dialog";
+import { useDeleteCostCenter } from "../../cost-centers/features/use-delete-cost-center";
 import { CostCenterCharts } from "./cost-center-charts";
 import { CostCenterStats } from "./cost-center-stats";
 import { CostCenterTransactions } from "./cost-center-transactions-section";
@@ -43,7 +43,6 @@ function CostCenterContent() {
    const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
       useState(false);
    const [isEditCostCenterOpen, setIsEditCostCenterOpen] = useState(false);
-   const [isDeleteCostCenterOpen, setIsDeleteCostCenterOpen] = useState(false);
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -101,6 +100,11 @@ function CostCenterContent() {
       });
    };
 
+   const { deleteCostCenter } = useDeleteCostCenter({
+      costCenter,
+      onSuccess: handleDeleteSuccess,
+   });
+
    return (
       <main className="space-y-4">
          <DefaultHeader
@@ -127,7 +131,7 @@ function CostCenterContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteCostCenterOpen(true)}
+               onClick={deleteCostCenter}
                size="sm"
                variant="outline"
             >
@@ -175,12 +179,6 @@ function CostCenterContent() {
             costCenter={costCenter}
             onOpen={isEditCostCenterOpen}
             onOpenChange={setIsEditCostCenterOpen}
-         />
-         <DeleteCostCenterDialog
-            costCenter={costCenter}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteCostCenterOpen}
-            setOpen={setIsDeleteCostCenterOpen}
          />
       </main>
    );

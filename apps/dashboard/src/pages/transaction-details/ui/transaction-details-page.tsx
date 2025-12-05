@@ -28,9 +28,9 @@ import { CategorySplitSheet } from "@/features/transaction/ui/category-split-she
 import { LinkFileSheet } from "@/features/transaction/ui/link-file-sheet";
 import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
 import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
+import { useDeleteTransaction } from "@/features/transaction/ui/use-delete-transaction";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteTransactionDialog } from "../features/delete-transaction-dialog";
 import { TransactionCategorizationSection } from "./transaction-categories-section";
 import { TransactionDetailsSection } from "./transaction-details-section";
 import { TransactionStats } from "./transaction-stats";
@@ -44,7 +44,6 @@ function TransactionContent() {
    const { activeOrganization } = useActiveOrganization();
 
    const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isTransferOpen, setIsTransferOpen] = useState(false);
    const [isSplitOpen, setIsSplitOpen] = useState(false);
    const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
@@ -53,6 +52,18 @@ function TransactionContent() {
    const { data: transaction } = useSuspenseQuery(
       trpc.transactions.getById.queryOptions({ id: transactionId }),
    );
+
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/transactions",
+      });
+   };
+
+   const { deleteTransaction } = useDeleteTransaction({
+      onSuccess: handleDeleteSuccess,
+      transaction: transaction ?? { description: "", id: "" },
+   });
 
    if (!transactionId) {
       return (
@@ -66,13 +77,6 @@ function TransactionContent() {
    if (!transaction) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/transactions",
-      });
-   };
 
    const isNotTransfer = transaction.type !== "transfer";
 
@@ -130,7 +134,7 @@ function TransactionContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteOpen(true)}
+               onClick={deleteTransaction}
                size="sm"
                variant="outline"
             >
@@ -146,12 +150,6 @@ function TransactionContent() {
          <ManageTransactionSheet
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-            transaction={transaction}
-         />
-         <DeleteTransactionDialog
-            onDeleted={handleDeleteSuccess}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
             transaction={transaction}
          />
          <MarkAsTransferSheet

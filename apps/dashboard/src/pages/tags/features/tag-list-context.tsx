@@ -18,8 +18,6 @@ interface TagListContextType {
    setCurrentPage: (page: number) => void;
    pageSize: number;
    setPageSize: (size: number) => void;
-   isFilterSheetOpen: boolean;
-   setIsFilterSheetOpen: (open: boolean) => void;
 }
 
 const TagListContext = createContext<TagListContextType | undefined>(undefined);
@@ -33,7 +31,6 @@ export function TagListProvider({ children }: { children: React.ReactNode }) {
    const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize, setPageSize] = useState(5);
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -69,7 +66,6 @@ export function TagListProvider({ children }: { children: React.ReactNode }) {
       clearSelection,
       currentPage,
       handleSelectionChange,
-      isFilterSheetOpen,
       nameFilter,
       orderBy,
       orderDirection,
@@ -78,7 +74,6 @@ export function TagListProvider({ children }: { children: React.ReactNode }) {
       selectedCount: selectedItems.size,
       selectedItems,
       setCurrentPage,
-      setIsFilterSheetOpen,
       setNameFilter,
       setOrderBy,
       setOrderDirection,

@@ -18,8 +18,6 @@ interface CounterpartyListContextType {
    setPageSize: (size: number) => void;
    typeFilter: "client" | "supplier" | "both" | "all";
    setTypeFilter: (value: "client" | "supplier" | "both" | "all") => void;
-   isFilterSheetOpen: boolean;
-   setIsFilterSheetOpen: (open: boolean) => void;
 }
 
 const CounterpartyListContext = createContext<
@@ -41,7 +39,6 @@ export function CounterpartyListProvider({
    const [typeFilter, setTypeFilter] = useState<
       "client" | "supplier" | "both" | "all"
    >("all");
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -77,7 +74,6 @@ export function CounterpartyListProvider({
       clearSelection,
       currentPage,
       handleSelectionChange,
-      isFilterSheetOpen,
       orderBy,
       orderDirection,
       pageSize,
@@ -85,7 +81,6 @@ export function CounterpartyListProvider({
       selectedCount: selectedItems.size,
       selectedItems,
       setCurrentPage,
-      setIsFilterSheetOpen,
       setOrderBy,
       setOrderDirection,
       setPageSize,

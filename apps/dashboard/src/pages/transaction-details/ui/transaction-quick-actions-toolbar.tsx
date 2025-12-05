@@ -17,9 +17,9 @@ import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { useDeleteTransaction } from "@/features/transaction/ui/use-delete-transaction";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteTransactionDialog } from "../features/delete-transaction-dialog";
 
 export function TransactionQuickActionsToolbar({
    transactionId,
@@ -30,7 +30,6 @@ export function TransactionQuickActionsToolbar({
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
    const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    const { data: transaction } = useSuspenseQuery(
       trpc.transactions.getById.queryOptions({ id: transactionId }),
@@ -42,6 +41,11 @@ export function TransactionQuickActionsToolbar({
          to: "/$slug/transactions",
       });
    };
+
+   const { deleteTransaction } = useDeleteTransaction({
+      onSuccess: handleBack,
+      transaction,
+   });
 
    const quickActions = [
       {
@@ -61,7 +65,7 @@ export function TransactionQuickActionsToolbar({
          label: translate(
             "dashboard.routes.transactions.list-section.actions.delete",
          ),
-         onClick: () => setIsDeleteDialogOpen(true),
+         onClick: deleteTransaction,
          variant: "destructive" as const,
       },
    ];
@@ -107,12 +111,6 @@ export function TransactionQuickActionsToolbar({
          <ManageTransactionSheet
             onOpen={isEditSheetOpen}
             onOpenChange={setIsEditSheetOpen}
-            transaction={transaction}
-         />
-         <DeleteTransactionDialog
-            onDeleted={handleBack}
-            open={isDeleteDialogOpen}
-            setOpen={setIsDeleteDialogOpen}
             transaction={transaction}
          />
       </>

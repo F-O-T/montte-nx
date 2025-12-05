@@ -35,8 +35,8 @@ import {
 import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import type { Counterparty } from "@/pages/counterparties/ui/counterparties-page";
-import { DeleteCounterpartyDialog } from "../features/delete-counterparty-dialog";
 import { ManageCounterpartySheet } from "../features/manage-counterparty-sheet";
+import { useDeleteCounterparty } from "../features/use-delete-counterparty";
 
 function getTypeIcon(type: string) {
    switch (type) {
@@ -69,9 +69,9 @@ function CounterpartyActionsCell({
 }: {
    counterparty: Counterparty;
 }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { deleteCounterparty } = useDeleteCounterparty({ counterparty });
 
    return (
       <>
@@ -116,7 +116,7 @@ function CounterpartyActionsCell({
                <TooltipTrigger asChild>
                   <Button
                      className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
+                     onClick={deleteCounterparty}
                      size="icon"
                      variant="outline"
                   >
@@ -134,11 +134,6 @@ function CounterpartyActionsCell({
             counterparty={counterparty}
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-         />
-         <DeleteCounterpartyDialog
-            counterparty={counterparty}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
          />
       </>
    );
@@ -230,9 +225,9 @@ export function CounterpartyExpandedContent({
 }: CounterpartyExpandedContentProps) {
    const counterparty = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isEditOpen, setIsEditOpen] = useState(false);
    const isMobile = useIsMobile();
+   const { deleteCounterparty } = useDeleteCounterparty({ counterparty });
 
    if (isMobile) {
       return (
@@ -350,7 +345,7 @@ export function CounterpartyExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsDeleteOpen(true);
+                     deleteCounterparty();
                   }}
                   size="sm"
                   variant="destructive"
@@ -366,11 +361,6 @@ export function CounterpartyExpandedContent({
                counterparty={counterparty}
                onOpen={isEditOpen}
                onOpenChange={setIsEditOpen}
-            />
-            <DeleteCounterpartyDialog
-               counterparty={counterparty}
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
             />
          </div>
       );
@@ -482,7 +472,7 @@ export function CounterpartyExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsDeleteOpen(true);
+                  deleteCounterparty();
                }}
                size="sm"
                variant="destructive"
@@ -498,11 +488,6 @@ export function CounterpartyExpandedContent({
             counterparty={counterparty}
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-         />
-         <DeleteCounterpartyDialog
-            counterparty={counterparty}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
          />
       </div>
    );

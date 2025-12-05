@@ -33,8 +33,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { DeleteInterestTemplateDialog } from "../features/delete-interest-template-dialog";
 import { ManageInterestTemplateSheet } from "../features/manage-interest-template-sheet";
+import { useDeleteInterestTemplate } from "../features/use-delete-interest-template";
 import type { InterestTemplate } from "./interest-templates-page";
 
 function getPenaltyTypeLabel(type: string) {
@@ -76,9 +76,9 @@ function InterestTemplateActionsCell({
 }: {
    template: InterestTemplate;
 }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { deleteInterestTemplate } = useDeleteInterestTemplate({ template });
 
    return (
       <>
@@ -123,7 +123,7 @@ function InterestTemplateActionsCell({
                <TooltipTrigger asChild>
                   <Button
                      className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
+                     onClick={deleteInterestTemplate}
                      size="icon"
                      variant="outline"
                   >
@@ -140,11 +140,6 @@ function InterestTemplateActionsCell({
          <ManageInterestTemplateSheet
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-            template={template}
-         />
-         <DeleteInterestTemplateDialog
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
             template={template}
          />
       </>
@@ -275,8 +270,8 @@ export function InterestTemplateExpandedContent({
 }: InterestTemplateExpandedContentProps) {
    const template = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [isEditOpen, setIsEditOpen] = useState(false);
+   const { deleteInterestTemplate } = useDeleteInterestTemplate({ template });
    const isMobile = useIsMobile();
 
    if (isMobile) {
@@ -389,7 +384,7 @@ export function InterestTemplateExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsDeleteOpen(true);
+                     deleteInterestTemplate();
                   }}
                   size="sm"
                   variant="destructive"
@@ -404,11 +399,6 @@ export function InterestTemplateExpandedContent({
             <ManageInterestTemplateSheet
                onOpen={isEditOpen}
                onOpenChange={setIsEditOpen}
-               template={template}
-            />
-            <DeleteInterestTemplateDialog
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
                template={template}
             />
          </div>
@@ -511,7 +501,7 @@ export function InterestTemplateExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsDeleteOpen(true);
+                  deleteInterestTemplate();
                }}
                size="sm"
                variant="destructive"
@@ -526,11 +516,6 @@ export function InterestTemplateExpandedContent({
          <ManageInterestTemplateSheet
             onOpen={isEditOpen}
             onOpenChange={setIsEditOpen}
-            template={template}
-         />
-         <DeleteInterestTemplateDialog
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
             template={template}
          />
       </div>

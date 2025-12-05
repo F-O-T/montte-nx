@@ -23,11 +23,12 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageCategorySheet } from "../../categories/features/manage-category-sheet";
-import { DeleteCategoryDialog } from "../features/delete-category-dialog";
+import { ManageCategoryForm } from "../../categories/features/manage-category-form";
+import { useDeleteCategory } from "../../categories/features/use-delete-category";
 import { CategoryCharts } from "./category-charts";
 import { CategoryStats } from "./category-stats";
 import { CategoryTransactions } from "./category-transactions-section";
@@ -38,11 +39,7 @@ function CategoryContent() {
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
-   const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
-   const [isDeleteCategoryOpen, setIsDeleteCategoryOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -100,11 +97,26 @@ function CategoryContent() {
       });
    };
 
+   const { deleteCategory } = useDeleteCategory({
+      category,
+      onSuccess: handleDeleteSuccess,
+   });
+
    return (
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageTransactionForm
+                              defaultCategoryIds={[categoryId]}
+                           />
+                        ),
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -119,7 +131,11 @@ function CategoryContent() {
 
          <div className="flex flex-wrap items-center gap-2">
             <Button
-               onClick={() => setIsEditCategoryOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <ManageCategoryForm category={category} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -128,7 +144,7 @@ function CategoryContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteCategoryOpen(true)}
+               onClick={deleteCategory}
                size="sm"
                variant="outline"
             >
@@ -165,23 +181,6 @@ function CategoryContent() {
             categoryId={categoryId}
             endDate={dateRange.endDate}
             startDate={dateRange.startDate}
-         />
-
-         <ManageTransactionSheet
-            defaultCategoryIds={[categoryId]}
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
-         <ManageCategorySheet
-            category={category}
-            onOpen={isEditCategoryOpen}
-            onOpenChange={setIsEditCategoryOpen}
-         />
-         <DeleteCategoryDialog
-            category={category}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteCategoryOpen}
-            setOpen={setIsDeleteCategoryOpen}
          />
       </main>
    );
