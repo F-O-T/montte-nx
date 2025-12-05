@@ -123,6 +123,62 @@ console.log({
 });
 ```
 
+### Generation Functions
+
+#### `generateBankStatement(options: GenerateBankStatementOptions): string`
+
+Generates a complete OFX bank statement file.
+
+```typescript
+import { generateBankStatement } from "@fot/ofx";
+
+const statement = generateBankStatement({
+  bankId: "123456",
+  accountId: "987654321",
+  accountType: "CHECKING",
+  currency: "USD",
+  startDate: new Date("2025-01-01"),
+  endDate: new Date("2025-01-31"),
+  transactions: [
+    {
+      type: "CREDIT",
+      datePosted: new Date(),
+      amount: 1000,
+      fitId: "1",
+      name: "Deposit",
+    },
+  ],
+});
+
+console.log(statement);
+```
+
+#### `generateCreditCardStatement(options: GenerateCreditCardStatementOptions): string`
+
+Generates a complete OFX credit card statement file.
+
+```typescript
+import { generateCreditCardStatement } from "@fot/ofx";
+
+const statement = generateCreditCardStatement({
+  accountId: "123456789",
+  currency: "USD",
+  startDate: new Date("2025-01-01"),
+  endDate: new Date("2025-01-31"),
+  transactions: [
+    {
+      type: "DEBIT",
+      datePosted: new Date(),
+      amount: -75.5,
+      fitId: "2",
+      name: "Purchase at a store",
+    },
+  ],
+});
+
+console.log(statement);
+```
+
 ## Types
 
 ### OFXTransaction
