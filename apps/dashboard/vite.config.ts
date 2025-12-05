@@ -15,7 +15,6 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: "auto",
       includeAssets: ["favicon.svg", "android/**/*", "ios/**/*"],
       manifest: {
         id: "/",
@@ -27,7 +26,11 @@ export default defineConfig({
         lang: "pt-BR",
         dir: "ltr",
         display: "standalone",
-        display_override: ["standalone", "minimal-ui"],
+        display_override: [
+          "window-controls-overlay",
+          "standalone",
+          "minimal-ui",
+        ],
         start_url: "/",
         background_color: "#050816",
         theme_color: "#050816",
@@ -92,12 +95,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2,webp}"],
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        navigationPreload: true,
         navigateFallback: "index.html",
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
@@ -130,25 +129,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: ({ url }) =>
-              url.origin === self.location.origin &&
-              url.pathname.startsWith("/assets"),
-            handler: "CacheFirst",
-            options: {
-              cacheName: "assets-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
-              },
-            },
-          },
-          {
-            urlPattern: ({ url }) =>
-              url.origin === self.location.origin &&
-              (url.pathname.endsWith(".png") ||
-                url.pathname.endsWith(".jpg") ||
-                url.pathname.endsWith(".webp") ||
-                url.pathname.endsWith(".svg")),
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
             handler: "CacheFirst",
             options: {
               cacheName: "images-cache",
@@ -159,7 +140,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: ({ url }) => url.origin === "https://api.montte.co",
+            urlPattern: /^https:\/\/api\.montte\.co\/.*/i,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -175,12 +156,7 @@ export default defineConfig({
           },
         ],
       },
-      devOptions: {
-        enabled: false,
-        type: "module",
-      },
     }),
-
     react(),
   ],
   server: {

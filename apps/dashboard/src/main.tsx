@@ -7,31 +7,29 @@ import "@packages/localization";
 import i18n from "@packages/localization";
 import "@packages/ui/globals.css";
 
+const intervalMS = 60 * 60 * 1000;
+
 registerSW({
    immediate: true,
    onRegisteredSW(swUrl, registration) {
       if (registration) {
-         setInterval(
-            async () => {
-               if (!(!registration.installing && navigator)) return;
-               if ("connection" in navigator && !navigator.onLine) return;
+         setInterval(async () => {
+            if (registration.installing || !navigator) return;
+            if ("connection" in navigator && !navigator.onLine) return;
 
-               const resp = await fetch(swUrl, {
+            const resp = await fetch(swUrl, {
+               cache: "no-store",
+               headers: {
                   cache: "no-store",
-                  headers: {
-                     cache: "no-store",
-                     "cache-control": "no-cache",
-                  },
-               });
+                  "cache-control": "no-cache",
+               },
+            });
 
-               if (resp?.status === 200) await registration.update();
-            },
-            60 * 60 * 1000,
-         );
+            if (resp?.status === 200) {
+               await registration.update();
+            }
+         }, intervalMS);
       }
-   },
-   onOfflineReady() {
-      console.log("PWA: App ready to work offline");
    },
 });
 
@@ -57,7 +55,7 @@ function App() {
    return <RouterProvider router={router} />;
 }
 
-// biome-ignore lint/style/noNonNullAssertion: <comes like this>
+// biome-ignore lint/style/noNonNullAssertion: root element is always present
 const rootElement = document.getElementById("root")!;
 
 if (!rootElement.innerHTML) {
