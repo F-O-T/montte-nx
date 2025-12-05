@@ -320,10 +320,10 @@ Tested on realistic business statement sizes:
 
 | Transactions | File Size | Parse Time |
 | ------------ | --------- | ---------- |
-| ~10,000      | 2.5 MB    | ~800ms     |
-| ~25,000      | 5.4 MB    | ~1.3s      |
-| ~50,000      | 10.4 MB   | ~4.3s      |
-| ~100,000     | 20.5 MB   | ~27s       |
+| ~5,000       | 1.2 MB    | ~37ms      |
+| ~10,000      | 2.5 MB    | ~113ms     |
+| ~25,000      | 5.4 MB    | ~250ms     |
+| ~50,000      | 10.4 MB   | ~442ms     |
 
 Extraction operations (`getTransactions`, `getBalance`, etc.) are sub-millisecond even on large datasets.
 
