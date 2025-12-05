@@ -43,11 +43,11 @@ import {
    CheckCircle2,
    Clock,
    Download,
-   Edit,
    ExternalLink,
    FileText,
    Loader2,
    Paperclip,
+   Pencil,
    Percent,
    Receipt,
    Trash2,
@@ -62,10 +62,11 @@ import { DefaultHeader } from "@/default/default-header";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { CompleteBillDialog } from "@/pages/bills/features/complete-bill-dialog";
-import { ManageBillSheet } from "@/pages/bills/features/manage-bill-sheet";
-import { DeleteBillDialog } from "../features/delete-bill-dialog";
+import { useDeleteBillDialog } from "@/pages/bills/features/delete-bill-dialog";
+import { ManageBillForm } from "@/pages/bills/features/manage-bill-sheet";
 
 function BillDetailsContent() {
    const params = useParams({ strict: false });
@@ -76,8 +77,6 @@ function BillDetailsContent() {
    const { activeOrganization } = useActiveOrganization();
    const fileInputRef = useRef<HTMLInputElement>(null);
 
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
    const [uploadingFile, setUploadingFile] = useState(false);
    const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<
       string | null
@@ -94,6 +93,18 @@ function BillDetailsContent() {
    });
 
    const bill = billQuery.data;
+
+   const { handleDeleteBill } = useDeleteBillDialog({
+      bill,
+      onSuccess() {
+         router.navigate({
+            params: { slug: activeOrganization.slug },
+            to: "/$slug/bills",
+         });
+      },
+   });
+   const { openSheet } = useSheet();
+
    const categories = categoriesQuery.data ?? [];
    const category = categories.find((c) => c.id === bill.categoryId);
 
@@ -110,11 +121,11 @@ function BillDetailsContent() {
 
    const addAttachmentMutation = useMutation(
       trpc.bills.addAttachment.mutationOptions({
-         onSuccess: () => {
-            refetchAttachments();
+         onError: () => {
             setUploadingFile(false);
          },
-         onError: () => {
+         onSuccess: () => {
+            refetchAttachments();
             setUploadingFile(false);
          },
       }),
@@ -122,11 +133,11 @@ function BillDetailsContent() {
 
    const deleteAttachmentMutation = useMutation(
       trpc.bills.deleteAttachment.mutationOptions({
-         onSuccess: () => {
-            refetchAttachments();
+         onError: () => {
             setDeletingAttachmentId(null);
          },
-         onError: () => {
+         onSuccess: () => {
+            refetchAttachments();
             setDeletingAttachmentId(null);
          },
       }),
@@ -211,17 +222,13 @@ function BillDetailsContent() {
       return null;
    }
 
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/bills",
-      });
-   };
-
    const today = new Date();
+
    today.setHours(0, 0, 0, 0);
+
    const isOverdue =
       bill.dueDate && !bill.completionDate && new Date(bill.dueDate) < today;
+
    const isCompleted = !!bill.completionDate;
 
    const getStatusInfo = () => {
@@ -274,19 +281,23 @@ function BillDetailsContent() {
                              )}
                      </Button>
                   </CompleteBillDialog>
+
                   <Button
-                     onClick={() => setIsEditOpen(true)}
+                     onClick={() => {
+                        openSheet({ children: <ManageBillForm bill={bill} /> });
+                     }}
                      size="sm"
                      variant="outline"
                   >
-                     <Edit className="size-4" />
+                     <Pencil className="size-4" />
                      {translate("dashboard.routes.bills.actions.edit")}
                   </Button>
                </>
             )}
+
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteOpen(true)}
+               onClick={handleDeleteBill}
                size="sm"
                variant="outline"
             >
@@ -927,18 +938,6 @@ function BillDetailsContent() {
                </CardContent>
             </Card>
          )}
-
-         <ManageBillSheet
-            bill={bill}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteBillDialog
-            bill={bill}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteOpen}
-            onOpenChange={setIsDeleteOpen}
-         />
       </main>
    );
 }
