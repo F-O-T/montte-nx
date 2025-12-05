@@ -38,7 +38,7 @@ function getDateParts(
    date: Date,
    locale: DateLocale,
    timezone?: string,
-   useUTC = false,
+   useUTC = true,
 ): DateParts {
    if (useUTC) {
       const day = String(date.getUTCDate()).padStart(2, "0");
@@ -118,7 +118,7 @@ export function formatDate(
 
    const locale = options?.locale ?? "pt-BR";
    const timezone = options?.timezone;
-   const useUTC = options?.useUTC ?? false;
+   const useUTC = options?.useUTC ?? true;
 
    const parts = getDateParts(date, locale, timezone, useUTC);
 

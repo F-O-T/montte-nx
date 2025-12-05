@@ -63,9 +63,7 @@ export function TransactionMobileCard({
                   )}
                </CardTitle>
                <CardDescription>
-                  {formatDate(new Date(transaction.date), "DD MMM YYYY", {
-                     useUTC: true,
-                  })}
+                  {formatDate(new Date(transaction.date), "DD MMM YYYY")}
                </CardDescription>
             </div>
             <CardAction>

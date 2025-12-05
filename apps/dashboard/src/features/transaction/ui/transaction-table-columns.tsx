@@ -233,9 +233,7 @@ export function createTransactionColumns(
       {
          accessorKey: "date",
          cell: ({ row }) => {
-            return formatDate(new Date(row.getValue("date")), "DD MMM YYYY", {
-               useUTC: true,
-            });
+            return formatDate(new Date(row.getValue("date")), "DD MMM YYYY");
          },
          enableSorting: false,
 
