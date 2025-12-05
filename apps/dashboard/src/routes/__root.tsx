@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { GlobalAlertDialog } from "@/hooks/use-alert-dialog";
+import { GlobalCredenza } from "@/hooks/use-credenza";
 import { GlobalSheet } from "@/hooks/use-sheet";
 
 declare module "@tanstack/react-router" {
@@ -84,6 +85,7 @@ function RootComponent() {
             <QueryProvider>
                <TelemetryAwarePostHogWrapper>
                   <GlobalAlertDialog />
+                  <GlobalCredenza />
                   <GlobalSheet />
                   <Toaster />
                   <Outlet />

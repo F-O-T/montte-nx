@@ -1,16 +1,5 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-   AlertDialogTrigger,
-} from "@packages/ui/components/alert-dialog";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -31,7 +20,6 @@ import {
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
-import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
@@ -46,86 +34,79 @@ import {
    Trash2,
    Wallet,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
+import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useTRPC } from "@/integrations/clients";
-import { DeleteBankAccount } from "@/pages/bank-account-details/features/delete-bank-account";
+import { useSheet } from "@/hooks/use-sheet";
+import { useDeleteBankAccount } from "@/pages/bank-account-details/features/use-delete-bank-account";
+import { useToggleBankAccountStatus } from "@/pages/bank-accounts/features/use-toggle-bank-account-status";
 
 function BankAccountActionsCell({ account }: { account: BankAccount }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { openSheet } = useSheet();
+   const { deleteBankAccount } = useDeleteBankAccount({ bankAccount: account });
 
    return (
-      <>
-         <div className="flex justify-end gap-1">
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button asChild size="icon" variant="outline">
-                     <Link
-                        params={{
-                           bankAccountId: account.id,
-                           slug: activeOrganization.slug,
-                        }}
-                        to="/$slug/bank-accounts/$bankAccountId"
-                     >
-                        <Eye className="size-4" />
-                     </Link>
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.actions.view-details",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsEditOpen(true)}
-                     size="icon"
-                     variant="outline"
+      <div className="flex justify-end gap-1">
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button asChild size="icon" variant="outline">
+                  <Link
+                     params={{
+                        bankAccountId: account.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/bank-accounts/$bankAccountId"
                   >
-                     <Edit className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.actions.edit",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.actions.delete",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-         </div>
-         <ManageBankAccountSheet
-            bankAccount={account}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteBankAccount
-            bankAccount={account}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
-      </>
+                     <Eye className="size-4" />
+                  </Link>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.actions.view-details",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageBankAccountForm bankAccount={account} />
+                        ),
+                     })
+                  }
+                  size="icon"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.actions.edit",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  className="text-destructive hover:text-destructive"
+                  onClick={deleteBankAccount}
+                  size="icon"
+                  variant="outline"
+               >
+                  <Trash2 className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.actions.delete",
+               )}
+            </TooltipContent>
+         </Tooltip>
+      </div>
    );
 }
 
@@ -219,94 +200,41 @@ export function BankAccountExpandedContent({
 }: BankAccountExpandedContentProps) {
    const account = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
    const isMobile = useIsMobile();
-   const trpc = useTRPC();
+   const { openSheet } = useSheet();
+   const { deleteBankAccount } = useDeleteBankAccount({ bankAccount: account });
+   const { toggleStatus, isUpdating } = useToggleBankAccountStatus({
+      bankAccount: account,
+   });
 
-   const updateStatusMutation = useMutation(
-      trpc.bankAccounts.update.mutationOptions({
-         onError: () => {
-            toast.error(
-               translate("dashboard.routes.bank-accounts.notifications.error"),
-            );
-         },
-         onSuccess: () => {
-            toast.success(
-               account.status === "active"
-                  ? translate(
-                       "dashboard.routes.bank-accounts.notifications.deactivated",
-                    )
-                  : translate(
-                       "dashboard.routes.bank-accounts.notifications.activated",
-                    ),
-            );
-         },
-      }),
+   const statusToggleButton = (
+      <Button
+         disabled={isUpdating}
+         onClick={(e) => {
+            e.stopPropagation();
+            toggleStatus();
+         }}
+         size="sm"
+         variant="outline"
+      >
+         <Power className="size-4" />
+         {account.status === "active"
+            ? translate("dashboard.routes.bank-accounts.status.active")
+            : translate("dashboard.routes.bank-accounts.status.inactive")}
+      </Button>
    );
 
-   const handleStatusToggle = () => {
-      const newStatus = account.status === "active" ? "inactive" : "active";
-      updateStatusMutation.mutate({
-         data: { status: newStatus },
-         id: account.id,
+   const handleEdit = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      openSheet({
+         children: <ManageBankAccountForm bankAccount={account} />,
       });
-      setIsStatusDialogOpen(false);
    };
 
-   const statusToggleElement = (
-      <AlertDialog
-         onOpenChange={setIsStatusDialogOpen}
-         open={isStatusDialogOpen}
-      >
-         <AlertDialogTrigger asChild>
-            <Button
-               disabled={updateStatusMutation.isPending}
-               onClick={(e) => e.stopPropagation()}
-               size="sm"
-               variant="outline"
-            >
-               <Power className="size-4" />
-               {account.status === "active"
-                  ? translate("dashboard.routes.bank-accounts.status.active")
-                  : translate("dashboard.routes.bank-accounts.status.inactive")}
-            </Button>
-         </AlertDialogTrigger>
-         <AlertDialogContent>
-            <AlertDialogHeader>
-               <AlertDialogTitle>
-                  {account.status === "active"
-                     ? translate(
-                          "dashboard.routes.bank-accounts.status-toggle.deactivate-title",
-                       )
-                     : translate(
-                          "dashboard.routes.bank-accounts.status-toggle.activate-title",
-                       )}
-               </AlertDialogTitle>
-               <AlertDialogDescription>
-                  {account.status === "active"
-                     ? translate(
-                          "dashboard.routes.bank-accounts.status-toggle.deactivate-description",
-                       )
-                     : translate(
-                          "dashboard.routes.bank-accounts.status-toggle.activate-description",
-                       )}
-               </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-               <AlertDialogCancel>
-                  {translate("common.actions.cancel")}
-               </AlertDialogCancel>
-               <AlertDialogAction onClick={handleStatusToggle}>
-                  {translate(
-                     "dashboard.routes.bank-accounts.status-toggle.confirm",
-                  )}
-               </AlertDialogAction>
-            </AlertDialogFooter>
-         </AlertDialogContent>
-      </AlertDialog>
-   );
+   const handleDelete = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      deleteBankAccount();
+   };
 
    if (isMobile) {
       return (
@@ -380,7 +308,7 @@ export function BankAccountExpandedContent({
                   </div>
                </div>
                <Separator />
-               {statusToggleElement}
+               {statusToggleButton}
             </div>
 
             <Separator />
@@ -407,10 +335,7 @@ export function BankAccountExpandedContent({
                </Button>
                <Button
                   className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsEditOpen(true);
-                  }}
+                  onClick={handleEdit}
                   size="sm"
                   variant="outline"
                >
@@ -421,10 +346,7 @@ export function BankAccountExpandedContent({
                </Button>
                <Button
                   className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsDeleteOpen(true);
-                  }}
+                  onClick={handleDelete}
                   size="sm"
                   variant="destructive"
                >
@@ -434,17 +356,6 @@ export function BankAccountExpandedContent({
                   )}
                </Button>
             </div>
-
-            <ManageBankAccountSheet
-               bankAccount={account}
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-            />
-            <DeleteBankAccount
-               bankAccount={account}
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
-            />
          </div>
       );
    }
@@ -496,7 +407,7 @@ export function BankAccountExpandedContent({
          </div>
 
          <div className="flex items-center gap-2">
-            {statusToggleElement}
+            {statusToggleButton}
             <Button asChild size="sm" variant="outline">
                <Link
                   params={{
@@ -511,44 +422,19 @@ export function BankAccountExpandedContent({
                   )}
                </Link>
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditOpen(true);
-               }}
-               size="sm"
-               variant="outline"
-            >
+            <Button onClick={handleEdit} size="sm" variant="outline">
                <Edit className="size-4" />
                {translate(
                   "dashboard.routes.bank-accounts.list-section.actions.edit",
                )}
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleteOpen(true);
-               }}
-               size="sm"
-               variant="destructive"
-            >
+            <Button onClick={handleDelete} size="sm" variant="destructive">
                <Trash2 className="size-4" />
                {translate(
                   "dashboard.routes.bank-accounts.list-section.actions.delete",
                )}
             </Button>
          </div>
-
-         <ManageBankAccountSheet
-            bankAccount={account}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteBankAccount
-            bankAccount={account}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
       </div>
    );
 }

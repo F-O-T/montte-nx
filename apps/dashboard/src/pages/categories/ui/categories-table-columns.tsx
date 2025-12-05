@@ -29,87 +29,79 @@ import {
    Eye,
    Trash2,
 } from "lucide-react";
-import { useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import type { Category } from "@/pages/categories/ui/categories-page";
-import { DeleteCategory } from "../features/delete-category";
-import { ManageCategorySheet } from "../features/manage-category-sheet";
+import { ManageCategoryForm } from "../features/manage-category-form";
+import { useDeleteCategory } from "../features/use-delete-category";
 
 function CategoryActionsCell({ category }: { category: Category }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { openSheet } = useSheet();
+   const { deleteCategory } = useDeleteCategory({ category });
 
    return (
-      <>
-         <div className="flex justify-end gap-1">
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button asChild size="icon" variant="outline">
-                     <Link
-                        params={{
-                           categoryId: category.id,
-                           slug: activeOrganization.slug,
-                        }}
-                        to="/$slug/categories/$categoryId"
-                     >
-                        <Eye className="size-4" />
-                     </Link>
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.view-details",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsEditOpen(true)}
-                     size="icon"
-                     variant="outline"
+      <div className="flex justify-end gap-1">
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button asChild size="icon" variant="outline">
+                  <Link
+                     params={{
+                        categoryId: category.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/categories/$categoryId"
                   >
-                     <Edit className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.edit-category",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.delete-category",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-         </div>
-         <ManageCategorySheet
-            category={category}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCategory
-            category={category}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
-      </>
+                     <Eye className="size-4" />
+                  </Link>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.view-details",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: <ManageCategoryForm category={category} />,
+                     })
+                  }
+                  size="icon"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.edit-category",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  className="text-destructive hover:text-destructive"
+                  onClick={deleteCategory}
+                  size="icon"
+                  variant="outline"
+               >
+                  <Trash2 className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.delete-category",
+               )}
+            </TooltipContent>
+         </Tooltip>
+      </div>
    );
 }
 
@@ -178,9 +170,9 @@ export function CategoryExpandedContent({
 }: CategoryExpandedContentProps) {
    const category = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
+   const { openSheet } = useSheet();
    const isMobile = useIsMobile();
+   const { deleteCategory } = useDeleteCategory({ category });
 
    if (isMobile) {
       return (
@@ -258,7 +250,9 @@ export function CategoryExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsEditOpen(true);
+                     openSheet({
+                        children: <ManageCategoryForm category={category} />,
+                     });
                   }}
                   size="sm"
                   variant="outline"
@@ -272,7 +266,7 @@ export function CategoryExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsDeleteOpen(true);
+                     deleteCategory();
                   }}
                   size="sm"
                   variant="destructive"
@@ -283,17 +277,6 @@ export function CategoryExpandedContent({
                   )}
                </Button>
             </div>
-
-            <ManageCategorySheet
-               category={category}
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-            />
-            <DeleteCategory
-               category={category}
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
-            />
          </div>
       );
    }
@@ -362,7 +345,9 @@ export function CategoryExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditOpen(true);
+                  openSheet({
+                     children: <ManageCategoryForm category={category} />,
+                  });
                }}
                size="sm"
                variant="outline"
@@ -375,7 +360,7 @@ export function CategoryExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsDeleteOpen(true);
+                  deleteCategory();
                }}
                size="sm"
                variant="destructive"
@@ -386,17 +371,6 @@ export function CategoryExpandedContent({
                )}
             </Button>
          </div>
-
-         <ManageCategorySheet
-            category={category}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCategory
-            category={category}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
       </div>
    );
 }

@@ -12,12 +12,12 @@ import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, Pencil, Split, Trash2 } from "lucide-react";
-import { useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { DeleteTransaction } from "./delete-transaction-dialog";
-import { ManageTransactionSheet } from "./manage-transaction-sheet";
+import { useSheet } from "@/hooks/use-sheet";
+import { ManageTransactionForm } from "./manage-transaction-form";
 import type { Category, Transaction } from "./transaction-list";
+import { useDeleteTransaction } from "./use-delete-transaction";
 
 type CategorySplit = {
    categoryId: string;
@@ -49,8 +49,8 @@ function TransactionActionsCell({
    transaction: Transaction;
    slug: string;
 }) {
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const { openSheet } = useSheet();
+   const { deleteTransaction } = useDeleteTransaction({ transaction });
 
    return (
       <>
@@ -78,7 +78,15 @@ function TransactionActionsCell({
             <Tooltip>
                <TooltipTrigger asChild>
                   <Button
-                     onClick={() => setIsEditOpen(true)}
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <ManageTransactionForm
+                                 transaction={transaction}
+                              />
+                           ),
+                        })
+                     }
                      size="icon"
                      variant="outline"
                   >
@@ -95,7 +103,7 @@ function TransactionActionsCell({
                <TooltipTrigger asChild>
                   <Button
                      className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
+                     onClick={deleteTransaction}
                      size="icon"
                      variant="outline"
                   >
@@ -109,16 +117,6 @@ function TransactionActionsCell({
                </TooltipContent>
             </Tooltip>
          </div>
-         <ManageTransactionSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            transaction={transaction}
-         />
-         <DeleteTransaction
-            onOpen={isDeleteOpen}
-            onOpenChange={setIsDeleteOpen}
-            transaction={transaction}
-         />
       </>
    );
 }

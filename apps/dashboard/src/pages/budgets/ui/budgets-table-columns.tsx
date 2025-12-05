@@ -1,16 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-   AlertDialogTrigger,
-} from "@packages/ui/components/alert-dialog";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -29,7 +18,6 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
-import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
@@ -43,12 +31,11 @@ import {
    TrendingUp,
    Wallet,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useTRPC } from "@/integrations/clients";
-import { DeleteBudget } from "../features/delete-budget";
-import { ManageBudgetSheet } from "../features/manage-budget-sheet";
+import { useSheet } from "@/hooks/use-sheet";
+import { ManageBudgetForm } from "../features/manage-budget-form";
+import { useDeleteBudget } from "../features/use-delete-budget";
+import { useToggleBudgetStatus } from "../features/use-toggle-budget-status";
 
 type Budget = RouterOutput["budgets"]["getAllPaginated"]["budgets"][0];
 
@@ -69,79 +56,68 @@ const periodLabels: Record<string, string> = {
 };
 
 function BudgetActionsCell({ budget }: { budget: Budget }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { openSheet } = useSheet();
+   const { deleteBudget } = useDeleteBudget({ budget });
 
    return (
-      <>
-         <div className="flex justify-end gap-1">
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button asChild size="icon" variant="outline">
-                     <Link
-                        params={{
-                           budgetId: budget.id,
-                           slug: activeOrganization.slug,
-                        }}
-                        to="/$slug/budgets/$budgetId"
-                     >
-                        <Eye className="size-4" />
-                     </Link>
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.budgets.list-section.actions.view-details",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsEditOpen(true)}
-                     size="icon"
-                     variant="outline"
+      <div className="flex justify-end gap-1">
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button asChild size="icon" variant="outline">
+                  <Link
+                     params={{
+                        budgetId: budget.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/budgets/$budgetId"
                   >
-                     <Edit className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.budgets.list-section.actions.edit",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.budgets.list-section.actions.delete",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-         </div>
-         <ManageBudgetSheet
-            budget={budget}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteBudget
-            asDialog
-            budget={budget}
-            onOpenChange={setIsDeleteOpen}
-            open={isDeleteOpen}
-         />
-      </>
+                     <Eye className="size-4" />
+                  </Link>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.budgets.list-section.actions.view-details",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: <ManageBudgetForm budget={budget} />,
+                     })
+                  }
+                  size="icon"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate("dashboard.routes.budgets.list-section.actions.edit")}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  className="text-destructive hover:text-destructive"
+                  onClick={deleteBudget}
+                  size="icon"
+                  variant="outline"
+               >
+                  <Trash2 className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.budgets.list-section.actions.delete",
+               )}
+            </TooltipContent>
+         </Tooltip>
+      </div>
    );
 }
 
@@ -243,11 +219,10 @@ interface BudgetExpandedContentProps {
 export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
    const budget = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+   const { openSheet } = useSheet();
+   const { deleteBudget } = useDeleteBudget({ budget });
+   const { isUpdating, toggleStatus } = useToggleBudgetStatus({ budget });
    const isMobile = useIsMobile();
-   const trpc = useTRPC();
 
    const totalAmount = parseFloat(budget.amount);
    const currentPeriod = budget.periods?.[0];
@@ -260,84 +235,35 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
    const available = Math.max(0, totalAmount - spent - scheduled);
    const percentage = totalAmount > 0 ? (spent / totalAmount) * 100 : 0;
 
-   const updateMutation = useMutation(
-      trpc.budgets.update.mutationOptions({
-         onError: () => {
-            toast.error(
-               translate("dashboard.routes.budgets.notifications.error"),
-            );
-         },
-         onSuccess: () => {
-            toast.success(
-               budget.isActive
-                  ? translate(
-                       "dashboard.routes.budgets.notifications.deactivated",
-                    )
-                  : translate(
-                       "dashboard.routes.budgets.notifications.activated",
-                    ),
-            );
-         },
-      }),
-   );
-
-   const handleStatusToggle = () => {
-      updateMutation.mutate({
-         data: { isActive: !budget.isActive },
-         id: budget.id,
+   const handleEditClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      openSheet({
+         children: <ManageBudgetForm budget={budget} />,
       });
-      setIsStatusDialogOpen(false);
+   };
+
+   const handleDeleteClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      deleteBudget();
+   };
+
+   const handleToggleStatusClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      toggleStatus();
    };
 
    const statusToggleElement = (
-      <AlertDialog
-         onOpenChange={setIsStatusDialogOpen}
-         open={isStatusDialogOpen}
+      <Button
+         disabled={isUpdating}
+         onClick={handleToggleStatusClick}
+         size="sm"
+         variant="outline"
       >
-         <AlertDialogTrigger asChild>
-            <Button
-               disabled={updateMutation.isPending}
-               onClick={(e) => e.stopPropagation()}
-               size="sm"
-               variant="outline"
-            >
-               <Power className="size-4" />
-               {budget.isActive
-                  ? translate("dashboard.routes.budgets.status.active")
-                  : translate("dashboard.routes.budgets.status.inactive")}
-            </Button>
-         </AlertDialogTrigger>
-         <AlertDialogContent>
-            <AlertDialogHeader>
-               <AlertDialogTitle>
-                  {budget.isActive
-                     ? translate(
-                          "dashboard.routes.budgets.status-toggle.deactivate-title",
-                       )
-                     : translate(
-                          "dashboard.routes.budgets.status-toggle.activate-title",
-                       )}
-               </AlertDialogTitle>
-               <AlertDialogDescription>
-                  {budget.isActive
-                     ? translate(
-                          "dashboard.routes.budgets.status-toggle.deactivate-description",
-                       )
-                     : translate(
-                          "dashboard.routes.budgets.status-toggle.activate-description",
-                       )}
-               </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-               <AlertDialogCancel>
-                  {translate("common.actions.cancel")}
-               </AlertDialogCancel>
-               <AlertDialogAction onClick={handleStatusToggle}>
-                  {translate("dashboard.routes.budgets.status-toggle.confirm")}
-               </AlertDialogAction>
-            </AlertDialogFooter>
-         </AlertDialogContent>
-      </AlertDialog>
+         <Power className="size-4" />
+         {budget.isActive
+            ? translate("dashboard.routes.budgets.status.active")
+            : translate("dashboard.routes.budgets.status.inactive")}
+      </Button>
    );
 
    if (isMobile) {
@@ -419,10 +345,7 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
                </Button>
                <Button
                   className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsEditOpen(true);
-                  }}
+                  onClick={handleEditClick}
                   size="sm"
                   variant="outline"
                >
@@ -433,10 +356,7 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
                </Button>
                <Button
                   className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsDeleteOpen(true);
-                  }}
+                  onClick={handleDeleteClick}
                   size="sm"
                   variant="destructive"
                >
@@ -446,18 +366,6 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
                   )}
                </Button>
             </div>
-
-            <ManageBudgetSheet
-               budget={budget}
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-            />
-            <DeleteBudget
-               asDialog
-               budget={budget}
-               onOpenChange={setIsDeleteOpen}
-               open={isDeleteOpen}
-            />
          </div>
       );
    }
@@ -518,43 +426,17 @@ export function BudgetExpandedContent({ row }: BudgetExpandedContentProps) {
                   )}
                </Link>
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditOpen(true);
-               }}
-               size="sm"
-               variant="outline"
-            >
+            <Button onClick={handleEditClick} size="sm" variant="outline">
                <Edit className="size-4" />
                {translate("dashboard.routes.budgets.list-section.actions.edit")}
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleteOpen(true);
-               }}
-               size="sm"
-               variant="destructive"
-            >
+            <Button onClick={handleDeleteClick} size="sm" variant="destructive">
                <Trash2 className="size-4" />
                {translate(
                   "dashboard.routes.budgets.list-section.actions.delete",
                )}
             </Button>
          </div>
-
-         <ManageBudgetSheet
-            budget={budget}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteBudget
-            asDialog
-            budget={budget}
-            onOpenChange={setIsDeleteOpen}
-            open={isDeleteOpen}
-         />
       </div>
    );
 }

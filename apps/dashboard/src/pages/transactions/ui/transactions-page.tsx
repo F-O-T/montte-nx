@@ -3,19 +3,18 @@ import { Button } from "@packages/ui/components/button";
 import { MonthSelector } from "@packages/ui/components/month-selector";
 import { TimePeriodChips } from "@packages/ui/components/time-period-chips";
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import { DefaultHeader } from "@/default/default-header";
 import {
    TransactionListProvider,
    useTransactionList,
 } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
+import { useSheet } from "@/hooks/use-sheet";
 import { TransactionsListSection } from "./transactions-list-section";
 import { TransactionsStats } from "./transactions-stats";
 
 function TransactionsPageContent() {
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
+   const { openSheet } = useSheet();
    const {
       timePeriod,
       handleTimePeriodChange,
@@ -27,7 +26,13 @@ function TransactionsPageContent() {
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: <ManageTransactionForm />,
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -58,11 +63,6 @@ function TransactionsPageContent() {
 
          <TransactionsStats />
          <TransactionsListSection />
-
-         <ManageTransactionSheet
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
       </main>
    );
 }

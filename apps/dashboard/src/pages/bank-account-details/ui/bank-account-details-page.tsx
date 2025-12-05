@@ -37,14 +37,15 @@ import {
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
-import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
+import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteBankAccount } from "../features/delete-bank-account";
-import { ExportOfxSheet } from "../features/export-ofx-sheet";
-import { ImportOfxSheet } from "../features/import-ofx-sheet";
+import { ExportOfxForm } from "../features/export-ofx-form";
+import { ImportOfxForm } from "../features/import-ofx-form";
+import { useDeleteBankAccount } from "../features/use-delete-bank-account";
 import { BankAccountCharts } from "./bank-account-charts";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
 import { BankAccountStats } from "./bank-account-stats";
@@ -54,12 +55,7 @@ function BankAccountContent() {
    const bankAccountId =
       (params as { bankAccountId?: string }).bankAccountId ?? "";
    const trpc = useTRPC();
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
-   const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
-   const [isDeleteAccountOpen, setIsDeleteAccountOpen] = useState(false);
-   const [isImportOfxOpen, setIsImportOfxOpen] = useState(false);
-   const [isExportOfxOpen, setIsExportOfxOpen] = useState(false);
+   const { openSheet } = useSheet();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
 
@@ -102,6 +98,17 @@ function BankAccountContent() {
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/bank-accounts",
+      });
+   };
+
+   const { deleteBankAccount } = useDeleteBankAccount({
+      bankAccount,
+      onSuccess: handleDeleteSuccess,
+   });
    if (!bankAccountId) {
       return (
          <BankAccountPageError
@@ -115,18 +122,15 @@ function BankAccountContent() {
       return null;
    }
 
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/bank-accounts",
-      });
-   };
-
    return (
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({ children: <ManageTransactionForm /> })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -149,7 +153,15 @@ function BankAccountContent() {
                   </Button>
                </DropdownMenuTrigger>
                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => setIsImportOfxOpen(true)}>
+                  <DropdownMenuItem
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <ImportOfxForm bankAccountId={bankAccountId} />
+                           ),
+                        })
+                     }
+                  >
                      <Upload className="size-4" />
                      Importar OFX
                   </DropdownMenuItem>
@@ -164,14 +176,32 @@ function BankAccountContent() {
                   </Button>
                </DropdownMenuTrigger>
                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => setIsExportOfxOpen(true)}>
+                  <DropdownMenuItem
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <ExportOfxForm
+                                 bankAccountId={bankAccountId}
+                                 endDate={dateRange.endDate}
+                                 startDate={dateRange.startDate}
+                              />
+                           ),
+                        })
+                     }
+                  >
                      <Download className="size-4" />
                      Exportar OFX
                   </DropdownMenuItem>
                </DropdownMenuContent>
             </DropdownMenu>
             <Button
-               onClick={() => setIsEditAccountOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <ManageBankAccountForm bankAccount={bankAccount} />
+                     ),
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -180,7 +210,7 @@ function BankAccountContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteAccountOpen(true)}
+               onClick={deleteBankAccount}
                size="sm"
                variant="outline"
             >
@@ -217,34 +247,6 @@ function BankAccountContent() {
          <RecentTransactions
             bankAccountId={bankAccountId}
             endDate={dateRange.endDate}
-            startDate={dateRange.startDate}
-         />
-
-         <ManageTransactionSheet
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
-         <ManageBankAccountSheet
-            bankAccount={bankAccount}
-            onOpen={isEditAccountOpen}
-            onOpenChange={setIsEditAccountOpen}
-         />
-         <DeleteBankAccount
-            bankAccount={bankAccount}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteAccountOpen}
-            setOpen={setIsDeleteAccountOpen}
-         />
-         <ImportOfxSheet
-            bankAccountId={bankAccountId}
-            isOpen={isImportOfxOpen}
-            onOpenChange={setIsImportOfxOpen}
-         />
-         <ExportOfxSheet
-            bankAccountId={bankAccountId}
-            endDate={dateRange.endDate}
-            isOpen={isExportOfxOpen}
-            onOpenChange={setIsExportOfxOpen}
             startDate={dateRange.startDate}
          />
       </main>

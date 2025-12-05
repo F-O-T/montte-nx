@@ -66,7 +66,7 @@ import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { CompleteBillDialog } from "@/pages/bills/features/complete-bill-dialog";
 import { useDeleteBillDialog } from "@/pages/bills/features/delete-bill-dialog";
-import { ManageBillForm } from "@/pages/bills/features/manage-bill-sheet";
+import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 
 function BillDetailsContent() {
    const params = useParams({ strict: false });

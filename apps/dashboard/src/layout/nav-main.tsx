@@ -24,11 +24,11 @@ import {
    Users,
    Wallet,
 } from "lucide-react";
-import { useState } from "react";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
+import { useSheet } from "@/hooks/use-sheet";
 
 export function NavMain() {
-   const [isTransactionSheetOpen, setIsTransactionSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
    const { pathname, searchStr } = useLocation();
    const { setOpenMobile, state } = useSidebar();
    const isActive = (url: string) => {
@@ -135,7 +135,9 @@ export function NavMain() {
             <SidebarMenu>
                <SidebarMenuButton
                   className="bg-primary text-primary-foreground cursor-pointer"
-                  onClick={() => setIsTransactionSheetOpen(true)}
+                  onClick={() =>
+                     openSheet({ children: <ManageTransactionForm /> })
+                  }
                   tooltip={translate(
                      "dashboard.routes.transactions.features.add-new.title",
                   )}
@@ -236,10 +238,6 @@ export function NavMain() {
                ))}
             </SidebarMenu>
          </SidebarGroupContent>
-         <ManageTransactionSheet
-            onOpen={isTransactionSheetOpen}
-            onOpenChange={setIsTransactionSheetOpen}
-         />
       </SidebarGroup>
    );
 }

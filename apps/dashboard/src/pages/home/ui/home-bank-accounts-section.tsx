@@ -8,11 +8,12 @@ import {
 } from "@packages/ui/components/card";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
 import { CreateBankAccountItem } from "@/features/bank-account/ui/create-bank-account-item";
-import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
+import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
 function HomeBankAccountsErrorFallback() {
@@ -66,7 +67,7 @@ function HomeBankAccountsSkeleton() {
 
 function HomeBankAccountsContent() {
    const trpc = useTRPC();
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
    const { data: bankAccounts = [] } = useSuspenseQuery(
       trpc.bankAccounts.getAll.queryOptions(),
    );
@@ -75,23 +76,19 @@ function HomeBankAccountsContent() {
    const shouldShowCreateTile = visibleAccounts.length < 3;
 
    return (
-      <>
-         <div className="grid gap-4 md:grid-cols-3">
-            {visibleAccounts.map((account) => (
-               <BankAccountItem account={account} key={account.id} solid />
-            ))}
-            {shouldShowCreateTile && (
-               <CreateBankAccountItem
-                  onCreateAccount={() => setIsCreateSheetOpen(true)}
-                  solid
-               />
-            )}
-         </div>
-         <ManageBankAccountSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
-      </>
+      <div className="grid gap-4 md:grid-cols-3">
+         {visibleAccounts.map((account) => (
+            <BankAccountItem account={account} key={account.id} solid />
+         ))}
+         {shouldShowCreateTile && (
+            <CreateBankAccountItem
+               onCreateAccount={() =>
+                  openSheet({ children: <ManageBankAccountForm /> })
+               }
+               solid
+            />
+         )}
+      </div>
    );
 }
 

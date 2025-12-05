@@ -16,8 +16,6 @@ interface InterestTemplateListContextType {
    setCurrentPage: (page: number) => void;
    pageSize: number;
    setPageSize: (size: number) => void;
-   isFilterSheetOpen: boolean;
-   setIsFilterSheetOpen: (open: boolean) => void;
 }
 
 const InterestTemplateListContext = createContext<
@@ -36,7 +34,6 @@ export function InterestTemplateListProvider({
    const [orderDirection, setOrderDirection] = useState<"asc" | "desc">("asc");
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize, setPageSize] = useState(10);
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    const handleSelectionChange = useCallback(
       (id: string, selected: boolean) => {
@@ -72,7 +69,6 @@ export function InterestTemplateListProvider({
       clearSelection,
       currentPage,
       handleSelectionChange,
-      isFilterSheetOpen,
       orderBy,
       orderDirection,
       pageSize,
@@ -80,7 +76,6 @@ export function InterestTemplateListProvider({
       selectedCount: selectedItems.size,
       selectedItems,
       setCurrentPage,
-      setIsFilterSheetOpen,
       setOrderBy,
       setOrderDirection,
       setPageSize,

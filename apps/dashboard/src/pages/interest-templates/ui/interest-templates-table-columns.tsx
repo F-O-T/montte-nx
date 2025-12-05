@@ -31,10 +31,10 @@ import {
    Trash2,
    TrendingUp,
 } from "lucide-react";
-import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { DeleteInterestTemplateDialog } from "../features/delete-interest-template-dialog";
-import { ManageInterestTemplateSheet } from "../features/manage-interest-template-sheet";
+import { useSheet } from "@/hooks/use-sheet";
+import { ManageInterestTemplateForm } from "../features/manage-interest-template-form";
+import { useDeleteInterestTemplate } from "../features/use-delete-interest-template";
 import type { InterestTemplate } from "./interest-templates-page";
 
 function getPenaltyTypeLabel(type: string) {
@@ -76,78 +76,71 @@ function InterestTemplateActionsCell({
 }: {
    template: InterestTemplate;
 }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
-
+   const { deleteInterestTemplate } = useDeleteInterestTemplate({ template });
+   const { openSheet } = useSheet();
    return (
-      <>
-         <div className="flex justify-end gap-1">
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button asChild size="icon" variant="outline">
-                     <Link
-                        params={{
-                           interestTemplateId: template.id,
-                           slug: activeOrganization.slug,
-                        }}
-                        to="/$slug/interest-templates/$interestTemplateId"
-                     >
-                        <Eye className="size-4" />
-                     </Link>
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.interest-templates.list-section.actions.view-details",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsEditOpen(true)}
-                     size="icon"
-                     variant="outline"
+      <div className="flex justify-end gap-1">
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button asChild size="icon" variant="outline">
+                  <Link
+                     params={{
+                        interestTemplateId: template.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/interest-templates/$interestTemplateId"
                   >
-                     <Edit className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.interest-templates.list-section.actions.edit-template",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.interest-templates.list-section.actions.delete-template",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-         </div>
-         <ManageInterestTemplateSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            template={template}
-         />
-         <DeleteInterestTemplateDialog
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-            template={template}
-         />
-      </>
+                     <Eye className="size-4" />
+                  </Link>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.interest-templates.list-section.actions.view-details",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageInterestTemplateForm template={template} />
+                        ),
+                     })
+                  }
+                  size="icon"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.interest-templates.list-section.actions.edit-template",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  className="text-destructive hover:text-destructive"
+                  onClick={deleteInterestTemplate}
+                  size="icon"
+                  variant="outline"
+               >
+                  <Trash2 className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.interest-templates.list-section.actions.delete-template",
+               )}
+            </TooltipContent>
+         </Tooltip>
+      </div>
    );
 }
 
@@ -275,9 +268,9 @@ export function InterestTemplateExpandedContent({
 }: InterestTemplateExpandedContentProps) {
    const template = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
+   const { deleteInterestTemplate } = useDeleteInterestTemplate({ template });
    const isMobile = useIsMobile();
+   const { openSheet } = useSheet();
 
    if (isMobile) {
       return (
@@ -375,7 +368,11 @@ export function InterestTemplateExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsEditOpen(true);
+                     openSheet({
+                        children: (
+                           <ManageInterestTemplateForm template={template} />
+                        ),
+                     });
                   }}
                   size="sm"
                   variant="outline"
@@ -389,7 +386,7 @@ export function InterestTemplateExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsDeleteOpen(true);
+                     deleteInterestTemplate();
                   }}
                   size="sm"
                   variant="destructive"
@@ -400,17 +397,6 @@ export function InterestTemplateExpandedContent({
                   )}
                </Button>
             </div>
-
-            <ManageInterestTemplateSheet
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-               template={template}
-            />
-            <DeleteInterestTemplateDialog
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
-               template={template}
-            />
          </div>
       );
    }
@@ -498,7 +484,11 @@ export function InterestTemplateExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditOpen(true);
+                  openSheet({
+                     children: (
+                        <ManageInterestTemplateForm template={template} />
+                     ),
+                  });
                }}
                size="sm"
                variant="outline"
@@ -511,7 +501,7 @@ export function InterestTemplateExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsDeleteOpen(true);
+                  deleteInterestTemplate();
                }}
                size="sm"
                variant="destructive"
@@ -522,17 +512,6 @@ export function InterestTemplateExpandedContent({
                )}
             </Button>
          </div>
-
-         <ManageInterestTemplateSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            template={template}
-         />
-         <DeleteInterestTemplateDialog
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-            template={template}
-         />
       </div>
    );
 }

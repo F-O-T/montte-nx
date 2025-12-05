@@ -31,13 +31,14 @@ import {
    User,
    Users,
 } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteCounterpartyDialog } from "../../counterparties/features/delete-counterparty-dialog";
-import { ManageCounterpartySheet } from "../../counterparties/features/manage-counterparty-sheet";
+import { ManageCounterpartyForm } from "../../counterparties/features/manage-counterparty-form";
+import { useDeleteCounterparty } from "../../counterparties/features/use-delete-counterparty";
 
 function getTypeIcon(type: string) {
    switch (type) {
@@ -73,12 +74,21 @@ function CounterpartyContent() {
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
 
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
    const { data: counterparty } = useSuspenseQuery(
       trpc.counterparties.getById.queryOptions({ id: counterpartyId }),
    );
+
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/counterparties",
+      });
+   };
+   const { openSheet } = useSheet();
+   const { deleteCounterparty } = useDeleteCounterparty({
+      counterparty: counterparty,
+      onSuccess: handleDeleteSuccess,
+   });
 
    if (!counterpartyId) {
       return (
@@ -92,13 +102,6 @@ function CounterpartyContent() {
    if (!counterparty) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/counterparties",
-      });
-   };
 
    return (
       <main className="space-y-4">
@@ -122,7 +125,13 @@ function CounterpartyContent() {
                )}
             </Badge>
             <Button
-               onClick={() => setIsEditOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <ManageCounterpartyForm counterparty={counterparty} />
+                     ),
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -133,7 +142,7 @@ function CounterpartyContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteOpen(true)}
+               onClick={deleteCounterparty}
                size="sm"
                variant="outline"
             >
@@ -236,18 +245,6 @@ function CounterpartyContent() {
                </Card>
             )}
          </div>
-
-         <ManageCounterpartySheet
-            counterparty={counterparty}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCounterpartyDialog
-            counterparty={counterparty}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
       </main>
    );
 }

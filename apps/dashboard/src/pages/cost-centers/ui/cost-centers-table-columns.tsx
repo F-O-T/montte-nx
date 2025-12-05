@@ -29,16 +29,17 @@ import {
    Hash,
    Trash2,
 } from "lucide-react";
-import { useState } from "react";
+
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import type { CostCenter } from "@/pages/cost-centers/ui/cost-centers-page";
-import { DeleteCostCenter } from "../features/delete-cost-center";
-import { ManageCostCenterSheet } from "../features/manage-cost-center-sheet";
+import { ManageCostCenterForm } from "../features/manage-cost-center-form";
+import { useDeleteCostCenter } from "../features/use-delete-cost-center";
 
 function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
+   const { deleteCostCenter } = useDeleteCostCenter({ costCenter });
+   const { openSheet } = useSheet();
 
    return (
       <>
@@ -66,7 +67,13 @@ function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
             <Tooltip>
                <TooltipTrigger asChild>
                   <Button
-                     onClick={() => setIsEditOpen(true)}
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <ManageCostCenterForm costCenter={costCenter} />
+                           ),
+                        })
+                     }
                      size="icon"
                      variant="outline"
                   >
@@ -83,7 +90,7 @@ function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
                <TooltipTrigger asChild>
                   <Button
                      className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
+                     onClick={deleteCostCenter}
                      size="icon"
                      variant="outline"
                   >
@@ -97,16 +104,6 @@ function CostCenterActionsCell({ costCenter }: { costCenter: CostCenter }) {
                </TooltipContent>
             </Tooltip>
          </div>
-         <ManageCostCenterSheet
-            costCenter={costCenter}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCostCenter
-            costCenter={costCenter}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
       </>
    );
 }
@@ -172,9 +169,9 @@ export function CostCenterExpandedContent({
 }: CostCenterExpandedContentProps) {
    const costCenter = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const isMobile = useIsMobile();
+   const { deleteCostCenter } = useDeleteCostCenter({ costCenter });
+   const { openSheet } = useSheet();
 
    if (isMobile) {
       return (
@@ -253,7 +250,11 @@ export function CostCenterExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsEditOpen(true);
+                     openSheet({
+                        children: (
+                           <ManageCostCenterForm costCenter={costCenter} />
+                        ),
+                     });
                   }}
                   size="sm"
                   variant="outline"
@@ -264,13 +265,10 @@ export function CostCenterExpandedContent({
                   )}
                </Button>
                <Button
-                  className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     setIsDeleteOpen(true);
-                  }}
+                  className="w-full justify-start text-destructive hover:text-destructive"
+                  onClick={deleteCostCenter}
                   size="sm"
-                  variant="destructive"
+                  variant="outline"
                >
                   <Trash2 className="size-4" />
                   {translate(
@@ -278,17 +276,6 @@ export function CostCenterExpandedContent({
                   )}
                </Button>
             </div>
-
-            <ManageCostCenterSheet
-               costCenter={costCenter}
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-            />
-            <DeleteCostCenter
-               costCenter={costCenter}
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
-            />
          </div>
       );
    }
@@ -359,7 +346,9 @@ export function CostCenterExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditOpen(true);
+                  openSheet({
+                     children: <ManageCostCenterForm costCenter={costCenter} />,
+                  });
                }}
                size="sm"
                variant="outline"
@@ -369,31 +358,13 @@ export function CostCenterExpandedContent({
                   "dashboard.routes.cost-centers.list-section.actions.edit-cost-center",
                )}
             </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleteOpen(true);
-               }}
-               size="sm"
-               variant="destructive"
-            >
+            <Button onClick={deleteCostCenter} size="sm" variant="destructive">
                <Trash2 className="size-4" />
                {translate(
                   "dashboard.routes.cost-centers.list-section.actions.delete-cost-center",
                )}
             </Button>
          </div>
-
-         <ManageCostCenterSheet
-            costCenter={costCenter}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCostCenter
-            costCenter={costCenter}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
       </div>
    );
 }

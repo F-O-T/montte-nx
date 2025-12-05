@@ -1,14 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -50,8 +40,10 @@ import {
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
-import { TagFilterSheet } from "../features/tag-filter-sheet";
+import { TagFilterCredenza } from "../features/tag-filter-credenza";
 import { useTagList } from "../features/tag-list-context";
 import { useTagBulkActions } from "../features/use-tag-bulk-actions";
 import {
@@ -126,16 +118,15 @@ function TagsListContent() {
       setCurrentPage,
       pageSize,
       setPageSize,
-      setIsFilterSheetOpen,
-      isFilterSheetOpen,
    } = useTagList();
 
    const { activeOrganization } = useActiveOrganization();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const isMobile = useIsMobile();
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -177,7 +168,6 @@ function TagsListContent() {
    const { deleteSelected, isLoading } = useTagBulkActions({
       onSuccess: () => {
          setRowSelection({});
-         setIsDeleteDialogOpen(false);
       },
    });
 
@@ -189,6 +179,48 @@ function TagsListContent() {
       setSearchTerm("");
       setOrderBy("name");
       setOrderDirection("asc");
+   };
+
+   const handleOpenFilterCredenza = () => {
+      openCredenza({
+         children: (
+            <TagFilterCredenza
+               onOrderByChange={(value) => {
+                  setOrderBy(value);
+                  handleFilterChange();
+               }}
+               onOrderDirectionChange={(value) => {
+                  setOrderDirection(value);
+                  handleFilterChange();
+               }}
+               onPageSizeChange={(value) => {
+                  setPageSize(value);
+                  handleFilterChange();
+               }}
+               orderBy={orderBy}
+               orderDirection={orderDirection}
+               pageSize={pageSize}
+            />
+         ),
+      });
+   };
+
+   const handleBulkDelete = () => {
+      openAlertDialog({
+         actionLabel: translate("dashboard.routes.tags.bulk-actions.delete"),
+         description: translate(
+            "dashboard.routes.tags.bulk-actions.delete-confirm-description",
+            { count: selectedIds.length },
+         ),
+         onAction: async () => {
+            await deleteSelected(selectedIds);
+         },
+         title: translate(
+            "dashboard.routes.tags.bulk-actions.delete-confirm-title",
+            { count: selectedIds.length },
+         ),
+         variant: "destructive",
+      });
    };
 
    return (
@@ -213,7 +245,7 @@ function TagsListContent() {
 
                   {isMobile && (
                      <Button
-                        onClick={() => setIsFilterSheetOpen(true)}
+                        onClick={handleOpenFilterCredenza}
                         size="icon"
                         variant="outline"
                      >
@@ -333,68 +365,12 @@ function TagsListContent() {
             <SelectionActionButton
                disabled={isLoading}
                icon={<Trash2 className="size-3.5" />}
-               onClick={() => setIsDeleteDialogOpen(true)}
+               onClick={handleBulkDelete}
                variant="destructive"
             >
                {translate("dashboard.routes.tags.bulk-actions.delete")}
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <AlertDialog
-            onOpenChange={setIsDeleteDialogOpen}
-            open={isDeleteDialogOpen}
-         >
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     {translate(
-                        "dashboard.routes.tags.bulk-actions.delete-confirm-title",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     {translate(
-                        "dashboard.routes.tags.bulk-actions.delete-confirm-description",
-                        { count: selectedIds.length },
-                     )}
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isLoading}>
-                     {translate("common.actions.cancel")}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                     disabled={isLoading}
-                     onClick={() => {
-                        deleteSelected(selectedIds);
-                     }}
-                  >
-                     {translate("dashboard.routes.tags.bulk-actions.delete")}
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-
-         <TagFilterSheet
-            isOpen={isFilterSheetOpen}
-            onOpenChange={setIsFilterSheetOpen}
-            onOrderByChange={(value) => {
-               setOrderBy(value);
-               handleFilterChange();
-            }}
-            onOrderDirectionChange={(value) => {
-               setOrderDirection(value);
-               handleFilterChange();
-            }}
-            onPageSizeChange={(value) => {
-               setPageSize(value);
-               handleFilterChange();
-            }}
-            orderBy={orderBy}
-            orderDirection={orderDirection}
-            pageSize={pageSize}
-         />
       </>
    );
 }

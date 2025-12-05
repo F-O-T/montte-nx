@@ -34,8 +34,6 @@ interface BillListContextType {
    setStatusFilter: (filter: string) => void;
    typeFilter: string;
    setTypeFilter: (filter: string) => void;
-   isFilterSheetOpen: boolean;
-   setIsFilterSheetOpen: (open: boolean) => void;
    // Time period
    timePeriod: TimePeriod | null;
    setTimePeriod: (period: TimePeriod | null) => void;
@@ -61,7 +59,6 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
    const [categoryFilter, setCategoryFilter] = useState("all");
    const [statusFilter, setStatusFilter] = useState("all");
    const [typeFilter, setTypeFilter] = useState("all");
-   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
    // Time period state
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
@@ -134,7 +131,6 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
       handleMonthChange,
       handleSelectionChange,
       handleTimePeriodChange,
-      isFilterSheetOpen,
       pageSize,
       searchTerm,
       selectAll,
@@ -145,7 +141,6 @@ export function BillListProvider({ children }: { children: React.ReactNode }) {
       setCurrentFilterType,
       setCurrentPage,
       setEndDate,
-      setIsFilterSheetOpen,
       setPageSize,
       setSearchTerm,
       setSelectedMonth,

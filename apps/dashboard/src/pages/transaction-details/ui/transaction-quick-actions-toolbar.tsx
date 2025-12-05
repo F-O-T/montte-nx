@@ -15,11 +15,11 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
+import { useDeleteTransaction } from "@/features/transaction/ui/use-delete-transaction";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteTransactionDialog } from "../features/delete-transaction-dialog";
 
 export function TransactionQuickActionsToolbar({
    transactionId,
@@ -29,8 +29,7 @@ export function TransactionQuickActionsToolbar({
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const { data: transaction } = useSuspenseQuery(
       trpc.transactions.getById.queryOptions({ id: transactionId }),
@@ -43,6 +42,11 @@ export function TransactionQuickActionsToolbar({
       });
    };
 
+   const { deleteTransaction } = useDeleteTransaction({
+      onSuccess: handleBack,
+      transaction,
+   });
+
    const quickActions = [
       {
          icon: <ArrowLeft className="size-4" />,
@@ -53,7 +57,10 @@ export function TransactionQuickActionsToolbar({
       {
          icon: <Edit className="size-4" />,
          label: translate("dashboard.routes.transactions.features.edit.title"),
-         onClick: () => setIsEditSheetOpen(true),
+         onClick: () =>
+            openSheet({
+               children: <ManageTransactionForm transaction={transaction} />,
+            }),
          variant: "outline" as const,
       },
       {
@@ -61,7 +68,7 @@ export function TransactionQuickActionsToolbar({
          label: translate(
             "dashboard.routes.transactions.list-section.actions.delete",
          ),
-         onClick: () => setIsDeleteDialogOpen(true),
+         onClick: deleteTransaction,
          variant: "destructive" as const,
       },
    ];
@@ -103,18 +110,6 @@ export function TransactionQuickActionsToolbar({
                </div>
             </ItemActions>
          </Item>
-
-         <ManageTransactionSheet
-            onOpen={isEditSheetOpen}
-            onOpenChange={setIsEditSheetOpen}
-            transaction={transaction}
-         />
-         <DeleteTransactionDialog
-            onDeleted={handleBack}
-            open={isDeleteDialogOpen}
-            setOpen={setIsDeleteDialogOpen}
-            transaction={transaction}
-         />
       </>
    );
 }

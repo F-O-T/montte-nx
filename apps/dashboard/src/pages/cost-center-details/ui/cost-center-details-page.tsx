@@ -23,11 +23,12 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageCostCenterSheet } from "../../cost-centers/features/manage-cost-center-sheet";
-import { DeleteCostCenterDialog } from "../features/delete-cost-center-dialog";
+import { ManageCostCenterForm } from "../../cost-centers/features/manage-cost-center-form";
+import { useDeleteCostCenter } from "../../cost-centers/features/use-delete-cost-center";
 import { CostCenterCharts } from "./cost-center-charts";
 import { CostCenterStats } from "./cost-center-stats";
 import { CostCenterTransactions } from "./cost-center-transactions-section";
@@ -39,11 +40,7 @@ function CostCenterContent() {
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
-   const [isEditCostCenterOpen, setIsEditCostCenterOpen] = useState(false);
-   const [isDeleteCostCenterOpen, setIsDeleteCostCenterOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -81,6 +78,17 @@ function CostCenterContent() {
       trpc.costCenters.getById.queryOptions({ id: costCenterId }),
    );
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/cost-centers",
+      });
+   };
+
+   const { deleteCostCenter } = useDeleteCostCenter({
+      costCenter,
+      onSuccess: handleDeleteSuccess,
+   });
    if (!costCenterId) {
       return (
          <CostCenterPageError
@@ -94,18 +102,21 @@ function CostCenterContent() {
       return null;
    }
 
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/cost-centers",
-      });
-   };
-
    return (
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageTransactionForm
+                              defaultCostCenterId={costCenterId}
+                           />
+                        ),
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -118,7 +129,11 @@ function CostCenterContent() {
 
          <div className="flex flex-wrap items-center gap-2">
             <Button
-               onClick={() => setIsEditCostCenterOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <ManageCostCenterForm costCenter={costCenter} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -127,7 +142,7 @@ function CostCenterContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteCostCenterOpen(true)}
+               onClick={deleteCostCenter}
                size="sm"
                variant="outline"
             >
@@ -164,23 +179,6 @@ function CostCenterContent() {
             costCenterId={costCenterId}
             endDate={dateRange.endDate}
             startDate={dateRange.startDate}
-         />
-
-         <ManageTransactionSheet
-            defaultCostCenterId={costCenterId}
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
-         <ManageCostCenterSheet
-            costCenter={costCenter}
-            onOpen={isEditCostCenterOpen}
-            onOpenChange={setIsEditCostCenterOpen}
-         />
-         <DeleteCostCenterDialog
-            costCenter={costCenter}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteCostCenterOpen}
-            setOpen={setIsDeleteCostCenterOpen}
          />
       </main>
    );

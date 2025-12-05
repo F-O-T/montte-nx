@@ -12,17 +12,20 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { MailPlus } from "lucide-react";
-import { useState } from "react";
-import { SendInvitationSheet } from "@/features/organization-actions/ui/send-invitation-sheet";
+import { SendInvitationForm } from "@/features/organization-actions/ui/send-invitation-form";
+import { useSheet } from "@/hooks/use-sheet";
 
 export function InvitesQuickActionsToolbar() {
-   const [isInvitationSheetOpen, setIsInvitationSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const quickActions = [
       {
          icon: <MailPlus className="size-4" />,
          label: "Send New Invitation",
-         onClick: () => setIsInvitationSheetOpen(true),
+         onClick: () =>
+            openSheet({
+               children: <SendInvitationForm />,
+            }),
          variant: "default" as const,
       },
    ];
@@ -57,11 +60,6 @@ export function InvitesQuickActionsToolbar() {
                </div>
             </ItemActions>
          </Item>
-
-         <SendInvitationSheet
-            onOpenChange={setIsInvitationSheetOpen}
-            open={isInvitationSheetOpen}
-         />
       </>
    );
 }

@@ -14,21 +14,21 @@ import {
    Plus,
    RotateCcw,
 } from "lucide-react";
-import { useState } from "react";
 import { DefaultHeader } from "@/default/default-header";
+import { useSheet } from "@/hooks/use-sheet";
 import {
    BudgetListProvider,
    type BudgetPeriodType,
    useBudgetList,
 } from "../features/budget-list-context";
-import { ManageBudgetSheet } from "../features/manage-budget-sheet";
+import { ManageBudgetForm } from "../features/manage-budget-form";
 import { BudgetsListSection } from "./budgets-list-section";
 import { BudgetsStats } from "./budgets-stats";
 
 export type Budget = RouterOutput["budgets"]["getAllPaginated"]["budgets"][0];
 
 function BudgetsPageContent() {
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
    const { periodType, setPeriodType } = useBudgetList();
 
    const periodChips = [
@@ -68,7 +68,9 @@ function BudgetsPageContent() {
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateSheetOpen(true)}>
+               <Button
+                  onClick={() => openSheet({ children: <ManageBudgetForm /> })}
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.budgets.actions-toolbar.actions.add-new",
@@ -111,10 +113,6 @@ function BudgetsPageContent() {
 
          <BudgetsStats />
          <BudgetsListSection />
-         <ManageBudgetSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
       </main>
    );
 }

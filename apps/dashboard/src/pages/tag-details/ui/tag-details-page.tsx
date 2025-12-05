@@ -23,11 +23,12 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageTagSheet } from "../../tags/features/manage-tag-sheet";
-import { DeleteTagDialog } from "../features/delete-tag-dialog";
+import { ManageTagForm } from "../../tags/features/manage-tag-form";
+import { useDeleteTag } from "../../tags/features/use-delete-tag";
 import { TagCharts } from "./tag-charts";
 import { TagStats } from "./tag-stats";
 import { TagTransactions } from "./tag-transactions-section";
@@ -38,11 +39,7 @@ function TagContent() {
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
-   const [isEditTagOpen, setIsEditTagOpen] = useState(false);
-   const [isDeleteTagOpen, setIsDeleteTagOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -80,6 +77,18 @@ function TagContent() {
       trpc.tags.getById.queryOptions({ id: tagId }),
    );
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/tags",
+      });
+   };
+
+   const { deleteTag } = useDeleteTag({
+      onSuccess: handleDeleteSuccess,
+      tag: tag!,
+   });
+
    if (!tagId) {
       return (
          <TagPageError
@@ -93,18 +102,19 @@ function TagContent() {
       return null;
    }
 
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/tags",
-      });
-   };
-
    return (
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageTransactionForm defaultTagIds={[tagId]} />
+                        ),
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -117,7 +127,9 @@ function TagContent() {
 
          <div className="flex flex-wrap items-center gap-2">
             <Button
-               onClick={() => setIsEditTagOpen(true)}
+               onClick={() =>
+                  openSheet({ children: <ManageTagForm tag={tag} /> })
+               }
                size="sm"
                variant="outline"
             >
@@ -126,7 +138,7 @@ function TagContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
-               onClick={() => setIsDeleteTagOpen(true)}
+               onClick={() => deleteTag()}
                size="sm"
                variant="outline"
             >
@@ -163,23 +175,6 @@ function TagContent() {
             endDate={dateRange.endDate}
             startDate={dateRange.startDate}
             tagId={tagId}
-         />
-
-         <ManageTransactionSheet
-            defaultTagIds={[tagId]}
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
-         <ManageTagSheet
-            onOpen={isEditTagOpen}
-            onOpenChange={setIsEditTagOpen}
-            tag={tag}
-         />
-         <DeleteTagDialog
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteTagOpen}
-            setOpen={setIsDeleteTagOpen}
-            tag={tag}
          />
       </main>
    );

@@ -17,7 +17,7 @@ import { FilePlus } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useSheet } from "@/hooks/use-sheet";
 import { useBillList } from "../features/bill-list-context";
-import { ManageBillForm } from "../features/manage-bill-sheet";
+import { ManageBillForm } from "../features/manage-bill-form";
 
 type BillsQuickActionsToolbarProps = {
    type?: "payable" | "receivable";

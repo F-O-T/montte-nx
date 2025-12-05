@@ -1,15 +1,4 @@
 import { translate } from "@packages/localization";
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-   AlertDialogTrigger,
-} from "@packages/ui/components/alert-dialog";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -32,7 +21,7 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
 import { endOfMonth, startOfMonth } from "date-fns";
 import {
@@ -47,14 +36,16 @@ import {
 } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { DeleteBudget } from "@/pages/budgets/features/delete-budget";
-import { ManageBudgetSheet } from "@/pages/budgets/features/manage-budget-sheet";
+import { ManageBudgetForm } from "@/pages/budgets/features/manage-budget-form";
+import { useDeleteBudget } from "@/pages/budgets/features/use-delete-budget";
+import { useToggleBudgetStatus } from "@/pages/budgets/features/use-toggle-budget-status";
+import { useToggleRollover } from "@/pages/budgets/features/use-toggle-rollover";
 import { BudgetDetailsStats } from "./budget-details-stats";
 import { BudgetInformationSection } from "./budget-information-section";
 import { BudgetProgressSection } from "./budget-progress-section";
@@ -66,11 +57,7 @@ function BudgetContent() {
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -108,29 +95,28 @@ function BudgetContent() {
       trpc.budgets.getById.queryOptions({ id: budgetId }),
    );
 
-   const updateBudgetMutation = useMutation(
-      trpc.budgets.update.mutationOptions({
-         onError: () => {
-            toast.error(
-               translate("dashboard.routes.budgets.notifications.error"),
-            );
-         },
-      }),
+   const budgetForList = {
+      ...budget,
+      periods: budget?.currentPeriod ? [budget.currentPeriod] : [],
+   };
+
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/budgets",
+      });
+   };
+
+   const { deleteBudget } = useDeleteBudget({
+      budget: budgetForList,
+      onSuccess: handleDeleteSuccess,
+   });
+   const { isUpdating: isStatusUpdating, toggleStatus } = useToggleBudgetStatus(
+      { budget: budgetForList },
    );
-
-   const handleToggleActive = () => {
-      updateBudgetMutation.mutate({
-         data: { isActive: !budget.isActive },
-         id: budget.id,
-      });
-   };
-
-   const handleToggleRollover = () => {
-      updateBudgetMutation.mutate({
-         data: { rollover: !budget.rollover },
-         id: budget.id,
-      });
-   };
+   const { isUpdating: isRolloverUpdating, toggleRollover } = useToggleRollover(
+      { budget },
+   );
 
    if (!budgetId) {
       return (
@@ -144,18 +130,6 @@ function BudgetContent() {
    if (!budget) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/budgets",
-      });
-   };
-
-   const budgetForList = {
-      ...budget,
-      periods: budget.currentPeriod ? [budget.currentPeriod] : [],
-   };
 
    const regimeLabels: Record<string, string> = {
       accrual: translate("dashboard.routes.budgets.form.regime.accrual"),
@@ -184,7 +158,19 @@ function BudgetContent() {
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageTransactionForm
+                              defaultCategoryIds={defaultCategoryIds}
+                              defaultCostCenterId={defaultCostCenterId}
+                              defaultTagIds={defaultTagIds}
+                           />
+                        ),
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -200,16 +186,18 @@ function BudgetContent() {
          <div className="flex flex-wrap items-center gap-4">
             <div className="flex flex-wrap items-center gap-2">
                <Button
-                  onClick={() => setIsEditOpen(true)}
-                  size="sm"
-                  variant="outline"
+                  onClick={() =>
+                     openSheet({
+                        children: <ManageBudgetForm />,
+                     })
+                  }
                >
                   <Edit className="size-4" />
                   {translate("dashboard.routes.budgets.details.actions.edit")}
                </Button>
                <Button
                   className="text-destructive hover:text-destructive"
-                  onClick={() => setIsDeleteOpen(true)}
+                  onClick={deleteBudget}
                   size="sm"
                   variant="outline"
                >
@@ -221,127 +209,45 @@ function BudgetContent() {
             <div className="h-6 w-px bg-border hidden sm:block" />
 
             <div className="flex flex-wrap items-center gap-2">
-               <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                     <Button
-                        className="gap-2"
-                        disabled={updateBudgetMutation.isPending}
-                        size="sm"
-                        variant="outline"
-                     >
-                        <CircleDot className="size-4" />
-                        {translate(
-                           "dashboard.routes.budgets.details.information.status",
-                        )}
-                        <Badge
-                           variant={budget.isActive ? "default" : "secondary"}
-                        >
-                           {budget.isActive
-                              ? translate(
-                                   "dashboard.routes.budgets.status.active",
-                                )
-                              : translate(
-                                   "dashboard.routes.budgets.status.inactive",
-                                )}
-                        </Badge>
-                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                           {budget.isActive
-                              ? translate(
-                                   "dashboard.routes.budgets.status-toggle.deactivate-title",
-                                )
-                              : translate(
-                                   "dashboard.routes.budgets.status-toggle.activate-title",
-                                )}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                           {budget.isActive
-                              ? translate(
-                                   "dashboard.routes.budgets.status-toggle.deactivate-description",
-                                )
-                              : translate(
-                                   "dashboard.routes.budgets.status-toggle.activate-description",
-                                )}
-                        </AlertDialogDescription>
-                     </AlertDialogHeader>
-                     <AlertDialogFooter>
-                        <AlertDialogCancel>
-                           {translate(
-                              "dashboard.routes.budgets.status-toggle.cancel",
-                           )}
-                        </AlertDialogCancel>
-                        <AlertDialogAction onClick={handleToggleActive}>
-                           {translate(
-                              "dashboard.routes.budgets.status-toggle.confirm",
-                           )}
-                        </AlertDialogAction>
-                     </AlertDialogFooter>
-                  </AlertDialogContent>
-               </AlertDialog>
+               <Button
+                  className="gap-2"
+                  disabled={isStatusUpdating}
+                  onClick={toggleStatus}
+                  size="sm"
+                  variant="outline"
+               >
+                  <CircleDot className="size-4" />
+                  {translate(
+                     "dashboard.routes.budgets.details.information.status",
+                  )}
+                  <Badge variant={budget.isActive ? "default" : "secondary"}>
+                     {budget.isActive
+                        ? translate("dashboard.routes.budgets.status.active")
+                        : translate("dashboard.routes.budgets.status.inactive")}
+                  </Badge>
+               </Button>
 
-               <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                     <Button
-                        className="gap-2"
-                        disabled={updateBudgetMutation.isPending}
-                        size="sm"
-                        variant="outline"
-                     >
-                        <RefreshCw className="size-4" />
-                        {translate(
-                           "dashboard.routes.budgets.details.information.rollover",
-                        )}
-                        <Badge
-                           variant={budget.rollover ? "default" : "secondary"}
-                        >
-                           {budget.rollover
-                              ? translate(
-                                   "dashboard.routes.budgets.details.information.rollover-enabled",
-                                )
-                              : translate(
-                                   "dashboard.routes.budgets.details.information.rollover-disabled",
-                                )}
-                        </Badge>
-                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                     <AlertDialogHeader>
-                        <AlertDialogTitle>
-                           {budget.rollover
-                              ? translate(
-                                   "dashboard.routes.budgets.rollover-toggle.disable-title",
-                                )
-                              : translate(
-                                   "dashboard.routes.budgets.rollover-toggle.enable-title",
-                                )}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                           {budget.rollover
-                              ? translate(
-                                   "dashboard.routes.budgets.rollover-toggle.disable-description",
-                                )
-                              : translate(
-                                   "dashboard.routes.budgets.rollover-toggle.enable-description",
-                                )}
-                        </AlertDialogDescription>
-                     </AlertDialogHeader>
-                     <AlertDialogFooter>
-                        <AlertDialogCancel>
-                           {translate(
-                              "dashboard.routes.budgets.rollover-toggle.cancel",
-                           )}
-                        </AlertDialogCancel>
-                        <AlertDialogAction onClick={handleToggleRollover}>
-                           {translate(
-                              "dashboard.routes.budgets.rollover-toggle.confirm",
-                           )}
-                        </AlertDialogAction>
-                     </AlertDialogFooter>
-                  </AlertDialogContent>
-               </AlertDialog>
+               <Button
+                  className="gap-2"
+                  disabled={isRolloverUpdating}
+                  onClick={toggleRollover}
+                  size="sm"
+                  variant="outline"
+               >
+                  <RefreshCw className="size-4" />
+                  {translate(
+                     "dashboard.routes.budgets.details.information.rollover",
+                  )}
+                  <Badge variant={budget.rollover ? "default" : "secondary"}>
+                     {budget.rollover
+                        ? translate(
+                             "dashboard.routes.budgets.details.information.rollover-enabled",
+                          )
+                        : translate(
+                             "dashboard.routes.budgets.details.information.rollover-disabled",
+                          )}
+                  </Badge>
+               </Button>
 
                <Tooltip>
                   <TooltipTrigger asChild>
@@ -385,26 +291,6 @@ function BudgetContent() {
             startDate={dateRange.startDate}
          />
          <BudgetInformationSection budget={budget} />
-
-         <ManageTransactionSheet
-            defaultCategoryIds={defaultCategoryIds}
-            defaultCostCenterId={defaultCostCenterId}
-            defaultTagIds={defaultTagIds}
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
-         <ManageBudgetSheet
-            budget={budgetForList}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteBudget
-            asDialog
-            budget={budgetForList}
-            onOpenChange={setIsDeleteOpen}
-            onSuccess={handleDeleteSuccess}
-            open={isDeleteOpen}
-         />
       </main>
    );
 }

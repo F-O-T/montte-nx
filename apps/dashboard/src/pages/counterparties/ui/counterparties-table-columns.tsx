@@ -32,11 +32,11 @@ import {
    User,
    Users,
 } from "lucide-react";
-import { useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import type { Counterparty } from "@/pages/counterparties/ui/counterparties-page";
-import { DeleteCounterpartyDialog } from "../features/delete-counterparty-dialog";
-import { ManageCounterpartySheet } from "../features/manage-counterparty-sheet";
+import { ManageCounterpartyForm } from "../features/manage-counterparty-form";
+import { useDeleteCounterparty } from "../features/use-delete-counterparty";
 
 function getTypeIcon(type: string) {
    switch (type) {
@@ -69,78 +69,73 @@ function CounterpartyActionsCell({
 }: {
    counterparty: Counterparty;
 }) {
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const { activeOrganization } = useActiveOrganization();
-
+   const { deleteCounterparty } = useDeleteCounterparty({ counterparty });
+   const { openSheet } = useSheet();
    return (
-      <>
-         <div className="flex justify-end gap-1">
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button asChild size="icon" variant="outline">
-                     <Link
-                        params={{
-                           counterpartyId: counterparty.id,
-                           slug: activeOrganization.slug,
-                        }}
-                        to="/$slug/counterparties/$counterpartyId"
-                     >
-                        <Eye className="size-4" />
-                     </Link>
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.counterparties.list-section.actions.view-details",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() => setIsEditOpen(true)}
-                     size="icon"
-                     variant="outline"
+      <div className="flex justify-end gap-1">
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button asChild size="icon" variant="outline">
+                  <Link
+                     params={{
+                        counterpartyId: counterparty.id,
+                        slug: activeOrganization.slug,
+                     }}
+                     to="/$slug/counterparties/$counterpartyId"
                   >
-                     <Edit className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.counterparties.list-section.actions.edit-counterparty",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     onClick={() => setIsDeleteOpen(true)}
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate(
-                     "dashboard.routes.counterparties.list-section.actions.delete-counterparty",
-                  )}
-               </TooltipContent>
-            </Tooltip>
-         </div>
-         <ManageCounterpartySheet
-            counterparty={counterparty}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCounterpartyDialog
-            counterparty={counterparty}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
-      </>
+                     <Eye className="size-4" />
+                  </Link>
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.counterparties.list-section.actions.view-details",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageCounterpartyForm
+                              counterparty={counterparty}
+                           />
+                        ),
+                     })
+                  }
+                  size="icon"
+                  variant="outline"
+               >
+                  <Edit className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.counterparties.list-section.actions.edit-counterparty",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button
+                  className="text-destructive hover:text-destructive"
+                  onClick={deleteCounterparty}
+                  size="icon"
+                  variant="outline"
+               >
+                  <Trash2 className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.counterparties.list-section.actions.delete-counterparty",
+               )}
+            </TooltipContent>
+         </Tooltip>
+      </div>
    );
 }
 
@@ -230,10 +225,9 @@ export function CounterpartyExpandedContent({
 }: CounterpartyExpandedContentProps) {
    const counterparty = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-   const [isEditOpen, setIsEditOpen] = useState(false);
    const isMobile = useIsMobile();
-
+   const { deleteCounterparty } = useDeleteCounterparty({ counterparty });
+   const { openSheet } = useSheet();
    if (isMobile) {
       return (
          <div className="p-4 space-y-4">
@@ -336,7 +330,13 @@ export function CounterpartyExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsEditOpen(true);
+                     openSheet({
+                        children: (
+                           <ManageCounterpartyForm
+                              counterparty={counterparty}
+                           />
+                        ),
+                     });
                   }}
                   size="sm"
                   variant="outline"
@@ -350,7 +350,7 @@ export function CounterpartyExpandedContent({
                   className="w-full justify-start"
                   onClick={(e) => {
                      e.stopPropagation();
-                     setIsDeleteOpen(true);
+                     deleteCounterparty();
                   }}
                   size="sm"
                   variant="destructive"
@@ -361,17 +361,6 @@ export function CounterpartyExpandedContent({
                   )}
                </Button>
             </div>
-
-            <ManageCounterpartySheet
-               counterparty={counterparty}
-               onOpen={isEditOpen}
-               onOpenChange={setIsEditOpen}
-            />
-            <DeleteCounterpartyDialog
-               counterparty={counterparty}
-               open={isDeleteOpen}
-               setOpen={setIsDeleteOpen}
-            />
          </div>
       );
    }
@@ -469,7 +458,11 @@ export function CounterpartyExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditOpen(true);
+                  openSheet({
+                     children: (
+                        <ManageCounterpartyForm counterparty={counterparty} />
+                     ),
+                  });
                }}
                size="sm"
                variant="outline"
@@ -482,7 +475,7 @@ export function CounterpartyExpandedContent({
             <Button
                onClick={(e) => {
                   e.stopPropagation();
-                  setIsDeleteOpen(true);
+                  deleteCounterparty();
                }}
                size="sm"
                variant="destructive"
@@ -493,17 +486,6 @@ export function CounterpartyExpandedContent({
                )}
             </Button>
          </div>
-
-         <ManageCounterpartySheet
-            counterparty={counterparty}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
-         <DeleteCounterpartyDialog
-            counterparty={counterparty}
-            open={isDeleteOpen}
-            setOpen={setIsDeleteOpen}
-         />
       </div>
    );
 }
