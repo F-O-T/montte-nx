@@ -13,7 +13,7 @@ export const createBillSchema = z.object({
    installmentNumber: z.number().optional(),
    interestTemplateId: z.string().optional(),
    isRecurring: z.boolean().optional().default(false),
-   issueDate: z.string().optional(),
+   issueDate: z.date().optional(),
    notes: z.string().optional(),
    originalAmount: z.number().optional(),
    recurrencePattern: z
