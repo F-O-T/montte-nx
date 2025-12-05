@@ -152,6 +152,16 @@ export function ManageBillSheet({
            counterpartyId: bill.counterpartyId || "",
            description: bill.description,
            dueDate: bill.dueDate ? new Date(bill.dueDate) : new Date(),
+           hasInstallments: false,
+           installmentAmountType: "equal" as "equal" | "custom",
+           installmentCount: 2,
+           installmentCustomAmounts: [] as number[],
+           installmentCustomDays: 30,
+           installmentIntervalType: "monthly" as
+              | "monthly"
+              | "biweekly"
+              | "weekly"
+              | "custom",
            interestTemplateId: bill.interestTemplateId || "",
            isRecurring: bill.isRecurring,
            issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
@@ -160,16 +170,6 @@ export function ManageBillSheet({
               | RecurrencePattern
               | undefined,
            type: bill.type as "expense" | "income",
-           hasInstallments: false,
-           installmentCount: 2,
-           installmentIntervalType: "monthly" as
-              | "monthly"
-              | "biweekly"
-              | "weekly"
-              | "custom",
-           installmentCustomDays: 30,
-           installmentAmountType: "equal" as "equal" | "custom",
-           installmentCustomAmounts: [] as number[],
         }
       : {
            amount: 0,
@@ -178,6 +178,16 @@ export function ManageBillSheet({
            counterpartyId: "",
            description: "",
            dueDate: new Date(),
+           hasInstallments: false,
+           installmentAmountType: "equal" as "equal" | "custom",
+           installmentCount: 2,
+           installmentCustomAmounts: [] as number[],
+           installmentCustomDays: 30,
+           installmentIntervalType: "monthly" as
+              | "monthly"
+              | "biweekly"
+              | "weekly"
+              | "custom",
            interestTemplateId: "",
            isRecurring: false,
            issueDate: undefined as Date | undefined,
@@ -188,16 +198,6 @@ export function ManageBillSheet({
               : currentFilterType === "receivable"
                 ? "income"
                 : "expense") as "expense" | "income",
-           hasInstallments: false,
-           installmentCount: 2,
-           installmentIntervalType: "monthly" as
-              | "monthly"
-              | "biweekly"
-              | "weekly"
-              | "custom",
-           installmentCustomDays: 30,
-           installmentAmountType: "equal" as "equal" | "custom",
-           installmentCustomAmounts: [] as number[],
         };
 
    const form = useForm({

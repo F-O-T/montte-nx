@@ -3,6 +3,7 @@
    "back": "Voltar",
    "cancel": "Cancelar",
    "clear-filters": "Limpar filtros",
+   "close": "Fechar",
    "edit": "Editar",
    "first-page": "Primeira página",
    "last-page": "Última página",
@@ -17,6 +18,5 @@
    "save": "Salvar",
    "skip": "Pular",
    "step-indicator": "Passo {{current}} de {{total}}",
-   "submit": "Enviar",
-   "close": "Fechar"
+   "submit": "Enviar"
 }

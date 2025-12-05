@@ -136,8 +136,8 @@ function BillActionsCell({ bill }: { bill: Bill }) {
          />
          <DeleteBillDialog
             bill={bill}
-            open={isDeleteOpen}
             onOpenChange={setIsDeleteOpen}
+            open={isDeleteOpen}
          />
       </>
    );
@@ -302,27 +302,27 @@ function getBillStatus(bill: Bill) {
 
    if (isCompleted) {
       return {
+         className: "border-green-500 text-green-500",
          icon: CheckCircle2,
          label: translate("dashboard.routes.bills.status.paid"),
          variant: "outline" as const,
-         className: "border-green-500 text-green-500",
       };
    }
 
    if (isOverdue) {
       return {
+         className: "",
          icon: AlertCircle,
          label: translate("dashboard.routes.bills.status.overdue"),
          variant: "destructive" as const,
-         className: "",
       };
    }
 
    return {
+      className: "",
       icon: Clock,
       label: translate("dashboard.routes.bills.status.pending"),
       variant: "secondary" as const,
-      className: "",
    };
 }
 
@@ -635,8 +635,8 @@ export function BillExpandedContent({
             />
             <DeleteBillDialog
                bill={bill}
-               open={isDeleteOpen}
                onOpenChange={setIsDeleteOpen}
+               open={isDeleteOpen}
             />
          </div>
       );
@@ -795,8 +795,8 @@ export function BillExpandedContent({
          />
          <DeleteBillDialog
             bill={bill}
-            open={isDeleteOpen}
             onOpenChange={setIsDeleteOpen}
+            open={isDeleteOpen}
          />
       </div>
    );

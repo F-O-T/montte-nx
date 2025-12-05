@@ -13,10 +13,10 @@ import budgetsPtBr from "./dashboard/routes/budgets.json";
 import categoriesPtBr from "./dashboard/routes/categories.json";
 import costCentersPtBr from "./dashboard/routes/cost-centers.json";
 import counterpartiesPtBr from "./dashboard/routes/counterparties.json";
-import interestTemplatesPtBr from "./dashboard/routes/interest-templates.json";
 import emailVerificationPtBr from "./dashboard/routes/email-verification.json";
 import forgotPasswordPtBr from "./dashboard/routes/forgot-password.json";
 import homePagePtBr from "./dashboard/routes/home.json";
+import interestTemplatesPtBr from "./dashboard/routes/interest-templates.json";
 import onboardingPtBr from "./dashboard/routes/onboarding.json";
 import organizationPtBr from "./dashboard/routes/organization.json";
 import profilePtBr from "./dashboard/routes/profile.json";
@@ -46,8 +46,8 @@ const resources = {
             bills: billsPtBr,
             budgets: budgetsPtBr,
             categories: categoriesPtBr,
-            counterparties: counterpartiesPtBr,
             "cost-centers": costCentersPtBr,
+            counterparties: counterpartiesPtBr,
             "email-verification": emailVerificationPtBr,
             "forgot-password": forgotPasswordPtBr,
             home: homePagePtBr,

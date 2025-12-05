@@ -110,11 +110,11 @@ function BillDetailsContent() {
 
    const addAttachmentMutation = useMutation(
       trpc.bills.addAttachment.mutationOptions({
-         onSuccess: () => {
-            refetchAttachments();
+         onError: () => {
             setUploadingFile(false);
          },
-         onError: () => {
+         onSuccess: () => {
+            refetchAttachments();
             setUploadingFile(false);
          },
       }),
@@ -122,11 +122,11 @@ function BillDetailsContent() {
 
    const deleteAttachmentMutation = useMutation(
       trpc.bills.deleteAttachment.mutationOptions({
-         onSuccess: () => {
-            refetchAttachments();
+         onError: () => {
             setDeletingAttachmentId(null);
          },
-         onError: () => {
+         onSuccess: () => {
+            refetchAttachments();
             setDeletingAttachmentId(null);
          },
       }),
@@ -935,9 +935,9 @@ function BillDetailsContent() {
          />
          <DeleteBillDialog
             bill={bill}
+            onOpenChange={setIsDeleteOpen}
             onSuccess={handleDeleteSuccess}
             open={isDeleteOpen}
-            onOpenChange={setIsDeleteOpen}
          />
       </main>
    );

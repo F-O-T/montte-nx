@@ -43,6 +43,7 @@ import { protectedProcedure, router } from "../trpc";
 
 const updateBillSchema = z.object({
    amount: z.number().optional(),
+   autoCreateNext: z.boolean().optional(),
    bankAccountId: z.string().optional(),
    categoryId: z.string().optional(),
    counterpartyId: z.string().nullable().optional(),
@@ -56,7 +57,6 @@ const updateBillSchema = z.object({
       .enum(["monthly", "quarterly", "semiannual", "annual"])
       .optional(),
    type: z.enum(["income", "expense"]).optional(),
-   autoCreateNext: z.boolean().optional(),
 });
 
 const completeBillSchema = z.object({
@@ -88,6 +88,47 @@ const filterSchema = z.object({
 });
 
 export const billRouter = router({
+   addAttachment: protectedProcedure
+      .input(
+         z.object({
+            billId: z.string(),
+            contentType: z.string(),
+            fileBuffer: z.string(),
+            fileName: z.string(),
+            fileSize: z.number().optional(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { billId, fileName, fileBuffer, contentType, fileSize } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingBill = await findBillById(resolvedCtx.db, billId);
+
+         if (!existingBill || existingBill.userId !== organizationId) {
+            throw new Error("Bill not found");
+         }
+
+         const attachmentId = crypto.randomUUID();
+         const key = `bills/${organizationId}/${billId}/attachments/${attachmentId}/${fileName}`;
+         const buffer = Buffer.from(fileBuffer, "base64");
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         await uploadFile(key, buffer, contentType, bucketName, minioClient);
+
+         const attachment = await createBillAttachment(resolvedCtx.db, {
+            billId,
+            contentType,
+            fileName,
+            fileSize: fileSize || buffer.length,
+            id: attachmentId,
+            storageKey: key,
+         });
+
+         return attachment;
+      }),
    complete: protectedProcedure
       .input(
          z.object({
@@ -129,6 +170,27 @@ export const billRouter = router({
 
          return updatedBill;
       }),
+
+   completeMany: protectedProcedure
+      .input(
+         z.object({
+            completionDate: z.string(),
+            ids: z.array(z.string()),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const result = await completeManyBills(
+            resolvedCtx.db,
+            input.ids,
+            organizationId,
+            new Date(input.completionDate),
+         );
+
+         return result;
+      }),
    create: protectedProcedure
       .input(createBillSchema)
       .mutation(async ({ ctx, input }) => {
@@ -157,9 +219,9 @@ export const billRouter = router({
             );
             const futureIssueDates = input.issueDate
                ? generateFutureDates(
-                    new Date(input.issueDate),
-                    input.recurrencePattern,
-                 )
+                  new Date(input.issueDate),
+                  input.recurrencePattern,
+               )
                : [];
 
             const futureBillsPromises = futureDueDates.map((dueDate, index) => {
@@ -189,6 +251,31 @@ export const billRouter = router({
          return firstBill;
       }),
 
+   createWithInstallments: protectedProcedure
+      .input(createBillWithInstallmentsSchema)
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const result = await createBillWithInstallments(resolvedCtx.db, {
+            amount: input.amount.toString(),
+            bankAccountId: input.bankAccountId,
+            categoryId: input.categoryId,
+            counterpartyId: input.counterpartyId,
+            description: input.description || "",
+            dueDate: new Date(input.dueDate),
+            id: crypto.randomUUID(),
+            installments: input.installments,
+            interestTemplateId: input.interestTemplateId,
+            issueDate: input.issueDate ? new Date(input.issueDate) : null,
+            notes: input.notes,
+            type: input.type,
+            userId: organizationId,
+         });
+
+         return result;
+      }),
+
    delete: protectedProcedure
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
@@ -210,6 +297,55 @@ export const billRouter = router({
          return deleteBill(resolvedCtx.db, input.id);
       }),
 
+   deleteAttachment: protectedProcedure
+      .input(z.object({ attachmentId: z.string(), billId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.userId !== organizationId) {
+            throw new Error("Bill not found");
+         }
+
+         const attachment = await findBillAttachmentById(
+            resolvedCtx.db,
+            input.attachmentId,
+         );
+
+         if (!attachment || attachment.billId !== input.billId) {
+            throw new Error("Attachment not found");
+         }
+
+         try {
+            const bucketName = resolvedCtx.minioBucket;
+            const minioClient = resolvedCtx.minioClient;
+            await minioClient.removeObject(bucketName, attachment.storageKey);
+         } catch (error) {
+            console.error("Error deleting attachment file:", error);
+         }
+
+         await deleteBillAttachment(resolvedCtx.db, input.attachmentId);
+
+         return { success: true };
+      }),
+
+   deleteMany: protectedProcedure
+      .input(z.object({ ids: z.array(z.string()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const result = await deleteManyBills(
+            resolvedCtx.db,
+            input.ids,
+            organizationId,
+         );
+
+         return result;
+      }),
+
    generateNext: protectedProcedure
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
@@ -229,21 +365,21 @@ export const billRouter = router({
          const nextDueDate = getNextDueDate(
             existingBill.dueDate,
             existingBill.recurrencePattern as
-               | "monthly"
-               | "quarterly"
-               | "semiannual"
-               | "annual",
+            | "monthly"
+            | "quarterly"
+            | "semiannual"
+            | "annual",
          );
 
          const nextIssueDate = existingBill.issueDate
             ? getNextDueDate(
-                 existingBill.issueDate,
-                 existingBill.recurrencePattern as
-                    | "monthly"
-                    | "quarterly"
-                    | "semiannual"
-                    | "annual",
-              )
+               existingBill.issueDate,
+               existingBill.recurrencePattern as
+               | "monthly"
+               | "quarterly"
+               | "semiannual"
+               | "annual",
+            )
             : nextDueDate;
 
          return createBill(resolvedCtx.db, {
@@ -295,6 +431,68 @@ export const billRouter = router({
          });
       }),
 
+   getAttachmentData: protectedProcedure
+      .input(z.object({ attachmentId: z.string(), billId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.userId !== organizationId) {
+            throw new Error("Bill not found");
+         }
+
+         const attachment = await findBillAttachmentById(
+            resolvedCtx.db,
+            input.attachmentId,
+         );
+
+         if (!attachment || attachment.billId !== input.billId) {
+            throw new Error("Attachment not found");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+
+         try {
+            const { buffer, contentType } = await streamFileForProxy(
+               attachment.storageKey,
+               bucketName,
+               resolvedCtx.minioClient,
+            );
+            const base64 = buffer.toString("base64");
+            return {
+               contentType,
+               data: `data:${contentType};base64,${base64}`,
+               fileName: attachment.fileName,
+               id: attachment.id,
+            };
+         } catch (error) {
+            console.error("Error fetching attachment:", error);
+            return null;
+         }
+      }),
+
+   getAttachments: protectedProcedure
+      .input(z.object({ billId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.userId !== organizationId) {
+            throw new Error("Bill not found");
+         }
+
+         const attachments = await findBillAttachmentsByBillId(
+            resolvedCtx.db,
+            input.billId,
+         );
+
+         return attachments;
+      }),
+
    getById: protectedProcedure
       .input(z.object({ id: z.string() }))
       .query(async ({ ctx, input }) => {
@@ -308,6 +506,28 @@ export const billRouter = router({
          }
 
          return billData;
+      }),
+
+   getByInstallmentGroup: protectedProcedure
+      .input(z.object({ installmentGroupId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bills = await findBillsByInstallmentGroupId(
+            resolvedCtx.db,
+            input.installmentGroupId,
+         );
+
+         const filteredBills = bills.filter(
+            (bill) => bill.userId === organizationId,
+         );
+
+         if (filteredBills.length === 0) {
+            throw new Error("Installment group not found");
+         }
+
+         return filteredBills;
       }),
 
    getByType: protectedProcedure
@@ -450,226 +670,5 @@ export const billRouter = router({
          }
 
          return updateBill(resolvedCtx.db, input.id, updateData);
-      }),
-
-   completeMany: protectedProcedure
-      .input(
-         z.object({
-            completionDate: z.string(),
-            ids: z.array(z.string()),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const result = await completeManyBills(
-            resolvedCtx.db,
-            input.ids,
-            organizationId,
-            new Date(input.completionDate),
-         );
-
-         return result;
-      }),
-
-   deleteMany: protectedProcedure
-      .input(z.object({ ids: z.array(z.string()) }))
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const result = await deleteManyBills(
-            resolvedCtx.db,
-            input.ids,
-            organizationId,
-         );
-
-         return result;
-      }),
-
-   addAttachment: protectedProcedure
-      .input(
-         z.object({
-            billId: z.string(),
-            contentType: z.string(),
-            fileBuffer: z.string(),
-            fileName: z.string(),
-            fileSize: z.number().optional(),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const { billId, fileName, fileBuffer, contentType, fileSize } = input;
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const existingBill = await findBillById(resolvedCtx.db, billId);
-
-         if (!existingBill || existingBill.userId !== organizationId) {
-            throw new Error("Bill not found");
-         }
-
-         const attachmentId = crypto.randomUUID();
-         const key = `bills/${organizationId}/${billId}/attachments/${attachmentId}/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
-
-         const bucketName = resolvedCtx.minioBucket;
-         const minioClient = resolvedCtx.minioClient;
-
-         await uploadFile(key, buffer, contentType, bucketName, minioClient);
-
-         const attachment = await createBillAttachment(resolvedCtx.db, {
-            billId,
-            contentType,
-            fileName,
-            fileSize: fileSize || buffer.length,
-            id: attachmentId,
-            storageKey: key,
-         });
-
-         return attachment;
-      }),
-
-   getAttachments: protectedProcedure
-      .input(z.object({ billId: z.string() }))
-      .query(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const bill = await findBillById(resolvedCtx.db, input.billId);
-
-         if (!bill || bill.userId !== organizationId) {
-            throw new Error("Bill not found");
-         }
-
-         const attachments = await findBillAttachmentsByBillId(
-            resolvedCtx.db,
-            input.billId,
-         );
-
-         return attachments;
-      }),
-
-   getAttachmentData: protectedProcedure
-      .input(z.object({ attachmentId: z.string(), billId: z.string() }))
-      .query(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const bill = await findBillById(resolvedCtx.db, input.billId);
-
-         if (!bill || bill.userId !== organizationId) {
-            throw new Error("Bill not found");
-         }
-
-         const attachment = await findBillAttachmentById(
-            resolvedCtx.db,
-            input.attachmentId,
-         );
-
-         if (!attachment || attachment.billId !== input.billId) {
-            throw new Error("Attachment not found");
-         }
-
-         const bucketName = resolvedCtx.minioBucket;
-
-         try {
-            const { buffer, contentType } = await streamFileForProxy(
-               attachment.storageKey,
-               bucketName,
-               resolvedCtx.minioClient,
-            );
-            const base64 = buffer.toString("base64");
-            return {
-               contentType,
-               data: `data:${contentType};base64,${base64}`,
-               fileName: attachment.fileName,
-               id: attachment.id,
-            };
-         } catch (error) {
-            console.error("Error fetching attachment:", error);
-            return null;
-         }
-      }),
-
-   deleteAttachment: protectedProcedure
-      .input(z.object({ attachmentId: z.string(), billId: z.string() }))
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const bill = await findBillById(resolvedCtx.db, input.billId);
-
-         if (!bill || bill.userId !== organizationId) {
-            throw new Error("Bill not found");
-         }
-
-         const attachment = await findBillAttachmentById(
-            resolvedCtx.db,
-            input.attachmentId,
-         );
-
-         if (!attachment || attachment.billId !== input.billId) {
-            throw new Error("Attachment not found");
-         }
-
-         try {
-            const bucketName = resolvedCtx.minioBucket;
-            const minioClient = resolvedCtx.minioClient;
-            await minioClient.removeObject(bucketName, attachment.storageKey);
-         } catch (error) {
-            console.error("Error deleting attachment file:", error);
-         }
-
-         await deleteBillAttachment(resolvedCtx.db, input.attachmentId);
-
-         return { success: true };
-      }),
-
-   createWithInstallments: protectedProcedure
-      .input(createBillWithInstallmentsSchema)
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const result = await createBillWithInstallments(resolvedCtx.db, {
-            amount: input.amount.toString(),
-            bankAccountId: input.bankAccountId,
-            categoryId: input.categoryId,
-            counterpartyId: input.counterpartyId,
-            description: input.description || "",
-            dueDate: new Date(input.dueDate),
-            id: crypto.randomUUID(),
-            installments: input.installments,
-            interestTemplateId: input.interestTemplateId,
-            issueDate: input.issueDate ? new Date(input.issueDate) : null,
-            notes: input.notes,
-            type: input.type,
-            userId: organizationId,
-         });
-
-         return result;
-      }),
-
-   getByInstallmentGroup: protectedProcedure
-      .input(z.object({ installmentGroupId: z.string() }))
-      .query(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.organizationId;
-
-         const bills = await findBillsByInstallmentGroupId(
-            resolvedCtx.db,
-            input.installmentGroupId,
-         );
-
-         const filteredBills = bills.filter(
-            (bill) => bill.userId === organizationId,
-         );
-
-         if (filteredBills.length === 0) {
-            throw new Error("Installment group not found");
-         }
-
-         return filteredBills;
       }),
 });
