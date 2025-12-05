@@ -49,10 +49,8 @@
    },
    "scripts": {
       "build": "bunup",
+      "check": "biome check --write .",
       "dev": "bunup --watch",
-      "lint": "biome check .",
-      "lint:fix": "biome check --write .",
-      "postinstall": "bun simple-git-hooks",
       "publish": "bunx npm publish",
       "release": "bumpp --commit --push --tag",
       "test": "bun test",
@@ -62,5 +60,5 @@
    },
    "type": "module",
    "types": "./dist/index.d.ts",
-   "version": "1.2.1"
+   "version": "1.3.0"
 }
