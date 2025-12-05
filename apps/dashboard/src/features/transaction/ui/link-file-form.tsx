@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useSheet } from "@/hooks/use-sheet";
+
 import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
@@ -61,7 +61,6 @@ type PendingFile = {
 
 export function LinkFileForm({ transaction, onSuccess }: LinkFileFormProps) {
    const trpc = useTRPC();
-   const { closeSheet } = useSheet();
    const queryClient = useQueryClient();
    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 

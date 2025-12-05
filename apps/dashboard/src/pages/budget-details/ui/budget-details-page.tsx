@@ -38,7 +38,7 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
@@ -58,9 +58,6 @@ function BudgetContent() {
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
    const { openSheet } = useSheet();
-
-   const [isCreateTransactionOpen, setIsCreateTransactionOpen] =
-      useState(false);
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
@@ -161,7 +158,19 @@ function BudgetContent() {
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button onClick={() => setIsCreateTransactionOpen(true)}>
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageTransactionForm
+                              defaultCategoryIds={defaultCategoryIds}
+                              defaultCostCenterId={defaultCostCenterId}
+                              defaultTagIds={defaultTagIds}
+                           />
+                        ),
+                     })
+                  }
+               >
                   <Plus className="size-4" />
                   {translate(
                      "dashboard.routes.transactions.features.add-new.title",
@@ -179,11 +188,9 @@ function BudgetContent() {
                <Button
                   onClick={() =>
                      openSheet({
-                        children: <ManageBudgetForm budget={budgetForList} />,
+                        children: <ManageBudgetForm />,
                      })
                   }
-                  size="sm"
-                  variant="outline"
                >
                   <Edit className="size-4" />
                   {translate("dashboard.routes.budgets.details.actions.edit")}
@@ -284,14 +291,6 @@ function BudgetContent() {
             startDate={dateRange.startDate}
          />
          <BudgetInformationSection budget={budget} />
-
-         <ManageTransactionSheet
-            defaultCategoryIds={defaultCategoryIds}
-            defaultCostCenterId={defaultCostCenterId}
-            defaultTagIds={defaultTagIds}
-            onOpen={isCreateTransactionOpen}
-            onOpenChange={setIsCreateTransactionOpen}
-         />
       </main>
    );
 }

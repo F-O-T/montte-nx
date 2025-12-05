@@ -2,10 +2,10 @@ import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import { DefaultHeader } from "@/default/default-header";
+import { useSheet } from "@/hooks/use-sheet";
 import { CounterpartyListProvider } from "../features/counterparty-list-context";
-import { ManageCounterpartySheet } from "../features/manage-counterparty-sheet";
+import { ManageCounterpartyForm } from "../features/manage-counterparty-form";
 import { CounterpartiesListSection } from "./counterparties-list-section";
 import { CounterpartiesStats } from "./counterparties-stats";
 
@@ -13,14 +13,20 @@ export type Counterparty =
    RouterOutput["counterparties"]["getAllPaginated"]["counterparties"][0];
 
 export function CounterpartiesPage() {
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    return (
       <CounterpartyListProvider>
          <main className="space-y-4">
             <DefaultHeader
                actions={
-                  <Button onClick={() => setIsCreateSheetOpen(true)}>
+                  <Button
+                     onClick={() =>
+                        openSheet({
+                           children: <ManageCounterpartyForm />,
+                        })
+                     }
+                  >
                      <Plus className="size-4" />
                      {translate(
                         "dashboard.routes.counterparties.actions.add-new",
@@ -34,10 +40,6 @@ export function CounterpartiesPage() {
             />
             <CounterpartiesStats />
             <CounterpartiesListSection />
-            <ManageCounterpartySheet
-               onOpen={isCreateSheetOpen}
-               onOpenChange={setIsCreateSheetOpen}
-            />
          </main>
       </CounterpartyListProvider>
    );

@@ -77,6 +77,17 @@ function CategoryContent() {
       trpc.categories.getById.queryOptions({ id: categoryId }),
    );
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/categories",
+      });
+   };
+
+   const { deleteCategory } = useDeleteCategory({
+      category,
+      onSuccess: handleDeleteSuccess,
+   });
    if (!categoryId) {
       return (
          <CategoryPageError
@@ -89,18 +100,6 @@ function CategoryContent() {
    if (!category) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/categories",
-      });
-   };
-
-   const { deleteCategory } = useDeleteCategory({
-      category,
-      onSuccess: handleDeleteSuccess,
-   });
 
    return (
       <main className="space-y-4">

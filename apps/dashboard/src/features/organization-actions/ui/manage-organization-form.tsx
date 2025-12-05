@@ -1,3 +1,4 @@
+import type { RouterOutput } from "@packages/api/client";
 import { Button } from "@packages/ui/components/button";
 import {
    Dropzone,
@@ -23,12 +24,7 @@ import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
-type Organization = {
-   description?: string | null;
-   id: string;
-   name: string;
-};
-
+type Organization = RouterOutput["organization"]["getActiveOrganization"];
 type ManageOrganizationFormProps = {
    organization?: Organization;
 };

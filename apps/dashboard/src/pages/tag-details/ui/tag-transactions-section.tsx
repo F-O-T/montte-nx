@@ -451,20 +451,6 @@ function TagTransactionsContent({
                Excluir
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <CategorizeSheet
-            isOpen={isCategorizeOpen}
-            onOpenChange={setIsCategorizeOpen}
-            onSuccess={() => setRowSelection({})}
-            transactions={selectedTransactions}
-         />
-
-         <MarkAsTransferSheet
-            isOpen={isTransferOpen}
-            onOpenChange={setIsTransferOpen}
-            onSuccess={() => setRowSelection({})}
-            transactions={selectedTransactions}
-         />
       </>
    );
 }

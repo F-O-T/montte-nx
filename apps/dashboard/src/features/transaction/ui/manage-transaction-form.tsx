@@ -32,6 +32,15 @@ import {
 } from "@packages/ui/components/sheet";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { Textarea } from "@packages/ui/components/textarea";
+
+const steps = [
+   { id: "details", title: "details" },
+   { id: "categorization", title: "categorization" },
+] as const;
+
+const { Stepper } = defineStepper(...steps);
+
+import { getRandomColor } from "@packages/utils/colors";
 import { formatDate } from "@packages/utils/date";
 import { centsToReais } from "@packages/utils/money";
 import { useForm } from "@tanstack/react-form";
@@ -65,38 +74,6 @@ type TransactionFormValues = {
    tagIds: string[];
    type: "expense" | "income";
 };
-
-const CATEGORY_COLORS = [
-   "#ef4444",
-   "#f97316",
-   "#f59e0b",
-   "#eab308",
-   "#84cc16",
-   "#22c55e",
-   "#10b981",
-   "#14b8a6",
-   "#06b6d4",
-   "#0ea5e9",
-   "#3b82f6",
-   "#6366f1",
-   "#8b5cf6",
-   "#a855f7",
-   "#d946ef",
-   "#ec4899",
-   "#f43f5e",
-];
-
-function getRandomColor(): string {
-   const index = Math.floor(Math.random() * CATEGORY_COLORS.length);
-   return CATEGORY_COLORS[index] ?? "#3b82f6";
-}
-
-const steps = [
-   { id: "details", title: "details" },
-   { id: "categorization", title: "categorization" },
-] as const;
-
-const { Stepper } = defineStepper(...steps);
 
 type ManageTransactionFormProps = {
    transaction?: Transaction;

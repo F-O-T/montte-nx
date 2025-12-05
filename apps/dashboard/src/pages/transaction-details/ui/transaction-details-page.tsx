@@ -20,16 +20,18 @@ import {
    Split,
    Trash2,
 } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
+// useState removed as unused
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
-import { CategorizeSheet } from "@/features/transaction/ui/categorize-sheet";
-import { CategorySplitSheet } from "@/features/transaction/ui/category-split-sheet";
-import { LinkFileSheet } from "@/features/transaction/ui/link-file-sheet";
-import { ManageTransactionSheet } from "@/features/transaction/ui/manage-transaction-sheet";
-import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
+import { CategorizeForm } from "@/features/transaction/ui/categorize-form";
+import { CategorySplitForm } from "@/features/transaction/ui/category-split-form";
+import { LinkFileForm } from "@/features/transaction/ui/link-file-form";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
+import { MarkAsTransferForm } from "@/features/transaction/ui/mark-as-transfer-form";
 import { useDeleteTransaction } from "@/features/transaction/ui/use-delete-transaction";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { TransactionCategorizationSection } from "./transaction-categories-section";
 import { TransactionDetailsSection } from "./transaction-details-section";
@@ -42,12 +44,7 @@ function TransactionContent() {
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-
-   const [isEditOpen, setIsEditOpen] = useState(false);
-   const [isTransferOpen, setIsTransferOpen] = useState(false);
-   const [isSplitOpen, setIsSplitOpen] = useState(false);
-   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
-   const [isLinkFileOpen, setIsLinkFileOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const { data: transaction } = useSuspenseQuery(
       trpc.transactions.getById.queryOptions({ id: transactionId }),
@@ -91,7 +88,15 @@ function TransactionContent() {
             {isNotTransfer && (
                <>
                   <Button
-                     onClick={() => setIsTransferOpen(true)}
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <MarkAsTransferForm
+                                 transactions={[transaction]}
+                              />
+                           ),
+                        })
+                     }
                      size="sm"
                      variant="outline"
                   >
@@ -99,7 +104,13 @@ function TransactionContent() {
                      Marcar Transferência
                   </Button>
                   <Button
-                     onClick={() => setIsSplitOpen(true)}
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <CategorySplitForm transaction={transaction} />
+                           ),
+                        })
+                     }
                      size="sm"
                      variant="outline"
                   >
@@ -109,7 +120,11 @@ function TransactionContent() {
                </>
             )}
             <Button
-               onClick={() => setIsCategorizeOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <CategorizeForm transactions={[transaction]} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -117,7 +132,11 @@ function TransactionContent() {
                Categorizar
             </Button>
             <Button
-               onClick={() => setIsLinkFileOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: <LinkFileForm transaction={transaction} />,
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -125,7 +144,13 @@ function TransactionContent() {
                {translate("dashboard.routes.transactions.link-file.button")}
             </Button>
             <Button
-               onClick={() => setIsEditOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <ManageTransactionForm transaction={transaction} />
+                     ),
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -146,32 +171,6 @@ function TransactionContent() {
          <TransactionStats transactionId={transactionId} />
          <TransactionCategorizationSection transactionId={transactionId} />
          <TransactionDetailsSection transactionId={transactionId} />
-
-         <ManageTransactionSheet
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-            transaction={transaction}
-         />
-         <MarkAsTransferSheet
-            isOpen={isTransferOpen}
-            onOpenChange={setIsTransferOpen}
-            transactions={[transaction]}
-         />
-         <CategorySplitSheet
-            isOpen={isSplitOpen}
-            onOpenChange={setIsSplitOpen}
-            transaction={transaction}
-         />
-         <CategorizeSheet
-            isOpen={isCategorizeOpen}
-            onOpenChange={setIsCategorizeOpen}
-            transactions={[transaction]}
-         />
-         <LinkFileSheet
-            isOpen={isLinkFileOpen}
-            onOpenChange={setIsLinkFileOpen}
-            transaction={transaction}
-         />
       </main>
    );
 }

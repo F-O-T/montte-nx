@@ -98,6 +98,17 @@ function BankAccountContent() {
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/bank-accounts",
+      });
+   };
+
+   const { deleteBankAccount } = useDeleteBankAccount({
+      bankAccount,
+      onSuccess: handleDeleteSuccess,
+   });
    if (!bankAccountId) {
       return (
          <BankAccountPageError
@@ -110,18 +121,6 @@ function BankAccountContent() {
    if (!bankAccount) {
       return null;
    }
-
-   const handleDeleteSuccess = () => {
-      router.navigate({
-         params: { slug: activeOrganization.slug },
-         to: "/$slug/bank-accounts",
-      });
-   };
-
-   const { deleteBankAccount } = useDeleteBankAccount({
-      bankAccount,
-      onSuccess: handleDeleteSuccess,
-   });
 
    return (
       <main className="space-y-4">

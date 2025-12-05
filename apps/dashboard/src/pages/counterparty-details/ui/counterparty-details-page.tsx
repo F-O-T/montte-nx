@@ -31,12 +31,13 @@ import {
    User,
    Users,
 } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageCounterpartySheet } from "../../counterparties/features/manage-counterparty-sheet";
+import { ManageCounterpartyForm } from "../../counterparties/features/manage-counterparty-form";
 import { useDeleteCounterparty } from "../../counterparties/features/use-delete-counterparty";
 
 function getTypeIcon(type: string) {
@@ -73,8 +74,6 @@ function CounterpartyContent() {
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
 
-   const [isEditOpen, setIsEditOpen] = useState(false);
-
    const { data: counterparty } = useSuspenseQuery(
       trpc.counterparties.getById.queryOptions({ id: counterpartyId }),
    );
@@ -85,9 +84,9 @@ function CounterpartyContent() {
          to: "/$slug/counterparties",
       });
    };
-
+   const { openSheet } = useSheet();
    const { deleteCounterparty } = useDeleteCounterparty({
-      counterparty: counterparty!,
+      counterparty: counterparty,
       onSuccess: handleDeleteSuccess,
    });
 
@@ -126,7 +125,13 @@ function CounterpartyContent() {
                )}
             </Badge>
             <Button
-               onClick={() => setIsEditOpen(true)}
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <ManageCounterpartyForm counterparty={counterparty} />
+                     ),
+                  })
+               }
                size="sm"
                variant="outline"
             >
@@ -240,12 +245,6 @@ function CounterpartyContent() {
                </Card>
             )}
          </div>
-
-         <ManageCounterpartySheet
-            counterparty={counterparty}
-            onOpen={isEditOpen}
-            onOpenChange={setIsEditOpen}
-         />
       </main>
    );
 }

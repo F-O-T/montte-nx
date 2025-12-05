@@ -48,8 +48,8 @@ import {
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTransactionBulkActions } from "@/features/transaction/lib/use-transaction-bulk-actions";
-import { CategorizeSheet } from "@/features/transaction/ui/categorize-sheet";
-import { MarkAsTransferSheet } from "@/features/transaction/ui/mark-as-transfer-sheet";
+import { CategorizeForm } from "@/features/transaction/ui/categorize-form";
+import { MarkAsTransferForm } from "@/features/transaction/ui/mark-as-transfer-form";
 import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
 import { TransactionFilterCredenza } from "@/features/transaction/ui/transaction-filter-credenza";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
@@ -57,6 +57,7 @@ import { createTransactionColumns } from "@/features/transaction/ui/transaction-
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useCredenza } from "@/hooks/use-credenza";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
 function CostCenterTransactionsErrorFallback(props: FallbackProps) {
@@ -125,10 +126,9 @@ function CostCenterTransactionsContent({
    const { activeOrganization } = useActiveOrganization();
    const { openCredenza } = useCredenza();
    const { openAlertDialog } = useAlertDialog();
+   const { openSheet } = useSheet();
    const [currentPage, setCurrentPage] = useState(1);
    const pageSize = 10;
-   const [isCategorizeOpen, setIsCategorizeOpen] = useState(false);
-   const [isTransferOpen, setIsTransferOpen] = useState(false);
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
    const [searchTerm, setSearchTerm] = useState("");
@@ -179,8 +179,6 @@ function CostCenterTransactionsContent({
    const { deleteSelected } = useTransactionBulkActions({
       onSuccess: () => {
          setRowSelection({});
-         setIsCategorizeOpen(false);
-         setIsTransferOpen(false);
       },
    });
 
@@ -211,11 +209,25 @@ function CostCenterTransactionsContent({
    };
 
    const handleBulkChangeCategory = () => {
-      setIsCategorizeOpen(true);
+      openSheet({
+         children: (
+            <CategorizeForm
+               onSuccess={() => setRowSelection({})}
+               transactions={selectedTransactions}
+            />
+         ),
+      });
    };
 
    const handleBulkTransfer = () => {
-      setIsTransferOpen(true);
+      openSheet({
+         children: (
+            <MarkAsTransferForm
+               onSuccess={() => setRowSelection({})}
+               transactions={selectedTransactions}
+            />
+         ),
+      });
    };
 
    if (transactions.length === 0 && !hasActiveFilters) {
@@ -439,20 +451,6 @@ function CostCenterTransactionsContent({
                Excluir
             </SelectionActionButton>
          </SelectionActionBar>
-
-         <CategorizeSheet
-            isOpen={isCategorizeOpen}
-            onOpenChange={setIsCategorizeOpen}
-            onSuccess={() => setRowSelection({})}
-            transactions={selectedTransactions}
-         />
-
-         <MarkAsTransferSheet
-            isOpen={isTransferOpen}
-            onOpenChange={setIsTransferOpen}
-            onSuccess={() => setRowSelection({})}
-            transactions={selectedTransactions}
-         />
       </>
    );
 }
