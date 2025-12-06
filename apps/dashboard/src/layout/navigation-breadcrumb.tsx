@@ -13,51 +13,52 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { cn } from "@packages/ui/lib/utils";
-import { Link, useMatches } from "@tanstack/react-router";
+import { Link, useMatches, useParams } from "@tanstack/react-router";
 import { Home } from "lucide-react";
+
+type TBreadcrumbItem = {
+   to: string;
+   params: Record<string, string>;
+   isHome: boolean;
+   label: string;
+};
 
 export function NavigationBreadcrumb() {
    const matches = useMatches();
+   const { slug } = useParams({ from: "/$slug" });
 
-   // Filter matches that have breadcrumb metadata and exclude layout routes
-   const contentBreadcrumbs = matches
+   const contentBreadcrumbs: TBreadcrumbItem[] = matches
       .filter((match) => {
-         // Skip routes that are just layout wrappers
          const isLayoutRoute =
-            match.pathname === "/" || // root route
-            match.id === "/_dashboard"; // dashboard layout route
+            match.pathname === "/" ||
+            match.id === "/_dashboard" ||
+            match.id === "/$slug";
 
          return match.staticData?.breadcrumb !== undefined && !isLayoutRoute;
       })
       .map((match) => ({
-         href: match.pathname,
+         isHome: false,
          label: match.staticData.breadcrumb as string,
+         params: match.params as Record<string, string>,
+         to: match.pathname,
       }));
 
-   // Check if we're on a page that shows "Home" as a breadcrumb
    const isHomeBreadcrumbPage = contentBreadcrumbs.some(
       (breadcrumb) =>
-         breadcrumb.label === "Home" || breadcrumb.href === "/home",
+         breadcrumb.label === "Home" || breadcrumb.to === `/${slug}/home`,
    );
 
-   // Build breadcrumbs - always start with home icon, but don't add duplicate home text
-   let allBreadcrumbs = [
+   let allBreadcrumbs: TBreadcrumbItem[] = [
       {
-         href: "/home",
          isHome: true,
          label: "Home",
+         params: { slug },
+         to: "/$slug/home",
       },
    ];
 
-   // Only add content breadcrumbs if we're not on a home breadcrumb page
    if (!isHomeBreadcrumbPage) {
-      allBreadcrumbs = [
-         ...allBreadcrumbs,
-         ...contentBreadcrumbs.map((breadcrumb) => ({
-            ...breadcrumb,
-            isHome: false,
-         })),
-      ];
+      allBreadcrumbs = [...allBreadcrumbs, ...contentBreadcrumbs];
    }
 
    // On home page, show only the home icon (not clickable)
@@ -91,7 +92,7 @@ export function NavigationBreadcrumb() {
                            <BreadcrumbSeparator key={`sep-${index + 1}`} />
                         )}
 
-                        <BreadcrumbItem key={breadcrumb.href}>
+                        <BreadcrumbItem key={breadcrumb.to}>
                            {isLast ? (
                               <BreadcrumbPage className={cn("font-medium")}>
                                  {breadcrumb.isHome ? (
@@ -104,16 +105,16 @@ export function NavigationBreadcrumb() {
                               <BreadcrumbLink asChild>
                                  <Link
                                     className="hover:text-foreground"
-                                    onClick={(e) => {
-                                       // Prevent navigation if it's the same page
+                                    onClick={(e: React.MouseEvent) => {
                                        if (
                                           window.location.pathname ===
-                                          breadcrumb.href
+                                          breadcrumb.to
                                        ) {
                                           e.preventDefault();
                                        }
                                     }}
-                                    to={breadcrumb.href}
+                                    params={breadcrumb.params}
+                                    to={breadcrumb.to}
                                  >
                                     {breadcrumb.isHome ? (
                                        <Tooltip>
