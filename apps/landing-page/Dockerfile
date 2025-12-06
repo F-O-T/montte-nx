@@ -45,6 +45,9 @@ RUN chmod +x /entrypoint.sh
 
 # Set and expose the port. Default to 4321 if not provided.
 ARG PORT
+ARG PUBLIC_POSTHOG_HOST
+ARG PUBLIC_POSTHOG_KEY
+
 ENV PORT=${PORT}
 EXPOSE ${PORT}
 
