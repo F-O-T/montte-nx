@@ -1,0 +1,11 @@
+{
+   "extends": "@tooling/typescript/internal-package.json",
+   "compilerOptions": {
+      "composite": true,
+      "declaration": true,
+      "declarationMap": true,
+      "emitDeclarationOnly": true
+   },
+   "include": ["src", "__tests__/*.test.ts"],
+   "references": [{ "path": "../database" }, { "path": "../utils" }]
+}

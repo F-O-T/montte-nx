@@ -35,6 +35,9 @@
       },
       {
          "path": "../brasil-api"
+      },
+      {
+         "path": "../notifications"
       }
    ]
 }

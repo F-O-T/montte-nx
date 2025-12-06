@@ -33,6 +33,9 @@
       },
       {
          "path": "./packages/pdf"
+      },
+      {
+         "path": "./packages/notifications"
       }
    ]
 }

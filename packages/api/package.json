@@ -8,7 +8,9 @@
       "@packages/ofx": "workspace:*",
       "@packages/pdf": "workspace:*",
       "@packages/posthog": "workspace:*",
+      "@packages/notifications": "workspace:*",
       "@packages/utils": "workspace:*",
+
       "@trpc/client": "catalog:trpc",
       "@trpc/server": "catalog:trpc",
       "superjson": "catalog:trpc",

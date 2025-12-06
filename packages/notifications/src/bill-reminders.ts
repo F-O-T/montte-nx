@@ -5,10 +5,7 @@ import {
    findPendingBillsByOrganizationId,
 } from "@packages/database/repositories/bill-repository";
 import { shouldSendNotification } from "@packages/database/repositories/notification-preferences-repository";
-import {
-   createNotificationPayload,
-   sendPushNotificationToUser,
-} from "./push-notification-service";
+import { createNotificationPayload, sendPushNotificationToUser } from "./push";
 
 interface BillReminderConfig {
    db: DatabaseInstance;
