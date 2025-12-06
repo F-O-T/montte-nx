@@ -1,0 +1,99 @@
+---
+import {
+   BarChart3,
+   FolderOpen,
+   PiggyBank,
+   Plus,
+   Target,
+   TrendingUp,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+
+interface _Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const steps = [
+   {
+      description:
+         "Adicione suas contas bancárias e importe transações via OFX ou manualmente",
+      icon: Plus,
+      title: "Registre",
+   },
+   {
+      description:
+         "Organize suas transações por categorias personalizadas para melhor controle",
+      icon: FolderOpen,
+      title: "Categorize",
+   },
+   {
+      description:
+         "Defina orçamentos mensais e metas de economia para cada categoria",
+      icon: Target,
+      title: "Planeje",
+   },
+   {
+      description:
+         "Monitore seus gastos em tempo real e receba alertas quando necessário",
+      icon: BarChart3,
+      title: "Acompanhe",
+   },
+   {
+      description:
+         "Visualize relatórios detalhados e identifique padrões nos seus gastos",
+      icon: TrendingUp,
+      title: "Analise",
+   },
+   {
+      description:
+         "Tome decisões mais inteligentes e alcance suas metas financeiras",
+      icon: PiggyBank,
+      title: "Cresça",
+   },
+];
+---
+
+<section id="financial-workflow" class="bg-muted relative py-16 md:py-24">
+   <div class="mx-auto max-w-6xl px-6">
+      <div class="mx-auto max-w-3xl text-center">
+         <h2
+            class="text-balance text-2xl font-bold md:text-3xl lg:text-4xl"
+         >
+            Seu fluxo financeiro <span class="text-primary">simplificado</span>
+         </h2>
+         <p class="text-muted-foreground mx-auto mt-4 max-w-2xl text-balance">
+            Siga um processo simples e eficiente para organizar suas finanças e alcançar seus objetivos.
+         </p>
+      </div>
+
+      <div class="relative mt-20 max-w-3xl mx-auto">
+         <div
+            class="absolute left-4 top-4 h-full w-px bg-border -translate-x-1/2"
+         ></div>
+
+         <div class="space-y-12">
+            {
+          steps.map(({ icon: Icon, title, description }
+            ) => (
+            <div class="relative flex items-start gap-6">
+               <div class="flex-shrink-0">
+                  <div
+                     class="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground ring-8 ring-background"
+                  >
+                     <Icon class="h-4 w-4"/>
+                  </div>
+               </div>
+               <div
+                  class="bg-card border rounded-lg p-6 flex-1 shadow-sm hover:shadow-md transition-shadow"
+               >
+                  <h3 class="text-xl font-semibold">{title}</h3>
+                  <p class="mt-2 text-muted-foreground">{description}</p>
+               </div>
+            </div>
+            )) }
+         </div>
+      </div>
+   </div>
+</section>

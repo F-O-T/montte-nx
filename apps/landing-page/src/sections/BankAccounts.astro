@@ -1,0 +1,194 @@
+---
+import {
+   ArrowRight,
+   Building,
+   Check,
+   CreditCard,
+   PiggyBank,
+   TrendingUp,
+   Upload,
+   Wallet,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+
+interface _Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const features = [
+   {
+      description: "Importe extratos automaticamente.",
+      icon: Upload,
+      title: "Importacao OFX",
+      upcoming: false,
+   },
+   {
+      description: "Corrente, poupanca e mais.",
+      icon: Building,
+      title: "Multiplas Contas",
+      upcoming: false,
+   },
+   {
+      description: "Controle faturas e limites.",
+      icon: CreditCard,
+      title: "Cartoes de Credito",
+      upcoming: true,
+   },
+   {
+      description: "Acompanhe rendimentos.",
+      icon: TrendingUp,
+      title: "Investimentos",
+      upcoming: true,
+   },
+];
+
+const benefits = [
+   "Saldos atualizados em tempo real",
+   "Suporte a todos os bancos brasileiros",
+   "Historico completo de movimentacoes",
+];
+---
+
+<section id="bank-accounts" class="bg-muted py-16 md:py-24">
+   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
+         <div class="relative flex justify-center max-lg:order-last">
+            <div class="relative">
+               <div class="absolute top-0 left-0 z-10 w-64 origin-top-left" style="transform: scale(0.85); top: -20px; left: -40px;">
+                  <div class="bg-card rounded-xl border p-4 shadow-lg">
+                     <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-full">
+                           <Wallet class="size-4" />
+                        </div>
+                        <span class="font-medium">Saldo Total</span>
+                     </div>
+                     <div class="flex items-center gap-2">
+                        <span class="text-2xl font-bold">R$ 24.580</span>
+                        <span class="text-xs text-green-500 flex items-center gap-0.5">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="m18 15-6-6-6 6"/>
+                           </svg>
+                           12%
+                        </span>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="bg-card rounded-2xl border p-6 shadow-xl relative z-0">
+                  <div class="flex items-center justify-between mb-6">
+                     <span class="text-lg font-semibold">Minhas Contas</span>
+                     <span class="text-muted-foreground text-sm">4 contas</span>
+                  </div>
+                  
+                  <div class="space-y-4">
+                     <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                        <div class="flex items-center gap-3">
+                           <div class="bg-orange-500 size-10 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                              IT
+                           </div>
+                           <div>
+                              <p class="font-medium">Itau</p>
+                              <p class="text-muted-foreground text-sm">Conta Corrente</p>
+                           </div>
+                        </div>
+                        <span class="font-semibold">R$ 8.450</span>
+                     </div>
+
+                     <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                        <div class="flex items-center gap-3">
+                           <div class="bg-purple-600 size-10 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                              NU
+                           </div>
+                           <div>
+                              <p class="font-medium">Nubank</p>
+                              <p class="text-muted-foreground text-sm">Conta Digital</p>
+                           </div>
+                        </div>
+                        <span class="font-semibold">R$ 12.320</span>
+                     </div>
+
+                     <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                        <div class="flex items-center gap-3">
+                           <div class="bg-blue-600 size-10 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                              BB
+                           </div>
+                           <div>
+                              <p class="font-medium">Banco do Brasil</p>
+                              <p class="text-muted-foreground text-sm">Poupanca</p>
+                           </div>
+                        </div>
+                        <span class="font-semibold">R$ 3.810</span>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="absolute bottom-0 right-0 z-10 w-56 origin-bottom-right" style="transform: scale(0.8); bottom: -30px; right: -50px;">
+                  <div class="bg-card rounded-xl border p-4 shadow-lg">
+                     <div class="flex items-center gap-2 mb-2">
+                        <div class="size-2 rounded-full bg-green-500"></div>
+                        <span class="text-sm font-medium">Sincronizado</span>
+                     </div>
+                     <p class="text-muted-foreground text-xs">Ultima atualizacao: agora</p>
+                  </div>
+               </div>
+
+               <div class="absolute -z-10 inset-0">
+                  <div class="absolute top-1/2 left-1/2 size-[80%] -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-primary/5 blur-3xl"></div>
+               </div>
+            </div>
+         </div>
+
+         <div class="space-y-8">
+            <div class="space-y-4">
+               <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium">
+                  <Wallet class="size-4 text-primary" />
+                  Contas Bancarias
+               </span>
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Todas as suas contas em um so lugar
+               </h2>
+               <p class="text-muted-foreground text-lg">
+                  Gerencie contas correntes, poupanca e investimentos com importacao automatica de extratos OFX.
+               </p>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+               {features.map((feature) => (
+                  <div class:list={[
+                     "group bg-card border rounded-lg p-4 transition-all duration-300",
+                     feature.upcoming ? "opacity-70" : "hover:border-primary"
+                  ]}>
+                     <div class="flex items-center gap-2 mb-1">
+                        <feature.icon class="size-4" />
+                        <h3 class="font-semibold text-sm">{feature.title}</h3>
+                        {feature.upcoming && (
+                           <span class="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">Em breve</span>
+                        )}
+                     </div>
+                     <p class="text-muted-foreground text-sm">{feature.description}</p>
+                  </div>
+               ))}
+            </div>
+
+            <div class="space-y-3">
+               {benefits.map((benefit) => (
+                  <div class="flex items-center gap-3">
+                     <Check class="text-primary size-5 shrink-0" />
+                     <span class="text-muted-foreground">{benefit}</span>
+                  </div>
+               ))}
+            </div>
+
+            <div>
+               <Button className="group rounded-lg" size="lg">
+                  Comecar agora
+                  <ArrowRight class="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+               </Button>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>

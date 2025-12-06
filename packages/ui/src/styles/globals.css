@@ -187,3 +187,13 @@
    }
 }
 
+@keyframes marquee-horizontal {
+   from { transform: translateX(0); }
+   to { transform: translateX(calc(-100% - var(--marquee-gap, 1rem))); }
+}
+
+.animate-marquee-horizontal {
+   animation: marquee-horizontal var(--marquee-duration, 20s) linear infinite;
+   animation-delay: var(--marquee-delay, 0s);
+}
+

@@ -1,0 +1,204 @@
+---
+import {
+   ArrowDown,
+   ArrowDownUp,
+   ArrowUp,
+   FileSearch,
+   Layers,
+   Paperclip,
+   Repeat,
+   Split,
+   Tag,
+   User,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+
+interface _Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const features = [
+   {
+      color: "bg-primary/10",
+      description:
+         "Proteja suas informacoes sensiveis com medidas de seguranca avancadas.",
+      icon: Repeat,
+      title: "Transparencia de Uso",
+      visual: "usage",
+   },
+   {
+      color: "bg-sky-500/10 dark:bg-sky-400/40",
+      description:
+         "Proteja suas informacoes sensiveis com medidas de seguranca avancadas.",
+      icon: User,
+      title: "Portal do Cliente",
+      visual: "clients",
+   },
+   {
+      color: "bg-green-500/10 dark:bg-green-400/40",
+      description:
+         "Proteja suas informacoes sensiveis com medidas de seguranca avancadas.",
+      icon: Layers,
+      title: "Colaboracao em Tarefas",
+      visual: "collab",
+   },
+];
+
+const transactions = [
+   {
+      amount: -29.9,
+      category: "Entretenimento",
+      name: "Netflix",
+      type: "expense",
+   },
+   { amount: 5800.0, category: "Receita", name: "Salario", type: "income" },
+   {
+      amount: -342.5,
+      category: "Alimentacao",
+      name: "Supermercado",
+      type: "expense",
+   },
+];
+
+const categories = [
+   { color: "bg-chart-1", name: "Alimentacao", percent: 35 },
+   { color: "bg-chart-2", name: "Transporte", percent: 20 },
+   { color: "bg-chart-3", name: "Lazer", percent: 15 },
+   { color: "bg-chart-4", name: "Moradia", percent: 30 },
+];
+---
+
+<section id="transactions" class="py-16 md:py-24">
+   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mb-12 space-y-4 text-center sm:mb-16 lg:mb-20">
+         <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium mx-auto">
+            Transacoes
+         </span>
+         <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+            Controle total sobre suas transacoes
+         </h2>
+         <p class="text-muted-foreground text-xl max-w-2xl mx-auto">
+            Gerencie suas receitas e despesas de forma inteligente com ferramentas poderosas de organizacao.
+         </p>
+      </div>
+
+      <div class="relative flex w-full flex-col items-center gap-12">
+         <div class="relative flex w-full items-center justify-center max-lg:flex-wrap max-lg:gap-6 lg:justify-between">
+            <div class="flex gap-6 lg:flex-col lg:gap-12">
+               <div class="bg-card flex h-11 w-fit items-center gap-2 rounded-lg border px-3 text-base shadow-sm">
+                  <div class="bg-orange-500 size-6 rounded flex items-center justify-center text-white text-xs font-bold">IT</div>
+                  Itau
+               </div>
+               <div class="bg-card flex h-11 w-fit items-center gap-2 rounded-lg border px-3 text-base shadow-sm">
+                  <div class="bg-purple-600 size-6 rounded flex items-center justify-center text-white text-xs font-bold">NU</div>
+                  Nubank
+               </div>
+            </div>
+
+            <div class="bg-primary flex h-14 w-fit items-center gap-3 rounded-full px-4 text-xl font-medium text-primary-foreground shadow-xl max-lg:hidden">
+               <div class="bg-primary-foreground/20 flex size-9 items-center justify-center rounded-full">
+                  <Layers class="size-5" />
+               </div>
+               Montte
+            </div>
+
+            <div class="flex gap-6 lg:flex-col lg:gap-12">
+               <div class="bg-card flex h-11 w-fit items-center gap-2 rounded-lg border px-3 text-base shadow-sm">
+                  <div class="bg-blue-600 size-6 rounded flex items-center justify-center text-white text-xs font-bold">BB</div>
+                  Banco Brasil
+               </div>
+               <div class="bg-card flex h-11 w-fit items-center gap-2 rounded-lg border px-3 text-base shadow-sm">
+                  <div class="bg-red-500 size-6 rounded flex items-center justify-center text-white text-xs font-bold">ST</div>
+                  Santander
+               </div>
+            </div>
+         </div>
+
+         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 w-full">
+            <div class="bg-card overflow-hidden rounded-xl border">
+               <div class="px-6 pt-6 text-center">
+                  <div class="flex items-center justify-center gap-1.5 text-lg font-medium">
+                     <Repeat class="size-4" />
+                     Visao Geral
+                  </div>
+                  <p class="text-muted-foreground mt-1.5 text-sm">Acompanhe todas suas movimentacoes financeiras.</p>
+               </div>
+               <div class="relative mt-4 px-4 pb-4">
+                  <div class="bg-primary/10 rounded-lg p-4 space-y-3">
+                     {transactions.map((tx) => (
+                        <div class="bg-card rounded-lg px-4 py-3 flex items-center justify-between shadow-sm">
+                           <div class="flex items-center gap-3">
+                              <div class:list={[
+                                 "size-8 rounded-full flex items-center justify-center",
+                                 tx.type === "income" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                              ]}>
+                                 {tx.type === "income" ? <ArrowUp class="size-4" /> : <ArrowDown class="size-4" />}
+                              </div>
+                              <div>
+                                 <p class="font-medium text-sm">{tx.name}</p>
+                                 <p class="text-muted-foreground text-xs">{tx.category}</p>
+                              </div>
+                           </div>
+                           <span class:list={[
+                              "font-semibold text-sm",
+                              tx.type === "income" ? "text-green-500" : "text-red-500"
+                           ]}>
+                              {tx.type === "income" ? "+" : ""}{tx.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                           </span>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+
+            <div class="bg-card overflow-hidden rounded-xl border">
+               <div class="px-6 pt-6 text-center">
+                  <div class="flex items-center justify-center gap-1.5 text-lg font-medium">
+                     <Tag class="size-4" />
+                     Categorias
+                  </div>
+                  <p class="text-muted-foreground mt-1.5 text-sm">Organize gastos por categorias personalizadas.</p>
+               </div>
+               <div class="mt-4 px-4 pb-4">
+                  <div class="bg-sky-500/10 dark:bg-sky-400/20 rounded-lg p-4 space-y-4">
+                     {categories.map((cat) => (
+                        <div class="space-y-2">
+                           <div class="flex items-center justify-between text-sm">
+                              <span class="font-medium">{cat.name}</span>
+                              <span class="text-muted-foreground">{cat.percent}%</span>
+                           </div>
+                           <div class="h-2 bg-muted rounded-full overflow-hidden">
+                              <div class={`h-full ${cat.color} rounded-full`} style={`width: ${cat.percent}%`}></div>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+
+            <div class="bg-card overflow-hidden rounded-xl border">
+               <div class="px-6 pt-6 text-center">
+                  <div class="flex items-center justify-center gap-1.5 text-lg font-medium">
+                     <FileSearch class="size-4" />
+                     Busca Avancada
+                  </div>
+                  <p class="text-muted-foreground mt-1.5 text-sm">Encontre qualquer transacao rapidamente.</p>
+               </div>
+               <div class="mt-4 px-4 pb-4">
+                  <div class="bg-green-500/10 dark:bg-green-400/20 rounded-lg p-4 flex items-center justify-center min-h-[180px]">
+                     <div class="flex -space-x-3">
+                        <div class="size-10 rounded-full bg-chart-1 ring-2 ring-background flex items-center justify-center text-white text-xs font-bold">AL</div>
+                        <div class="size-12 rounded-full bg-chart-2 ring-2 ring-background flex items-center justify-center text-white text-xs font-bold">TR</div>
+                        <div class="size-14 rounded-full bg-chart-3 ring-2 ring-background flex items-center justify-center text-white text-xs font-bold">LA</div>
+                        <div class="size-12 rounded-full bg-chart-4 ring-2 ring-background flex items-center justify-center text-white text-xs font-bold">MO</div>
+                        <div class="size-10 rounded-full bg-chart-5 ring-2 ring-background flex items-center justify-center text-white text-xs font-bold">SA</div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
