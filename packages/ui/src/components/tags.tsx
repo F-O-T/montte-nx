@@ -137,7 +137,7 @@ export const TagsValue = ({
    onRemove,
    ...props
 }: TagsValueProps & { onRemove?: () => void }) => {
-   const handleRemove: MouseEventHandler<HTMLDivElement> = (event) => {
+   const handleRemove: MouseEventHandler<HTMLButtonElement> = (event) => {
       event.preventDefault();
       event.stopPropagation();
       onRemove?.();
@@ -147,14 +147,15 @@ export const TagsValue = ({
       <Badge className={cn("flex items-center gap-2", className)} {...props}>
          {children}
          {onRemove && (
-            // biome-ignore lint/a11y/noStaticElementInteractions: "This is a clickable badge"
-            // biome-ignore lint/a11y/useKeyWithClickEvents: "This is a clickable badge"
-            <div
-               className="size-auto cursor-pointer hover:text-muted-foreground"
+            <Button
+               aria-label="Remove tag"
                onClick={handleRemove}
+               size="sm"
+               type="button"
+               variant="ghost"
             >
                <XIcon size={12} />
-            </div>
+            </Button>
          )}
       </Badge>
    );
