@@ -30,7 +30,7 @@ COPY packages/environment/package.json ./packages/environment/
 COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/ofx/package.json ./packages/ofx/
-
+COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
@@ -69,9 +69,9 @@ COPY packages/api/package.json ./packages/api/
 COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
+COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/database/package.json ./packages/database/
 COPY packages/pdf/package.json ./packages/pdf/
-
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/

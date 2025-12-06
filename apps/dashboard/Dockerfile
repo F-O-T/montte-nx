@@ -24,6 +24,7 @@ COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 COPY packages/pdf/package.json ./packages/pdf/
+COPY packages/notifications/package.json ./packages/notifications/
 COPY libraries/ofx/package.json ./libraries/ofx/
 
 
