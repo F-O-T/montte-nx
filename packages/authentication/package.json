@@ -2,8 +2,8 @@
    "dependencies": {
       "@better-auth/stripe": "catalog:auth",
       "@packages/database": "workspace:*",
-      "@packages/stripe": "workspace:*",
       "@packages/environment": "workspace:*",
+      "@packages/stripe": "workspace:*",
       "@packages/transactional": "workspace:*",
       "better-auth": "catalog:auth",
       "better-auth-localization": "catalog:auth"

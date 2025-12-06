@@ -1,10 +1,10 @@
+import { stripeClient } from "@better-auth/stripe/client";
 import {
    adminClient,
    apiKeyClient,
    emailOTPClient,
    organizationClient,
 } from "better-auth/client/plugins";
-import { stripeClient } from "@better-auth/stripe/client";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 
 export interface AuthClientError {
@@ -26,6 +26,7 @@ export const createAuthClient = ({
 }: AuthClientOptions) =>
    createBetterAuthClient({
       baseURL: apiBaseUrl,
+
       fetchOptions: {
          onError: (context) => {
             onError?.({
@@ -40,7 +41,7 @@ export const createAuthClient = ({
       },
       plugins: [
          stripeClient({
-            subscription: true, //if you want to enable subscription management
+            subscription: true,
          }),
          emailOTPClient(),
          apiKeyClient(),

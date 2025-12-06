@@ -1,4 +1,8 @@
 {
+   "dependencies": {
+      "@packages/environment": "workspace:*",
+      "stripe": "catalog:payments"
+   },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
       "typescript": "catalog:development"
@@ -21,9 +25,5 @@
       "typecheck": "bunx --bun tsc  "
    },
    "type": "module",
-   "version": "0.3.0",
-   "dependencies": {
-      "stripe": "catalog:payments",
-      "@packages/environment": "workspace:*"
-   }
+   "version": "0.3.0"
 }

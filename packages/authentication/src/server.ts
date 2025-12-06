@@ -115,6 +115,41 @@ export const getAuthOptions = (
             createCustomerOnSignUp: true,
             stripeClient,
             stripeWebhookSecret: STRIPE_WEBHOOK_SECRET,
+            subscription: {
+               authorizeReference: async ({ user, referenceId }) => {
+                  const membership = await db.query.member.findFirst({
+                     where: (member, { eq, and }) =>
+                        and(
+                           eq(member.organizationId, referenceId),
+                           eq(member.userId, user.id),
+                        ),
+                  });
+                  if (!membership) {
+                     return false;
+                  }
+                  return (
+                     membership.role === "owner" || membership.role === "admin"
+                  );
+               },
+               enabled: true,
+               plans: [
+                  {
+                     annualDiscountPriceId:
+                        serverEnv.STRIPE_BASIC_ANNUAL_PRICE_ID,
+                     name: "basic",
+                     priceId: serverEnv.STRIPE_BASIC_PRICE_ID,
+                  },
+                  {
+                     annualDiscountPriceId:
+                        serverEnv.STRIPE_PRO_ANNUAL_PRICE_ID,
+                     freeTrial: {
+                        days: 14,
+                     },
+                     name: "pro",
+                     priceId: serverEnv.STRIPE_PRO_PRICE_ID,
+                  },
+               ],
+            },
          }),
          localization({
             defaultLocale: "pt-BR", // Use built-in Portuguese translations
