@@ -1,0 +1,123 @@
+---
+import { Github, Instagram, Twitter, Youtube } from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import { Separator } from "@packages/ui/components/separator";
+import Logo from "../components/Logo.astro";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const links = [
+   {
+      group: "Produto",
+      items: [
+         { href: "#features", title: "Funcionalidades" },
+         { href: "#bank-accounts", title: "Contas Bancarias" },
+         { href: "#transactions", title: "Transacoes" },
+         { href: "#how-it-works", title: "Como Funciona" },
+      ],
+   },
+   {
+      group: "Recursos",
+      items: [
+         {
+            href: "https://github.com/F-O-T/montte-nx/blob/main/CHANGELOG.md",
+            target: "_blank",
+            title: "Changelog",
+         },
+         {
+            href: "https://github.com/F-O-T/montte-nx/blob/main/CONTRIBUTING.md",
+            target: "_blank",
+            title: "Contribuir",
+         },
+         {
+            href: "https://github.com/F-O-T/montte-nx",
+            target: "_blank",
+            title: "GitHub",
+         },
+         { href: "#faq", title: "FAQ" },
+      ],
+   },
+   {
+      group: "Legal",
+      items: [
+         { href: "/privacy-policy", title: "Politica de Privacidade" },
+         { href: "/terms-of-service", title: "Termos de Uso" },
+      ],
+   },
+];
+
+const socialLinks = [
+   {
+      href: "https://github.com/F-O-T/montte-nx",
+      icon: Github,
+      label: "GitHub",
+   },
+   { color: "text-pink-500", href: "#", icon: Instagram, label: "Instagram" },
+   { color: "text-sky-500", href: "#", icon: Twitter, label: "Twitter" },
+   { color: "text-red-500", href: "#", icon: Youtube, label: "YouTube" },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-muted">
+   <div class="mx-auto grid max-w-7xl grid-cols-6 gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-16 md:py-24">
+      <div class="col-span-full flex flex-col items-start gap-4 lg:col-span-2">
+         <a href="/" class="flex items-center gap-3">
+            <Logo size={36} class="text-primary"/>
+            <span class="text-xl font-semibold text-foreground">Montte</span>
+         </a>
+         <p class="text-muted-foreground max-w-sm">
+            Uma colecao open-source de componentes para controle financeiro pessoal. Organize suas financas de forma simples e inteligente.
+         </p>
+         <Separator className="!w-36 my-2" />
+         <div class="flex items-center gap-4">
+            {socialLinks.map((social) => (
+               <a
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  class={`text-muted-foreground hover:text-primary transition-colors duration-150 ${social.color || ''}`}
+               >
+                  <social.icon class="size-5" />
+               </a>
+            ))}
+         </div>
+      </div>
+
+      <div class="col-span-full grid grid-cols-2 gap-6 sm:grid-cols-3 lg:col-span-4 lg:gap-8">
+         {links.map((linkGroup) => (
+            <div class="flex flex-col gap-4">
+               <span class="text-lg font-medium text-foreground">{linkGroup.group}</span>
+               <ul class="space-y-3">
+                  {linkGroup.items.map((item) => (
+                     <li>
+                        <a
+                           href={item.href}
+                           target={'target' in item ? item.target : '_self'}
+                           rel={'target' in item && item.target === '_blank' ? 'noopener noreferrer' : undefined}
+                           class="text-muted-foreground hover:text-primary transition-colors duration-150 text-sm"
+                        >
+                           {item.title}
+                        </a>
+                     </li>
+                  ))}
+               </ul>
+            </div>
+         ))}
+      </div>
+   </div>
+   
+   <Separator />
+   
+   <div class="mx-auto flex max-w-7xl justify-center px-4 py-6 sm:px-6">
+      <p class="text-center text-muted-foreground text-sm font-medium text-balance">
+         {year} <a href="/" class="hover:text-primary transition-colors">Montte</a>. Feito com <span class="text-red-500">&#10084;</span> para um melhor controle financeiro.
+      </p>
+   </div>
+</footer>

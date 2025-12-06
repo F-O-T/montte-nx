@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "bunx --bun biome check --write .",
+    "check": "bunx --bun biome check --write --unsafe .",
     "typecheck": "tsc",
-    "dev": "vite dev ",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -24,6 +24,7 @@
     "@tanstack/react-query": "catalog:tanstack",
     "@tanstack/react-query-devtools": "catalog:tanstack",
     "@tanstack/react-router": "catalog:tanstack",
+    "@tanstack/react-store": "^0.8.0",
     "@trpc/tanstack-react-query": "catalog:trpc",
     "framer-motion": "catalog:ui",
     "react": "catalog:react",

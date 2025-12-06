@@ -18,10 +18,11 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@packages/ui/components/select";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatDate } from "@packages/utils/date";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 interface CompleteBillDialogProps {
    bill: Bill;
@@ -37,7 +38,7 @@ export function CompleteBillDialog({
    const [bankAccountId, setBankAccountId] = useState(
       bill.bankAccountId || undefined,
    );
-   const queryClient = useQueryClient();
+   const trpc = useTRPC();
 
    const { data: bankAccounts = [] } = useQuery(
       trpc.bankAccounts.getAll.queryOptions(),
@@ -56,15 +57,6 @@ export function CompleteBillDialog({
             );
          },
          onSuccess: () => {
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getAll.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.bills.getStats.queryKey(),
-            });
-            queryClient.invalidateQueries({
-               queryKey: trpc.transactions.getAll.queryKey(),
-            });
             toast.success(
                translate("dashboard.routes.bills.features.create-bill.success"),
             );
@@ -78,7 +70,7 @@ export function CompleteBillDialog({
          await completeBillMutation.mutateAsync({
             data: {
                bankAccountId,
-               completionDate: completionDate.toISOString().split("T")[0] ?? "",
+               completionDate: formatDate(completionDate, "YYYY-MM-DD"),
             },
             id: bill.id,
          });

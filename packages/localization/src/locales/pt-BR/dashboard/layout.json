@@ -1,8 +1,11 @@
 {
    "breadcrumbs": {
       "bills": "Contas a Pagar",
+      "budgets": "Orçamentos",
       "categories": "Categorias",
       "cost-centers": "Centros de Custo",
+      "counterparties": "Fornecedores",
+      "interest-templates": "Modelos de Juros",
       "profile": "Perfil",
       "tags": "Tags",
       "transactions": "Transações"
@@ -12,6 +15,14 @@
       "search": "Pesquisar idiomas..."
    },
    "nav-main": {
+      "bills": {
+         "counterparties": "Fornecedores",
+         "interest-templates": "Modelos de Juros",
+         "overview": "Visão Geral",
+         "payables": "Contas a Pagar",
+         "receivables": "Contas a Receber",
+         "title": "Contas"
+      },
       "categorization": {
          "categories": "Categorias",
          "cost-centers": "Centros de Custo",
@@ -19,6 +30,7 @@
          "title": "Categorização"
       },
       "finance": {
+         "budgets": "Orçamentos",
          "categories": "Categorias",
          "overview": "Fluxo de caixa",
          "payables": "Contas a pagar",

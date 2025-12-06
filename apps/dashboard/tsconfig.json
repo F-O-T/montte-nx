@@ -1,52 +1,25 @@
 {
   "extends": "@tooling/typescript/vite.json",
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-  ],
+  "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client", "vite-plugin-pwa/client"],
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "module": "ESNext",
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@packages/ui/*": [
-        "../../packages/ui/src/*"
-      ]
-    },
+      "@/*": ["./src/*"],
+      "@packages/ui/*": ["../../packages/ui/src/*"]
+    }
   },
   "references": [
-    {
-      "path": "../../packages/database"
-    },
-    {
-      "path": "../../packages/utils"
-    },
-    {
-      "path": "../../packages/ui"
-    },
-    {
-      "path": "../../packages/transactional"
-    },
-    {
-      "path": "../../packages/posthog"
-    },
-    {
-      "path": "../../packages/localization"
-    },
-    {
-      "path": "../../packages/environment"
-    },
+    { "path": "../../packages/database" },
+    { "path": "../../packages/utils" },
+    { "path": "../../packages/ui" },
+    { "path": "../../packages/transactional" },
+    { "path": "../../packages/posthog" },
+    { "path": "../../packages/localization" },
+    { "path": "../../packages/environment" }
   ]
 }

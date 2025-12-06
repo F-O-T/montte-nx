@@ -6,7 +6,7 @@ import { useTRPC } from "@/integrations/clients";
 export function useActiveOrganization() {
    const trpc = useTRPC();
    const slug = useParams({
-      from: "/_dashboard/$slug",
+      from: "/$slug",
       select: (params) => params.slug,
    });
 

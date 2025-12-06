@@ -2,7 +2,6 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { tag, transactionTag } from "../schemas/tags";
-import { transaction } from "../schemas/transactions";
 
 export type Tag = typeof tag.$inferSelect;
 export type NewTag = typeof tag.$inferInsert;
@@ -188,6 +187,35 @@ export async function deleteTag(dbClient: DatabaseInstance, tagId: string) {
    }
 }
 
+export async function deleteManyTags(
+   dbClient: DatabaseInstance,
+   tagIds: string[],
+   organizationId: string,
+) {
+   if (tagIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient
+         .delete(tag)
+         .where(
+            and(
+               inArray(tag.id, tagIds),
+               eq(tag.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete tags: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function getTotalTagsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
@@ -236,7 +264,7 @@ export async function searchTags(
             LEFT JOIN ${transactionTag} tt ON t.id = tt.tag_id
             WHERE
                t.organization_id = ${organizationId}
-               AND t.name ILIKE ${"%" + query + "%"}
+               AND t.name ILIKE ${`%${query}%`}
             GROUP BY t.id
             ORDER BY t.name ASC
             LIMIT ${limit}

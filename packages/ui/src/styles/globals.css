@@ -45,7 +45,7 @@
   --font-sans: Montserrat, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Lora, ui-serif, serif;
   --font-mono: IBM Plex Mono, monospace;
-  --radius: 0.5rem;
+  --radius: 0.8rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 8px;
@@ -100,7 +100,7 @@
   --font-sans: Montserrat, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Lora, ui-serif, serif;
   --font-mono: IBM Plex Mono, monospace;
-  --radius: 0.5rem;
+  --radius: 0.8rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 8px;
@@ -185,5 +185,15 @@
       font-style: normal;
       overscroll-behavior-y: contain;
    }
+}
+
+@keyframes marquee-horizontal {
+   from { transform: translateX(0); }
+   to { transform: translateX(calc(-100% - var(--marquee-gap, 1rem))); }
+}
+
+.animate-marquee-horizontal {
+   animation: marquee-horizontal var(--marquee-duration, 20s) linear infinite;
+   animation-delay: var(--marquee-delay, 0s);
 }
 

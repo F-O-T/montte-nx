@@ -1,4 +1,4 @@
-FROM oven/bun:1.2.23 AS builder
+FROM oven/bun:alpine AS builder
 
 
 ARG DATABASE_URL
@@ -21,6 +21,7 @@ COPY package.json ./
 COPY apps/server/package.json ./apps/server/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/api/package.json ./packages/api/
+COPY libraries/ofx/package.json ./libraries/ofx/
 COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
@@ -30,6 +31,7 @@ COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/ofx/package.json ./packages/ofx/
 
+COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
@@ -41,6 +43,10 @@ RUN bun install
 COPY . .
 
 ENV NODE_ENV=production
+
+# Build the ofx library first (required dependency)
+RUN cd libraries/ofx && bun run build
+
 RUN bun build \
     --minify-whitespace \
     --minify-syntax \
@@ -64,11 +70,15 @@ COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/database/package.json ./packages/database/
+COPY packages/pdf/package.json ./packages/pdf/
+
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/ofx/package.json ./packages/ofx/
+COPY libraries/ofx/package.json ./libraries/ofx/
+
 
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
@@ -78,7 +88,7 @@ RUN bun install
 # ---
 
 # Stage 3: Create the final, small production image
-FROM oven/bun:1.2.23 AS runner
+FROM oven/bun:alpine AS base
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -95,6 +105,10 @@ ARG MINIO_SECRET_KEY
 ARG MINIO_BUCKET
 ARG POSTHOG_HOST
 ARG POSTHOG_KEY
+ARG VAPID_PUBLIC_KEY
+ARG VAPID_PRIVATE_KEY
+ARG VAPID_SUBJECT
+
 
 # Copy the pruned, production-only node_modules from the 'deps' stage.
 COPY --from=deps /app/node_modules ./node_modules

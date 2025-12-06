@@ -7,29 +7,30 @@
    },
    "description": "Typesafe ofx handling",
    "devDependencies": {
-      "@biomejs/biome": "^2.3.7",
+      "@biomejs/biome": "2.3.8",
       "@types/bun": "1.3.3",
-      "bumpp": "10.3.1",
+      "bumpp": "10.3.2",
       "bunup": "0.16.10",
-      "simple-git-hooks": "2.13.1",
       "typescript": "5.9.3"
    },
    "exports": {
       ".": {
+         "bun": "./src/index.ts",
          "import": {
             "default": "./dist/index.js",
             "types": "./dist/index.d.ts"
-         }
+         },
+         "types": "./src/index.ts"
       },
       "./package.json": "./package.json"
    },
    "files": [
       "dist"
    ],
-   "homepage": "https://github.com/F-O-T/montte-nx#readme",
+   "homepage": "https://github.com/F-O-T/montte-nx/blob/master/libraries/ofx",
    "license": "MIT",
    "module": "./dist/index.js",
-   "name": "@fot/ofx",
+   "name": "@f-o-t/ofx",
    "peerDependencies": {
       "typescript": ">=4.5.0"
    },
@@ -38,26 +39,26 @@
          "optional": true
       }
    },
+   "private": false,
+   "publishConfig": {
+      "access": "public"
+   },
    "repository": {
       "type": "git",
       "url": "https://github.com/F-O-T/montte-nx.git"
    },
    "scripts": {
       "build": "bunup",
+      "check": "biome check --write .",
       "dev": "bunup --watch",
-      "lint": "biome check .",
-      "lint:fix": "biome check --write .",
-      "postinstall": "bun simple-git-hooks",
+      "publish": "bunx npm publish",
       "release": "bumpp --commit --push --tag",
       "test": "bun test",
       "test:coverage": "bun test --coverage",
       "test:watch": "bun test --watch",
       "type-check": "tsc --noEmit"
    },
-   "simple-git-hooks": {
-      "pre-commit": "bun run lint && bun run type-check"
-   },
    "type": "module",
    "types": "./dist/index.d.ts",
-   "version": "1.0.0"
+   "version": "1.3.0"
 }

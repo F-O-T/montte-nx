@@ -1,0 +1,61 @@
+---
+import { Search } from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import Logo from "../components/Logo.astro";
+import { MobileMenu } from "../components/mobile-menu";
+import ThemeToggler from "../components/ThemeToggler.astro";
+import { menuItems } from "../data/menu-items";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang = "pt-BR" } = Astro.props;
+const brandName = translate("common.brand.name", { lng: lang });
+---
+
+<header class="bg-background sticky top-0 z-50">
+   <div class="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-5 sm:px-6">
+      <div class="text-muted-foreground flex flex-1 items-center gap-8 font-medium md:justify-center lg:gap-12">
+         <a href="#bank-accounts" class="hover:text-primary transition-colors duration-150 max-md:hidden">
+            Contas
+         </a>
+         <a href="#transactions" class="hover:text-primary transition-colors duration-150 max-md:hidden">
+            Transacoes
+         </a>
+         
+         <a href="/" class="flex items-center gap-3 text-foreground">
+            <Logo class="size-10 text-primary"/>
+            <span class="text-xl font-semibold">{brandName}</span>
+         </a>
+         
+         <a href="#how-it-works" class="hover:text-primary transition-colors duration-150 max-md:hidden">
+            Como Funciona
+         </a>
+         <a href="#open-source" class="hover:text-primary transition-colors duration-150 max-md:hidden">
+            Open Source
+         </a>
+      </div>
+      
+      <div class="flex items-center gap-4">
+         <ThemeToggler/>
+         
+         <div class="md:hidden">
+            <MobileMenu client:load/>
+         </div>
+         
+         <a
+            href="https://app.montte.co/auth/sign-up"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hidden md:block"
+         >
+            <Button aria-label={`Comecar a usar ${brandName}`}>
+               Comecar
+            </Button>
+         </a>
+      </div>
+   </div>
+</header>

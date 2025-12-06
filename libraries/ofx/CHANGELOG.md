@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-12-05
+
+### Added
+
+- Streaming API for processing large OFX files with low memory footprint
+  - `parseStream()` - AsyncGenerator yielding events (header, transaction, account, balance, complete)
+  - `parseStreamToArray()` - Helper to collect all stream events into arrays
+  - `StreamEvent` type for typed event handling
+  - Supports both `ReadableStream<Uint8Array>` and `AsyncIterable<string>` inputs
+
+### Performance
+
+- Optimized parser with lazy entity decoding (only decode when `&` present)
+- Optimized string cleaning with combined regexes and early returns
+- Single-pass date parsing with regex capture groups instead of multiple `substring()` + `parseInt()` calls
+- Direct array accumulation in extractors instead of spread + `.flat()`
+- Lazy escape with early returns when no special characters present
+- Targeted transaction normalization traversing only known OFX paths
+- Array-based string building in generator with loops instead of `.map().join()`
+- Streaming achieves ~66,000 transactions/sec throughput
+
+## [1.2.1] - 2025-12-05
+
+### Added
+
+- OFX file generation capabilities for bank and credit card statements.
+- `generateHeader()` for creating OFX headers.
+- `formatOfxDate()` for consistent OFX date formatting.
+- `escapeOfxText()` for proper text escaping within OFX tags.
+- `generateTransaction()` for creating individual OFX transaction entries.
+- `generateBankStatement()` for creating complete OFX bank statements.
+- `generateCreditCardStatement()` for creating complete OFX credit card statements.
+
+## [1.2.0] - 2025-11-27
+
+### Fixed
+
+- Fixed parsing of mixed XML/SGML format OFX files (files with both `<TAG>value</TAG>` and `<TAG>value` styles)
+- Closing tags now correctly find their matching opening tag instead of popping the wrong element from the stack
+
+### Changed
+
+- Optimized `addToContent` to mutate arrays in place instead of using spread operator
+- Optimized `sgmlToObject` to use `Map` for O(1) tag stack lookups instead of `findIndex` O(n)
+
+### Performance
+
+- ~38% faster parsing on real-world files
+- ~6.5x faster on 5K transactions (241ms → 37ms)
+- ~7x faster on 10K transactions (832ms → 113ms)
+- ~10x faster on 50K transactions (4255ms → 442ms)
+
+## [1.1.1] - 2025-11-27
+
+### Changed
+
+- Updated package exports to point to dist files for proper module resolution
+
+## [1.1.0] - 2025-11-27
+
+### Changed
+
+- Reordered object properties in `parseDateComponents` and `parseTimezone` for consistency (alphabetical order)
+
 ## [1.0.0] - 2025-11-26
 
 ### Added

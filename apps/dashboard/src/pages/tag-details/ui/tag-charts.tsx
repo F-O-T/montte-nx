@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
@@ -37,9 +38,9 @@ function TagChartsErrorFallback(props: FallbackProps) {
       <div className="grid gap-4 h-min">
          {createErrorFallback({
             errorDescription:
-               "Failed to load tag charts. Please try again later.",
-            errorTitle: "Error loading charts",
-            retryText: "Retry",
+               "Falha ao carregar graficos da tag. Por favor, tente novamente.",
+            errorTitle: "Erro ao carregar graficos",
+            retryText: "Tentar novamente",
          })(props)}
       </div>
    );
@@ -178,14 +179,24 @@ function MonthlyTooltip({
    );
 }
 
-function TagTypeDistributionChart({ tagId }: { tagId: string }) {
+function TagTypeDistributionChart({
+   tagId,
+   startDate,
+   endDate,
+}: {
+   tagId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
-      trpc.tags.getTransactions.queryOptions({
-         id: tagId,
+      trpc.transactions.getAllPaginated.queryOptions({
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
+         tagId,
       }),
    );
 
@@ -326,14 +337,24 @@ function TagTypeDistributionChart({ tagId }: { tagId: string }) {
    );
 }
 
-function TagMonthlyTrendChart({ tagId }: { tagId: string }) {
+function TagMonthlyTrendChart({
+   tagId,
+   startDate,
+   endDate,
+}: {
+   tagId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
-      trpc.tags.getTransactions.queryOptions({
-         id: tagId,
+      trpc.transactions.getAllPaginated.queryOptions({
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
+         tagId,
       }),
    );
 
@@ -352,9 +373,7 @@ function TagMonthlyTrendChart({ tagId }: { tagId: string }) {
       for (const t of transactions) {
          const date = new Date(t.date);
          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-         const monthLabel = date.toLocaleDateString("pt-BR", {
-            month: "short",
-         });
+         const monthLabel = formatDate(date, "MMM");
 
          if (!monthlyData.has(monthKey)) {
             monthlyData.set(monthKey, {
@@ -364,7 +383,8 @@ function TagMonthlyTrendChart({ tagId }: { tagId: string }) {
             });
          }
 
-         const monthData = monthlyData.get(monthKey)!;
+         const monthData = monthlyData.get(monthKey);
+         if (!monthData) continue;
          const amount = Math.abs(parseFloat(t.amount));
 
          if (t.type === "income") {
@@ -463,20 +483,48 @@ function TagMonthlyTrendChart({ tagId }: { tagId: string }) {
    );
 }
 
-function TagChartsContent({ tagId }: { tagId: string }) {
+function TagChartsContent({
+   tagId,
+   startDate,
+   endDate,
+}: {
+   tagId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <TagMonthlyTrendChart tagId={tagId} />
-         <TagTypeDistributionChart tagId={tagId} />
+         <TagMonthlyTrendChart
+            endDate={endDate}
+            startDate={startDate}
+            tagId={tagId}
+         />
+         <TagTypeDistributionChart
+            endDate={endDate}
+            startDate={startDate}
+            tagId={tagId}
+         />
       </div>
    );
 }
 
-export function TagCharts({ tagId }: { tagId: string }) {
+export function TagCharts({
+   tagId,
+   startDate,
+   endDate,
+}: {
+   tagId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={TagChartsErrorFallback}>
          <Suspense fallback={<TagChartsSkeleton />}>
-            <TagChartsContent tagId={tagId} />
+            <TagChartsContent
+               endDate={endDate}
+               startDate={startDate}
+               tagId={tagId}
+            />
          </Suspense>
       </ErrorBoundary>
    );

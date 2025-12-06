@@ -12,8 +12,8 @@ import { useRouter } from "@tanstack/react-router";
 import { AlertCircle, Building2, FolderOpen } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { NotificationSettingsCard } from "@/features/notifications/ui/notification-settings-card";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { BankAccountsSection } from "./profile-page-bank-accounts-section";
 import { ProfilePageBilling } from "./profile-page-billing";
 import { ProfileInformation } from "./profile-page-informations-section";
 import { PreferencesSection } from "./profile-page-preferences-sections";
@@ -160,7 +160,7 @@ export function ProfilePage() {
             </div>
 
             <div className="md:col-span-3 grid md:grid-cols-2 gap-4">
-               <BankAccountsSection />
+               <NotificationSettingsCard />
                <PreferencesSection />
             </div>
          </div>

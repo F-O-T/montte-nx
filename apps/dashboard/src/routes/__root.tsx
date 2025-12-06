@@ -4,7 +4,7 @@ import { QueryProvider, useTRPC } from "@/integrations/clients";
 import { ThemeProvider } from "@/layout/theme-provider";
 import "@packages/localization";
 import { translate } from "@packages/localization";
-import { PostHogWrapper } from "@packages/posthog/client";
+import { PostHogWrapper, PosthogRouterTracker } from "@packages/posthog/client";
 import { Toaster } from "@packages/ui/components/sonner";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -12,8 +12,12 @@ import {
    HeadContent,
    Outlet,
    redirect,
+   useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { GlobalAlertDialog } from "@/hooks/use-alert-dialog";
+import { GlobalCredenza } from "@/hooks/use-credenza";
+import { GlobalSheet } from "@/hooks/use-sheet";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {
@@ -61,6 +65,7 @@ function TelemetryAwarePostHogWrapper({
    children: React.ReactNode;
 }) {
    const trpc = useTRPC();
+   const location = useLocation();
    const { data: hasConsent } = useSuspenseQuery(
       trpc.session.getTelemetryConsent.queryOptions(undefined, {
          meta: { skipGlobalInvalidation: true },
@@ -69,6 +74,7 @@ function TelemetryAwarePostHogWrapper({
 
    return (
       <PostHogWrapper env={clientEnv} hasConsent={hasConsent}>
+         <PosthogRouterTracker location={location} />
          {children}
       </PostHogWrapper>
    );
@@ -81,6 +87,9 @@ function RootComponent() {
          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <QueryProvider>
                <TelemetryAwarePostHogWrapper>
+                  <GlobalAlertDialog />
+                  <GlobalCredenza />
+                  <GlobalSheet />
                   <Toaster />
                   <Outlet />
                   <TanStackRouterDevtools position="bottom-left" />

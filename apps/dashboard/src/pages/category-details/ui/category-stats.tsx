@@ -52,14 +52,24 @@ function CategoryStatsSkeleton() {
    );
 }
 
-function CategoryStatsContent({ categoryId }: { categoryId: string }) {
+function CategoryStatsContent({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
          categoryId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -118,11 +128,23 @@ function CategoryStatsContent({ categoryId }: { categoryId: string }) {
    );
 }
 
-export function CategoryStats({ categoryId }: { categoryId: string }) {
+export function CategoryStats({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={CategoryStatsErrorFallback}>
          <Suspense fallback={<CategoryStatsSkeleton />}>
-            <CategoryStatsContent categoryId={categoryId} />
+            <CategoryStatsContent
+               categoryId={categoryId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

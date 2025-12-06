@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
@@ -178,14 +179,24 @@ function MonthlyTooltip({
    );
 }
 
-function CategoryTypeDistributionChart({ categoryId }: { categoryId: string }) {
+function CategoryTypeDistributionChart({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
          categoryId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -326,14 +337,24 @@ function CategoryTypeDistributionChart({ categoryId }: { categoryId: string }) {
    );
 }
 
-function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
+function CategoryMonthlyTrendChart({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions({
          categoryId,
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -352,9 +373,7 @@ function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
       for (const t of transactions) {
          const date = new Date(t.date);
          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-         const monthLabel = date.toLocaleDateString("pt-BR", {
-            month: "short",
-         });
+         const monthLabel = formatDate(date, "MMM");
 
          if (!monthlyData.has(monthKey)) {
             monthlyData.set(monthKey, {
@@ -364,7 +383,8 @@ function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
             });
          }
 
-         const monthData = monthlyData.get(monthKey)!;
+         const monthData = monthlyData.get(monthKey);
+         if (!monthData) continue;
          const amount = Math.abs(parseFloat(t.amount));
 
          if (t.type === "income") {
@@ -463,20 +483,48 @@ function CategoryMonthlyTrendChart({ categoryId }: { categoryId: string }) {
    );
 }
 
-function CategoryChartsContent({ categoryId }: { categoryId: string }) {
+function CategoryChartsContent({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <CategoryMonthlyTrendChart categoryId={categoryId} />
-         <CategoryTypeDistributionChart categoryId={categoryId} />
+         <CategoryMonthlyTrendChart
+            categoryId={categoryId}
+            endDate={endDate}
+            startDate={startDate}
+         />
+         <CategoryTypeDistributionChart
+            categoryId={categoryId}
+            endDate={endDate}
+            startDate={startDate}
+         />
       </div>
    );
 }
 
-export function CategoryCharts({ categoryId }: { categoryId: string }) {
+export function CategoryCharts({
+   categoryId,
+   startDate,
+   endDate,
+}: {
+   categoryId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={CategoryChartsErrorFallback}>
          <Suspense fallback={<CategoryChartsSkeleton />}>
-            <CategoryChartsContent categoryId={categoryId} />
+            <CategoryChartsContent
+               categoryId={categoryId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

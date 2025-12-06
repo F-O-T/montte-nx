@@ -1,21 +1,8 @@
-import { gunzipSync } from "fflate";
 import { describe, expect, it } from "bun:test";
-import {
-   AGENT_FILE_UPLOAD_LIMIT,
-   compressMarkdown,
-} from "../src/text-file-helpers";
+import { gunzipSync } from "fflate";
+import { compressMarkdown } from "../src/text-file-helpers";
 
 describe("text file helpers", () => {
-   describe("AGENT_FILE_UPLOAD_LIMIT", () => {
-      it("should be defined as a number", () => {
-         expect(typeof AGENT_FILE_UPLOAD_LIMIT).toBe("number");
-      });
-
-      it("should equal 5", () => {
-         expect(AGENT_FILE_UPLOAD_LIMIT).toBe(5);
-      });
-   });
-
    describe("compressMarkdown", () => {
       it("should compress a simple markdown buffer", () => {
          const markdown = "# Hello World\n\nThis is a test.";

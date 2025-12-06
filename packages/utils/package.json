@@ -13,6 +13,10 @@
          "default": "./src/array.ts",
          "types": "./dist/src/array.d.ts"
       },
+      "./colors": {
+         "default": "./src/colors.ts",
+         "types": "./dist/src/colors.d.ts"
+      },
       "./date": {
          "default": "./src/date.ts",
          "types": "./dist/src/date.d.ts"
@@ -28,6 +32,10 @@
       "./file": {
          "default": "./src/file.ts",
          "types": "./dist/src/file.d.ts"
+      },
+      "./interest": {
+         "default": "./src/interest.ts",
+         "types": "./dist/src/interest.d.ts"
       },
       "./markdown": {
          "default": "./src/markdown.ts",
@@ -45,10 +53,6 @@
          "default": "./src/recurrence.ts",
          "types": "./dist/src/recurrence.d.ts"
       },
-      "./text": {
-         "default": "./src/text.ts",
-         "types": "./dist/src/text.d.ts"
-      },
       "./sanitization": {
          "default": "./src/sanitization.ts",
          "types": "./dist/src/sanitization.d.ts"
@@ -56,6 +60,10 @@
       "./split": {
          "default": "./src/split.ts",
          "types": "./dist/src/split.d.ts"
+      },
+      "./text": {
+         "default": "./src/text.ts",
+         "types": "./dist/src/text.d.ts"
       }
    },
    "files": [

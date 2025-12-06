@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Card,
    CardContent,
@@ -7,46 +6,52 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { StatsCard } from "@packages/ui/components/stats-card";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-   ArrowDownRight,
-   ArrowUpRight,
-   Building,
-   Calendar,
-   Tag,
-} from "lucide-react";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
 
-function StatsErrorFallback() {
+function StatsErrorFallback(props: FallbackProps) {
    return (
-      <Alert variant="destructive">
-         <AlertDescription>
-            {translate(
+      <div className="grid gap-4 h-min">
+         {createErrorFallback({
+            errorDescription: translate(
                "dashboard.routes.transactions.details.error.load-stats",
-            )}
-         </AlertDescription>
-      </Alert>
+            ),
+            errorTitle: "Error loading stats",
+            retryText: translate("common.actions.retry"),
+         })(props)}
+      </div>
    );
 }
 
 function StatsSkeleton() {
    return (
-      <Card className="h-full flex flex-col">
-         <CardHeader className="p-4 md:p-6">
-            <Skeleton className="h-5 md:h-6 w-24 md:w-32" />
-         </CardHeader>
-         <CardContent className="flex-1 flex flex-col justify-between gap-3 md:gap-4 p-4 md:p-6 pt-0 md:pt-0">
-            <Skeleton className="h-16 md:h-20 w-full" />
-            <Skeleton className="h-16 md:h-20 w-full" />
-            <Skeleton className="h-16 md:h-20 w-full" />
-            <Skeleton className="h-16 md:h-20 w-full" />
-         </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+         {[1, 2, 3, 4].map((index) => (
+            <Card
+               className="col-span-1 h-full w-full"
+               key={`stats-skeleton-${index}`}
+            >
+               <CardHeader>
+                  <CardTitle>
+                     <Skeleton className="h-6 w-24" />
+                  </CardTitle>
+                  <CardDescription>
+                     <Skeleton className="h-4 w-32" />
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <Skeleton className="h-10 w-16" />
+               </CardContent>
+            </Card>
+         ))}
+      </div>
    );
 }
 
@@ -61,86 +66,57 @@ function StatsContent({ transactionId }: { transactionId: string }) {
       data.type === "income" || (data.type === "transfer" && amount > 0);
    const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
-   const createdAt = formatDate(new Date(data.createdAt), "DD/MM/YYYY");
-   const updatedAt = formatDate(new Date(data.updatedAt), "DD/MM/YYYY");
+   const formattedDate = formatDate(new Date(data.date), "DD MMMM YYYY");
 
-   const stats = [
-      {
-         description: translate(
-            "dashboard.routes.transactions.details.stats.amount.description",
-         ),
-         icon: isPositive ? (
-            <ArrowUpRight className="size-5 text-green-500" />
-         ) : (
-            <ArrowDownRight className="size-5 text-red-500" />
-         ),
-         title: translate(
-            "dashboard.routes.transactions.details.stats.amount.title",
-         ),
-         value: `${isPositive ? "+" : "-"}${formattedAmount}`,
-      },
-      {
-         description: translate(
-            "dashboard.routes.transactions.details.stats.categories.description",
-         ),
-         icon: <Tag className="size-5 text-muted-foreground" />,
-         title: translate(
-            "dashboard.routes.transactions.details.stats.categories.title",
-         ),
-         value: data.transactionCategories?.length || 0,
-      },
-      {
-         description: data.bankAccount?.bank || "-",
-         icon: <Building className="size-5 text-muted-foreground" />,
-         title: translate(
-            "dashboard.routes.transactions.details.stats.bank-account.title",
-         ),
-         value: data.bankAccount?.name || "-",
-      },
-      {
-         description: `${translate("dashboard.routes.transactions.details.stats.updated.description")}: ${updatedAt}`,
-         icon: <Calendar className="size-5 text-muted-foreground" />,
-         title: translate(
-            "dashboard.routes.transactions.details.stats.created.title",
-         ),
-         value: createdAt,
-      },
-   ];
+   const typeLabels: Record<string, string> = {
+      expense: translate(
+         "dashboard.routes.transactions.list-section.types.expense",
+      ),
+      income: translate(
+         "dashboard.routes.transactions.list-section.types.income",
+      ),
+      transfer: translate(
+         "dashboard.routes.transactions.list-section.types.transfer",
+      ),
+   };
+
+   const createdAt = formatDate(new Date(data.createdAt), "DD/MM/YYYY");
 
    return (
-      <Card className="h-full flex flex-col">
-         <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">
-               {translate("dashboard.routes.transactions.details.stats.title")}
-            </CardTitle>
-            <CardDescription className="text-xs md:text-sm">
-               {translate(
-                  "dashboard.routes.transactions.details.stats.description",
-               )}
-            </CardDescription>
-         </CardHeader>
-         <CardContent className="flex-1 flex flex-col justify-between gap-3 md:gap-4 p-4 md:p-6 pt-0 md:pt-0">
-            {stats.map((stat, index) => (
-               <div
-                  className="flex items-start gap-2 md:gap-3 rounded-lg border p-2 md:p-3"
-                  key={`stat-${index + 1}`}
-               >
-                  <div className="mt-0.5 hidden md:block">{stat.icon}</div>
-                  <div className="flex-1 min-w-0">
-                     <p className="text-xs md:text-sm text-muted-foreground">
-                        {stat.title}
-                     </p>
-                     <p className="font-semibold text-sm md:text-base truncate">
-                        {stat.value}
-                     </p>
-                     <p className="text-xs text-muted-foreground truncate">
-                        {stat.description}
-                     </p>
-                  </div>
-               </div>
-            ))}
-         </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.details.stats.amount.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.details.stats.amount.title",
+            )}
+            value={`${isPositive ? "+" : "-"}${formattedAmount}`}
+         />
+         <StatsCard
+            description={formattedDate}
+            title={translate(
+               "dashboard.routes.transactions.details.stats.type.title",
+            )}
+            value={typeLabels[data.type] || data.type}
+         />
+         <StatsCard
+            description={data.bankAccount?.bank || "-"}
+            title={translate(
+               "dashboard.routes.transactions.details.stats.bank-account.title",
+            )}
+            value={data.bankAccount?.name || "-"}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.transactions.details.stats.created.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.details.stats.created.title",
+            )}
+            value={createdAt}
+         />
+      </div>
    );
 }
 

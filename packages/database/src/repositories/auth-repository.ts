@@ -96,9 +96,11 @@ export async function createDefaultOrganization(
       const [createdOrganization] = await dbClient
          .insert(organization)
          .values({
+            context: "personal",
             createdAt: now,
             description: orgName,
             name: orgName,
+            onboardingCompleted: false,
             slug: orgSlug,
          })
          .returning();
@@ -173,6 +175,35 @@ export async function enableTelemetryConsent(
       propagateError(err);
       throw AppError.database(
          `Failed to update telemetry consent: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getOrganizationMembership(
+   dbClient: DatabaseInstance,
+   userId: string,
+   organizationSlug: string,
+) {
+   try {
+      const org = await dbClient.query.organization.findFirst({
+         where: (organization, { eq }) =>
+            eq(organization.slug, organizationSlug),
+      });
+
+      if (!org) {
+         return { membership: null, organization: null };
+      }
+
+      const membership = await dbClient.query.member.findFirst({
+         where: (member, { eq, and }) =>
+            and(eq(member.organizationId, org.id), eq(member.userId, userId)),
+      });
+
+      return { membership, organization: org };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get organization membership: ${(err as Error).message}`,
       );
    }
 }

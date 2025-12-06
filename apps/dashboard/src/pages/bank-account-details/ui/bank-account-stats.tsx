@@ -52,14 +52,24 @@ function BankAccountStatsSkeleton() {
    );
 }
 
-function BankAccountStatsContent({ bankAccountId }: { bankAccountId: string }) {
+function BankAccountStatsContent({
+   bankAccountId,
+   startDate,
+   endDate,
+}: {
+   bankAccountId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
+         endDate: endDate?.toISOString(),
          id: bankAccountId,
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -131,11 +141,23 @@ function BankAccountStatsContent({ bankAccountId }: { bankAccountId: string }) {
    );
 }
 
-export function BankAccountStats({ bankAccountId }: { bankAccountId: string }) {
+export function BankAccountStats({
+   bankAccountId,
+   startDate,
+   endDate,
+}: {
+   bankAccountId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={BankAccountStatsErrorFallback}>
          <Suspense fallback={<BankAccountStatsSkeleton />}>
-            <BankAccountStatsContent bankAccountId={bankAccountId} />
+            <BankAccountStatsContent
+               bankAccountId={bankAccountId}
+               endDate={endDate}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

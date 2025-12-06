@@ -30,7 +30,7 @@ import {
    XAxis,
    YAxis,
 } from "recharts";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function CostCentersChartsErrorFallback(props: FallbackProps) {
    return (
@@ -150,6 +150,7 @@ const CHART_COLORS = [
 ];
 
 function CostCenterDistributionChart() {
+   const trpc = useTRPC();
    const { data: costCenters } = useSuspenseQuery(
       trpc.costCenters.getAllPaginated.queryOptions({
          limit: 100,
@@ -176,7 +177,8 @@ function CostCenterDistributionChart() {
 
       for (const t of transactions.transactions) {
          if (t.costCenterId && costCenterMap.has(t.costCenterId)) {
-            const cc = costCenterMap.get(t.costCenterId)!;
+            const cc = costCenterMap.get(t.costCenterId);
+            if (!cc) continue;
             cc.total += Math.abs(parseFloat(t.amount));
             cc.count += 1;
          }
@@ -300,6 +302,7 @@ function CostCenterDistributionChart() {
 }
 
 function TopCostCentersChart() {
+   const trpc = useTRPC();
    const { data: costCenters } = useSuspenseQuery(
       trpc.costCenters.getAllPaginated.queryOptions({
          limit: 100,
@@ -330,7 +333,8 @@ function TopCostCentersChart() {
             costCenterMap.has(t.costCenterId) &&
             t.type === "expense"
          ) {
-            const cc = costCenterMap.get(t.costCenterId)!;
+            const cc = costCenterMap.get(t.costCenterId);
+            if (!cc) continue;
             cc.total += Math.abs(parseFloat(t.amount));
             cc.count += 1;
          }
@@ -431,6 +435,7 @@ function TopCostCentersChart() {
 }
 
 function CostCenterTypeDistributionChart() {
+   const trpc = useTRPC();
    const { data: costCenters } = useSuspenseQuery(
       trpc.costCenters.getAllPaginated.queryOptions({
          limit: 100,

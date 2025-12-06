@@ -9,7 +9,7 @@ import {
 } from "@packages/ui/components/command";
 import { cn } from "@packages/ui/lib/utils";
 import { Command as CommandPrimitive } from "cmdk";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import * as React from "react";
 
 export type Option = {
@@ -25,6 +25,8 @@ interface MultiSelectProps {
    className?: string;
    placeholder?: string;
    emptyMessage?: string;
+   onCreate?: (name: string) => void;
+   createLabel?: string;
 }
 
 export function MultiSelect({
@@ -33,6 +35,8 @@ export function MultiSelect({
    onChange,
    className,
    placeholder = "Select options...",
+   onCreate,
+   createLabel = "Criar",
 }: MultiSelectProps) {
    const inputRef = React.useRef<HTMLInputElement>(null);
    const [open, setOpen] = React.useState(false);
@@ -68,6 +72,27 @@ export function MultiSelect({
       () => options.filter((option) => !selected.includes(option.value)),
       [options, selected],
    );
+
+   const filteredSelectables = React.useMemo(() => {
+      const searchTerm = inputValue.trim().toLowerCase();
+      if (!searchTerm) return selectables;
+      return selectables.filter((option) =>
+         option.label.toLowerCase().includes(searchTerm),
+      );
+   }, [selectables, inputValue]);
+
+   const handleCreate = () => {
+      const trimmedValue = inputValue.trim();
+      if (trimmedValue && onCreate) {
+         onCreate(trimmedValue);
+         setInputValue("");
+      }
+   };
+
+   const showCreateOption =
+      onCreate &&
+      inputValue.trim().length > 0 &&
+      filteredSelectables.length === 0;
 
    return (
       <Command
@@ -120,10 +145,24 @@ export function MultiSelect({
          </div>
          <div className="relative mt-2">
             <CommandList>
-               {open && selectables.length > 0 ? (
+               {open && (filteredSelectables.length > 0 || showCreateOption) ? (
                   <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
                      <CommandGroup className="h-full overflow-auto max-h-64">
-                        {selectables.map((opt) => {
+                        {showCreateOption && (
+                           <CommandItem
+                              className="cursor-pointer"
+                              onMouseDown={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                              }}
+                              onSelect={handleCreate}
+                              value={`create-${inputValue.trim()}`}
+                           >
+                              <Plus className="mr-2 h-4 w-4" />
+                              {createLabel} "{inputValue.trim()}"
+                           </CommandItem>
+                        )}
+                        {filteredSelectables.map((opt) => {
                            const IconComponent = opt?.icon;
                            return (
                               <CommandItem

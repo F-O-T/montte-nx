@@ -1,19 +1,43 @@
 import type { RouterOutput } from "@packages/api/client";
+import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import { Plus } from "lucide-react";
 import { DefaultHeader } from "@/default/default-header";
+import { useSheet } from "@/hooks/use-sheet";
 import { CategoryListProvider } from "../features/category-list-context";
+import { ManageCategoryForm } from "../features/manage-category-form";
 import { CategoriesCharts } from "./categories-charts";
 import { CategoriesListSection } from "./categories-list-section";
 import { CategoriesStats } from "./categories-stats";
+
 export type Category =
    RouterOutput["categories"]["getAllPaginated"]["categories"][0];
 
 export function CategoriesPage() {
+   const { openSheet } = useSheet();
+
    return (
       <CategoryListProvider>
          <main className="space-y-4">
             <DefaultHeader
-               description="Gerencie suas categorias de transacoes"
-               title="Categorias"
+               actions={
+                  <Button
+                     onClick={() =>
+                        openSheet({ children: <ManageCategoryForm /> })
+                     }
+                  >
+                     <Plus className="size-4" />
+                     {translate(
+                        "dashboard.routes.categories.actions-toolbar.actions.add-new",
+                     )}
+                  </Button>
+               }
+               description={translate(
+                  "dashboard.routes.categories.list-section.description",
+               )}
+               title={translate(
+                  "dashboard.routes.categories.list-section.title",
+               )}
             />
             <CategoriesStats />
             <CategoriesListSection />

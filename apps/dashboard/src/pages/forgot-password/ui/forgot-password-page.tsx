@@ -1,14 +1,6 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
-import {
    Field,
    FieldError,
    FieldGroup,
@@ -308,12 +300,12 @@ export function ForgotPasswordPage() {
    return (
       <Stepper.Provider>
          {({ methods }) => (
-            <Card>
-               <CardHeader className="text-center">
-                  <CardTitle className="text-3xl ">
+            <section className="space-y-6 w-full">
+               <div className="text-center space-y-2">
+                  <h1 className="text-3xl font-semibold font-serif">
                      {translate("dashboard.routes.forgot-password.title")}
-                  </CardTitle>
-                  <CardDescription className="">
+                  </h1>
+                  <p className="text-muted-foreground text-sm">
                      {methods.current.id === "enter-email"
                         ? translate(
                              "dashboard.routes.forgot-password.descriptions.enter-email",
@@ -325,10 +317,11 @@ export function ForgotPasswordPage() {
                           : translate(
                                "dashboard.routes.forgot-password.descriptions.enter-password",
                             )}
-                  </CardDescription>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                  <Stepper.Navigation>
+                  </p>
+               </div>
+
+               <div className="space-y-6">
+                  <Stepper.Navigation className="w-full">
                      {steps.map((step) => (
                         <Stepper.Step key={step.id} of={step.id} />
                      ))}
@@ -352,7 +345,7 @@ export function ForgotPasswordPage() {
                            <form.Subscribe>
                               {(formState) => (
                                  <Button
-                                    className="shadow-lg transition-all duration-300 group bg-primary shadow-primary/20 hover:bg-primary/90 flex gap-2 items-center justify-center"
+                                    className="flex gap-2 items-center justify-center"
                                     disabled={
                                        !formState.canSubmit ||
                                        formState.isSubmitting
@@ -393,23 +386,26 @@ export function ForgotPasswordPage() {
                         )}
                      </Stepper.Controls>
                   </form>
-               </CardContent>
-               <CardFooter className="text-sm flex gap-1 items-center justify-center">
-                  <span>
-                     {translate(
-                        "dashboard.routes.forgot-password.texts.remembered-password",
-                     )}
-                  </span>
-                  <Link
-                     className=" underline text-muted-foreground"
-                     to="/auth/sign-in"
-                  >
-                     {translate(
-                        "dashboard.routes.forgot-password.actions.sign-in",
-                     )}
-                  </Link>
-               </CardFooter>
-            </Card>
+               </div>
+
+               <div className="text-sm text-center">
+                  <div className="flex gap-1 justify-center items-center">
+                     <span>
+                        {translate(
+                           "dashboard.routes.forgot-password.texts.remembered-password",
+                        )}
+                     </span>
+                     <Link
+                        className="text-primary hover:underline"
+                        to="/auth/sign-in"
+                     >
+                        {translate(
+                           "dashboard.routes.forgot-password.actions.sign-in",
+                        )}
+                     </Link>
+                  </div>
+               </div>
+            </section>
          )}
       </Stepper.Provider>
    );

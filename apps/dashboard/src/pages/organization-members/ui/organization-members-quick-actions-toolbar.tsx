@@ -12,55 +12,50 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { Plus } from "lucide-react";
-import { useState } from "react";
-import { InviteMemberSheet } from "../features/invite-member-sheet";
+import { useSheet } from "@/hooks/use-sheet";
+import { InviteMemberForm } from "../features/invite-member-form";
 
 export function MembersQuickActionsToolbar() {
-   const [isInviteMemberSheetOpen, setIsInviteMemberSheetOpen] =
-      useState(false);
+   const { openSheet } = useSheet();
 
    const quickActions = [
       {
          icon: <Plus className="size-4" />,
          label: "Invite New Member",
-         onClick: () => setIsInviteMemberSheetOpen(true),
+         onClick: () =>
+            openSheet({
+               children: <InviteMemberForm />,
+            }),
          variant: "default" as const,
       },
    ];
 
    return (
-      <>
-         <Item variant="outline">
-            <ItemContent>
-               <ItemTitle>Member Actions</ItemTitle>
-               <ItemDescription>Manage organization members</ItemDescription>
-            </ItemContent>
-            <ItemActions>
-               <div className="flex flex-wrap gap-2">
-                  {quickActions.map((action, index) => (
-                     <Tooltip key={`member-action-${index + 1}`}>
-                        <TooltipTrigger asChild>
-                           <Button
-                              onClick={action.onClick}
-                              size="icon"
-                              variant={action.variant}
-                           >
-                              {action.icon}
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{action.label}</p>
-                        </TooltipContent>
-                     </Tooltip>
-                  ))}
-               </div>
-            </ItemActions>
-         </Item>
-
-         <InviteMemberSheet
-            onOpenChange={setIsInviteMemberSheetOpen}
-            open={isInviteMemberSheetOpen}
-         />
-      </>
+      <Item variant="outline">
+         <ItemContent>
+            <ItemTitle>Member Actions</ItemTitle>
+            <ItemDescription>Manage organization members</ItemDescription>
+         </ItemContent>
+         <ItemActions>
+            <div className="flex flex-wrap gap-2">
+               {quickActions.map((action, index) => (
+                  <Tooltip key={`member-action-${index + 1}`}>
+                     <TooltipTrigger asChild>
+                        <Button
+                           onClick={action.onClick}
+                           size="icon"
+                           variant={action.variant}
+                        >
+                           {action.icon}
+                        </Button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                        <p>{action.label}</p>
+                     </TooltipContent>
+                  </Tooltip>
+               ))}
+            </div>
+         </ItemActions>
+      </Item>
    );
 }

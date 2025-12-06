@@ -12,7 +12,7 @@ import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function TagsStatsErrorFallback(props: FallbackProps) {
    return (
@@ -53,6 +53,7 @@ function TagsStatsSkeleton() {
 }
 
 function TagsStatsContent() {
+   const trpc = useTRPC();
    const { data: stats } = useSuspenseQuery(trpc.tags.getStats.queryOptions());
 
    return (

@@ -19,9 +19,9 @@ function TagStatsErrorFallback(props: FallbackProps) {
       <div className="grid gap-4 h-min">
          {createErrorFallback({
             errorDescription:
-               "Failed to load tag stats. Please try again later.",
-            errorTitle: "Error loading stats",
-            retryText: "Retry",
+               "Falha ao carregar estatísticas. Por favor, tente novamente.",
+            errorTitle: "Erro ao carregar estatísticas",
+            retryText: "Tentar novamente",
          })(props)}
       </div>
    );
@@ -52,14 +52,24 @@ function TagStatsSkeleton() {
    );
 }
 
-function TagStatsContent({ tagId }: { tagId: string }) {
+function TagStatsContent({
+   tagId,
+   startDate,
+   endDate,
+}: {
+   tagId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
-      trpc.tags.getTransactions.queryOptions({
-         id: tagId,
+      trpc.transactions.getAllPaginated.queryOptions({
+         endDate: endDate?.toISOString(),
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
+         tagId,
       }),
    );
 
@@ -75,7 +85,7 @@ function TagStatsContent({ tagId }: { tagId: string }) {
       .filter((t: { type: string }) => t.type === "expense")
       .reduce(
          (acc: number, curr: { amount: string }) =>
-            acc + parseFloat(curr.amount),
+            acc + Math.abs(parseFloat(curr.amount)),
          0,
       );
 
@@ -118,11 +128,23 @@ function TagStatsContent({ tagId }: { tagId: string }) {
    );
 }
 
-export function TagStats({ tagId }: { tagId: string }) {
+export function TagStats({
+   tagId,
+   startDate,
+   endDate,
+}: {
+   tagId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+}) {
    return (
       <ErrorBoundary FallbackComponent={TagStatsErrorFallback}>
          <Suspense fallback={<TagStatsSkeleton />}>
-            <TagStatsContent tagId={tagId} />
+            <TagStatsContent
+               endDate={endDate}
+               startDate={startDate}
+               tagId={tagId}
+            />
          </Suspense>
       </ErrorBoundary>
    );

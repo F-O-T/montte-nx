@@ -33,10 +33,14 @@
             "title": "Categorias"
          },
          "created": {
+            "description": "Data de registro no sistema",
             "title": "Criado em"
          },
          "description": "Informações detalhadas da transação",
          "title": "Detalhes",
+         "type": {
+            "title": "Tipo"
+         },
          "updated": {
             "description": "Atualizado em"
          }
@@ -79,14 +83,31 @@
          "title": "Filtrar Transações"
       }
    },
+   "link-file": {
+      "button": "Anexar Arquivo",
+      "clear-selection": "Limpar seleção",
+      "click-to-change": "Clique para alterar",
+      "current-file": "Arquivo atual",
+      "new-file": "Novo arquivo",
+      "replace-hint": "Envie um novo arquivo para substituir o atual",
+      "select-file": "Selecione um arquivo",
+      "sheet": {
+         "description": "Anexe um arquivo à transação, como uma nota fiscal ou comprovante.",
+         "title": "Anexar Arquivo"
+      },
+      "upload": "Enviar arquivo",
+      "uploading": "Enviando..."
+   },
    "list-section": {
       "actions": {
          "delete": "Excluir transação",
+         "edit": "Editar transação",
          "label": "Gerencie sua transação",
          "view-details": "Ver detalhes"
       },
       "description": "Veja todas as suas transações financeiras aqui.",
       "page": "Página {{current}} de {{total}}",
+      "rows-per-page": "Linhas por página",
       "showing": "Mostrando {{count}} de {{total}} transações",
       "state": {
          "empty": {
@@ -100,6 +121,12 @@
          "income": "Receita",
          "transfer": "Transferência"
       }
+   },
+   "notifications": {
+      "create-error": "Falha ao criar transação",
+      "create-success": "Transação criada com sucesso",
+      "update-error": "Falha ao atualizar transação",
+      "update-success": "Transação atualizada com sucesso"
    },
    "stats-section": {
       "expense": {

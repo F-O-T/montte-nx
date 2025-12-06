@@ -26,12 +26,13 @@ import {
 } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Eye, Plus, Users } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ManageOrganizationSheet } from "@/features/organization-actions/ui/manage-organization-sheet";
+import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { CreateTeamSheet } from "@/pages/organization-teams/features/create-team-sheet";
+import { CreateTeamForm } from "@/pages/organization-teams/features/create-team-form";
 
 //TODO: Adicionar textos no Locale
 function OrganizationSwitcherErrorFallback() {
@@ -119,23 +120,34 @@ function OrganizationDropdownContent({
       trpc.organization.getLogo.queryOptions(),
    );
 
+   const { activeOrganization } = useActiveOrganization();
    const queryClient = useQueryClient();
 
    const setActiveOrganization = useMutation(
       trpc.organization.setActiveOrganization.mutationOptions({
          onSuccess: async () => {
-            await queryClient.invalidateQueries({
-               queryKey: trpc.organization.getOrganizations.queryKey(),
-            });
             toast.success("Organization set successfully");
          },
       }),
    );
 
-   async function handleOrganizationClick(organizationId: string) {
-      await setActiveOrganization.mutateAsync({
-         organizationId,
+   async function handleOrganizationClick(
+      organizationId: string,
+      organizationSlug: string,
+   ) {
+      const isCurrentOrg = activeOrganization.slug === organizationSlug;
+
+      await router.navigate({
+         params: { slug: organizationSlug },
+         to: "/$slug/home",
       });
+      await queryClient.invalidateQueries();
+
+      if (!isCurrentOrg) {
+         setActiveOrganization.mutate({
+            organizationId,
+         });
+      }
    }
 
    return (
@@ -149,7 +161,10 @@ function OrganizationDropdownContent({
                   className="gap-2 p-2"
                   disabled={setActiveOrganization.isPending}
                   onClick={() => {
-                     handleOrganizationClick(organization.id);
+                     handleOrganizationClick(
+                        organization.id,
+                        organization.slug,
+                     );
                   }}
                >
                   <div className="flex p-1 size-6 items-center justify-center rounded-md border">
@@ -186,6 +201,7 @@ function OrganizationDropdownContent({
                               to: "/$slug/organization",
                            });
                         }}
+                        organizationId={organization.id}
                         organizationSlug={organization.slug}
                      />
                   </Suspense>
@@ -197,10 +213,12 @@ function OrganizationDropdownContent({
 }
 
 function OrganizationTeamsList({
+   organizationId,
    organizationSlug,
    onCreateTeamClick,
    onViewDetailsClick,
 }: {
+   organizationId: string;
    organizationSlug: string;
    onCreateTeamClick: () => void;
    onViewDetailsClick: () => void;
@@ -209,7 +227,9 @@ function OrganizationTeamsList({
    const router = useRouter();
 
    const { data: teams } = useSuspenseQuery(
-      trpc.organization.listTeams.queryOptions(),
+      trpc.organization.listTeamsByOrganizationId.queryOptions({
+         organizationId,
+      }),
    );
 
    //TODO: checar necessidade de repetir o dropdown menu label
@@ -300,9 +320,7 @@ function OrganizationTeamsList({
 function OrganizationSwitcherContent() {
    const { isMobile } = useSidebar();
    const trpc = useTRPC();
-
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-   const [isCreateTeamSheetOpen, setIsCreateTeamSheetOpen] = useState(false);
+   const { openSheet } = useSheet();
 
    const { activeOrganization } = useActiveOrganization();
 
@@ -365,7 +383,7 @@ function OrganizationSwitcherContent() {
                      <Suspense fallback={<OrganizationDropdownSkeleton />}>
                         <OrganizationDropdownContent
                            onCreateTeamClick={() =>
-                              setIsCreateTeamSheetOpen(true)
+                              openSheet({ children: <CreateTeamForm /> })
                            }
                         />
                      </Suspense>
@@ -375,7 +393,9 @@ function OrganizationSwitcherContent() {
 
                   <DropdownMenuItem
                      disabled={hasReachedLimit}
-                     onClick={() => setIsCreateSheetOpen(true)}
+                     onClick={() =>
+                        openSheet({ children: <ManageOrganizationForm /> })
+                     }
                      title={
                         hasReachedLimit
                            ? translate(
@@ -396,15 +416,6 @@ function OrganizationSwitcherContent() {
                </DropdownMenuContent>
             </DropdownMenu>
          </SidebarMenuItem>
-
-         <ManageOrganizationSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
-         <CreateTeamSheet
-            onOpenChange={setIsCreateTeamSheetOpen}
-            open={isCreateTeamSheetOpen}
-         />
       </SidebarMenu>
    );
 }

@@ -1,0 +1,492 @@
+import { translate } from "@packages/localization";
+import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
+import { Combobox } from "@packages/ui/components/combobox";
+import {
+   Field,
+   FieldDescription,
+   FieldError,
+   FieldGroup,
+   FieldLabel,
+} from "@packages/ui/components/field";
+import { MultiSelect } from "@packages/ui/components/multi-select";
+import {
+   SheetDescription,
+   SheetFooter,
+   SheetHeader,
+   SheetTitle,
+} from "@packages/ui/components/sheet";
+import { getRandomColor } from "@packages/utils/colors";
+import { useForm } from "@tanstack/react-form";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Tag, X } from "lucide-react";
+import type { FormEvent } from "react";
+import { useCallback } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { useSheet } from "@/hooks/use-sheet";
+import { useTRPC } from "@/integrations/clients";
+import type { Transaction } from "./transaction-list";
+
+type CategorizeFormProps = {
+   transactions: Transaction[];
+   onSuccess?: () => void;
+};
+
+export function CategorizeForm({
+   transactions,
+   onSuccess,
+}: CategorizeFormProps) {
+   const trpc = useTRPC();
+   const { closeSheet } = useSheet();
+
+   // For single transaction, pre-populate with existing values
+   const existingCategoryIds =
+      transactions.length === 1 && transactions[0]
+         ? transactions[0].transactionCategories?.map((tc) => tc.category.id) ||
+           []
+         : [];
+   const existingCostCenterId =
+      transactions.length === 1 && transactions[0]
+         ? transactions[0].costCenterId || ""
+         : "";
+   const existingTagIds =
+      transactions.length === 1 && transactions[0]
+         ? transactions[0].transactionTags?.map((tt) => tt.tag.id) || []
+         : [];
+
+   const categorizeSchema = z.object({
+      categoryIds: z.array(z.string()),
+      costCenterId: z.string(),
+      tagIds: z.array(z.string()),
+   });
+
+   const { data: categories = [] } = useQuery(
+      trpc.categories.getAll.queryOptions(),
+   );
+
+   const { data: costCenters = [] } = useQuery(
+      trpc.costCenters.getAll.queryOptions(),
+   );
+
+   const { data: tags = [] } = useQuery(trpc.tags.getAll.queryOptions());
+
+   const updateCategoryMutation = useMutation(
+      trpc.transactions.updateCategory.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao atualizar categoria");
+         },
+      }),
+   );
+
+   const updateCostCenterMutation = useMutation(
+      trpc.transactions.updateCostCenter.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao atualizar centro de custo");
+         },
+      }),
+   );
+
+   const updateTagsMutation = useMutation(
+      trpc.transactions.updateTags.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao atualizar tags");
+         },
+      }),
+   );
+
+   const handleCategorize = useCallback(
+      async (value: z.infer<typeof categorizeSchema>) => {
+         const transactionIds = transactions.map((t) => t.id);
+
+         // Run all mutations in parallel
+         const promises = [];
+
+         if (value.categoryIds && value.categoryIds.length > 0) {
+            promises.push(
+               updateCategoryMutation.mutateAsync({
+                  categoryId: value.categoryIds[0] as string,
+                  ids: transactionIds,
+               }),
+            );
+         }
+
+         if (value.costCenterId || value.costCenterId === "") {
+            promises.push(
+               updateCostCenterMutation.mutateAsync({
+                  costCenterId: value.costCenterId || null,
+                  ids: transactionIds,
+               }),
+            );
+         }
+
+         if (value.tagIds.length > 0) {
+            promises.push(
+               updateTagsMutation.mutateAsync({
+                  ids: transactionIds,
+                  tagIds: value.tagIds,
+               }),
+            );
+         }
+
+         try {
+            await Promise.all(promises);
+            const updatedFields = [];
+            if (value.categoryIds.length > 0) updatedFields.push("categoria");
+            if (value.costCenterId || value.costCenterId === "")
+               updatedFields.push("centro de custo");
+            if (value.tagIds.length > 0) updatedFields.push("tags");
+
+            toast.success(
+               `${updatedFields.join(", ")} atualizado${updatedFields.length > 1 ? "s" : ""} para ${transactions.length} ${transactions.length === 1 ? "transação" : "transações"}`,
+            );
+            onSuccess?.();
+            closeSheet();
+         } catch (error) {
+            console.error(error);
+            // Errors are handled by individual mutations
+         }
+      },
+      [
+         transactions,
+         updateCategoryMutation,
+         updateCostCenterMutation,
+         updateTagsMutation,
+         onSuccess,
+         closeSheet,
+      ],
+   );
+
+   const form = useForm({
+      defaultValues: {
+         categoryIds: existingCategoryIds,
+         costCenterId: existingCostCenterId,
+         tagIds: existingTagIds,
+      },
+      onSubmit: async ({ value }) => {
+         await handleCategorize(value);
+      },
+      validators: {
+         onBlur: categorizeSchema,
+      },
+   });
+
+   const createCategoryMutation = useMutation(
+      trpc.categories.create.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao criar categoria");
+         },
+         onSuccess: (data) => {
+            if (!data) return;
+            form.setFieldValue("categoryIds", [
+               ...form.getFieldValue("categoryIds"),
+               data.id,
+            ]);
+            toast.success(`Categoria "${data.name}" criada`);
+         },
+      }),
+   );
+
+   const createCostCenterMutation = useMutation(
+      trpc.costCenters.create.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao criar centro de custo");
+         },
+         onSuccess: (data) => {
+            if (!data) return;
+            form.setFieldValue("costCenterId", data.id);
+            toast.success(`Centro de custo "${data.name}" criado`);
+         },
+      }),
+   );
+
+   const createTagMutation = useMutation(
+      trpc.tags.create.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao criar tag");
+         },
+         onSuccess: (data) => {
+            if (!data) return;
+            form.setFieldValue("tagIds", [
+               ...form.getFieldValue("tagIds"),
+               data.id,
+            ]);
+            toast.success(`Tag "${data.name}" criada`);
+         },
+      }),
+   );
+
+   const isLoading =
+      updateCategoryMutation.isPending ||
+      updateCostCenterMutation.isPending ||
+      updateTagsMutation.isPending;
+
+   const isCreating =
+      createCategoryMutation.isPending ||
+      createCostCenterMutation.isPending ||
+      createTagMutation.isPending;
+
+   const handleCreateCategory = useCallback(
+      (name: string) => {
+         createCategoryMutation.mutate({
+            color: getRandomColor(),
+            name,
+         });
+      },
+      [createCategoryMutation.mutate],
+   );
+
+   const handleCreateCostCenter = useCallback(
+      (name: string) => {
+         createCostCenterMutation.mutate({
+            name,
+         });
+      },
+      [createCostCenterMutation.mutate],
+   );
+
+   const handleCreateTag = useCallback(
+      (name: string) => {
+         createTagMutation.mutate({
+            color: getRandomColor(),
+            name,
+         });
+      },
+      [createTagMutation.mutate],
+   );
+
+   const categoryOptions = categories.map((category) => ({
+      icon: (
+         <div
+            className="flex size-4 items-center justify-center rounded"
+            style={{ backgroundColor: category.color }}
+         >
+            <IconDisplay iconName={category.icon as IconName} size={10} />
+         </div>
+      ),
+      label: category.name,
+      value: category.id,
+   }));
+
+   const costCenterOptions = [
+      { label: "Nenhum", value: "" },
+      ...costCenters.map((cc) => ({
+         label: cc.code ? `${cc.name} (${cc.code})` : cc.name,
+         value: cc.id,
+      })),
+   ];
+
+   const tagOptions = tags.map((tag) => ({
+      icon: <Tag className="size-4" style={{ color: tag.color }} />,
+      label: tag.name,
+      value: tag.id,
+   }));
+
+   const transactionCount = transactions.length;
+   const transactionLabel =
+      transactionCount === 1 ? "1 transação" : `${transactionCount} transações`;
+
+   const handleSubmit = useCallback(
+      (e: FormEvent) => {
+         e.preventDefault();
+         e.stopPropagation();
+         form.handleSubmit();
+      },
+      [form],
+   );
+
+   return (
+      <form className="h-full flex flex-col" onSubmit={handleSubmit}>
+         <SheetHeader>
+            <SheetTitle>Categorizar Transações</SheetTitle>
+            <SheetDescription>
+               Associe categoria, centro de custo ou tags para{" "}
+               {transactionLabel}.
+            </SheetDescription>
+         </SheetHeader>
+         <div className="px-4 flex-1 overflow-y-auto">
+            <div className="space-y-4 py-4">
+               <FieldGroup>
+                  <form.Field name="categoryIds">
+                     {(field) => {
+                        const isInvalid =
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
+                        return (
+                           <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                 {translate("common.form.category.label")}
+                              </FieldLabel>
+                              <MultiSelect
+                                 className="flex-1"
+                                 createLabel={translate(
+                                    "common.form.category.create",
+                                 )}
+                                 emptyMessage={translate(
+                                    "common.form.search.no-results",
+                                 )}
+                                 onChange={(val) => field.handleChange(val)}
+                                 onCreate={handleCreateCategory}
+                                 options={categoryOptions}
+                                 placeholder={translate(
+                                    "common.form.category.placeholder",
+                                 )}
+                                 selected={field.state.value || []}
+                              />
+                              <FieldDescription>
+                                 {translate("common.form.category.description")}
+                              </FieldDescription>
+                              {isInvalid && (
+                                 <FieldError errors={field.state.meta.errors} />
+                              )}
+                           </Field>
+                        );
+                     }}
+                  </form.Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <form.Field name="costCenterId">
+                     {(field) => {
+                        const isInvalid =
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
+                        return (
+                           <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                 {translate("common.form.cost-center.label")}
+                              </FieldLabel>
+                              <Combobox
+                                 className="w-full justify-between"
+                                 createLabel={translate(
+                                    "common.form.cost-center.create",
+                                 )}
+                                 disabled={isCreating}
+                                 emptyMessage={translate(
+                                    "common.form.search.no-results",
+                                 )}
+                                 onCreate={handleCreateCostCenter}
+                                 onValueChange={(value) =>
+                                    field.handleChange(value || "")
+                                 }
+                                 options={costCenterOptions}
+                                 placeholder={translate(
+                                    "common.form.cost-center.placeholder",
+                                 )}
+                                 searchPlaceholder={translate(
+                                    "common.form.search.label",
+                                 )}
+                                 value={field.state.value}
+                              />
+                              <FieldDescription>
+                                 {translate(
+                                    "common.form.cost-center.description",
+                                 )}
+                              </FieldDescription>
+                              {isInvalid && (
+                                 <FieldError errors={field.state.meta.errors} />
+                              )}
+                           </Field>
+                        );
+                     }}
+                  </form.Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <form.Field name="tagIds">
+                     {(field) => {
+                        const isInvalid =
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
+                        return (
+                           <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                 {translate("common.form.tags.label")}
+                              </FieldLabel>
+                              {(field.state.value || []).length > 0 && (
+                                 <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {(field.state.value || []).map((tagId) => {
+                                       const tag = tags.find(
+                                          (t) => t.id === tagId,
+                                       );
+                                       if (!tag) return null;
+                                       return (
+                                          <Badge
+                                             key={tag.id}
+                                             style={{
+                                                backgroundColor: tag.color,
+                                             }}
+                                             variant="secondary"
+                                          >
+                                             {tag.name}
+                                             <button
+                                                className="ml-1 rounded-full hover:bg-black/20"
+                                                onClick={() =>
+                                                   field.handleChange(
+                                                      (
+                                                         field.state.value || []
+                                                      ).filter(
+                                                         (id) => id !== tag.id,
+                                                      ),
+                                                   )
+                                                }
+                                                type="button"
+                                             >
+                                                <X className="size-3" />
+                                             </button>
+                                          </Badge>
+                                       );
+                                    })}
+                                 </div>
+                              )}
+                              <MultiSelect
+                                 className="flex-1"
+                                 createLabel={translate(
+                                    "common.form.tags.create",
+                                 )}
+                                 emptyMessage={translate(
+                                    "common.form.search.no-results",
+                                 )}
+                                 onChange={(val) => field.handleChange(val)}
+                                 onCreate={handleCreateTag}
+                                 options={tagOptions}
+                                 placeholder={translate(
+                                    "common.form.tags.placeholder",
+                                 )}
+                                 selected={field.state.value || []}
+                              />
+                              <FieldDescription>
+                                 {translate("common.form.tags.description")}
+                              </FieldDescription>
+                              {isInvalid && (
+                                 <FieldError errors={field.state.meta.errors} />
+                              )}
+                           </Field>
+                        );
+                     }}
+                  </form.Field>
+               </FieldGroup>
+            </div>
+         </div>
+         <form.Subscribe
+            selector={(state) => ({
+               isSubmitting: state.isSubmitting,
+            })}
+         >
+            {({ isSubmitting }) => (
+               <SheetFooter className="px-4">
+                  <Button
+                     className="w-full"
+                     disabled={isSubmitting || isLoading || isCreating}
+                     type="submit"
+                  >
+                     {isLoading ? "Salvando..." : "Aplicar Alterações"}
+                  </Button>
+               </SheetFooter>
+            )}
+         </form.Subscribe>
+      </form>
+   );
+}

@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
@@ -178,18 +179,29 @@ function MonthlyTooltip({
    );
 }
 
+type ChartGranularity = "daily" | "monthly";
+
+interface ChartProps {
+   bankAccountId: string;
+   startDate?: Date | null;
+   endDate?: Date | null;
+   granularity?: ChartGranularity;
+}
+
 function BankAccountTypeDistributionChart({
    bankAccountId,
-}: {
-   bankAccountId: string;
-}) {
+   startDate,
+   endDate,
+}: ChartProps) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
+         endDate: endDate?.toISOString(),
          id: bankAccountId,
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
@@ -330,91 +342,158 @@ function BankAccountTypeDistributionChart({
    );
 }
 
-function BankAccountMonthlyTrendChart({
+function BankAccountEvolutionChart({
    bankAccountId,
-}: {
-   bankAccountId: string;
-}) {
+   startDate,
+   endDate,
+   granularity = "daily",
+}: ChartProps) {
    const trpc = useTRPC();
 
    const { data } = useSuspenseQuery(
       trpc.bankAccounts.getTransactions.queryOptions({
+         endDate: endDate?.toISOString(),
          id: bankAccountId,
          limit: 100,
          page: 1,
+         startDate: startDate?.toISOString(),
       }),
    );
 
-   const { chartData, chartConfig, hasData } = useMemo(() => {
-      const transactions = data.transactions;
+   const { chartData, chartConfig, hasData, chartTitle, chartDescription } =
+      useMemo(() => {
+         const transactions = data.transactions;
 
-      if (transactions.length === 0) {
-         return { chartConfig: {}, chartData: [], hasData: false };
-      }
-
-      const monthlyData = new Map<
-         string,
-         { income: number; expense: number; month: string }
-      >();
-
-      for (const t of transactions) {
-         const date = new Date(t.date);
-         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-         const monthLabel = date.toLocaleDateString("pt-BR", {
-            month: "short",
-         });
-
-         if (!monthlyData.has(monthKey)) {
-            monthlyData.set(monthKey, {
-               expense: 0,
-               income: 0,
-               month: monthLabel,
-            });
+         if (transactions.length === 0) {
+            return {
+               chartConfig: {},
+               chartData: [],
+               chartDescription: "",
+               chartTitle: "",
+               hasData: false,
+            };
          }
 
-         const monthData = monthlyData.get(monthKey)!;
-         const amount = Math.abs(parseFloat(t.amount));
+         const incomeLabel = translate("common.charts.labels.income");
+         const expensesLabel = translate("common.charts.labels.expenses");
 
-         if (t.type === "income") {
-            monthData.income += amount;
-         } else if (t.type === "expense") {
-            monthData.expense += amount;
+         if (granularity === "monthly") {
+            const monthlyData = new Map<
+               string,
+               { income: number; expense: number; label: string }
+            >();
+
+            for (const t of transactions) {
+               const date = new Date(t.date);
+               const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+               const monthLabel = formatDate(date, "MMM yyyy");
+
+               if (!monthlyData.has(monthKey)) {
+                  monthlyData.set(monthKey, {
+                     expense: 0,
+                     income: 0,
+                     label: monthLabel,
+                  });
+               }
+
+               const monthData = monthlyData.get(monthKey);
+               if (!monthData) continue;
+               const amount = Math.abs(parseFloat(t.amount));
+
+               if (t.type === "income") {
+                  monthData.income += amount;
+               } else if (t.type === "expense") {
+                  monthData.expense += amount;
+               }
+            }
+
+            const sortedData = Array.from(monthlyData.entries())
+               .sort(([a], [b]) => a.localeCompare(b))
+               .slice(-12);
+
+            const chartData = sortedData.map(([_, d]) => d);
+
+            const config: ChartConfig = {
+               expense: {
+                  color: "#ef4444",
+                  label: expensesLabel,
+               },
+               income: {
+                  color: "#10b981",
+                  label: incomeLabel,
+               },
+            };
+
+            return {
+               chartConfig: config,
+               chartData,
+               chartDescription: "Historico de transacoes por mes",
+               chartTitle: "Evolucao Mensal",
+               hasData: chartData.length > 0,
+            };
          }
-      }
 
-      const sortedMonths = Array.from(monthlyData.entries())
-         .sort(([a], [b]) => a.localeCompare(b))
-         .slice(-6);
+         const dailyData = new Map<
+            string,
+            { income: number; expense: number; label: string }
+         >();
 
-      const chartData = sortedMonths.map(([_, data]) => data);
+         for (const t of transactions) {
+            const date = new Date(t.date);
+            const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+            const dayLabel = formatDate(date, "dd/MM");
 
-      const incomeLabel = translate("common.charts.labels.income");
-      const expensesLabel = translate("common.charts.labels.expenses");
+            if (!dailyData.has(dayKey)) {
+               dailyData.set(dayKey, {
+                  expense: 0,
+                  income: 0,
+                  label: dayLabel,
+               });
+            }
 
-      const config: ChartConfig = {
-         expense: {
-            color: "#ef4444",
-            label: expensesLabel,
-         },
-         income: {
-            color: "#10b981",
-            label: incomeLabel,
-         },
-      };
+            const dayData = dailyData.get(dayKey);
+            if (!dayData) continue;
+            const amount = Math.abs(parseFloat(t.amount));
 
-      return {
-         chartConfig: config,
-         chartData,
-         hasData: chartData.length > 0,
-      };
-   }, [data.transactions]);
+            if (t.type === "income") {
+               dayData.income += amount;
+            } else if (t.type === "expense") {
+               dayData.expense += amount;
+            }
+         }
+
+         const sortedData = Array.from(dailyData.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .slice(-31);
+
+         const chartData = sortedData.map(([_, d]) => d);
+
+         const config: ChartConfig = {
+            expense: {
+               color: "#ef4444",
+               label: expensesLabel,
+            },
+            income: {
+               color: "#10b981",
+               label: incomeLabel,
+            },
+         };
+
+         return {
+            chartConfig: config,
+            chartData,
+            chartDescription: "Historico de transacoes por dia",
+            chartTitle: "Evolucao Diaria",
+            hasData: chartData.length > 0,
+         };
+      }, [data.transactions, granularity]);
 
    return (
       <Card>
          <CardHeader>
-            <CardTitle>Evolucao Mensal</CardTitle>
+            <CardTitle>{chartTitle || "Evolucao"}</CardTitle>
             <CardDescription>
-               Historico de transacoes nos ultimos meses
+               {chartDescription || "Historico de transacoes"}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -427,7 +506,7 @@ function BankAccountMonthlyTrendChart({
                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
                      <XAxis
                         axisLine={false}
-                        dataKey="month"
+                        dataKey="label"
                         tickLine={false}
                         tickMargin={8}
                      />
@@ -473,26 +552,47 @@ function BankAccountMonthlyTrendChart({
 
 function BankAccountChartsContent({
    bankAccountId,
-}: {
-   bankAccountId: string;
-}) {
+   startDate,
+   endDate,
+   granularity,
+}: ChartProps) {
    return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-         <BankAccountMonthlyTrendChart bankAccountId={bankAccountId} />
-         <BankAccountTypeDistributionChart bankAccountId={bankAccountId} />
+         <BankAccountEvolutionChart
+            bankAccountId={bankAccountId}
+            endDate={endDate}
+            granularity={granularity}
+            startDate={startDate}
+         />
+         <BankAccountTypeDistributionChart
+            bankAccountId={bankAccountId}
+            endDate={endDate}
+            startDate={startDate}
+         />
       </div>
    );
 }
 
 export function BankAccountCharts({
    bankAccountId,
+   startDate,
+   endDate,
+   granularity = "daily",
 }: {
    bankAccountId: string;
+   startDate: Date | null;
+   endDate: Date | null;
+   granularity?: ChartGranularity;
 }) {
    return (
       <ErrorBoundary FallbackComponent={BankAccountChartsErrorFallback}>
          <Suspense fallback={<BankAccountChartsSkeleton />}>
-            <BankAccountChartsContent bankAccountId={bankAccountId} />
+            <BankAccountChartsContent
+               bankAccountId={bankAccountId}
+               endDate={endDate}
+               granularity={granularity}
+               startDate={startDate}
+            />
          </Suspense>
       </ErrorBoundary>
    );

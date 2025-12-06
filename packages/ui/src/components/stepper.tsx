@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { cn } from "@packages/ui/lib/utils";
 import { Slot } from "@radix-ui/react-slot";
@@ -64,6 +65,39 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             ...props
          }) => {
             const { variant } = useStepperProvider();
+            const { current } = useStepper();
+            const currentIndex = rest.utils.getIndex(current.id);
+            const totalSteps = rest.steps.length;
+
+            if (variant === "line") {
+               return (
+                  <nav
+                     aria-label={ariaLabel}
+                     className="mb-5"
+                     date-component="stepper-navigation"
+                     {...props}
+                  >
+                     <div className="flex items-center gap-4">
+                        <ol
+                           className={classForNavigationList({ variant })}
+                           date-component="stepper-navigation-list"
+                        >
+                           {children}
+                        </ol>
+                        <span
+                           className="text-sm text-muted-foreground whitespace-nowrap"
+                           date-component="stepper-step-counter"
+                        >
+                           {translate("common.actions.step-indicator", {
+                              current: currentIndex + 1,
+                              total: totalSteps,
+                           })}
+                        </span>
+                     </div>
+                  </nav>
+               );
+            }
+
             return (
                <nav
                   aria-label={ariaLabel}
@@ -95,7 +129,7 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             );
          },
          Provider: ({
-            variant = "horizontal",
+            variant = "line",
             labelOrientation = "horizontal",
             tracking = false,
             children,
@@ -137,6 +171,30 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             const title = childMap.get("title");
             const description = childMap.get("description");
             const panel = childMap.get("panel");
+
+            if (variant === "line") {
+               return (
+                  <li
+                     className={cn(className)}
+                     data-state={dataState}
+                     date-component="stepper-step"
+                  >
+                     <button
+                        aria-current={isActive ? "step" : undefined}
+                        className={cn(
+                           "h-1 w-8 rounded-full transition-colors duration-300",
+                           dataState === "completed" || dataState === "active"
+                              ? "bg-primary"
+                              : "bg-muted",
+                        )}
+                        date-component="stepper-step-indicator"
+                        id={`step-${step?.id}`}
+                        type="button"
+                        {...props}
+                     />
+                  </li>
+               );
+            }
 
             if (variant === "circle") {
                return (
@@ -386,6 +444,7 @@ const classForNavigationList = cva("flex gap-2", {
       variant: {
          circle: "flex-row items-center justify-between",
          horizontal: "flex-row items-center justify-between",
+         line: "flex-row items-center gap-1.5",
          vertical: "flex-col",
       },
    },
@@ -486,7 +545,7 @@ const getStepState = (currentIndex: number, stepIndex: number) => {
 };
 
 namespace Stepper {
-   export type StepperVariant = "horizontal" | "vertical" | "circle";
+   export type StepperVariant = "horizontal" | "vertical" | "circle" | "line";
    export type StepperLabelOrientation = "horizontal" | "vertical";
 
    export type ConfigProps = {

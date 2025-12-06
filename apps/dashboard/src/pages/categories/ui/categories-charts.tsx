@@ -15,6 +15,7 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
@@ -32,7 +33,7 @@ import {
    XAxis,
    YAxis,
 } from "recharts";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function CategoriesChartsErrorFallback(props: FallbackProps) {
    return (
@@ -358,6 +359,7 @@ function CategoryPieChart({
 }
 
 function CategoryMonthlyTrendChart() {
+   const trpc = useTRPC();
    const { data: monthlyTrend } = useSuspenseQuery(
       trpc.categories.getMonthlyTrend.queryOptions({ months: 6 }),
    );
@@ -396,9 +398,7 @@ function CategoryMonthlyTrendChart() {
 
       const data = monthlyTrend.map((month) => {
          const monthData: Record<string, string | number> = {
-            month: new Date(`${month.month}-01`).toLocaleDateString("pt-BR", {
-               month: "short",
-            }),
+            month: formatDate(new Date(`${month.month}-01`), "MMM"),
          };
 
          for (const cat of categories) {
@@ -486,6 +486,7 @@ function CategoryMonthlyTrendChart() {
 }
 
 function TopCategoriesChart() {
+   const trpc = useTRPC();
    const { data: topCategories } = useSuspenseQuery(
       trpc.categories.getTopCategories.queryOptions({
          limit: 5,
@@ -596,6 +597,7 @@ function TopCategoriesChart() {
 }
 
 function CategoryTypeDistributionChart() {
+   const trpc = useTRPC();
    const { data: typeDistribution } = useSuspenseQuery(
       trpc.categories.getTypeDistribution.queryOptions(),
    );
@@ -756,6 +758,7 @@ function CategoryTypeDistributionChart() {
 }
 
 function CategoryUsageFrequencyChart() {
+   const trpc = useTRPC();
    const { data: usageFrequency } = useSuspenseQuery(
       trpc.categories.getUsageFrequency.queryOptions(),
    );
@@ -862,6 +865,7 @@ function CategoryUsageFrequencyChart() {
 }
 
 function CategoriesChartsContent() {
+   const trpc = useTRPC();
    const { data: breakdown } = useSuspenseQuery(
       trpc.categories.getBreakdown.queryOptions(),
    );

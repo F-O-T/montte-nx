@@ -1,0 +1,70 @@
+---
+import "@packages/ui/globals.css";
+import type { SupportedLng } from "@packages/localization";
+import { translate } from "@packages/localization";
+import { getAstroPosthogConfig } from "@packages/posthog/client";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang = "pt-BR" } = Astro.props;
+const brandName = translate("common.brand.name", { lng: lang });
+const brandDescription = translate("common.brand.description", { lng: lang });
+
+const posthogEnv = {
+   VITE_POSTHOG_HOST: import.meta.env.VITE_POSTHOG_HOST || "",
+   VITE_POSTHOG_KEY: import.meta.env.VITE_POSTHOG_KEY || "",
+};
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+   <head>
+      <link rel="sitemap" href="/sitemap-index.xml">
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width">
+      <meta
+         name="description"
+         content={`${brandName} - ${brandDescription}`}
+      >
+      <meta
+         name="keywords"
+         content="gestão financeira, controle de gastos, orçamento pessoal, contas a pagar, contas a receber, open source, finanças, transações, importar OFX"
+      >
+      <meta name="author" content="Montte">
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+      <meta name="generator" content={Astro.generator}>
+      <link rel="canonical" href="https://montte.co/">
+
+      <link
+         rel="preload"
+         as="image"
+         href="/src/assets/light/light-hero.webp"
+         media="(prefers-color-scheme: light)"
+      >
+      <link
+         rel="preload"
+         as="image"
+         href="/src/assets/dark/dark-hero.webp"
+         media="(prefers-color-scheme: dark)"
+      >
+
+      <meta property="og:title" content={brandName}>
+      <meta
+         property="og:description"
+         content={brandDescription}
+      >
+      <meta property="og:image" content="/og-image.webp">
+      <meta property="og:url" content="https://montte.co">
+      <meta property="og:type" content="website">
+      {import.meta.env.PROD && posthogEnv.VITE_POSTHOG_KEY && <script set:html={getAstroPosthogConfig(posthogEnv)}
+      is:inline/>}
+      <title>
+         {brandName} - Gestão Financeira Simples e Open Source
+      </title>
+   </head>
+   <body>
+      <slot/>
+   </body>
+</html>

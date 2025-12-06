@@ -5,30 +5,42 @@ import type { PostHog } from "posthog-node";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
+import { budgetRouter } from "./routers/budgets";
 import { categoryRouter } from "./routers/categories";
 import { costCenterRouter } from "./routers/cost-centers";
+import { counterpartyRouter } from "./routers/counterparties";
+import { customReportRouter } from "./routers/custom-reports";
+import { interestTemplateRouter } from "./routers/interest-templates";
 import { notificationRouter } from "./routers/notifications";
 import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
+import { pushNotificationRouter } from "./routers/push-notifications";
 import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
 import { tagRouter } from "./routers/tags";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 
+export type { ReminderResult } from "./services/bill-reminder-service";
+
 export const appRouter = router({
    bankAccounts: bankAccountRouter,
    bills: billRouter,
    brasilApi: brasilApiRouter,
+   budgets: budgetRouter,
    categories: categoryRouter,
    costCenters: costCenterRouter,
+   counterparties: counterpartyRouter,
+   customReports: customReportRouter,
+   interestTemplates: interestTemplateRouter,
    notifications: notificationRouter,
    onboarding: onboardingRouter,
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
+   pushNotifications: pushNotificationRouter,
    reports: reportRouter,
    session: sessionRouter,
    tags: tagRouter,

@@ -7,15 +7,28 @@ import {
    EmptyMedia,
    EmptyTitle,
 } from "@packages/ui/components/empty";
+import { MonthSelector } from "@packages/ui/components/month-selector";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   getDateRangeForPeriod,
+   type TimePeriod,
+   TimePeriodChips,
+   type TimePeriodDateRange,
+} from "@packages/ui/components/time-period-chips";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
-import { FileText, Home } from "lucide-react";
-import { Suspense } from "react";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { Edit, FileText, Home, Plus, Trash2 } from "lucide-react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
+import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
+import { ManageCategoryForm } from "../../categories/features/manage-category-form";
+import { useDeleteCategory } from "../../categories/features/use-delete-category";
 import { CategoryCharts } from "./category-charts";
 import { CategoryStats } from "./category-stats";
 import { CategoryTransactions } from "./category-transactions-section";
@@ -24,11 +37,57 @@ function CategoryContent() {
    const params = useParams({ strict: false });
    const categoryId = (params as { categoryId?: string }).categoryId ?? "";
    const trpc = useTRPC();
+   const router = useRouter();
+   const { activeOrganization } = useActiveOrganization();
+   const { openSheet } = useSheet();
+
+   const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
+      "this-month",
+   );
+   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+   const [dateRange, setDateRange] = useState<{
+      startDate: Date | null;
+      endDate: Date | null;
+   }>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return { endDate: range.endDate, startDate: range.startDate };
+   });
+
+   const handleTimePeriodChange = (
+      period: TimePeriod | null,
+      range: TimePeriodDateRange,
+   ) => {
+      setTimePeriod(period);
+      setDateRange({ endDate: range.endDate, startDate: range.startDate });
+      if (range.selectedMonth) {
+         setSelectedMonth(range.selectedMonth);
+      }
+   };
+
+   const handleMonthChange = (month: Date) => {
+      setSelectedMonth(month);
+      setTimePeriod(null);
+      setDateRange({
+         endDate: endOfMonth(month),
+         startDate: startOfMonth(month),
+      });
+   };
 
    const { data: category } = useSuspenseQuery(
       trpc.categories.getById.queryOptions({ id: categoryId }),
    );
 
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/categories",
+      });
+   };
+
+   const { deleteCategory } = useDeleteCategory({
+      category,
+      onSuccess: handleDeleteSuccess,
+   });
    if (!categoryId) {
       return (
          <CategoryPageError
@@ -45,14 +104,83 @@ function CategoryContent() {
    return (
       <main className="space-y-4">
          <DefaultHeader
+            actions={
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: (
+                           <ManageTransactionForm
+                              defaultCategoryIds={[categoryId]}
+                           />
+                        ),
+                     })
+                  }
+               >
+                  <Plus className="size-4" />
+                  {translate(
+                     "dashboard.routes.transactions.features.add-new.title",
+                  )}
+               </Button>
+            }
             description={translate(
                "dashboard.routes.categories.details-section.description",
             )}
             title={category.name}
          />
-         <CategoryStats categoryId={categoryId} />
-         <CategoryTransactions categoryId={categoryId} />
-         <CategoryCharts categoryId={categoryId} />
+
+         <div className="flex flex-wrap items-center gap-2">
+            <Button
+               onClick={() =>
+                  openSheet({
+                     children: <ManageCategoryForm category={category} />,
+                  })
+               }
+               size="sm"
+               variant="outline"
+            >
+               <Edit className="size-4" />
+               Editar Categoria
+            </Button>
+            <Button
+               className="text-destructive hover:text-destructive"
+               onClick={deleteCategory}
+               size="sm"
+               variant="outline"
+            >
+               <Trash2 className="size-4" />
+               Excluir Categoria
+            </Button>
+         </div>
+
+         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <TimePeriodChips
+               onValueChange={handleTimePeriodChange}
+               size="sm"
+               value={timePeriod}
+            />
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <MonthSelector
+               date={selectedMonth}
+               disabled={timePeriod !== null && timePeriod !== "all-time"}
+               onSelect={handleMonthChange}
+            />
+         </div>
+
+         <CategoryStats
+            categoryId={categoryId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
+         <CategoryCharts
+            categoryId={categoryId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
+         <CategoryTransactions
+            categoryId={categoryId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
       </main>
    );
 }
@@ -118,10 +246,12 @@ function CategoryPageError({ error, resetErrorBoundary }: FallbackProps) {
 
 export function CategoryDetailsPage() {
    return (
-      <ErrorBoundary FallbackComponent={CategoryPageError}>
-         <Suspense fallback={<CategoryPageSkeleton />}>
-            <CategoryContent />
-         </Suspense>
-      </ErrorBoundary>
+      <TransactionListProvider>
+         <ErrorBoundary FallbackComponent={CategoryPageError}>
+            <Suspense fallback={<CategoryPageSkeleton />}>
+               <CategoryContent />
+            </Suspense>
+         </ErrorBoundary>
+      </TransactionListProvider>
    );
 }

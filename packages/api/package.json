@@ -6,6 +6,7 @@
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",
       "@packages/ofx": "workspace:*",
+      "@packages/pdf": "workspace:*",
       "@packages/posthog": "workspace:*",
       "@packages/utils": "workspace:*",
       "@trpc/client": "catalog:trpc",
@@ -17,8 +18,7 @@
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
       "typescript": "catalog:development",
-      "vite": "catalog:vite",
-      "vitest": "catalog:testing"
+      "vite": "catalog:vite"
    },
    "exports": {
       "./client": {

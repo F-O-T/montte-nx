@@ -20,11 +20,12 @@ import { ScrollArea } from "@packages/ui/components/scroll-area";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
-import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
-import { trpc } from "@/integrations/clients";
+import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
+import { useSheet } from "@/hooks/use-sheet";
+import { useTRPC } from "@/integrations/clients";
 
 interface CreateBankAccountItemProps {
    onCreateAccount: () => void;
@@ -111,7 +112,8 @@ function BankAccountsSkeleton() {
 }
 
 function BankAccountsContent() {
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+   const trpc = useTRPC();
+   const { openSheet } = useSheet();
    const { data: bankAccounts } = useSuspenseQuery(
       trpc.bankAccounts.getAll.queryOptions(),
    );
@@ -138,11 +140,9 @@ function BankAccountsContent() {
                   ))}
                   {bankAccounts.length > 0 && <ItemSeparator />}
                   <CreateBankAccountItem
-                     onCreateAccount={() => setIsCreateSheetOpen(true)}
-                  />
-                  <ManageBankAccountSheet
-                     onOpen={isCreateSheetOpen}
-                     onOpenChange={setIsCreateSheetOpen}
+                     onCreateAccount={() =>
+                        openSheet({ children: <ManageBankAccountForm /> })
+                     }
                   />
                </ItemGroup>
             </ScrollArea>

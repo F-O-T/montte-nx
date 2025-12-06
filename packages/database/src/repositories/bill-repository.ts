@@ -1,10 +1,25 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
+import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
+import type { bankAccount } from "../schemas/bank-accounts";
 import { bill } from "../schemas/bills";
+import type { counterparty } from "../schemas/counterparties";
+import type { interestTemplate } from "../schemas/interest-templates";
+import { transaction } from "../schemas/transactions";
 
 export type Bill = typeof bill.$inferSelect;
 export type NewBill = typeof bill.$inferInsert;
+export type BankAccount = typeof bankAccount.$inferSelect;
+export type Transaction = typeof transaction.$inferSelect;
+export type Counterparty = typeof counterparty.$inferSelect;
+export type InterestTemplate = typeof interestTemplate.$inferSelect;
+
+export type BillWithRelations = Bill & {
+   bankAccount: BankAccount | null;
+   counterparty: Counterparty | null;
+   interestTemplate: InterestTemplate | null;
+   transaction: Transaction | null;
+};
 
 export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
    try {
@@ -19,6 +34,8 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
          where: (bill, { eq }) => eq(bill.id, createdBillId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -42,6 +59,8 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -54,16 +73,18 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
    }
 }
 
-export async function findBillsByUserId(
+export async function findBillsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient.query.bill.findMany({
          orderBy: (bill, { desc }) => desc(bill.dueDate),
-         where: (bill, { eq }) => eq(bill.userId, userId),
+         where: (bill, { eq }) => eq(bill.organizationId, organizationId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -71,14 +92,14 @@ export async function findBillsByUserId(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find bills by user id: ${(err as Error).message}`,
+         `Failed to find bills by organization id: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findBillsByUserIdFiltered(
+export async function findBillsByOrganizationIdFiltered(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    options: {
       type?: "income" | "expense";
       month?: string;
@@ -95,7 +116,7 @@ export async function findBillsByUserIdFiltered(
 
    try {
       const buildWhereCondition = () => {
-         const conditions = [eq(bill.userId, userId)];
+         const conditions = [eq(bill.organizationId, organizationId)];
 
          if (type) {
             conditions.push(eq(bill.type, type));
@@ -122,6 +143,8 @@ export async function findBillsByUserIdFiltered(
          where: buildWhereCondition,
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -130,14 +153,14 @@ export async function findBillsByUserIdFiltered(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find bills by user id with filters: ${(err as Error).message}`,
+         `Failed to find bills by organization id with filters: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findBillsByUserIdPaginated(
+export async function findBillsByOrganizationIdPaginated(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    options: {
       page?: number;
       limit?: number;
@@ -166,7 +189,7 @@ export async function findBillsByUserIdPaginated(
 
    try {
       const buildWhereCondition = () => {
-         const conditions = [eq(bill.userId, userId)];
+         const conditions = [eq(bill.organizationId, organizationId)];
 
          if (type) {
             conditions.push(eq(bill.type, type));
@@ -208,6 +231,8 @@ export async function findBillsByUserIdPaginated(
             where: buildWhereCondition,
             with: {
                bankAccount: true,
+               counterparty: true,
+               interestTemplate: true,
                transaction: true,
             },
          }),
@@ -234,23 +259,25 @@ export async function findBillsByUserIdPaginated(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find bills by user id paginated: ${(err as Error).message}`,
+         `Failed to find bills by organization id paginated: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findBillsByUserIdAndType(
+export async function findBillsByOrganizationIdAndType(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
    type: "income" | "expense",
 ) {
    try {
       const result = await dbClient.query.bill.findMany({
          orderBy: (bill, { desc }) => desc(bill.dueDate),
          where: (bill, { eq, and }) =>
-            and(eq(bill.userId, userId), eq(bill.type, type)),
+            and(eq(bill.organizationId, organizationId), eq(bill.type, type)),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -258,14 +285,14 @@ export async function findBillsByUserIdAndType(
    } catch (err) {
       propagateError(err);
       throw AppError.database(
-         `Failed to find bills by user id and type: ${(err as Error).message}`,
+         `Failed to find bills by organization id and type: ${(err as Error).message}`,
       );
    }
 }
 
-export async function findPendingBillsByUserId(
+export async function findPendingBillsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const today = new Date();
@@ -275,12 +302,14 @@ export async function findPendingBillsByUserId(
          orderBy: (bill, { desc }) => desc(bill.dueDate),
          where: (bill, { eq, and, gte, isNull }) =>
             and(
-               eq(bill.userId, userId),
+               eq(bill.organizationId, organizationId),
                gte(bill.dueDate, today),
                isNull(bill.completionDate),
             ),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -293,9 +322,9 @@ export async function findPendingBillsByUserId(
    }
 }
 
-export async function findOverdueBillsByUserId(
+export async function findOverdueBillsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const today = new Date();
@@ -305,12 +334,14 @@ export async function findOverdueBillsByUserId(
          orderBy: (bill, { desc }) => desc(bill.dueDate),
          where: (bill, { eq, and, lt, isNull }) =>
             and(
-               eq(bill.userId, userId),
+               eq(bill.organizationId, organizationId),
                lt(bill.dueDate, today),
                isNull(bill.completionDate),
             ),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -323,17 +354,22 @@ export async function findOverdueBillsByUserId(
    }
 }
 
-export async function findCompletedBillsByUserId(
+export async function findCompletedBillsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient.query.bill.findMany({
          orderBy: (bill, { desc }) => desc(bill.completionDate),
          where: (bill, { eq, and, isNotNull }) =>
-            and(eq(bill.userId, userId), isNotNull(bill.completionDate)),
+            and(
+               eq(bill.organizationId, organizationId),
+               isNotNull(bill.completionDate),
+            ),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -366,6 +402,8 @@ export async function updateBill(
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
             transaction: true,
          },
       });
@@ -403,15 +441,15 @@ export async function deleteBill(dbClient: DatabaseInstance, billId: string) {
    }
 }
 
-export async function getTotalBillsByUserId(
+export async function getTotalBillsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient
          .select({ count: sql<number>`count(*)` })
          .from(bill)
-         .where(eq(bill.userId, userId));
+         .where(eq(bill.organizationId, organizationId));
 
       return result[0]?.count || 0;
    } catch (err) {
@@ -422,9 +460,9 @@ export async function getTotalBillsByUserId(
    }
 }
 
-export async function getTotalPendingPayablesByUserId(
+export async function getTotalPendingPayablesByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient
@@ -432,7 +470,7 @@ export async function getTotalPendingPayablesByUserId(
             total: sql<number>`sum(CASE WHEN ${bill.type} = 'expense' AND ${bill.completionDate} IS NULL THEN CAST(${bill.amount} AS REAL) ELSE 0 END)`,
          })
          .from(bill)
-         .where(eq(bill.userId, userId));
+         .where(eq(bill.organizationId, organizationId));
 
       return result[0]?.total || 0;
    } catch (err) {
@@ -443,9 +481,9 @@ export async function getTotalPendingPayablesByUserId(
    }
 }
 
-export async function getTotalPendingReceivablesByUserId(
+export async function getTotalPendingReceivablesByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const result = await dbClient
@@ -453,7 +491,7 @@ export async function getTotalPendingReceivablesByUserId(
             total: sql<number>`sum(CASE WHEN ${bill.type} = 'income' AND ${bill.completionDate} IS NULL THEN CAST(${bill.amount} AS REAL) ELSE 0 END)`,
          })
          .from(bill)
-         .where(eq(bill.userId, userId));
+         .where(eq(bill.organizationId, organizationId));
 
       return result[0]?.total || 0;
    } catch (err) {
@@ -464,19 +502,18 @@ export async function getTotalPendingReceivablesByUserId(
    }
 }
 
-export async function getTotalOverdueBillsByUserId(
+export async function getTotalOverdueBillsByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Count bills where dueDate < today and not completed
       const result = await dbClient.query.bill.findMany({
          where: (bill, { eq, and, lt, isNull }) =>
             and(
-               eq(bill.userId, userId),
+               eq(bill.organizationId, organizationId),
                lt(bill.dueDate, today),
                isNull(bill.completionDate),
             ),
@@ -491,19 +528,18 @@ export async function getTotalOverdueBillsByUserId(
    }
 }
 
-export async function getTotalOverduePayablesByUserId(
+export async function getTotalOverduePayablesByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Count overdue expense bills
       const result = await dbClient.query.bill.findMany({
          where: (bill, { eq, and, lt, isNull }) =>
             and(
-               eq(bill.userId, userId),
+               eq(bill.organizationId, organizationId),
                eq(bill.type, "expense"),
                lt(bill.dueDate, today),
                isNull(bill.completionDate),
@@ -519,19 +555,18 @@ export async function getTotalOverduePayablesByUserId(
    }
 }
 
-export async function getTotalOverdueReceivablesByUserId(
+export async function getTotalOverdueReceivablesByOrganizationId(
    dbClient: DatabaseInstance,
-   userId: string,
+   organizationId: string,
 ) {
    try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Count overdue income bills
       const result = await dbClient.query.bill.findMany({
          where: (bill, { eq, and, lt, isNull }) =>
             and(
-               eq(bill.userId, userId),
+               eq(bill.organizationId, organizationId),
                eq(bill.type, "income"),
                lt(bill.dueDate, today),
                isNull(bill.completionDate),
@@ -543,6 +578,265 @@ export async function getTotalOverdueReceivablesByUserId(
       propagateError(err);
       throw AppError.database(
          `Failed to get total overdue receivables count: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteManyBills(
+   dbClient: DatabaseInstance,
+   billIds: string[],
+   organizationId: string,
+) {
+   try {
+      if (billIds.length === 0) {
+         return { deletedCount: 0 };
+      }
+
+      const billsToDelete = await dbClient.query.bill.findMany({
+         where: (bill, { and, eq, inArray }) =>
+            and(
+               eq(bill.organizationId, organizationId),
+               inArray(bill.id, billIds),
+            ),
+      });
+
+      const completedBills = billsToDelete.filter((b) => b.completionDate);
+      if (completedBills.length > 0) {
+         throw AppError.validation(
+            "Cannot delete completed bills. Delete the associated transactions first.",
+         );
+      }
+
+      const validIds = billsToDelete.map((b) => b.id);
+      if (validIds.length === 0) {
+         return { deletedCount: 0 };
+      }
+
+      const result = await dbClient
+         .delete(bill)
+         .where(
+            and(
+               eq(bill.organizationId, organizationId),
+               sql`${bill.id} IN ${validIds}`,
+            ),
+         )
+         .returning();
+
+      return { deletedCount: result.length };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete multiple bills: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function completeManyBills(
+   dbClient: DatabaseInstance,
+   billIds: string[],
+   organizationId: string,
+   completionDate: Date,
+) {
+   try {
+      if (billIds.length === 0) {
+         return { completedCount: 0, transactionIds: [] as string[] };
+      }
+
+      const billsToComplete = await dbClient.query.bill.findMany({
+         where: (bill, { and, eq, isNull, inArray }) =>
+            and(
+               eq(bill.organizationId, organizationId),
+               inArray(bill.id, billIds),
+               isNull(bill.completionDate),
+            ),
+         with: {
+            bankAccount: true,
+         },
+      });
+
+      if (billsToComplete.length === 0) {
+         return { completedCount: 0, transactionIds: [] as string[] };
+      }
+
+      const transactionIds: string[] = [];
+
+      for (const billItem of billsToComplete) {
+         const transactionId = crypto.randomUUID();
+         transactionIds.push(transactionId);
+
+         await dbClient.transaction(async (tx) => {
+            await tx.insert(transaction).values({
+               amount: billItem.amount,
+               bankAccountId: billItem.bankAccountId,
+               date: completionDate,
+               description: billItem.description,
+               id: transactionId,
+               organizationId,
+               type: billItem.type as "income" | "expense",
+            });
+
+            await tx
+               .update(bill)
+               .set({
+                  completionDate,
+                  transactionId,
+               })
+               .where(eq(bill.id, billItem.id));
+         });
+      }
+
+      return { completedCount: billsToComplete.length, transactionIds };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to complete multiple bills: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findBillsByInstallmentGroupId(
+   dbClient: DatabaseInstance,
+   installmentGroupId: string,
+) {
+   try {
+      const result = await dbClient.query.bill.findMany({
+         orderBy: (bill, { asc }) => asc(bill.installmentNumber),
+         where: (bill, { eq }) =>
+            eq(bill.installmentGroupId, installmentGroupId),
+         with: {
+            bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
+            transaction: true,
+         },
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bills by installment group id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function updateBillInterest(
+   dbClient: DatabaseInstance,
+   billId: string,
+   data: {
+      appliedPenalty?: string;
+      appliedInterest?: string;
+      appliedCorrection?: string;
+      lastInterestUpdate?: Date;
+   },
+) {
+   try {
+      const result = await dbClient
+         .update(bill)
+         .set(data)
+         .where(eq(bill.id, billId))
+         .returning();
+
+      if (!result.length) {
+         throw AppError.database("Bill not found");
+      }
+
+      return result[0];
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update bill interest: ${(err as Error).message}`,
+      );
+   }
+}
+
+export type InstallmentConfig = {
+   totalInstallments: number;
+   intervalDays: number;
+   amounts: number[] | "equal";
+};
+
+export type CreateBillWithInstallmentsInput = Omit<
+   NewBill,
+   | "installmentGroupId"
+   | "installmentNumber"
+   | "totalInstallments"
+   | "installmentIntervalDays"
+> & {
+   installments: InstallmentConfig;
+};
+
+export async function createBillWithInstallments(
+   dbClient: DatabaseInstance,
+   data: CreateBillWithInstallmentsInput,
+) {
+   try {
+      const { installments, ...billData } = data;
+      const { totalInstallments, intervalDays, amounts } = installments;
+
+      const installmentGroupId = crypto.randomUUID();
+      const baseAmount = Number(billData.amount);
+      const baseDueDate = new Date(billData.dueDate);
+
+      const installmentAmounts: number[] =
+         amounts === "equal"
+            ? Array(totalInstallments).fill(baseAmount / totalInstallments)
+            : amounts;
+
+      if (installmentAmounts.length !== totalInstallments) {
+         throw AppError.validation(
+            "Number of amounts must match total installments",
+         );
+      }
+
+      const createdBills: BillWithRelations[] = [];
+
+      await dbClient.transaction(async (tx) => {
+         for (let i = 0; i < totalInstallments; i++) {
+            const installmentDueDate = new Date(baseDueDate);
+            installmentDueDate.setDate(
+               baseDueDate.getDate() + i * intervalDays,
+            );
+
+            const installmentAmount = installmentAmounts[i];
+            const billId = crypto.randomUUID();
+
+            await tx.insert(bill).values({
+               ...billData,
+               amount: String(installmentAmount),
+               dueDate: installmentDueDate,
+               id: billId,
+               installmentGroupId,
+               installmentIntervalDays: intervalDays,
+               installmentNumber: i + 1,
+               originalAmount: String(installmentAmount),
+               totalInstallments,
+            });
+
+            const createdBill = await tx.query.bill.findFirst({
+               where: (bill, { eq }) => eq(bill.id, billId),
+               with: {
+                  bankAccount: true,
+                  counterparty: true,
+                  interestTemplate: true,
+                  transaction: true,
+               },
+            });
+
+            if (createdBill) {
+               createdBills.push(createdBill);
+            }
+         }
+      });
+
+      return {
+         bills: createdBills,
+         installmentGroupId,
+         totalInstallments,
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create bill with installments: ${(err as Error).message}`,
       );
    }
 }

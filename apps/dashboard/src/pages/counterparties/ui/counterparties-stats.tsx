@@ -1,0 +1,114 @@
+import { translate } from "@packages/localization";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { StatsCard } from "@packages/ui/components/stats-card";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useTRPC } from "@/integrations/clients";
+
+function CounterpartiesStatsErrorFallback(props: FallbackProps) {
+   return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+         {createErrorFallback({
+            errorDescription: translate(
+               "dashboard.routes.counterparties.stats.error.description",
+            ),
+            errorTitle: translate(
+               "dashboard.routes.counterparties.stats.error.title",
+            ),
+            retryText: translate("common.actions.retry"),
+         })(props)}
+      </div>
+   );
+}
+
+function CounterpartiesStatsSkeleton() {
+   return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+         {[1, 2, 3, 4].map((index) => (
+            <Card
+               className="col-span-1 h-full w-full"
+               key={`stats-skeleton-card-${index + 1}`}
+            >
+               <CardHeader>
+                  <CardTitle>
+                     <Skeleton className="h-6 w-24" />
+                  </CardTitle>
+                  <CardDescription>
+                     <Skeleton className="h-4 w-32" />
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <Skeleton className="h-10 w-16" />
+               </CardContent>
+            </Card>
+         ))}
+      </div>
+   );
+}
+
+function CounterpartiesStatsContent() {
+   const trpc = useTRPC();
+   const { data: stats } = useSuspenseQuery(
+      trpc.counterparties.getStats.queryOptions(),
+   );
+
+   return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+         <StatsCard
+            description={translate(
+               "dashboard.routes.counterparties.stats.total.description",
+            )}
+            title={translate(
+               "dashboard.routes.counterparties.stats.total.title",
+            )}
+            value={stats?.total ?? 0}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.counterparties.stats.clients.description",
+            )}
+            title={translate(
+               "dashboard.routes.counterparties.stats.clients.title",
+            )}
+            value={stats?.totalClients ?? 0}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.counterparties.stats.suppliers.description",
+            )}
+            title={translate(
+               "dashboard.routes.counterparties.stats.suppliers.title",
+            )}
+            value={stats?.totalSuppliers ?? 0}
+         />
+         <StatsCard
+            description={translate(
+               "dashboard.routes.counterparties.stats.active.description",
+            )}
+            title={translate(
+               "dashboard.routes.counterparties.stats.active.title",
+            )}
+            value={stats?.totalActive ?? 0}
+         />
+      </div>
+   );
+}
+
+export function CounterpartiesStats() {
+   return (
+      <ErrorBoundary FallbackComponent={CounterpartiesStatsErrorFallback}>
+         <Suspense fallback={<CounterpartiesStatsSkeleton />}>
+            <CounterpartiesStatsContent />
+         </Suspense>
+      </ErrorBoundary>
+   );
+}

@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { bankAccount } from "../schemas/bank-accounts";
 import { transaction } from "../schemas/transactions";
@@ -71,6 +71,8 @@ export async function findBankAccountsByOrganizationIdPaginated(
       search?: string;
       orderBy?: "name" | "bank" | "createdAt" | "updatedAt";
       orderDirection?: "asc" | "desc";
+      status?: "active" | "inactive";
+      type?: "checking" | "savings" | "investment";
    },
 ) {
    try {
@@ -80,12 +82,16 @@ export async function findBankAccountsByOrganizationIdPaginated(
          search,
          orderBy = "name",
          orderDirection = "asc",
+         status,
+         type,
       } = params;
       const offset = (page - 1) * limit;
 
       const whereClause = and(
          eq(bankAccount.organizationId, organizationId),
          search ? sql`${bankAccount.name} ILIKE ${`%${search}%`}` : undefined,
+         status ? eq(bankAccount.status, status) : undefined,
+         type ? eq(bankAccount.type, type) : undefined,
       );
 
       const [data, totalCountResult] = await Promise.all([
@@ -172,16 +178,67 @@ export async function deleteBankAccount(
    }
 }
 
+export async function updateBankAccountsStatus(
+   dbClient: DatabaseInstance,
+   ids: string[],
+   status: "active" | "inactive",
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .update(bankAccount)
+         .set({ status })
+         .where(
+            and(
+               inArray(bankAccount.id, ids),
+               eq(bankAccount.organizationId, organizationId),
+            ),
+         )
+         .returning();
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update bank accounts status: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteBankAccounts(
+   dbClient: DatabaseInstance,
+   ids: string[],
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .delete(bankAccount)
+         .where(
+            and(
+               inArray(bankAccount.id, ids),
+               eq(bankAccount.organizationId, organizationId),
+            ),
+         )
+         .returning();
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete bank accounts: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function createDefaultWalletBankAccount(
    dbClient: DatabaseInstance,
    organizationId: string,
+   name = "Wallet",
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
          where: (bankAccount, { eq, and }) =>
             and(
                eq(bankAccount.organizationId, organizationId),
-               eq(bankAccount.name, "Wallet"),
+               eq(bankAccount.name, name),
             ),
       });
 
@@ -193,7 +250,7 @@ export async function createDefaultWalletBankAccount(
          .insert(bankAccount)
          .values({
             bank: "Default",
-            name: "Wallet",
+            name,
             organizationId,
             type: "checking",
          })
@@ -210,13 +267,14 @@ export async function createDefaultWalletBankAccount(
 export async function createDefaultBusinessBankAccount(
    dbClient: DatabaseInstance,
    organizationId: string,
+   name = "Caixa",
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
          where: (bankAccount, { eq, and }) =>
             and(
                eq(bankAccount.organizationId, organizationId),
-               eq(bankAccount.name, "Caixa"),
+               eq(bankAccount.name, name),
             ),
       });
 
@@ -228,7 +286,7 @@ export async function createDefaultBusinessBankAccount(
          .insert(bankAccount)
          .values({
             bank: "Caixa",
-            name: "Caixa",
+            name,
             organizationId,
             type: "checking",
          })
@@ -254,7 +312,7 @@ export async function getBankAccountStats(
 
       const totalAccounts = totalAccountsResult[0]?.count || 0;
 
-      const balanceResult = await dbClient
+      const statsResult = await dbClient
          .select({
             totalBalance: sql<number>`
                 COALESCE(SUM(
@@ -266,16 +324,32 @@ export async function getBankAccountStats(
                    END
                 ), 0)
              `,
+            totalExpenses: sql<number>`
+                COALESCE(SUM(
+                   CASE
+                      WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL)
+                      ELSE 0
+                   END
+                ), 0)
+             `,
+            totalIncome: sql<number>`
+                COALESCE(SUM(
+                   CASE
+                      WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL)
+                      ELSE 0
+                   END
+                ), 0)
+             `,
          })
          .from(bankAccount)
          .leftJoin(transaction, eq(transaction.bankAccountId, bankAccount.id))
          .where(eq(bankAccount.organizationId, organizationId));
 
-      const totalBalance = balanceResult[0]?.totalBalance || 0;
-
       return {
          totalAccounts,
-         totalBalance,
+         totalBalance: statsResult[0]?.totalBalance || 0,
+         totalExpenses: statsResult[0]?.totalExpenses || 0,
+         totalIncome: statsResult[0]?.totalIncome || 0,
       };
    } catch (err) {
       propagateError(err);
@@ -303,7 +377,23 @@ export async function getBankAccountBalances(
                ), 0)
             `,
             bank: bankAccount.bank,
+            expenses: sql<number>`
+               COALESCE(SUM(
+                  CASE
+                     WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL)
+                     ELSE 0
+                  END
+               ), 0)
+            `,
             id: bankAccount.id,
+            income: sql<number>`
+               COALESCE(SUM(
+                  CASE
+                     WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL)
+                     ELSE 0
+                  END
+               ), 0)
+            `,
             name: bankAccount.name,
             type: bankAccount.type,
          })

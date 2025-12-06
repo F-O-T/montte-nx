@@ -6,6 +6,9 @@
    "advanced-options": {
       "label": "Opções Avançadas"
    },
+   "all": {
+      "label": "Todos"
+   },
    "amount": {
       "label": "Valor",
       "placeholder": "Digite o valor"
@@ -15,6 +18,8 @@
       "placeholder": "Selecione seu banco"
    },
    "category": {
+      "create": "Criar categoria \"{name}\"",
+      "description": "Agrupe suas transações por tipo de gasto ou receita para análises detalhadas",
       "label": "Categoria",
       "placeholder": "Selecione uma categoria"
    },
@@ -27,6 +32,8 @@
       "placeholder": "Confirme sua senha"
    },
    "cost-center": {
+      "create": "Criar centro de custo \"{name}\"",
+      "description": "Associe a departamentos, projetos ou áreas para controle orçamentário",
       "label": "Centro de Custo",
       "none": "Nenhum",
       "placeholder": "Selecione um centro de custo"
@@ -53,6 +60,9 @@
    "icon": {
       "label": "Ícone ",
       "placeholder": "Selecione um ícone"
+   },
+   "items-per-page": {
+      "label": "Itens por página"
    },
    "name": {
       "label": "Nome",
@@ -94,6 +104,8 @@
       "placeholder": "Selecione o status"
    },
    "tags": {
+      "create": "Criar tag \"{name}\"",
+      "description": "Adicione marcadores personalizados para filtrar e organizar suas transações",
       "label": "Tags",
       "placeholder": "Selecione as tags"
    },

@@ -1,82 +1,161 @@
-import { Ofx } from "ofx-data-extractor";
+import { generateBankStatement, getTransactions, parse } from "@f-o-t/ofx";
+import { AppError } from "@packages/utils/errors";
+import { normalizeText } from "@packages/utils/text";
+
+interface OFXDateValue {
+   raw: string;
+   year: number;
+   month: number;
+   day: number;
+   hour: number;
+   minute: number;
+   second: number;
+   timezone: { offset: number; name: string };
+   toDate: () => Date;
+}
+
+interface Transaction {
+   CHECKNUM?: string;
+   CORRECTACTION?: "DELETE" | "REPLACE";
+   CORRECTFITID?: string;
+   CURRENCY?: string;
+   DTAVAIL?: OFXDateValue;
+   DTPOSTED: OFXDateValue;
+   DTUSER?: OFXDateValue;
+   FITID: string;
+   MEMO?: string;
+   NAME?: string;
+   PAYEEID?: string;
+   REFNUM?: string;
+   SIC?: string;
+   SRVRTID?: string;
+   TRNAMT: number;
+   TRNTYPE: string;
+}
+
+type OFXTransactionType =
+   | "CREDIT"
+   | "DEBIT"
+   | "INT"
+   | "DIV"
+   | "FEE"
+   | "SRVCHG"
+   | "DEP"
+   | "ATM"
+   | "POS"
+   | "XFER"
+   | "CHECK"
+   | "PAYMENT"
+   | "CASH"
+   | "DIRECTDEP"
+   | "DIRECTDEBIT"
+   | "REPEATPMT"
+   | "HOLD"
+   | "OTHER";
+
+type OFXAccountType =
+   | "CHECKING"
+   | "SAVINGS"
+   | "MONEYMRKT"
+   | "CREDITLINE"
+   | "CD";
 
 export async function parseOfxContent(content: string) {
-   try {
-      const parser = new Ofx(content);
+   const result = parse(content);
 
-      if (typeof parser.getBankTransferList === "function") {
-         const transfers = parser.getBankTransferList();
-
-         if (transfers && Array.isArray(transfers)) {
-            return transfers.map((trn) => {
-               const amount =
-                  typeof trn.TRNAMT === "string"
-                     ? parseFloat(trn.TRNAMT)
-                     : (trn.TRNAMT as number);
-               const dateString = trn.DTPOSTED;
-
-               if (!dateString) {
-                  throw new Error("Missing DTPOSTED in OFX transfer");
-               }
-
-               const [yearStr, monthStr, dayStr] = dateString.split("-");
-
-               const year = parseInt(yearStr ?? "0", 10);
-               const month = parseInt(monthStr ?? "1", 10) - 1;
-               const day = parseInt(dayStr ?? "1", 10);
-               const date = new Date(year, month, day);
-
-               return {
-                  amount: Math.abs(amount),
-                  date,
-                  description: trn.MEMO || trn.NAME || "No description",
-                  fitid: trn.FITID,
-                  type: amount < 0 ? "expense" : "income",
-               };
-            });
-         }
-      }
-
-      const result = parser.getContent();
-
-      const bankMsgs =
-         result.OFX?.BANKMSGSRSV1 || result.OFX?.CREDITCARDMSGSRSV1;
-      const stmtTrnRs = bankMsgs?.STMTTRNRS || bankMsgs?.CCSTMTTRNRS;
-      const stmTrs = stmtTrnRs?.STMTRS || stmtTrnRs?.CCSTMTRS;
-      const bankTranList = stmTrs?.BANKTRANLIST;
-      const stmtTrn = bankTranList?.STMTTRN;
-
-      if (!stmtTrn) {
-         return [];
-      }
-
-      const transactionsArray = Array.isArray(stmtTrn) ? stmtTrn : [stmtTrn];
-
-      return transactionsArray.map((trn) => {
-         const amount =
-            typeof trn.TRNAMT === "string"
-               ? parseFloat(trn.TRNAMT)
-               : (trn.TRNAMT as number);
-         const dateString = trn.DTPOSTED;
-
-         if (!dateString) {
-            throw new Error("Missing DTPOSTED in OFX transaction");
-         }
-
-         const year = parseInt(dateString.substring(0, 4), 10);
-         const month = parseInt(dateString.substring(4, 6), 10) - 1;
-         const day = parseInt(dateString.substring(6, 8), 10);
-         const date = new Date(Date.UTC(year, month, day));
-
-         return {
-            amount: Math.abs(amount),
-            date,
-            description: trn.MEMO || trn.NAME || "No description",
-            fitid: trn.FITID,
-            type: amount < 0 ? "expense" : "income",
-         };
+   if (!result.success) {
+      throw AppError.validation("Failed to parse OFX file", {
+         cause: result.error,
       });
-   } catch (_error) {
-      throw new Error("Failed to parse OFX file");
    }
+
+   const transactions = getTransactions(result.data) as Transaction[];
+
+   return transactions.map((trn) => {
+      const amount = trn.TRNAMT;
+      const date = trn.DTPOSTED.toDate();
+      const rawDescription = trn.MEMO || trn.NAME || "No description";
+      return {
+         amount: Math.abs(amount),
+         date,
+         description: normalizeText(rawDescription),
+         fitid: trn.FITID,
+         type: amount < 0 ? "expense" : "income",
+      };
+   });
+}
+
+export interface ExportTransaction {
+   id: string;
+   amount: string;
+   date: Date;
+   description: string;
+   type: "income" | "expense" | "transfer";
+   externalId?: string | null;
+}
+
+export interface ExportOfxOptions {
+   accountId: string;
+   bankId: string;
+   accountType: "checking" | "savings" | "investment";
+   currency?: string;
+   startDate: Date;
+   endDate: Date;
+   organizationName?: string;
+}
+
+function mapAccountType(type: ExportOfxOptions["accountType"]): OFXAccountType {
+   const mapping: Record<ExportOfxOptions["accountType"], OFXAccountType> = {
+      checking: "CHECKING",
+      investment: "MONEYMRKT",
+      savings: "SAVINGS",
+   };
+   return mapping[type];
+}
+
+function mapTransactionType(
+   type: ExportTransaction["type"],
+   amount: number,
+): OFXTransactionType {
+   if (type === "transfer") {
+      return "XFER";
+   }
+   if (type === "income") {
+      return amount >= 0 ? "CREDIT" : "DEBIT";
+   }
+   return "DEBIT";
+}
+
+export function generateOfxContent(
+   transactions: ExportTransaction[],
+   options: ExportOfxOptions,
+): string {
+   const currency = options.currency ?? "BRL";
+
+   const ofxTransactions = transactions.map((trn) => {
+      const amount = Number.parseFloat(trn.amount);
+      const signedAmount =
+         trn.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
+
+      return {
+         amount: signedAmount,
+         datePosted: trn.date,
+         fitId: trn.externalId ?? trn.id,
+         memo: trn.description,
+         type: mapTransactionType(trn.type, signedAmount),
+      };
+   });
+
+   return generateBankStatement({
+      accountId: options.accountId,
+      accountType: mapAccountType(options.accountType),
+      bankId: options.bankId,
+      currency,
+      endDate: options.endDate,
+      financialInstitution: options.organizationName
+         ? { org: options.organizationName }
+         : undefined,
+      startDate: options.startDate,
+      transactions: ofxTransactions,
+   });
 }

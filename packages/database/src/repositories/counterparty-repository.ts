@@ -1,0 +1,395 @@
+import { AppError, propagateError } from "@packages/utils/errors";
+import { and, count, eq, ilike, inArray } from "drizzle-orm";
+import type { DatabaseInstance } from "../client";
+import { counterparty } from "../schemas/counterparties";
+
+export type Counterparty = typeof counterparty.$inferSelect;
+export type NewCounterparty = typeof counterparty.$inferInsert;
+export type CounterpartyType = "client" | "supplier" | "both";
+
+export async function createCounterparty(
+   dbClient: DatabaseInstance,
+   data: NewCounterparty,
+) {
+   try {
+      const result = await dbClient
+         .insert(counterparty)
+         .values(data)
+         .returning();
+      return result[0];
+   } catch (err: unknown) {
+      const error = err as Error & { code?: string };
+
+      if (error.code === "23505") {
+         throw AppError.conflict(
+            "Counterparty already exists for this organization",
+            { cause: err },
+         );
+      }
+
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create counterparty: ${error.message}`,
+         { cause: err },
+      );
+   }
+}
+
+export async function findCounterpartyById(
+   dbClient: DatabaseInstance,
+   counterpartyId: string,
+) {
+   try {
+      const result = await dbClient.query.counterparty.findFirst({
+         where: (counterparty, { eq }) => eq(counterparty.id, counterpartyId),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find counterparty by id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findCounterpartiesByOrganizationId(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   options: {
+      type?: CounterpartyType;
+      isActive?: boolean;
+   } = {},
+) {
+   const { type, isActive } = options;
+
+   try {
+      const conditions = [eq(counterparty.organizationId, organizationId)];
+
+      if (type) {
+         conditions.push(eq(counterparty.type, type));
+      }
+
+      if (isActive !== undefined) {
+         conditions.push(eq(counterparty.isActive, isActive));
+      }
+
+      const result = await dbClient.query.counterparty.findMany({
+         orderBy: (counterparty, { asc }) => asc(counterparty.name),
+         where: and(...conditions),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find counterparties by organization id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findCounterpartiesByOrganizationIdPaginated(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   options: {
+      page?: number;
+      limit?: number;
+      orderBy?: "name" | "type" | "createdAt" | "updatedAt";
+      orderDirection?: "asc" | "desc";
+      search?: string;
+      type?: CounterpartyType;
+      isActive?: boolean;
+   } = {},
+) {
+   const {
+      page = 1,
+      limit = 10,
+      orderBy = "name",
+      orderDirection = "asc",
+      search,
+      type,
+      isActive,
+   } = options;
+
+   const offset = (page - 1) * limit;
+
+   try {
+      const conditions = [eq(counterparty.organizationId, organizationId)];
+
+      if (search) {
+         conditions.push(ilike(counterparty.name, `%${search}%`));
+      }
+
+      if (type) {
+         conditions.push(eq(counterparty.type, type));
+      }
+
+      if (isActive !== undefined) {
+         conditions.push(eq(counterparty.isActive, isActive));
+      }
+
+      const whereCondition = and(...conditions);
+
+      const [counterparties, totalCount] = await Promise.all([
+         dbClient.query.counterparty.findMany({
+            limit,
+            offset,
+            orderBy: (counterparty, { asc, desc }) => {
+               const column =
+                  counterparty[orderBy as keyof typeof counterparty];
+               return orderDirection === "asc" ? asc(column) : desc(column);
+            },
+            where: whereCondition,
+         }),
+         dbClient.query.counterparty
+            .findMany({
+               where: whereCondition,
+            })
+            .then((result) => result.length),
+      ]);
+
+      const totalPages = Math.ceil(totalCount / limit);
+
+      return {
+         counterparties,
+         pagination: {
+            currentPage: page,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            limit,
+            totalCount,
+            totalPages,
+         },
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find counterparties paginated: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function updateCounterparty(
+   dbClient: DatabaseInstance,
+   counterpartyId: string,
+   data: Partial<NewCounterparty>,
+) {
+   try {
+      const existingCounterparty = await findCounterpartyById(
+         dbClient,
+         counterpartyId,
+      );
+      if (!existingCounterparty) {
+         throw AppError.notFound("Counterparty not found");
+      }
+
+      const result = await dbClient
+         .update(counterparty)
+         .set(data)
+         .where(eq(counterparty.id, counterpartyId))
+         .returning();
+
+      if (!result.length) {
+         throw AppError.database("Counterparty not found");
+      }
+
+      return result[0];
+   } catch (err: unknown) {
+      const error = err as Error & { code?: string };
+
+      if (error.code === "23505") {
+         throw AppError.conflict(
+            "Counterparty already exists for this organization",
+            { cause: err },
+         );
+      }
+
+      if (err instanceof AppError) {
+         throw err;
+      }
+
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update counterparty: ${error.message}`,
+         { cause: err },
+      );
+   }
+}
+
+export async function deleteCounterparty(
+   dbClient: DatabaseInstance,
+   counterpartyId: string,
+) {
+   try {
+      const result = await dbClient
+         .delete(counterparty)
+         .where(eq(counterparty.id, counterpartyId))
+         .returning();
+
+      if (!result.length) {
+         throw AppError.database("Counterparty not found");
+      }
+
+      return result[0];
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete counterparty: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteManyCounterparties(
+   dbClient: DatabaseInstance,
+   counterpartyIds: string[],
+   organizationId: string,
+) {
+   if (counterpartyIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient
+         .delete(counterparty)
+         .where(
+            and(
+               inArray(counterparty.id, counterpartyIds),
+               eq(counterparty.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete counterparties: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getTotalCounterpartiesByOrganizationId(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({ count: count() })
+         .from(counterparty)
+         .where(eq(counterparty.organizationId, organizationId));
+
+      return result[0]?.count || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total counterparties: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function searchCounterparties(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   query: string,
+   options: {
+      limit?: number;
+      type?: CounterpartyType;
+      isActive?: boolean;
+   } = {},
+) {
+   const { limit = 20, type, isActive = true } = options;
+
+   try {
+      const conditions = [
+         eq(counterparty.organizationId, organizationId),
+         ilike(counterparty.name, `%${query}%`),
+         eq(counterparty.isActive, isActive),
+      ];
+
+      if (type) {
+         conditions.push(eq(counterparty.type, type));
+      }
+
+      const result = await dbClient.query.counterparty.findMany({
+         limit,
+         orderBy: (counterparty, { asc }) => asc(counterparty.name),
+         where: and(...conditions),
+      });
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to search counterparties: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findCounterpartiesByIds(
+   dbClient: DatabaseInstance,
+   counterpartyIds: string[],
+) {
+   if (counterpartyIds.length === 0) {
+      return [];
+   }
+
+   try {
+      const result = await dbClient.query.counterparty.findMany({
+         where: inArray(counterparty.id, counterpartyIds),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find counterparties by ids: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function getCounterpartyStats(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const [total, clients, suppliers] = await Promise.all([
+         dbClient
+            .select({ count: count() })
+            .from(counterparty)
+            .where(
+               and(
+                  eq(counterparty.organizationId, organizationId),
+                  eq(counterparty.isActive, true),
+               ),
+            ),
+         dbClient
+            .select({ count: count() })
+            .from(counterparty)
+            .where(
+               and(
+                  eq(counterparty.organizationId, organizationId),
+                  eq(counterparty.isActive, true),
+                  eq(counterparty.type, "client"),
+               ),
+            ),
+         dbClient
+            .select({ count: count() })
+            .from(counterparty)
+            .where(
+               and(
+                  eq(counterparty.organizationId, organizationId),
+                  eq(counterparty.isActive, true),
+                  eq(counterparty.type, "supplier"),
+               ),
+            ),
+      ]);
+
+      return {
+         totalActive: total[0]?.count || 0,
+         totalClients: clients[0]?.count || 0,
+         totalSuppliers: suppliers[0]?.count || 0,
+      };
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get counterparty stats: ${(err as Error).message}`,
+      );
+   }
+}

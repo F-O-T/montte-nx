@@ -5,10 +5,10 @@ const createValidPngBuffer = async (): Promise<Buffer> => {
    const sharp = (await import("sharp")).default;
    return sharp({
       create: {
-         width: 100,
-         height: 100,
+         background: { b: 0, g: 0, r: 255 },
          channels: 3,
-         background: { r: 255, g: 0, b: 0 },
+         height: 100,
+         width: 100,
       },
    })
       .png()

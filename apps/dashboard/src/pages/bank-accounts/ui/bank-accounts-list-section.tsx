@@ -1,15 +1,6 @@
 import { translate } from "@packages/localization";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { Button } from "@packages/ui/components/button";
-import {
-   Card,
-   CardAction,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
+import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
    Empty,
@@ -26,37 +17,48 @@ import {
 } from "@packages/ui/components/input-group";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-   Pagination,
-   PaginationContent,
-   PaginationItem,
-   PaginationLink,
-   PaginationNext,
-   PaginationPrevious,
-} from "@packages/ui/components/pagination";
+   SelectionActionBar,
+   SelectionActionButton,
+} from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
-import { Building, Plus, Search } from "lucide-react";
-import { Fragment, Suspense, useEffect, useState } from "react";
+import type { RowSelectionState } from "@tanstack/react-table";
+import {
+   Building,
+   Check,
+   CheckCircle,
+   CircleDashed,
+   CreditCard,
+   Filter,
+   PiggyBank,
+   Search,
+   Trash2,
+   TrendingUp,
+   X,
+} from "lucide-react";
+import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { BankAccountItem } from "@/features/bank-account/ui/bank-account-item";
-import { ManageBankAccountSheet } from "@/features/bank-account/ui/manage-bank-account-sheet";
-import { trpc } from "@/integrations/clients";
-import { createBankAccountColumns } from "./bank-accounts-table-columns";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
+import { useTRPC } from "@/integrations/clients";
+import { BankAccountsFilterCredenza } from "../features/bank-accounts-filter-credenza";
+import { useBankAccountBulkActions } from "../features/use-bank-account-bulk-actions";
+import {
+   BankAccountExpandedContent,
+   BankAccountMobileCard,
+   createBankAccountColumns,
+} from "./bank-accounts-table-columns";
 
 function BankAccountsListErrorFallback(props: FallbackProps) {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.bank-accounts.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.bank-accounts.list-section.description",
-               )}
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
+         <CardContent className="pt-6">
             {createErrorFallback({
                errorDescription:
                   "Failed to load bank accounts. Please try again later.",
@@ -71,23 +73,18 @@ function BankAccountsListErrorFallback(props: FallbackProps) {
 function BankAccountsListSkeleton() {
    return (
       <Card>
-         <CardHeader>
-            <CardTitle>
-               {translate("dashboard.routes.bank-accounts.list-section.title")}
-            </CardTitle>
-            <CardDescription>
-               {translate(
-                  "dashboard.routes.bank-accounts.list-section.description",
-               )}
-            </CardDescription>
-            <div className="flex items-center gap-3 pt-4">
-               <div className="relative flex-1 max-w-md">
-                  <Skeleton className="h-10 w-full" />
-               </div>
-               <Skeleton className="ml-auto h-10 w-10" />
+         <CardContent className="pt-6 grid gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+               <Skeleton className="h-9 w-full sm:max-w-md" />
+               <Skeleton className="h-9 w-9" />
             </div>
-         </CardHeader>
-         <CardContent>
+            <div className="flex gap-2">
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-28" />
+            </div>
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`bank-account-skeleton-${index + 1}`}>
@@ -103,21 +100,32 @@ function BankAccountsListSkeleton() {
                   </Fragment>
                ))}
             </ItemGroup>
+            <div className="flex items-center justify-end gap-2 pt-4">
+               <Skeleton className="h-10 w-24" />
+               <Skeleton className="h-10 w-10" />
+               <Skeleton className="h-10 w-24" />
+            </div>
          </CardContent>
-         <CardFooter>
-            <Skeleton className="h-10 w-full" />
-         </CardFooter>
       </Card>
    );
 }
 
+type SortOption = "name" | "balance" | "createdAt" | "bank";
+
 function BankAccountsListContent() {
+   const trpc = useTRPC();
+   const isMobile = useIsMobile();
+   const { openCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
-   const pageSize = 10;
-   const isMobile = useIsMobile();
+   const [statusFilter, setStatusFilter] = useState<string>("");
+   const [typeFilter, setTypeFilter] = useState<string>("");
+   const [sortBy, setSortBy] = useState<SortOption>("name");
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+   const [pageSize, setPageSize] = useState(10);
+
    useEffect(() => {
       const timer = setTimeout(() => {
          setDebouncedSearchTerm(searchTerm);
@@ -125,6 +133,11 @@ function BankAccountsListContent() {
       }, 300);
       return () => clearTimeout(timer);
    }, [searchTerm]);
+   //TODO: achar uma forma melhor de fazer isso
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [statusFilter, typeFilter, pageSize]);
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.bankAccounts.getAllPaginated.queryOptions(
@@ -132,6 +145,12 @@ function BankAccountsListContent() {
             limit: pageSize,
             page: currentPage,
             search: debouncedSearchTerm || undefined,
+            status: statusFilter
+               ? (statusFilter as "active" | "inactive")
+               : undefined,
+            type: typeFilter
+               ? (typeFilter as "checking" | "savings" | "investment")
+               : undefined,
          },
          {
             placeholderData: keepPreviousData,
@@ -139,97 +158,62 @@ function BankAccountsListContent() {
       ),
    );
 
+   const { data: balances } = useSuspenseQuery(
+      trpc.bankAccounts.getBalances.queryOptions(),
+   );
+
+   const accountStatsMap = useMemo(() => {
+      const map: Record<
+         string,
+         { balance: number; income: number; expenses: number }
+      > = {};
+      for (const item of balances) {
+         map[item.id] = {
+            balance: item.balance,
+            expenses: item.expenses,
+            income: item.income,
+         };
+      }
+      return map;
+   }, [balances]);
+
    const { bankAccounts, pagination } = paginatedData;
    const { totalPages, totalCount } = pagination;
 
-   if (bankAccounts.length === 0 && !debouncedSearchTerm) {
-      return (
-         <Card>
-            <CardHeader>
-               <CardTitle>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.title",
-                  )}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.description",
-                  )}
-               </CardDescription>
-               {!isMobile && (<CardAction >
-                  <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.bank-accounts.list-section.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>)}
-            </CardHeader>
-            <CardContent>
-               <Empty>
-                  <EmptyContent>
-                     <EmptyMedia variant="icon">
-                        <Building className="size-12 text-muted-foreground" />
-                     </EmptyMedia>
-                     <EmptyTitle>
-                        {translate(
-                           "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                        )}
-                     </EmptyTitle>
-                     <EmptyDescription>
-                        {translate(
-                           "dashboard.routes.bank-accounts.list-section.state.empty.description",
-                        )}
-                     </EmptyDescription>
-                     <div className="mt-6">
-                        <Button
-                           onClick={() => setIsCreateSheetOpen(true)}
-                           size="default"
-                        >
-                           <Plus className="size-4 mr-2" />
-                           {translate(
-                              "dashboard.routes.transactions.actions-toolbar.actions.add-new",
-                           )}
-                        </Button>
-                     </div>
-                  </EmptyContent>
-               </Empty>
-            </CardContent>
-            <ManageBankAccountSheet
-               onOpen={isCreateSheetOpen}
-               onOpenChange={setIsCreateSheetOpen}
-            />
-         </Card>
-      );
-   }
+   const hasActiveFilters = debouncedSearchTerm || statusFilter || typeFilter;
+
+   const selectedIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id],
+   );
+   const selectedAccounts = bankAccounts.filter((account) =>
+      selectedIds.includes(account.id),
+   );
+   const selectedBalance = selectedAccounts.reduce((sum, account) => {
+      const stats = accountStatsMap[account.id];
+      return sum + (stats?.balance || 0);
+   }, 0);
+
+   const { markAsActive, markAsInactive, deleteSelected, isLoading } =
+      useBankAccountBulkActions({
+         onSuccess: () => setRowSelection({}),
+      });
+
+   const handleClearSelection = () => {
+      setRowSelection({});
+   };
+
+   const handleClearFilters = () => {
+      setStatusFilter("");
+      setTypeFilter("");
+      setSearchTerm("");
+   };
 
    return (
       <>
          <Card>
-            <CardHeader>
-               <CardTitle>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.title",
-                  )}
-               </CardTitle>
-               <CardDescription>
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.description",
-                  )}
-               </CardDescription>
-               {!isMobile && (<CardAction >
-                  <Button onClick={() => setIsCreateSheetOpen(true)} size="sm">
-                     <Plus className="size-4 mr-2" />
-                     {translate(
-                        "dashboard.routes.bank-accounts.list-section.actions.add-new",
-                     )}
-                  </Button>
-               </CardAction>
-               )}
-            </CardHeader>
-            <CardContent className="grid gap-2">
-               <div className="flex items-center gap-3">
-                  <InputGroup className="flex-1 max-w-md">
+            <CardContent className="pt-6 grid gap-4">
+               <div className="flex gap-6">
+                  <InputGroup className="flex-1 sm:max-w-md">
                      <InputGroupInput
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder={translate(
@@ -241,148 +225,290 @@ function BankAccountsListContent() {
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
+
+                  {isMobile && (
+                     <Button
+                        onClick={() =>
+                           openCredenza({
+                              children: (
+                                 <BankAccountsFilterCredenza
+                                    onClearFilters={handleClearFilters}
+                                    onSortByChange={(value) =>
+                                       setSortBy(value as SortOption)
+                                    }
+                                    onStatusFilterChange={setStatusFilter}
+                                    onTypeFilterChange={setTypeFilter}
+                                    sortBy={sortBy}
+                                    statusFilter={statusFilter}
+                                    typeFilter={typeFilter}
+                                 />
+                              ),
+                           })
+                        }
+                        size="icon"
+                        variant="outline"
+                     >
+                        <Filter className="size-4" />
+                     </Button>
+                  )}
                </div>
 
-               <div className="block md:hidden">
-                  {bankAccounts.length === 0 ? (
-                     <div className="py-8 text-center text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                        )}
-                     </div>
-                  ) : (
-                     <ItemGroup>
-                        {bankAccounts.map((account, index) => (
-                           <Fragment key={account.id}>
-                              <BankAccountItem solid account={account} />
-                              {index !== bankAccounts.length - 1 && (
-                                 <ItemSeparator />
+               {!isMobile && (
+                  <div className="flex flex-wrap items-center gap-3">
+                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                           Status:
+                        </span>
+                        <ToggleGroup
+                           onValueChange={setStatusFilter}
+                           size="sm"
+                           spacing={2}
+                           type="single"
+                           value={statusFilter}
+                           variant="outline"
+                        >
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                              value="active"
+                           >
+                              <CheckCircle className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.bank-accounts.status.active",
                               )}
-                           </Fragment>
-                        ))}
-                     </ItemGroup>
-                  )}
-               </div>
-
-               <div className="hidden md:block">
-                  {bankAccounts.length === 0 ? (
-                     <div className="py-8 text-center text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.list-section.state.empty.title",
-                        )}
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-muted-foreground data-[state=on]:text-muted-foreground"
+                              value="inactive"
+                           >
+                              <CircleDashed className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.bank-accounts.status.inactive",
+                              )}
+                           </ToggleGroupItem>
+                        </ToggleGroup>
                      </div>
-                  ) : (
-                     <DataTable
-                        columns={createBankAccountColumns()}
-                        data={bankAccounts}
-                     />
-                  )}
-               </div>
-            </CardContent>
 
-            {totalPages > 1 && (
-               <CardFooter className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground hidden md:block">
-                     {translate(
-                        "dashboard.routes.transactions.list-section.showing",
-                        {
-                           count: bankAccounts.length,
-                           total: totalCount,
-                        },
+                     <div className="h-4 w-px bg-border" />
+
+                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                           Tipo:
+                        </span>
+                        <ToggleGroup
+                           onValueChange={setTypeFilter}
+                           size="sm"
+                           spacing={2}
+                           type="single"
+                           value={typeFilter}
+                           variant="outline"
+                        >
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                              value="checking"
+                           >
+                              <CreditCard className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.bank-accounts.types.checking",
+                              )}
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                              value="savings"
+                           >
+                              <PiggyBank className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.bank-accounts.types.savings",
+                              )}
+                           </ToggleGroupItem>
+                           <ToggleGroupItem
+                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                              value="investment"
+                           >
+                              <TrendingUp className="size-3.5" />
+                              {translate(
+                                 "dashboard.routes.bank-accounts.types.investment",
+                              )}
+                           </ToggleGroupItem>
+                        </ToggleGroup>
+                     </div>
+
+                     {hasActiveFilters && (
+                        <>
+                           <div className="h-4 w-px bg-border" />
+                           <Button
+                              className="h-8 text-xs"
+                              onClick={handleClearFilters}
+                              size="sm"
+                              variant="outline"
+                           >
+                              <X className="size-3" />
+                              Limpar filtros
+                           </Button>
+                        </>
                      )}
                   </div>
-                  <div className="flex-1 flex items-center justify-center md:justify-end space-x-6 lg:space-x-8">
-                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                        {translate(
-                           "dashboard.routes.transactions.list-section.page",
-                           {
-                              current: currentPage,
-                              total: totalPages,
-                           },
-                        )}
-                     </div>
-                     <Pagination className="w-auto">
-                        <PaginationContent>
-                           <PaginationItem>
-                              <PaginationPrevious
-                                 className={
-                                    currentPage === 1
-                                       ? "pointer-events-none opacity-50"
-                                       : ""
-                                 }
-                                 href="#"
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentPage((prev) =>
-                                       Math.max(1, prev - 1),
-                                    );
-                                 }}
-                              />
-                           </PaginationItem>
+               )}
 
-                           {Array.from(
-                              { length: Math.min(5, totalPages) },
-                              (_, i: number): number => {
-                                 if (totalPages <= 5) {
-                                    return i + 1;
-                                 } else if (currentPage <= 3) {
-                                    return i + 1;
-                                 } else if (currentPage >= totalPages - 2) {
-                                    return totalPages - 4 + i;
-                                 } else {
-                                    return currentPage - 2 + i;
-                                 }
-                              },
-                           ).map((pageNum) => (
-                              <PaginationItem key={pageNum}>
-                                 <PaginationLink
-                                    href="#"
-                                    isActive={pageNum === currentPage}
-                                    onClick={(e) => {
-                                       e.preventDefault();
-                                       setCurrentPage(pageNum);
-                                    }}
-                                 >
-                                    {pageNum}
-                                 </PaginationLink>
-                              </PaginationItem>
-                           ))}
-
-                           <PaginationItem>
-                              <PaginationNext
-                                 className={
-                                    currentPage === totalPages
-                                       ? "pointer-events-none opacity-50"
-                                       : ""
-                                 }
-                                 href="#"
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentPage((prev) =>
-                                       Math.min(totalPages, prev + 1),
-                                    );
-                                 }}
-                              />
-                           </PaginationItem>
-                        </PaginationContent>
-                     </Pagination>
-                  </div>
-               </CardFooter>
-            )}
+               {bankAccounts.length === 0 ? (
+                  <Empty>
+                     <EmptyContent>
+                        <EmptyMedia variant="icon">
+                           <Building className="size-12 text-muted-foreground" />
+                        </EmptyMedia>
+                        <EmptyTitle>
+                           {hasActiveFilters
+                              ? translate(
+                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                                )
+                              : translate(
+                                   "dashboard.routes.bank-accounts.list-section.state.empty.title",
+                                )}
+                        </EmptyTitle>
+                        <EmptyDescription>
+                           {hasActiveFilters
+                              ? "Nenhuma conta encontrada com os filtros aplicados"
+                              : translate(
+                                   "dashboard.routes.bank-accounts.list-section.state.empty.description",
+                                )}
+                        </EmptyDescription>
+                     </EmptyContent>
+                  </Empty>
+               ) : (
+                  <DataTable
+                     columns={createBankAccountColumns()}
+                     data={bankAccounts}
+                     enableRowSelection
+                     getRowId={(row) => row.id}
+                     onRowSelectionChange={setRowSelection}
+                     pagination={{
+                        currentPage,
+                        onPageChange: setCurrentPage,
+                        onPageSizeChange: setPageSize,
+                        pageSize,
+                        totalCount,
+                        totalPages,
+                     }}
+                     renderMobileCard={(props) => {
+                        const stats = accountStatsMap[
+                           props.row.original.id
+                        ] ?? {
+                           balance: 0,
+                           expenses: 0,
+                           income: 0,
+                        };
+                        return (
+                           <BankAccountMobileCard
+                              {...props}
+                              balance={stats.balance}
+                              expenses={stats.expenses}
+                              income={stats.income}
+                           />
+                        );
+                     }}
+                     renderSubComponent={(props) => {
+                        const stats = accountStatsMap[
+                           props.row.original.id
+                        ] ?? {
+                           balance: 0,
+                           expenses: 0,
+                           income: 0,
+                        };
+                        return (
+                           <BankAccountExpandedContent
+                              {...props}
+                              balance={stats.balance}
+                              expenses={stats.expenses}
+                              income={stats.income}
+                           />
+                        );
+                     }}
+                     rowSelection={rowSelection}
+                  />
+               )}
+            </CardContent>
          </Card>
 
-         <Button
-            className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow md:hidden"
-            onClick={() => setIsCreateSheetOpen(true)}
-            size="icon"
+         <SelectionActionBar
+            onClear={handleClearSelection}
+            selectedCount={selectedIds.length}
+            summary={formatDecimalCurrency(selectedBalance)}
          >
-            <Plus className="size-6" />
-         </Button>
-
-         <ManageBankAccountSheet
-            onOpen={isCreateSheetOpen}
-            onOpenChange={setIsCreateSheetOpen}
-         />
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<Check className="size-3.5" />}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.confirm",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.activate-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => markAsActive(selectedIds),
+                     title: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.activate-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                  })
+               }
+            >
+               {translate(
+                  "dashboard.routes.bank-accounts.bulk-actions.activate",
+               )}
+            </SelectionActionButton>
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<X className="size-3.5" />}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.confirm",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.deactivate-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => markAsInactive(selectedIds),
+                     title: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.deactivate-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                  })
+               }
+            >
+               {translate(
+                  "dashboard.routes.bank-accounts.bulk-actions.deactivate",
+               )}
+            </SelectionActionButton>
+            <SelectionActionButton
+               disabled={isLoading}
+               icon={<Trash2 className="size-3.5" />}
+               onClick={() =>
+                  openAlertDialog({
+                     actionLabel: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.delete",
+                     ),
+                     cancelLabel: translate("common.actions.cancel"),
+                     description: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.delete-confirm-description",
+                        { count: selectedIds.length },
+                     ),
+                     onAction: () => deleteSelected(selectedIds),
+                     title: translate(
+                        "dashboard.routes.bank-accounts.bulk-actions.delete-confirm-title",
+                        { count: selectedIds.length },
+                     ),
+                     variant: "destructive",
+                  })
+               }
+               variant="destructive"
+            >
+               {translate("dashboard.routes.bank-accounts.bulk-actions.delete")}
+            </SelectionActionButton>
+         </SelectionActionBar>
       </>
    );
 }

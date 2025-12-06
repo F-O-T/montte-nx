@@ -1,9 +1,22 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, eq, exists, gte, inArray, lte, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
+import { and, eq, exists, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { category, transactionCategory } from "../schemas/categories";
+import { transactionTag } from "../schemas/tags";
 import { type CategorySplit, transaction } from "../schemas/transactions";
+import { transferLog } from "../schemas/transfers";
 import { setTransactionCategories } from "./category-repository";
+
+type TransactionFields = typeof transaction.$inferSelect;
+type TransactionColumns = {
+   [K in keyof TransactionFields]: (typeof transaction)[K];
+};
+type DrizzleOperators = {
+   eq: typeof eq;
+   and: (...conditions: (SQL | undefined)[]) => SQL | undefined;
+   ilike: typeof ilike;
+};
 
 export type Transaction = typeof transaction.$inferSelect;
 export type NewTransaction = typeof transaction.$inferInsert;
@@ -23,8 +36,10 @@ export async function createTransaction(
          throw AppError.database("Failed to create transaction");
       }
 
+      const createdId = result[0].id;
+
       const createdTransaction = await dbClient.query.transaction.findFirst({
-         where: (transaction, { eq }) => eq(transaction.id, result[0]!.id),
+         where: (transaction, { eq }) => eq(transaction.id, createdId),
          with: {
             bankAccount: true,
             costCenter: true,
@@ -127,6 +142,7 @@ export async function findTransactionsByOrganizationIdPaginated(
       type?: "income" | "expense" | "transfer";
       bankAccountId?: string;
       categoryId?: string;
+      categoryIds?: string[];
       tagId?: string;
       costCenterId?: string;
       search?: string;
@@ -142,6 +158,9 @@ export async function findTransactionsByOrganizationIdPaginated(
       type,
       bankAccountId,
       categoryId,
+      categoryIds,
+      tagId,
+      costCenterId,
       search,
       orderBy = "date",
       orderDirection = "desc",
@@ -153,21 +172,23 @@ export async function findTransactionsByOrganizationIdPaginated(
 
    try {
       const buildWhereCondition = (
-         txn: any,
-         { eq: eqOp, and: andOp, ilike }: any,
+         txn: TransactionColumns,
+         { eq: eqOp, and: andOp, ilike: ilikeOp }: DrizzleOperators,
       ) => {
-         const conditions = [eqOp(txn.organizationId, organizationId)];
+         const conditions: (SQL | undefined)[] = [
+            eqOp(txn.organizationId, organizationId),
+         ];
 
          if (bankAccountId && bankAccountId !== "all") {
             conditions.push(eqOp(txn.bankAccountId, bankAccountId));
          }
 
-         if (type && type !== ("all" as any)) {
+         if (type) {
             conditions.push(eqOp(txn.type, type));
          }
 
          if (search) {
-            conditions.push(ilike(txn.description, `%${search}%`));
+            conditions.push(ilikeOp(txn.description, `%${search}%`));
          }
 
          if (startDate) {
@@ -178,7 +199,21 @@ export async function findTransactionsByOrganizationIdPaginated(
             conditions.push(lte(txn.date, endDate));
          }
 
-         if (categoryId) {
+         if (categoryIds && categoryIds.length > 0) {
+            conditions.push(
+               exists(
+                  dbClient
+                     .select({ one: sql`1` })
+                     .from(transactionCategory)
+                     .where(
+                        and(
+                           eq(transactionCategory.transactionId, txn.id),
+                           inArray(transactionCategory.categoryId, categoryIds),
+                        ),
+                     ),
+               ),
+            );
+         } else if (categoryId) {
             conditions.push(
                exists(
                   dbClient
@@ -188,6 +223,26 @@ export async function findTransactionsByOrganizationIdPaginated(
                         and(
                            eq(transactionCategory.transactionId, txn.id),
                            eq(transactionCategory.categoryId, categoryId),
+                        ),
+                     ),
+               ),
+            );
+         }
+
+         if (costCenterId) {
+            conditions.push(eqOp(txn.costCenterId, costCenterId));
+         }
+
+         if (tagId) {
+            conditions.push(
+               exists(
+                  dbClient
+                     .select({ one: sql`1` })
+                     .from(transactionTag)
+                     .where(
+                        and(
+                           eq(transactionTag.transactionId, txn.id),
+                           eq(transactionTag.tagId, tagId),
                         ),
                      ),
                ),
@@ -282,25 +337,115 @@ export async function findTransactionsByBankAccountId(
    }
 }
 
+export async function findTransactionsForExport(
+   dbClient: DatabaseInstance,
+   bankAccountId: string,
+   options: {
+      startDate?: Date;
+      endDate?: Date;
+      type?: "income" | "expense" | "transfer";
+   } = {},
+) {
+   const { startDate, endDate, type } = options;
+
+   try {
+      const baseConditions = [eq(transaction.bankAccountId, bankAccountId)];
+
+      if (startDate) {
+         baseConditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         baseConditions.push(lte(transaction.date, endDate));
+      }
+
+      if (type) {
+         baseConditions.push(eq(transaction.type, type));
+      }
+
+      const whereClause = and(...baseConditions);
+
+      const transactions = await dbClient.query.transaction.findMany({
+         orderBy: (txn, { desc }) => desc(txn.date),
+         where: whereClause,
+      });
+
+      return transactions;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transactions for export: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findTransactionsByBankAccountIdPaginated(
    dbClient: DatabaseInstance,
    bankAccountId: string,
    options: {
       page?: number;
       limit?: number;
+      search?: string;
+      startDate?: Date;
+      endDate?: Date;
+      categoryId?: string;
+      type?: "income" | "expense" | "transfer";
    } = {},
 ) {
-   const { page = 1, limit = 10 } = options;
-   const offset = (page - 1) * limit;
+   const {
+      page = 1,
+      limit: pageLimit = 10,
+      search,
+      startDate,
+      endDate,
+      categoryId,
+      type,
+   } = options;
+   const offset = (page - 1) * pageLimit;
 
    try {
+      const baseConditions = [eq(transaction.bankAccountId, bankAccountId)];
+
+      if (search) {
+         baseConditions.push(ilike(transaction.description, `%${search}%`));
+      }
+
+      if (startDate) {
+         baseConditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         baseConditions.push(lte(transaction.date, endDate));
+      }
+
+      if (type) {
+         baseConditions.push(eq(transaction.type, type));
+      }
+
+      if (categoryId) {
+         baseConditions.push(
+            exists(
+               dbClient
+                  .select()
+                  .from(transactionCategory)
+                  .where(
+                     and(
+                        eq(transactionCategory.transactionId, transaction.id),
+                        eq(transactionCategory.categoryId, categoryId),
+                     ),
+                  ),
+            ),
+         );
+      }
+
+      const whereClause = and(...baseConditions);
+
       const [transactions, totalCount] = await Promise.all([
          dbClient.query.transaction.findMany({
-            limit,
+            limit: pageLimit,
             offset,
-            orderBy: (transaction, { desc }) => desc(transaction.date),
-            where: (transaction, { eq }) =>
-               eq(transaction.bankAccountId, bankAccountId),
+            orderBy: (txn, { desc }) => desc(txn.date),
+            where: whereClause,
             with: {
                bankAccount: true,
                costCenter: true,
@@ -318,20 +463,19 @@ export async function findTransactionsByBankAccountIdPaginated(
          }),
          dbClient.query.transaction
             .findMany({
-               where: (transaction, { eq }) =>
-                  eq(transaction.bankAccountId, bankAccountId),
+               where: whereClause,
             })
             .then((result) => result.length),
       ]);
 
-      const totalPages = Math.ceil(totalCount / limit);
+      const totalPages = Math.ceil(totalCount / pageLimit);
 
       return {
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
             hasPreviousPage: page > 1,
-            limit,
+            limit: pageLimit,
             totalCount,
             totalPages,
          },
@@ -419,12 +563,22 @@ export async function getTotalTransactionsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
       const conditions = [eq(transaction.organizationId, organizationId)];
 
       if (bankAccountId && bankAccountId !== "all") {
          conditions.push(eq(transaction.bankAccountId, bankAccountId));
+      }
+
+      if (startDate) {
+         conditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(transaction.date, endDate));
       }
 
       const result = await dbClient
@@ -445,20 +599,12 @@ export async function getTotalIncomeByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
-      const now = new Date();
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(
-         now.getFullYear(),
-         now.getMonth() + 1,
-         0,
-      );
-
       const conditions = [
          eq(transaction.organizationId, organizationId),
-         gte(transaction.date, currentMonthStart),
-         lte(transaction.date, currentMonthEnd),
          eq(transaction.type, "income"),
       ];
 
@@ -466,9 +612,17 @@ export async function getTotalIncomeByOrganizationId(
          conditions.push(eq(transaction.bankAccountId, bankAccountId));
       }
 
+      if (startDate) {
+         conditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(transaction.date, endDate));
+      }
+
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'income' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`COALESCE(sum(CAST(${transaction.amount} AS REAL)), 0)`,
          })
          .from(transaction)
          .where(and(...conditions));
@@ -486,22 +640,22 @@ export async function getTotalExpensesByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
-      const now = new Date();
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(
-         now.getFullYear(),
-         now.getMonth() + 1,
-         0,
-      );
-
       const conditions = [
          eq(transaction.organizationId, organizationId),
-         gte(transaction.date, currentMonthStart),
-         lte(transaction.date, currentMonthEnd),
          eq(transaction.type, "expense"),
       ];
+
+      if (startDate) {
+         conditions.push(gte(transaction.date, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(transaction.date, endDate));
+      }
 
       if (bankAccountId && bankAccountId !== "all") {
          conditions.push(eq(transaction.bankAccountId, bankAccountId));
@@ -509,7 +663,7 @@ export async function getTotalExpensesByOrganizationId(
 
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'expense' THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`COALESCE(sum(ABS(CAST(${transaction.amount} AS REAL))), 0)`,
          })
          .from(transaction)
          .where(and(...conditions));
@@ -527,32 +681,54 @@ export async function getTotalTransfersByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,
    bankAccountId?: string,
+   startDate?: Date,
+   endDate?: Date,
 ) {
    try {
-      const now = new Date();
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const currentMonthEnd = new Date(
-         now.getFullYear(),
-         now.getMonth() + 1,
-         0,
-      );
+      const conditions = [eq(transferLog.organizationId, organizationId)];
 
-      const conditions = [
-         eq(transaction.organizationId, organizationId),
-         gte(transaction.date, currentMonthStart),
-         lte(transaction.date, currentMonthEnd),
-         eq(transaction.type, "transfer"),
-      ];
+      if (startDate || endDate || bankAccountId) {
+         const transactionConditions = [];
 
-      if (bankAccountId && bankAccountId !== "all") {
-         conditions.push(eq(transaction.bankAccountId, bankAccountId));
+         if (startDate) {
+            transactionConditions.push(gte(transaction.date, startDate));
+         }
+
+         if (endDate) {
+            transactionConditions.push(lte(transaction.date, endDate));
+         }
+
+         if (bankAccountId && bankAccountId !== "all") {
+            conditions.push(
+               sql`(${transferLog.fromBankAccountId} = ${bankAccountId} OR ${transferLog.toBankAccountId} = ${bankAccountId})`,
+            );
+         }
+
+         if (transactionConditions.length > 0) {
+            const result = await dbClient
+               .select({
+                  total: sql<number>`COALESCE(sum(ABS(CAST(${transaction.amount} AS REAL))), 0)`,
+               })
+               .from(transferLog)
+               .innerJoin(
+                  transaction,
+                  eq(transferLog.toTransactionId, transaction.id),
+               )
+               .where(and(...conditions, ...transactionConditions));
+
+            return result[0]?.total || 0;
+         }
       }
 
       const result = await dbClient
          .select({
-            total: sql<number>`sum(CASE WHEN ${transaction.type} = 'transfer' AND CAST(${transaction.amount} AS REAL) > 0 THEN CAST(${transaction.amount} AS REAL) ELSE 0 END)`,
+            total: sql<number>`COALESCE(sum(ABS(CAST(${transaction.amount} AS REAL))), 0)`,
          })
-         .from(transaction)
+         .from(transferLog)
+         .innerJoin(
+            transaction,
+            eq(transferLog.toTransactionId, transaction.id),
+         )
          .where(and(...conditions));
 
       return result[0]?.total || 0;
@@ -560,6 +736,236 @@ export async function getTotalTransfersByOrganizationId(
       propagateError(err);
       throw AppError.database(
          `Failed to get total transfers: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteTransactions(
+   dbClient: DatabaseInstance,
+   transactionIds: string[],
+) {
+   try {
+      if (transactionIds.length === 0) {
+         return [];
+      }
+
+      const result = await dbClient
+         .delete(transaction)
+         .where(inArray(transaction.id, transactionIds))
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete transactions: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function updateTransactionsCategory(
+   dbClient: DatabaseInstance,
+   transactionIds: string[],
+   categoryId: string,
+) {
+   try {
+      if (transactionIds.length === 0) {
+         return [];
+      }
+
+      await dbClient
+         .delete(transactionCategory)
+         .where(inArray(transactionCategory.transactionId, transactionIds));
+
+      const categoryInserts = transactionIds.map((transactionId) => ({
+         categoryId,
+         transactionId,
+      }));
+
+      await dbClient.insert(transactionCategory).values(categoryInserts);
+
+      const updatedTransactions = await dbClient.query.transaction.findMany({
+         where: (txn) => inArray(txn.id, transactionIds),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            transactionCategories: {
+               with: {
+                  category: true,
+               },
+            },
+            transactionTags: {
+               with: {
+                  tag: true,
+               },
+            },
+         },
+      });
+
+      return updatedTransactions;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to update transactions category: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findMatchingTransferTransaction(
+   dbClient: DatabaseInstance,
+   params: {
+      bankAccountId: string;
+      amount: number;
+      date: Date;
+      organizationId: string;
+   },
+): Promise<Transaction | null> {
+   try {
+      const dateStart = new Date(params.date);
+      dateStart.setHours(0, 0, 0, 0);
+      const dateEnd = new Date(params.date);
+      dateEnd.setHours(23, 59, 59, 999);
+
+      const result = await dbClient.query.transaction.findFirst({
+         where: and(
+            eq(transaction.bankAccountId, params.bankAccountId),
+            eq(transaction.organizationId, params.organizationId),
+            eq(transaction.amount, params.amount.toString()),
+            gte(transaction.date, dateStart),
+            lte(transaction.date, dateEnd),
+            sql`${transaction.type} != 'transfer'`,
+         ),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            transactionCategories: {
+               with: {
+                  category: true,
+               },
+            },
+            transactionTags: {
+               with: {
+                  tag: true,
+               },
+            },
+         },
+      });
+      return result || null;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find matching transfer transaction: ${(err as Error).message}`,
+      );
+   }
+}
+
+export type TransferCandidate = {
+   transaction: Transaction;
+   score: number;
+   matchReason: string;
+};
+
+export async function findTransferCandidates(
+   dbClient: DatabaseInstance,
+   params: {
+      bankAccountId: string;
+      amount: number;
+      date: Date;
+      description: string;
+      organizationId: string;
+   },
+): Promise<TransferCandidate[]> {
+   try {
+      const dateStart = new Date(params.date);
+      dateStart.setDate(dateStart.getDate() - 7);
+      const dateEnd = new Date(params.date);
+      dateEnd.setDate(dateEnd.getDate() + 7);
+
+      const candidates = await dbClient.query.transaction.findMany({
+         where: and(
+            eq(transaction.bankAccountId, params.bankAccountId),
+            eq(transaction.organizationId, params.organizationId),
+            eq(transaction.amount, params.amount.toString()),
+            gte(transaction.date, dateStart),
+            lte(transaction.date, dateEnd),
+            sql`${transaction.type} != 'transfer'`,
+         ),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            transactionCategories: {
+               with: {
+                  category: true,
+               },
+            },
+            transactionTags: {
+               with: {
+                  tag: true,
+               },
+            },
+         },
+      });
+
+      return candidates
+         .map((candidate) => {
+            let score = 0;
+            const reasons: string[] = [];
+
+            const daysDiff = Math.abs(
+               Math.floor(
+                  (candidate.date.getTime() - params.date.getTime()) /
+                     (1000 * 60 * 60 * 24),
+               ),
+            );
+            if (daysDiff === 0) {
+               score += 50;
+               reasons.push("Mesma data");
+            } else if (daysDiff === 1) {
+               score += 40;
+               reasons.push("1 dia de diferença");
+            } else if (daysDiff <= 3) {
+               score += 25;
+               reasons.push(`${daysDiff} dias de diferença`);
+            } else if (daysDiff <= 7) {
+               score += 10;
+               reasons.push(`${daysDiff} dias de diferença`);
+            }
+
+            const descLower = candidate.description.toLowerCase();
+            const paramDescLower = params.description.toLowerCase();
+            if (descLower === paramDescLower) {
+               score += 50;
+               reasons.push("Descrição idêntica");
+            } else if (
+               descLower.includes(paramDescLower) ||
+               paramDescLower.includes(descLower)
+            ) {
+               score += 35;
+               reasons.push("Descrição similar");
+            } else {
+               const candidateWords = new Set(descLower.split(/\s+/));
+               const paramWords = paramDescLower.split(/\s+/);
+               const commonWords = paramWords.filter(
+                  (w) => w.length > 3 && candidateWords.has(w),
+               );
+               if (commonWords.length > 0) {
+                  score += 20;
+                  reasons.push("Palavras em comum");
+               }
+            }
+
+            return {
+               matchReason: reasons.join(", "),
+               score,
+               transaction: candidate,
+            };
+         })
+         .filter((c) => c.score >= 50)
+         .sort((a, b) => b.score - a.score);
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find transfer candidates: ${(err as Error).message}`,
       );
    }
 }
@@ -573,6 +979,7 @@ export async function createTransfer(
       fromBankAccountId: string;
       toBankAccountId: string;
       organizationId: string;
+      notes?: string;
    },
 ) {
    try {
@@ -624,6 +1031,16 @@ export async function createTransfer(
          await setTransactionCategories(tx, toTransaction.id, [
             transferCategoryId,
          ]);
+
+         await tx.insert(transferLog).values({
+            fromBankAccountId: data.fromBankAccountId,
+            fromTransactionId: fromTransaction.id,
+            id: crypto.randomUUID(),
+            notes: data.notes || null,
+            organizationId: data.organizationId,
+            toBankAccountId: data.toBankAccountId,
+            toTransactionId: toTransaction.id,
+         });
 
          return [fromTransaction, toTransaction];
       });

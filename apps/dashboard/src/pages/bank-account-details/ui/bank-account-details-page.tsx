@@ -1,4 +1,11 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import {
+   DropdownMenu,
+   DropdownMenuContent,
+   DropdownMenuItem,
+   DropdownMenuTrigger,
+} from "@packages/ui/components/dropdown-menu";
 import {
    Empty,
    EmptyContent,
@@ -6,34 +13,119 @@ import {
    EmptyMedia,
    EmptyTitle,
 } from "@packages/ui/components/empty";
+import { MonthSelector } from "@packages/ui/components/month-selector";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import {
+   getDateRangeForPeriod,
+   type TimePeriod,
+   TimePeriodChips,
+   type TimePeriodDateRange,
+} from "@packages/ui/components/time-period-chips";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
-import { Building, Home } from "lucide-react";
-import { Suspense } from "react";
+import { endOfMonth, startOfMonth } from "date-fns";
+import {
+   Building,
+   ChevronDown,
+   Download,
+   Edit,
+   Home,
+   Plus,
+   Trash2,
+   Upload,
+} from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
+import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
+import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
+import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { usePendingOfxImport } from "@/hooks/use-pending-ofx-import";
+import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
+import { ExportOfxForm } from "../features/export-ofx-form";
+import { ImportOfxForm } from "../features/import-ofx-form";
+import { useDeleteBankAccount } from "../features/use-delete-bank-account";
 import { BankAccountCharts } from "./bank-account-charts";
-import { BankAccountStats } from "./bank-account-stats";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
+import { BankAccountStats } from "./bank-account-stats";
 
 function BankAccountContent() {
    const params = useParams({ strict: false });
    const bankAccountId =
       (params as { bankAccountId?: string }).bankAccountId ?? "";
    const trpc = useTRPC();
+   const { openSheet } = useSheet();
+   const router = useRouter();
+   const { activeOrganization } = useActiveOrganization();
+   const { getPending, clearPending } = usePendingOfxImport();
+
+   const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
+      "this-month",
+   );
+   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+   const [dateRange, setDateRange] = useState<{
+      startDate: Date | null;
+      endDate: Date | null;
+   }>(() => {
+      const range = getDateRangeForPeriod("this-month");
+      return { endDate: range.endDate, startDate: range.startDate };
+   });
+
+   const handleTimePeriodChange = (
+      period: TimePeriod | null,
+      range: TimePeriodDateRange,
+   ) => {
+      setTimePeriod(period);
+      setDateRange({ endDate: range.endDate, startDate: range.startDate });
+      if (range.selectedMonth) {
+         setSelectedMonth(range.selectedMonth);
+      }
+   };
+
+   const handleMonthChange = (month: Date) => {
+      setSelectedMonth(month);
+      setTimePeriod(null);
+      setDateRange({
+         endDate: endOfMonth(month),
+         startDate: startOfMonth(month),
+      });
+   };
+
+   const chartGranularity =
+      timePeriod === "all-time" ? ("monthly" as const) : ("daily" as const);
 
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
 
+   useEffect(() => {
+      const pending = getPending();
+      if (pending && bankAccountId) {
+         clearPending();
+         openSheet({
+            children: <ImportOfxForm bankAccountId={bankAccountId} />,
+         });
+      }
+   }, [bankAccountId, getPending, clearPending, openSheet]);
+
+   const handleDeleteSuccess = () => {
+      router.navigate({
+         params: { slug: activeOrganization.slug },
+         to: "/$slug/bank-accounts",
+      });
+   };
+
+   const { deleteBankAccount } = useDeleteBankAccount({
+      bankAccount,
+      onSuccess: handleDeleteSuccess,
+   });
    if (!bankAccountId) {
       return (
          <BankAccountPageError
             error={new Error("Invalid bank account ID")}
-            resetErrorBoundary={() => { }}
+            resetErrorBoundary={() => {}}
          />
       );
    }
@@ -45,12 +137,130 @@ function BankAccountContent() {
    return (
       <main className="space-y-4">
          <DefaultHeader
-            description={"Detalhes da sua conta bancaria"}
-            title={bankAccount.name || "Conta Bancaria"}
+            actions={
+               <Button
+                  onClick={() =>
+                     openSheet({ children: <ManageTransactionForm /> })
+                  }
+               >
+                  <Plus className="size-4" />
+                  {translate(
+                     "dashboard.routes.transactions.features.add-new.title",
+                  )}
+               </Button>
+            }
+            description={translate(
+               "dashboard.routes.transactions.list-section.description",
+            )}
+            title={bankAccount.name || "Conta Bancária"}
          />
-         <BankAccountStats bankAccountId={bankAccountId} />
-         <RecentTransactions bankAccountId={bankAccountId} />
-         <BankAccountCharts bankAccountId={bankAccountId} />
+
+         <div className="flex flex-wrap items-center gap-2">
+            <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline">
+                     <Upload className="size-4" />
+                     Importar Extrato
+                     <ChevronDown className="size-4" />
+                  </Button>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent align="start">
+                  <DropdownMenuItem
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <ImportOfxForm bankAccountId={bankAccountId} />
+                           ),
+                        })
+                     }
+                  >
+                     <Upload className="size-4" />
+                     Importar OFX
+                  </DropdownMenuItem>
+               </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline">
+                     <Download className="size-4" />
+                     Exportar Extrato
+                     <ChevronDown className="size-4" />
+                  </Button>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent align="start">
+                  <DropdownMenuItem
+                     onClick={() =>
+                        openSheet({
+                           children: (
+                              <ExportOfxForm
+                                 bankAccountId={bankAccountId}
+                                 endDate={dateRange.endDate}
+                                 startDate={dateRange.startDate}
+                              />
+                           ),
+                        })
+                     }
+                  >
+                     <Download className="size-4" />
+                     Exportar OFX
+                  </DropdownMenuItem>
+               </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <ManageBankAccountForm bankAccount={bankAccount} />
+                     ),
+                  })
+               }
+               size="sm"
+               variant="outline"
+            >
+               <Edit className="size-4" />
+               Editar Conta
+            </Button>
+            <Button
+               className="text-destructive hover:text-destructive"
+               onClick={deleteBankAccount}
+               size="sm"
+               variant="outline"
+            >
+               <Trash2 className="size-4" />
+               Excluir Conta
+            </Button>
+         </div>
+
+         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <TimePeriodChips
+               onValueChange={handleTimePeriodChange}
+               size="sm"
+               value={timePeriod}
+            />
+            <div className="hidden sm:block h-4 w-px bg-border" />
+            <MonthSelector
+               date={selectedMonth}
+               disabled={timePeriod !== null && timePeriod !== "all-time"}
+               onSelect={handleMonthChange}
+            />
+         </div>
+
+         <BankAccountStats
+            bankAccountId={bankAccountId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
+         <BankAccountCharts
+            bankAccountId={bankAccountId}
+            endDate={dateRange.endDate}
+            granularity={chartGranularity}
+            startDate={dateRange.startDate}
+         />
+         <RecentTransactions
+            bankAccountId={bankAccountId}
+            endDate={dateRange.endDate}
+            startDate={dateRange.startDate}
+         />
       </main>
    );
 }
@@ -116,10 +326,12 @@ function BankAccountPageError({ error, resetErrorBoundary }: FallbackProps) {
 
 export function BankAccountDetailsPage() {
    return (
-      <ErrorBoundary FallbackComponent={BankAccountPageError}>
-         <Suspense fallback={<BankAccountPageSkeleton />}>
-            <BankAccountContent />
-         </Suspense>
-      </ErrorBoundary>
+      <TransactionListProvider>
+         <ErrorBoundary FallbackComponent={BankAccountPageError}>
+            <Suspense fallback={<BankAccountPageSkeleton />}>
+               <BankAccountContent />
+            </Suspense>
+         </ErrorBoundary>
+      </TransactionListProvider>
    );
 }

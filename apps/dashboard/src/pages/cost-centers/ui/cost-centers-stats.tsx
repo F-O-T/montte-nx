@@ -12,7 +12,7 @@ import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { trpc } from "@/integrations/clients";
+import { useTRPC } from "@/integrations/clients";
 
 function CostCentersStatsErrorFallback(props: FallbackProps) {
    return (
@@ -55,6 +55,7 @@ function CostCentersStatsSkeleton() {
 }
 
 function CostCentersStatsContent() {
+   const trpc = useTRPC();
    const { data: stats } = useSuspenseQuery(
       trpc.costCenters.getStats.queryOptions(),
    );
