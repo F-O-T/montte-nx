@@ -55,7 +55,7 @@ export const onboardingRouter = router({
          hasBankAccounts,
          hasCategories,
          needsOnboarding: !organization.onboardingCompleted,
-         organizationContext: organization.context,
+         organizationSlug: organization.slug,
       };
    }),
 });

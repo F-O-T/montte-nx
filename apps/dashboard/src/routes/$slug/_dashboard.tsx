@@ -43,7 +43,7 @@ export const Route = createFileRoute("/$slug/_dashboard")({
 
          if (status.needsOnboarding) {
             throw redirect({
-               params: { slug: firstOrg.slug },
+               params: { slug: status.organizationSlug ?? firstOrg.slug },
                to: "/$slug/onboarding",
             });
          }
