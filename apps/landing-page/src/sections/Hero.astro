@@ -1,8 +1,40 @@
 ---
-import { ArrowRight, Check } from "@lucide/astro";
+import {
+   ArrowRight,
+   Check,
+   CreditCard,
+   TrendingUp,
+   Wallet,
+} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
+import {
+   Card,
+   CardAction,
+   CardContent,
+   CardDescription,
+   CardFooter,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import {
+   Item,
+   ItemActions,
+   ItemContent,
+   ItemDescription,
+   ItemGroup,
+   ItemMedia,
+   ItemSeparator,
+   ItemTitle,
+} from "@packages/ui/components/item";
+import { Separator } from "@packages/ui/components/separator";
+import HeroChart from "../components/HeroChart";
 
 interface _Props {
    lang?: SupportedLng;
@@ -15,23 +47,40 @@ const features = [
    "Categorizacao inteligente",
    "Relatorios detalhados",
 ];
+
+const items = [
+   {
+      amount: "R$ 8.2k",
+      change: "+12.6%",
+      changeColor: "text-primary-foreground bg-primary",
+      icon: CreditCard,
+      iconClass: "size-4 text-primary",
+      title: "Conta Corrente",
+   },
+   {
+      amount: "R$ 4.2k",
+      change: "-4.2%",
+      changeColor: "bg-destructive text-destructive-foreground",
+      icon: Wallet,
+      iconClass: "size-4 text-primary",
+      title: "Poupanca",
+   },
+];
 ---
 
-<main class="overflow-hidden" id="hero">
-   <section class="relative flex-1">
-      <div class="relative flex flex-col py-12 sm:py-16 lg:py-24">
-         <div class="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 max-xl:justify-center sm:gap-16 sm:px-6 lg:gap-24 lg:px-8 xl:grid-cols-2">
+   <section class=" min-h-screen  " id="hero">
+      <div class="relative flex flex-col justify-center items-center py-12 sm:py-16 lg:py-24">
+         <div class="grid w-full max-w-7xl grid-cols-1 gap-12 px-4 sm:gap-16 sm:px-6 lg:gap-24 lg:px-8 xl:grid-cols-2">
             <div class="flex flex-col justify-between gap-8">
                <div class="flex flex-col gap-8">
                   <div class="flex flex-col justify-between gap-4">
-                     <div class="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-foreground font-normal">
-                           Controle Financeiro Pessoal
-                        </Badge>
-                        <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/20 font-medium animate-pulse">
-                           Alpha
-                        </Badge>
-                     </div>
+                       <Announcement >
+                      <AnnouncementTag className="bg-primary text-primary-foreground">Alpha</AnnouncementTag>
+                          <AnnouncementTitle>
+                             Gestão Financeira Inteligente 
+                          </AnnouncementTitle>
+                       </Announcement>
+
                      <div>
                         <h1 class="text-2xl font-semibold sm:text-3xl lg:text-5xl">
                            Organize suas financas de forma simples e inteligente
@@ -46,7 +95,7 @@ const features = [
                         <a href="https://app.montte.co/auth/sign-up" target="_blank" rel="noopener noreferrer">
                            <Button size="lg" className="group relative overflow-hidden rounded-lg">
                               <span>Comecar agora</span>
-                              <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1"/>
+                              <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                            </Button>
                         </a>
                         <a href="#features">
@@ -56,173 +105,80 @@ const features = [
                         </a>
                      </div>
                   </div>
-                  <div class="space-y-4 ps-2">
+                  <ul class="flex flex-col gap-4 ps-2">
                      {features.map((feature) => (
-                        <div class="flex items-center gap-3">
+                        <li class="flex items-center gap-3">
                            <div class="flex size-5 items-center justify-center rounded-full bg-primary/10">
                               <Check class="size-3 text-primary" />
                            </div>
                            <p class="text-muted-foreground">{feature}</p>
-                        </div>
+                        </li>
                      ))}
-                  </div>
+                  </ul>
                </div>
             </div>
-            <div class="flex items-center justify-center">
-               <div class="relative max-xl:max-w-135 md:mt-8 md:ml-3 md:grow">
-                  <div class="w-fit -rotate-6">
-                     <div class="pointer-events-none absolute inset-0 h-full w-full scale-105 transform-gpu blur-xl opacity-30 bg-gradient-to-br from-primary/50 via-chart-2/50 to-chart-3/50 rounded-2xl"></div>
-                     <div class="bg-card text-card-foreground flex flex-col rounded-xl border py-6 shadow-lg gap-4 relative w-full max-w-sm">
-                        <div class="px-6 flex justify-between items-start">
-                           <div class="flex flex-col gap-1">
-                              <span class="text-xl font-semibold">Visao Geral</span>
-                              <span class="text-muted-foreground text-sm">Suas financas em tempo real</span>
-                           </div>
-                           <div class="bg-primary/10 text-primary p-2 rounded-lg">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
-                                 <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
-                                 <path d="m19 9-5 5-4-4-3 3"/>
-                              </svg>
-                           </div>
-                        </div>
-                        <div class="px-6">
-                           <div class="h-px w-full bg-border"></div>
-                        </div>
-                        <div class="px-6 flex flex-col gap-4">
-                           <div class="flex items-baseline gap-2">
-                              <span class="text-3xl font-semibold">R$ 12.450</span>
-                              <span class="text-primary text-sm font-medium">+12.5%</span>
-                           </div>
-                           <div class="flex gap-4">
-                              <div class="flex-1">
-                                 <div class="text-muted-foreground text-xs mb-1">Receitas</div>
-                                 <div class="h-2 bg-primary/20 rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: 75%"></div>
-                                 </div>
-                              </div>
-                              <div class="flex-1">
-                                 <div class="text-muted-foreground text-xs mb-1">Despesas</div>
-                                 <div class="h-2 bg-destructive/20 rounded-full overflow-hidden">
-                                    <div class="h-full bg-destructive rounded-full" style="width: 45%"></div>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                        <div class="px-6 pt-2 flex justify-between items-center">
-                           <span class="text-muted-foreground text-sm">Saldo atual</span>
-                           <Button variant="outline" size="sm" className="rounded-full h-7 text-xs">
-                              Ver detalhes
-                           </Button>
-                        </div>
-                     </div>
+
+
+         <Card>
+            <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+
+                  <div class="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                                       <TrendingUp class="size-5 text-primary" />
+
                   </div>
-                  <div class="ms-auto -mt-32 rotate-3 md:w-fit translate-x-16 sm:translate-x-24">
-                     <div class="pointer-events-none absolute inset-0 h-full w-full scale-105 transform-gpu blur-xl opacity-30 bg-gradient-to-br from-chart-4/50 via-primary/50 to-chart-1/50 rounded-2xl"></div>
-                     <div class="bg-card text-card-foreground flex flex-col rounded-xl border py-6 shadow-lg gap-4 relative ms-auto w-full max-w-xs">
-                        <div class="px-6 flex items-center gap-3">
-                           <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5 text-primary">
-                                 <rect width="20" height="14" x="2" y="5" rx="2"/>
-                                 <line x1="2" x2="22" y1="10" y2="10"/>
-                              </svg>
-                           </div>
-                           <div class="flex flex-col">
-                              <span class="font-medium">Conta Principal</span>
-                              <span class="text-muted-foreground text-sm">Banco do Brasil</span>
-                           </div>
-                        </div>
-                        <div class="px-6">
-                           <div class="h-px w-full bg-border"></div>
-                        </div>
-                        <div class="px-6">
-                           <div class="flex justify-between items-center mb-3">
-                              <span class="text-muted-foreground text-sm">Transacoes recentes</span>
-                              <span class="text-xs text-muted-foreground">Hoje</span>
-                           </div>
-                           <div class="space-y-3">
-                              <div class="flex items-center justify-between">
-                                 <div class="flex items-center gap-2">
-                                    <div class="size-8 rounded-full bg-destructive/10 flex items-center justify-center">
-                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-destructive">
-                                          <path d="m3 16 4 4 4-4"/>
-                                          <path d="M7 20V4"/>
-                                          <path d="m21 8-4-4-4 4"/>
-                                          <path d="M17 4v16"/>
-                                       </svg>
-                                    </div>
-                                    <span class="text-sm">Supermercado</span>
-                                 </div>
-                                 <span class="text-sm font-medium text-destructive">-R$ 234</span>
-                              </div>
-                              <div class="flex items-center justify-between">
-                                 <div class="flex items-center gap-2">
-                                    <div class="size-8 rounded-full bg-primary/10 flex items-center justify-center">
-                                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4 text-primary">
-                                          <path d="m3 8 4-4 4 4"/>
-                                          <path d="M7 4v16"/>
-                                          <path d="m21 16-4 4-4-4"/>
-                                          <path d="M17 20V4"/>
-                                       </svg>
-                                    </div>
-                                    <span class="text-sm">Salario</span>
-                                 </div>
-                                 <span class="text-sm font-medium text-primary">+R$ 5.200</span>
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <div class="absolute inset-y-0 flex items-center justify-center right-0 -z-10 h-full w-1/2 max-xl:hidden overflow-hidden">
-            <svg class="pointer-events-none absolute z-0 h-full w-full opacity-60" width="644" height="864" viewBox="0 0 644 864" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-               <title>Background beams decoration</title>
-               <g>
-                  <path d="M298.018 510.471C343.224 474.034 402.278 467.033 446.057 492.921L562.934 562.032L679.811 631.143C723.59 657.031 782.645 650.03 827.851 613.593L948.536 516.319" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M313.947 477.805C355.656 440.949 410.618 429.982 453.979 449.864L579.079 507.225L700.639 570.201C746.256 593.833 806.293 581.706 849.853 540.06L965.934 429.082" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M325.297 440.813C363.606 408.221 411.813 397.24 451.648 412.033L590.842 463.725L720.185 514.69C765.181 532.42 820.903 516.615 860.909 474.775L975.911 354.505" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M287.785 548.818C335.829 517.199 394.936 516.755 435.89 547.705L547.664 632.177L655.638 702.257C703.089 733.056 769.488 724.604 816.491 681.783L942.724 566.781" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M281.67 589.634C330.138 562.794 387.665 566.512 426.953 599.024L538.903 691.666L639.778 776.841C684.392 814.511 752.293 814.058 803.203 775.75L930.652 679.851" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M226.743 485.26L310.181 357.131C336.244 317.107 381.266 294.249 427.893 297.365L577.162 307.344L726.431 317.322C773.058 320.439 818.08 297.58 844.143 257.557L927.581 129.427" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M228.849 462.519L306.486 330.402C330.637 289.302 374.435 264.408 421.055 265.282L570.92 268.091L720.784 270.9C767.404 271.774 811.202 246.881 835.353 205.781L912.99 73.6634" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M219.228 439.691L303.106 299.889C325.76 262.132 365.219 238.241 408.281 236.211L564.661 228.836L714.808 221.756C761.252 219.566 803.222 191.991 824.678 149.571L894.042 12.4309" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M223.848 503.803L314.106 380.909C342.438 342.332 388.829 322.05 435.32 327.914L583.424 346.596L731.528 365.278C778.019 371.142 824.409 350.86 852.742 312.283L943 189.389" stroke="var(--border)" stroke-linecap="round" stroke-linejoin="round"/>
-               </g>
-               <path d="M298.018 510.471C343.224 474.034 402.278 467.033 446.057 492.921L562.934 562.032L679.811 631.143C723.59 657.031 782.645 650.03 827.851 613.593L948.536 516.319" stroke="url(#heroGrad0)" stroke-opacity="0.8" stroke-width="2" stroke-linecap="round"/>
-               <path d="M313.947 477.805C355.656 440.949 410.618 429.982 453.979 449.864L579.079 507.225L700.639 570.201C746.256 593.833 806.293 581.706 849.853 540.06L965.934 429.082" stroke="url(#heroGrad1)" stroke-opacity="0.8" stroke-width="2" stroke-linecap="round"/>
-               <path d="M287.785 548.818C335.829 517.199 394.936 516.755 435.89 547.705L547.664 632.177L655.638 702.257C703.089 733.056 769.488 724.604 816.491 681.783L942.724 566.781" stroke="url(#heroGrad2)" stroke-opacity="0.8" stroke-width="2" stroke-linecap="round"/>
-               <path d="M226.743 485.26L310.181 357.131C336.244 317.107 381.266 294.249 427.893 297.365L577.162 307.344L726.431 317.322C773.058 320.439 818.08 297.58 844.143 257.557L927.581 129.427" stroke="url(#heroGrad3)" stroke-opacity="0.8" stroke-width="2" stroke-linecap="round"/>
-               <path d="M223.848 503.803L314.106 380.909C342.438 342.332 388.829 322.05 435.32 327.914L583.424 346.596L731.528 365.278C778.019 371.142 824.409 350.86 852.742 312.283L943 189.389" stroke="url(#heroGrad4)" stroke-opacity="0.8" stroke-width="2" stroke-linecap="round"/>
-               <defs>
-                  <linearGradient id="heroGrad0" x1="0%" x2="100%" y1="0%" y2="100%">
-                     <stop stop-color="var(--primary)" stop-opacity="0"/>
-                     <stop offset="50%" stop-color="var(--primary)"/>
-                     <stop offset="100%" stop-color="var(--chart-2)" stop-opacity="0"/>
-                  </linearGradient>
-                  <linearGradient id="heroGrad1" x1="0%" x2="100%" y1="0%" y2="100%">
-                     <stop stop-color="var(--chart-2)" stop-opacity="0"/>
-                     <stop offset="50%" stop-color="var(--chart-2)"/>
-                     <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
-                  </linearGradient>
-                  <linearGradient id="heroGrad2" x1="0%" x2="100%" y1="0%" y2="100%">
-                     <stop stop-color="var(--primary)" stop-opacity="0"/>
-                     <stop offset="50%" stop-color="var(--chart-3)"/>
-                     <stop offset="100%" stop-color="var(--chart-2)" stop-opacity="0"/>
-                  </linearGradient>
-                  <linearGradient id="heroGrad3" x1="0%" x2="100%" y1="0%" y2="100%">
-                     <stop stop-color="var(--chart-4)" stop-opacity="0"/>
-                     <stop offset="50%" stop-color="var(--primary)"/>
-                     <stop offset="100%" stop-color="var(--chart-3)" stop-opacity="0"/>
-                  </linearGradient>
-                  <linearGradient id="heroGrad4" x1="0%" x2="100%" y1="0%" y2="100%">
-                     <stop stop-color="var(--chart-2)" stop-opacity="0"/>
-                     <stop offset="50%" stop-color="var(--chart-4)"/>
-                     <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
-                  </linearGradient>
-               </defs>
-            </svg>
+                  R$ 12.450,00
+                                                 <span class="text-primary text-sm font-semibold">+5%</span>
+
+               </CardTitle>
+               <CardDescription>
+                  Saldo total das suas contas
+               </CardDescription>
+               <CardAction>
+                                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg font-normal">
+                               Detalhes
+                            </Button>
+
+               </CardAction>
+            </CardHeader>
+
+            <CardContent className="space-y-2">
+
+
+                   <ItemGroup className="gap-2">
+                      {items.map((item, index) => (
+                         <>
+                            <Item size={item.size} className={item.className}>
+                               <ItemMedia variant='icon' className={item.mediaClass}>
+                                  <item.icon class={item.iconClass} />
+                               </ItemMedia>
+                               <ItemContent>
+                                  <ItemTitle className={item.titleClass}>{item.title}</ItemTitle>
+                               </ItemContent>
+                        <ItemActions >
+                       <Announcement >
+                              <AnnouncementTag className={item.changeColor}>{item.change}</AnnouncementTag>
+                          <AnnouncementTitle>
+{item.amount}
+                          </AnnouncementTitle>
+                       </Announcement>
+                               </ItemActions>
+                            </Item>
+                            {index < items.length - 1 && <ItemSeparator />}
+                         </>
+                      ))}
+                   </ItemGroup>
+
+            </CardContent>
+            <Separator/>
+
+            <CardFooter>
+                                              <HeroChart client:only />
+
+            </CardFooter>
+                      </Card>
+             </div>
+
          </div>
       </div>
    </section>
-</main>
