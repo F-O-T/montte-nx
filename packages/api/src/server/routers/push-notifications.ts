@@ -7,12 +7,12 @@ import {
    deletePushSubscriptionByUserAndEndpoint,
    findPushSubscriptionsByUserId,
 } from "@packages/database/repositories/push-subscription-repository";
-import { z } from "zod";
-import { checkBillReminders } from "../services/bill-reminder-service";
+import { checkBillReminders } from "@packages/notifications/bill-reminders";
 import {
    createNotificationPayload,
    sendPushNotificationToUser,
-} from "../services/push-notification-service";
+} from "@packages/notifications/push";
+import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 const pushSubscriptionSchema = z.object({

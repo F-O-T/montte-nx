@@ -13,7 +13,6 @@ import { Route as ShareTargetRouteImport } from './routes/share-target'
 import { Route as PwaRedirectRouteImport } from './routes/pwa-redirect'
 import { Route as FileHandlerRouteImport } from './routes/file-handler'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
@@ -67,10 +66,6 @@ const FileHandlerRoute = FileHandlerRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SlugRoute = SlugRouteImport.update({
@@ -345,7 +340,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$slug': typeof SlugRouteWithChildren
-  '/_dashboard': typeof DashboardRoute
   '/auth': typeof AuthRouteWithChildren
   '/file-handler': typeof FileHandlerRoute
   '/pwa-redirect': typeof PwaRedirectRoute
@@ -466,7 +460,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/$slug'
-    | '/_dashboard'
     | '/auth'
     | '/file-handler'
     | '/pwa-redirect'
@@ -508,7 +501,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   SlugRoute: typeof SlugRouteWithChildren
-  DashboardRoute: typeof DashboardRoute
   AuthRoute: typeof AuthRouteWithChildren
   FileHandlerRoute: typeof FileHandlerRoute
   PwaRedirectRoute: typeof PwaRedirectRoute
@@ -543,13 +535,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_dashboard': {
-      id: '/_dashboard'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/$slug': {
@@ -895,7 +880,6 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   SlugRoute: SlugRouteWithChildren,
-  DashboardRoute: DashboardRoute,
   AuthRoute: AuthRouteWithChildren,
   FileHandlerRoute: FileHandlerRoute,
   PwaRedirectRoute: PwaRedirectRoute,

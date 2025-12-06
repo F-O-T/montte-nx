@@ -9,7 +9,7 @@ if [ -n "$staged_files" ]; then
     fi
   done
   if [ -n "$files_to_format" ]; then
-    echo "$files_to_format" | xargs bun biome format --write
+    echo "$files_to_format" | xargs bun run check
     if [ -n "$(git diff --name-only $files_to_format)" ]; then
       echo "Files were formatted. Aborting commit."
       echo "Please stage the formatted files and commit again."

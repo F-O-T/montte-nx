@@ -23,7 +23,7 @@ import { tagRouter } from "./routers/tags";
 import { transactionRouter } from "./routers/transactions";
 import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 
-export type { ReminderResult } from "./services/bill-reminder-service";
+export type { ReminderResult } from "@packages/notifications/bill-reminders";
 
 export const appRouter = router({
    bankAccounts: bankAccountRouter,

@@ -1,0 +1,12 @@
+{
+   "extends": "@tooling/typescript/internal-package.json",
+   "include": ["src", "__tests__/*.test.ts"],
+   "references": [
+      {
+         "path": "../database"
+      },
+      {
+         "path": "../utils"
+      }
+   ]
+}
