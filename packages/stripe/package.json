@@ -11,6 +11,10 @@
       ".": {
          "default": "./src/index.ts",
          "types": "./dist/src/index.d.ts"
+      },
+      "./constants": {
+         "default": "./src/constants.ts",
+         "types": "./dist/src/constants.d.ts"
       }
    },
    "files": [

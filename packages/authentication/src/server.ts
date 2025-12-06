@@ -7,6 +7,7 @@ import {
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
 import type { StripeClient } from "@packages/stripe";
+import { PlanName } from "@packages/stripe/constants";
 import {
    type ResendClient,
    type SendEmailOTPOptions,
@@ -136,7 +137,7 @@ export const getAuthOptions = (
                   {
                      annualDiscountPriceId:
                         serverEnv.STRIPE_BASIC_ANNUAL_PRICE_ID,
-                     name: "basic",
+                     name: PlanName.BASIC,
                      priceId: serverEnv.STRIPE_BASIC_PRICE_ID,
                   },
                   {
@@ -145,7 +146,7 @@ export const getAuthOptions = (
                      freeTrial: {
                         days: 14,
                      },
-                     name: "pro",
+                     name: PlanName.PRO,
                      priceId: serverEnv.STRIPE_PRO_PRICE_ID,
                   },
                ],
@@ -282,4 +283,5 @@ export const createAuth = (options: AuthOptions) => {
    );
    return betterAuth(authOptions);
 };
+
 export type AuthInstance = ReturnType<typeof createAuth>;

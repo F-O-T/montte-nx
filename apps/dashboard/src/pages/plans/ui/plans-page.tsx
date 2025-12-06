@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { PlanName, STRIPE_PLANS } from "@packages/stripe/constants";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -10,13 +11,17 @@ import {
 } from "@packages/ui/components/card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import {
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useActivePlan } from "@/hooks/use-active-plan";
 import { betterAuthClient } from "@/integrations/clients";
 
 interface Plan {
@@ -30,40 +35,17 @@ interface Plan {
    highlighted?: boolean;
 }
 
-const plans: Plan[] = [
-   {
-      annualPrice: "R$ 290",
-      description: "Para pequenos negócios e uso pessoal",
-      displayName: "Basic",
-      features: [
-         "Até 3 membros",
-         "1.000 transações/mês",
-         "Relatórios básicos",
-         "Suporte por email",
-         "Exportação OFX",
-      ],
-      icon: <Zap className="size-6" />,
-      name: "basic",
-      price: "R$ 29",
-   },
-   {
-      annualPrice: "R$ 790",
-      description: "Para equipes em crescimento",
-      displayName: "Pro",
-      features: [
-         "Até 10 membros",
-         "10.000 transações/mês",
-         "Relatórios avançados",
-         "Suporte prioritário",
-         "API access",
-         "14 dias de teste grátis",
-      ],
-      highlighted: true,
-      icon: <Crown className="size-6" />,
-      name: "pro",
-      price: "R$ 79",
-   },
-];
+const plans: Plan[] = STRIPE_PLANS.map((plan) => {
+   return {
+      ...plan,
+      icon:
+         plan.name === PlanName.BASIC ? (
+            <Zap className="size-6" />
+         ) : (
+            <Crown className="size-6" />
+         ),
+   };
+});
 
 function PlansPageErrorFallback(props: FallbackProps) {
    return createErrorFallback({
@@ -185,22 +167,7 @@ function PlansPageContent() {
    const [isAnnual, setIsAnnual] = useState(true);
    const [isLoading, startTransition] = useTransition();
 
-   const { data: subscriptions } = useQuery({
-      enabled: !!activeOrganization?.id,
-      queryFn: async () => {
-         const result = await betterAuthClient.subscription.list({
-            query: {
-               referenceId: activeOrganization?.id,
-            },
-         });
-         return result.data;
-      },
-      queryKey: ["subscriptions", activeOrganization?.id],
-   });
-
-   const currentSubscription = subscriptions?.find(
-      (sub) => sub.status === "active" || sub.status === "trialing",
-   );
+   const { currentSubscription } = useActivePlan();
 
    const handleSelectPlan = async (planName: string) => {
       startTransition(async () => {
@@ -210,12 +177,14 @@ function PlansPageContent() {
          }
 
          try {
+            const baseUrl = `${window.location.origin}${window.location.pathname}`;
+
             await betterAuthClient.subscription.upgrade({
                annual: isAnnual,
-
+               cancelUrl: `${baseUrl}?cancel=true`,
                plan: planName,
                referenceId: activeOrganization?.id,
-               successUrl: `http://localhost:3000/joao-vitor-workspace-36au1n/plans?success=true`,
+               successUrl: `${baseUrl}?success=true`,
             });
          } catch (error) {
             console.error("Failed to create checkout session:", error);
@@ -234,31 +203,22 @@ function PlansPageContent() {
          />
 
          <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 bg-muted p-1 rounded-lg">
-               <button
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                     !isAnnual
-                        ? "bg-background shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  onClick={() => setIsAnnual(false)}
-                  type="button"
-               >
+            <ToggleGroup
+               className="bg-muted p-1 rounded-lg"
+               onValueChange={(value) => {
+                  if (value) setIsAnnual(value === "annual");
+               }}
+               type="single"
+               value={isAnnual ? "annual" : "monthly"}
+            >
+               <ToggleGroupItem className="px-4 py-2 text-sm" value="monthly">
                   Mensal
-               </button>
-               <button
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                     isAnnual
-                        ? "bg-background shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                  }`}
-                  onClick={() => setIsAnnual(true)}
-                  type="button"
-               >
+               </ToggleGroupItem>
+               <ToggleGroupItem className="px-4 py-2 text-sm" value="annual">
                   Anual
                   <span className="ml-1 text-xs text-green-600">-17%</span>
-               </button>
-            </div>
+               </ToggleGroupItem>
+            </ToggleGroup>
          </div>
 
          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto w-full">

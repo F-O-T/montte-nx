@@ -8,4 +8,5 @@ export const getStripeClient = (
       apiVersion: "2025-11-17.clover", // Latest API version as of Stripe SDK v20.0.0
    });
 };
+
 export type StripeClient = ReturnType<typeof getStripeClient>;
