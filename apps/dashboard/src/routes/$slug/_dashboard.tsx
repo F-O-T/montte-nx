@@ -8,7 +8,7 @@ import { getQueryClient, trpc } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
 
 export const Route = createFileRoute("/$slug/_dashboard")({
-   beforeLoad: async ({ location }) => {
+   beforeLoad: async ({ location, params }) => {
       const queryClient = getQueryClient();
       try {
          const session = await queryClient.fetchQuery(
@@ -34,7 +34,10 @@ export const Route = createFileRoute("/$slug/_dashboard")({
          });
 
          if (status.needsOnboarding) {
-            throw redirect({ to: "/$slug/onboarding" });
+            throw redirect({
+               params,
+               to: "/$slug/onboarding",
+            });
          }
       } catch (error) {
          if (
