@@ -31,35 +31,31 @@ export function InvitesQuickActionsToolbar() {
    ];
 
    return (
-      <>
-         <Item variant="outline">
-            <ItemContent>
-               <ItemTitle>Invitation Actions</ItemTitle>
-               <ItemDescription>
-                  Manage organization invitations
-               </ItemDescription>
-            </ItemContent>
-            <ItemActions>
-               <div className="flex flex-wrap gap-2">
-                  {quickActions.map((action, index) => (
-                     <Tooltip key={`invite-action-${index + 1}`}>
-                        <TooltipTrigger asChild>
-                           <Button
-                              onClick={action.onClick}
-                              size="icon"
-                              variant={action.variant}
-                           >
-                              {action.icon}
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{action.label}</p>
-                        </TooltipContent>
-                     </Tooltip>
-                  ))}
-               </div>
-            </ItemActions>
-         </Item>
-      </>
+      <Item variant="outline">
+         <ItemContent>
+            <ItemTitle>Invitation Actions</ItemTitle>
+            <ItemDescription>Manage organization invitations</ItemDescription>
+         </ItemContent>
+         <ItemActions>
+            <div className="flex flex-wrap gap-2">
+               {quickActions.map((action, index) => (
+                  <Tooltip key={`invite-action-${index + 1}`}>
+                     <TooltipTrigger asChild>
+                        <Button
+                           onClick={action.onClick}
+                           size="icon"
+                           variant={action.variant}
+                        >
+                           {action.icon}
+                        </Button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                        <p>{action.label}</p>
+                     </TooltipContent>
+                  </Tooltip>
+               ))}
+            </div>
+         </ItemActions>
+      </Item>
    );
 }

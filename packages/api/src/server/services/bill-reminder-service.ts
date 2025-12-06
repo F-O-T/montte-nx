@@ -1,7 +1,8 @@
 import type { DatabaseInstance } from "@packages/database/client";
 import {
-   findOverdueBillsByUserId,
-   findPendingBillsByUserId,
+   type BillWithRelations,
+   findOverdueBillsByOrganizationId,
+   findPendingBillsByOrganizationId,
 } from "@packages/database/repositories/bill-repository";
 import { shouldSendNotification } from "@packages/database/repositories/notification-preferences-repository";
 import {
@@ -64,7 +65,10 @@ export async function checkBillReminders(
    );
 
    if (shouldNotifyReminders) {
-      const pendingBills = await findPendingBillsByUserId(db, organizationId);
+      const pendingBills = await findPendingBillsByOrganizationId(
+         db,
+         organizationId,
+      );
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -72,7 +76,7 @@ export async function checkBillReminders(
       const reminderDate = new Date(today);
       reminderDate.setDate(reminderDate.getDate() + reminderDaysBefore);
 
-      const upcomingBills = pendingBills.filter((bill) => {
+      const upcomingBills = pendingBills.filter((bill: BillWithRelations) => {
          const dueDate = new Date(bill.dueDate);
          dueDate.setHours(0, 0, 0, 0);
          return dueDate >= today && dueDate <= reminderDate;
@@ -80,7 +84,8 @@ export async function checkBillReminders(
 
       if (upcomingBills.length > 0) {
          const totalAmount = upcomingBills.reduce(
-            (sum, bill) => sum + Math.abs(Number(bill.amount)),
+            (sum: number, bill: BillWithRelations) =>
+               sum + Math.abs(Number(bill.amount)),
             0,
          );
 
@@ -90,7 +95,7 @@ export async function checkBillReminders(
                   ? `${upcomingBills[0]?.description || "Conta"} vence em breve - ${formatCurrency(totalAmount)}`
                   : `${upcomingBills.length} contas vencem nos próximos ${reminderDaysBefore} dias - Total: ${formatCurrency(totalAmount)}`,
             metadata: {
-               billIds: upcomingBills.map((b) => b.id),
+               billIds: upcomingBills.map((b: BillWithRelations) => b.id),
                count: upcomingBills.length,
                totalAmount,
             },
@@ -117,11 +122,15 @@ export async function checkBillReminders(
    }
 
    if (shouldNotifyOverdue) {
-      const overdueBills = await findOverdueBillsByUserId(db, organizationId);
+      const overdueBills = await findOverdueBillsByOrganizationId(
+         db,
+         organizationId,
+      );
 
       if (overdueBills.length > 0) {
          const totalAmount = overdueBills.reduce(
-            (sum, bill) => sum + Math.abs(Number(bill.amount)),
+            (sum: number, bill: BillWithRelations) =>
+               sum + Math.abs(Number(bill.amount)),
             0,
          );
 
@@ -131,7 +140,7 @@ export async function checkBillReminders(
                   ? `${overdueBills[0]?.description || "Conta"} está vencida - ${formatCurrency(totalAmount)}`
                   : `${overdueBills.length} contas estão vencidas - Total: ${formatCurrency(totalAmount)}`,
             metadata: {
-               billIds: overdueBills.map((b) => b.id),
+               billIds: overdueBills.map((b: BillWithRelations) => b.id),
                count: overdueBills.length,
                totalAmount,
             },

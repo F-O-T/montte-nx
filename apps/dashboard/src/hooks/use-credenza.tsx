@@ -6,20 +6,24 @@ const credenzaStore = new Store({
    isOpen: false,
 });
 
+export const openCredenza = ({ children }: { children: React.ReactNode }) =>
+   credenzaStore.setState((state) => ({
+      ...state,
+      children,
+      isOpen: true,
+   }));
+
+export const closeCredenza = () =>
+   credenzaStore.setState((state) => ({
+      ...state,
+      children: null,
+      isOpen: false,
+   }));
+
 export const useCredenza = () => {
    return {
-      closeCredenza: () =>
-         credenzaStore.setState((state) => ({
-            ...state,
-            children: null,
-            isOpen: false,
-         })),
-      openCredenza: ({ children }: { children: React.ReactNode }) =>
-         credenzaStore.setState((state) => ({
-            ...state,
-            children,
-            isOpen: true,
-         })),
+      closeCredenza,
+      openCredenza,
    };
 };
 

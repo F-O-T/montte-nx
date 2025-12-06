@@ -74,42 +74,40 @@ export function TransactionQuickActionsToolbar({
    ];
 
    return (
-      <>
-         <Item variant="outline">
-            <ItemContent className="hidden md:block">
-               <ItemTitle>
-                  {translate(
-                     "dashboard.routes.transactions.details.toolbar.title",
-                  )}
-               </ItemTitle>
-               <ItemDescription>
-                  {translate(
-                     "dashboard.routes.transactions.details.toolbar.description",
-                  )}
-               </ItemDescription>
-            </ItemContent>
-            <ItemActions className="w-full md:w-auto">
-               <div className="flex flex-wrap gap-2 w-full md:w-auto justify-between md:justify-end">
-                  {quickActions.map((action, index) => (
-                     <Tooltip key={`quick-action-${index + 1}`}>
-                        <TooltipTrigger asChild>
-                           <Button
-                              className="flex-1 md:flex-none"
-                              onClick={action.onClick}
-                              size="icon"
-                              variant={action.variant}
-                           >
-                              {action.icon}
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>{action.label}</p>
-                        </TooltipContent>
-                     </Tooltip>
-                  ))}
-               </div>
-            </ItemActions>
-         </Item>
-      </>
+      <Item variant="outline">
+         <ItemContent className="hidden md:block">
+            <ItemTitle>
+               {translate(
+                  "dashboard.routes.transactions.details.toolbar.title",
+               )}
+            </ItemTitle>
+            <ItemDescription>
+               {translate(
+                  "dashboard.routes.transactions.details.toolbar.description",
+               )}
+            </ItemDescription>
+         </ItemContent>
+         <ItemActions className="w-full md:w-auto">
+            <div className="flex flex-wrap gap-2 w-full md:w-auto justify-between md:justify-end">
+               {quickActions.map((action, index) => (
+                  <Tooltip key={`quick-action-${index + 1}`}>
+                     <TooltipTrigger asChild>
+                        <Button
+                           className="flex-1 md:flex-none"
+                           onClick={action.onClick}
+                           size="icon"
+                           variant={action.variant}
+                        >
+                           {action.icon}
+                        </Button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                        <p>{action.label}</p>
+                     </TooltipContent>
+                  </Tooltip>
+               ))}
+            </div>
+         </ItemActions>
+      </Item>
    );
 }

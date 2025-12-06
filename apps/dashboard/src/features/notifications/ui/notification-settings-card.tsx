@@ -7,12 +7,18 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import {
+   Collapsible,
+   CollapsibleContent,
+} from "@packages/ui/components/collapsible";
+import {
    Item,
    ItemContent,
    ItemDescription,
+   ItemGroup,
+   ItemMedia,
+   ItemSeparator,
    ItemTitle,
 } from "@packages/ui/components/item";
-import { Separator } from "@packages/ui/components/separator";
 import { Switch } from "@packages/ui/components/switch";
 import {
    AlertTriangle,
@@ -22,7 +28,6 @@ import {
    CreditCard,
    Loader2,
    Receipt,
-   Send,
    Wallet,
 } from "lucide-react";
 import { useNotificationPreferences } from "@/hooks/use-notification-preferences";
@@ -42,19 +47,14 @@ export function NotificationSettingsCard() {
       preferences,
       isLoading: isLoadingPrefs,
       isUpdating,
-      isTesting,
       updatePreference,
-      sendTestNotification,
    } = useNotificationPreferences();
 
    if (!isSupported) {
       return (
          <Card>
             <CardHeader>
-               <CardTitle className="flex items-center gap-2">
-                  <BellOff className="size-5" />
-                  Notificações Push
-               </CardTitle>
+               <CardTitle>Notificações Push</CardTitle>
                <CardDescription>
                   Seu navegador não suporta notificações push.
                </CardDescription>
@@ -67,10 +67,7 @@ export function NotificationSettingsCard() {
       return (
          <Card>
             <CardHeader>
-               <CardTitle className="flex items-center gap-2">
-                  <Bell className="size-5" />
-                  Notificações Push
-               </CardTitle>
+               <CardTitle>Notificações Push</CardTitle>
                <CardDescription>
                   Notificações push não estão configuradas no servidor.
                </CardDescription>
@@ -83,10 +80,7 @@ export function NotificationSettingsCard() {
       return (
          <Card>
             <CardHeader>
-               <CardTitle className="flex items-center gap-2">
-                  <BellOff className="size-5" />
-                  Notificações Push
-               </CardTitle>
+               <CardTitle>Notificações Push</CardTitle>
                <CardDescription>
                   Você bloqueou as notificações. Para receber notificações,
                   permita nas configurações do seu navegador.
@@ -99,56 +93,54 @@ export function NotificationSettingsCard() {
    return (
       <Card>
          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-               <BellRing className="size-5" />
-               Notificações Push
-            </CardTitle>
+            <CardTitle>Notificações Push</CardTitle>
             <CardDescription>
                Receba notificações em tempo real sobre suas finanças.
             </CardDescription>
          </CardHeader>
-         <CardContent className="space-y-4">
-            <Item className="p-0">
-               <ItemContent>
-                  <ItemTitle>Ativar notificações</ItemTitle>
-                  <ItemDescription>
-                     {isEnabled
-                        ? "Você receberá alertas sobre transações, orçamentos e lembretes."
-                        : "Ative para receber alertas importantes no seu dispositivo."}
-                  </ItemDescription>
-               </ItemContent>
-               {isLoading ? (
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
-               ) : (
-                  <Switch
-                     aria-label="Ativar notificações push"
-                     checked={isEnabled}
-                     onCheckedChange={toggle}
-                  />
-               )}
-            </Item>
+         <CardContent>
+            <Collapsible open={isEnabled}>
+               <Item>
+                  <ItemMedia variant="icon">
+                     {isEnabled ? (
+                        <BellRing className="size-4" />
+                     ) : (
+                        <BellOff className="size-4" />
+                     )}
+                  </ItemMedia>
+                  <ItemContent>
+                     <ItemTitle>Ativar notificações</ItemTitle>
+                     <ItemDescription>
+                        {isEnabled
+                           ? "Você receberá alertas sobre transações, orçamentos e lembretes."
+                           : "Ative para receber alertas importantes no seu dispositivo."}
+                     </ItemDescription>
+                  </ItemContent>
+                  {isLoading ? (
+                     <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  ) : (
+                     <Switch
+                        aria-label="Ativar notificações push"
+                        checked={isEnabled}
+                        onCheckedChange={toggle}
+                     />
+                  )}
+               </Item>
 
-            {isEnabled && (
-               <>
-                  <Separator />
+               <CollapsibleContent>
+                  <ItemSeparator className="my-4" />
 
-                  <div className="space-y-3">
-                     <p className="font-medium text-sm">Tipos de notificação</p>
-
-                     <Item className="p-0">
-                        <div className="flex items-center gap-3">
-                           <div className="flex size-8 items-center justify-center rounded-md bg-amber-500/10">
-                              <Wallet className="size-4 text-amber-500" />
-                           </div>
-                           <ItemContent>
-                              <ItemTitle className="text-sm">
-                                 Alertas de orçamento
-                              </ItemTitle>
-                              <ItemDescription className="text-xs">
-                                 Quando você atingir limites do orçamento
-                              </ItemDescription>
-                           </ItemContent>
-                        </div>
+                  <ItemGroup>
+                     <Item>
+                        <ItemMedia variant="icon">
+                           <Wallet className="size-4" />
+                        </ItemMedia>
+                        <ItemContent>
+                           <ItemTitle>Alertas de orçamento</ItemTitle>
+                           <ItemDescription>
+                              Quando você atingir limites do orçamento
+                           </ItemDescription>
+                        </ItemContent>
                         {isLoadingPrefs || isUpdating ? (
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
@@ -162,20 +154,18 @@ export function NotificationSettingsCard() {
                         )}
                      </Item>
 
-                     <Item className="p-0">
-                        <div className="flex items-center gap-3">
-                           <div className="flex size-8 items-center justify-center rounded-md bg-blue-500/10">
-                              <Receipt className="size-4 text-blue-500" />
-                           </div>
-                           <ItemContent>
-                              <ItemTitle className="text-sm">
-                                 Lembretes de contas
-                              </ItemTitle>
-                              <ItemDescription className="text-xs">
-                                 Antes do vencimento de contas recorrentes
-                              </ItemDescription>
-                           </ItemContent>
-                        </div>
+                     <ItemSeparator />
+
+                     <Item>
+                        <ItemMedia variant="icon">
+                           <Receipt className="size-4" />
+                        </ItemMedia>
+                        <ItemContent>
+                           <ItemTitle>Lembretes de contas</ItemTitle>
+                           <ItemDescription>
+                              Antes do vencimento de contas recorrentes
+                           </ItemDescription>
+                        </ItemContent>
                         {isLoadingPrefs || isUpdating ? (
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
@@ -189,20 +179,18 @@ export function NotificationSettingsCard() {
                         )}
                      </Item>
 
-                     <Item className="p-0">
-                        <div className="flex items-center gap-3">
-                           <div className="flex size-8 items-center justify-center rounded-md bg-red-500/10">
-                              <AlertTriangle className="size-4 text-red-500" />
-                           </div>
-                           <ItemContent>
-                              <ItemTitle className="text-sm">
-                                 Contas vencidas
-                              </ItemTitle>
-                              <ItemDescription className="text-xs">
-                                 Quando houver contas em atraso
-                              </ItemDescription>
-                           </ItemContent>
-                        </div>
+                     <ItemSeparator />
+
+                     <Item>
+                        <ItemMedia variant="icon">
+                           <AlertTriangle className="size-4" />
+                        </ItemMedia>
+                        <ItemContent>
+                           <ItemTitle>Contas vencidas</ItemTitle>
+                           <ItemDescription>
+                              Quando houver contas em atraso
+                           </ItemDescription>
+                        </ItemContent>
                         {isLoadingPrefs || isUpdating ? (
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
@@ -216,20 +204,18 @@ export function NotificationSettingsCard() {
                         )}
                      </Item>
 
-                     <Item className="p-0">
-                        <div className="flex items-center gap-3">
-                           <div className="flex size-8 items-center justify-center rounded-md bg-green-500/10">
-                              <CreditCard className="size-4 text-green-500" />
-                           </div>
-                           <ItemContent>
-                              <ItemTitle className="text-sm">
-                                 Novas transações
-                              </ItemTitle>
-                              <ItemDescription className="text-xs">
-                                 Quando transações forem adicionadas
-                              </ItemDescription>
-                           </ItemContent>
-                        </div>
+                     <ItemSeparator />
+
+                     <Item>
+                        <ItemMedia variant="icon">
+                           <CreditCard className="size-4" />
+                        </ItemMedia>
+                        <ItemContent>
+                           <ItemTitle>Novas transações</ItemTitle>
+                           <ItemDescription>
+                              Quando transações forem adicionadas
+                           </ItemDescription>
+                        </ItemContent>
                         {isLoadingPrefs || isUpdating ? (
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
@@ -242,26 +228,9 @@ export function NotificationSettingsCard() {
                            />
                         )}
                      </Item>
-                  </div>
-
-                  <Separator />
-
-                  <Button
-                     className="w-full"
-                     disabled={isTesting}
-                     onClick={sendTestNotification}
-                     size="sm"
-                     variant="outline"
-                  >
-                     {isTesting ? (
-                        <Loader2 className="mr-2 size-4 animate-spin" />
-                     ) : (
-                        <Send className="mr-2 size-4" />
-                     )}
-                     Enviar notificação de teste
-                  </Button>
-               </>
-            )}
+                  </ItemGroup>
+               </CollapsibleContent>
+            </Collapsible>
          </CardContent>
       </Card>
    );

@@ -12,19 +12,19 @@ import {
    deleteManyBills,
    findBillById,
    findBillsByInstallmentGroupId,
-   findBillsByUserId,
-   findBillsByUserIdAndType,
-   findBillsByUserIdFiltered,
-   findBillsByUserIdPaginated,
-   findCompletedBillsByUserId,
-   findOverdueBillsByUserId,
-   findPendingBillsByUserId,
-   getTotalBillsByUserId,
-   getTotalOverdueBillsByUserId,
-   getTotalOverduePayablesByUserId,
-   getTotalOverdueReceivablesByUserId,
-   getTotalPendingPayablesByUserId,
-   getTotalPendingReceivablesByUserId,
+   findBillsByOrganizationId,
+   findBillsByOrganizationIdAndType,
+   findBillsByOrganizationIdFiltered,
+   findBillsByOrganizationIdPaginated,
+   findCompletedBillsByOrganizationId,
+   findOverdueBillsByOrganizationId,
+   findPendingBillsByOrganizationId,
+   getTotalBillsByOrganizationId,
+   getTotalOverdueBillsByOrganizationId,
+   getTotalOverduePayablesByOrganizationId,
+   getTotalOverdueReceivablesByOrganizationId,
+   getTotalPendingPayablesByOrganizationId,
+   getTotalPendingReceivablesByOrganizationId,
    type NewBill,
    updateBill,
 } from "@packages/database/repositories/bill-repository";
@@ -105,7 +105,7 @@ export const billRouter = router({
 
          const existingBill = await findBillById(resolvedCtx.db, billId);
 
-         if (!existingBill || existingBill.userId !== organizationId) {
+         if (!existingBill || existingBill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -142,7 +142,7 @@ export const billRouter = router({
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== organizationId) {
+         if (!existingBill || existingBill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -207,6 +207,7 @@ export const billRouter = router({
             interestTemplateId: input.interestTemplateId,
             isRecurring: input.isRecurring ?? false,
             issueDate: input.issueDate ? new Date(input.issueDate) : null,
+            organizationId,
             originalAmount: input.originalAmount?.toString(),
             recurrencePattern: input.recurrencePattern,
             userId: organizationId,
@@ -237,6 +238,7 @@ export const billRouter = router({
                   isRecurring: true,
                   issueDate: futureIssueDates[index] ?? null,
                   notes: input.notes,
+                  organizationId,
                   originalAmount: input.originalAmount?.toString(),
                   parentBillId: firstBill.id,
                   recurrencePattern: input.recurrencePattern,
@@ -269,6 +271,7 @@ export const billRouter = router({
             interestTemplateId: input.interestTemplateId,
             issueDate: input.issueDate ? new Date(input.issueDate) : null,
             notes: input.notes,
+            organizationId,
             type: input.type,
             userId: organizationId,
          });
@@ -284,7 +287,7 @@ export const billRouter = router({
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== organizationId) {
+         if (!existingBill || existingBill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -305,7 +308,7 @@ export const billRouter = router({
 
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
-         if (!bill || bill.userId !== organizationId) {
+         if (!bill || bill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -354,7 +357,7 @@ export const billRouter = router({
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== organizationId) {
+         if (!existingBill || existingBill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -394,6 +397,7 @@ export const billRouter = router({
             isRecurring: existingBill.isRecurring,
             issueDate: nextIssueDate,
             notes: existingBill.notes,
+            organizationId,
             parentBillId: existingBill.id,
             recurrencePattern: existingBill.recurrencePattern,
             type: existingBill.type,
@@ -408,14 +412,14 @@ export const billRouter = router({
          const organizationId = resolvedCtx.organizationId;
 
          if (input && (input.month || input.type)) {
-            return findBillsByUserIdFiltered(
+            return findBillsByOrganizationIdFiltered(
                resolvedCtx.db,
                organizationId,
                input,
             );
          }
 
-         return findBillsByUserId(resolvedCtx.db, organizationId);
+         return findBillsByOrganizationId(resolvedCtx.db, organizationId);
       }),
 
    getAllPaginated: protectedProcedure
@@ -424,11 +428,17 @@ export const billRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
-         return findBillsByUserIdPaginated(resolvedCtx.db, organizationId, {
-            ...input,
-            endDate: input.endDate ? new Date(input.endDate) : undefined,
-            startDate: input.startDate ? new Date(input.startDate) : undefined,
-         });
+         return findBillsByOrganizationIdPaginated(
+            resolvedCtx.db,
+            organizationId,
+            {
+               ...input,
+               endDate: input.endDate ? new Date(input.endDate) : undefined,
+               startDate: input.startDate
+                  ? new Date(input.startDate)
+                  : undefined,
+            },
+         );
       }),
 
    getAttachmentData: protectedProcedure
@@ -439,7 +449,7 @@ export const billRouter = router({
 
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
-         if (!bill || bill.userId !== organizationId) {
+         if (!bill || bill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -481,7 +491,7 @@ export const billRouter = router({
 
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
-         if (!bill || bill.userId !== organizationId) {
+         if (!bill || bill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 
@@ -520,7 +530,7 @@ export const billRouter = router({
          );
 
          const filteredBills = bills.filter(
-            (bill) => bill.userId === organizationId,
+            (bill) => bill.organizationId === organizationId,
          );
 
          if (filteredBills.length === 0) {
@@ -536,7 +546,7 @@ export const billRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
-         return findBillsByUserIdAndType(
+         return findBillsByOrganizationIdAndType(
             resolvedCtx.db,
             organizationId,
             input.type,
@@ -547,21 +557,21 @@ export const billRouter = router({
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
 
-      return findCompletedBillsByUserId(resolvedCtx.db, organizationId);
+      return findCompletedBillsByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
    getOverdue: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
 
-      return findOverdueBillsByUserId(resolvedCtx.db, organizationId);
+      return findOverdueBillsByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
    getPending: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
 
-      return findPendingBillsByUserId(resolvedCtx.db, organizationId);
+      return findPendingBillsByOrganizationId(resolvedCtx.db, organizationId);
    }),
 
    getStats: protectedProcedure.query(async ({ ctx }) => {
@@ -576,12 +586,24 @@ export const billRouter = router({
          totalOverduePayables,
          totalOverdueReceivables,
       ] = await Promise.all([
-         getTotalBillsByUserId(resolvedCtx.db, organizationId),
-         getTotalPendingPayablesByUserId(resolvedCtx.db, organizationId),
-         getTotalPendingReceivablesByUserId(resolvedCtx.db, organizationId),
-         getTotalOverdueBillsByUserId(resolvedCtx.db, organizationId),
-         getTotalOverduePayablesByUserId(resolvedCtx.db, organizationId),
-         getTotalOverdueReceivablesByUserId(resolvedCtx.db, organizationId),
+         getTotalBillsByOrganizationId(resolvedCtx.db, organizationId),
+         getTotalPendingPayablesByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         ),
+         getTotalPendingReceivablesByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         ),
+         getTotalOverdueBillsByOrganizationId(resolvedCtx.db, organizationId),
+         getTotalOverduePayablesByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         ),
+         getTotalOverdueReceivablesByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         ),
       ]);
 
       return {
@@ -607,7 +629,7 @@ export const billRouter = router({
 
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
-         if (!existingBill || existingBill.userId !== organizationId) {
+         if (!existingBill || existingBill.organizationId !== organizationId) {
             throw new Error("Bill not found");
          }
 

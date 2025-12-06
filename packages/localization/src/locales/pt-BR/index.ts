@@ -1,6 +1,7 @@
 import commonActionsPtBr from "./common/actions.json";
 import commonBrandPtBr from "./common/brand.json";
 import commonChartsPtBr from "./common/charts.json";
+import commonErrorReportPtBr from "./common/error-report.json";
 import commonFormPtBr from "./common/form.json";
 import commonHeadersPtBr from "./common/headers.json";
 import commonLanguagesPtBr from "./common/languages.json";
@@ -34,6 +35,7 @@ const resources = {
          actions: commonActionsPtBr,
          brand: commonBrandPtBr,
          charts: commonChartsPtBr,
+         "error-report": commonErrorReportPtBr,
          form: commonFormPtBr,
          headers: commonHeadersPtBr,
          languages: commonLanguagesPtBr,

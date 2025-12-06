@@ -78,14 +78,15 @@ registerRoute(
 const bgSyncPlugin = new BackgroundSyncPlugin("api-queue", {
    maxRetentionTime: 24 * 60,
    onSync: async ({ queue }) => {
-      let entry;
-      while ((entry = await queue.shiftRequest())) {
+      let entry = await queue.shiftRequest();
+      while (entry) {
          try {
             await fetch(entry.request);
          } catch (error) {
             await queue.unshiftRequest(entry);
             throw error;
          }
+         entry = await queue.shiftRequest();
       }
    },
 });

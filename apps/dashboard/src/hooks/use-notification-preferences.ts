@@ -18,39 +18,6 @@ export function useNotificationPreferences() {
 
    const updateMutation = useMutation(
       trpc.pushNotifications.updatePreferences.mutationOptions({
-         onError: (_err, _newPrefs, context) => {
-            if (context?.previousPrefs) {
-               queryClient.setQueryData(
-                  trpc.pushNotifications.getPreferences.queryKey(),
-                  context.previousPrefs,
-               );
-            }
-         },
-         onMutate: async (newPrefs) => {
-            await queryClient.cancelQueries({
-               queryKey: trpc.pushNotifications.getPreferences.queryKey(),
-            });
-
-            const previousPrefs = queryClient.getQueryData(
-               trpc.pushNotifications.getPreferences.queryKey(),
-            );
-
-            queryClient.setQueryData(
-               trpc.pushNotifications.getPreferences.queryKey(),
-               (old: NotificationPreferences | undefined) =>
-                  old
-                     ? ({
-                          billReminders: old.billReminders,
-                          budgetAlerts: old.budgetAlerts,
-                          overdueAlerts: old.overdueAlerts,
-                          transactionAlerts: old.transactionAlerts,
-                          ...newPrefs,
-                       } as NotificationPreferences)
-                     : undefined,
-            );
-
-            return { previousPrefs };
-         },
          onSettled: () => {
             queryClient.invalidateQueries({
                queryKey: trpc.pushNotifications.getPreferences.queryKey(),

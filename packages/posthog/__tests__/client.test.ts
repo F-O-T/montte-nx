@@ -14,6 +14,10 @@ describe("posthog client", () => {
          expect(config).toEqual({
             api_host: "https://us.i.posthog.com",
             api_key: "phc_test_key_123",
+            autocapture: true,
+            capture_pageleave: true,
+            capture_pageview: false,
+            capture_performance: true,
          });
       });
 
@@ -38,6 +42,30 @@ describe("posthog client", () => {
          const config = getReactPosthogConfig(selfHostedEnv);
 
          expect(config.api_host).toBe("https://analytics.mycompany.com");
+      });
+
+      it("should disable automatic pageview capture", () => {
+         const config = getReactPosthogConfig(mockEnv);
+
+         expect(config.capture_pageview).toBe(false);
+      });
+
+      it("should enable pageleave tracking", () => {
+         const config = getReactPosthogConfig(mockEnv);
+
+         expect(config.capture_pageleave).toBe(true);
+      });
+
+      it("should enable performance/web vitals capture", () => {
+         const config = getReactPosthogConfig(mockEnv);
+
+         expect(config.capture_performance).toBe(true);
+      });
+
+      it("should enable autocapture", () => {
+         const config = getReactPosthogConfig(mockEnv);
+
+         expect(config.autocapture).toBe(true);
       });
    });
 

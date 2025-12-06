@@ -3,6 +3,7 @@ import type { DatabaseInstance } from "@packages/database/client";
 import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
+import { captureError, identifyUser, setGroup } from "@packages/posthog/server";
 import { APIError } from "@packages/utils/errors";
 import { sanitizeData } from "@packages/utils/sanitization";
 import { initTRPC } from "@trpc/server";
@@ -166,41 +167,72 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 const telemetryMiddleware = t.middleware(
    async ({ ctx, path, type, meta, getRawInput, next }) => {
       const startDate = new Date();
+      const resolvedCtx = await ctx;
+      const posthog = resolvedCtx.posthog;
+      const userId = resolvedCtx.session?.user?.id;
+      const userEmail = resolvedCtx.session?.user?.email;
+      const userName = resolvedCtx.session?.user?.name;
+      const hasConsent = resolvedCtx.session?.user?.telemetryConsent;
+      const organizationId = resolvedCtx.organizationId;
+
+      if (userId && hasConsent) {
+         identifyUser(posthog, userId, {
+            email: userEmail,
+            name: userName,
+         });
+
+         if (organizationId) {
+            setGroup(posthog, organizationId, {});
+         }
+      }
+
       const result = await next();
 
       try {
-         if (type === "mutation") {
-            const resolvedCtx = await ctx;
-            const posthog = resolvedCtx.posthog;
-            const userId = resolvedCtx.session?.user?.id;
-            const hasConsent = resolvedCtx.session?.user?.telemetryConsent;
+         if (type === "mutation" && userId && hasConsent) {
+            const rootPath = path.split(".")[0];
+            const rawInput = await getRawInput();
 
-            if (userId && hasConsent) {
-               const rootPath = path.split(".")[0];
-               const rawInput = await getRawInput();
+            if (!result.ok) {
+               const errorId = crypto.randomUUID();
 
-               posthog.capture({
-                  distinctId: userId,
-                  event: "trpc_mutation",
-                  properties: {
-                     durationMs: Date.now() - startDate.getTime(),
-                     endAt: new Date().toISOString(),
-                     input: sanitizeData(rawInput),
-                     meta: meta || {},
-                     path,
-                     rootPath,
-                     startAt: startDate.toISOString(),
-                     success: result.ok,
-                     ...(result.ok
-                        ? {}
-                        : {
-                             errorCode: result.error.code,
-                             errorMessage: result.error.message,
-                             errorName: result.error.name,
-                          }),
-                  },
+               resolvedCtx.responseHeaders.set("x-error-id", errorId);
+
+               captureError(posthog, {
+                  code: result.error.code,
+                  errorId,
+                  input: sanitizeData(rawInput),
+                  message: result.error.message,
+                  organizationId: organizationId || undefined,
+                  path,
+                  userId,
                });
             }
+
+            posthog.capture({
+               distinctId: userId,
+               event: "trpc_mutation",
+               properties: {
+                  durationMs: Date.now() - startDate.getTime(),
+                  endAt: new Date().toISOString(),
+                  input: sanitizeData(rawInput),
+                  meta: meta || {},
+                  path,
+                  rootPath,
+                  startAt: startDate.toISOString(),
+                  success: result.ok,
+                  ...(organizationId
+                     ? { $groups: { organization: organizationId } }
+                     : {}),
+                  ...(result.ok
+                     ? {}
+                     : {
+                          errorCode: result.error.code,
+                          errorMessage: result.error.message,
+                          errorName: result.error.name,
+                       }),
+               },
+            });
          }
       } catch (err) {
          console.error(`Error on telemetry capture ${path}`, err);

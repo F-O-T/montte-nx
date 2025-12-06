@@ -16,6 +16,7 @@
    "previous-page": "Página anterior",
    "retry": "Tentar novamente",
    "save": "Salvar",
+   "sending": "Enviando...",
    "skip": "Pular",
    "step-indicator": "Passo {{current}} de {{total}}",
    "submit": "Enviar"
