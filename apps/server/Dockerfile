@@ -31,6 +31,7 @@ COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/ofx/package.json ./packages/ofx/
 
+COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
@@ -69,6 +70,8 @@ COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/localization/package.json ./packages/localization/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/database/package.json ./packages/database/
+COPY packages/pdf/package.json ./packages/pdf/
+
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/files/package.json ./packages/files/
 COPY packages/posthog/package.json ./packages/posthog/
@@ -102,6 +105,10 @@ ARG MINIO_SECRET_KEY
 ARG MINIO_BUCKET
 ARG POSTHOG_HOST
 ARG POSTHOG_KEY
+ARG VAPID_PUBLIC_KEY
+ARG VAPID_PRIVATE_KEY
+ARG VAPID_SUBJECT
+
 
 # Copy the pruned, production-only node_modules from the 'deps' stage.
 COPY --from=deps /app/node_modules ./node_modules
