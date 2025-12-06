@@ -19,6 +19,9 @@
          "path": "../posthog"
       },
       {
+         "path": "../pdf"
+      },
+      {
          "path": "../ofx"
       },
       {
