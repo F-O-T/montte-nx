@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { betterAuthClient } from "@/integrations/clients";
 import { useActiveOrganization } from "./use-active-organization";
 
 export const useActivePlan = () => {
    const { activeOrganization } = useActiveOrganization();
-   const { data: subscriptions, isLoading: isLoadingSubscriptions } = useQuery({
-      enabled: !!activeOrganization?.id,
+
+   const { data: subscriptions } = useSuspenseQuery({
       queryFn: async () => {
          const result = await betterAuthClient.subscription.list({
             query: {
@@ -23,6 +23,5 @@ export const useActivePlan = () => {
 
    return {
       currentSubscription,
-      isLoading: isLoadingSubscriptions,
    };
 };

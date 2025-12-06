@@ -12,12 +12,6 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
-import {
-   Item,
-   ItemContent,
-   ItemDescription,
-   ItemTitle,
-} from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { getInitials } from "@packages/utils/text";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -102,12 +96,6 @@ function ProfileInformationContent() {
                   )}
                </AvatarFallback>
             </Avatar>
-            <Item className=" text-center">
-               <ItemContent>
-                  <ItemTitle>{session?.user?.name}</ItemTitle>
-                  <ItemDescription>{session?.user?.email}</ItemDescription>
-               </ItemContent>
-            </Item>
          </CardContent>
       </Card>
    );
