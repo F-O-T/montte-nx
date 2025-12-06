@@ -1,0 +1,9 @@
+{
+   "compilerOptions": {
+      "jsx": "react-jsx",
+      "jsxImportSource": "react"
+   },
+   "extends": "@tooling/typescript/internal-package.json",
+   "include": ["src/**/*"],
+   "references": []
+}

@@ -1,6 +1,6 @@
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { useTRPC } from "@/integrations/clients";
-import { useMutation } from "@tanstack/react-query";
 
 interface UseBillReminderCheckOptions {
    enabled?: boolean;
@@ -31,13 +31,13 @@ export function useBillReminderCheck(
    }, [enabled, reminderDaysBefore, checkMutation]);
 
    return {
-      isChecking: checkMutation.isPending,
-      results: checkMutation.data?.results,
       error: checkMutation.error,
+      isChecking: checkMutation.isPending,
       recheck: () => {
          checkMutation.mutate(
             reminderDaysBefore ? { reminderDaysBefore } : undefined,
          );
       },
+      results: checkMutation.data?.results,
    };
 }

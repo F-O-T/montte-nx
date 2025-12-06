@@ -1,5 +1,5 @@
-import { useTRPC } from "@/integrations/clients";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/integrations/clients";
 
 export interface NotificationPreferences {
    budgetAlerts: boolean;
@@ -18,6 +18,14 @@ export function useNotificationPreferences() {
 
    const updateMutation = useMutation(
       trpc.pushNotifications.updatePreferences.mutationOptions({
+         onError: (_err, _newPrefs, context) => {
+            if (context?.previousPrefs) {
+               queryClient.setQueryData(
+                  trpc.pushNotifications.getPreferences.queryKey(),
+                  context.previousPrefs,
+               );
+            }
+         },
          onMutate: async (newPrefs) => {
             await queryClient.cancelQueries({
                queryKey: trpc.pushNotifications.getPreferences.queryKey(),
@@ -32,8 +40,8 @@ export function useNotificationPreferences() {
                (old: NotificationPreferences | undefined) =>
                   old
                      ? ({
-                          budgetAlerts: old.budgetAlerts,
                           billReminders: old.billReminders,
+                          budgetAlerts: old.budgetAlerts,
                           overdueAlerts: old.overdueAlerts,
                           transactionAlerts: old.transactionAlerts,
                           ...newPrefs,
@@ -42,14 +50,6 @@ export function useNotificationPreferences() {
             );
 
             return { previousPrefs };
-         },
-         onError: (_err, _newPrefs, context) => {
-            if (context?.previousPrefs) {
-               queryClient.setQueryData(
-                  trpc.pushNotifications.getPreferences.queryKey(),
-                  context.previousPrefs,
-               );
-            }
          },
          onSettled: () => {
             queryClient.invalidateQueries({
@@ -75,18 +75,18 @@ export function useNotificationPreferences() {
    };
 
    return {
+      isLoading,
+      isTesting: testMutation.isPending,
+      isUpdating: updateMutation.isPending,
       preferences: preferences ?? {
-         budgetAlerts: true,
          billReminders: true,
+         budgetAlerts: true,
          overdueAlerts: true,
          transactionAlerts: false,
       },
-      isLoading,
-      isUpdating: updateMutation.isPending,
-      isTesting: testMutation.isPending,
-      updatePreference,
       sendTestNotification,
       testError: testMutation.error,
       testSuccess: testMutation.isSuccess,
+      updatePreference,
    };
 }

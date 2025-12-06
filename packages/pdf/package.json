@@ -1,0 +1,31 @@
+{
+   "dependencies": {
+      "@packages/database": "workspace:*",
+      "@react-pdf/renderer": "^4.3.0",
+      "react": "catalog:react"
+   },
+   "devDependencies": {
+      "@tooling/typescript": "workspace:*",
+      "@types/react": "catalog:react",
+      "typescript": "catalog:development"
+   },
+   "exports": {
+      ".": {
+         "default": "./src/index.ts",
+         "types": "./dist/src/index.d.ts"
+      }
+   },
+   "files": [
+      "dist"
+   ],
+   "license": "Apache-2.0",
+   "name": "@packages/pdf",
+   "private": true,
+   "scripts": {
+      "build": "tsc --build",
+      "check": "biome check --write ./src",
+      "typecheck": "bunx --bun tsc"
+   },
+   "type": "module",
+   "version": "0.1.0"
+}

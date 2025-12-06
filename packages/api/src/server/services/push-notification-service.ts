@@ -50,10 +50,10 @@ export async function sendPushNotificationToUser(
 
    if (!vapidPublicKey || !vapidPrivateKey) {
       return {
-         success: false,
-         sent: 0,
-         failed: 0,
          errors: ["VAPID keys not configured"],
+         failed: 0,
+         sent: 0,
+         success: false,
       };
    }
 
@@ -63,10 +63,10 @@ export async function sendPushNotificationToUser(
 
    if (subscriptions.length === 0) {
       return {
-         success: true,
-         sent: 0,
-         failed: 0,
          errors: [],
+         failed: 0,
+         sent: 0,
+         success: true,
       };
    }
 
@@ -75,8 +75,8 @@ export async function sendPushNotificationToUser(
          const pushSubscription = {
             endpoint: sub.endpoint,
             keys: {
-               p256dh: sub.p256dh,
                auth: sub.auth,
+               p256dh: sub.p256dh,
             },
          };
 
@@ -85,7 +85,7 @@ export async function sendPushNotificationToUser(
                pushSubscription,
                JSON.stringify(payload),
             );
-            return { success: true, endpoint: sub.endpoint };
+            return { endpoint: sub.endpoint, success: true };
          } catch (error) {
             const webPushError = error as { statusCode?: number };
 
@@ -108,10 +108,10 @@ export async function sendPushNotificationToUser(
       .map((r) => String(r.reason));
 
    return {
-      success: sent > 0 || (sent === 0 && failed === 0),
-      sent,
-      failed,
       errors,
+      failed,
+      sent,
+      success: sent > 0 || (sent === 0 && failed === 0),
    };
 }
 
@@ -125,17 +125,17 @@ export function createNotificationPayload(
    },
 ): PushNotificationPayload {
    return {
-      title: data.title,
-      body: data.body,
-      icon: "/android/android-launchericon-192-192.png",
       badge: "/android/android-launchericon-96-96.png",
-      tag: `montte-${type}-${Date.now()}`,
+      body: data.body,
       data: {
-         url: data.url || "/",
          type,
+         url: data.url || "/",
          ...data.metadata,
       },
+      icon: "/android/android-launchericon-192-192.png",
       requireInteraction: type === "overdue_alert",
       silent: false,
+      tag: `montte-${type}-${Date.now()}`,
+      title: data.title,
    };
 }

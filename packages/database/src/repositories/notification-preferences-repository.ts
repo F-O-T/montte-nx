@@ -18,8 +18,8 @@ const DEFAULT_PREFERENCES: Omit<
    NotificationPreference,
    "id" | "userId" | "createdAt" | "updatedAt"
 > = {
-   budgetAlerts: true,
    billReminders: true,
+   budgetAlerts: true,
    overdueAlerts: true,
    transactionAlerts: false,
 };

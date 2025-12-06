@@ -5,8 +5,8 @@ import {
 } from "@packages/database/repositories/bill-repository";
 import { shouldSendNotification } from "@packages/database/repositories/notification-preferences-repository";
 import {
-   sendPushNotificationToUser,
    createNotificationPayload,
+   sendPushNotificationToUser,
 } from "./push-notification-service";
 
 interface BillReminderConfig {
@@ -28,8 +28,8 @@ export interface ReminderResult {
 
 function formatCurrency(amount: number): string {
    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
+      style: "currency",
    }).format(amount);
 }
 
@@ -85,33 +85,33 @@ export async function checkBillReminders(
          );
 
          const payload = createNotificationPayload("bill_reminder", {
-            title: "Contas a Vencer",
             body:
                upcomingBills.length === 1
                   ? `${upcomingBills[0]?.description || "Conta"} vence em breve - ${formatCurrency(totalAmount)}`
                   : `${upcomingBills.length} contas vencem nos próximos ${reminderDaysBefore} dias - Total: ${formatCurrency(totalAmount)}`,
-            url: "/bills?filter=pending",
             metadata: {
                billIds: upcomingBills.map((b) => b.id),
                count: upcomingBills.length,
                totalAmount,
             },
+            title: "Contas a Vencer",
+            url: "/bills?filter=pending",
          });
 
          const result = await sendPushNotificationToUser({
             db,
-            userId,
             payload,
-            vapidPublicKey,
+            userId,
             vapidPrivateKey,
+            vapidPublicKey,
             vapidSubject: vapidSubject || "mailto:admin@montte.co",
          });
 
          results.push({
-            type: "upcoming",
             billsCount: upcomingBills.length,
-            totalAmount,
             notificationSent: result.success,
+            totalAmount,
+            type: "upcoming",
          });
       }
    }
@@ -126,33 +126,33 @@ export async function checkBillReminders(
          );
 
          const payload = createNotificationPayload("overdue_alert", {
-            title: "Contas Vencidas",
             body:
                overdueBills.length === 1
                   ? `${overdueBills[0]?.description || "Conta"} está vencida - ${formatCurrency(totalAmount)}`
                   : `${overdueBills.length} contas estão vencidas - Total: ${formatCurrency(totalAmount)}`,
-            url: "/bills?filter=overdue",
             metadata: {
                billIds: overdueBills.map((b) => b.id),
                count: overdueBills.length,
                totalAmount,
             },
+            title: "Contas Vencidas",
+            url: "/bills?filter=overdue",
          });
 
          const result = await sendPushNotificationToUser({
             db,
-            userId,
             payload,
-            vapidPublicKey,
+            userId,
             vapidPrivateKey,
+            vapidPublicKey,
             vapidSubject: vapidSubject || "mailto:admin@montte.co",
          });
 
          results.push({
-            type: "overdue",
             billsCount: overdueBills.length,
-            totalAmount,
             notificationSent: result.success,
+            totalAmount,
+            type: "overdue",
          });
       }
    }

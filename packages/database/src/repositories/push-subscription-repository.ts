@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { pushSubscription } from "../schemas/push-subscriptions";
 
@@ -25,11 +25,11 @@ export async function createPushSubscription(
          const result = await dbClient
             .update(pushSubscription)
             .set({
-               userId: data.userId,
-               p256dh: data.p256dh,
                auth: data.auth,
-               userAgent: data.userAgent,
+               p256dh: data.p256dh,
                updatedAt: new Date(),
+               userAgent: data.userAgent,
+               userId: data.userId,
             })
             .where(eq(pushSubscription.endpoint, data.endpoint))
             .returning();
@@ -61,8 +61,8 @@ export async function findPushSubscriptionsByUserId(
 ): Promise<PushSubscription[]> {
    try {
       return await dbClient.query.pushSubscription.findMany({
-         where: (sub, { eq }) => eq(sub.userId, userId),
          orderBy: (sub, { desc }) => desc(sub.createdAt),
+         where: (sub, { eq }) => eq(sub.userId, userId),
       });
    } catch (err) {
       propagateError(err);

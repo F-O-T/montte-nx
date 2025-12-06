@@ -12,12 +12,12 @@ import {
    Building2,
    FileText,
    Landmark,
+   type LucideIcon,
    Percent,
    Settings,
    Tag,
    Users,
    Wallet,
-   type LucideIcon,
 } from "lucide-react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useCredenza } from "@/hooks/use-credenza";
@@ -32,7 +32,6 @@ interface NavItem {
 
 const sections: { title: string; items: NavItem[] }[] = [
    {
-      title: "Suas finanças",
       items: [
          {
             icon: Building2,
@@ -53,9 +52,9 @@ const sections: { title: string; items: NavItem[] }[] = [
             url: "/$slug/budgets",
          },
       ],
+      title: "Suas finanças",
    },
    {
-      title: "Contas",
       items: [
          {
             icon: ArrowDownRight,
@@ -82,9 +81,9 @@ const sections: { title: string; items: NavItem[] }[] = [
             url: "/$slug/interest-templates",
          },
       ],
+      title: "Contas",
    },
    {
-      title: "Categorização",
       items: [
          {
             icon: FileText,
@@ -105,9 +104,9 @@ const sections: { title: string; items: NavItem[] }[] = [
             url: "/$slug/tags",
          },
       ],
+      title: "Categorização",
    },
    {
-      title: "Conta",
       items: [
          {
             icon: Settings,
@@ -116,6 +115,7 @@ const sections: { title: string; items: NavItem[] }[] = [
             url: "/$slug/profile",
          },
       ],
+      title: "Conta",
    },
 ];
 
@@ -146,15 +146,15 @@ export function MoreMenuCredenza() {
                            const Icon = item.icon;
                            return (
                               <Link
-                                 key={item.id}
-                                 to={item.url}
-                                 params={{ slug: activeOrganization.slug }}
-                                 onClick={handleItemClick}
                                  className={cn(
                                     "flex flex-col items-center justify-center gap-2 p-3",
                                     "rounded-xl border bg-card",
                                     "transition-colors active:bg-accent",
                                  )}
+                                 key={item.id}
+                                 onClick={handleItemClick}
+                                 params={{ slug: activeOrganization.slug }}
+                                 to={item.url}
                               >
                                  <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
                                     <Icon className="size-5 text-primary" />

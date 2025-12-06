@@ -1,4 +1,8 @@
 /// <reference lib="webworker" />
+
+import { BackgroundSyncPlugin } from "workbox-background-sync";
+import { CacheableResponsePlugin } from "workbox-cacheable-response";
+import { ExpirationPlugin } from "workbox-expiration";
 import {
    cleanupOutdatedCaches,
    createHandlerBoundToURL,
@@ -10,9 +14,6 @@ import {
    NetworkFirst,
    StaleWhileRevalidate,
 } from "workbox-strategies";
-import { ExpirationPlugin } from "workbox-expiration";
-import { CacheableResponsePlugin } from "workbox-cacheable-response";
-import { BackgroundSyncPlugin } from "workbox-background-sync";
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -38,8 +39,8 @@ registerRoute(
       plugins: [
          new CacheableResponsePlugin({ statuses: [0, 200] }),
          new ExpirationPlugin({
-            maxEntries: 30,
             maxAgeSeconds: 60 * 60 * 24 * 365,
+            maxEntries: 30,
          }),
       ],
    }),
@@ -52,8 +53,8 @@ registerRoute(
       plugins: [
          new CacheableResponsePlugin({ statuses: [0, 200] }),
          new ExpirationPlugin({
-            maxEntries: 100,
             maxAgeSeconds: 60 * 60 * 24 * 30,
+            maxEntries: 100,
          }),
       ],
    }),
@@ -67,8 +68,8 @@ registerRoute(
       plugins: [
          new CacheableResponsePlugin({ statuses: [0, 200] }),
          new ExpirationPlugin({
-            maxEntries: 50,
             maxAgeSeconds: 60 * 60 * 24 * 7,
+            maxEntries: 50,
          }),
       ],
    }),
@@ -98,8 +99,8 @@ registerRoute(
       plugins: [
          new CacheableResponsePlugin({ statuses: [0, 200] }),
          new ExpirationPlugin({
-            maxEntries: 50,
             maxAgeSeconds: 60 * 5,
+            maxEntries: 50,
          }),
          bgSyncPlugin,
       ],
@@ -121,8 +122,8 @@ registerRoute(
                   "Você está offline. A requisição será enviada quando voltar online.",
             }),
             {
-               status: 503,
                headers: { "Content-Type": "application/json" },
+               status: 503,
             },
          );
       }
@@ -166,13 +167,13 @@ self.addEventListener("push", (event: PushEvent) => {
 
    const title = payload.title || "Montte";
    const options: NotificationOptions & { vibrate?: number[] } = {
-      body: payload.body || "Você tem uma nova notificação",
-      icon: payload.icon || "/android/android-launchericon-192-192.png",
       badge: payload.badge || "/android/android-launchericon-96-96.png",
-      tag: payload.tag || `montte-${Date.now()}`,
+      body: payload.body || "Você tem uma nova notificação",
       data: payload.data || {},
+      icon: payload.icon || "/android/android-launchericon-192-192.png",
       requireInteraction: payload.requireInteraction ?? false,
       silent: payload.silent ?? false,
+      tag: payload.tag || `montte-${Date.now()}`,
       vibrate: payload.vibrate || [100, 50, 100],
    };
 
@@ -201,7 +202,7 @@ self.addEventListener("notificationclick", (event: NotificationEvent) => {
 
    event.waitUntil(
       self.clients
-         .matchAll({ type: "window", includeUncontrolled: true })
+         .matchAll({ includeUncontrolled: true, type: "window" })
          .then((clientList) => {
             for (const client of clientList) {
                if (
@@ -209,9 +210,9 @@ self.addEventListener("notificationclick", (event: NotificationEvent) => {
                   "focus" in client
                ) {
                   client.postMessage({
+                     data: notificationData,
                      type: "NOTIFICATION_CLICK",
                      url: targetUrl,
-                     data: notificationData,
                   });
                   return client.focus();
                }
@@ -229,8 +230,8 @@ self.addEventListener("notificationclose", (event: NotificationEvent) => {
    self.clients.matchAll({ type: "window" }).then((clients) => {
       clients.forEach((client) => {
          client.postMessage({
-            type: "NOTIFICATION_CLOSED",
             data: notificationData,
+            type: "NOTIFICATION_CLOSED",
          });
       });
    });
@@ -246,9 +247,9 @@ self.addEventListener("pushsubscriptionchange", (event: Event) => {
       self.clients.matchAll({ type: "window" }).then((clients) => {
          clients.forEach((client) => {
             client.postMessage({
-               type: "PUSH_SUBSCRIPTION_CHANGE",
-               oldSubscription: pushEvent.oldSubscription?.toJSON(),
                newSubscription: pushEvent.newSubscription?.toJSON(),
+               oldSubscription: pushEvent.oldSubscription?.toJSON(),
+               type: "PUSH_SUBSCRIPTION_CHANGE",
             });
          });
       }),

@@ -9,6 +9,7 @@ import { budgetRouter } from "./routers/budgets";
 import { categoryRouter } from "./routers/categories";
 import { costCenterRouter } from "./routers/cost-centers";
 import { counterpartyRouter } from "./routers/counterparties";
+import { customReportRouter } from "./routers/custom-reports";
 import { interestTemplateRouter } from "./routers/interest-templates";
 import { notificationRouter } from "./routers/notifications";
 import { onboardingRouter } from "./routers/onboarding";
@@ -32,6 +33,7 @@ export const appRouter = router({
    categories: categoryRouter,
    costCenters: costCenterRouter,
    counterparties: counterpartyRouter,
+   customReports: customReportRouter,
    interestTemplates: interestTemplateRouter,
    notifications: notificationRouter,
    onboarding: onboardingRouter,

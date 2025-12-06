@@ -5,8 +5,8 @@ import {
 } from "@packages/database/repositories/budget-repository";
 import { shouldSendNotification } from "@packages/database/repositories/notification-preferences-repository";
 import {
-   sendPushNotificationToUser,
    createNotificationPayload,
+   sendPushNotificationToUser,
 } from "./push-notification-service";
 
 interface BudgetAlertConfig {
@@ -65,22 +65,22 @@ export async function checkBudgetAlertsAfterTransaction(
       for (const threshold of thresholds) {
          if (percentage >= threshold.percentage && !threshold.notified) {
             const payload = createNotificationPayload("budget_alert", {
-               title: "Alerta de Orçamento",
                body: `${budget.name} atingiu ${percentage.toFixed(0)}% do limite (${threshold.percentage}% configurado)`,
-               url: `/budgets/${budget.id}`,
                metadata: {
                   budgetId: budget.id,
                   percentage,
                   threshold: threshold.percentage,
                },
+               title: "Alerta de Orçamento",
+               url: `/budgets/${budget.id}`,
             });
 
             const result = await sendPushNotificationToUser({
                db,
-               userId,
                payload,
-               vapidPublicKey,
+               userId,
                vapidPrivateKey,
+               vapidPublicKey,
                vapidSubject: vapidSubject || "mailto:admin@montte.co",
             });
 
@@ -102,9 +102,9 @@ export async function checkBudgetAlertsAfterTransaction(
             results.push({
                budgetId: budget.id,
                budgetName: budget.name,
+               notificationSent: result.success,
                percentage,
                threshold: threshold.percentage,
-               notificationSent: result.success,
             });
          }
       }

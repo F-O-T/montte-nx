@@ -1,6 +1,6 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 type NotificationPermissionState = "default" | "granted" | "denied";
 
@@ -18,12 +18,12 @@ export function usePushNotifications() {
    const queryClient = useQueryClient();
 
    const [state, setState] = useState<PushNotificationState>({
-      isSupported: false,
+      error: null,
       isEnabled: false,
+      isLoading: true,
+      isSupported: false,
       permission: "default",
       subscription: null,
-      isLoading: true,
-      error: null,
    });
 
    const { data: vapidData, isLoading: isLoadingVapid } = useQuery(
@@ -60,8 +60,8 @@ export function usePushNotifications() {
          if (!isSupported) {
             setState((prev) => ({
                ...prev,
-               isSupported: false,
                isLoading: false,
+               isSupported: false,
             }));
             return;
          }
@@ -75,20 +75,20 @@ export function usePushNotifications() {
                await registration.pushManager.getSubscription();
 
             setState({
-               isSupported: true,
+               error: null,
                isEnabled: !!subscription,
+               isLoading: false,
+               isSupported: true,
                permission,
                subscription,
-               isLoading: false,
-               error: null,
             });
          } catch (error) {
             setState((prev) => ({
                ...prev,
+               error: error as Error,
+               isLoading: false,
                isSupported: true,
                permission,
-               isLoading: false,
-               error: error as Error,
             }));
          }
       };
@@ -143,8 +143,8 @@ export function usePushNotifications() {
          }
 
          const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
             applicationServerKey: vapidData.vapidPublicKey,
+            userVisibleOnly: true,
          });
 
          const json = subscription.toJSON();
@@ -155,26 +155,26 @@ export function usePushNotifications() {
          await subscribeMutation.mutateAsync({
             endpoint: json.endpoint,
             keys: {
-               p256dh: json.keys.p256dh,
                auth: json.keys.auth,
+               p256dh: json.keys.p256dh,
             },
             userAgent: navigator.userAgent,
          });
 
          setState((prev) => ({
             ...prev,
-            isEnabled: true,
-            subscription,
-            isLoading: false,
             error: null,
+            isEnabled: true,
+            isLoading: false,
+            subscription,
          }));
 
          return true;
       } catch (error) {
          setState((prev) => ({
             ...prev,
-            isLoading: false,
             error: error as Error,
+            isLoading: false,
          }));
          return false;
       }
@@ -202,18 +202,18 @@ export function usePushNotifications() {
 
          setState((prev) => ({
             ...prev,
-            isEnabled: false,
-            subscription: null,
-            isLoading: false,
             error: null,
+            isEnabled: false,
+            isLoading: false,
+            subscription: null,
          }));
 
          return true;
       } catch (error) {
          setState((prev) => ({
             ...prev,
-            isLoading: false,
             error: error as Error,
+            isLoading: false,
          }));
          return false;
       }
@@ -232,7 +232,7 @@ export function usePushNotifications() {
       isPushEnabled: vapidData?.enabled ?? false,
       requestPermission,
       subscribe,
-      unsubscribe,
       toggle,
+      unsubscribe,
    };
 }

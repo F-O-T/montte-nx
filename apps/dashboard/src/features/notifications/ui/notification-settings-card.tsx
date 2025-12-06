@@ -12,21 +12,21 @@ import {
    ItemDescription,
    ItemTitle,
 } from "@packages/ui/components/item";
-import { Switch } from "@packages/ui/components/switch";
 import { Separator } from "@packages/ui/components/separator";
+import { Switch } from "@packages/ui/components/switch";
 import {
+   AlertTriangle,
    Bell,
    BellOff,
    BellRing,
-   Loader2,
-   Wallet,
-   Receipt,
-   AlertTriangle,
    CreditCard,
+   Loader2,
+   Receipt,
    Send,
+   Wallet,
 } from "lucide-react";
-import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { useNotificationPreferences } from "@/hooks/use-notification-preferences";
+import { usePushNotifications } from "@/hooks/use-push-notifications";
 
 export function NotificationSettingsCard() {
    const {
@@ -121,9 +121,9 @@ export function NotificationSettingsCard() {
                   <Loader2 className="size-4 animate-spin text-muted-foreground" />
                ) : (
                   <Switch
+                     aria-label="Ativar notificações push"
                      checked={isEnabled}
                      onCheckedChange={toggle}
-                     aria-label="Ativar notificações push"
                   />
                )}
             </Item>
@@ -153,11 +153,11 @@ export function NotificationSettingsCard() {
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
                            <Switch
+                              aria-label="Alertas de orçamento"
                               checked={preferences.budgetAlerts}
                               onCheckedChange={(v) =>
                                  updatePreference("budgetAlerts", v)
                               }
-                              aria-label="Alertas de orçamento"
                            />
                         )}
                      </Item>
@@ -180,11 +180,11 @@ export function NotificationSettingsCard() {
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
                            <Switch
+                              aria-label="Lembretes de contas"
                               checked={preferences.billReminders}
                               onCheckedChange={(v) =>
                                  updatePreference("billReminders", v)
                               }
-                              aria-label="Lembretes de contas"
                            />
                         )}
                      </Item>
@@ -207,11 +207,11 @@ export function NotificationSettingsCard() {
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
                            <Switch
+                              aria-label="Alertas de contas vencidas"
                               checked={preferences.overdueAlerts}
                               onCheckedChange={(v) =>
                                  updatePreference("overdueAlerts", v)
                               }
-                              aria-label="Alertas de contas vencidas"
                            />
                         )}
                      </Item>
@@ -234,11 +234,11 @@ export function NotificationSettingsCard() {
                            <Loader2 className="size-4 animate-spin text-muted-foreground" />
                         ) : (
                            <Switch
+                              aria-label="Alertas de transações"
                               checked={preferences.transactionAlerts}
                               onCheckedChange={(v) =>
                                  updatePreference("transactionAlerts", v)
                               }
-                              aria-label="Alertas de transações"
                            />
                         )}
                      </Item>
@@ -247,11 +247,11 @@ export function NotificationSettingsCard() {
                   <Separator />
 
                   <Button
-                     variant="outline"
-                     size="sm"
                      className="w-full"
-                     onClick={sendTestNotification}
                      disabled={isTesting}
+                     onClick={sendTestNotification}
+                     size="sm"
+                     variant="outline"
                   >
                      {isTesting ? (
                         <Loader2 className="mr-2 size-4 animate-spin" />
@@ -304,11 +304,11 @@ export function NotificationPromptBanner({
          </div>
          <div className="flex items-center gap-2">
             {onDismiss && (
-               <Button variant="ghost" size="sm" onClick={onDismiss}>
+               <Button onClick={onDismiss} size="sm" variant="ghost">
                   Agora não
                </Button>
             )}
-            <Button size="sm" onClick={handleEnable} disabled={isLoading}>
+            <Button disabled={isLoading} onClick={handleEnable} size="sm">
                {isLoading ? (
                   <Loader2 className="size-4 animate-spin" />
                ) : (
