@@ -11,12 +11,9 @@ export const Route = createFileRoute("/$slug/_dashboard")({
    beforeLoad: async ({ location }) => {
       const queryClient = getQueryClient();
       try {
-         const [session, organizations] = await Promise.all([
-            queryClient.fetchQuery(trpc.session.getSession.queryOptions()),
-            queryClient.fetchQuery(
-               trpc.organization.getOrganizations.queryOptions(),
-            ),
-         ]);
+         const session = await queryClient.fetchQuery(
+            trpc.session.getSession.queryOptions(),
+         );
 
          if (!session) {
             throw redirect({
@@ -24,11 +21,6 @@ export const Route = createFileRoute("/$slug/_dashboard")({
                search: location.search,
                to: "/auth/sign-in",
             });
-         }
-
-         const firstOrg = organizations[0];
-         if (!firstOrg) {
-            throw redirect({ to: "/auth/sign-in" });
          }
 
          const isOnboardingPage = location.pathname.endsWith("/onboarding");
@@ -42,10 +34,7 @@ export const Route = createFileRoute("/$slug/_dashboard")({
          });
 
          if (status.needsOnboarding) {
-            throw redirect({
-               params: { slug: firstOrg.slug },
-               to: "/$slug/onboarding",
-            });
+            throw redirect({ to: "/$slug/onboarding" });
          }
       } catch (error) {
          if (

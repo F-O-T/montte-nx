@@ -10,8 +10,11 @@ export const Route = createFileRoute("/$slug")({
       const firstSlug = organizations[0]?.slug;
 
       const isReservedSlug = reservedRoutes.includes(params.slug);
+      const hasOrganization = organizations.some(
+         (organization) => organization.slug === params.slug,
+      );
 
-      if (isReservedSlug && firstSlug) {
+      if ((isReservedSlug || !hasOrganization) && firstSlug) {
          throw redirect({
             params: { slug: firstSlug },
             search: location.search,
