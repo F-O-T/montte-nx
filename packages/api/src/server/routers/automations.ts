@@ -25,24 +25,17 @@ import type {
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
-import { emitManualTrigger } from "@packages/rules-engine/queue";
-import type { AutomationEvent } from "@packages/rules-engine/types";
+import { emitManualTrigger } from "@packages/rules-engine/queue/producer";
+import type { AutomationEvent } from "@packages/rules-engine/types/events";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 const triggerTypeSchema = z.enum([
    "transaction.created",
    "transaction.updated",
-   "webhook.received",
 ]);
 
-const triggerConfigSchema = z
-   .object({
-      webhookEvent: z.string().optional(),
-      webhookSource: z.string().optional(),
-   })
-   .optional()
-   .default({});
+const triggerConfigSchema = z.object({}).optional().default({});
 
 const conditionOperatorSchema = z.enum([
    "equals",
@@ -477,14 +470,6 @@ export const automationRouter = router({
                         type: z.enum(["income", "expense", "transfer"]),
                      })
                      .optional(),
-                  webhook: z
-                     .object({
-                        eventType: z.string(),
-                        headers: z.record(z.string(), z.string()).optional(),
-                        payload: z.record(z.string(), z.unknown()),
-                        source: z.enum(["stripe", "asaas", "custom"]),
-                     })
-                     .optional(),
                })
                .optional(),
          }),
@@ -506,61 +491,32 @@ export const automationRouter = router({
             throw new Error("Cannot trigger inactive automation rule");
          }
 
-         let event: AutomationEvent;
+         const txData = input.testData?.transaction ?? {
+            amount: 100,
+            description: "Test Transaction",
+            type: "expense" as const,
+         };
 
-         if (
-            rule.triggerType === "transaction.created" ||
-            rule.triggerType === "transaction.updated"
-         ) {
-            const txData = input.testData?.transaction ?? {
-               amount: 100,
-               description: "Test Transaction",
-               type: "expense" as const,
-            };
-
-            event = {
-               data: {
-                  amount: txData.amount,
-                  bankAccountId: txData.bankAccountId ?? null,
-                  categoryIds: txData.categoryIds ?? [],
-                  costCenterId: txData.costCenterId ?? null,
-                  counterpartyId: txData.counterpartyId ?? null,
-                  date: txData.date ?? new Date().toISOString(),
-                  description: txData.description,
-                  id: txData.id ?? crypto.randomUUID(),
-                  metadata: txData.metadata ?? {},
-                  organizationId,
-                  tagIds: txData.tagIds ?? [],
-                  type: txData.type,
-               },
-               id: crypto.randomUUID(),
+         const event: AutomationEvent = {
+            data: {
+               amount: txData.amount,
+               bankAccountId: txData.bankAccountId ?? null,
+               categoryIds: txData.categoryIds ?? [],
+               costCenterId: txData.costCenterId ?? null,
+               counterpartyId: txData.counterpartyId ?? null,
+               date: txData.date ?? new Date().toISOString(),
+               description: txData.description,
+               id: txData.id ?? crypto.randomUUID(),
+               metadata: txData.metadata ?? {},
                organizationId,
-               timestamp: new Date().toISOString(),
-               type: rule.triggerType,
-            };
-         } else if (rule.triggerType === "webhook.received") {
-            const webhookData = input.testData?.webhook ?? {
-               eventType: "test.event",
-               payload: {},
-               source: "custom" as const,
-            };
-
-            event = {
-               data: {
-                  eventType: webhookData.eventType,
-                  headers: webhookData.headers,
-                  payload: webhookData.payload,
-                  receivedAt: new Date().toISOString(),
-                  source: webhookData.source,
-               },
-               id: crypto.randomUUID(),
-               organizationId,
-               timestamp: new Date().toISOString(),
-               type: "webhook.received",
-            };
-         } else {
-            throw new Error(`Unsupported trigger type: ${rule.triggerType}`);
-         }
+               tagIds: txData.tagIds ?? [],
+               type: txData.type,
+            },
+            id: crypto.randomUUID(),
+            organizationId,
+            timestamp: new Date().toISOString(),
+            type: rule.triggerType,
+         };
 
          const job = await emitManualTrigger(event);
 

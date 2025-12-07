@@ -100,6 +100,12 @@ export function EarlyAccessFeaturesCard() {
    const { features, isEnrolled, loaded, updateEnrollment } =
       useEarlyAccessFeatures();
 
+   console.log("[DEBUG] EarlyAccessFeaturesCard render:", {
+      features: features.length,
+      featuresList: features.map((f) => ({ flagKey: f.flagKey, name: f.name })),
+      loaded,
+   });
+
    return (
       <Card>
          <CardHeader>

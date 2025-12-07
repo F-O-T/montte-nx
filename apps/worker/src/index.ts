@@ -1,9 +1,13 @@
 import { createDb } from "@packages/database/client";
 import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
+import type { TriggerType } from "@packages/database/schema";
 import { serverEnv as env } from "@packages/environment/server";
-import { closeRedisConnection, createConnectionFromUrl } from "@packages/queue";
-import { startAutomationConsumer } from "@packages/rules-engine/queue";
-import type { AutomationRule, TriggerType } from "@packages/rules-engine/types";
+import {
+   closeRedisConnection,
+   createConnectionFromUrl,
+} from "@packages/queue/connection";
+import { startAutomationConsumer } from "@packages/rules-engine/queue/consumer";
+import type { AutomationRule } from "@packages/rules-engine/types/rules";
 
 const MEMORY_THRESHOLD_MB = 512;
 const HEALTH_CHECK_INTERVAL_MS = 30000;

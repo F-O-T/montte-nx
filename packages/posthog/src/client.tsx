@@ -289,7 +289,12 @@ export function useEarlyAccessFeatures() {
    );
 
    const loadFeatures = useCallback(() => {
+      console.log("[DEBUG] Loading early access features...");
       posthogClient.getEarlyAccessFeatures((earlyAccessFeatures) => {
+         console.log(
+            "[DEBUG] Early access features loaded:",
+            earlyAccessFeatures,
+         );
          setFeatures(earlyAccessFeatures);
          setLoaded(true);
 
@@ -299,11 +304,16 @@ export function useEarlyAccessFeatures() {
                const isEnabled = posthogClient.isFeatureEnabled(
                   feature.flagKey,
                );
+               console.log(
+                  `[DEBUG] Feature ${feature.flagKey} enabled:`,
+                  isEnabled,
+               );
                if (isEnabled) {
                   enrolled.add(feature.flagKey);
                }
             }
          }
+         console.log("[DEBUG] Enrolled features:", Array.from(enrolled));
          setEnrolledFeatures(enrolled);
       }, true);
    }, [posthogClient]);

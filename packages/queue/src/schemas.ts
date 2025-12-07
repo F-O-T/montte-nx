@@ -1,0 +1,61 @@
+import { z } from "zod";
+
+export const RedisConfigSchema = z.object({
+   db: z.number().optional(),
+   host: z.string(),
+   maxRetriesPerRequest: z.number().nullable().optional(),
+   password: z.string().optional(),
+   port: z.number(),
+});
+
+export type RedisConfig = z.infer<typeof RedisConfigSchema>;
+
+export const QUEUE_NAMES = ["automation", "notification", "webhook"] as const;
+
+export const QueueNameSchema = z.enum(QUEUE_NAMES);
+
+export type QueueName = z.infer<typeof QueueNameSchema>;
+
+export const BaseJobDataSchema = z.object({
+   organizationId: z.string(),
+   timestamp: z.string(),
+});
+
+export type BaseJobData = z.infer<typeof BaseJobDataSchema>;
+
+export const AutomationJobDataSchema = BaseJobDataSchema.extend({
+   eventType: z.string(),
+   metadata: z.record(z.string(), z.unknown()).optional(),
+   payload: z.record(z.string(), z.unknown()),
+});
+
+export type AutomationJobData = z.infer<typeof AutomationJobDataSchema>;
+
+export const NotificationJobDataSchema = BaseJobDataSchema.extend({
+   body: z.string(),
+   metadata: z.record(z.string(), z.unknown()).optional(),
+   title: z.string(),
+   type: z.string(),
+   url: z.string().optional(),
+   userId: z.string(),
+});
+
+export type NotificationJobData = z.infer<typeof NotificationJobDataSchema>;
+
+export const WebhookJobDataSchema = BaseJobDataSchema.extend({
+   event: z.string(),
+   headers: z.record(z.string(), z.string()),
+   rawPayload: z.unknown(),
+   signature: z.string().optional(),
+   source: z.string(),
+});
+
+export type WebhookJobData = z.infer<typeof WebhookJobDataSchema>;
+
+export const JobDataSchema = z.union([
+   AutomationJobDataSchema,
+   NotificationJobDataSchema,
+   WebhookJobDataSchema,
+]);
+
+export type JobData = z.infer<typeof JobDataSchema>;

@@ -1,5 +1,10 @@
-import { getRedisConnection } from "@packages/queue";
-import { type JobsOptions, Queue, Worker, type WorkerOptions } from "bullmq";
+import { getRedisConnection } from "@packages/queue/connection";
+import {
+   type JobsOptions,
+   Queue,
+   Worker,
+   type WorkerOptions,
+} from "@packages/queue/bullmq";
 import type { AutomationEvent } from "../types/events";
 
 export const AUTOMATION_QUEUE_NAME = "automation-events";

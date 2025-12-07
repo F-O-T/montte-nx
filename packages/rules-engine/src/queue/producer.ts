@@ -1,4 +1,4 @@
-import type { Job } from "bullmq";
+import type { Job } from "@packages/queue/bullmq";
 import type { AutomationEvent, TransactionEventData } from "../types/events";
 import {
    type AutomationJobData,
@@ -10,7 +10,7 @@ import {
 export async function emitAutomationEvent(
    event: AutomationEvent,
    options?: {
-      triggeredBy?: "event" | "manual" | "webhook";
+      triggeredBy?: "event" | "manual";
       delay?: number;
       priority?: number;
    },
@@ -63,30 +63,6 @@ export async function emitTransactionUpdatedEvent(
    };
 
    return emitAutomationEvent(event, { triggeredBy: "event" });
-}
-
-export async function emitWebhookReceivedEvent(
-   organizationId: string,
-   source: "stripe" | "asaas" | "custom",
-   eventType: string,
-   payload: Record<string, unknown>,
-   headers?: Record<string, string>,
-): Promise<Job<AutomationJobData, AutomationJobResult>> {
-   const event: AutomationEvent = {
-      data: {
-         eventType,
-         headers,
-         payload,
-         receivedAt: new Date().toISOString(),
-         source,
-      },
-      id: crypto.randomUUID(),
-      organizationId,
-      timestamp: new Date().toISOString(),
-      type: "webhook.received",
-   };
-
-   return emitAutomationEvent(event, { triggeredBy: "webhook" });
 }
 
 export async function emitManualTrigger(

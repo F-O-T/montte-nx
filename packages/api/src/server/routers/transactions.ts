@@ -33,8 +33,8 @@ import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budge
 import {
    emitTransactionCreatedEvent,
    emitTransactionUpdatedEvent,
-} from "@packages/rules-engine/queue";
-import type { TransactionEventData } from "@packages/rules-engine/types";
+} from "@packages/rules-engine/queue/producer";
+import type { TransactionEventData } from "@packages/rules-engine/types/events";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";

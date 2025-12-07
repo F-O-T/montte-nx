@@ -4,9 +4,7 @@ export type TransactionEventType =
    | "transaction.created"
    | "transaction.updated";
 
-export type WebhookEventType = "webhook.received";
-
-export type EventType = TransactionEventType | WebhookEventType;
+export type EventType = TransactionEventType;
 
 export type TransactionEventData = {
    id: string;
@@ -22,14 +20,6 @@ export type TransactionEventData = {
    tagIds?: string[];
    metadata?: Record<string, unknown>;
    previousData?: Partial<TransactionEventData>;
-};
-
-export type WebhookEventData = {
-   source: "stripe" | "asaas" | "custom";
-   eventType: string;
-   payload: Record<string, unknown>;
-   headers?: Record<string, string>;
-   receivedAt: string;
 };
 
 export type BaseEvent<T extends EventType, D> = {
@@ -50,15 +40,7 @@ export type TransactionUpdatedEvent = BaseEvent<
    TransactionEventData
 >;
 
-export type WebhookReceivedEvent = BaseEvent<
-   "webhook.received",
-   WebhookEventData
->;
-
-export type AutomationEvent =
-   | TransactionCreatedEvent
-   | TransactionUpdatedEvent
-   | WebhookReceivedEvent;
+export type AutomationEvent = TransactionCreatedEvent | TransactionUpdatedEvent;
 
 export function createTransactionCreatedEvent(
    organizationId: string,
@@ -86,19 +68,6 @@ export function createTransactionUpdatedEvent(
    };
 }
 
-export function createWebhookReceivedEvent(
-   organizationId: string,
-   data: WebhookEventData,
-): WebhookReceivedEvent {
-   return {
-      data,
-      id: crypto.randomUUID(),
-      organizationId,
-      timestamp: new Date().toISOString(),
-      type: "webhook.received",
-   };
-}
-
 export function isTransactionEvent(
    event: AutomationEvent,
 ): event is TransactionCreatedEvent | TransactionUpdatedEvent {
@@ -106,12 +75,6 @@ export function isTransactionEvent(
       event.type === "transaction.created" ||
       event.type === "transaction.updated"
    );
-}
-
-export function isWebhookEvent(
-   event: AutomationEvent,
-): event is WebhookReceivedEvent {
-   return event.type === "webhook.received";
 }
 
 export function eventTypeToTriggerType(eventType: EventType): TriggerType {

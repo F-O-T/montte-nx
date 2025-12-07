@@ -1,5 +1,4 @@
 import type { TriggerType } from "@packages/database/schema";
-import { useEarlyAccessFeatures } from "@packages/posthog/client";
 import {
    Field,
    FieldDescription,
@@ -24,7 +23,6 @@ import {
 import { Switch } from "@packages/ui/components/switch";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
-import { Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import { z } from "zod";
 import { TRIGGER_TYPE_LABELS } from "../lib/types";
@@ -64,14 +62,6 @@ export function AutomationSettingsForm({
    onTriggerTypeChange,
    mode = "create",
 }: AutomationSettingsFormProps) {
-   const {
-      isEnrolled,
-      updateEnrollment,
-      loaded: earlyAccessLoaded,
-   } = useEarlyAccessFeatures();
-
-   const isAutomationBuilderEnrolled = isEnrolled("automation-builder");
-
    const form = useForm({
       defaultValues: {
          description: settings.description,
@@ -103,10 +93,6 @@ export function AutomationSettingsForm({
    const handleTriggerTypeChange = (value: TriggerType) => {
       form.setFieldValue("triggerType", value);
       onTriggerTypeChange?.(value);
-   };
-
-   const handleEarlyAccessToggle = (checked: boolean) => {
-      updateEnrollment("automation-builder", checked);
    };
 
    return (
@@ -293,27 +279,6 @@ export function AutomationSettingsForm({
                      )}
                   </form.Field>
                </div>
-
-               {earlyAccessLoaded && (
-                  <div className="flex items-center justify-between rounded-md border border-primary/20 bg-primary/5 p-3">
-                     <div className="flex items-start gap-3">
-                        <Sparkles className="mt-0.5 size-4 text-primary" />
-                        <div>
-                           <p className="text-sm font-medium">
-                              Novo Editor Visual
-                           </p>
-                           <p className="text-xs text-muted-foreground">
-                              Experimente o novo construtor de automações com
-                              interface visual
-                           </p>
-                        </div>
-                     </div>
-                     <Switch
-                        checked={isAutomationBuilderEnrolled}
-                        onCheckedChange={handleEarlyAccessToggle}
-                     />
-                  </div>
-               )}
             </div>
          </ScrollArea>
       </>

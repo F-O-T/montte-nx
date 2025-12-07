@@ -316,6 +316,7 @@
       "dependencies": {
         "bullmq": "^5.34.8",
         "ioredis": "^5.4.2",
+        "zod": "catalog:validation",
       },
       "devDependencies": {
         "@tooling/typescript": "workspace:*",

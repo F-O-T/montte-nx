@@ -8,21 +8,17 @@
       "typescript": "catalog:development"
    },
    "exports": {
-      ".": {
-         "default": "./src/index.ts",
-         "types": "./dist/src/index.d.ts"
+      "./engine/*": {
+         "default": "./src/engine/*.ts",
+         "types": "./dist/src/engine/*.d.ts"
       },
-      "./engine": {
-         "default": "./src/engine/index.ts",
-         "types": "./dist/src/engine/index.d.ts"
+      "./queue/*": {
+         "default": "./src/queue/*.ts",
+         "types": "./dist/src/queue/*.d.ts"
       },
-      "./queue": {
-         "default": "./src/queue/index.ts",
-         "types": "./dist/src/queue/index.d.ts"
-      },
-      "./types": {
-         "default": "./src/types/index.ts",
-         "types": "./dist/src/types/index.d.ts"
+      "./types/*": {
+         "default": "./src/types/*.ts",
+         "types": "./dist/src/types/*.d.ts"
       }
    },
    "files": [

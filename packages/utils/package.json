@@ -49,6 +49,10 @@
          "default": "./src/numbers.ts",
          "types": "./dist/src/numbers.d.ts"
       },
+      "./object": {
+         "default": "./src/object.ts",
+         "types": "./dist/src/object.d.ts"
+      },
       "./recurrence": {
          "default": "./src/recurrence.ts",
          "types": "./dist/src/recurrence.d.ts"
