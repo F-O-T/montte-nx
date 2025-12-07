@@ -1,4 +1,10 @@
 import type { DatabaseInstance } from "@packages/database/client";
+import { setTransactionCategories } from "@packages/database/repositories/category-repository";
+import {
+   addTagToTransaction,
+   removeTagFromTransaction,
+} from "@packages/database/repositories/tag-repository";
+import { updateTransaction } from "@packages/database/repositories/transaction-repository";
 import type { Action, ActionType } from "@packages/database/schema";
 import type {
    ActionExecutionContext,
@@ -45,7 +51,7 @@ export type ActionHandlers = {
 async function executeSetCategory(
    action: Action,
    context: ActionExecutionContext,
-   _db?: DatabaseInstance,
+   db?: DatabaseInstance,
 ): Promise<ActionExecutionResult> {
    const { categoryId } = action.config;
 
@@ -77,17 +83,37 @@ async function executeSetCategory(
       };
    }
 
-   return {
-      actionId: action.id,
-      result: { categoryId, transactionId },
-      success: true,
-      type: action.type,
-   };
+   if (!db) {
+      return {
+         actionId: action.id,
+         error: "Database connection not available",
+         success: false,
+         type: action.type,
+      };
+   }
+
+   try {
+      await setTransactionCategories(db, transactionId, [categoryId]);
+      return {
+         actionId: action.id,
+         result: { categoryId, transactionId },
+         success: true,
+         type: action.type,
+      };
+   } catch (error) {
+      return {
+         actionId: action.id,
+         error: `Failed to set category: ${error instanceof Error ? error.message : "Unknown error"}`,
+         success: false,
+         type: action.type,
+      };
+   }
 }
 
 async function executeAddTag(
    action: Action,
    context: ActionExecutionContext,
+   db?: DatabaseInstance,
 ): Promise<ActionExecutionResult> {
    const { tagIds } = action.config;
 
@@ -119,17 +145,43 @@ async function executeAddTag(
       };
    }
 
-   return {
-      actionId: action.id,
-      result: { tagIds, transactionId },
-      success: true,
-      type: action.type,
-   };
+   if (!db) {
+      return {
+         actionId: action.id,
+         error: "Database connection not available",
+         success: false,
+         type: action.type,
+      };
+   }
+
+   try {
+      for (const tagId of tagIds) {
+         try {
+            await addTagToTransaction(db, transactionId, tagId);
+         } catch {
+            // Ignore if tag already exists on transaction
+         }
+      }
+      return {
+         actionId: action.id,
+         result: { tagIds, transactionId },
+         success: true,
+         type: action.type,
+      };
+   } catch (error) {
+      return {
+         actionId: action.id,
+         error: `Failed to add tags: ${error instanceof Error ? error.message : "Unknown error"}`,
+         success: false,
+         type: action.type,
+      };
+   }
 }
 
 async function executeRemoveTag(
    action: Action,
    context: ActionExecutionContext,
+   db?: DatabaseInstance,
 ): Promise<ActionExecutionResult> {
    const { tagIds } = action.config;
 
@@ -161,17 +213,43 @@ async function executeRemoveTag(
       };
    }
 
-   return {
-      actionId: action.id,
-      result: { removed: true, tagIds, transactionId },
-      success: true,
-      type: action.type,
-   };
+   if (!db) {
+      return {
+         actionId: action.id,
+         error: "Database connection not available",
+         success: false,
+         type: action.type,
+      };
+   }
+
+   try {
+      for (const tagId of tagIds) {
+         try {
+            await removeTagFromTransaction(db, transactionId, tagId);
+         } catch {
+            // Ignore if tag doesn't exist on transaction
+         }
+      }
+      return {
+         actionId: action.id,
+         result: { removed: true, tagIds, transactionId },
+         success: true,
+         type: action.type,
+      };
+   } catch (error) {
+      return {
+         actionId: action.id,
+         error: `Failed to remove tags: ${error instanceof Error ? error.message : "Unknown error"}`,
+         success: false,
+         type: action.type,
+      };
+   }
 }
 
 async function executeSetCostCenter(
    action: Action,
    context: ActionExecutionContext,
+   db?: DatabaseInstance,
 ): Promise<ActionExecutionResult> {
    const { costCenterId } = action.config;
 
@@ -203,17 +281,37 @@ async function executeSetCostCenter(
       };
    }
 
-   return {
-      actionId: action.id,
-      result: { costCenterId, transactionId },
-      success: true,
-      type: action.type,
-   };
+   if (!db) {
+      return {
+         actionId: action.id,
+         error: "Database connection not available",
+         success: false,
+         type: action.type,
+      };
+   }
+
+   try {
+      await updateTransaction(db, transactionId, { costCenterId });
+      return {
+         actionId: action.id,
+         result: { costCenterId, transactionId },
+         success: true,
+         type: action.type,
+      };
+   } catch (error) {
+      return {
+         actionId: action.id,
+         error: `Failed to set cost center: ${error instanceof Error ? error.message : "Unknown error"}`,
+         success: false,
+         type: action.type,
+      };
+   }
 }
 
 async function executeUpdateDescription(
    action: Action,
    context: ActionExecutionContext,
+   db?: DatabaseInstance,
 ): Promise<ActionExecutionResult> {
    const { mode = "replace", value, template } = action.config;
 
@@ -263,12 +361,33 @@ async function executeUpdateDescription(
       };
    }
 
-   return {
-      actionId: action.id,
-      result: { description: finalDescription, transactionId },
-      success: true,
-      type: action.type,
-   };
+   if (!db) {
+      return {
+         actionId: action.id,
+         error: "Database connection not available",
+         success: false,
+         type: action.type,
+      };
+   }
+
+   try {
+      await updateTransaction(db, transactionId, {
+         description: finalDescription,
+      });
+      return {
+         actionId: action.id,
+         result: { description: finalDescription, transactionId },
+         success: true,
+         type: action.type,
+      };
+   } catch (error) {
+      return {
+         actionId: action.id,
+         error: `Failed to update description: ${error instanceof Error ? error.message : "Unknown error"}`,
+         success: false,
+         type: action.type,
+      };
+   }
 }
 
 async function executeCreateTransaction(

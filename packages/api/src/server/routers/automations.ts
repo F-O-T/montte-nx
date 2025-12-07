@@ -527,7 +527,7 @@ export const automationRouter = router({
                   counterpartyId: txData.counterpartyId ?? null,
                   date: txData.date ?? new Date().toISOString(),
                   description: txData.description,
-                  id: txData.id ?? `test-${crypto.randomUUID()}`,
+                  id: txData.id ?? crypto.randomUUID(),
                   metadata: txData.metadata ?? {},
                   organizationId,
                   tagIds: txData.tagIds ?? [],
