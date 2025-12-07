@@ -48,7 +48,6 @@ function OrganizationLogo() {
 
 // Content Component
 function OrganizationContent() {
-   const _trpc = useTRPC();
    const { activeOrganization } = useActiveOrganization();
 
    return (

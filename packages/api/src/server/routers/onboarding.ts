@@ -56,6 +56,7 @@ export const onboardingRouter = router({
          hasCategories,
          needsOnboarding: !organization.onboardingCompleted,
          organizationSlug: organization.slug,
+         organizationContext: organization.context,
       };
    }),
 });
