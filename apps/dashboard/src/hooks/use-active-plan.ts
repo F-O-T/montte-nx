@@ -8,13 +8,12 @@ export const useActivePlan = () => {
    const { data: subscriptions } = useSuspenseQuery({
       queryFn: async () => {
          const result = await betterAuthClient.subscription.list({
-            query: {
-               referenceId: activeOrganization?.id,
-            },
+            query: { referenceId: activeOrganization?.id },
          });
          return result.data;
       },
       queryKey: ["subscriptions", activeOrganization?.id],
+      meta: { skipGlobalInvalidation: true },
    });
 
    const currentSubscription = subscriptions?.find(

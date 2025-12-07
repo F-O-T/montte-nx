@@ -117,14 +117,6 @@ export const organizationRouter = router({
          }
       }),
 
-   getActiveOrganization: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      const organization = await resolvedCtx.auth.api.getFullOrganization({
-         headers: resolvedCtx.headers,
-      });
-      return organization;
-   }),
-
    getActiveOrganizationMembers: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
@@ -173,6 +165,30 @@ export const organizationRouter = router({
 
    getOrganizationLimit: protectedProcedure.query(async () => {
       return ORGANIZATION_LIMIT;
+   }),
+
+   getActiveOrganization: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+
+      const organization = await resolvedCtx.auth.api.getFullOrganization({
+         headers: resolvedCtx.headers,
+      });
+
+      const subscriptions = await resolvedCtx.auth.api.listActiveSubscriptions({
+         headers: resolvedCtx.headers,
+         query: { referenceId: organization?.id },
+      });
+
+      const activeSubscription = subscriptions.find(
+         (subscription) =>
+            subscription.status === "active" ||
+            subscription.status === "trialing",
+      );
+
+      return {
+         organization: organization,
+         activeSubscription: activeSubscription ?? null,
+      };
    }),
 
    getOrganizations: protectedProcedure.query(async ({ ctx }) => {

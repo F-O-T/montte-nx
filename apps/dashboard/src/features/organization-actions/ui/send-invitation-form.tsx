@@ -26,6 +26,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import z from "zod";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -58,9 +59,7 @@ function SendInvitationSkeleton() {
 const SendInvitationFormContent = () => {
    const { closeSheet } = useSheet();
    const trpc = useTRPC();
-   const { data: organization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const { activeOrganization } = useActiveOrganization();
    const { data: teams = [] } = useSuspenseQuery(
       trpc.organization.listTeams.queryOptions(),
    );
@@ -86,7 +85,7 @@ const SendInvitationFormContent = () => {
    const form = useForm({
       defaultValues: {
          email: "",
-         organizationId: organization?.id,
+         organizationId: activeOrganization?.id,
          resend: false,
          teamId: "",
       },

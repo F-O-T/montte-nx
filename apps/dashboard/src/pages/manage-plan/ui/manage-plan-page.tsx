@@ -25,7 +25,6 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useActivePlan } from "@/hooks/use-active-plan";
 import { betterAuthClient } from "@/integrations/clients";
 
 function ManagePlanPageErrorFallback(props: FallbackProps) {
@@ -51,16 +50,15 @@ function ManagePlanPageSkeleton() {
 
 function ManagePlanPageContent() {
    const { slug } = useParams({ strict: false }) as { slug: string };
-   const { activeOrganization } = useActiveOrganization();
-   const { currentSubscription } = useActivePlan();
+   const { activeOrganization, activeSubscription } = useActiveOrganization();
    const [isLoading, startTransition] = useTransition();
 
-   if (!currentSubscription) {
+   if (!activeSubscription) {
       return null;
    }
 
    const plan = STRIPE_PLANS.find(
-      (p) => p.name.toLowerCase() === currentSubscription.plan.toLowerCase(),
+      (p) => p.name.toLowerCase() === activeSubscription.plan.toLowerCase(),
    );
 
    if (!plan) {

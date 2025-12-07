@@ -17,13 +17,14 @@ import {
 } from "@packages/ui/components/sheet";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -56,9 +57,7 @@ function InviteMemberSkeleton() {
 const InviteMemberFormContent = () => {
    const { closeSheet } = useSheet();
    const trpc = useTRPC();
-   const { data: organization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const { activeOrganization } = useActiveOrganization();
 
    const createInvitationMutation = useMutation(
       trpc.organizationInvites.createInvitation.mutationOptions({
@@ -82,7 +81,7 @@ const InviteMemberFormContent = () => {
    const form = useForm({
       defaultValues: {
          email: "",
-         organizationId: organization?.id ?? "",
+         organizationId: activeOrganization?.id ?? "",
          role: "member" as "member" | "admin",
       },
       onSubmit: async ({ value, formApi }) => {

@@ -11,13 +11,14 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -51,10 +52,8 @@ function CreateTeamSkeleton() {
 
 const CreateTeamFormContent = () => {
    const { closeSheet } = useSheet();
+   const { activeOrganization } = useActiveOrganization();
    const trpc = useTRPC();
-   const { data: organization } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
 
    const createTeamMutation = useMutation(
       trpc.organizationTeams.createTeam.mutationOptions({
@@ -85,7 +84,7 @@ const CreateTeamFormContent = () => {
       defaultValues: {
          description: "",
          name: "",
-         organizationId: organization?.id ?? "",
+         organizationId: activeOrganization?.id ?? "",
       },
       onSubmit: async ({ value, formApi }) => {
          await createTeamMutation.mutateAsync(value);
