@@ -288,28 +288,3 @@ export const ofxDocumentSchema = z.object({
 });
 
 export type OFXDocument = z.infer<typeof ofxDocumentSchema>;
-
-export const schemas = {
-   accountType: accountTypeSchema,
-   balance: balanceSchema,
-   bankAccount: bankAccountSchema,
-   bankMessageSetResponse: bankMessageSetResponseSchema,
-   bankStatementResponse: bankStatementResponseSchema,
-   bankStatementTransactionResponse: bankStatementTransactionResponseSchema,
-   creditCardAccount: creditCardAccountSchema,
-   creditCardMessageSetResponse: creditCardMessageSetResponseSchema,
-   creditCardStatementResponse: creditCardStatementResponseSchema,
-   creditCardStatementTransactionResponse:
-      creditCardStatementTransactionResponseSchema,
-   financialInstitution: financialInstitutionSchema,
-   ofxDate: ofxDateSchema,
-   ofxDocument: ofxDocumentSchema,
-   ofxHeader: ofxHeaderSchema,
-   ofxResponse: ofxResponseSchema,
-   signOnMessageSetResponse: signOnMessageSetResponseSchema,
-   signOnResponse: signOnResponseSchema,
-   status: statusSchema,
-   transaction: transactionSchema,
-   transactionList: transactionListSchema,
-   transactionType: transactionTypeSchema,
-} as const;

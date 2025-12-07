@@ -92,6 +92,7 @@ function ShareTargetComponent() {
                      content: string;
                      filename: string;
                   };
+
                   sessionStorage.removeItem("montte:pending-share-target");
                   sessionStorage.setItem(
                      "montte:pending-ofx-import",
