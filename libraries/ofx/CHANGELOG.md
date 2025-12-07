@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-12-07
+
+### Changed
+
+- Removed `schemas` object export to fix TypeScript type inference issues
+- All OFX types are now exported directly as named type exports instead of via a `schemas` object
+
+### Breaking Changes
+
+- The `schemas` export has been removed. If you were using `import { schemas } from '@f-o-t/ofx'`, you now need to import types directly: `import type { OFXDocument, OFXTransaction } from '@f-o-t/ofx'`
+
 ## [1.3.0] - 2025-12-05
 
 ### Added
