@@ -1,5 +1,6 @@
 {
    "dependencies": {
+      "@f-o-t/condition-evaluator": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/queue": "workspace:*"
    },

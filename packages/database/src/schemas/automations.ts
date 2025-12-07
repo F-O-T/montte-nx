@@ -1,3 +1,19 @@
+import {
+   isConditionGroup,
+   type ArrayOperator as LibArrayOperator,
+   type BooleanOperator as LibBooleanOperator,
+   type Condition as LibCondition,
+   type ConditionGroup as LibConditionGroup,
+   type ConditionGroupInput as LibConditionGroupInput,
+   type DateOperator as LibDateOperator,
+   type EvaluationContext as LibEvaluationContext,
+   type EvaluationResult as LibEvaluationResult,
+   type GroupEvaluationResult as LibGroupEvaluationResult,
+   type GroupEvaluationResultInput as LibGroupEvaluationResultInput,
+   type LogicalOperator as LibLogicalOperator,
+   type NumberOperator as LibNumberOperator,
+   type StringOperator as LibStringOperator,
+} from "@f-o-t/condition-evaluator";
 import { relations, sql } from "drizzle-orm";
 import {
    boolean,
@@ -12,54 +28,34 @@ import {
 } from "drizzle-orm/pg-core";
 import { organization, user } from "./auth";
 
+export type StringOperator = LibStringOperator;
+export type NumberOperator = LibNumberOperator;
+export type BooleanOperator = LibBooleanOperator;
+export type DateOperator = LibDateOperator;
+export type ArrayOperator = LibArrayOperator;
+export type LogicalOperator = LibLogicalOperator;
+export type Condition = LibCondition;
+export type ConditionGroup = LibConditionGroup;
+export type ConditionGroupInput = LibConditionGroupInput;
+export type EvaluationContext = LibEvaluationContext;
+export type EvaluationResult = LibEvaluationResult;
+export type GroupEvaluationResult = LibGroupEvaluationResult;
+export type GroupEvaluationResultInput = LibGroupEvaluationResultInput;
+
+export { isConditionGroup };
+
+export type ConditionOperator =
+   | StringOperator
+   | NumberOperator
+   | BooleanOperator
+   | DateOperator
+   | ArrayOperator;
+
+export type ConditionType = "string" | "number" | "boolean" | "date" | "array";
+
 export type TriggerType = "transaction.created" | "transaction.updated";
 
 export type TriggerConfig = Record<string, never>;
-
-export type ConditionOperator =
-   | "equals"
-   | "not_equals"
-   | "contains"
-   | "not_contains"
-   | "starts_with"
-   | "ends_with"
-   | "regex"
-   | "eq"
-   | "neq"
-   | "gt"
-   | "gte"
-   | "lt"
-   | "lte"
-   | "between"
-   | "is_weekend"
-   | "is_business_day"
-   | "day_of_month"
-   | "day_of_week"
-   | "before"
-   | "after"
-   | "is_empty"
-   | "is_not_empty"
-   | "in_list"
-   | "not_in_list";
-
-export type Condition = {
-   id: string;
-   field: string;
-   operator: ConditionOperator;
-   value: unknown;
-   options?: {
-      caseSensitive?: boolean;
-      negate?: boolean;
-   };
-};
-
-export type LogicalOperator = "AND" | "OR";
-
-export type ConditionGroup = {
-   id: string;
-   operator: LogicalOperator;
-   conditions: (Condition | ConditionGroup)[];
-};
 
 export type ActionType =
    | "set_category"
@@ -158,14 +154,14 @@ export type AutomationLogStatus = "success" | "partial" | "failed" | "skipped";
 export type TriggeredBy = "event" | "manual";
 export type RelatedEntityType = "transaction";
 
-export type ConditionEvaluationResult = {
+export type ConditionEvaluationLogResult = {
    conditionId: string;
    passed: boolean;
    actualValue?: unknown;
    expectedValue?: unknown;
 };
 
-export type ActionExecutionResult = {
+export type ActionExecutionLogResult = {
    actionId: string;
    type: ActionType;
    success: boolean;
@@ -177,10 +173,10 @@ export const automationLog = pgTable(
    "automation_log",
    {
       actionsExecuted:
-         jsonb("actions_executed").$type<ActionExecutionResult[]>(),
+         jsonb("actions_executed").$type<ActionExecutionLogResult[]>(),
       completedAt: timestamp("completed_at"),
       conditionsEvaluated: jsonb("conditions_evaluated").$type<
-         ConditionEvaluationResult[]
+         ConditionEvaluationLogResult[]
       >(),
       createdAt: timestamp("created_at").defaultNow().notNull(),
       durationMs: integer("duration_ms"),

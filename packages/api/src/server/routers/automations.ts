@@ -1,3 +1,4 @@
+import { ConditionGroup as ConditionGroupSchema } from "@f-o-t/condition-evaluator";
 import {
    findAutomationLogsByOrganizationIdPaginated,
    findAutomationLogsByRuleId,
@@ -36,62 +37,6 @@ const triggerTypeSchema = z.enum([
 ]);
 
 const triggerConfigSchema = z.object({}).optional().default({});
-
-const conditionOperatorSchema = z.enum([
-   "equals",
-   "not_equals",
-   "contains",
-   "not_contains",
-   "starts_with",
-   "ends_with",
-   "regex",
-   "eq",
-   "neq",
-   "gt",
-   "gte",
-   "lt",
-   "lte",
-   "between",
-   "is_weekend",
-   "is_business_day",
-   "day_of_month",
-   "day_of_week",
-   "before",
-   "after",
-   "is_empty",
-   "is_not_empty",
-   "in_list",
-   "not_in_list",
-]);
-
-const conditionSchema: z.ZodType<{
-   id: string;
-   field: string;
-   operator: z.infer<typeof conditionOperatorSchema>;
-   value: unknown;
-   options?: { caseSensitive?: boolean; negate?: boolean };
-}> = z.object({
-   field: z.string(),
-   id: z.string(),
-   operator: conditionOperatorSchema,
-   options: z
-      .object({
-         caseSensitive: z.boolean().optional(),
-         negate: z.boolean().optional(),
-      })
-      .optional(),
-   value: z.unknown(),
-});
-
-const logicalOperatorSchema = z.enum(["AND", "OR"]);
-
-const conditionGroupSchema: z.ZodType<ConditionGroup> = z.lazy(() =>
-   z.object({
-      conditions: z.array(z.union([conditionSchema, conditionGroupSchema])),
-      id: z.string(),
-      operator: logicalOperatorSchema,
-   }),
-);
 
 const actionTypeSchema = z.enum([
    "set_category",
@@ -151,7 +96,7 @@ const flowDataSchema = z
 
 const createAutomationRuleSchema = z.object({
    actions: z.array(actionSchema).min(1, "At least one action is required"),
-   conditions: z.array(conditionGroupSchema).default([]),
+   conditions: z.array(ConditionGroupSchema).default([]),
    description: z.string().optional(),
    flowData: flowDataSchema,
    isActive: z.boolean().default(false),
@@ -164,7 +109,7 @@ const createAutomationRuleSchema = z.object({
 
 const updateAutomationRuleSchema = z.object({
    actions: z.array(actionSchema).optional(),
-   conditions: z.array(conditionGroupSchema).optional(),
+   conditions: z.array(ConditionGroupSchema).optional(),
    description: z.string().optional().nullable(),
    flowData: flowDataSchema,
    isActive: z.boolean().optional(),

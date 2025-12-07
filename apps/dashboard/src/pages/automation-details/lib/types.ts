@@ -2,6 +2,7 @@ import type {
    ActionConfig,
    ActionType,
    ConditionOperator,
+   ConditionType,
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
@@ -18,9 +19,10 @@ export type ConditionNodeData = {
    operator: "AND" | "OR";
    conditions: {
       id: string;
+      type: ConditionType;
       field: string;
       operator: ConditionOperator;
-      value: unknown;
+      value?: unknown;
    }[];
 };
 
@@ -66,30 +68,36 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
    update_description: "Atualizar Descrição",
 };
 
-export const CONDITION_OPERATOR_LABELS: Record<ConditionOperator, string> = {
+export const CONDITION_OPERATOR_LABELS: Partial<Record<string, string>> = {
    after: "Depois",
    before: "Antes",
    between: "Entre",
    contains: "Contém",
+   contains_all: "Contém Todos",
+   contains_any: "Contém Qualquer",
    day_of_month: "Dia do Mês",
    day_of_week: "Dia da Semana",
    ends_with: "Termina Com",
    eq: "=",
-   equals: "Igual a",
    gt: ">",
    gte: "≥",
-   in_list: "Na Lista",
-   is_business_day: "É Dia Útil",
+   in: "Na Lista",
    is_empty: "Está Vazio",
+   is_false: "É Falso",
    is_not_empty: "Não Está Vazio",
+   is_true: "É Verdadeiro",
+   is_weekday: "É Dia de Semana",
    is_weekend: "É Fim de Semana",
+   length_eq: "Tamanho =",
+   length_gt: "Tamanho >",
+   length_lt: "Tamanho <",
    lt: "<",
    lte: "≤",
+   matches: "Corresponde a Regex",
    neq: "≠",
+   not_between: "Fora do Intervalo",
    not_contains: "Não Contém",
-   not_equals: "Diferente de",
-   not_in_list: "Fora da Lista",
-   regex: "Corresponde a Regex",
+   not_in: "Fora da Lista",
    starts_with: "Começa Com",
 };
 

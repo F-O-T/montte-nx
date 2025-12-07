@@ -1,3 +1,8 @@
+import {
+   evaluateConditions,
+   type EvaluationResult,
+   type GroupEvaluationResult,
+} from "@f-o-t/condition-evaluator";
 import type { DatabaseInstance } from "@packages/database/client";
 import { createAutomationLog } from "@packages/database/repositories/automation-log-repository";
 import type {
@@ -5,10 +10,6 @@ import type {
    RelatedEntityType,
    TriggerType,
 } from "@packages/database/schema";
-import type {
-   ConditionEvaluationResult,
-   ConditionGroupEvaluationResult,
-} from "../types/conditions";
 import type { AutomationEvent } from "../types/events";
 import type {
    AutomationRule,
@@ -17,7 +18,6 @@ import type {
    RuleExecutionContext,
    RuleExecutionResult,
 } from "../types/rules";
-import { evaluateConditions } from "./evaluator";
 import { executeActions } from "./executor";
 
 function mapStatusToLogStatus(
@@ -36,7 +36,7 @@ function mapStatusToLogStatus(
 }
 
 function flattenConditionResults(
-   results: ConditionGroupEvaluationResult[] | undefined,
+   results: GroupEvaluationResult[] | undefined,
 ): {
    conditionId: string;
    passed: boolean;
@@ -52,9 +52,7 @@ function flattenConditionResults(
       expectedValue?: unknown;
    }[] = [];
 
-   function flatten(
-      items: (ConditionEvaluationResult | ConditionGroupEvaluationResult)[],
-   ) {
+   function flatten(items: (EvaluationResult | GroupEvaluationResult)[]) {
       for (const item of items) {
          if ("groupId" in item) {
             flattened.push({
@@ -131,8 +129,7 @@ export async function runRule(
    try {
       const { passed: conditionsPassed, results: conditionsResult } =
          evaluateConditions(rule.conditions, {
-            eventData: event.data as Record<string, unknown>,
-            organizationId: context.organizationId,
+            data: event.data as Record<string, unknown>,
          });
 
       if (!conditionsPassed) {

@@ -11,7 +11,7 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Save, Settings } from "lucide-react";
 import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -59,7 +59,6 @@ function AutomationDetailsErrorFallback({
 
 function AutomationDetailsContent({ automationId }: { automationId: string }) {
    const { activeOrganization } = useActiveOrganization();
-   const navigate = useNavigate();
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const { openSheet } = useSheet();
@@ -97,10 +96,6 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
                queryKey: [["automations"]],
             });
             toast.success("Automação salva com sucesso");
-            navigate({
-               params: { slug: activeOrganization.slug },
-               to: "/$slug/automations",
-            });
          },
       }),
    );

@@ -2,10 +2,23 @@ import type {
    Condition,
    ConditionGroup,
    ConditionOperator,
+   EvaluationContext,
+   EvaluationResult,
+   GroupEvaluationResult,
    LogicalOperator,
 } from "@packages/database/schema";
 
-export type { Condition, ConditionGroup, ConditionOperator, LogicalOperator };
+export type {
+   Condition,
+   ConditionGroup,
+   ConditionOperator,
+   EvaluationContext,
+   EvaluationResult,
+   GroupEvaluationResult,
+   LogicalOperator,
+};
+
+export { isConditionGroup } from "@packages/database/schema";
 
 export type ConditionField =
    | "amount"
@@ -49,13 +62,13 @@ export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
       key: "description",
       label: "Description",
       operators: [
-         "equals",
-         "not_equals",
+         "eq",
+         "neq",
          "contains",
          "not_contains",
          "starts_with",
          "ends_with",
-         "regex",
+         "matches",
          "is_empty",
          "is_not_empty",
       ],
@@ -65,14 +78,14 @@ export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
       category: "transaction",
       key: "type",
       label: "Type",
-      operators: ["equals", "not_equals", "in_list", "not_in_list"],
+      operators: ["eq", "neq", "in", "not_in"],
       type: "string",
    },
    {
       category: "transaction",
       key: "status",
       label: "Status",
-      operators: ["equals", "not_equals", "in_list", "not_in_list"],
+      operators: ["eq", "neq", "in", "not_in"],
       type: "string",
    },
    {
@@ -84,7 +97,7 @@ export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
          "after",
          "between",
          "is_weekend",
-         "is_business_day",
+         "is_weekday",
          "day_of_month",
          "day_of_week",
       ],
@@ -94,46 +107,28 @@ export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
       category: "transaction",
       key: "categoryId",
       label: "Category",
-      operators: [
-         "equals",
-         "not_equals",
-         "is_empty",
-         "is_not_empty",
-         "in_list",
-      ],
+      operators: ["eq", "neq", "is_empty", "is_not_empty", "in"],
       type: "string",
    },
    {
       category: "transaction",
       key: "costCenterId",
       label: "Cost Center",
-      operators: [
-         "equals",
-         "not_equals",
-         "is_empty",
-         "is_not_empty",
-         "in_list",
-      ],
+      operators: ["eq", "neq", "is_empty", "is_not_empty", "in"],
       type: "string",
    },
    {
       category: "transaction",
       key: "counterpartyId",
       label: "Counterparty",
-      operators: [
-         "equals",
-         "not_equals",
-         "is_empty",
-         "is_not_empty",
-         "in_list",
-      ],
+      operators: ["eq", "neq", "is_empty", "is_not_empty", "in"],
       type: "string",
    },
    {
       category: "transaction",
       key: "bankAccountId",
       label: "Bank Account",
-      operators: ["equals", "not_equals", "in_list", "not_in_list"],
+      operators: ["eq", "neq", "in", "not_in"],
       type: "string",
    },
    {
@@ -145,42 +140,90 @@ export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
    },
 ];
 
-export type ConditionEvaluationContext = {
-   organizationId: string;
-   eventData: Record<string, unknown>;
-   metadata?: Record<string, unknown>;
-};
+export type ConditionType = "string" | "number" | "boolean" | "date" | "array";
 
-export type ConditionEvaluationResult = {
-   conditionId: string;
-   passed: boolean;
-   operator: ConditionOperator;
-   field: string;
-   actualValue: unknown;
-   expectedValue: unknown;
-   error?: string;
-};
-
-export type ConditionGroupEvaluationResult = {
-   groupId: string;
-   operator: LogicalOperator;
-   passed: boolean;
-   results: (ConditionEvaluationResult | ConditionGroupEvaluationResult)[];
+export type ConditionOptions = {
+   caseSensitive?: boolean;
+   negate?: boolean;
+   trim?: boolean;
 };
 
 export function createCondition(
+   type: ConditionType,
    field: string,
    operator: ConditionOperator,
-   value: unknown,
-   options?: Condition["options"],
+   value?: unknown,
+   options?: ConditionOptions,
 ): Condition {
-   return {
+   const base = {
       field,
       id: crypto.randomUUID(),
-      operator,
       options,
-      value,
    };
+
+   switch (type) {
+      case "string":
+         return {
+            ...base,
+            type: "string",
+            operator: operator as Condition & { type: "string" } extends {
+               operator: infer O;
+            }
+               ? O
+               : never,
+            value: value as string | string[] | undefined,
+         };
+      case "number":
+         return {
+            ...base,
+            type: "number",
+            operator: operator as Condition & { type: "number" } extends {
+               operator: infer O;
+            }
+               ? O
+               : never,
+            value: value as number | [number, number] | undefined,
+         };
+      case "boolean":
+         return {
+            ...base,
+            type: "boolean",
+            operator: operator as Condition & { type: "boolean" } extends {
+               operator: infer O;
+            }
+               ? O
+               : never,
+            value: value as boolean | undefined,
+         };
+      case "date":
+         return {
+            ...base,
+            type: "date",
+            operator: operator as Condition & { type: "date" } extends {
+               operator: infer O;
+            }
+               ? O
+               : never,
+            value: value as
+               | string
+               | Date
+               | number
+               | [string | Date | number, string | Date | number]
+               | number[]
+               | undefined,
+         };
+      case "array":
+         return {
+            ...base,
+            type: "array",
+            operator: operator as Condition & { type: "array" } extends {
+               operator: infer O;
+            }
+               ? O
+               : never,
+            value: value as unknown[] | unknown | number | undefined,
+         };
+   }
 }
 
 export function createConditionGroup(
@@ -192,10 +235,4 @@ export function createConditionGroup(
       id: crypto.randomUUID(),
       operator,
    };
-}
-
-export function isConditionGroup(
-   item: Condition | ConditionGroup,
-): item is ConditionGroup {
-   return "operator" in item && "conditions" in item;
 }

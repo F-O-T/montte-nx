@@ -12,7 +12,6 @@ import { useRouter } from "@tanstack/react-router";
 import { AlertCircle, Building2, FolderOpen } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { EarlyAccessFeaturesCard } from "@/features/early-access";
 import { NotificationSettingsCard } from "@/features/notifications/ui/notification-settings-card";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { ProfilePageBilling } from "./profile-page-billing";
@@ -163,10 +162,6 @@ export function ProfilePage() {
             <div className="md:col-span-3 grid md:grid-cols-2 gap-4">
                <NotificationSettingsCard />
                <PreferencesSection />
-            </div>
-
-            <div className="md:col-span-3">
-               <EarlyAccessFeaturesCard />
             </div>
          </div>
          <ProfilePageSessionsSection />

@@ -200,6 +200,7 @@ function ConditionConfigurationForm({
          field: "description",
          id: crypto.randomUUID(),
          operator: "contains" as const,
+         type: "string" as const,
          value: "",
       };
       onUpdate(nodeId, { conditions: [...data.conditions, newCondition] });

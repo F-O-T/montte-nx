@@ -2,11 +2,11 @@ import type {
    Action,
    ConditionGroup,
    FlowData,
+   GroupEvaluationResult,
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
 import type { ActionExecutionResult } from "./actions";
-import type { ConditionGroupEvaluationResult } from "./conditions";
 import type { AutomationEvent } from "./events";
 
 export type { FlowData, TriggerConfig, TriggerType };
@@ -45,7 +45,7 @@ export type RuleEvaluationResult = {
    ruleId: string;
    ruleName: string;
    status: RuleEvaluationStatus;
-   conditionsResult?: ConditionGroupEvaluationResult[];
+   conditionsResult?: GroupEvaluationResult[];
    conditionsPassed: boolean;
    actionsResults: ActionExecutionResult[];
    startedAt: Date;

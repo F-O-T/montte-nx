@@ -112,7 +112,7 @@ function AutomationsPageContent() {
                },
             ],
          },
-         isActive: false,
+         isActive: true,
          name: generateRandomName(),
          priority: 0,
          stopOnFirstMatch: false,

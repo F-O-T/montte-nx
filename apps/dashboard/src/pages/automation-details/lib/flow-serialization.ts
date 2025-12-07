@@ -2,11 +2,13 @@ import type {
    Action,
    ActionConfig,
    ActionType,
+   Condition,
    ConditionGroup,
    FlowData,
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
+import { isConditionGroup } from "@packages/database/schema";
 import type {
    ActionNodeData,
    AutomationEdge,
@@ -73,7 +75,7 @@ export function extractRuleDataFromNodes(
    const conditions: ConditionGroup[] = conditionNodes.map((node) => {
       const data = node.data as ConditionNodeData;
       return {
-         conditions: data.conditions,
+         conditions: data.conditions as Condition[],
          id: node.id,
          operator: data.operator,
       };
@@ -179,17 +181,15 @@ export function ruleDataToNodes(
       const conditionId = condition.id || `condition-${crypto.randomUUID()}`;
       nodes.push({
          data: {
-            conditions: condition.conditions.map((c) => {
-               if ("field" in c) {
-                  return c;
-               }
-               return {
-                  field: "",
+            conditions: condition.conditions
+               .filter((c): c is Condition => !isConditionGroup(c))
+               .map((c) => ({
+                  field: c.field,
                   id: c.id,
-                  operator: "equals" as const,
-                  value: "",
-               };
-            }),
+                  operator: c.operator,
+                  type: c.type,
+                  value: c.value,
+               })),
             label: `Condição ${condition.operator}`,
             operator: condition.operator,
          },

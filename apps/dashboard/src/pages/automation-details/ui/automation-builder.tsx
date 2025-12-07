@@ -1,7 +1,7 @@
 import type {
-   ActionExecutionResult,
+   ActionExecutionLogResult,
    ActionType,
-   ConditionEvaluationResult,
+   ConditionEvaluationLogResult,
    TriggeredBy,
    TriggerType,
 } from "@packages/database/schema";
@@ -356,8 +356,8 @@ type ExecutionLog = {
    triggerType: string;
    triggeredBy: string | null;
    triggerEvent: unknown;
-   conditionsEvaluated: ConditionEvaluationResult[] | null;
-   actionsExecuted: ActionExecutionResult[] | null;
+   conditionsEvaluated: ConditionEvaluationLogResult[] | null;
+   actionsExecuted: ActionExecutionLogResult[] | null;
    errorMessage: string | null;
    durationMs: number | null;
    createdAt: Date | string;
