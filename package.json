@@ -26,7 +26,8 @@
    },
    "scripts": {
       "auth:generate": "nx run authentication:auth-schema-generate",
-      "build:all": "nx run-many -t build --parallel=3",
+      "build": "nx run-many -t build --parallel=3",
+      "start:dashboard": "nx run dashboard:start",
       "check": "nx run-many -t check --parallel=3",
       "clean": "bun run scripts/clean.ts clean",
       "clean:cache": "bun run scripts/clean.ts cache",
