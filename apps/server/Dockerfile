@@ -79,8 +79,7 @@ COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/ofx/package.json ./packages/ofx/
 COPY libraries/ofx/package.json ./libraries/ofx/
-
-
+COPY packages/stripe/package.json ./packages/stripe/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 
 # Install only production dependencies.
