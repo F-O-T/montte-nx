@@ -90,20 +90,30 @@ export const verification = pgTable(
    (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const subscription = pgTable("subscription", {
-   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
-   id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
-   periodEnd: timestamp("period_end"),
-   periodStart: timestamp("period_start"),
-   plan: text("plan").notNull(),
-   referenceId: text("reference_id").notNull(),
-   seats: integer("seats"),
-   status: text("status").default("incomplete"),
-   stripeCustomerId: text("stripe_customer_id"),
-   stripeSubscriptionId: text("stripe_subscription_id"),
-   trialEnd: timestamp("trial_end"),
-   trialStart: timestamp("trial_start"),
-});
+export const subscription = pgTable(
+   "subscription",
+   {
+      cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+      id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+      periodEnd: timestamp("period_end"),
+      periodStart: timestamp("period_start"),
+      plan: text("plan").notNull(),
+      referenceId: text("reference_id").notNull(),
+      seats: integer("seats"),
+      status: text("status").default("incomplete"),
+      stripeCustomerId: text("stripe_customer_id"),
+      stripeSubscriptionId: text("stripe_subscription_id"),
+      trialEnd: timestamp("trial_end"),
+      trialStart: timestamp("trial_start"),
+   },
+   (table) => [
+      index("subscription_stripeSubscriptionId_idx").on(
+         table.stripeSubscriptionId,
+      ),
+      index("subscription_stripeCustomerId_idx").on(table.stripeCustomerId),
+      index("subscription_referenceId_idx").on(table.referenceId),
+   ],
+);
 
 export const organization = pgTable("organization", {
    context: text("context").default("personal"),
