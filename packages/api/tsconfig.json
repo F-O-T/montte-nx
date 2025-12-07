@@ -16,6 +16,9 @@
          "path": "../utils"
       },
       {
+         "path": "../rules-engine"
+      },
+      {
          "path": "../posthog"
       },
       {

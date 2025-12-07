@@ -1,5 +1,6 @@
 {
    "dependencies": {
+      "@f-o-t/condition-evaluator": "workspace:*",
       "@packages/authentication": "workspace:*",
       "@packages/brasil-api": "workspace:*",
       "@packages/database": "workspace:*",
@@ -9,6 +10,7 @@
       "@packages/ofx": "workspace:*",
       "@packages/pdf": "workspace:*",
       "@packages/posthog": "workspace:*",
+      "@packages/rules-engine": "workspace:*",
       "@packages/utils": "workspace:*",
 
       "@trpc/client": "catalog:trpc",

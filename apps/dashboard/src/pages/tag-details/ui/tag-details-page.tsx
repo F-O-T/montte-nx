@@ -1,3 +1,4 @@
+import type { Tag as TagType } from "@packages/database/repositories/tag-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -84,11 +85,6 @@ function TagContent() {
       });
    };
 
-   const { deleteTag } = useDeleteTag({
-      onSuccess: handleDeleteSuccess,
-      tag: tag!,
-   });
-
    if (!tagId) {
       return (
          <TagPageError
@@ -101,6 +97,50 @@ function TagContent() {
    if (!tag) {
       return null;
    }
+
+   return (
+      <TagContentWithTag
+         dateRange={dateRange}
+         handleDeleteSuccess={handleDeleteSuccess}
+         handleMonthChange={handleMonthChange}
+         handleTimePeriodChange={handleTimePeriodChange}
+         openSheet={openSheet}
+         selectedMonth={selectedMonth}
+         tag={tag}
+         tagId={tagId}
+         timePeriod={timePeriod}
+      />
+   );
+}
+
+function TagContentWithTag({
+   dateRange,
+   handleDeleteSuccess,
+   handleMonthChange,
+   handleTimePeriodChange,
+   openSheet,
+   selectedMonth,
+   tag,
+   tagId,
+   timePeriod,
+}: {
+   dateRange: { startDate: Date | null; endDate: Date | null };
+   handleDeleteSuccess: () => void;
+   handleMonthChange: (month: Date) => void;
+   handleTimePeriodChange: (
+      period: TimePeriod | null,
+      range: TimePeriodDateRange,
+   ) => void;
+   openSheet: (options: { children: React.ReactNode }) => void;
+   selectedMonth: Date;
+   tag: TagType;
+   tagId: string;
+   timePeriod: TimePeriod | null;
+}) {
+   const { deleteTag } = useDeleteTag({
+      onSuccess: handleDeleteSuccess,
+      tag,
+   });
 
    return (
       <main className="space-y-4">

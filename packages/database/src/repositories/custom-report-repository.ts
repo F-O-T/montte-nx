@@ -252,10 +252,11 @@ async function buildFilterMetadata(
    };
 
    if (hasBankAccountFilter) {
+      const bankAccountIds = filterConfig.bankAccountIds as string[];
       const bankAccounts = await dbClient
          .select({ id: bankAccount.id, name: bankAccount.name })
          .from(bankAccount)
-         .where(inArray(bankAccount.id, filterConfig.bankAccountIds!));
+         .where(inArray(bankAccount.id, bankAccountIds));
       metadata.bankAccounts = bankAccounts.map((ba) => ({
          id: ba.id,
          name: ba.name || "Sem nome",
@@ -263,10 +264,11 @@ async function buildFilterMetadata(
    }
 
    if (hasCategoryFilter) {
+      const categoryIds = filterConfig.categoryIds as string[];
       const categories = await dbClient
          .select({ id: category.id, name: category.name })
          .from(category)
-         .where(inArray(category.id, filterConfig.categoryIds!));
+         .where(inArray(category.id, categoryIds));
       metadata.categories = categories.map((c) => ({
          id: c.id,
          name: c.name,
@@ -274,10 +276,11 @@ async function buildFilterMetadata(
    }
 
    if (hasCostCenterFilter) {
+      const costCenterIds = filterConfig.costCenterIds as string[];
       const costCenters = await dbClient
          .select({ id: costCenter.id, name: costCenter.name })
          .from(costCenter)
-         .where(inArray(costCenter.id, filterConfig.costCenterIds!));
+         .where(inArray(costCenter.id, costCenterIds));
       metadata.costCenters = costCenters.map((cc) => ({
          id: cc.id,
          name: cc.name,
@@ -285,10 +288,11 @@ async function buildFilterMetadata(
    }
 
    if (hasTagFilter) {
+      const tagIds = filterConfig.tagIds as string[];
       const tags = await dbClient
          .select({ id: tag.id, name: tag.name })
          .from(tag)
-         .where(inArray(tag.id, filterConfig.tagIds!));
+         .where(inArray(tag.id, tagIds));
       metadata.tags = tags.map((t) => ({
          id: t.id,
          name: t.name,

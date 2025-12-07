@@ -23,6 +23,7 @@ import {
    TrendingUp,
    Users,
    Wallet,
+   Zap,
 } from "lucide-react";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useSheet } from "@/hooks/use-sheet";
@@ -31,6 +32,7 @@ export function NavMain() {
    const { openSheet } = useSheet();
    const { pathname, searchStr } = useLocation();
    const { setOpenMobile, state } = useSidebar();
+
    const isActive = (url: string) => {
       if (!url) return false;
 
@@ -129,6 +131,15 @@ export function NavMain() {
       },
    ];
 
+   const automationItems = [
+      {
+         icon: Zap,
+         id: "automations",
+         title: "Automações",
+         url: "/$slug/automations",
+      },
+   ];
+
    return (
       <SidebarGroup className="group-data-[collapsible=icon]">
          <SidebarGroupContent className="flex flex-col gap-2">
@@ -215,6 +226,33 @@ export function NavMain() {
             )}
             <SidebarMenu>
                {categorizationItems.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                     <SidebarMenuButton
+                        asChild
+                        className={
+                           isActive(item.url)
+                              ? "bg-primary/10 text-primary rounded-lg"
+                              : ""
+                        }
+                        tooltip={item.title}
+                     >
+                        <Link
+                           onClick={() => setOpenMobile(false)}
+                           params={{}}
+                           to={item.url}
+                        >
+                           <item.icon />
+                           <span>{item.title}</span>
+                        </Link>
+                     </SidebarMenuButton>
+                  </SidebarMenuItem>
+               ))}
+            </SidebarMenu>
+            {state === "expanded" && (
+               <SidebarGroupLabel>Automação</SidebarGroupLabel>
+            )}
+            <SidebarMenu>
+               {automationItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
                      <SidebarMenuButton
                         asChild

@@ -14,6 +14,7 @@ const EnvSchema = z.object({
    MINIO_SECRET_KEY: z.string(),
    POSTHOG_HOST: z.string(),
    POSTHOG_KEY: z.string(),
+   REDIS_URL: z.string().optional().default("redis://localhost:6379"),
    RESEND_API_KEY: z.string(),
    STRIPE_BASIC_ANNUAL_PRICE_ID: z.string().optional(),
    STRIPE_BASIC_PRICE_ID: z.string().optional(),
@@ -24,6 +25,7 @@ const EnvSchema = z.object({
    VAPID_PRIVATE_KEY: z.string().optional(),
    VAPID_PUBLIC_KEY: z.string().optional(),
    VAPID_SUBJECT: z.string().optional().default("mailto:contato@montte.co"),
+   WORKER_CONCURRENCY: z.coerce.number().optional().default(5),
 });
 export type ServerEnv = z.infer<typeof EnvSchema>;
 export const serverEnv: ServerEnv = parseEnv(process.env, EnvSchema);

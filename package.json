@@ -24,7 +24,6 @@
    "scripts": {
       "auth:generate": "nx run authentication:auth-schema-generate",
       "build": "nx run-many -t build --parallel=3",
-      "start:dashboard": "nx run dashboard:start",
       "check": "nx run-many -t check --parallel=3",
       "clean": "bun run scripts/clean.ts clean",
       "clean:cache": "bun run scripts/clean.ts cache",
@@ -34,7 +33,7 @@
       "db:push:prod": "nx run database:db-push-prod",
       "db:studio:local": "nx run database:db-studio-local",
       "db:studio:prod": "nx run database:db-studio-prod",
-      "dev": "nx run-many -t dev --parallel=3 -p server dashboard ",
+      "dev": "nx run-many -t dev --parallel=3 -p server dashboard worker",
       "dev:all": "nx run-many -t dev --parallel=6",
       "dev:blog": "nx run-many -t dev --parallel=1 -p  blog ",
       "dev:content-apps": "nx run-many -t dev --parallel=3 -p  landing-page blog docs",
@@ -49,9 +48,11 @@
       "release": "nx release",
       "release:changelog": "nx release changelog",
       "release:dry": "nx release --dry-run --first-release",
+      "release:libraries": "bun run scripts/release-library.ts",
       "release:publish": "nx release publish",
       "release:version": "nx release version",
       "reset": "bun run scripts/clean.ts reset",
+      "start:dashboard": "nx run dashboard:start",
       "test": "nx run-many -t test --parallel=3",
       "typecheck": "nx run-many -t typecheck --parallel=8"
    },

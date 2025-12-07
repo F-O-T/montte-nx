@@ -15,10 +15,16 @@
    "extends": "@tooling/typescript/base.json",
    "references": [
       {
+         "path": "../../packages/queue"
+      },
+      {
          "path": "../../packages/utils"
       },
       {
          "path": "../../packages/transactional"
+      },
+      {
+         "path": "../../packages/rules-engine"
       },
       {
          "path": "../../packages/posthog"

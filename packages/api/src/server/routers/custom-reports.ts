@@ -51,7 +51,11 @@ export const customReportRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
+         const userId = resolvedCtx.session?.user.id;
+
+         if (!userId) {
+            throw new Error("User ID is required");
+         }
 
          const startDate = new Date(input.startDate);
          const endDate = new Date(input.endDate);

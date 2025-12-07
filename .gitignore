@@ -2,6 +2,7 @@
 
 # Dependencies
 .trigger
+apps/worker/worker
 .claude/**
 .mastra
 mastra.db**

@@ -8,6 +8,7 @@
       "@packages/environment": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/posthog": "workspace:*",
+      "@packages/rules-engine": "workspace:*",
       "@packages/transactional": "workspace:*",
       "@packages/utils": "workspace:*",
       "@trpc/server": "catalog:trpc",

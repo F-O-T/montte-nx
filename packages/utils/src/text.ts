@@ -1,15 +1,30 @@
 import slugfy from "slugify";
 
-export function normalizeText(text: string): string {
+export type NormalizeTextOptions = {
+   removeDiacritics?: boolean;
+   trim?: boolean;
+};
+
+export function normalizeText(
+   text: string,
+   options?: NormalizeTextOptions,
+): string {
    if (!text) return "";
-   return text
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "")
-      .trim();
+   let result = text;
+   if (options?.removeDiacritics !== false) {
+      result = result.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+   }
+   if (options?.trim !== false) {
+      result = result.trim();
+   }
+   return result;
 }
 
-export function normalizeTextLower(text: string): string {
-   return normalizeText(text).toLowerCase();
+export function normalizeTextLower(
+   text: string,
+   options?: NormalizeTextOptions,
+): string {
+   return normalizeText(text, options).toLowerCase();
 }
 
 export function createDescriptionFromText({

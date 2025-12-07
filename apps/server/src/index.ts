@@ -1,12 +1,15 @@
 import cors from "@elysiajs/cors";
 import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
+import { createRedisConnection } from "@packages/queue/connection";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { Elysia } from "elysia";
 import { auth } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
 import { posthog, posthogPlugin } from "./integrations/posthog";
+
+createRedisConnection(env.REDIS_URL);
 
 const trpcApi = createApi({
    auth,
@@ -42,12 +45,10 @@ const app = new Elysia({
          origin: (request: Request) => {
             const url = new URL(request.url);
 
-            // Allow all origins for SDK endpoints
             if (url.pathname.startsWith("/sdk")) {
                return true;
             }
 
-            // Use trusted origins for other endpoints
             const origin = request.headers.get("origin");
             const trustedOrigins = env.BETTER_AUTH_TRUSTED_ORIGINS.split(",");
             return trustedOrigins.includes(origin || "");
@@ -84,7 +85,5 @@ const app = new Elysia({
    )
    .listen(process.env.PORT ?? 9876);
 
-console.log(
-   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
-);
+console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
 export type App = typeof app;
