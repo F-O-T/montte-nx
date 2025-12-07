@@ -1,0 +1,40 @@
+{
+   "dependencies": {
+      "@packages/database": "workspace:*",
+      "@packages/queue": "workspace:*"
+   },
+   "devDependencies": {
+      "@tooling/typescript": "workspace:*",
+      "typescript": "catalog:development"
+   },
+   "exports": {
+      ".": {
+         "default": "./src/index.ts",
+         "types": "./dist/src/index.d.ts"
+      },
+      "./engine": {
+         "default": "./src/engine/index.ts",
+         "types": "./dist/src/engine/index.d.ts"
+      },
+      "./queue": {
+         "default": "./src/queue/index.ts",
+         "types": "./dist/src/queue/index.d.ts"
+      },
+      "./types": {
+         "default": "./src/types/index.ts",
+         "types": "./dist/src/types/index.d.ts"
+      }
+   },
+   "files": [
+      "dist"
+   ],
+   "license": "Apache-2.0",
+   "name": "@packages/rules-engine",
+   "private": true,
+   "scripts": {
+      "build": "tsc --build",
+      "typecheck": "bunx --bun tsc"
+   },
+   "type": "module",
+   "version": "0.1.0"
+}

@@ -30,6 +30,11 @@ import {
 import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { streamFileForProxy, uploadFile } from "@packages/files/client";
 import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
+import {
+   emitTransactionCreatedEvent,
+   emitTransactionUpdatedEvent,
+} from "@packages/rules-engine/queue";
+import type { TransactionEventData } from "@packages/rules-engine/types";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
@@ -98,6 +103,27 @@ function validateCategorySplitsForTransaction(
    if (!result.isValid) {
       throw new Error(result.errors.join("; "));
    }
+}
+
+function buildTransactionEventData(
+   transaction: NonNullable<Awaited<ReturnType<typeof findTransactionById>>>,
+   previousData?: Partial<TransactionEventData>,
+): TransactionEventData {
+   return {
+      amount: Number(transaction.amount),
+      bankAccountId: transaction.bankAccountId,
+      categoryIds: transaction.transactionCategories?.map(
+         (tc) => tc.category.id,
+      ),
+      costCenterId: transaction.costCenterId,
+      date: transaction.date.toISOString(),
+      description: transaction.description,
+      id: transaction.id,
+      organizationId: transaction.organizationId,
+      previousData,
+      tagIds: transaction.transactionTags?.map((tt) => tt.tag.id),
+      type: transaction.type as "income" | "expense" | "transfer",
+   };
 }
 
 export const transactionRouter = router({
@@ -286,6 +312,15 @@ export const transactionRouter = router({
                   console.error("Error checking budget alerts:", err);
                });
             }
+         }
+
+         if (createdTransaction) {
+            emitTransactionCreatedEvent(
+               organizationId,
+               buildTransactionEventData(createdTransaction),
+            ).catch((err: unknown) => {
+               console.error("Error emitting transaction created event:", err);
+            });
          }
 
          return {
@@ -976,6 +1011,21 @@ export const transactionRouter = router({
                input.id,
                input.data.tagIds,
             );
+         }
+
+         const finalTransaction = await findTransactionById(
+            resolvedCtx.db,
+            input.id,
+         );
+
+         if (finalTransaction) {
+            const previousData = buildTransactionEventData(existingTransaction);
+            emitTransactionUpdatedEvent(
+               organizationId,
+               buildTransactionEventData(finalTransaction, previousData),
+            ).catch((err: unknown) => {
+               console.error("Error emitting transaction updated event:", err);
+            });
          }
 
          return {

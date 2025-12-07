@@ -1,12 +1,21 @@
 import cors from "@elysiajs/cors";
 import { createApi } from "@packages/api/server";
 import { serverEnv as env } from "@packages/environment/server";
+import { createConnectionFromUrl } from "@packages/queue";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { Elysia } from "elysia";
 import { auth } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
 import { posthog, posthogPlugin } from "./integrations/posthog";
+import {
+   handleAsaasWebhook,
+   handleCustomWebhook,
+   handleStripeWebhook,
+   type WebhookRequest,
+} from "./integrations/webhooks";
+
+createConnectionFromUrl(env.REDIS_URL);
 
 const trpcApi = createApi({
    auth,
@@ -82,6 +91,68 @@ const app = new Elysia({
          parse: "none",
       },
    )
+   .post("/webhooks/stripe", async ({ request }) => {
+      const rawBody = await request.text();
+      const headers: Record<string, string | undefined> = {};
+      request.headers.forEach((value, key) => {
+         headers[key] = value;
+      });
+
+      const webhookRequest: WebhookRequest = {
+         body: JSON.parse(rawBody),
+         headers,
+         rawBody,
+      };
+
+      const result = await handleStripeWebhook(webhookRequest, db);
+      return result;
+   })
+   .post("/webhooks/asaas", async ({ request }) => {
+      const rawBody = await request.text();
+      const headers: Record<string, string | undefined> = {};
+      request.headers.forEach((value, key) => {
+         headers[key] = value;
+      });
+
+      const webhookRequest: WebhookRequest = {
+         body: JSON.parse(rawBody),
+         headers,
+         rawBody,
+      };
+
+      const result = await handleAsaasWebhook(webhookRequest, db);
+      return result;
+   })
+   .post("/webhooks/:organizationId", async ({ request, params, query }) => {
+      const rawBody = await request.text();
+      const headers: Record<string, string | undefined> = {};
+      request.headers.forEach((value, key) => {
+         headers[key] = value;
+      });
+
+      let parsedBody: unknown;
+      try {
+         parsedBody = JSON.parse(rawBody);
+      } catch {
+         parsedBody = { raw: rawBody };
+      }
+
+      const webhookRequest: WebhookRequest = {
+         body: parsedBody,
+         headers,
+         rawBody,
+      };
+
+      const eventType =
+         (query as Record<string, string>).event || "custom.event";
+      const result = await handleCustomWebhook(
+         params.organizationId,
+         eventType,
+         webhookRequest,
+         db,
+      );
+      return result;
+   })
    .listen(process.env.PORT ?? 9876);
 
 console.log(

@@ -1,0 +1,4 @@
+{
+   "extends": "@tooling/typescript/internal-package.json",
+   "references": [{ "path": "../database" }, { "path": "../queue" }]
+}

@@ -1,0 +1,32 @@
+{
+   "compilerOptions": {
+      "baseUrl": ".",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "paths": {
+         "@worker/*": ["./src/*"]
+      },
+      "skipLibCheck": true,
+      "strict": true,
+      "target": "ES2021",
+      "types": ["bun-types"]
+   },
+   "extends": "@tooling/typescript/base.json",
+   "references": [
+      {
+         "path": "../../packages/database"
+      },
+      {
+         "path": "../../packages/environment"
+      },
+      {
+         "path": "../../packages/queue"
+      },
+      {
+         "path": "../../packages/rules-engine"
+      },
+      {
+         "path": "../../packages/utils"
+      }
+   ]
+}

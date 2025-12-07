@@ -2,6 +2,7 @@ import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
 import type { PostHog } from "posthog-node";
+import { automationRouter } from "./routers/automations";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
@@ -26,6 +27,7 @@ import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 export type { ReminderResult } from "@packages/notifications/bill-reminders";
 
 export const appRouter = router({
+   automations: automationRouter,
    bankAccounts: bankAccountRouter,
    bills: billRouter,
    brasilApi: brasilApiRouter,
