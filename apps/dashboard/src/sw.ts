@@ -24,48 +24,56 @@ const API_CACHE = `api-${CACHE_VERSION}`;
 precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 
-registerRoute(
-   ({ url, request }) =>
-      url.pathname === "/share-target" && request.method === "POST",
-   async ({ request }) => {
-      try {
-         const formData = await request.formData();
-         const file = formData.get("file");
+self.addEventListener("fetch", (event: FetchEvent) => {
+   const url = new URL(event.request.url);
 
-         if (file && file instanceof File) {
-            const content = await file.text();
+   if (url.pathname === "/share-target" && event.request.method === "POST") {
+      event.respondWith(
+         (async () => {
+            try {
+               const formData = await event.request.formData();
+               const file = formData.get("file");
 
-            const clients = await self.clients.matchAll({ type: "window" });
+               if (file && file instanceof File) {
+                  const content = await file.text();
 
-            for (const client of clients) {
-               client.postMessage({
-                  data: {
-                     content,
-                     filename: file.name,
-                  },
-                  type: "SHARE_TARGET_FILE",
-               });
+                  const cache = await caches.open("share-target-temp");
+                  await cache.put(
+                     "pending-share",
+                     new Response(
+                        JSON.stringify({ content, filename: file.name }),
+                        {
+                           headers: { "Content-Type": "application/json" },
+                        },
+                     ),
+                  );
+
+                  const clients = await self.clients.matchAll({
+                     type: "window",
+                  });
+                  for (const client of clients) {
+                     client.postMessage({
+                        data: { content, filename: file.name },
+                        type: "SHARE_TARGET_FILE",
+                     });
+                  }
+
+                  return Response.redirect(
+                     "/share-target?hasContent=true",
+                     303,
+                  );
+               }
+
+               return Response.redirect("/share-target", 303);
+            } catch (error) {
+               console.error("Error handling share target:", error);
+               return Response.redirect("/share-target?error=true", 303);
             }
-
-            const cache = await caches.open("share-target-temp");
-            await cache.put(
-               "pending-share",
-               new Response(JSON.stringify({ content, filename: file.name }), {
-                  headers: { "Content-Type": "application/json" },
-               }),
-            );
-
-            return Response.redirect("/share-target?hasContent=true", 303);
-         }
-
-         return Response.redirect("/share-target", 303);
-      } catch (error) {
-         console.error("Error handling share target:", error);
-         return Response.redirect("/share-target?error=true", 303);
-      }
-   },
-   "POST",
-);
+         })(),
+      );
+      return;
+   }
+});
 
 const navigationHandler = createHandlerBoundToURL("/index.html");
 const navigationRoute = new NavigationRoute(navigationHandler, {

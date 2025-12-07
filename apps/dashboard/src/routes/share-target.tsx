@@ -28,20 +28,28 @@ export const Route = createFileRoute("/share-target")({
    component: ShareTargetComponent,
 });
 
-async function getShareDataFromCache(): Promise<{
+async function getShareDataFromCache(
+   retries = 5,
+   delay = 150,
+): Promise<{
    content: string;
    filename: string;
 } | null> {
-   try {
-      const cache = await caches.open("share-target-temp");
-      const response = await cache.match("pending-share");
-      if (response) {
-         const data = await response.json();
-         await cache.delete("pending-share");
-         return data;
+   for (let i = 0; i < retries; i++) {
+      try {
+         const cache = await caches.open("share-target-temp");
+         const response = await cache.match("pending-share");
+         if (response) {
+            const data = await response.json();
+            await cache.delete("pending-share");
+            return data;
+         }
+      } catch {
+         // Cache not available or data invalid
       }
-   } catch {
-      // Cache not available or data invalid
+      if (i < retries - 1) {
+         await new Promise((r) => setTimeout(r, delay));
+      }
    }
    return null;
 }
