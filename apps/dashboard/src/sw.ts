@@ -314,6 +314,14 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
 });
 
 self.addEventListener("fetch", (event: FetchEvent) => {
+   if (
+      event.request.url.includes("/share-target") &&
+      event.request.method === "POST"
+   ) {
+      event.respondWith(handleShareTarget(event.request));
+      return;
+   }
+
    if (event.request.method !== "GET") return;
 
    if (event.request.mode === "navigate") {
@@ -324,3 +332,45 @@ self.addEventListener("fetch", (event: FetchEvent) => {
       );
    }
 });
+
+async function handleShareTarget(request: Request): Promise<Response> {
+   try {
+      const formData = await request.formData();
+      const file = formData.get("file");
+
+      if (file && file instanceof File) {
+         const content = await file.text();
+
+         const clients = await self.clients.matchAll({ type: "window" });
+
+         for (const client of clients) {
+            client.postMessage({
+               data: {
+                  content,
+                  filename: file.name,
+               },
+               type: "SHARE_TARGET_FILE",
+            });
+         }
+
+         const url = new URL("/share-target", self.location.origin);
+         url.searchParams.set("filename", file.name);
+         url.searchParams.set("hasContent", "true");
+
+         const cache = await caches.open("share-target-temp");
+         await cache.put(
+            "pending-share",
+            new Response(JSON.stringify({ content, filename: file.name }), {
+               headers: { "Content-Type": "application/json" },
+            }),
+         );
+
+         return Response.redirect(url.toString(), 303);
+      }
+
+      return Response.redirect("/share-target", 303);
+   } catch (error) {
+      console.error("Error handling share target:", error);
+      return Response.redirect("/share-target?error=true", 303);
+   }
+}

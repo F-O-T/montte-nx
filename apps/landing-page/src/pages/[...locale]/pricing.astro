@@ -1,0 +1,79 @@
+---
+export const prerender = true;
+
+import type { SupportedLng } from "@packages/localization";
+import {
+   PricingCards,
+   PricingComparison,
+   PricingFAQ,
+   TransparencyTable,
+} from "@/components/pricing-components";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import CTA from "@/sections/CTA.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <section class="bg-background">
+         <div class="pt-24 md:pt-32 lg:pt-48">
+            <div class="mx-auto grid max-w-5xl items-end gap-4 px-6 text-center">
+               <h1 class="text-balance text-5xl font-semibold lg:text-6xl">
+                   Preços <span class="bg-linear-to-b from-foreground/50 to-foreground/95 bg-clip-text text-transparent [-webkit-text-stroke:0.5px_var(--color-foreground)]">Simples</span>
+                </h1>
+                <p class="text-muted-foreground mx-auto max-w-lg text-balance text-lg lg:text-xl">
+                   Comece grátis. Evolua conforme cresce. Sempre dono dos seus dados.
+                </p>
+            </div>
+         </div>
+      </section>
+
+      <section>
+         <div class="pb-16 pt-12 md:pb-32">
+            <div class="mx-auto max-w-5xl px-6">
+               <PricingCards client:load />
+            </div>
+         </div>
+      </section>
+
+      <section class="bg-background pb-16 md:pt-18">
+         <div class="mx-auto max-w-6xl px-6">
+            <div class="mx-auto mb-12 max-w-xl text-balance text-center md:mb-16">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                   Compare Todos os Recursos
+                </h2>
+                <p class="text-muted-foreground mt-4">
+                   Veja exatamente o que está incluído em cada plano.
+                </p>
+            </div>
+
+            <PricingComparison client:load />
+         </div>
+      </section>
+
+      <section class="py-16 md:py-24">
+         <TransparencyTable client:load />
+      </section>
+
+      <section class="py-16 md:py-24">
+         <PricingFAQ client:load />
+      </section>
+
+      <CTA lang={lang} />
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

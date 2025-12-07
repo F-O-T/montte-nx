@@ -1,0 +1,321 @@
+---
+import { Gem, Leaf, Users } from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+type FeatureValue = boolean | string;
+
+interface FeatureCategory {
+   title: string;
+   description: string;
+   features: {
+      name: string;
+      tooltip?: string;
+      spreadsheets: FeatureValue;
+      closedApps: FeatureValue;
+      montte: FeatureValue;
+   }[];
+}
+
+const categories: FeatureCategory[] = [
+   {
+      description:
+         "Ferramentas essenciais para gerenciar suas finanças com eficiência",
+      features: [
+         {
+            closedApps: true,
+            montte: true,
+            name: "Rastreamento de Transações",
+            spreadsheets: true,
+         },
+         {
+            closedApps: "5 GB",
+            montte: "Ilimitado",
+            name: "Armazenamento de Dados",
+            spreadsheets: "Apenas Local",
+         },
+         {
+            closedApps: true,
+            montte: true,
+            name: "Categorias Personalizadas",
+            spreadsheets: true,
+         },
+         {
+            closedApps: true,
+            montte: true,
+            name: "Multi-Moeda",
+            spreadsheets: false,
+         },
+         {
+            closedApps: true,
+            montte: true,
+            name: "Lembretes de Contas",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Transações Divididas",
+            spreadsheets: false,
+         },
+      ],
+      title: "Recursos Principais",
+   },
+   {
+      description: "Controle e propriedade dos seus dados financeiros",
+      features: [
+         {
+            closedApps: false,
+            montte: true,
+            name: "Propriedade Total dos Dados",
+            spreadsheets: true,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Opção de Auto-Hospedagem",
+            spreadsheets: true,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Exportação de Dados",
+            spreadsheets: true,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Código Open Source",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Sem Dependência de Fornecedor",
+            spreadsheets: true,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Trilha de Auditoria",
+            spreadsheets: false,
+         },
+      ],
+      title: "Dados e Privacidade",
+   },
+   {
+      description: "Trabalhe junto com sua equipe ou família",
+      features: [
+         {
+            closedApps: false,
+            montte: true,
+            name: "Workspaces de Equipe",
+            spreadsheets: false,
+         },
+         {
+            closedApps: true,
+            montte: true,
+            name: "Sincronização em Tempo Real",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Controle de Acesso por Função",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Orçamentos Compartilhados",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Histórico de Atividades",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Membros Ilimitados",
+            spreadsheets: false,
+         },
+      ],
+      title: "Colaboração",
+   },
+   {
+      description: "Insights para tomar melhores decisões financeiras",
+      features: [
+         {
+            closedApps: true,
+            montte: true,
+            name: "Relatórios de Gastos",
+            spreadsheets: false,
+         },
+         {
+            closedApps: true,
+            montte: true,
+            name: "Acompanhamento de Orçamento",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Dashboards Personalizados",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Análise de Tendências",
+            spreadsheets: false,
+         },
+         {
+            closedApps: false,
+            montte: true,
+            name: "Relatórios em PDF",
+            spreadsheets: false,
+         },
+      ],
+      title: "Análises",
+   },
+];
+
+const plans = [
+   {
+      cta: "Saiba Mais",
+      ctaVariant: "outline" as const,
+      icon: Leaf,
+      id: "spreadsheets",
+      name: "Planilhas",
+   },
+   {
+      cta: "Comparar",
+      ctaVariant: "default" as const,
+      highlighted: true,
+      icon: Gem,
+      id: "closedApps",
+      name: "Apps Fechados",
+   },
+   {
+      cta: "Começar",
+      ctaVariant: "outline" as const,
+      icon: Users,
+      id: "montte",
+      name: "Montte",
+   },
+];
+---
+
+<section id="comparison" class="bg-background pb-16 md:py-24">
+   <div class="mx-auto max-w-5xl md:px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4">
+         <div>
+            <div class="bg-background h-18 z-1 sticky top-0 flex items-end gap-1.5 border-b px-6 py-2 max-md:hidden">
+               <div class="text-muted-foreground text-sm font-medium">Recursos</div>
+            </div>
+
+            {categories.map((category, catIndex) => (
+               <div>
+                  <div class="relative flex h-14 flex-col justify-center px-6 md:h-28">
+                     <h3 class="font-medium">{category.title}</h3>
+                     <p class="text-muted-foreground mt-1 line-clamp-2 text-balance text-sm max-md:hidden md:-mr-24">
+                        {category.description}
+                     </p>
+                  </div>
+                  {category.features.map((feature, featureIndex) => (
+                     <div class:list={[
+                        "text-muted-foreground flex h-14 items-center border-t px-6 md:border-l",
+                        featureIndex === category.features.length - 1 && catIndex === categories.length - 1 && "border-b md:rounded-bl-xl",
+                        catIndex === 0 && featureIndex === 0 && "md:rounded-tl-xl"
+                     ]}>
+                        <div class="text-sm">{feature.name}</div>
+                     </div>
+                  ))}
+               </div>
+            ))}
+         </div>
+
+         <div class="grid md:col-span-3 md:grid-cols-3">
+            {plans.map((plan) => (
+               <div class="group">
+                  <div class:list={[
+                     plan.highlighted
+                        ? "z-1 md:bg-card md:ring-border relative md:rounded-xl md:shadow-xl md:shadow-black/10 md:ring-1"
+                        : ""
+                  ]}>
+                     <div class:list={[
+                        "h-18 sticky top-0 flex flex-col items-center justify-center gap-1.5 border-b px-4 text-center max-md:hidden lg:px-8",
+                        plan.highlighted ? "bg-card rounded-t-xl" : "bg-background pt-2"
+                     ]}>
+                        <plan.icon class="size-4" />
+                        <div class="text-sm font-medium">{plan.name}</div>
+                     </div>
+
+                     {categories.map((category, catIndex) => (
+                        <div>
+                           <div aria-hidden="true" class="h-14 md:h-28"></div>
+                           <div>
+                              {category.features.map((feature, featureIndex) => {
+                                 const value = feature[plan.id as keyof typeof feature];
+                                 const isLast = featureIndex === category.features.length - 1 && catIndex === categories.length - 1;
+
+                                 return (
+                                    <div class:list={[
+                                       "flex h-14 items-center justify-center border-t px-6 text-sm max-md:border-l",
+                                       isLast && "h-[calc(3.5rem+1px)] border-b",
+                                       "md:group-last:border-r md:group-last:first:rounded-tr-xl md:group-last:last:rounded-br-xl"
+                                    ]}>
+                                       <div>
+                                          {typeof value === "boolean" ? (
+                                             value ? (
+                                                <span class="flex size-5 items-center justify-center rounded-full font-sans text-xs font-semibold bg-emerald-500/10 text-emerald-600">
+                                                   ✓
+                                                </span>
+                                             ) : (
+                                                <span class="bg-foreground/[0.065] text-foreground/65 flex size-5 items-center justify-center rounded-full font-sans text-xs font-semibold">
+                                                   ✗
+                                                </span>
+                                             )
+                                          ) : (
+                                             <span class="text-sm">{value}</span>
+                                          )}
+                                       </div>
+                                    </div>
+                                 );
+                              })}
+                           </div>
+                        </div>
+                     ))}
+
+                     <div class="flex h-20 items-center justify-center px-4 text-sm max-md:hidden lg:px-6">
+                        {plan.id === "montte" ? (
+                           <a href="/signup" class="lg:w-full">
+                              <Button
+                                 size="sm"
+                                 className="w-full shadow-md border-[0.5px] border-white/25 shadow-black/20"
+                              >
+                                 Comece Grátis
+                              </Button>
+                           </a>
+                        ) : plan.id === "closedApps" ? (
+                           <span class="text-muted-foreground text-xs">R$49–R$499/mês</span>
+                        ) : (
+                           <span class="text-muted-foreground text-xs">Trabalho manual</span>
+                        )}
+                     </div>
+                  </div>
+               </div>
+            ))}
+         </div>
+      </div>
+   </div>
+</section>

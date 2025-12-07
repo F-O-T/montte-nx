@@ -1,0 +1,673 @@
+---
+export const prerender = true;
+
+import {
+   ArrowRight,
+   BarChart3,
+   Check,
+   ChevronDown,
+   FileText,
+   Github,
+   Globe,
+   Link as LinkIcon,
+   RefreshCw,
+   ScanLine,
+   Search,
+   Split,
+   Tag,
+   Users,
+   Wallet,
+   Zap,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
+import { Button } from "@packages/ui/components/button";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+
+const problemPoints = [
+   "Digitar transações manualmente leva de 5 a 10 minutos por dia",
+   "Erros de categorização se acumulam com o tempo",
+   "Dados faltando criam lacunas na visibilidade financeira",
+   "A maioria dos apps não lida com transações divididas (despesas compartilhadas, alocação por projeto)",
+];
+
+const instantEntryFeatures = [
+   {
+      icon: "Zap",
+      points: [
+         'Digite "café" → sugere automaticamente "Alimentação"',
+         'Digite "2000" → lembra o valor do seu salário',
+         "Veja transações recentes → copie lançamentos similares com um clique",
+         "Defina padrões recorrentes → preenche automaticamente no próximo mês",
+      ],
+      title: "Detecção Inteligente de Valor e Categoria",
+   },
+   {
+      icon: "Globe",
+      points: [
+         "Especifique a moeda da transação",
+         "Conversão de câmbio em tempo real",
+         "Acompanhe despesas em qualquer moeda",
+         "Rastreamento automático de câmbio para relatórios de despesas",
+      ],
+      title: "Suporte a Múltiplas Moedas",
+   },
+   {
+      icon: "Tag",
+      points: [
+         "Campo de notas rico (suporta markdown)",
+         "Adicione tags rapidamente",
+         'Filtre por tags (ex: "projeto-X", "dedutível-IR")',
+         "Busque transações por tags e notas",
+      ],
+      title: "Adicione Notas e Tags Instantaneamente",
+   },
+];
+
+const splitFeatures = [
+   {
+      icon: "Split",
+      points: [
+         "Divida uma transação de R$ 100 em 3 categorias",
+         "Defina valores ou porcentagens",
+         "Divisões são inteligentes (lembram seus padrões)",
+         "Divisões com um clique para padrões recorrentes",
+      ],
+      title: "Divisões Ilimitadas por Transação",
+   },
+   {
+      icon: "Users",
+      points: [
+         "Pague uma refeição compartilhada → divida o custo automaticamente",
+         "Veja quem deve para quem",
+         "Recurso de acerto de contas (com links de pagamento)",
+         "Integração automática com Venmo/PayPal (em breve)",
+      ],
+      title: "Rastreamento de Despesas Compartilhadas",
+   },
+   {
+      icon: "BarChart3",
+      points: [
+         "Aloque despesas entre projetos",
+         "Acompanhe custo por projeto (faturável vs não faturável)",
+         "Relatórios mensais de despesas por projeto",
+         "Controle de orçamento por projeto",
+      ],
+      title: "Alocação por Projeto e Centro de Custo",
+   },
+];
+
+const bankImportFeatures = [
+   {
+      icon: "RefreshCw",
+      points: [
+         "Conecte mais de 1000 bancos via padrão OFX",
+         "Sincronização diária automática (tempo real)",
+         "Detecção de transações duplicadas",
+         "Rastreamento de transações pendentes vs. compensadas",
+      ],
+      title: "Integração em Tempo Real com Bancos",
+   },
+   {
+      icon: "Search",
+      points: [
+         "AI combina importações com lançamentos manuais",
+         "Previne duplicatas automaticamente",
+         "Lida com variações de nomes de bancos",
+         "Painel de conciliação",
+      ],
+      title: "Correspondência Inteligente de Transações",
+   },
+   {
+      icon: "Wallet",
+      points: [
+         "Importe de todas as suas contas",
+         "Veja saldos de todas as contas",
+         "Painel consolidado",
+         "Exporte relatórios de conciliação",
+      ],
+      title: "Suporte a Múltiplas Contas",
+   },
+];
+
+const receiptFeatures = [
+   {
+      icon: "FileText",
+      points: [
+         "Envie PDF, imagem ou captura de tela",
+         "Vincule comprovantes às transações automaticamente",
+         "Veja miniaturas na lista de transações",
+         "Acesso ao comprovante completo com um clique",
+      ],
+      title: "Anexe Comprovantes a Qualquer Transação",
+   },
+   {
+      icon: "Search",
+      points: [
+         "Busque por nome do estabelecimento, valor, data",
+         "Organize por categoria ou projeto",
+         "Exporte comprovantes em lote (para contabilidade)",
+         "Alertas automáticos de vencimento (comprovantes de contratos)",
+      ],
+      title: "Busca e Organização de Comprovantes",
+   },
+   {
+      icon: "ScanLine",
+      points: [
+         "Leitura automática do texto do comprovante",
+         "Extração de estabelecimento, valor, itens",
+         "Categorização inteligente a partir dos itens",
+         "Cálculo automático de impostos por região",
+      ],
+      title: "Em Breve: Leitura OCR de Comprovantes",
+   },
+];
+
+const relatedFeatures = [
+   {
+      description: "Acompanhe orçamento por categoria de transação",
+      href: "/features/budgeting",
+      title: "Orçamentos que Realmente Funcionam",
+   },
+   {
+      description:
+         "Transações de contas são separadas (rastreadas de forma diferente)",
+      href: "/features/bills",
+      title: "Contas a Pagar sem Estresse",
+   },
+   {
+      description: "Todas as transações alimentam as análises",
+      href: "/features/analytics",
+      title: "Entenda seu Dinheiro com Insights Reais",
+   },
+   {
+      description: "Transações compartilhadas com a equipe",
+      href: "/features/workspaces",
+      title: "Compartilhe Finanças sem Compartilhar Tudo",
+   },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Sarah",
+      name: "Sarah M.",
+      quote: "Eu costumava gastar 30 minutos por semana categorizando transações numa planilha. O Montte importa automaticamente e sugere categorias. Economizo 2 horas por semana. E o recurso de divisão de transações é perfeito para despesas compartilhadas de projetos.",
+      role: "Designer e Fundadora",
+      tag: "Freelancer",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Alex",
+      name: "Alex K.",
+      quote: "Nossa equipe inteira usava diferentes rastreadores de despesas. Agora tudo sincroniza com o Montte. Conseguimos ver quanto cada projeto está custando. Isso deixou nossa análise de lucratividade muito mais clara.",
+      role: "CFO de Startup",
+      tag: "Equipe",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Jordan",
+      name: "Jordan T.",
+      quote: "A importação OFX mudou minha vida. Meu banco atualiza automaticamente e eu vejo tudo em tempo real. Não preciso mais ficar na dúvida se uma cobrança foi processada.",
+      role: "Coach de Independência Financeira",
+      tag: "Individual",
+   },
+];
+
+const faqs = [
+   {
+      answer:
+         "Sincronização diária automática (maioria dos bancos). Alguns oferecem atualizações em tempo real. Você também pode sincronizar manualmente a qualquer momento no app.",
+      question: "Com que frequência a conexão bancária sincroniza?",
+   },
+   {
+      answer:
+         "Sim. Usamos o protocolo OFX padrão do setor e nunca armazenamos sua senha bancária. Suas credenciais bancárias são criptografadas de ponta a ponta.",
+      question: "Minha conexão bancária é segura?",
+   },
+   {
+      answer:
+         "Suportamos mais de 1000 bancos no Brasil e no mundo. Consulte nossa lista de bancos suportados para mais detalhes.",
+      question: "Quais bancos são suportados?",
+   },
+   {
+      answer:
+         "A correspondência inteligente do Montte detecta transferências entre suas contas e as vincula automaticamente. Elas não contam duas vezes no cálculo do seu patrimônio líquido.",
+      question: "Como lidar com transferências entre minhas próprias contas?",
+   },
+   {
+      answer:
+         "Sim. Configure transações recorrentes uma vez e o Montte as registra automaticamente a cada mês. Perfeito para assinaturas e despesas regulares.",
+      question: "Posso ter lançamentos automáticos de transações recorrentes?",
+   },
+   {
+      answer:
+         "A maioria dos bancos suporta histórico de 90 a 180 dias de transações. Transações mais antigas podem ser importadas via CSV. Verifique os limites do seu banco.",
+      question: "Até onde posso importar o histórico?",
+   },
+];
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <!-- Hero Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+               <Announcement className="justify-center">
+                  <AnnouncementTag className="bg-primary text-primary-foreground">Feito para 2025</AnnouncementTag>
+                  <AnnouncementTitle>
+                     Rastreamento Inteligente de Transações
+                  </AnnouncementTitle>
+               </Announcement>
+
+               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                  Capture Cada Transação.{" "}
+                  <span class="text-primary">Automaticamente.</span>
+               </h1>
+
+               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
+                  Rastreamento inteligente de despesas sem entrada manual de dados.
+                  Registre transações em segundos. Divida-as de forma inteligente.
+                  Acompanhe comprovantes. Importe extratos bancários.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece Grátis</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Github class="size-5" />
+                        Auto-Hospedagem
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-8 text-sm text-muted-foreground">
+                  Usado por <span class="font-semibold text-foreground">mais de 500 equipes</span> rastreando{" "}
+                  <span class="font-semibold text-foreground">R$ 500M+</span> em transações
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <!-- Problem Hook Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+               <div>
+                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                     Lançar Transações Não Deveria Demorar Tanto
+                  </h2>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     A maioria dos apps de finanças força você a inserir dados manualmente. O Montte captura transações automaticamente—de importações bancárias, de lançamento manual, de categorização dividida—tudo em segundos.
+                  </p>
+               </div>
+
+               <div class="p-6 rounded-2xl bg-background border border-border/50">
+                  <h3 class="text-lg font-semibold text-foreground mb-4">Por Que Isso Importa:</h3>
+                  <ul class="space-y-3">
+                     {problemPoints.map((point) => (
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10">
+                           <span class="flex-shrink-0 mt-0.5 text-red-500">!</span>
+                           <span class="text-muted-foreground">{point}</span>
+                        </li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 1: Instant Transaction Entry -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 1
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Registre Qualquer Transação em Segundos
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Seja um depósito de renda, uma despesa ou uma transferência entre contas—o formulário inteligente do Montte entende o contexto e preenche os padrões.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {instantEntryFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Zap" && <Zap class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Globe" && <Globe class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Tag" && <Tag class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Transaction+Entry+Form"
+                  alt="Formulário de lançamento de transação com dropdown inteligente de categoria, seletor de moeda, tags"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 2: Split Transactions -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 2
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Uma Transação. Múltiplas Categorias.
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Uma conta de restaurante para um almoço de equipe. Uma despesa de projeto paga por você mas compartilhada com outros. Uma compra em volume dividida entre centros de custo. O Montte cuida de tudo.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {splitFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Split" && <Split class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Users" && <Users class="w-5 h-5 text-primary" />}
+                           {feature.icon === "BarChart3" && <BarChart3 class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Split+Transaction+View"
+                  alt="Transação única de R$ 120 dividida em 3 partes com detalhamento de valores"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 3: Bank Imports (OFX) -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 3
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Seu Banco. Seus Dados. Sincronização em Tempo Real.
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Conecte sua conta bancária uma vez. O Montte importa transações automaticamente todos os dias. Sem mais atualizações manuais de planilhas. Sem mais transações perdidas.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {bankImportFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "RefreshCw" && <RefreshCw class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Search" && <Search class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Wallet" && <Wallet class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Bank+Import+Dashboard"
+                  alt="Modal de conexão bancária com contas conectadas e transações importadas"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 4: Receipt Attachments & OCR -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 4
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Anexe Comprovantes. Esteja Pronto para Auditoria.
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Comprovante em PDF ou imagem? O Montte armazena junto com sua transação. Sem mais comprovantes perdidos. Sem mais dúvidas sobre o que era uma transação.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {receiptFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "FileText" && <FileText class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Search" && <Search class="w-5 h-5 text-primary" />}
+                           {feature.icon === "ScanLine" && <ScanLine class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Receipt+Attachment+View"
+                  alt="Transação com miniatura de comprovante anexado e modal de visualização"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Related Features Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Também Funciona Com
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
+                  Esses Recursos Funcionam Juntos
+               </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {relatedFeatures.map((feature) => (
+                  <a
+                     href={feature.href}
+                     class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
+                  >
+                     <div class="flex items-center gap-2 mb-2">
+                        <LinkIcon class="w-4 h-4 text-primary" />
+                        <h3 class="font-semibold text-foreground group-hover:text-primary transition-colors">
+                           {feature.title}
+                        </h3>
+                     </div>
+                     <p class="text-sm text-muted-foreground">{feature.description}</p>
+                  </a>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Social Proof / Testimonials Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Confiado por Equipes que Rastreiam Cada Real
+               </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {testimonials.map((testimonial) => (
+                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {testimonial.tag}
+                     </span>
+
+                     <div class="flex-1">
+                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p class="text-foreground leading-relaxed">
+                           "{testimonial.quote}"
+                        </p>
+                     </div>
+
+                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                        <img
+                           src={testimonial.avatar}
+                           alt={testimonial.name}
+                           class="w-12 h-12 rounded-full bg-muted"
+                           loading="lazy"
+                        />
+                        <div>
+                           <p class="font-semibold text-foreground">{testimonial.name}</p>
+                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                  Perguntas Frequentes
+               </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+               {faqs.map((faq) => (
+                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <summary class="flex items-center justify-between cursor-pointer list-none">
+                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                     </summary>
+                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+                  </details>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Pare de Lançar Transações Manualmente
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg">
+                  Junte-se às equipes que automatizaram o rastreamento de despesas.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece o Teste Grátis na Nuvem</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Github class="size-5" />
+                        Auto-Hospedagem no GitHub
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-6 text-sm text-muted-foreground">
+                  14 dias de teste grátis. Sem cartão de crédito. Importação completa de transações incluída.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

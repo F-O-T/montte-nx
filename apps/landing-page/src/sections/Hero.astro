@@ -1,184 +1,121 @@
 ---
-import {
-   ArrowRight,
-   Check,
-   CreditCard,
-   TrendingUp,
-   Wallet,
-} from "@lucide/astro";
+import { AlertTriangle, ArrowRight, Check, Github } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
 import {
    Announcement,
    AnnouncementTag,
    AnnouncementTitle,
 } from "@packages/ui/components/announcement";
-import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
-import {
-   Card,
-   CardAction,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
-import {
-   Item,
-   ItemActions,
-   ItemContent,
-   ItemDescription,
-   ItemGroup,
-   ItemMedia,
-   ItemSeparator,
-   ItemTitle,
-} from "@packages/ui/components/item";
-import { Separator } from "@packages/ui/components/separator";
-import HeroChart from "../components/HeroChart";
 
-interface _Props {
+interface Props {
    lang?: SupportedLng;
 }
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const features = [
-   "Importacao de extratos OFX",
-   "Categorizacao inteligente",
-   "Relatorios detalhados",
+const painPoints = [
+   "Gerenciando despesas em múltiplas planilhas?",
+   "Usando apps diferentes para contas pessoais e empresariais?",
+   "Com dificuldade para rastrear despesas compartilhadas em equipes?",
+   "Preocupado com privacidade de dados e dependência de fornecedor?",
 ];
 
-const items = [
-   {
-      amount: "R$ 8.2k",
-      change: "+12.6%",
-      changeColor: "text-primary-foreground bg-primary",
-      icon: CreditCard,
-      iconClass: "size-4 text-primary",
-      title: "Conta Corrente",
-   },
-   {
-      amount: "R$ 4.2k",
-      change: "-4.2%",
-      changeColor: "bg-destructive text-destructive-foreground",
-      icon: Wallet,
-      iconClass: "size-4 text-primary",
-      title: "Poupanca",
-   },
+const benefits = [
+   "Comece grátis hoje",
+   "Hospede no seu servidor",
+   "Propriedade total dos dados",
+   "Sem dependência de fornecedor",
 ];
 ---
 
-   <section class=" min-h-screen  " id="hero">
-      <div class="relative flex flex-col justify-center items-center py-12 sm:py-16 lg:py-24">
-         <div class="grid w-full max-w-7xl grid-cols-1 gap-12 px-4 sm:gap-16 sm:px-6 lg:gap-24 lg:px-8 xl:grid-cols-2">
-            <div class="flex flex-col justify-between gap-8">
-               <div class="flex flex-col gap-8">
-                  <div class="flex flex-col justify-between gap-4">
-                       <Announcement >
-                      <AnnouncementTag className="bg-primary text-primary-foreground">Alpha</AnnouncementTag>
-                          <AnnouncementTitle>
-                             Gestão Financeira Inteligente 
-                          </AnnouncementTitle>
-                       </Announcement>
+<section class="min-h-screen" id="hero">
+   <div class="relative flex flex-col justify-center items-center py-12 sm:py-16 lg:py-24">
+      <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+         <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div class="flex flex-col gap-8">
+               <div class="flex flex-col gap-6">
+                  <Announcement>
+                     <AnnouncementTag className="bg-primary text-primary-foreground">Código Aberto</AnnouncementTag>
+                     <AnnouncementTitle>
+                        100% Grátis e Auto-Hospedável
+                     </AnnouncementTitle>
+                  </Announcement>
 
-                     <div>
-                        <h1 class="text-2xl font-semibold sm:text-3xl lg:text-5xl">
-                           Organize suas financas de forma simples e inteligente
-                        </h1>
-                     </div>
-                     <div>
-                        <p class="text-muted-foreground text-xl">
-                           Gerencie contas, categorize transacoes, importe extratos OFX e tenha uma visao completa da sua vida financeira em um so lugar.
-                        </p>
-                     </div>
-                     <div class="flex flex-wrap items-center gap-4">
-                        <a href="https://app.montte.co/auth/sign-up" target="_blank" rel="noopener noreferrer">
-                           <Button size="lg" className="group relative overflow-hidden rounded-lg">
-                              <span>Comecar agora</span>
-                              <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                           </Button>
-                        </a>
-                        <a href="#features">
-                           <Button variant="ghost" size="lg" className="rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
-                              Saiba mais
-                           </Button>
-                        </a>
-                     </div>
+                  <h1 class="text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                     <span class="text-primary">Montte:</span> Finanças Open-Source Sob Seu Controle
+                  </h1>
+
+                  <p class="text-muted-foreground text-lg sm:text-xl">
+                     Rastreamento inteligente de despesas com workspaces colaborativos.
+                     <br class="hidden sm:block" />
+                     Com uma fração da complexidade.
+                  </p>
+
+                  <div class="flex flex-wrap items-center gap-4">
+<a href="/signup">
+                         <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                            <span>Comece Grátis na Nuvem</span>
+                            <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                         </Button>
+                      </a>
+                      <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
+                         <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                            <Github class="size-5" />
+                            Auto-Hospede via GitHub
+                         </Button>
+                      </a>
                   </div>
-                  <ul class="flex flex-col gap-4 ps-2">
-                     {features.map((feature) => (
-                        <li class="flex items-center gap-3">
-                           <div class="flex size-5 items-center justify-center rounded-full bg-primary/10">
-                              <Check class="size-3 text-primary" />
-                           </div>
-                           <p class="text-muted-foreground">{feature}</p>
+               </div>
+
+               <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
+                  {benefits.map((benefit) => (
+                     <div class="flex items-center gap-2">
+                        <div class="flex size-5 items-center justify-center rounded-full bg-primary/10">
+                           <Check class="size-3 text-primary" />
+                        </div>
+                        <span class="text-sm text-muted-foreground">{benefit}</span>
+                     </div>
+                  ))}
+               </div>
+            </div>
+
+            <div class="flex flex-col gap-6 p-6 sm:p-8 rounded-2xl bg-muted/50 border border-border/50">
+<div class="flex items-start gap-3">
+                   <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10">
+                      <AlertTriangle class="size-5 text-amber-500" />
+                   </div>
+                   <div>
+                      <h2 class="text-lg font-semibold text-foreground">
+                         Cansado de planilhas e apps espalhados?
+                      </h2>
+                      <p class="text-sm text-muted-foreground mt-1">
+                         Você não está sozinho. Veja com o que a maioria das pessoas luta:
+                      </p>
+                   </div>
+                </div>
+
+               <div class="space-y-3">
+                  <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                     Você está:
+                  </p>
+                  <ul class="space-y-3">
+                     {painPoints.map((point) => (
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-background/50 border border-border/30">
+                           <span class="flex-shrink-0 mt-0.5 text-amber-500">•</span>
+                           <span class="text-foreground">{point}</span>
                         </li>
                      ))}
                   </ul>
                </div>
+
+               <div class="pt-4 border-t border-border/50">
+                  <p class="text-center">
+                     <span class="text-primary font-semibold">Então o Montte é para você.</span>
+                  </p>
+               </div>
             </div>
-
-
-         <Card>
-            <CardHeader>
-               <CardTitle className="flex items-center gap-2">
-
-                  <div class="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                                       <TrendingUp class="size-5 text-primary" />
-
-                  </div>
-                  R$ 12.450,00
-                                                 <span class="text-primary text-sm font-semibold">+5%</span>
-
-               </CardTitle>
-               <CardDescription>
-                  Saldo total das suas contas
-               </CardDescription>
-               <CardAction>
-                                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg font-normal">
-                               Detalhes
-                            </Button>
-
-               </CardAction>
-            </CardHeader>
-
-            <CardContent className="space-y-2">
-
-
-                   <ItemGroup className="gap-2">
-                      {items.map((item, index) => (
-                         <>
-                            <Item size={item.size} className={item.className}>
-                               <ItemMedia variant='icon' className={item.mediaClass}>
-                                  <item.icon class={item.iconClass} />
-                               </ItemMedia>
-                               <ItemContent>
-                                  <ItemTitle className={item.titleClass}>{item.title}</ItemTitle>
-                               </ItemContent>
-                        <ItemActions >
-                       <Announcement >
-                              <AnnouncementTag className={item.changeColor}>{item.change}</AnnouncementTag>
-                          <AnnouncementTitle>
-{item.amount}
-                          </AnnouncementTitle>
-                       </Announcement>
-                               </ItemActions>
-                            </Item>
-                            {index < items.length - 1 && <ItemSeparator />}
-                         </>
-                      ))}
-                   </ItemGroup>
-
-            </CardContent>
-            <Separator/>
-
-            <CardFooter>
-                                              <HeroChart client:only />
-
-            </CardFooter>
-                      </Card>
-             </div>
-
          </div>
       </div>
-   </section>
+   </div>
+</section>

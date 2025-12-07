@@ -1,0 +1,108 @@
+---
+import type { SupportedLng } from "@packages/localization";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const stats = [
+   { icon: "⭐", label: "Estrelas no GitHub", value: "15.000+" },
+   { icon: "👥", label: "Contribuidores Open-Source", value: "500+" },
+   { icon: "🌍", label: "Países", value: "40+" },
+   { icon: "💰", label: "Implantações Auto-Hospedadas", value: "5.000+" },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Alex",
+      company: "TechCompany",
+      name: "Alex K.",
+      quote: "Finalmente, uma ferramenta financeira em que posso confiar. É open source então auditei o código, auto-hospedado então meus dados ficam no meu servidor, e a interface é linda. É assim que SaaS deveria ser construído.",
+      role: "Engenheiro Backend",
+      tag: "Desenvolvedor",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Jordan",
+      company: "",
+      name: "Jordan T.",
+      quote: "O dashboard de análises do Montte me ajudou a entender meus padrões de gastos e economizar R$50 mil por ano. Além disso, o recurso de transação dividida é revolucionário para despesas compartilhadas. Melhor parte? Sou dono dos meus dados completamente.",
+      role: "Coach de Independência Financeira",
+      tag: "Entusiasta Financeiro",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Sarah",
+      company: "",
+      name: "Sarah M.",
+      quote: "Como freelancer, preciso separar despesas empresariais das pessoais, rastrear faturas e exportar relatórios fiscais trimestralmente. Montte faz tudo isso lindamente. E é open source então posso confiar meus dados financeiros.",
+      role: "Designer e Fundadora de Produto",
+      tag: "Freelancer",
+   },
+];
+---
+
+<section id="social-proof" class="py-16 md:py-24 bg-muted/50">
+   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 md:mb-16">
+         <span class="text-primary text-sm font-medium uppercase tracking-wider">
+            Prova Social
+         </span>
+         <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+            Confiado por Desenvolvedores e Entusiastas Financeiros
+         </h2>
+         <p class="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            Usado por equipes e indivíduos que se preocupam com privacidade, controle e transparência.
+         </p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-20">
+         {stats.map((stat) => (
+            <div class="text-center p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-colors">
+               <span class="text-3xl md:text-4xl block mb-2">{stat.icon}</span>
+               <span class="text-2xl md:text-3xl font-bold text-foreground block">
+                  {stat.value}
+               </span>
+               <span class="text-sm text-muted-foreground">{stat.label}</span>
+            </div>
+         ))}
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+         {testimonials.map((testimonial) => (
+            <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/5">
+               <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                  {testimonial.tag}
+               </span>
+               
+               <div class="flex-1">
+                  <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                  <p class="text-foreground leading-relaxed">
+                     "{testimonial.quote}"
+                  </p>
+               </div>
+
+               <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                  <img
+                     src={testimonial.avatar}
+                     alt={testimonial.name}
+                     class="w-12 h-12 rounded-full bg-muted"
+                     loading="lazy"
+                  />
+                  <div>
+                     <p class="font-semibold text-foreground">{testimonial.name}</p>
+                     <p class="text-sm text-muted-foreground">
+                        {testimonial.role}
+                        {testimonial.company && (
+                           <span> @ {testimonial.company}</span>
+                        )}
+                     </p>
+                  </div>
+               </div>
+            </div>
+         ))}
+      </div>
+   </div>
+</section>

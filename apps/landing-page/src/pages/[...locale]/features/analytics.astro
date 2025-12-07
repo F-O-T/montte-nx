@@ -1,0 +1,675 @@
+---
+export const prerender = true;
+
+import {
+   AlertCircle,
+   ArrowRight,
+   BarChart3,
+   Check,
+   ChevronDown,
+   Clock,
+   Eye,
+   FileText,
+   Layers,
+   LineChart,
+   Link as LinkIcon,
+   PieChart,
+   Target,
+   TrendingUp,
+   Wallet,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
+import { Button } from "@packages/ui/components/button";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+
+const problemPoints = [
+   "Você tem transações. Mas entende seus padrões de gastos?",
+   "Está gastando mais ou menos do que no mês passado?",
+   "Para onde o dinheiro realmente está indo?",
+   "A maioria dos apps despeja dados brutos. O Montte transforma dados em insights.",
+];
+
+const cashFlowFeatures = [
+   {
+      icon: "LineChart",
+      points: [
+         "Linha de receitas (azul)",
+         "Linha de despesas (vermelho)",
+         "Fluxo de caixa líquido (barras verde/vermelho)",
+         "Período de datas personalizável",
+      ],
+      title: "Gráficos de Fluxo de Caixa",
+   },
+   {
+      icon: "TrendingUp",
+      points: [
+         "Identifique gastos sazonais (maior em dezembro?)",
+         "Tendências mensais/anuais",
+         "Linha de tendência (receita crescendo? despesas diminuindo?)",
+         "Detecção de anomalias (meses incomuns destacados)",
+      ],
+      title: "Reconhecimento de Padrões",
+   },
+   {
+      icon: "Eye",
+      points: [
+         "Clique em um mês → veja todas as transações",
+         "Filtre por categoria",
+         "Compare com períodos anteriores",
+         "Exporte relatórios detalhados",
+      ],
+      title: "Análise Detalhada",
+   },
+];
+
+const evolutionFeatures = [
+   {
+      icon: "Wallet",
+      points: [
+         "Ativos (saldos bancários, investimentos)",
+         "Passivos (dívida do cartão, empréstimos)",
+         "Patrimônio líquido ao longo do tempo",
+         "Progressão mensal",
+      ],
+      title: "Acompanhamento do Patrimônio",
+   },
+   {
+      icon: "PieChart",
+      points: [
+         "Gráfico de pizza: onde o patrimônio está alocado",
+         "Por tipo de conta (corrente, poupança, investimento)",
+         "Atribuição de crescimento",
+         "Acompanhamento de volatilidade",
+      ],
+      title: "Detalhamento de Ativos",
+   },
+   {
+      icon: "Target",
+      points: [
+         "Meta de patrimônio líquido",
+         "Progresso em direção à meta",
+         "Prazo para atingir o objetivo",
+         "Contribuição mensal necessária",
+      ],
+      title: "Visualização de Metas",
+   },
+];
+
+const categoryFeatures = [
+   {
+      icon: "PieChart",
+      points: [
+         "Gráfico de pizza ou barras de gastos por categoria",
+         "Principais categorias de gastos destacadas",
+         "Comparação mês a mês",
+         "Porcentagem do gasto total",
+      ],
+      title: "Detalhamento por Categoria",
+   },
+   {
+      icon: "BarChart3",
+      points: [
+         "Receita vs gastos por projeto",
+         "Métricas de lucratividade",
+         "Detalhamento de custos por projeto",
+         "Análise de horas faturáveis vs não faturáveis",
+      ],
+      title: "Análise de Projetos",
+   },
+   {
+      icon: "Layers",
+      points: [
+         "Gastos por centro de custo",
+         "Orçamento vs realizado por centro de custo",
+         "Regras de alocação (dividir custos entre centros)",
+         "Análise por departamento",
+      ],
+      title: "Relatórios por Centro de Custo",
+   },
+];
+
+const plannedVsActualFeatures = [
+   {
+      icon: "FileText",
+      points: [
+         "Planejado vs realizado lado a lado",
+         "Variação total (acima/abaixo)",
+         "Detalhamento de variação por categoria",
+         "Variação YTD",
+      ],
+      title: "Relatórios de Variação Orçamentária",
+   },
+   {
+      icon: "Clock",
+      points: [
+         "Taxa de pagamentos em dia",
+         "Média de dias para pagamento",
+         "Acompanhamento de pagamentos atrasados",
+         "Custos com multas",
+      ],
+      title: "Métricas de Desempenho de Pagamentos",
+   },
+   {
+      icon: "TrendingUp",
+      points: [
+         "Previsões anteriores vs resultados reais",
+         "Melhoria das previsões ao longo do tempo",
+         "Ajustes sazonais nas previsões",
+         "Métricas de confiança",
+      ],
+      title: "Precisão das Previsões",
+   },
+];
+
+const relatedFeatures = [
+   {
+      description: "Transações são a fonte de dados",
+      href: "/features/smart-transactions",
+      title: "Capture Toda Transação",
+   },
+   {
+      description: "Métricas de contas nos relatórios",
+      href: "/features/bill-tracking",
+      title: "Contas Sem Estresse",
+   },
+   {
+      description: "Comparação orçamento vs realizado",
+      href: "/features/budgeting",
+      title: "Orçamentos que Funcionam",
+   },
+   {
+      description: "Análises em nível de equipe",
+      href: "/features/collaboration",
+      title: "Compartilhe Finanças",
+   },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Taylor",
+      name: "Taylor M.",
+      quote: "O painel de evolução financeira mudou a forma como penso sobre dinheiro. Ver meu patrimônio crescer mês a mês é incrivelmente motivador. Aumentei minhas economias em 30% só pela visibilidade.",
+      role: "Usuário Individual",
+      tag: "Individual",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Morgan",
+      name: "Morgan L.",
+      quote: "Finalmente consigo ver quais projetos são lucrativos. Descobri que meu maior cliente é na verdade o menos lucrativo. As análises de projetos do Montte me ajudaram a ajustar meus preços adequadamente.",
+      role: "Dono de Agência",
+      tag: "Empresário",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=AlexK",
+      name: "Alex K.",
+      quote: "Nossa equipe financeira costumava passar horas criando relatórios no Excel. Agora só abrimos o painel do Montte nas reuniões. Economizamos 5 horas por semana.",
+      role: "Diretor Financeiro",
+      tag: "Equipe",
+   },
+];
+
+const faqs = [
+   {
+      answer:
+         "Sim. Exporte para PDF, CSV ou Excel. Totalmente formatado e pronto para compartilhar.",
+      question: "Posso exportar relatórios?",
+   },
+   {
+      answer:
+         "Até onde seus dados existirem. Da data inicial até hoje. Sem limite.",
+      question: "Até quando as análises retroagem?",
+   },
+   {
+      answer:
+         "Sim. Escolha quais gráficos exibir, reordene-os, personalização total.",
+      question: "Posso personalizar os widgets do painel?",
+   },
+   {
+      answer:
+         "Sim. Veja relatórios na moeda base ou em moeda específica. Conversão automática.",
+      question: "O Montte suporta múltiplas moedas?",
+   },
+   {
+      answer: "Sim (se você tiver permissão). Filtre por membro da equipe.",
+      question: "Posso ver gastos de membros da equipe nas análises?",
+   },
+   {
+      answer:
+         "Em tempo real. Os gráficos atualizam conforme novas transações são adicionadas.",
+      question: "Com que frequência as análises são atualizadas?",
+   },
+];
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <!-- Hero Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+               <Announcement className="justify-center">
+                  <AnnouncementTag className="bg-primary text-primary-foreground">Feito para 2025</AnnouncementTag>
+                  <AnnouncementTitle>
+                     Análises e Insights Financeiros
+                  </AnnouncementTitle>
+               </Announcement>
+
+               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                  Entenda Seu Dinheiro com{" "}
+                  <span class="text-primary">Insights Reais</span>
+               </h1>
+
+               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
+                  Painéis bonitos e interativos revelam o que realmente está acontecendo com suas finanças.
+                  Veja padrões. Identifique tendências. Tome decisões baseadas em dados.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece Grátis</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/book-demo">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Eye class="size-5" />
+                        Ver Demo do Painel
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-8 text-sm text-muted-foreground">
+                  Usuários ganham{" "}
+                  <span class="font-semibold text-foreground">3,5 horas por semana</span>{" "}
+                  de volta usando os insights do Montte
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <!-- Problem Hook Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+               <div>
+                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                     Dados Sem Insights São Inúteis
+                  </h2>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     A maioria dos apps despeja dados brutos em você. Planilhas cheias de números. Sem contexto. Sem significado.
+                     O Montte transforma seus dados financeiros em insights acionáveis que você realmente pode usar.
+                  </p>
+               </div>
+
+               <div class="p-6 rounded-2xl bg-background border border-border/50">
+                  <h3 class="text-lg font-semibold text-foreground mb-4">O Problema:</h3>
+                  <ul class="space-y-3">
+                     {problemPoints.map((point, index) => (
+                        <li class={`flex items-start gap-3 p-3 rounded-xl ${index < 3 ? 'bg-red-500/5 border border-red-500/10' : 'bg-primary/5 border border-primary/10'}`}>
+                           {index < 3 ? (
+                              <AlertCircle class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                           ) : (
+                              <Check class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                           )}
+                           <span class={index < 3 ? "text-muted-foreground" : "text-foreground"}>{point}</span>
+                        </li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 1: Cash Flow Analytics -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 1
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Veja Receitas vs. Despesas ao Longo do Tempo
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Dinheiro entrando. Dinheiro saindo. Fluxo de caixa líquido. Veja padrões sazonais e tendências de uma só vez.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {cashFlowFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "LineChart" && <LineChart class="w-5 h-5 text-primary" />}
+                           {feature.icon === "TrendingUp" && <TrendingUp class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Eye" && <Eye class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Cash+Flow+Analytics+Chart"
+                  alt="Gráfico de fluxo de caixa mostrando receitas, despesas e fluxo líquido com linhas de tendência"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 2: Financial Evolution Dashboard -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 2
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Acompanhe o Crescimento do Seu Patrimônio
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Veja seu patrimônio crescer ao longo do tempo. Visualize o impacto das suas economias e investimentos.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {evolutionFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Wallet" && <Wallet class="w-5 h-5 text-primary" />}
+                           {feature.icon === "PieChart" && <PieChart class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Target" && <Target class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Net+Worth+Evolution+Dashboard"
+                  alt="Gráfico de linha do patrimônio líquido ao longo de 12 meses com gráfico de pizza de alocação de ativos e projeção de meta"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 3: Category & Project Breakdown -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 3
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Veja Para Onde o Dinheiro Realmente Vai
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Explore categorias em detalhes. Veja a lucratividade dos projetos. Entenda a distribuição dos gastos.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {categoryFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "PieChart" && <PieChart class="w-5 h-5 text-primary" />}
+                           {feature.icon === "BarChart3" && <BarChart3 class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Layers" && <Layers class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Category+Breakdown+Charts"
+                  alt="Gráfico de pizza mostrando para onde vai o dinheiro com detalhamento por categoria e comparação mês a mês"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 4: Planned vs. Actual Analysis -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 4
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Precisão do Orçamento e Desempenho
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Quão perto você chegou do seu orçamento? Está melhorando com o tempo?
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {plannedVsActualFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "FileText" && <FileText class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Clock" && <Clock class="w-5 h-5 text-primary" />}
+                           {feature.icon === "TrendingUp" && <TrendingUp class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Budget+vs+Actual+Comparison"
+                  alt="Comparação Orçamento vs Realizado mostrando planejado, realizado e variação com métricas de desempenho"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Related Features Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Funciona Com
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
+                  Esses Recursos Trabalham Juntos
+               </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {relatedFeatures.map((feature) => (
+                  <a
+                     href={feature.href}
+                     class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
+                  >
+                     <div class="flex items-center gap-2 mb-2">
+                        <LinkIcon class="w-4 h-4 text-primary" />
+                        <h3 class="font-semibold text-foreground group-hover:text-primary transition-colors">
+                           {feature.title}
+                        </h3>
+                     </div>
+                     <p class="text-sm text-muted-foreground">{feature.description}</p>
+                  </a>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Social Proof / Testimonials Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Insights que Geram Resultados
+               </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {testimonials.map((testimonial) => (
+                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {testimonial.tag}
+                     </span>
+
+                     <div class="flex-1">
+                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p class="text-foreground leading-relaxed">
+                           "{testimonial.quote}"
+                        </p>
+                     </div>
+
+                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                        <img
+                           src={testimonial.avatar}
+                           alt={testimonial.name}
+                           class="w-12 h-12 rounded-full bg-muted"
+                           loading="lazy"
+                        />
+                        <div>
+                           <p class="font-semibold text-foreground">{testimonial.name}</p>
+                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                  Perguntas Frequentes
+               </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+               {faqs.map((faq) => (
+                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <summary class="flex items-center justify-between cursor-pointer list-none">
+                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                     </summary>
+                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+                  </details>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Comece a Entender Seu Dinheiro
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg">
+                  Obtenha insights que transformam a forma como você gerencia suas finanças.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/book-demo">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Ver Demo das Análises</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/signup">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <BarChart3 class="size-5" />
+                        Comece Grátis o Painel
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-6 text-sm text-muted-foreground">
+                  Veja a história do seu dinheiro com gráficos e relatórios interativos.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

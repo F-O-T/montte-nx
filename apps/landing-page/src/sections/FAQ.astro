@@ -1,15 +1,15 @@
 ---
 import type { SupportedLng } from "@packages/localization";
-import { FAQTabs } from "../components/faq-tabs";
+import { FAQTabs } from "@/components/faq-tabs";
 
-interface _Props {
+interface Props {
    lang?: SupportedLng;
 }
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 ---
 
-<section id="faq" class="py-16 md:py-24">
+<section id="faq" class="py-16 md:py-24 bg-muted">
    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="mb-12 space-y-4 md:mb-16">
          <span class="text-primary text-sm font-medium uppercase">FAQ</span>

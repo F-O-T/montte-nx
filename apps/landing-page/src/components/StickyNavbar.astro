@@ -17,9 +17,9 @@ const brandName = translate("common.brand.name", { lng: lang });
 
 <nav
    id="sticky-navbar"
-   class="fixed top-6 inset-x-4 h-16 bg-background/80 backdrop-blur-md border dark:border-slate-700/70 max-w-7xl mx-auto rounded-lg  z-50 opacity-0 translate-y-[-20px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-lg shadow-black/5 dark:shadow-black/20 pointer-events-none"
+   class="fixed top-0 inset-x-0 h-16 bg-background/80 backdrop-blur-md border-b dark:border-slate-700/70 z-50 shadow-sm shadow-black/5 dark:shadow-black/20"
 >
-   <div class="h-full flex items-center justify-between mx-auto px-6 relative">
+   <div class="h-full flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div
          class="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
       >
@@ -29,11 +29,11 @@ const brandName = translate("common.brand.name", { lng: lang });
          </span>
       </div>
 
-      <div class="hidden md:block ">
+      <div class="hidden md:block">
          <NavMenu lang={lang} client:load/>
       </div>
 
-      <div class="flex items-center gap-3 navbar-actions">
+      <div class="flex items-center gap-3">
          <div class="transition-transform duration-300 hover:scale-110">
             <ThemeToggler/>
          </div>
@@ -56,68 +56,17 @@ const brandName = translate("common.brand.name", { lng: lang });
          </div>
       </div>
    </div>
-
-   <div
-      class="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-transparent to-primary/20 opacity-0 transition-opacity duration-500 navbar-glow"
-   ></div>
 </nav>
 
+<div class="h-16"></div>
+
 <style>
-   #sticky-navbar.visible {
-      pointer-events: auto;
-      animation: slideInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-   }
-
-   @keyframes slideInDown {
-      0% {
-         opacity: 0;
-         transform: translateY(-20px) scale(0.95);
-      }
-      50% {
-         opacity: 1;
-         transform: translateY(-2px) scale(1.02);
-      }
-      100% {
-         opacity: 1;
-         transform: translateY(0) scale(1);
-         pointer-events: auto;
-      }
-   }
-
-   .navbar-menu {
-      animation-delay: 0.1s;
-   }
-
-   .navbar-actions {
-      animation-delay: 0.2s;
-   }
-
-   .navbar-glow {
-      pointer-events: none;
-      animation: pulse-glow 3s ease-in-out infinite;
-   }
-
-   @keyframes pulse-glow {
-      0%,
-      100% {
-         opacity: 0;
-      }
-      50% {
-         opacity: 0.1;
-      }
-   }
-
-   #sticky-navbar:hover .navbar-glow {
-      opacity: 0.2;
-      transition: opacity 0.3s ease;
-   }
-
    @supports (backdrop-filter: blur(12px)) {
       #sticky-navbar {
          backdrop-filter: blur(12px) saturate(150%);
       }
 
-      :global(.dark)#sticky-navbar {
+      :global(.dark) #sticky-navbar {
          border-color: rgba(255, 255, 255, 0.1);
       }
    }
@@ -126,36 +75,8 @@ const brandName = translate("common.brand.name", { lng: lang });
 <script>
    function initStickyNavbar() {
       const stickyNavbar = document.getElementById("sticky-navbar");
-      const heroSection = document.getElementById("hero");
 
-      if (!stickyNavbar || !heroSection) return;
-
-      let isVisible = false;
-
-      const handleScroll = () => {
-         const scrollPosition = window.scrollY;
-         const heroHeight = heroSection.offsetHeight;
-         const shouldShow = scrollPosition > heroHeight * 0.8;
-
-         if (shouldShow && !isVisible) {
-            isVisible = true;
-            stickyNavbar.classList.add("visible");
-         } else if (!shouldShow && isVisible) {
-            isVisible = false;
-            stickyNavbar.classList.remove("visible");
-         }
-      };
-
-      let ticking = false;
-      const scrollHandler = () => {
-         if (!ticking) {
-            requestAnimationFrame(() => {
-               handleScroll();
-               ticking = false;
-            });
-            ticking = true;
-         }
-      };
+      if (!stickyNavbar) return;
 
       const addSmoothScrolling = () => {
          const navLinks = stickyNavbar.querySelectorAll('a[href^="#"]');
@@ -176,10 +97,7 @@ const brandName = translate("common.brand.name", { lng: lang });
          });
       };
 
-      window.addEventListener("scroll", scrollHandler, { passive: true });
       addSmoothScrolling();
-
-      handleScroll();
    }
 
    if (document.readyState === "loading") {

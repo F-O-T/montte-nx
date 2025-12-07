@@ -1,0 +1,688 @@
+---
+export const prerender = true;
+
+import {
+   ArrowRight,
+   Check,
+   ChevronDown,
+   Code,
+   Download,
+   ExternalLink,
+   FileJson,
+   GitBranch,
+   Github,
+   Globe,
+   Heart,
+   Link as LinkIcon,
+   Lock,
+   MessageSquare,
+   Rocket,
+   Server,
+   Shield,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
+import { Button } from "@packages/ui/components/button";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+
+const problemPoints = [
+   "100% open source (Apache 2.0)",
+   "Código auditável (sem segredos)",
+   "Hospede você mesmo na sua infraestrutura",
+   "Propriedade total dos seus dados",
+   "Zero dependência de fornecedor",
+];
+
+const openSourceFeatures = [
+   {
+      icon: "Shield",
+      points: [
+         "Licença open source permissiva",
+         "Amigável para uso comercial",
+         "Use para fins pessoais ou empresariais",
+         "Modifique e redistribua livremente",
+         "Proteção de patentes incluída",
+      ],
+      title: "Licença Apache 2.0",
+   },
+   {
+      icon: "Code",
+      points: [
+         "Todo o código fonte no GitHub",
+         "Sem módulos proprietários",
+         "Sem funcionalidades de código fechado",
+         "Programa de recompensa por bugs",
+         "Auditorias de segurança da comunidade",
+      ],
+      title: "Transparência Total",
+   },
+   {
+      icon: "Check",
+      points: [
+         "Type-safe (TypeScript + strict)",
+         "Cobertura abrangente de testes",
+         "Código bem documentado",
+         "Melhores práticas de segurança",
+         "Auditorias de segurança regulares",
+      ],
+      title: "Qualidade do Código",
+   },
+];
+
+const selfHostFeatures = [
+   {
+      icon: "Server",
+      points: [
+         "Docker (Docker Compose ou Kubernetes)",
+         "Vercel (serverless)",
+         "Railway (plataforma gerenciada)",
+         "AWS, DigitalOcean, Linode (VPS)",
+         "Seu próprio servidor (on-premise)",
+         "Raspberry Pi (sim, funciona!)",
+      ],
+      title: "Opções de Deploy",
+   },
+   {
+      icon: "Rocket",
+      points: [
+         "Docker Compose: 5 minutos",
+         "Vercel: 2 minutos (um clique)",
+         "Railway: deploy com um clique",
+         "Manual: seguindo a documentação (30 minutos)",
+      ],
+      title: "Instalação Fácil",
+   },
+   {
+      icon: "Lock",
+      points: [
+         "Seu banco de dados (PostgreSQL)",
+         "Seus backups",
+         "Sua configuração de segurança",
+         "Seu SLA de disponibilidade (ou nenhum)",
+         "Sua estrutura de custos",
+      ],
+      title: "Controle Total",
+   },
+];
+
+const noLockInFeatures = [
+   {
+      icon: "Download",
+      points: [
+         "Exporte todos os dados como JSON",
+         "Exportação do histórico de transações (CSV)",
+         "Relatórios em PDF",
+         "Exportação completa do banco de dados",
+         "Sem restrições de formato",
+      ],
+      title: "Exportação Fácil de Dados",
+   },
+   {
+      icon: "FileJson",
+      points: [
+         "JSON para dados estruturados",
+         "CSV para importação em planilhas",
+         "OFX (padrão bancário)",
+         "IIF (padrão contábil)",
+         "Formatos de exportação personalizados",
+      ],
+      title: "Formatos de Dados Padrão",
+   },
+   {
+      icon: "Heart",
+      points: [
+         "Sem contratos longos",
+         "Cobrança mensal",
+         "Cancele quando quiser",
+         "Auto-hospedado é sempre gratuito",
+         "Assistência para migração disponível",
+      ],
+      title: "Sem Armadilhas",
+   },
+];
+
+const communityFeatures = [
+   {
+      icon: "GitBranch",
+      points: [
+         "Contribua com novas funcionalidades",
+         "Reporte e corrija bugs",
+         "Melhore a documentação",
+         "Traduza para outros idiomas",
+         "Melhorias de design e UX",
+      ],
+      title: "Contribuição da Comunidade",
+   },
+   {
+      icon: "Globe",
+      points: [
+         "Issues públicas no GitHub",
+         "Votação da comunidade em funcionalidades",
+         "Atualizações mensais de progresso",
+         "Discussões de design abertas a todos",
+         "Planejamento trimestral com a comunidade",
+      ],
+      title: "Roadmap Transparente",
+   },
+   {
+      icon: "MessageSquare",
+      points: [
+         "GitHub Discussions",
+         "Comunidade no Discord",
+         "Tag no Stack Overflow",
+         "Contribuições para documentação",
+         "Guias escritos pela comunidade",
+      ],
+      title: "Suporte da Comunidade",
+   },
+];
+
+const extensibilityFeatures = [
+   {
+      description: "API aberta para qualquer integração",
+      title: "Crie Integrações Personalizadas",
+   },
+   {
+      description: "Dispare ações em eventos",
+      title: "Webhooks para Automação",
+   },
+   {
+      description: "Em breve - estenda funcionalidades",
+      title: "Sistema de Plugins",
+   },
+   {
+      description: "Sem restrições para modificações",
+      title: "Totalmente Personalizável",
+   },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Privacy",
+      name: "Pesquisador de Privacidade",
+      quote: "Eu li o código do Montte. Não há coleta de dados. Sem rastreamento. Sem algoritmos vendendo recomendações. É assim que um software financeiro deveria ser.",
+      role: "Analista de Segurança",
+      tag: "Defensor da Privacidade",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=SelfHost",
+      name: "Auto-Hospedador",
+      quote: "Eu rodo o Montte no meu próprio servidor. Meus dados financeiros nunca saem da minha infraestrutura. Perfeito para quem valoriza privacidade total.",
+      role: "Desenvolvedor",
+      tag: "Auto-Hospedado",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Contributor",
+      name: "Dev Open Source",
+      quote: "Contribuir para o Montte tem sido incrível. Os mantenedores são responsivos, o código é limpo, e o roadmap é realmente moldado pela comunidade.",
+      role: "Contribuidor",
+      tag: "Contribuidor",
+   },
+];
+
+const faqs = [
+   {
+      answer:
+         "Sim. 100% gratuito e open source (Apache 2.0). A versão cloud é um serviço pago opcional.",
+      question: "O Montte é realmente gratuito e open source?",
+   },
+   {
+      answer:
+         "Sim. Você pode fazer fork, modificar e usar para qualquer finalidade (a licença Apache 2.0 permite).",
+      question: "Posso modificar o Montte para minhas necessidades?",
+   },
+   {
+      answer:
+         "Não. Você pode simplesmente usar. Contribuições são voluntárias e sempre bem-vindas.",
+      question: "Preciso contribuir com código?",
+   },
+   {
+      answer:
+         "O suporte da comunidade é gratuito. Suporte premium está disponível (Enterprise).",
+      question: "E o suporte para auto-hospedado?",
+   },
+   {
+      answer: "Sim. A licença Apache 2.0 permite uso comercial.",
+      question: "Posso usar o Montte na minha empresa?",
+   },
+   {
+      answer:
+         "Não. O código é o mesmo. A versão cloud é hospedada e mantida por nós. Auto-hospedado é por sua conta.",
+      question: "A versão cloud é diferente da auto-hospedada?",
+   },
+];
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <!-- Hero Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+               <Announcement className="justify-center">
+                  <AnnouncementTag className="bg-primary text-primary-foreground">Apache 2.0 License</AnnouncementTag>
+                  <AnnouncementTitle>
+                     100% Open Source
+                  </AnnouncementTitle>
+               </Announcement>
+
+               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                  Seus Dados. Seu Servidor.{" "}
+                  <span class="text-primary">Suas Regras.</span>
+               </h1>
+
+               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
+                  Montte é 100% open source. Sem dependência de fornecedor. Sem coleta de dados.
+                  Audite o código. Hospede em qualquer lugar. Tenha total controle dos seus dados financeiros.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <Github class="size-5" />
+                        <span>Ver no GitHub</span>
+                        <ExternalLink class="size-4" />
+                     </Button>
+                  </a>
+                  <a href="/self-host-guide">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Server class="size-5" />
+                        Fazer Deploy Agora
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-8 text-sm text-muted-foreground">
+                  <span class="font-semibold text-foreground">5.000+</span> deploys auto-hospedados.{" "}
+                  <span class="font-semibold text-foreground">15.000+</span> estrelas no GitHub.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <!-- Problem Hook Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+               <div>
+                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                     A Maioria dos Apps Financeiros Mantém Seus Dados Reféns
+                  </h2>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     Código fechado. Algoritmos de caixa preta. Venda de dados. Dependência de fornecedor.
+                     Você não tem controle. Não pode auditar o código. Não pode ser dono dos seus dados.
+                  </p>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     Montte é diferente:
+                  </p>
+               </div>
+
+               <div class="p-6 rounded-2xl bg-background border border-border/50">
+                  <h3 class="text-lg font-semibold text-foreground mb-4">Montte É Diferente:</h3>
+                  <ul class="space-y-3">
+                     {problemPoints.map((point) => (
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                           <Check class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                           <span class="text-foreground">{point}</span>
+                        </li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 1: 100% Open Source -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 1
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Leia Cada Linha do Código
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Não é apenas "open source" para marketing. Cada linha está aberta. Audite. Verifique. Confie.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {openSourceFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Shield" && <Shield class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Code" && <Code class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Check" && <Check class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=GitHub+Repository+Stats"
+                  alt="Repositório GitHub mostrando 15.000+ estrelas, 500+ contribuidores, licença Apache 2.0"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 2: Self-Host on Your Infrastructure -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 2
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Faça Deploy em Qualquer Lugar. Mantenha o Controle.
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Servidor privado. Seu data center. Suas regras. Montte funciona em qualquer lugar.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {selfHostFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Server" && <Server class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Rocket" && <Rocket class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Lock" && <Lock class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Deployment+Options"
+                  alt="Opções de deploy mostrando Docker, Vercel, Railway e provedores VPS"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 3: Zero Vendor Lock-In -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 3
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Saia Quando Quiser. Leve Seus Dados.
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Mudou de ideia? Saia do Montte. Seus dados são seus. Exporte e importe em qualquer lugar.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {noLockInFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Download" && <Download class="w-5 h-5 text-primary" />}
+                           {feature.icon === "FileJson" && <FileJson class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Heart" && <Heart class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Data+Export+Options"
+                  alt="Modal de exportação mostrando opções de formato JSON, CSV, PDF"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 4: Community & Contribution -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 4
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Faça Parte da Comunidade
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Montte é construído pela comunidade. Contribua com código. Reporte bugs. Molde o roadmap.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {communityFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "GitBranch" && <GitBranch class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Globe" && <Globe class="w-5 h-5 text-primary" />}
+                           {feature.icon === "MessageSquare" && <MessageSquare class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Community+Contributors"
+                  alt="Página de contribuidores do GitHub mostrando 500+ contribuidores e atividade da comunidade"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Extensibility Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Integrações e Extensibilidade
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
+                  Estenda o Montte do Seu Jeito
+               </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {extensibilityFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-2 mb-2">
+                        <LinkIcon class="w-4 h-4 text-primary" />
+                        <h3 class="font-semibold text-foreground">
+                           {feature.title}
+                        </h3>
+                     </div>
+                     <p class="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Social Proof / Testimonials Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Confiado por Usuários que Valorizam Privacidade
+               </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {testimonials.map((testimonial) => (
+                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {testimonial.tag}
+                     </span>
+
+                     <div class="flex-1">
+                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p class="text-foreground leading-relaxed">
+                           "{testimonial.quote}"
+                        </p>
+                     </div>
+
+                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                        <img
+                           src={testimonial.avatar}
+                           alt={testimonial.name}
+                           class="w-12 h-12 rounded-full bg-muted"
+                           loading="lazy"
+                        />
+                        <div>
+                           <p class="font-semibold text-foreground">{testimonial.name}</p>
+                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                  Perguntas Frequentes
+               </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+               {faqs.map((faq) => (
+                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <summary class="flex items-center justify-between cursor-pointer list-none">
+                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                     </summary>
+                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+                  </details>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Assuma o Controle dos Seus Dados Financeiros
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg">
+                  Open source. Sem dependência de fornecedor. Totalmente transparente.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <Github class="size-5" />
+                        <span>Ver Código no GitHub</span>
+                     </Button>
+                  </a>
+                  <a href="/self-host-guide">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Server class="size-5" />
+                        Deploy no Seu Servidor
+                     </Button>
+                  </a>
+                  <a href="/signup">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <ArrowRight class="size-5" />
+                        Começar Grátis na Cloud
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-6 text-sm text-muted-foreground">
+                  Escolha seu caminho. Seus dados. Suas regras.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

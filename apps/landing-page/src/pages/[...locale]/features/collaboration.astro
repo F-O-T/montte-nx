@@ -1,0 +1,674 @@
+---
+export const prerender = true;
+
+import {
+   Activity,
+   ArrowRight,
+   Building2,
+   Check,
+   ChevronDown,
+   Download,
+   Eye,
+   History,
+   Key,
+   Link as LinkIcon,
+   LogOut,
+   Mail,
+   MessageSquare,
+   Monitor,
+   UserCog,
+   Users,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
+import { Button } from "@packages/ui/components/button";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+
+const solutionPoints = [
+   "Convide membros da equipe em segundos",
+   "Defina permissoes granulares (Proprietario, Administrador, Membro, Visualizador)",
+   "Veja saldos compartilhados em tempo real",
+   "Acompanhe quem fez o que (logs de auditoria)",
+];
+
+const teamFeatures = [
+   {
+      icon: "Mail",
+      points: [
+         "Convide por endereco de e-mail",
+         "Defina a funcao durante o convite (Proprietario, Administrador, Membro, Visualizador)",
+         "Mensagem de convite personalizada",
+         "Revogue o acesso a qualquer momento",
+      ],
+      title: "Convites por E-mail",
+   },
+   {
+      icon: "UserCog",
+      points: [
+         "Proprietario: Controle total (gerencia cobrancas, configuracoes, membros)",
+         "Administrador: Pode gerenciar contas e membros da equipe",
+         "Membro: Pode visualizar e editar transacoes, orcamentos, contas",
+         "Visualizador: Acesso somente leitura (relatorios e dashboards)",
+      ],
+      title: "Controle de Acesso por Funcao",
+   },
+   {
+      icon: "Building2",
+      points: [
+         "Defina funcoes personalizadas com permissoes especificas",
+         'Ex: "Visualizador Financeiro" (ve relatorios, nao transacoes)',
+         "Controle granular de permissoes",
+         "Gestao de funcoes pronta para auditoria",
+      ],
+      title: "Permissoes Personalizadas (Enterprise)",
+   },
+];
+
+const sharedAccountFeatures = [
+   {
+      icon: "Users",
+      points: [
+         "Varias pessoas podem acessar a mesma conta",
+         "Atualizacoes em tempo real (todos veem o mais recente)",
+         "Sem bloqueios ou conflitos",
+         "Conciliacao automatica",
+      ],
+      title: "Acesso Multi-Usuario a Contas",
+   },
+   {
+      icon: "Eye",
+      points: [
+         "Convide para contas especificas apenas",
+         "Oculte contas sensiveis",
+         "Permissoes diferentes por conta",
+         "Acesso somente leitura para alguns membros",
+      ],
+      title: "Permissoes Granulares por Conta",
+   },
+   {
+      icon: "History",
+      points: [
+         "Veja quem fez alteracoes e quando",
+         "Historico de edicao de transacoes",
+         "Reverta alteracoes se necessario",
+         "Trilha de auditoria completa",
+      ],
+      title: "Rastreamento de Alteracoes e Responsabilidade",
+   },
+];
+
+const sessionFeatures = [
+   {
+      icon: "Monitor",
+      points: [
+         "Veja todas as sessoes de login ativas",
+         "Tipo de dispositivo e localizacao",
+         "Data e hora da ultima atividade",
+         "Logout de qualquer dispositivo com um clique",
+      ],
+      title: "Monitoramento de Sessoes Ativas",
+   },
+   {
+      icon: "LogOut",
+      points: [
+         "Remova membro da equipe → revogue todas as sessoes instantaneamente",
+         "Pessoa sai da empresa → um clique para desativar",
+         "Sem esperar por redefinicao de senha",
+         "Revogacao de acesso de emergencia",
+      ],
+      title: "Revogue o Acesso Imediatamente",
+   },
+   {
+      icon: "Key",
+      points: [
+         "Suporte a 2FA / MFA",
+         "SSO / SAML (Enterprise)",
+         "Lista de IPs permitidos (Enterprise)",
+         "Alertas de login suspeito",
+      ],
+      title: "Seguranca de Login",
+   },
+];
+
+const auditFeatures = [
+   {
+      icon: "Activity",
+      points: [
+         "Toda criacao/edicao/exclusao de transacao",
+         "Toda alteracao de configuracao",
+         "Toda acao de membro da equipe",
+         "Filtravel por usuario, conta, periodo",
+      ],
+      title: "Registro Completo de Atividades",
+   },
+   {
+      icon: "Download",
+      points: [
+         "Exporte logs de auditoria como CSV/PDF",
+         "Data e hora em cada acao",
+         "Informacoes do usuario capturadas",
+         "Pronto para auditorias",
+      ],
+      title: "Exportacao para Conformidade",
+   },
+   {
+      icon: "MessageSquare",
+      points: [
+         "Veja acoes dos membros da equipe em tempo real",
+         "Mencoes (quando alguem marca voce)",
+         "Dashboard de atividades",
+         "Historico de comentarios",
+      ],
+      title: "Feed de Atividades em Tempo Real",
+   },
+];
+
+const relatedFeatures = [
+   {
+      description: "Varias pessoas gerenciando o orcamento da equipe",
+      href: "/features/budgeting",
+      title: "Orcamentos Compartilhados",
+   },
+   {
+      description: "Atribua contas a membros especificos da equipe",
+      href: "/features/bill-tracking",
+      title: "Contas Compartilhadas",
+   },
+   {
+      description: "Analises em nivel de equipe",
+      href: "/features/analytics",
+      title: "Entenda Seu Dinheiro",
+   },
+   {
+      description: "Hospede na sua infraestrutura com sua equipe",
+      href: "/features/self-hosting",
+      title: "Seus Dados. Seu Servidor",
+   },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Emma",
+      name: "Emma & David",
+      quote: "Meu parceiro e eu finalmente temos transparencia financeira. Nos dois podemos ver para onde o dinheiro esta indo, e nao existe mais o 'em que voce gastou isso?' Montte facilitou as financas domesticas.",
+      role: "Casal",
+      tag: "Domestico",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Casey",
+      name: "Casey L.",
+      quote: "Todo o nosso estudio de design usa o Montte para despesas de projetos. Todos podem adicionar despesas, mas so eu vejo os totais e orcamentos. Controle perfeito sem microgerenciamento.",
+      role: "Dono de Estudio",
+      tag: "Equipe",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Priya",
+      name: "Priya P.",
+      quote: "Antes do Montte, nossa equipe usava 3 sistemas diferentes de controle de despesas. Agora temos uma unica fonte de verdade. Os logs de auditoria facilitam a verificacao de gastos.",
+      role: "CFO de Startup",
+      tag: "Startup",
+   },
+];
+
+const faqs = [
+   {
+      answer:
+         'Sim. Use a funcao "Visualizador"—eles podem ver dashboards e relatorios, mas nao os detalhes das transacoes.',
+      question: "Posso convidar alguem apenas para ver relatorios?",
+   },
+   {
+      answer:
+         "Eles perdem o acesso imediatamente. Todas as sessoes ativas sao revogadas. As transacoes passadas permanecem visiveis no historico.",
+      question: "O que acontece se eu remover um membro da equipe?",
+   },
+   {
+      answer:
+         'Sim. Convide alguem para a "Conta Corrente" como Administrador, mas para a "Poupanca" como Visualizador.',
+      question: "Posso definir permissoes diferentes para contas diferentes?",
+   },
+   {
+      answer:
+         "Plano Gratuito: 1 usuario. Pro: 1 usuario. Equipe: Ilimitado (pague por membro).",
+      question: "Quantos membros da equipe posso adicionar?",
+   },
+   {
+      answer:
+         "O plano Equipe escala de 2 usuarios a mais de 100. Sem limite fixo.",
+      question: "Existe um limite de membros da equipe?",
+   },
+   {
+      answer:
+         'Sim. Sara poderia ser "Administradora" na conta do Projeto A, mas "Visualizadora" no Projeto B.',
+      question:
+         "Membros da equipe podem ter funcoes diferentes para contas diferentes?",
+   },
+];
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <!-- Hero Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+               <Announcement className="justify-center">
+                  <AnnouncementTag className="bg-primary text-primary-foreground">Feito para 2025</AnnouncementTag>
+                  <AnnouncementTitle>
+                     Colaboracao em Equipe
+                  </AnnouncementTitle>
+               </Announcement>
+
+               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                  Compartilhe Financas Sem{" "}
+                  <span class="text-primary">Compartilhar Tudo</span>
+               </h1>
+
+               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
+                  Convide sua equipe. Controle o que eles veem. Mantenha dados sensiveis privados.
+                  Gerencie financas domesticas ou empresariais juntos. Chega de planilhas isoladas.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup-team">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece o Teste Gratuito para Equipes</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/enterprise">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        Ver Recursos Enterprise
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-8 text-sm text-muted-foreground">
+                  <span class="font-semibold text-foreground">Mais de 500 equipes</span> usando Montte para controle de despesas compartilhado
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <!-- Problem Hook Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+               <div>
+                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                     Financas Compartilhadas Sao Bagunca
+                  </h2>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     Despesas domesticas. Equipes freelancer com contas compartilhadas. Equipes empresariais com multiplos usuarios.
+                     Planilhas ficam desatualizadas. Mensagens no Slack se perdem. Ninguem sabe o saldo atual.
+                  </p>
+                  <p class="mt-4 text-foreground font-medium">
+                     O Montte resolve isso:
+                  </p>
+               </div>
+
+               <div class="p-6 rounded-2xl bg-background border border-border/50">
+                  <ul class="space-y-3">
+                     {solutionPoints.map((point) => (
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/10">
+                           <span class="flex-shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500/10">
+                              <Check class="w-3 h-3 text-green-500" />
+                           </span>
+                           <span class="text-foreground">{point}</span>
+                        </li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 1: Team Management & Invites -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 1
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Convide Sua Equipe em Segundos
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Adicione membros da equipe por e-mail. Eles recebem acesso instantaneo. Sem necessidade de onboarding.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {teamFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Mail" && <Mail class="w-5 h-5 text-primary" />}
+                           {feature.icon === "UserCog" && <UserCog class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Building2" && <Building2 class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Team+Management"
+                  alt="Lista de membros da equipe com funcoes e modal de convite"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 2: Shared Accounts & Permissions -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 2
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Contas Bancarias Compartilhadas Simplificadas
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Varias pessoas gerenciando a mesma conta? O Montte evita conflitos e mantem todos sincronizados.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {sharedAccountFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Users" && <Users class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Eye" && <Eye class="w-5 h-5 text-primary" />}
+                           {feature.icon === "History" && <History class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Shared+Accounts"
+                  alt="Conta compartilhada com multiplos membros e historico de alteracoes"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 3: Session Management -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 3
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Seguranca Que Voce Controla
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Veja quem esta logado. Revogue acesso imediatamente. Proteja contas compartilhadas.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {sessionFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Monitor" && <Monitor class="w-5 h-5 text-primary" />}
+                           {feature.icon === "LogOut" && <LogOut class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Key" && <Key class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Session+Management"
+                  alt="Lista de sessoes ativas com informacoes do dispositivo e botoes de revogacao"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 4: Audit Logs & Activity History -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 4
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Saiba Quem Fez o Que
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Trilha de auditoria completa para conformidade, seguranca e tranquilidade.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {auditFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Activity" && <Activity class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Download" && <Download class="w-5 h-5 text-primary" />}
+                           {feature.icon === "MessageSquare" && <MessageSquare class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Audit+Logs"
+                  alt="Feed de atividades com acoes recentes e alteracoes de membros da equipe"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Related Features Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Funciona Com
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
+                  Melhor Juntos
+               </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {relatedFeatures.map((feature) => (
+                  <a
+                     href={feature.href}
+                     class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
+                  >
+                     <div class="flex items-center gap-2 mb-2">
+                        <LinkIcon class="w-4 h-4 text-primary" />
+                        <h3 class="font-semibold text-foreground group-hover:text-primary transition-colors">
+                           {feature.title}
+                        </h3>
+                     </div>
+                     <p class="text-sm text-muted-foreground">{feature.description}</p>
+                  </a>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Social Proof / Testimonials Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Confiado por Equipes de Todos os Tamanhos
+               </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {testimonials.map((testimonial) => (
+                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {testimonial.tag}
+                     </span>
+
+                     <div class="flex-1">
+                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p class="text-foreground leading-relaxed">
+                           "{testimonial.quote}"
+                        </p>
+                     </div>
+
+                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                        <img
+                           src={testimonial.avatar}
+                           alt={testimonial.name}
+                           class="w-12 h-12 rounded-full bg-muted"
+                           loading="lazy"
+                        />
+                        <div>
+                           <p class="font-semibold text-foreground">{testimonial.name}</p>
+                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                  Perguntas Frequentes
+               </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+               {faqs.map((faq) => (
+                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <summary class="flex items-center justify-between cursor-pointer list-none">
+                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                     </summary>
+                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+                  </details>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Pare de Usar Planilhas com Sua Equipe
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg">
+                  Traga sua equipe. Controle o que eles veem. Mantenha dados sensiveis privados.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup-team">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece o Teste Gratuito para Equipes</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/book-demo">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6">
+                        Agendar Demonstracao
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-6 text-sm text-muted-foreground">
+                  Teste gratuito de 14 dias para ate 3 membros da equipe. Sem necessidade de cartao de credito.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

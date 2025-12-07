@@ -7,13 +7,30 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
-import { Menu } from "lucide-react";
+import {
+   BarChart3,
+   CalendarCheck,
+   Code,
+   Menu,
+   PiggyBank,
+   Receipt,
+   Users,
+} from "lucide-react";
 import { useState } from "react";
-import { menuItems } from "../data/menu-items";
+import { menuItems, productItems } from "../data/menu-items";
 
 interface MobileMenuProps {
    lang?: SupportedLng;
 }
+
+const productIcons: Record<string, typeof Receipt> = {
+   "/features/analytics": BarChart3,
+   "/features/bill-tracking": CalendarCheck,
+   "/features/budgeting": PiggyBank,
+   "/features/collaboration": Users,
+   "/features/open-source": Code,
+   "/features/smart-transactions": Receipt,
+};
 
 export function MobileMenu({ lang: _lang = "pt-BR" }: MobileMenuProps) {
    const [open, setOpen] = useState(false);
@@ -29,7 +46,7 @@ export function MobileMenu({ lang: _lang = "pt-BR" }: MobileMenuProps) {
             <Menu className="size-6" />
          </Button>
          <Sheet onOpenChange={setOpen} open={open}>
-            <SheetContent className="space-y-4" side="right">
+            <SheetContent className="space-y-4 overflow-y-auto" side="right">
                <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                   <SheetDescription>
@@ -37,19 +54,60 @@ export function MobileMenu({ lang: _lang = "pt-BR" }: MobileMenuProps) {
                   </SheetDescription>
                </SheetHeader>
 
-               <ul className="space-y-4 text-base px-4">
-                  {menuItems.map((item) => (
-                     <li key={item.href}>
-                        <a
-                           className="text-muted-foreground hover:text-accent-foreground block duration-150"
-                           href={item.href}
-                           onClick={() => setOpen(false)}
-                        >
-                           <span>{item.name}</span>
-                        </a>
-                     </li>
-                  ))}
-               </ul>
+               <div className="space-y-6 px-4">
+                  <div>
+                     <p className="text-sm font-medium text-foreground mb-3">
+                        Produto
+                     </p>
+                     <ul className="space-y-1">
+                        {productItems.map((item) => {
+                           const Icon = productIcons[item.href];
+                           return (
+                              <li key={item.href}>
+                                 <a
+                                    className="flex items-start gap-3 rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                                    href={item.href}
+                                    onClick={() => setOpen(false)}
+                                 >
+                                    {Icon && (
+                                       <Icon className="size-4 mt-0.5 flex-shrink-0" />
+                                    )}
+                                    <div>
+                                       <div className="text-sm font-medium leading-none text-foreground">
+                                          {item.name}
+                                       </div>
+                                       <p className="text-xs text-muted-foreground mt-1">
+                                          {item.description}
+                                       </p>
+                                    </div>
+                                 </a>
+                              </li>
+                           );
+                        })}
+                     </ul>
+                  </div>
+
+                  <div className="border-t pt-4">
+                     <ul className="space-y-1">
+                        {menuItems.map((item) => (
+                           <li key={item.href}>
+                              <a
+                                 className="flex flex-col rounded-md p-2 hover:bg-accent transition-colors"
+                                 href={item.href}
+                                 onClick={() => setOpen(false)}
+                              >
+                                 <span className="text-sm font-medium text-foreground">
+                                    {item.name}
+                                 </span>
+                                 <span className="text-xs text-muted-foreground">
+                                    {item.description}
+                                 </span>
+                              </a>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               </div>
 
                <div className="px-4 w-full mt-auto">
                   <Button className="w-full" variant="outline">

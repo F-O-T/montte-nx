@@ -1,0 +1,61 @@
+---
+import type { SupportedLng } from "@packages/localization";
+import { FeatureCarousel } from "@/components/feature-carousel";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const workspaceFeatures = [
+   {
+      description:
+         "Contas pessoais e empresariais em uma plataforma. Separe suas finanças com total clareza.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Organiza%C3%A7%C3%B5es",
+      title: "Organização Multi-Tenant",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Adicione membros da equipe aos workspaces. Convide qualquer pessoa apenas com o endereço de e-mail.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Gest%C3%A3o+de+Equipe",
+      title: "Gestão de Equipe e Convites",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Funções de Proprietário, Admin e Membro. Defina exatamente o que cada pessoa pode ver e fazer.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Controle+de+Acesso",
+      title: "Controle de Acesso por Função",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Sincronização em tempo real entre membros da equipe. Comente em transações, compartilhe orçamentos, discuta relatórios.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Colabora%C3%A7%C3%A3o",
+      title: "Colaboração no Workspace",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Monitore dispositivos e sessões ativos. Revogue acesso instantaneamente se um dispositivo for comprometido.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Sess%C3%B5es",
+      title: "Gestão de Sessões",
+      width: "narrow" as const,
+   },
+];
+---
+
+<section id="workspaces" class="py-16 md:py-24 overflow-hidden">
+   <FeatureCarousel
+      client:load
+      label="Workspaces Colaborativos"
+      title="Compartilhe Finanças Sem Compartilhar Tudo"
+      description="Seja orçamentos familiares, despesas de equipe ou finanças empresariais, compartilhe sem sacrificar o controle."
+      ctaText="Explorar recursos"
+      ctaHref="#features"
+      benefitStatement="Traga sua equipe. Controle o que eles veem. Mantenha dados sensíveis privados."
+      items={workspaceFeatures as any}
+   />
+</section>

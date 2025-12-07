@@ -14,6 +14,7 @@ import {
 } from "@packages/ui/components/credenza";
 import {
    SidebarMenu,
+   SidebarMenuButton,
    SidebarMenuItem,
    useSidebar,
 } from "@packages/ui/components/sidebar";
@@ -201,13 +202,15 @@ function NavUserContent() {
    }, [closeCredenza, setOpenMobile]);
 
    const handleOpenCredenza = useCallback(() => {
+      if (!session) return;
+      const currentSession = session;
       openCredenza({
          children: (
             <NavUserCredenza
                activeOrganization={activeOrganization}
                onLogout={handleLogoutClick}
                onNavigate={handleNavigate}
-               session={session}
+               session={currentSession}
             />
          ),
       });
