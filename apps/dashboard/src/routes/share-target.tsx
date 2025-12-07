@@ -109,8 +109,8 @@ function ShareTargetComponent() {
          }
 
          navigate({
-            search: { selectForImport: "true" },
-            to: `/${orgSlug}/bank-accounts`,
+            params: { slug: orgSlug },
+            to: "/$slug/import-ofx",
          });
       }
 

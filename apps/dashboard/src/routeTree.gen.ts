@@ -19,6 +19,7 @@ import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as SlugOnboardingRouteImport } from './routes/$slug/onboarding'
+import { Route as SlugImportOfxRouteImport } from './routes/$slug/import-ofx'
 import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
 import { Route as SlugDashboardReportsRouteImport } from './routes/$slug/_dashboard/reports'
 import { Route as SlugDashboardProfileRouteImport } from './routes/$slug/_dashboard/profile'
@@ -96,6 +97,11 @@ const AuthEmailVerificationRoute = AuthEmailVerificationRouteImport.update({
 const SlugOnboardingRoute = SlugOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => SlugRoute,
+} as any)
+const SlugImportOfxRoute = SlugImportOfxRouteImport.update({
+  id: '/import-ofx',
+  path: '/import-ofx',
   getParentRoute: () => SlugRoute,
 } as any)
 const SlugDashboardRoute = SlugDashboardRouteImport.update({
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/file-handler': typeof FileHandlerRoute
   '/pwa-redirect': typeof PwaRedirectRoute
   '/share-target': typeof ShareTargetRoute
+  '/$slug/import-ofx': typeof SlugImportOfxRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/file-handler': typeof FileHandlerRoute
   '/pwa-redirect': typeof PwaRedirectRoute
   '/share-target': typeof ShareTargetRoute
+  '/$slug/import-ofx': typeof SlugImportOfxRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -345,6 +353,7 @@ export interface FileRoutesById {
   '/pwa-redirect': typeof PwaRedirectRoute
   '/share-target': typeof ShareTargetRoute
   '/$slug/_dashboard': typeof SlugDashboardRouteWithChildren
+  '/$slug/import-ofx': typeof SlugImportOfxRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -386,6 +395,7 @@ export interface FileRouteTypes {
     | '/file-handler'
     | '/pwa-redirect'
     | '/share-target'
+    | '/$slug/import-ofx'
     | '/$slug/onboarding'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -425,6 +435,7 @@ export interface FileRouteTypes {
     | '/file-handler'
     | '/pwa-redirect'
     | '/share-target'
+    | '/$slug/import-ofx'
     | '/$slug/onboarding'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -465,6 +476,7 @@ export interface FileRouteTypes {
     | '/pwa-redirect'
     | '/share-target'
     | '/$slug/_dashboard'
+    | '/$slug/import-ofx'
     | '/$slug/onboarding'
     | '/auth/email-verification'
     | '/auth/forgot-password'
@@ -577,6 +589,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/$slug/onboarding'
       preLoaderRoute: typeof SlugOnboardingRouteImport
+      parentRoute: typeof SlugRoute
+    }
+    '/$slug/import-ofx': {
+      id: '/$slug/import-ofx'
+      path: '/import-ofx'
+      fullPath: '/$slug/import-ofx'
+      preLoaderRoute: typeof SlugImportOfxRouteImport
       parentRoute: typeof SlugRoute
     }
     '/$slug/_dashboard': {
@@ -852,11 +871,13 @@ const SlugDashboardRouteWithChildren = SlugDashboardRoute._addFileChildren(
 
 interface SlugRouteChildren {
   SlugDashboardRoute: typeof SlugDashboardRouteWithChildren
+  SlugImportOfxRoute: typeof SlugImportOfxRoute
   SlugOnboardingRoute: typeof SlugOnboardingRoute
 }
 
 const SlugRouteChildren: SlugRouteChildren = {
   SlugDashboardRoute: SlugDashboardRouteWithChildren,
+  SlugImportOfxRoute: SlugImportOfxRoute,
   SlugOnboardingRoute: SlugOnboardingRoute,
 }
 
