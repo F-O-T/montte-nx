@@ -1,7 +1,7 @@
 import { createDb } from "@packages/database/client";
 import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
 import type { TriggerType } from "@packages/database/schema";
-import { serverEnv as env } from "@packages/environment/server";
+import { workerEnv as env } from "@packages/environment/worker";
 import {
    closeRedisConnection,
    createRedisConnection,

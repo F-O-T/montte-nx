@@ -39,6 +39,9 @@ RUN bun install
 # Copy source code
 COPY . .
 
+# Build the condition-evaluator library
+RUN cd libraries/condition-evaluator && bun run build
+
 # Build the dashboard application
 ENV NODE_ENV=production
 ARG VITE_SERVER_URL
