@@ -15,6 +15,7 @@ COPY packages/environment/package.json ./packages/environment/
 COPY packages/queue/package.json ./packages/queue/
 COPY packages/rules-engine/package.json ./packages/rules-engine/
 COPY packages/utils/package.json ./packages/utils/
+COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 
 RUN bun install
 
@@ -29,32 +30,13 @@ RUN bun build \
     --outfile ./dist/index.js \
     ./apps/worker/src/index.ts
 
-FROM oven/bun:1.2.23 AS deps
-WORKDIR /app
-
-COPY bun.lock ./
-COPY package.json ./
-COPY apps/worker/package.json ./apps/worker/
-COPY tooling/typescript/package.json ./tooling/typescript/
-COPY packages/database/package.json ./packages/database/
-COPY packages/environment/package.json ./packages/environment/
-COPY packages/queue/package.json ./packages/queue/
-COPY packages/rules-engine/package.json ./packages/rules-engine/
-COPY packages/utils/package.json ./packages/utils/
-
-RUN bun install --production
-
-FROM oven/bun:alpine AS base
+FROM oven/bun:alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-ARG DATABASE_URL
-ARG REDIS_URL
-ARG WORKER_CONCURRENCY
-
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=deps /app/package.json ./package.json
+COPY --from=builder /app/package.json ./package.json
 
 CMD ["bun", "./dist/index.js"]

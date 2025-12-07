@@ -1,15 +1,5 @@
 import { z } from "zod";
 
-export const RedisConfigSchema = z.object({
-   db: z.number().optional(),
-   host: z.string(),
-   maxRetriesPerRequest: z.number().nullable().optional(),
-   password: z.string().optional(),
-   port: z.number(),
-});
-
-export type RedisConfig = z.infer<typeof RedisConfigSchema>;
-
 export const QUEUE_NAMES = ["automation", "notification"] as const;
 
 export const QueueNameSchema = z.enum(QUEUE_NAMES);

@@ -4,7 +4,7 @@ import type { TriggerType } from "@packages/database/schema";
 import { serverEnv as env } from "@packages/environment/server";
 import {
    closeRedisConnection,
-   createConnectionFromUrl,
+   createRedisConnection,
 } from "@packages/queue/connection";
 import { startAutomationConsumer } from "@packages/rules-engine/queue/consumer";
 import type { AutomationRule } from "@packages/rules-engine/types/rules";
@@ -14,7 +14,7 @@ const HEALTH_CHECK_INTERVAL_MS = 30000;
 
 const db = createDb({ databaseUrl: env.DATABASE_URL });
 
-createConnectionFromUrl(env.REDIS_URL);
+createRedisConnection(env.REDIS_URL);
 
 console.log("Starting automation worker...");
 
