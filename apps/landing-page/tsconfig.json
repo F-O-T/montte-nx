@@ -16,6 +16,9 @@
    "include": [".astro/types.d.ts", "**/*.ts", "**/*.astro", "**/*.tsx"],
    "references": [
       {
+         "path": "../../packages/utils"
+      },
+      {
          "path": "../../packages/ui"
       },
       {

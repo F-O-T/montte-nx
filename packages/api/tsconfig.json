@@ -10,5 +10,34 @@
    },
    "exclude": ["node_modules"],
    "extends": "@tooling/typescript/internal-package.json",
-   "include": ["src", "__tests__/*.test.ts"]
+   "include": ["src", "__tests__/*.test.ts"],
+   "references": [
+      {
+         "path": "../utils"
+      },
+      {
+         "path": "../posthog"
+      },
+      {
+         "path": "../pdf"
+      },
+      {
+         "path": "../ofx"
+      },
+      {
+         "path": "../notifications"
+      },
+      {
+         "path": "../localization"
+      },
+      {
+         "path": "../files"
+      },
+      {
+         "path": "../database"
+      },
+      {
+         "path": "../brasil-api"
+      }
+   ]
 }
