@@ -122,6 +122,7 @@ export const getAuthOptions = (
             createCustomerOnSignUp: true,
             stripeClient,
             stripeWebhookSecret: STRIPE_WEBHOOK_SECRET,
+
             subscription: {
                authorizeReference: async ({ user, referenceId }) => {
                   const membership = await db.query.member.findFirst({
@@ -139,6 +140,11 @@ export const getAuthOptions = (
                   );
                },
                enabled: true,
+               getCheckoutSessionParams: async () => ({
+                  params: {
+                     allow_promotion_codes: true,
+                  },
+               }),
                plans: [
                   {
                      annualDiscountPriceId:
