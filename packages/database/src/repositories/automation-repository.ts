@@ -354,7 +354,13 @@ export async function duplicateAutomationRule(
          throw AppError.notFound("Automation rule not found");
       }
 
-      const { id, createdAt, updatedAt, ...ruleData } = existingRule;
+      // biome-ignore lint/correctness/noUnusedVariables: destructuring to exclude these fields from spread
+      const {
+         id: _id,
+         createdAt: _createdAt,
+         updatedAt: _updatedAt,
+         ...ruleData
+      } = existingRule;
 
       const result = await dbClient
          .insert(automationRule)

@@ -64,7 +64,10 @@ export function extractRuleDataFromNodes(
       throw new Error("At least one action node is required");
    }
 
-   const triggerNode = triggerNodes[0]!;
+   const triggerNode = triggerNodes[0];
+   if (!triggerNode) {
+      throw new Error("Trigger node not found");
+   }
    const triggerData = triggerNode.data as TriggerNodeData;
 
    const conditions: ConditionGroup[] = conditionNodes.map((node) => {
@@ -129,7 +132,8 @@ function topologicalSort(
    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
 
    while (queue.length > 0) {
-      const id = queue.shift()!;
+      const id = queue.shift();
+      if (!id) continue;
       const node = nodeMap.get(id);
       if (node) {
          sorted.push(node);

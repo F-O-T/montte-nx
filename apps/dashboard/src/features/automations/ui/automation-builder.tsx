@@ -415,7 +415,8 @@ function ActivityPanel({ automationId }: { automationId: string }) {
                            {Array.from({ length: 4 }).map((_, i) => (
                               <Skeleton
                                  className="h-20 w-full rounded-lg"
-                                 key={i}
+                                 // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders don't reorder
+                                 key={`skeleton-${i}`}
                               />
                            ))}
                         </div>

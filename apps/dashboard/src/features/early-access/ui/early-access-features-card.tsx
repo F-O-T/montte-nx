@@ -72,7 +72,7 @@ function FeatureItem({
             <Switch
                checked={isEnrolled}
                onCheckedChange={(checked) =>
-                  onToggle(feature.flagKey!, checked)
+                  onToggle(feature.flagKey as string, checked)
                }
             />
          )}

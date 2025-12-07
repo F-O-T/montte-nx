@@ -229,7 +229,7 @@ export function AutomationCanvas({
       : null;
 
    return (
-      <div className="relative size-full">
+      <div className="relative size-full ">
          <ReactFlow
             className="bg-muted/30"
             defaultEdgeOptions={defaultEdgeOptions}

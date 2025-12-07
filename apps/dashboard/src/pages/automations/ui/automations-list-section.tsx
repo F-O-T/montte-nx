@@ -131,6 +131,7 @@ function AutomationsListContent() {
       return () => clearTimeout(timer);
    }, [searchTerm]);
 
+   // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally reset page when filters change
    useEffect(() => {
       setCurrentPage(1);
    }, [statusFilter, triggerType, pageSize]);

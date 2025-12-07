@@ -33,6 +33,7 @@
    "private": true,
    "scripts": {
       "build": "tsc --build",
+      "test": "bun test",
       "typecheck": "bunx --bun tsc"
    },
    "type": "module",

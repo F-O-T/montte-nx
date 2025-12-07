@@ -171,7 +171,7 @@ function EditAutomationContent({ automationId }: { automationId: string }) {
    };
 
    return (
-      <div className="relative -m-4 flex h-[calc(100vh-3rem)] flex-col">
+      <div className="relative -m-4 flex h-full flex-col">
          <div className="absolute left-4 top-4 z-10 flex gap-2">
             <Button asChild size="sm" variant="outline">
                <Link
@@ -317,7 +317,7 @@ function NewAutomationContent() {
    };
 
    return (
-      <div className="relative -m-4 flex h-[calc(100vh-3rem)] flex-col">
+      <div className="relative -m-4 flex h-full flex-col">
          <div className="absolute left-4 top-4 z-10 flex gap-2">
             <Button asChild size="sm" variant="outline">
                <Link
