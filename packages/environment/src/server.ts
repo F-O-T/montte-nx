@@ -2,6 +2,7 @@ import { z } from "zod";
 import { parseEnv } from "./helpers";
 
 const EnvSchema = z.object({
+   APP_URL: z.string().optional(),
    BETTER_AUTH_GOOGLE_CLIENT_ID: z.string(),
    BETTER_AUTH_GOOGLE_CLIENT_SECRET: z.string(),
    BETTER_AUTH_SECRET: z.string(),

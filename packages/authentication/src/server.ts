@@ -32,6 +32,16 @@ export interface AuthOptions {
    stripeClient: StripeClient;
    STRIPE_WEBHOOK_SECRET: string;
 }
+const getCrossSubDomainCookiesConfig = () => {
+   if (isProduction) {
+      return {
+         domain: ".montte.co",
+         enabled: true,
+      };
+   }
+   return { enabled: false };
+};
+
 export const getAuthOptions = (
    db: AuthOptions["db"],
    resendClient: AuthOptions["resendClient"],
@@ -40,11 +50,7 @@ export const getAuthOptions = (
 ) =>
    ({
       advanced: {
-         crossSubDomainCookies: {
-            domain: ".montte.co",
-            enabled: isProduction,
-         },
-
+         crossSubDomainCookies: getCrossSubDomainCookiesConfig(),
          database: { generateId: "uuid" },
       },
       database: drizzleAdapter(db, {
