@@ -263,7 +263,7 @@ export function createOfxWithMultipleTransactions(count: number): string {
    const transactions: TransactionOverrides[] = [];
    for (let i = 0; i < count; i++) {
       transactions.push({
-         amount: (i % 2 === 0 ? -1 : 1) * (100 + i * 10) + ".00",
+         amount: `${(i % 2 === 0 ? -1 : 1) * (100 + i * 10)}.00`,
          fitId: `TXN${String(i + 1).padStart(3, "0")}`,
          name: `Transaction ${i + 1}`,
          type: i % 2 === 0 ? "DEBIT" : "CREDIT",

@@ -182,7 +182,7 @@ export function parse(content: string): ParseResult<OFXDocument> {
                {
                   code: "invalid_type",
                   expected: "string",
-                  message: "Expected string, received " + typeof content,
+                  message: `Expected string, received ${typeof content}`,
                   path: [],
                },
             ]),

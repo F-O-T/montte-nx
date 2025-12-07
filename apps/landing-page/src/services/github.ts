@@ -70,21 +70,26 @@ export async function fetchGitHubContributors(
       }
 
       const data = await response.json();
-      return data.map(
-         (contributor: {
-            id: number;
-            login: string;
-            avatar_url: string;
-            html_url: string;
-            contributions: number;
-         }) => ({
-            avatar_url: contributor.avatar_url,
-            contributions: contributor.contributions,
-            html_url: contributor.html_url,
-            id: contributor.id,
-            login: contributor.login,
-         }),
-      );
+      return data
+         .filter(
+            (contributor: { contributions: number }) =>
+               contributor.contributions >= 5,
+         )
+         .map(
+            (contributor: {
+               id: number;
+               login: string;
+               avatar_url: string;
+               html_url: string;
+               contributions: number;
+            }) => ({
+               avatar_url: contributor.avatar_url,
+               contributions: contributor.contributions,
+               html_url: contributor.html_url,
+               id: contributor.id,
+               login: contributor.login,
+            }),
+         );
    } catch (error) {
       console.error("Error fetching GitHub contributors:", error);
       return [];

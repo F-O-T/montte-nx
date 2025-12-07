@@ -1,0 +1,676 @@
+---
+export const prerender = true;
+
+import {
+   AlertCircle,
+   ArrowRight,
+   BarChart3,
+   Bell,
+   Calculator,
+   CalendarClock,
+   Check,
+   CheckCircle2,
+   ChevronDown,
+   CircleDot,
+   Clock,
+   FileText,
+   Link as LinkIcon,
+   Percent,
+   Repeat,
+   Users,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
+import { Button } from "@packages/ui/components/button";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+
+const automationPoints = [
+   "Configure suas contas uma única vez",
+   "Receba lembretes antes do vencimento",
+   "Cálculo automático de juros e multas",
+   "Acompanhe o status dos pagamentos em tempo real",
+];
+
+const billCreationFeatures = [
+   {
+      icon: "Repeat",
+      points: [
+         "Crie uma conta → defina o vencimento → pronto",
+         "Recorrência: mensal, trimestral, semestral, anual",
+         "Intervalos personalizados (a cada 2 semanas, etc.)",
+         "Modelos de contas para pagamentos comuns",
+      ],
+      title: "Contas Únicas e Recorrentes",
+   },
+   {
+      icon: "CalendarClock",
+      points: [
+         "Data de vencimento (exata ou flexível)",
+         "Pagamentos parciais antes do prazo",
+         "Períodos de carência",
+         "Descontos para pagamento antecipado",
+      ],
+      title: "Condições de Pagamento Flexíveis",
+   },
+   {
+      icon: "FileText",
+      points: [
+         "Anexe boletos e notas fiscais em PDF",
+         "Adicione números de referência (ID do contrato, etc.)",
+         "Vincule a transações relacionadas",
+         "Adicione anotações e lembretes personalizados",
+      ],
+      title: "Anexos e Referências",
+   },
+];
+
+const interestFeatures = [
+   {
+      icon: "Percent",
+      points: [
+         "Salve modelos: cartão de crédito (18% APR), empréstimo (5%), etc.",
+         "Aplique o modelo → juros calculados automaticamente",
+         "Capitalização diária, mensal ou anual",
+         "Veja o saldo de juros em tempo real",
+      ],
+      title: "Modelos de Taxa de Juros",
+   },
+   {
+      icon: "AlertCircle",
+      points: [
+         "Configure multa: valor fixo ou percentual",
+         "Cobrança automática em atraso",
+         "Acompanhe multas acumuladas",
+         "Cálculo de multa visível",
+      ],
+      title: "Controle de Multas e Juros de Mora",
+   },
+   {
+      icon: "Calculator",
+      points: [
+         "Taxas de juros diferentes por período",
+         "Isenção de juros para pagamento antecipado",
+         "Taxas promocionais (0% por 12 meses)",
+         "Exporte cálculos para declaração de impostos",
+      ],
+      title: "Cálculos Personalizáveis",
+   },
+];
+
+const reminderFeatures = [
+   {
+      icon: "Clock",
+      points: [
+         "Lembre X dias antes do vencimento (configurável)",
+         "Lembre no dia do vencimento se não pago",
+         "Lembretes urgentes para contas atrasadas",
+         "Regras de escalonamento personalizadas",
+      ],
+      title: "Lembretes Inteligentes",
+   },
+   {
+      icon: "Bell",
+      points: [
+         "Lembretes por e-mail",
+         "Notificações no app",
+         "Integração com Slack (mencione o responsável)",
+         "Alertas por SMS (premium)",
+      ],
+      title: "Notificações Multicanal",
+   },
+   {
+      icon: "Users",
+      points: [
+         "Se não pago no dia X: escalone para o gerente",
+         "Se atrasado Y dias: escalone para o diretor financeiro",
+         "Roteamento por equipe (quem recebe o alerta)",
+         "Alertas condicionais (ex: só se valor > R$ 5 mil)",
+      ],
+      title: "Regras de Escalonamento",
+   },
+];
+
+const trackingFeatures = [
+   {
+      icon: "CheckCircle2",
+      points: [
+         "Registre pagamentos parciais",
+         "Marcação de pagamento total",
+         "Rastreamento de pagamentos atrasados",
+         "Detalhes da quitação",
+      ],
+      title: "Histórico e Rastreamento de Pagamentos",
+   },
+   {
+      icon: "CircleDot",
+      points: [
+         "Veja todas as contas atrasadas",
+         "Valor total em atraso",
+         "Detalhamento de dias em atraso",
+         "Juros acumulados sobre atrasos",
+      ],
+      title: "Painel de Contas Atrasadas",
+   },
+   {
+      icon: "BarChart3",
+      points: [
+         "Contas a vencer este mês",
+         "Contas a vencer nos próximos 90 dias",
+         "Tempo médio de pagamento",
+         "Tendências de desempenho de pagamentos",
+      ],
+      title: "Relatórios e Análises",
+   },
+];
+
+const relatedFeatures = [
+   {
+      description: "Vincule pagamentos de contas às transações automaticamente",
+      href: "/features/smart-transactions",
+      title: "Capture Cada Transação",
+   },
+   {
+      description: "Inclua contas no planejamento do orçamento",
+      href: "/features/budgeting",
+      title: "Orçamentos Que Realmente Funcionam",
+   },
+   {
+      description: "Atribua contas aos membros da equipe",
+      href: "/features/workspaces",
+      title: "Compartilhe Finanças Sem Compartilhar Tudo",
+   },
+   {
+      description: "Métricas de pagamento de contas em análises",
+      href: "/features/analytics",
+      title: "Entenda Seu Dinheiro com Insights Reais",
+   },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Marcus",
+      name: "Marcus T.",
+      quote: "Antes do Montte, eu tinha faturas de fornecedores espalhadas em e-mails e planilhas. Agora está tudo em um só lugar com cálculo automático de juros. Não perdemos nenhum prazo nos últimos 6 meses.",
+      role: "Empresário",
+      tag: "Pequena Empresa",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Riley",
+      name: "Riley K.",
+      quote: "Eu costumava controlar manualmente as faturas de clientes e minhas próprias contas. O sistema de lembretes é incrível—recebo alertas 3 dias antes do vencimento. Zero pagamentos atrasados no último ano.",
+      role: "Consultor Autônomo",
+      tag: "Autônomo",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Morgan",
+      name: "Morgan L.",
+      quote: "Toda nossa equipe de contas a pagar usa o Montte. As regras de escalonamento garantem que a pessoa certa seja notificada no momento certo. Reduzimos nosso tempo de processamento de contas em 40%.",
+      role: "Gerente Financeiro",
+      tag: "Equipe",
+   },
+];
+
+const faqs = [
+   {
+      answer:
+         "Sim. Quando você registra uma transação de pagamento, ela é automaticamente vinculada à conta e marcada como paga.",
+      question: "Posso vincular pagamentos de contas às transações reais?",
+   },
+   {
+      answer:
+         "Registre o pagamento parcial e o Montte atualiza o saldo restante. Você pode pagar o restante depois.",
+      question: "Como faço para registrar pagamentos parciais?",
+   },
+   {
+      answer:
+         "Sim. Configure regras de escalonamento para que os lembretes cheguem à pessoa certa no momento certo.",
+      question: "Várias pessoas podem receber lembretes de contas?",
+   },
+   {
+      answer:
+         "Sim. Configure o padrão de recorrência e ajuste o valor a cada ciclo de cobrança.",
+      question:
+         "Vocês suportam contas recorrentes com valores variáveis (como contas de luz)?",
+   },
+   {
+      answer:
+         "Sim. Exporte para PDF/CSV ou visualize relatórios de fluxo de caixa integrados mostrando as obrigações.",
+      question:
+         "Posso gerar relatórios financeiros a partir dos dados de contas?",
+   },
+   {
+      answer:
+         "Suportamos exportação em CSV. Planos Premium/Empresarial incluem integrações avançadas com sistemas contábeis.",
+      question: "O Montte integra com softwares de contabilidade?",
+   },
+];
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <!-- Hero Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+               <Announcement className="justify-center">
+                  <AnnouncementTag className="bg-primary text-primary-foreground">Feito para 2025</AnnouncementTag>
+                  <AnnouncementTitle>
+                     Gestão Inteligente de Contas
+                  </AnnouncementTitle>
+               </Announcement>
+
+               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                  Contas Sem{" "}
+                  <span class="text-primary">Estresse</span>
+               </h1>
+
+               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
+                  Acompanhe o que você deve. Saiba quando vence. Nunca mais perca um pagamento.
+                  Calcule juros automaticamente. Configure contas recorrentes em segundos.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece Grátis</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/book-demo">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        Ver Demonstração
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-8 text-sm text-muted-foreground">
+                  <span class="font-semibold text-foreground">Mais de 500 empresas</span> gerenciam{" "}
+                  <span class="font-semibold text-foreground">R$ 250M+</span> em contas a pagar pelo Montte
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <!-- Problem Hook Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+               <div>
+                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                     Gestão de Contas Não Precisa Ser Complicada
+                  </h2>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     Pagamentos atrasados custam dinheiro (juros, multas, crédito prejudicado). Perder contas é estressante.
+                     Planilhas ficam desatualizadas. Lembretes manuais não funcionam.
+                  </p>
+                  <p class="mt-4 text-foreground font-medium">
+                     O Montte automatiza tudo isso:
+                  </p>
+               </div>
+
+               <div class="p-6 rounded-2xl bg-background border border-border/50">
+                  <ul class="space-y-3">
+                     {automationPoints.map((point) => (
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/10">
+                           <span class="flex-shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500/10">
+                              <Check class="w-3 h-3 text-green-500" />
+                           </span>
+                           <span class="text-foreground">{point}</span>
+                        </li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 1: Smart Bill Creation -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 1
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Crie Contas em Segundos
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Conta única ou recorrente? Data fixa ou flexível? O Montte cuida de tudo.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {billCreationFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Repeat" && <Repeat class="w-5 h-5 text-primary" />}
+                           {feature.icon === "CalendarClock" && <CalendarClock class="w-5 h-5 text-primary" />}
+                           {feature.icon === "FileText" && <FileText class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Bill+Creation+Form"
+                  alt="Formulário de criação de conta com seletor de recorrência e data de vencimento"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 2: Automatic Interest & Penalties -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 2
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Calcule Juros Automaticamente
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Dívida de cartão de crédito, empréstimos, contas atrasadas—o Montte calcula juros e multas sem fazer conta na mão.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {interestFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Percent" && <Percent class="w-5 h-5 text-primary" />}
+                           {feature.icon === "AlertCircle" && <AlertCircle class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Calculator" && <Calculator class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Interest+Calculator"
+                  alt="Conta com modelo de taxa de juros mostrando acúmulo ao longo do tempo e detalhamento total"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 3: Payment Reminders & Alerts -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 3
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Nunca Mais Perca um Prazo
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Notificações inteligentes avisam quando as contas vencem—antes de você atrasar.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {reminderFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Clock" && <Clock class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Bell" && <Bell class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Users" && <Users class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Reminder+Settings"
+                  alt="Conta com configurações de lembrete, canais de notificação e regras de escalonamento"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 4: Payment Status & Tracking -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 4
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Acompanhe o Status dos Pagamentos em Tempo Real
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Não paga, parcialmente paga, paga, atrasada—veja o status de cada conta de uma só vez.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {trackingFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "CheckCircle2" && <CheckCircle2 class="w-5 h-5 text-primary" />}
+                           {feature.icon === "CircleDot" && <CircleDot class="w-5 h-5 text-primary" />}
+                           {feature.icon === "BarChart3" && <BarChart3 class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Payment+Status+Dashboard"
+                  alt="Lista de contas com badges de status e painel de resumo de atrasos"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Related Features Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Funciona Com
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
+                  Melhor Juntos
+               </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {relatedFeatures.map((feature) => (
+                  <a
+                     href={feature.href}
+                     class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
+                  >
+                     <div class="flex items-center gap-2 mb-2">
+                        <LinkIcon class="w-4 h-4 text-primary" />
+                        <h3 class="font-semibold text-foreground group-hover:text-primary transition-colors">
+                           {feature.title}
+                        </h3>
+                     </div>
+                     <p class="text-sm text-muted-foreground">{feature.description}</p>
+                  </a>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Social Proof / Testimonials Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Utilizado por Equipes que Gerenciam Milhões em Contas a Pagar
+               </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {testimonials.map((testimonial) => (
+                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {testimonial.tag}
+                     </span>
+
+                     <div class="flex-1">
+                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p class="text-foreground leading-relaxed">
+                           "{testimonial.quote}"
+                        </p>
+                     </div>
+
+                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                        <img
+                           src={testimonial.avatar}
+                           alt={testimonial.name}
+                           class="w-12 h-12 rounded-full bg-muted"
+                           loading="lazy"
+                        />
+                        <div>
+                           <p class="font-semibold text-foreground">{testimonial.name}</p>
+                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                  Perguntas Frequentes
+               </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+               {faqs.map((faq) => (
+                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <summary class="flex items-center justify-between cursor-pointer list-none">
+                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                     </summary>
+                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+                  </details>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Pare de Se Estressar com Contas
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg">
+                  Junte-se a centenas de empresas que automatizaram suas contas a pagar.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece Grátis</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/book-demo">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6">
+                        Agendar Demonstração
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-6 text-sm text-muted-foreground">
+                  Veja uma demonstração completa do controle de contas e automação de pagamentos.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

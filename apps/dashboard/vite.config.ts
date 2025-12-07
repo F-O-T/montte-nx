@@ -109,10 +109,21 @@ export default defineConfig({
                method: "POST",
                enctype: "multipart/form-data",
                params: {
+                  title: "title",
+                  text: "text",
+                  url: "url",
                   files: [
                      {
                         name: "file",
-                        accept: ["application/x-ofx", ".ofx"],
+                        accept: [
+                           "application/x-ofx",
+                           "application/ofx",
+                           "application/octet-stream",
+                           "text/plain",
+                           "text/ofx",
+                           "*/*",
+                           ".ofx",
+                        ],
                      },
                   ],
                },

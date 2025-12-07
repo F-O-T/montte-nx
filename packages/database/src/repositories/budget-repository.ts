@@ -855,7 +855,7 @@ export async function findTransactionsByBudgetTarget(
 
       if (target.type === "category") {
          const searchCondition = search
-            ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+            ? sql`AND t.description ILIKE ${`%${search}%`}`
             : sql``;
 
          const countResult = await dbClient.execute<{ count: string }>(sql`
@@ -869,7 +869,7 @@ export async function findTransactionsByBudgetTarget(
                AND t.organization_id = ${budgetData.organizationId}
                ${searchCondition}
          `);
-         totalCount = parseInt(countResult.rows[0]?.count || "0");
+         totalCount = parseInt(countResult.rows[0]?.count || "0", 10);
 
          const result = await dbClient.execute<{
             id: string;
@@ -906,7 +906,7 @@ export async function findTransactionsByBudgetTarget(
          const categoryIds = target.categoryIds;
          if (categoryIds.length > 0) {
             const searchCondition = search
-               ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+               ? sql`AND t.description ILIKE ${`%${search}%`}`
                : sql``;
 
             const countResult = await dbClient.execute<{ count: string }>(sql`
@@ -923,7 +923,7 @@ export async function findTransactionsByBudgetTarget(
                   AND t.organization_id = ${budgetData.organizationId}
                   ${searchCondition}
             `);
-            totalCount = parseInt(countResult.rows[0]?.count || "0");
+            totalCount = parseInt(countResult.rows[0]?.count || "0", 10);
 
             const result = await dbClient.execute<{
                id: string;
@@ -962,7 +962,7 @@ export async function findTransactionsByBudgetTarget(
          }
       } else if (target.type === "tag") {
          const searchCondition = search
-            ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+            ? sql`AND t.description ILIKE ${`%${search}%`}`
             : sql``;
 
          const countResult = await dbClient.execute<{ count: string }>(sql`
@@ -976,7 +976,7 @@ export async function findTransactionsByBudgetTarget(
                AND t.organization_id = ${budgetData.organizationId}
                ${searchCondition}
          `);
-         totalCount = parseInt(countResult.rows[0]?.count || "0");
+         totalCount = parseInt(countResult.rows[0]?.count || "0", 10);
 
          const result = await dbClient.execute<{
             id: string;
@@ -1009,7 +1009,7 @@ export async function findTransactionsByBudgetTarget(
          }));
       } else if (target.type === "cost_center") {
          const searchCondition = search
-            ? sql`AND t.description ILIKE ${"%" + search + "%"}`
+            ? sql`AND t.description ILIKE ${`%${search}%`}`
             : sql``;
 
          const countResult = await dbClient.execute<{ count: string }>(sql`
@@ -1022,7 +1022,7 @@ export async function findTransactionsByBudgetTarget(
                AND t.organization_id = ${budgetData.organizationId}
                ${searchCondition}
          `);
-         totalCount = parseInt(countResult.rows[0]?.count || "0");
+         totalCount = parseInt(countResult.rows[0]?.count || "0", 10);
 
          const result = await dbClient.execute<{
             id: string;

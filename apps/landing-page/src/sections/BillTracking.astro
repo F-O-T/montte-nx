@@ -1,0 +1,61 @@
+---
+import type { SupportedLng } from "@packages/localization";
+import { FeatureCarousel } from "@/components/feature-carousel";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const billFeatures = [
+   {
+      description:
+         "Crie contas únicas ou recorrentes para qualquer valor. Rastreie vencimentos, status de pagamento e histórico.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Gest%C3%A3o+de+Contas",
+      title: "Gestão de Contas a Pagar",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Divida pagamentos em parcelas iguais ou personalizadas. Útil para empréstimos, financiamentos e negociação de assinaturas.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Parcelas",
+      title: "Parcelas Personalizadas",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Padrões mensais, trimestrais, semestrais, anuais. Ou defina cronogramas de recorrência personalizados.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Recorr%C3%AAncia",
+      title: "Recorrência Inteligente",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Configure templates para juros, multas e correções monetárias. Calcule automaticamente o que você deve em contas atrasadas.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Calculadora+de+Juros",
+      title: "Cálculos de Juros e Multas",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Notificações inteligentes para pagamentos próximos e atrasados. Reduza o estresse. Melhore a performance de pagamentos.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Alertas",
+      title: "Alertas de Vencimento",
+      width: "narrow" as const,
+   },
+];
+---
+
+<section id="bills" class="py-16 md:py-24 overflow-hidden">
+   <FeatureCarousel
+      client:load
+      label="Rastreamento de Contas a Pagar"
+      title="Contas Sem Estresse"
+      description="Rastreie o que você deve, quando vence e quanto de juros acumula. Nunca mais perca um pagamento."
+      ctaText="Explorar recursos"
+      ctaHref="#features"
+      benefitStatement="Nunca perca um prazo. Calcule juros automaticamente. Saiba exatamente o que você deve."
+      items={billFeatures}
+   />
+</section>

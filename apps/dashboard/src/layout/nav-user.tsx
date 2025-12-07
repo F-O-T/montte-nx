@@ -6,14 +6,12 @@ import {
 } from "@packages/ui/components/avatar";
 import { Button } from "@packages/ui/components/button";
 import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuGroup,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
+   CredenzaBody,
+   CredenzaDescription,
+   CredenzaFooter,
+   CredenzaHeader,
+   CredenzaTitle,
+} from "@packages/ui/components/credenza";
 import {
    SidebarMenu,
    SidebarMenuButton,
@@ -28,37 +26,85 @@ import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { betterAuthClient, useTRPC } from "@/integrations/clients";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { useCredenza } from "@/hooks/use-credenza";
+import {
+   betterAuthClient,
+   type Session,
+   useTRPC,
+} from "@/integrations/clients";
 import { LanguageCommand } from "./language-command";
 import { ThemeSwitcher } from "./theme-provider";
 
-function UserAvatarInfo({
-   name,
-   email,
-   image,
-   grayscale,
+function NavUserCredenza({
+   session,
+   activeOrganization,
+   onNavigate,
+   onLogout,
 }: {
-   name?: string;
-   email?: string;
-   image?: string;
-   grayscale?: boolean;
+   session: Session;
+   activeOrganization: { slug: string };
+   onNavigate: () => void;
+   onLogout: () => void;
 }) {
    return (
       <>
-         <Avatar
-            className={`h-8 w-8 rounded-lg${grayscale ? " grayscale" : ""}`}
-         >
-            <AvatarImage alt={name} src={image ?? undefined} />
-            <AvatarFallback className="rounded-lg">
-               {name?.charAt(0) || "?"}
-            </AvatarFallback>
-         </Avatar>
-         <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{name}</span>
-            <span className="truncate text-xs text-muted-foreground">
-               {email}
-            </span>
-         </div>
+         <CredenzaHeader>
+            <CredenzaTitle>
+               {translate("dashboard.layout.nav-user.greeting", {
+                  name: session.user.name,
+               })}
+            </CredenzaTitle>
+            <CredenzaDescription>{session.user.email}</CredenzaDescription>
+         </CredenzaHeader>
+
+         <CredenzaBody className="space-y-4">
+            <Button
+               asChild
+               className="w-full justify-start gap-2"
+               onClick={onNavigate}
+               variant="outline"
+            >
+               <Link
+                  params={{ slug: activeOrganization.slug }}
+                  to="/$slug/profile"
+               >
+                  <UserCircleIcon />
+                  {translate("dashboard.layout.nav-user.main.account")}
+               </Link>
+            </Button>
+
+            <div className="space-y-3">
+               <span className="text-sm font-medium text-muted-foreground">
+                  {translate("dashboard.layout.nav-user.preferences.label")}
+               </span>
+               <div className="flex items-center justify-between">
+                  <span className="text-sm">
+                     {translate("dashboard.layout.nav-user.preferences.theme")}
+                  </span>
+                  <ThemeSwitcher />
+               </div>
+               <div className="flex items-center justify-between gap-8">
+                  <span className="text-sm">
+                     {translate(
+                        "dashboard.layout.nav-user.preferences.language",
+                     )}
+                  </span>
+                  <LanguageCommand />
+               </div>
+            </div>
+         </CredenzaBody>
+
+         <CredenzaFooter>
+            <Button
+               className="w-full gap-2"
+               onClick={onLogout}
+               variant="destructive"
+            >
+               <LogOutIcon />
+               {translate("dashboard.layout.nav-user.actions.logout")}
+            </Button>
+         </CredenzaFooter>
       </>
    );
 }
@@ -97,6 +143,8 @@ function NavUserContent() {
    const router = useRouter();
    const trpc = useTRPC();
    const queryClient = useQueryClient();
+   const { openCredenza, closeCredenza } = useCredenza();
+   const { openAlertDialog } = useAlertDialog();
    const { data: session } = useSuspenseQuery(
       trpc.session.getSession.queryOptions(),
    );
@@ -123,8 +171,8 @@ function NavUserContent() {
                toast.success(
                   translate(
                      "dashboard.layout.nav-user.messages.logout-success",
-                     { id: "logout" },
                   ),
+                  { id: "logout" },
                );
             },
          },
@@ -132,97 +180,63 @@ function NavUserContent() {
       setOpenMobile(false);
    }, [queryClient, router.navigate, setOpenMobile, trpc.session.getSession]);
 
+   const handleLogoutClick = useCallback(() => {
+      closeCredenza();
+      openAlertDialog({
+         actionLabel: translate("dashboard.layout.nav-user.actions.logout"),
+         cancelLabel: translate("common.actions.cancel"),
+         description: translate(
+            "dashboard.layout.nav-user.logout-confirmation.description",
+         ),
+         onAction: handleLogout,
+         title: translate(
+            "dashboard.layout.nav-user.logout-confirmation.title",
+         ),
+         variant: "destructive",
+      });
+   }, [closeCredenza, openAlertDialog, handleLogout]);
+
+   const handleNavigate = useCallback(() => {
+      closeCredenza();
+      setOpenMobile(false);
+   }, [closeCredenza, setOpenMobile]);
+
+   const handleOpenCredenza = useCallback(() => {
+      if (!session) return;
+      const currentSession = session;
+      openCredenza({
+         children: (
+            <NavUserCredenza
+               activeOrganization={activeOrganization}
+               onLogout={handleLogoutClick}
+               onNavigate={handleNavigate}
+               session={currentSession}
+            />
+         ),
+      });
+   }, [
+      openCredenza,
+      session,
+      activeOrganization,
+      handleNavigate,
+      handleLogoutClick,
+   ]);
+
    return (
       <SidebarMenu>
          <SidebarMenuItem>
-            <DropdownMenu>
-               <DropdownMenuTrigger asChild className="cursor-pointer ">
-                  <Avatar className="border-border border-2">
-                     <AvatarImage
-                        alt={session?.user.name}
-                        src={session?.user.image ?? ""}
-                     />
-                     <AvatarFallback className="rounded-lg">
-                        {session?.user.name?.charAt(0) || "?"}
-                     </AvatarFallback>
-                  </Avatar>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent
-                  align="end"
-                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                  side="bottom"
-                  sideOffset={4}
-               >
-                  <DropdownMenuLabel className="p-0 font-normal">
-                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                        <UserAvatarInfo
-                           email={session?.user.email}
-                           image={session?.user.image ?? ""}
-                           name={session?.user.name}
-                        />
-                     </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                     <DropdownMenuItem asChild>
-                        <Button
-                           asChild
-                           className="w-full items-center cursor-pointer justify-start flex gap-2 h-12"
-                           onClick={() => setOpenMobile(false)}
-                           variant="ghost"
-                        >
-                           <Link
-                              params={{ slug: activeOrganization.slug }}
-                              to="/$slug/profile"
-                           >
-                              <UserCircleIcon />
-                              {translate(
-                                 "dashboard.layout.nav-user.main.account",
-                              )}
-                           </Link>
-                        </Button>
-                     </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>
-                     {translate("dashboard.layout.nav-user.preferences.label")}
-                  </DropdownMenuLabel>
-
-                  <div className="space-y-1">
-                     <div className="px-2 py-1">
-                        <div className="flex items-center justify-between">
-                           <span className="text-sm font-medium">
-                              {translate(
-                                 "dashboard.layout.nav-user.preferences.theme",
-                              )}
-                           </span>
-                           <ThemeSwitcher />
-                        </div>
-                     </div>
-                     <div className="px-2 py-1">
-                        <div className="flex items-center justify-between gap-8">
-                           <span className="text-sm font-medium">
-                              {translate(
-                                 "dashboard.layout.nav-user.preferences.language",
-                              )}
-                           </span>
-                           <LanguageCommand />
-                        </div>
-                     </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                     <Button
-                        className="w-full cursor-pointer items-center justify-start flex gap-2"
-                        onClick={handleLogout}
-                        variant="ghost"
-                     >
-                        <LogOutIcon />
-                        {translate("dashboard.layout.nav-user.actions.logout")}
-                     </Button>
-                  </DropdownMenuItem>
-               </DropdownMenuContent>
-            </DropdownMenu>
+            <Avatar
+               className="border-border border-2 cursor-pointer"
+               onClick={handleOpenCredenza}
+            >
+               <AvatarImage
+                  alt={session?.user.name}
+                  src={session?.user.image ?? ""}
+               />
+               <AvatarFallback className="rounded-lg">
+                  {session?.user.name?.charAt(0) || "?"}
+               </AvatarFallback>
+            </Avatar>
          </SidebarMenuItem>
       </SidebarMenu>
    );

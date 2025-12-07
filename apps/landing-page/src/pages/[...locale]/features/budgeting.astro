@@ -1,0 +1,674 @@
+---
+export const prerender = true;
+
+import {
+   AlertTriangle,
+   ArrowRight,
+   BarChart3,
+   Bell,
+   Calendar,
+   Check,
+   ChevronDown,
+   Eye,
+   Layers,
+   Lightbulb,
+   LineChart,
+   Link as LinkIcon,
+   RefreshCw,
+   Target,
+   TrendingUp,
+} from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
+import { Button } from "@packages/ui/components/button";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+
+const problemPoints = [
+   "Ajuste quando precisar",
+   "Veja o que está acontecendo em tempo real",
+   "Entenda a variação (por que você estourou)",
+   "Receba previsões (onde você vai chegar)",
+];
+
+const flexibleBudgetFeatures = [
+   {
+      icon: "Layers",
+      points: [
+         "Orçamentos por categoria (Alimentação, Transporte, Contas)",
+         "Orçamentos por tag (Despesas dedutíveis)",
+         "Orçamentos por projeto/centro de custo",
+         "Orçamentos combinados (aninhados)",
+      ],
+      title: "Múltiplas Dimensões de Orçamento",
+   },
+   {
+      icon: "Calendar",
+      points: [
+         "Orçamentos mensais",
+         "Orçamentos trimestrais",
+         "Orçamentos anuais",
+         "Períodos personalizados",
+      ],
+      title: "Períodos Flexíveis",
+   },
+   {
+      icon: "Target",
+      points: [
+         "Defina metas em reais",
+         'Defina metas percentuais (ex: "20% da renda")',
+         "Suporte a múltiplas moedas",
+         "Metas dinâmicas (ajustam conforme a renda real)",
+      ],
+      title: "Metas e Objetivos",
+   },
+];
+
+const progressTrackingFeatures = [
+   {
+      icon: "BarChart3",
+      points: [
+         "Barras visuais de orçado vs realizado",
+         "% restante",
+         "Dias restantes no período",
+         "Projeção: no caminho certo, acima ou abaixo",
+      ],
+      title: "Barras de Progresso e Indicadores",
+   },
+   {
+      icon: "Eye",
+      points: [
+         "Detalhamento por categoria ou tag",
+         "Veja transações individuais que impactam o orçamento",
+         "Filtre por período",
+         "Compare este período com o anterior",
+      ],
+      title: "Visão Detalhada",
+   },
+   {
+      icon: "Bell",
+      points: [
+         "Alerta quando 75% do orçamento for gasto",
+         "Alerta quando estourar o orçamento",
+         "Limites de alerta personalizados",
+         "Alertas por e-mail ou no app",
+      ],
+      title: "Alertas e Notificações",
+   },
+];
+
+const varianceFeatures = [
+   {
+      icon: "AlertTriangle",
+      points: [
+         "Veja quais transações fizeram você estourar",
+         "Compare com o mês passado (os restaurantes aumentaram?)",
+         "Identifique padrões (gasto semanal vs único?)",
+         "Detalhamento por categoria",
+      ],
+      title: "Análise de Variação",
+   },
+   {
+      icon: "RefreshCw",
+      points: [
+         "Orçamento não usado passa para o próximo mês",
+         "Acompanhamento visual do saldo acumulado",
+         "Escolha zerar ou acumular por orçamento",
+         "Visualização acumulada vs por período",
+      ],
+      title: "Saldo Acumulado",
+   },
+   {
+      icon: "TrendingUp",
+      points: [
+         "Média móvel de 3 meses",
+         "Os gastos estão subindo ou descendo?",
+         "Padrões sazonais identificados",
+         "Comparação ano a ano",
+      ],
+      title: "Análise de Tendências",
+   },
+];
+
+const forecastFeatures = [
+   {
+      icon: "LineChart",
+      points: [
+         "Projete o fim do mês com base no ritmo atual",
+         "Previsões de 30 dias, 90 dias e anuais",
+         "Intervalos de confiança (estimativa alta/baixa)",
+         "Opções de ajuste manual",
+      ],
+      title: "Previsão de Gastos",
+   },
+   {
+      icon: "Target",
+      points: [
+         'Defina metas de economia (ex: "guardar R$ 5 mil até dezembro")',
+         "Acompanhe o progresso da meta",
+         "Detalhamento mensal para atingir a meta",
+         "Comemore as conquistas",
+      ],
+      title: "Acompanhamento de Metas",
+   },
+   {
+      icon: "Lightbulb",
+      points: [
+         '"E se eu cortar 20% dos restaurantes?"',
+         '"E se minha renda aumentar?"',
+         "Comparação de cenários",
+         "Modelagem de impacto nas metas",
+      ],
+      title: "Cenários Hipotéticos",
+   },
+];
+
+const relatedFeatures = [
+   {
+      description: "Transações alimentam o cálculo do orçamento",
+      href: "/features/smart-transactions",
+      title: "Capture Todas as Transações",
+   },
+   {
+      description: "Dados do orçamento nos relatórios financeiros",
+      href: "/features/analytics",
+      title: "Entenda Seu Dinheiro",
+   },
+   {
+      description: "Contas consideradas no planejamento",
+      href: "/features/bill-tracking",
+      title: "Contas Sem Estresse",
+   },
+   {
+      description: "Orçamentos em equipe para gastos compartilhados",
+      href: "/features/collaboration",
+      title: "Compartilhe Finanças",
+   },
+];
+
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Jamie",
+      name: "Juliana K.",
+      quote: "Já testei 5 apps de orçamento. Nenhum funcionou até o Montte. As barras de progresso são muito satisfatórias, e adoro ver as previsões. Finalmente estou batendo minhas metas de economia.",
+      role: "Usuária Individual",
+      tag: "Individual",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=AlexMorgan",
+      name: "André & Marina",
+      quote: "Meu parceiro e eu conseguimos ver o mesmo orçamento e trabalhar juntos nas nossas metas. Acabaram os gastos 'surpresa'. Transparência total.",
+      role: "Casal",
+      tag: "Casal",
+   },
+   {
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Casey",
+      name: "Carlos L.",
+      quote: "Fazemos orçamento por projeto. O Montte facilita ver quais projetos são lucrativos e quais estão comendo a margem. Mudou completamente nossa precificação.",
+      role: "Dono de Estúdio",
+      tag: "Pequeno Negócio",
+   },
+];
+
+const faqs = [
+   {
+      answer:
+         "Sim. Altere a meta a qualquer momento. O Montte recalcula na hora.",
+      question: "Posso ajustar um orçamento no meio do mês?",
+   },
+   {
+      answer:
+         "Você recebe um alerta, mas não fica bloqueado. O Montte rastreia a variação e mostra o motivo.",
+      question: "O que acontece se eu estourar o orçamento?",
+   },
+   {
+      answer:
+         'Sim. Crie orçamentos separados como "Mercado: R$ 300" e "Restaurantes: R$ 150".',
+      question: "Posso ter múltiplos orçamentos para a mesma categoria?",
+   },
+   {
+      answer:
+         "No fim do mês, se você tiver R$ 50 de orçamento não usado, ele passa para o próximo mês (se o acúmulo estiver ativado). Você terá R$ 350 para gastar no próximo mês em vez de R$ 300.",
+      question: "Como funciona o saldo acumulado?",
+   },
+   {
+      answer:
+         "Sim. Veja orçado vs realizado de qualquer mês passado. Compare tendências.",
+      question: "Posso ver orçamentos de meses anteriores?",
+   },
+   {
+      answer:
+         "Sim. Se seus gastos de dezembro são historicamente maiores, a previsão do Montte considera isso.",
+      question: "O Montte prevê variações sazonais?",
+   },
+];
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+
+      <!-- Hero Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+               <Announcement className="justify-center">
+                  <AnnouncementTag className="bg-primary text-primary-foreground">Feito para 2025</AnnouncementTag>
+                  <AnnouncementTitle>
+                     Gestão Inteligente de Orçamento
+                  </AnnouncementTitle>
+               </Announcement>
+
+               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
+                  Orçamentos Que{" "}
+                  <span class="text-primary">Realmente Funcionam</span>
+               </h1>
+
+               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
+                  Defina metas. Acompanhe o progresso. Ajuste quando precisar. Alcance seus objetivos.
+                  Acompanhamento visual. Análise de variação em tempo real. Previsões integradas.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Comece Grátis</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/book-demo">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Eye class="size-5" />
+                        Ver Demo
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-8 text-sm text-muted-foreground">
+                  Usuários do Montte economizam em média{" "}
+                  <span class="font-semibold text-foreground">R$ 230/mês</span>
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <!-- Problem Hook Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+               <div>
+                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                     A Maioria dos Orçamentos Falha
+                  </h2>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     Você cria um orçamento. Aí a vida acontece. Gastos inesperados. Mudanças nos hábitos.
+                     De repente o orçamento não serve mais.
+                  </p>
+                  <p class="mt-4 text-muted-foreground text-lg">
+                     Os orçamentos do Montte são flexíveis:
+                  </p>
+               </div>
+
+               <div class="p-6 rounded-2xl bg-background border border-border/50">
+                  <h3 class="text-lg font-semibold text-foreground mb-4">Os Orçamentos do Montte São Diferentes:</h3>
+                  <ul class="space-y-3">
+                     {problemPoints.map((point) => (
+                        <li class="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                           <Check class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                           <span class="text-foreground">{point}</span>
+                        </li>
+                     ))}
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 1: Flexible Budget Creation -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 1
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Crie Orçamentos por Categoria, Tag ou Projeto
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Faça orçamento para "Mercado", "Marketing Q1" ou "Projeto X". O Montte se adapta às suas necessidades.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {flexibleBudgetFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "Layers" && <Layers class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Calendar" && <Calendar class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Target" && <Target class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Budget+Creation+Form"
+                  alt="Formulário de criação de orçamento com seletor de categoria, campo de valor e seletor de período"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 2: Real-Time Progress Tracking -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 2
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Veja o Progresso em Tempo Real
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Saiba exatamente onde você está em relação à sua meta. Barras de progresso visuais. Feedback instantâneo.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {progressTrackingFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "BarChart3" && <BarChart3 class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Eye" && <Eye class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Bell" && <Bell class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Budget+Progress+Cards"
+                  alt="Cards de orçamento com barras de progresso mostrando Mercado: R$ 240 / R$ 300 (80%), dias restantes e indicador de status"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 3: Variance Analysis -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 3
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Entenda Por Que Você Estourou
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  O orçamento era R$ 300 para mercado. Você gastou R$ 380. Por quê? O Montte mostra exatamente.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {varianceFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "AlertTriangle" && <AlertTriangle class="w-5 h-5 text-primary" />}
+                           {feature.icon === "RefreshCw" && <RefreshCw class="w-5 h-5 text-primary" />}
+                           {feature.icon === "TrendingUp" && <TrendingUp class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Variance+Analysis+View"
+                  alt="Card de análise de variação mostrando R$ 280 de R$ 300 planejados com detalhamento e linha de tendência"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Feature 4: Forecasting & Goals -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Recurso 4
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Projete Seus Gastos Futuros
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
+                  Com base nos seus padrões, onde você vai chegar? O Montte prevê gastos e alerta você com antecedência.
+               </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {forecastFeatures.map((feature) => (
+                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                           {feature.icon === "LineChart" && <LineChart class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Target" && <Target class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Lightbulb" && <Lightbulb class="w-5 h-5 text-primary" />}
+                        </div>
+                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
+                     </div>
+                     <ul class="space-y-2">
+                        {feature.points.map((point) => (
+                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
+                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                              <span>{point}</span>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ))}
+            </div>
+
+            <!-- Visual placeholder -->
+            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+               <img
+                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Budget+Forecast+Chart"
+                  alt="Gráfico de previsão de orçamento mostrando ritmo atual de gastos, projeção para o fim do ano e ajuste de meta"
+                  class="w-full"
+                  loading="lazy"
+               />
+            </div>
+         </div>
+      </section>
+
+      <!-- Related Features Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <span class="text-primary text-sm font-medium uppercase tracking-wider">
+                  Funciona Com
+               </span>
+               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
+                  Esses Recursos Funcionam Juntos
+               </h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {relatedFeatures.map((feature) => (
+                  <a
+                     href={feature.href}
+                     class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
+                  >
+                     <div class="flex items-center gap-2 mb-2">
+                        <LinkIcon class="w-4 h-4 text-primary" />
+                        <h3 class="font-semibold text-foreground group-hover:text-primary transition-colors">
+                           {feature.title}
+                        </h3>
+                     </div>
+                     <p class="text-sm text-muted-foreground">{feature.description}</p>
+                  </a>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Social Proof / Testimonials Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Orçamentos Que Ajudam Pessoas Reais
+               </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+               {testimonials.map((testimonial) => (
+                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {testimonial.tag}
+                     </span>
+
+                     <div class="flex-1">
+                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
+                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                        </svg>
+                        <p class="text-foreground leading-relaxed">
+                           "{testimonial.quote}"
+                        </p>
+                     </div>
+
+                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+                        <img
+                           src={testimonial.avatar}
+                           alt={testimonial.name}
+                           class="w-12 h-12 rounded-full bg-muted"
+                           loading="lazy"
+                        />
+                        <div>
+                           <p class="font-semibold text-foreground">{testimonial.name}</p>
+                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="py-16 md:py-24">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+               <h2 class="text-2xl font-semibold md:text-3xl">
+                  Perguntas Frequentes
+               </h2>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+               {faqs.map((faq) => (
+                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
+                     <summary class="flex items-center justify-between cursor-pointer list-none">
+                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                     </summary>
+                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+                  </details>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="py-16 md:py-24 bg-muted/30">
+         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto">
+               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
+                  Comece um Orçamento Que Realmente Funciona
+               </h2>
+               <p class="mt-4 text-muted-foreground text-lg">
+                  Pare de adivinhar. Comece a acompanhar. Alcance suas metas.
+               </p>
+
+               <div class="flex flex-wrap justify-center gap-4 mt-8">
+                  <a href="/signup">
+                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
+                        <span>Crie Seu Primeiro Orçamento</span>
+                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     </Button>
+                  </a>
+                  <a href="/book-demo">
+                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
+                        <Eye class="size-5" />
+                        Ver Demo de Orçamento
+                     </Button>
+                  </a>
+               </div>
+
+               <p class="mt-6 text-sm text-muted-foreground">
+                  Veja os orçamentos em ação. Teste grátis por 14 dias incluso.
+               </p>
+            </div>
+         </div>
+      </section>
+
+      <Footer lang={lang}/>
+   </div>
+</Layout>

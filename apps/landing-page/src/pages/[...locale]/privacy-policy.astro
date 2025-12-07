@@ -1,0 +1,149 @@
+---
+export const prerender = true;
+
+import type { SupportedLng } from "@packages/localization";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
+
+export function getStaticPaths() {
+   return supportedLanguages.map((locale) => ({
+      params: { locale: locale === "pt-BR" ? undefined : locale },
+   }));
+}
+
+const { locale } = Astro.params;
+const lang = (locale || "pt-BR") as SupportedLng;
+---
+
+<Layout lang={lang}>
+   <div class="flex flex-col">
+      <StickyNavbar lang={lang}/>
+      <main class="py-36">
+         <div class="mx-auto max-w-4xl px-6 prose dark:prose-invert">
+            <h1>Politica de Privacidade do Montte</h1>
+            <p>
+               <strong>Ultima Atualizacao:</strong> 6 de dezembro de 2025
+            </p>
+
+            <p>
+               Montte ("nos," "nosso," ou "nossa") opera o Servico Montte.
+               Esta Politica de Privacidade informa sobre nossas praticas em relacao
+               a coleta, uso e divulgacao de dados pessoais quando voce usa nosso
+               Servico e as escolhas que voce tem associadas a esses dados.
+            </p>
+
+            <h2>1. Coleta e Uso de Informacoes</h2>
+            <p>
+               Coletamos diferentes tipos de informacoes para diversos
+               propositos, visando fornecer e melhorar nosso Servico para voce.
+            </p>
+            <h3>Tipos de Dados Coletados:</h3>
+            <ul>
+               <li>
+                  <strong>Dados Pessoais:</strong> Ao usar nosso Servico, podemos
+                  solicitar que voce forneca certas informacoes pessoais
+                  identificaveis, como seu nome e endereco de e-mail.
+               </li>
+               <li>
+                  <strong>Dados de Uso:</strong> Coletamos informacoes sobre como o
+                  Servico e acessado e utilizado, como seu endereco IP, tipo de navegador
+                  e paginas visitadas. Utilizamos PostHog para analise de produto.
+               </li>
+               <li>
+                  <strong>Dados Financeiros:</strong> Coletamos e armazenamos os dados
+                  financeiros que voce fornece, como informacoes de contas bancarias,
+                  transacoes, categorias e arquivos OFX importados.
+               </li>
+            </ul>
+
+            <h2>2. Uso dos Dados</h2>
+            <p>Utilizamos os dados coletados para diversos propositos:</p>
+            <ul>
+               <li>Para fornecer e manter nosso Servico.</li>
+               <li>Para gerenciar sua conta e preferencias.</li>
+               <li>Para melhorar a precisao e o desempenho do nosso sistema.</li>
+               <li>Para fornecer suporte ao cliente e responder as suas duvidas.</li>
+               <li>
+                  Para monitorar o uso do nosso Servico para seguranca e analise.
+               </li>
+            </ul>
+
+            <h2>3. Compartilhamento de Dados com Terceiros</h2>
+            <p>
+               Para fornecer nosso Servico, podemos compartilhar certos dados com
+               provedores de servicos terceirizados:
+            </p>
+            <ul>
+               <li>
+                  <strong>Provedores de Hospedagem:</strong> Seus dados sao armazenados
+                  em servidores seguros de provedores de nuvem confiaveis.
+               </li>
+               <li>
+                  <strong>Provedores de Analise:</strong> Utilizamos PostHog para entender
+                  como nosso Servico e utilizado.
+               </li>
+            </ul>
+
+            <h2>4. Seguranca dos Dados</h2>
+            <p>
+               A seguranca dos seus dados e importante para nos. Utilizamos
+               medidas padroes da industria para proteger suas informacoes. Como
+               projeto open source, voce pode verificar exatamente como seus dados
+               sao tratados ou hospedar sua propria instancia.
+            </p>
+
+            <h2>5. Retencao de Dados</h2>
+            <p>
+               Manteremos seus Dados Pessoais apenas pelo tempo necessario
+               para os propositos estabelecidos nesta Politica de Privacidade. Manteremos
+               e usaremos seus dados na medida necessaria para cumprir nossas obrigacoes
+               legais.
+            </p>
+
+            <h2>6. Seus Direitos de Protecao de Dados</h2>
+            <p>
+               De acordo com a Lei Geral de Protecao de Dados (LGPD), voce tem os
+               seguintes direitos em relacao aos seus dados pessoais:
+            </p>
+            <ul>
+               <li>
+                  O direito de acessar, atualizar ou excluir as informacoes que temos
+                  sobre voce.
+               </li>
+               <li>O direito de retificacao.</li>
+               <li>
+                  O direito de se opor ao processamento de seus Dados Pessoais.
+               </li>
+               <li>O direito a portabilidade dos dados.</li>
+            </ul>
+            <p>Para exercer esses direitos, entre em contato conosco.</p>
+
+            <h2>7. Privacidade de Menores</h2>
+            <p>
+               Nosso Servico nao e destinado a menores de 18 anos. Nao coletamos
+               intencionalmente informacoes pessoais identificaveis de menores
+               de 18 anos.
+            </p>
+
+            <h2>8. Alteracoes nesta Politica de Privacidade</h2>
+            <p>
+               Podemos atualizar nossa Politica de Privacidade periodicamente. Notificaremos
+               voce sobre quaisquer alteracoes publicando a nova Politica de Privacidade
+               nesta pagina.
+            </p>
+
+            <h2>9. Contato</h2>
+            <p>
+               Se voce tiver alguma duvida sobre esta Politica de Privacidade, entre
+               em contato conosco atraves do nosso repositorio no GitHub:
+               <a href="https://github.com/F-O-T/montte-nx" target="_blank" rel="noopener noreferrer">
+                  github.com/F-O-T/montte-nx
+               </a>.
+            </p>
+         </div>
+      </main>
+      <Footer lang={lang}/>
+   </div>
+</Layout>

@@ -1,9 +1,23 @@
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 
 export default defineConfig({
+   env: {
+      schema: {
+         POSTHOG_HOST: envField.string({
+            access: "public",
+            context: "client",
+            optional: true,
+         }),
+         POSTHOG_KEY: envField.string({
+            access: "public",
+            context: "client",
+            optional: true,
+         }),
+      },
+   },
    i18n: {
       defaultLocale: "pt",
       locales: ["pt"],

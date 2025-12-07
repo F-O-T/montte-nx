@@ -12,7 +12,6 @@ COPY bun.lock ./
 COPY package.json ./
 COPY apps/landing-page/package.json ./apps/landing-page/
 COPY packages/ui/package.json ./packages/ui/
-COPY packages/brand/package.json ./packages/brand/
 COPY packages/posthog/package.json ./packages/posthog/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/environment/package.json ./packages/environment/
@@ -46,6 +45,9 @@ RUN chmod +x /entrypoint.sh
 
 # Set and expose the port. Default to 4321 if not provided.
 ARG PORT
+ARG PUBLIC_POSTHOG_HOST
+ARG PUBLIC_POSTHOG_KEY
+
 ENV PORT=${PORT}
 EXPOSE ${PORT}
 

@@ -71,7 +71,8 @@ function FileHandlerComponent() {
                async (launchParams: LaunchParams) => {
                   if (!launchParams.files?.length || !launchParams.files[0]) {
                      navigate({
-                        href: `/${orgSlug}/bank-accounts?selectForImport=true`,
+                        params: { slug: orgSlug },
+                        to: "/$slug/import-ofx",
                      });
                      return;
                   }
@@ -90,13 +91,15 @@ function FileHandlerComponent() {
                   );
 
                   navigate({
-                     href: `/${orgSlug}/bank-accounts?selectForImport=true`,
+                     params: { slug: orgSlug },
+                     to: "/$slug/import-ofx",
                   });
                },
             );
          } else {
             navigate({
-               href: `/${orgSlug}/bank-accounts?selectForImport=true`,
+               params: { slug: orgSlug },
+               to: "/$slug/import-ofx",
             });
          }
       }

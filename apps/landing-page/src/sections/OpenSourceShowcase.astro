@@ -1,0 +1,54 @@
+---
+import type { SupportedLng } from "@packages/localization";
+import { FeatureCarousel } from "@/components/feature-carousel";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const openSourceFeatures = [
+   {
+      description:
+         "Licenciado sob Apache 2.0. Audite cada linha de código. Sem surpresas de código fechado.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Open+Source",
+      title: "100% Open Source",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Implante na sua própria infraestrutura. Opção de nuvem gerenciada também disponível. Escolha o que funciona para você.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Auto+Hospedagem",
+      title: "Opção de Auto-Hospedagem",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Exporte todos os dados a qualquer momento em formatos padrão. Migre para outra plataforma se quiser. Mas você não vai querer.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Sem+Lock-In",
+      title: "Zero Dependência de Fornecedor",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Roadmap transparente. Contribua com recursos e melhorias. Molde o produto junto com a comunidade.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Comunidade",
+      title: "Desenvolvimento Guiado pela Comunidade",
+      width: "wide" as const,
+   },
+];
+---
+
+<section id="open-source" class="py-16 md:py-24 overflow-hidden">
+   <FeatureCarousel
+      client:load
+      label="Open-Source e Auto-Hospedado"
+      title="Seus Dados. Seu Servidor. Suas Regras."
+      description="Montte é 100% open source. Implante em qualquer lugar. Seja dono de tudo."
+      ctaText="Ver no GitHub"
+      ctaHref="https://github.com/montte/montte"
+      benefitStatement="Sem venda de dados. Sem vigilância. Privacidade financeira pura."
+      items={openSourceFeatures as any}
+   />
+</section>

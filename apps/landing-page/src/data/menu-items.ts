@@ -1,35 +1,45 @@
 export const menuItems = [
    {
-      description: "Gerencie suas contas bancárias",
-      href: "#bank-accounts",
-      name: "Contas",
+      description: "Planos e preços",
+      href: "/pricing",
+      name: "Preços",
    },
    {
-      description: "Controle suas transações",
-      href: "#transactions",
-      name: "Transações",
-   },
-   {
-      description: "Visualize seu fluxo financeiro",
-      href: "#financial-workflow",
-      name: "Fluxo Financeiro",
+      description: "Para grandes organizações",
+      href: "/enterprise",
+      name: "Enterprise",
    },
 ];
 
 export const productItems = [
    {
-      description: "Gerencie contas correntes, poupança e investimentos",
-      href: "#bank-accounts",
-      name: "Contas Bancárias",
-   },
-   {
-      description: "Registre e categorize suas transações",
-      href: "#transactions",
+      description: "Transações inteligentes com IA",
+      href: "/features/smart-transactions",
       name: "Transações",
    },
    {
-      description: "Acompanhe todo seu fluxo financeiro",
-      href: "#financial-workflow",
-      name: "Fluxo Financeiro",
+      description: "Controle de contas e faturas",
+      href: "/features/bill-tracking",
+      name: "Contas a Pagar",
+   },
+   {
+      description: "Orçamentos que funcionam",
+      href: "/features/budgeting",
+      name: "Orçamentos",
+   },
+   {
+      description: "Relatórios e insights financeiros",
+      href: "/features/analytics",
+      name: "Análises",
+   },
+   {
+      description: "Finanças em equipe",
+      href: "/features/collaboration",
+      name: "Colaboração",
+   },
+   {
+      description: "Código aberto e transparente",
+      href: "/features/open-source",
+      name: "Open Source",
    },
 ];

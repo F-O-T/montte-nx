@@ -1,8 +1,8 @@
 ---
-import { Github, Instagram, Twitter, Youtube } from "@lucide/astro";
+import { Github, Mail } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
 import { Separator } from "@packages/ui/components/separator";
-import Logo from "../components/Logo.astro";
+import Logo from "@/components/Logo.astro";
 
 interface Props {
    lang?: SupportedLng;
@@ -10,114 +10,125 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const links = [
+const quickLinks = [
+   { external: true, href: "https://docs.montte.co", title: "Documentação" },
    {
-      group: "Produto",
-      items: [
-         { href: "#features", title: "Funcionalidades" },
-         { href: "#bank-accounts", title: "Contas Bancarias" },
-         { href: "#transactions", title: "Transacoes" },
-         { href: "#how-it-works", title: "Como Funciona" },
-      ],
+      external: true,
+      href: "https://github.com/montte/montte",
+      title: "GitHub",
    },
-   {
-      group: "Recursos",
-      items: [
-         {
-            href: "https://github.com/F-O-T/montte-nx/blob/main/CHANGELOG.md",
-            target: "_blank",
-            title: "Changelog",
-         },
-         {
-            href: "https://github.com/F-O-T/montte-nx/blob/main/CONTRIBUTING.md",
-            target: "_blank",
-            title: "Contribuir",
-         },
-         {
-            href: "https://github.com/F-O-T/montte-nx",
-            target: "_blank",
-            title: "GitHub",
-         },
-         { href: "#faq", title: "FAQ" },
-      ],
-   },
-   {
-      group: "Legal",
-      items: [
-         { href: "/privacy-policy", title: "Politica de Privacidade" },
-         { href: "/terms-of-service", title: "Termos de Uso" },
-      ],
-   },
-];
-
-const socialLinks = [
-   {
-      href: "https://github.com/F-O-T/montte-nx",
-      icon: Github,
-      label: "GitHub",
-   },
-   { color: "text-pink-500", href: "#", icon: Instagram, label: "Instagram" },
-   { color: "text-sky-500", href: "#", icon: Twitter, label: "Twitter" },
-   { color: "text-red-500", href: "#", icon: Youtube, label: "YouTube" },
+   { external: false, href: "/blog", title: "Blog" },
+   { external: true, href: "https://discord.gg/montte", title: "Comunidade" },
+   { external: false, href: "/privacy", title: "Privacidade" },
+   { external: false, href: "/terms", title: "Termos" },
 ];
 
 const year = new Date().getFullYear();
 ---
 
-<footer class="bg-muted">
-   <div class="mx-auto grid max-w-7xl grid-cols-6 gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-16 md:py-24">
-      <div class="col-span-full flex flex-col items-start gap-4 lg:col-span-2">
-         <a href="/" class="flex items-center gap-3">
-            <Logo size={36} class="text-primary"/>
-            <span class="text-xl font-semibold text-foreground">Montte</span>
-         </a>
-         <p class="text-muted-foreground max-w-sm">
-            Uma colecao open-source de componentes para controle financeiro pessoal. Organize suas financas de forma simples e inteligente.
-         </p>
-         <Separator className="!w-36 my-2" />
-         <div class="flex items-center gap-4">
-            {socialLinks.map((social) => (
+<footer class="bg-muted/30">
+   <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div class="grid gap-12 lg:grid-cols-2 lg:gap-8">
+         <div class="flex flex-col gap-6">
+            <a href="/" class="flex items-center gap-3">
+               <Logo size={36} class="text-primary"/>
+               <span class="text-xl font-semibold text-foreground">Montte</span>
+            </a>
+<p class="text-muted-foreground max-w-md">
+                Gestão financeira open-source. Rastreie despesas, gerencie orçamentos e tenha controle total das suas finanças com propriedade completa dos dados.
+             </p>
+
+            <div class="flex items-center gap-4">
                <a
-                  href={social.href}
+                  href="https://github.com/montte/montte"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={social.label}
-                  class={`text-muted-foreground hover:text-primary transition-colors duration-150 ${social.color || ''}`}
+                  aria-label="GitHub"
+                  class="flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
                >
-                  <social.icon class="size-5" />
+                  <Github class="size-5" />
                </a>
-            ))}
+               <a
+                  href="https://twitter.com/montte_app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Twitter"
+                  class="flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
+               >
+                  <svg class="size-5" viewBox="0 0 24 24" fill="currentColor">
+                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+               </a>
+               <a
+                  href="https://discord.gg/montte"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Discord"
+                  class="flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
+               >
+                  <svg class="size-5" viewBox="0 0 24 24" fill="currentColor">
+                     <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/>
+                  </svg>
+               </a>
+               <a
+                  href="mailto:hello@montte.co"
+                  aria-label="Email"
+                  class="flex items-center justify-center w-10 h-10 rounded-lg bg-background border border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all"
+               >
+                  <Mail class="size-5" />
+               </a>
+            </div>
+         </div>
+
+         <div class="flex flex-col gap-6">
+<div>
+                <h3 class="text-sm font-semibold text-foreground mb-2">Receba novidades sobre funcionalidades e boas práticas</h3>
+                <form class="flex gap-2 max-w-md" action="#" method="POST">
+                   <input
+                      type="email"
+                      name="email"
+                      placeholder="Digite seu e-mail"
+                      required
+                      class="flex-1 px-4 py-2.5 rounded-lg bg-background border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all text-sm"
+                   />
+                   <button
+                      type="submit"
+                      class="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors text-sm"
+                   >
+                      Inscrever
+                   </button>
+                </form>
+             </div>
+
+            <div class="flex flex-wrap gap-x-6 gap-y-2">
+               {quickLinks.map((link) => (
+                  <a
+                     href={link.href}
+                     target={link.external ? "_blank" : "_self"}
+                     rel={link.external ? "noopener noreferrer" : undefined}
+                     class="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                     {link.title}
+                  </a>
+               ))}
+            </div>
          </div>
       </div>
 
-      <div class="col-span-full grid grid-cols-2 gap-6 sm:grid-cols-3 lg:col-span-4 lg:gap-8">
-         {links.map((linkGroup) => (
-            <div class="flex flex-col gap-4">
-               <span class="text-lg font-medium text-foreground">{linkGroup.group}</span>
-               <ul class="space-y-3">
-                  {linkGroup.items.map((item) => (
-                     <li>
-                        <a
-                           href={item.href}
-                           target={'target' in item ? item.target : '_self'}
-                           rel={'target' in item && item.target === '_blank' ? 'noopener noreferrer' : undefined}
-                           class="text-muted-foreground hover:text-primary transition-colors duration-150 text-sm"
-                        >
-                           {item.title}
-                        </a>
-                     </li>
-                  ))}
-               </ul>
-            </div>
-         ))}
+      <Separator className="my-8" />
+
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+         <p class="text-sm text-muted-foreground">
+            © {year} Montte. Gestão financeira open source.
+         </p>
+         <a
+            href="https://github.com/montte/montte/blob/main/LICENSE.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-muted-foreground hover:text-primary transition-colors"
+         >
+            Licença Apache 2.0
+         </a>
       </div>
-   </div>
-   
-   <Separator />
-   
-   <div class="mx-auto flex max-w-7xl justify-center px-4 py-6 sm:px-6">
-      <p class="text-center text-muted-foreground text-sm font-medium text-balance">
-         {year} <a href="/" class="hover:text-primary transition-colors">Montte</a>. Feito com <span class="text-red-500">&#10084;</span> para um melhor controle financeiro.
-      </p>
    </div>
 </footer>

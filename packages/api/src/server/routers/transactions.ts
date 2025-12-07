@@ -29,9 +29,9 @@ import {
 } from "@packages/database/repositories/transfer-log-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { streamFileForProxy, uploadFile } from "@packages/files/client";
+import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { z } from "zod";
-import { checkBudgetAlertsAfterTransaction } from "../services/budget-alert-service";
 import { protectedProcedure, router } from "../trpc";
 
 const categorySplitSchema = z.object({
@@ -282,7 +282,7 @@ export const transactionRouter = router({
                   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
                   vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
                   vapidSubject: process.env.VAPID_SUBJECT,
-               }).catch((err) => {
+               }).catch((err: unknown) => {
                   console.error("Error checking budget alerts:", err);
                });
             }

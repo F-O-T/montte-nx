@@ -28,6 +28,32 @@ export const Route = createFileRoute("/share-target")({
    component: ShareTargetComponent,
 });
 
+async function getShareDataFromCache(
+   retries = 5,
+   delay = 150,
+): Promise<{
+   content: string;
+   filename: string;
+} | null> {
+   for (let i = 0; i < retries; i++) {
+      try {
+         const cache = await caches.open("share-target-temp");
+         const response = await cache.match("pending-share");
+         if (response) {
+            const data = await response.json();
+            await cache.delete("pending-share");
+            return data;
+         }
+      } catch {
+         // Cache not available or data invalid
+      }
+      if (i < retries - 1) {
+         await new Promise((r) => setTimeout(r, delay));
+      }
+   }
+   return null;
+}
+
 function ShareTargetComponent() {
    const navigate = useNavigate();
 
@@ -52,33 +78,47 @@ function ShareTargetComponent() {
 
          const orgSlug = org.slug;
 
-         const pendingShare = sessionStorage.getItem(
-            "montte:pending-share-target",
-         );
+         const cacheData = await getShareDataFromCache();
 
-         if (pendingShare) {
-            try {
-               const data = JSON.parse(pendingShare) as {
-                  content: string;
-                  filename: string;
-               };
+         if (cacheData) {
+            sessionStorage.setItem(
+               "montte:pending-ofx-import",
+               JSON.stringify({
+                  content: cacheData.content,
+                  filename: cacheData.filename,
+                  timestamp: Date.now(),
+               }),
+            );
+         } else {
+            const pendingShare = sessionStorage.getItem(
+               "montte:pending-share-target",
+            );
 
-               sessionStorage.removeItem("montte:pending-share-target");
-               sessionStorage.setItem(
-                  "montte:pending-ofx-import",
-                  JSON.stringify({
-                     content: data.content,
-                     filename: data.filename,
-                     timestamp: Date.now(),
-                  }),
-               );
-            } catch {
-               // Invalid data, ignore
+            if (pendingShare) {
+               try {
+                  const data = JSON.parse(pendingShare) as {
+                     content: string;
+                     filename: string;
+                  };
+
+                  sessionStorage.removeItem("montte:pending-share-target");
+                  sessionStorage.setItem(
+                     "montte:pending-ofx-import",
+                     JSON.stringify({
+                        content: data.content,
+                        filename: data.filename,
+                        timestamp: Date.now(),
+                     }),
+                  );
+               } catch {
+                  // Invalid data, ignore
+               }
             }
          }
 
          navigate({
-            href: `/${orgSlug}/bank-accounts?selectForImport=true`,
+            params: { slug: orgSlug },
+            to: "/$slug/import-ofx",
          });
       }
 

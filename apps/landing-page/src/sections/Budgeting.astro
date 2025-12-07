@@ -1,0 +1,61 @@
+---
+import type { SupportedLng } from "@packages/localization";
+import { FeatureCarousel } from "@/components/feature-carousel";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const budgetFeatures = [
+   {
+      description:
+         "Crie orçamentos por Categoria, Tags ou Centros de Custo. Crie quantos orçamentos precisar.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Cria%C3%A7%C3%A3o+de+Or%C3%A7amento",
+      title: "Criação Flexível de Orçamentos",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Saldos não utilizados rolam automaticamente para o próximo período. Ou comece do zero a cada mês. Sua escolha.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Saldo+Acumulado",
+      title: "Rollover e Acúmulo",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Barras de progresso visuais mostrando orçamento vs. real. Veja gastos excessivos instantaneamente.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Acompanhamento",
+      title: "Acompanhamento em Tempo Real",
+      width: "narrow" as const,
+   },
+   {
+      description:
+         "Compare gastos planejados vs. reais. Identifique onde você excedeu as metas.",
+      image: "https://placehold.co/725x478/0f0f23/22c55e?text=An%C3%A1lise+de+Vari%C3%A2ncia",
+      title: "Análise de Variância",
+      width: "wide" as const,
+   },
+   {
+      description:
+         "Projete gastos futuros baseado em padrões. Faça ajustes antes que seja tarde demais.",
+      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Previs%C3%A3o",
+      title: "Previsão e Tendências",
+      width: "narrow" as const,
+   },
+];
+---
+
+<section id="budgeting" class="py-16 md:py-24 overflow-hidden">
+   <FeatureCarousel
+      client:load
+      label="Orçamentos e Previsões Completas"
+      title="Orçamentos Que Realmente Funcionam"
+      description="Defina metas. Acompanhe o progresso. Ajuste no momento. Realmente alcance seus objetivos."
+      ctaText="Explorar recursos"
+      ctaHref="#features"
+      benefitStatement="Defina metas. Acompanhe o progresso. Ajuste no momento. Realmente alcance seus objetivos."
+      items={budgetFeatures}
+   />
+</section>

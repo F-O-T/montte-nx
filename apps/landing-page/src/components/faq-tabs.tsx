@@ -4,6 +4,7 @@ import {
    AccordionTrigger,
    Accordion as BaseAccordion,
 } from "@packages/ui/components/accordion";
+import { Button } from "@packages/ui/components/button";
 import { cn } from "@packages/ui/lib/utils";
 import {
    Briefcase,
@@ -136,27 +137,27 @@ export function FAQTabs() {
    );
 
    return (
-      <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-         <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+         <div className="space-y-4">
             {categories.map((category) => {
                const Icon = category.icon;
                const isActive = activeCategory === category.id;
                return (
-                  <button
+                  <Button
                      className={cn(
-                        "w-full flex items-center gap-2 rounded-lg border px-6 py-2.5 text-base font-medium transition-all cursor-pointer",
+                        "w-full flex items-center gap-2 rounded-lg  transition-all cursor-pointer",
                         isActive
                            ? "bg-primary/10 text-primary border-primary/20"
                            : "bg-background text-foreground border-border hover:border-primary/20 hover:bg-primary/5",
                      )}
                      key={category.id}
                      onClick={() => setActiveCategory(category.id)}
-                     type="button"
+                     variant="outline"
                   >
                      <Icon className="size-4" />
                      <span className="flex-1 text-start">{category.label}</span>
                      <ChevronRight className="size-4" />
-                  </button>
+                  </Button>
                );
             })}
          </div>
@@ -166,7 +167,7 @@ export function FAQTabs() {
                <BaseAccordion collapsible key={activeCategory} type="single">
                   {filteredItems.map((item) => (
                      <AccordionItem
-                        className="border-b last:border-b-0"
+                        className="border-b last:border-b-0 p-2"
                         key={item.id}
                         value={item.id}
                      >

@@ -1,0 +1,154 @@
+---
+import { Check, Cloud, Github, Rocket, Server } from "@lucide/astro";
+import type { SupportedLng } from "@packages/localization";
+
+interface Props {
+   lang?: SupportedLng;
+}
+
+const { lang: _lang = "pt-BR" } = Astro.props;
+
+const selfHostedFeatures = [
+   "Todos os recursos principais incluídos",
+   "Suporte da comunidade (GitHub, Discussões)",
+   "Totalmente grátis. Para sempre.",
+   "Propriedade total dos dados",
+   "Auto-hospedado na sua infraestrutura",
+   "Zero dependência de fornecedor",
+];
+
+const cloudFeatures = [
+   "Todos os recursos principais (paridade com auto-hospedado)",
+   "Backups diários automáticos",
+   "SLA de 99,9% de uptime",
+   "Suporte prioritário por e-mail",
+   "Escalabilidade gerenciada",
+   "Convites fáceis para equipe",
+];
+---
+
+<section id="pricing" class="py-16 md:py-24 bg-muted/50">
+   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 md:mb-16">
+         <span class="text-primary text-sm font-medium uppercase tracking-wider">
+            Preços
+         </span>
+         <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
+            Preços Simples. Controle Real.
+         </h2>
+         <p class="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            Escolha o modelo de implantação que funciona para você.
+         </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+         <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
+<div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-muted">
+                   <Server class="w-6 h-6 text-foreground" />
+                </div>
+                <div>
+                   <h3 class="text-xl font-semibold text-foreground">Auto-Hospedado</h3>
+                   <span class="text-sm text-primary font-medium">Grátis Para Sempre</span>
+                </div>
+             </div>
+
+             <p class="text-muted-foreground mb-2">
+                Implante o Montte na sua própria infraestrutura.
+             </p>
+             <p class="text-sm text-muted-foreground/80 mb-6">
+                Nuvem (AWS, Digital Ocean, etc.) ou on-premise.
+             </p>
+
+<div class="flex items-baseline gap-1 mb-6">
+                <span class="text-4xl font-bold text-foreground">R$0</span>
+                <span class="text-muted-foreground">/mês</span>
+             </div>
+
+            <ul class="space-y-3 mb-8 flex-1">
+               {selfHostedFeatures.map((feature) => (
+                  <li class="flex items-start gap-3">
+                     <span class="flex-shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/10">
+                        <Check class="w-3 h-3 text-primary" />
+                     </span>
+                     <span class="text-sm text-muted-foreground">{feature}</span>
+                  </li>
+               ))}
+            </ul>
+
+<div class="space-y-3 mt-auto">
+                <a
+                   href="https://github.com/montte/montte"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors"
+                >
+                   <Github class="w-5 h-5" />
+                   Auto-Hospede via GitHub
+                </a>
+                <a
+                   href="https://vercel.com/new/clone?repository-url=https://github.com/montte/montte"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl border border-border hover:bg-muted transition-colors font-medium text-foreground"
+                >
+                   <Rocket class="w-5 h-5" />
+                   Deploy na Vercel
+                </a>
+             </div>
+         </div>
+
+         <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border-2 border-primary/50 hover:border-primary transition-all shadow-lg shadow-primary/5">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-medium rounded-full bg-primary text-primary-foreground">
+                Recomendado
+             </div>
+
+             <div class="flex items-center gap-3 mb-4">
+                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">
+                   <Cloud class="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                   <h3 class="text-xl font-semibold text-foreground">Nuvem Gerenciada</h3>
+                   <span class="text-sm text-primary font-medium">Hospedado pelo Montte</span>
+                </div>
+             </div>
+
+             <p class="text-muted-foreground mb-2">
+                Nós gerenciamos servidores, atualizações e backups.
+             </p>
+             <p class="text-sm text-muted-foreground/80 mb-6">
+                Você foca nas suas finanças.
+             </p>
+
+             <div class="flex items-baseline gap-1 mb-6">
+                <span class="text-sm text-muted-foreground">A partir de</span>
+                <span class="text-4xl font-bold text-foreground ml-2">R$49</span>
+                <span class="text-muted-foreground">/mês por workspace</span>
+             </div>
+
+            <ul class="space-y-3 mb-8 flex-1">
+               {cloudFeatures.map((feature) => (
+                  <li class="flex items-start gap-3">
+                     <span class="flex-shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20">
+                        <Check class="w-3 h-3 text-primary" />
+                     </span>
+                     <span class="text-sm text-muted-foreground">{feature}</span>
+                  </li>
+               ))}
+            </ul>
+
+<div class="space-y-3 mt-auto">
+                <a
+                   href="/signup"
+                   class="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                >
+                   Comece o Teste Grátis de 14 Dias
+                </a>
+                <p class="text-center text-xs text-muted-foreground">
+                   Sem cartão necessário. Cancele quando quiser.
+                </p>
+             </div>
+         </div>
+      </div>
+   </div>
+</section>

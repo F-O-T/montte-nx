@@ -43,6 +43,11 @@
       "actions": {
          "logout": "Sair"
       },
+      "greeting": "Olá, {{name}}",
+      "logout-confirmation": {
+         "description": "Tem certeza que deseja sair da sua conta?",
+         "title": "Confirmar saída"
+      },
       "main": {
          "account": "Conta"
       },
