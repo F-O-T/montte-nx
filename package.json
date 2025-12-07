@@ -1,7 +1,4 @@
 {
-   "dependencies": {
-      "ofx-data-extractor": "^1.4.8"
-   },
    "devDependencies": {
       "@biomejs/biome": "2.3.8",
       "@commitlint/cli": "20.2.0",

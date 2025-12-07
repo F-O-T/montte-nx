@@ -1,4 +1,14 @@
 import type { DatabaseInstance } from "@packages/database/client";
+import { createAutomationLog } from "@packages/database/repositories/automation-log-repository";
+import type {
+   AutomationLogStatus,
+   RelatedEntityType,
+   TriggerType,
+} from "@packages/database/schema";
+import type {
+   ConditionEvaluationResult,
+   ConditionGroupEvaluationResult,
+} from "../types/conditions";
 import type { AutomationEvent } from "../types/events";
 import type {
    AutomationRule,
@@ -9,6 +19,110 @@ import type {
 } from "../types/rules";
 import { evaluateConditions } from "./evaluator";
 import { executeActions } from "./executor";
+
+function mapStatusToLogStatus(
+   status: RuleEvaluationStatus,
+): AutomationLogStatus {
+   switch (status) {
+      case "success":
+         return "success";
+      case "partial":
+         return "partial";
+      case "failed":
+         return "failed";
+      case "skipped":
+      case "stopped":
+      default:
+         return "skipped";
+   }
+}
+
+function flattenConditionResults(
+   results: ConditionGroupEvaluationResult[] | undefined,
+): {
+   conditionId: string;
+   passed: boolean;
+   actualValue?: unknown;
+   expectedValue?: unknown;
+}[] {
+   if (!results) return [];
+
+   const flattened: {
+      conditionId: string;
+      passed: boolean;
+      actualValue?: unknown;
+      expectedValue?: unknown;
+   }[] = [];
+
+   function flatten(
+      items: (ConditionEvaluationResult | ConditionGroupEvaluationResult)[],
+   ) {
+      for (const item of items) {
+         if ("groupId" in item) {
+            flattened.push({
+               actualValue: item.operator,
+               conditionId: item.groupId,
+               passed: item.passed,
+            });
+            flatten(item.results);
+         } else {
+            flattened.push({
+               actualValue: item.actualValue,
+               conditionId: item.conditionId,
+               expectedValue: item.expectedValue,
+               passed: item.passed,
+            });
+         }
+      }
+   }
+
+   flatten(results);
+   return flattened;
+}
+
+async function saveExecutionLog(
+   db: DatabaseInstance,
+   rule: AutomationRule,
+   event: AutomationEvent,
+   result: RuleEvaluationResult,
+   context: RuleExecutionContext,
+): Promise<void> {
+   try {
+      const eventData = event.data as Record<string, unknown>;
+      const relatedEntityId = eventData.id as string | undefined;
+      let relatedEntityType: RelatedEntityType | undefined;
+
+      if (event.type === "webhook.received") {
+         relatedEntityType = "webhook";
+      } else if (
+         event.type === "transaction.created" ||
+         event.type === "transaction.updated"
+      ) {
+         relatedEntityType = "transaction";
+      }
+
+      await createAutomationLog(db, {
+         actionsExecuted: result.actionsResults,
+         completedAt: result.completedAt,
+         conditionsEvaluated: flattenConditionResults(result.conditionsResult),
+         durationMs: result.durationMs,
+         errorMessage: result.error,
+         organizationId: context.organizationId,
+         relatedEntityId: relatedEntityId,
+         relatedEntityType: relatedEntityType,
+         ruleId: rule.id,
+         ruleName: rule.name,
+         ruleSnapshot: rule,
+         startedAt: result.startedAt,
+         status: mapStatusToLogStatus(result.status),
+         triggerEvent: event.data,
+         triggeredBy: context.triggeredBy,
+         triggerType: event.type as TriggerType,
+      });
+   } catch (error) {
+      console.error("Failed to save automation log:", error);
+   }
+}
 
 export async function runRule(
    rule: AutomationRule,
@@ -27,7 +141,7 @@ export async function runRule(
 
       if (!conditionsPassed) {
          const completedAt = new Date();
-         return {
+         const result: RuleEvaluationResult = {
             actionsResults: [],
             completedAt,
             conditionsPassed: false,
@@ -38,6 +152,12 @@ export async function runRule(
             startedAt,
             status: "skipped",
          };
+
+         if (db && !context.dryRun) {
+            await saveExecutionLog(db, rule, event, result, context);
+         }
+
+         return result;
       }
 
       const {
@@ -70,7 +190,7 @@ export async function runRule(
          status = "failed";
       }
 
-      return {
+      const result: RuleEvaluationResult = {
          actionsResults,
          completedAt,
          conditionsPassed: true,
@@ -82,9 +202,15 @@ export async function runRule(
          status,
          stoppedByAction: stoppedEarly,
       };
+
+      if (db && !context.dryRun) {
+         await saveExecutionLog(db, rule, event, result, context);
+      }
+
+      return result;
    } catch (error) {
       const completedAt = new Date();
-      return {
+      const result: RuleEvaluationResult = {
          actionsResults: [],
          completedAt,
          conditionsPassed: false,
@@ -95,6 +221,12 @@ export async function runRule(
          startedAt,
          status: "failed",
       };
+
+      if (db && !context.dryRun) {
+         await saveExecutionLog(db, rule, event, result, context);
+      }
+
+      return result;
    }
 }
 

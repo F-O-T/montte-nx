@@ -272,6 +272,82 @@ export function usePageviewTracking() {
    return { trackPageview };
 }
 
+export type EarlyAccessFeature = {
+   name: string;
+   description: string;
+   stage: "alpha" | "beta" | "concept";
+   documentationUrl: string | null;
+   flagKey: string | null;
+};
+
+export function useEarlyAccessFeatures() {
+   const posthogClient = usePostHog();
+   const [features, setFeatures] = useState<EarlyAccessFeature[]>([]);
+   const [loaded, setLoaded] = useState(false);
+   const [enrolledFeatures, setEnrolledFeatures] = useState<Set<string>>(
+      new Set(),
+   );
+
+   const loadFeatures = useCallback(() => {
+      posthogClient.getEarlyAccessFeatures((earlyAccessFeatures) => {
+         setFeatures(earlyAccessFeatures);
+         setLoaded(true);
+
+         const enrolled = new Set<string>();
+         for (const feature of earlyAccessFeatures) {
+            if (feature.flagKey) {
+               const isEnabled = posthogClient.isFeatureEnabled(
+                  feature.flagKey,
+               );
+               if (isEnabled) {
+                  enrolled.add(feature.flagKey);
+               }
+            }
+         }
+         setEnrolledFeatures(enrolled);
+      }, true);
+   }, [posthogClient]);
+
+   useEffect(() => {
+      loadFeatures();
+   }, [loadFeatures]);
+
+   const updateEnrollment = useCallback(
+      (flagKey: string, isEnrolled: boolean) => {
+         posthogClient.updateEarlyAccessFeatureEnrollment(flagKey, isEnrolled);
+
+         setEnrolledFeatures((prev) => {
+            const next = new Set(prev);
+            if (isEnrolled) {
+               next.add(flagKey);
+            } else {
+               next.delete(flagKey);
+            }
+            return next;
+         });
+
+         posthogClient.reloadFeatureFlags();
+      },
+      [posthogClient],
+   );
+
+   const isEnrolled = useCallback(
+      (flagKey: string) => {
+         return enrolledFeatures.has(flagKey);
+      },
+      [enrolledFeatures],
+   );
+
+   return {
+      enrolledFeatures,
+      features,
+      isEnrolled,
+      loaded,
+      reloadFeatures: loadFeatures,
+      updateEnrollment,
+   };
+}
+
 type RouterLocation = {
    href: string;
    pathname: string;

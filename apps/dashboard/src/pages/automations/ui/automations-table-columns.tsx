@@ -26,7 +26,7 @@ import {
    ChevronDown,
    Clock,
    Copy,
-   Edit,
+   ExternalLink,
    Play,
    Trash2,
    Webhook,
@@ -136,11 +136,11 @@ function AutomationActionsCell({ automation }: { automation: Automation }) {
                      }}
                      to="/$slug/automations/$automationId"
                   >
-                     <Edit className="size-4" />
+                     <ExternalLink className="size-4" />
                   </Link>
                </Button>
             </TooltipTrigger>
-            <TooltipContent>Editar</TooltipContent>
+            <TooltipContent>Detalhes</TooltipContent>
          </Tooltip>
          <Tooltip>
             <TooltipTrigger asChild>
@@ -396,8 +396,8 @@ export function AutomationExpandedContent({
                      }}
                      to="/$slug/automations/$automationId"
                   >
-                     <Edit className="size-4" />
-                     Editar
+                     <ExternalLink className="size-4" />
+                     Detalhes
                   </Link>
                </Button>
                <Button
@@ -481,8 +481,8 @@ export function AutomationExpandedContent({
                   }}
                   to="/$slug/automations/$automationId"
                >
-                  <Edit className="size-4" />
-                  Editar
+                  <ExternalLink className="size-4" />
+                  Detalhes
                </Link>
             </Button>
             <Button onClick={handleDelete} size="sm" variant="destructive">

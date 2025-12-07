@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { useFeatureFlag } from "@packages/posthog/client";
 import {
    SidebarGroup,
    SidebarGroupContent,
@@ -32,6 +33,9 @@ export function NavMain() {
    const { openSheet } = useSheet();
    const { pathname, searchStr } = useLocation();
    const { setOpenMobile, state } = useSidebar();
+   const { enabled: isAutomationEnabled } =
+      useFeatureFlag("automation-builder");
+
    const isActive = (url: string) => {
       if (!url) return false;
 
@@ -247,33 +251,37 @@ export function NavMain() {
                   </SidebarMenuItem>
                ))}
             </SidebarMenu>
-            {state === "expanded" && (
-               <SidebarGroupLabel>Automação</SidebarGroupLabel>
+            {isAutomationEnabled && (
+               <>
+                  {state === "expanded" && (
+                     <SidebarGroupLabel>Automação</SidebarGroupLabel>
+                  )}
+                  <SidebarMenu>
+                     {automationItems.map((item) => (
+                        <SidebarMenuItem key={item.id}>
+                           <SidebarMenuButton
+                              asChild
+                              className={
+                                 isActive(item.url)
+                                    ? "bg-primary/10 text-primary rounded-lg"
+                                    : ""
+                              }
+                              tooltip={item.title}
+                           >
+                              <Link
+                                 onClick={() => setOpenMobile(false)}
+                                 params={{}}
+                                 to={item.url}
+                              >
+                                 <item.icon />
+                                 <span>{item.title}</span>
+                              </Link>
+                           </SidebarMenuButton>
+                        </SidebarMenuItem>
+                     ))}
+                  </SidebarMenu>
+               </>
             )}
-            <SidebarMenu>
-               {automationItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                     <SidebarMenuButton
-                        asChild
-                        className={
-                           isActive(item.url)
-                              ? "bg-primary/10 text-primary rounded-lg"
-                              : ""
-                        }
-                        tooltip={item.title}
-                     >
-                        <Link
-                           onClick={() => setOpenMobile(false)}
-                           params={{}}
-                           to={item.url}
-                        >
-                           <item.icon />
-                           <span>{item.title}</span>
-                        </Link>
-                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-               ))}
-            </SidebarMenu>
          </SidebarGroupContent>
       </SidebarGroup>
    );

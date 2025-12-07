@@ -4,16 +4,20 @@ import {
    ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
 import { cn } from "@packages/ui/lib/utils";
-import { Link } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import {
    Activity,
    Infinity as InfinityIcon,
+   Loader2,
    Plus,
    Webhook,
    Zap,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 import {
    AutomationsListProvider,
    type TriggerTypeFilter,
@@ -21,9 +25,101 @@ import {
 } from "../features/automations-list-context";
 import { AutomationsListSection } from "./automations-list-section";
 
+function generateRandomName(): string {
+   const adjectives = [
+      "Rápida",
+      "Inteligente",
+      "Automática",
+      "Eficiente",
+      "Prática",
+      "Nova",
+      "Simples",
+      "Dinâmica",
+   ];
+   const nouns = ["Regra", "Automação", "Rotina", "Tarefa", "Ação", "Processo"];
+   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+   const noun = nouns[Math.floor(Math.random() * nouns.length)];
+   const num = Math.floor(Math.random() * 1000);
+   return `${adj} ${noun} ${num}`;
+}
+
 function AutomationsPageContent() {
    const { activeOrganization } = useActiveOrganization();
    const { triggerType, setTriggerType } = useAutomationsList();
+   const navigate = useNavigate();
+   const queryClient = useQueryClient();
+   const trpc = useTRPC();
+
+   const createMutation = useMutation(
+      trpc.automations.create.mutationOptions({
+         onError: (error) => {
+            toast.error(`Erro ao criar automação: ${error.message}`);
+         },
+         onSuccess: (data) => {
+            queryClient.invalidateQueries({
+               queryKey: [["automations"]],
+            });
+            if (data?.id) {
+               navigate({
+                  params: {
+                     automationId: data.id,
+                     slug: activeOrganization.slug,
+                  },
+                  to: "/$slug/automations/$automationId",
+               });
+            }
+         },
+      }),
+   );
+
+   const handleCreateAutomation = () => {
+      createMutation.mutate({
+         actions: [
+            {
+               config: {},
+               id: `action-${crypto.randomUUID()}`,
+               type: "set_category",
+            },
+         ],
+         conditions: [],
+         flowData: {
+            edges: [
+               {
+                  id: `edge-trigger-action`,
+                  source: "trigger-default",
+                  target: "action-default",
+               },
+            ],
+            nodes: [
+               {
+                  data: {
+                     config: {},
+                     label: "Gatilho",
+                     triggerType: "transaction.created",
+                  },
+                  id: "trigger-default",
+                  position: { x: 250, y: 0 },
+                  type: "trigger",
+               },
+               {
+                  data: {
+                     actionType: "set_category",
+                     config: {},
+                     label: "Definir Categoria",
+                  },
+                  id: "action-default",
+                  position: { x: 250, y: 150 },
+                  type: "action",
+               },
+            ],
+         },
+         isActive: false,
+         name: generateRandomName(),
+         priority: 0,
+         stopOnFirstMatch: false,
+         triggerType: "transaction.created",
+      });
+   };
 
    const triggerChips = [
       {
@@ -52,14 +148,16 @@ function AutomationsPageContent() {
       <main className="space-y-4">
          <DefaultHeader
             actions={
-               <Button asChild>
-                  <Link
-                     params={{ slug: activeOrganization.slug }}
-                     to="/$slug/automations/new"
-                  >
+               <Button
+                  disabled={createMutation.isPending}
+                  onClick={handleCreateAutomation}
+               >
+                  {createMutation.isPending ? (
+                     <Loader2 className="size-4 animate-spin" />
+                  ) : (
                      <Plus className="size-4" />
-                     Nova Automação
-                  </Link>
+                  )}
+                  Nova Automação
                </Button>
             }
             description="Crie regras para automatizar ações baseadas em transações e eventos externos."
