@@ -34,6 +34,8 @@ COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
+COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/queue/package.json ./packages/queue/
 
 
 # Install all dependencies (monorepo-aware)
@@ -81,6 +83,8 @@ COPY libraries/ofx/package.json ./libraries/ofx/
 
 
 COPY packages/brasil-api/package.json ./packages/brasil-api/
+COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/queue/package.json ./packages/queue/
 
 # Install only production dependencies.
 RUN bun install 

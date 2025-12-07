@@ -25,6 +25,8 @@ COPY packages/utils/package.json ./packages/utils/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/notifications/package.json ./packages/notifications/
+COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/queue/package.json ./packages/queue/
 COPY libraries/ofx/package.json ./libraries/ofx/
 
 
