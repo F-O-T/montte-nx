@@ -26,6 +26,7 @@ COPY packages/brasil-api/package.json ./packages/brasil-api/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/notifications/package.json ./packages/notifications/
 COPY libraries/ofx/package.json ./libraries/ofx/
+COPY packages/stripe/package.json ./packages/stripe/
 
 
 # Install dependencies
