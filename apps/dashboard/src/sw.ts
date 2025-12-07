@@ -325,6 +325,20 @@ self.addEventListener("fetch", (event: FetchEvent) => {
    if (event.request.method !== "GET") return;
 
    if (event.request.mode === "navigate") {
+      const url = new URL(event.request.url);
+
+      if (
+         url.pathname.startsWith("/share-target") ||
+         url.pathname.startsWith("/file-handler")
+      ) {
+         event.respondWith(
+            caches.match("/index.html").then((response) => {
+               return response || fetch("/index.html");
+            }),
+         );
+         return;
+      }
+
       event.respondWith(
          fetch(event.request).catch(() => {
             return caches.match("/offline.html") as Promise<Response>;
@@ -353,10 +367,6 @@ async function handleShareTarget(request: Request): Promise<Response> {
             });
          }
 
-         const url = new URL("/share-target", self.location.origin);
-         url.searchParams.set("filename", file.name);
-         url.searchParams.set("hasContent", "true");
-
          const cache = await caches.open("share-target-temp");
          await cache.put(
             "pending-share",
@@ -365,7 +375,7 @@ async function handleShareTarget(request: Request): Promise<Response> {
             }),
          );
 
-         return Response.redirect(url.toString(), 303);
+         return Response.redirect("/share-target?hasContent=true", 303);
       }
 
       return Response.redirect("/share-target", 303);
