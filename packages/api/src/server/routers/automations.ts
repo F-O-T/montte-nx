@@ -33,6 +33,7 @@ import { protectedProcedure, router } from "../trpc";
 const triggerTypeSchema = z.enum([
    "transaction.created",
    "transaction.updated",
+   "webhook.received",
 ]);
 
 const triggerConfigSchema = z.object({}).optional().default({});
@@ -489,6 +490,15 @@ export const automationRouter = router({
 
          if (!rule.isActive) {
             throw new Error("Cannot trigger inactive automation rule");
+         }
+
+         if (
+            rule.triggerType !== "transaction.created" &&
+            rule.triggerType !== "transaction.updated"
+         ) {
+            throw new Error(
+               "Manual trigger is only supported for transaction-based automations",
+            );
          }
 
          const txData = input.testData?.transaction ?? {
