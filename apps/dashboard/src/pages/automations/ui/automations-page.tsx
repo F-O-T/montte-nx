@@ -11,7 +11,6 @@ import {
    Infinity as InfinityIcon,
    Loader2,
    Plus,
-   Webhook,
    Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -136,11 +135,6 @@ function AutomationsPageContent() {
          icon: Activity,
          label: "Transação Atualizada",
          value: "transaction.updated" as const,
-      },
-      {
-         icon: Webhook,
-         label: "Webhook",
-         value: "webhook.received" as const,
       },
    ];
 

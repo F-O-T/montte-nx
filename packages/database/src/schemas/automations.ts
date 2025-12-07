@@ -12,15 +12,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { organization, user } from "./auth";
 
-export type TriggerType =
-   | "transaction.created"
-   | "transaction.updated"
-   | "webhook.received";
+export type TriggerType = "transaction.created" | "transaction.updated";
 
-export type TriggerConfig = {
-   webhookSource?: string;
-   webhookEvent?: string;
-};
+export type TriggerConfig = Record<string, never>;
 
 export type ConditionOperator =
    | "equals"
@@ -161,8 +155,8 @@ export const automationRule = pgTable(
 );
 
 export type AutomationLogStatus = "success" | "partial" | "failed" | "skipped";
-export type TriggeredBy = "event" | "manual" | "webhook";
-export type RelatedEntityType = "transaction" | "webhook";
+export type TriggeredBy = "event" | "manual";
+export type RelatedEntityType = "transaction";
 
 export type ConditionEvaluationResult = {
    conditionId: string;

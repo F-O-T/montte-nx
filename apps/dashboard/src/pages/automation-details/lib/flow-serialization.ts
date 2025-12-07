@@ -57,16 +57,16 @@ export function extractRuleDataFromNodes(
    const actionNodes = nodes.filter((n) => n.type === "action");
 
    if (triggerNodes.length === 0) {
-      throw new Error("At least one trigger node is required");
+      throw new Error("É necessário pelo menos um nó de gatilho");
    }
 
    if (actionNodes.length === 0) {
-      throw new Error("At least one action node is required");
+      throw new Error("É necessário pelo menos um nó de ação");
    }
 
    const triggerNode = triggerNodes[0];
    if (!triggerNode) {
-      throw new Error("Trigger node not found");
+      throw new Error("Nó de gatilho não encontrado");
    }
    const triggerData = triggerNode.data as TriggerNodeData;
 
@@ -164,7 +164,7 @@ export function ruleDataToNodes(
    nodes.push({
       data: {
          config: triggerConfig,
-         label: "Trigger",
+         label: "Gatilho",
          triggerType,
       },
       id: triggerId,
@@ -190,7 +190,7 @@ export function ruleDataToNodes(
                   value: "",
                };
             }),
-            label: `${condition.operator} Condition`,
+            label: `Condição ${condition.operator}`,
             operator: condition.operator,
          },
          id: conditionId,
@@ -237,15 +237,15 @@ export function ruleDataToNodes(
 
 function getActionLabel(actionType: ActionType): string {
    const labels: Record<ActionType, string> = {
-      add_tag: "Add Tag",
-      create_transaction: "Create Transaction",
-      remove_tag: "Remove Tag",
-      send_email: "Send Email",
-      send_push_notification: "Send Notification",
-      set_category: "Set Category",
-      set_cost_center: "Set Cost Center",
-      stop_execution: "Stop",
-      update_description: "Update Description",
+      add_tag: "Adicionar Tag",
+      create_transaction: "Criar Transação",
+      remove_tag: "Remover Tag",
+      send_email: "Enviar E-mail",
+      send_push_notification: "Enviar Notificação",
+      set_category: "Definir Categoria",
+      set_cost_center: "Definir Centro de Custo",
+      stop_execution: "Parar",
+      update_description: "Atualizar Descrição",
    };
    return labels[actionType] ?? actionType;
 }
@@ -256,7 +256,7 @@ export function createDefaultTriggerNode(
    return {
       data: {
          config: {},
-         label: "Trigger",
+         label: "Gatilho",
          triggerType,
       },
       id: `trigger-${crypto.randomUUID()}`,
@@ -272,7 +272,7 @@ export function createDefaultConditionNode(
    return {
       data: {
          conditions: [],
-         label: `${operator} Condition`,
+         label: `Condição ${operator}`,
          operator,
       },
       id: `condition-${crypto.randomUUID()}`,

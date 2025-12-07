@@ -331,13 +331,11 @@ const STATUS_CONFIG: Record<
 const TRIGGER_TYPE_LABELS: Record<string, string> = {
    "transaction.created": "Transação criada",
    "transaction.updated": "Transação atualizada",
-   "webhook.received": "Webhook recebido",
 };
 
 const TRIGGERED_BY_LABELS: Record<TriggeredBy, string> = {
    event: "Evento",
    manual: "Manual",
-   webhook: "Webhook",
 };
 
 const ACTION_TYPE_LABELS: Record<ActionType, string> = {

@@ -35,14 +35,15 @@ import {
    StopCircle,
    Tag,
    Trash2,
-   Webhook,
    Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import type { ActionType, TriggerType } from "@packages/database/schema";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
-import { ActionNode, ConditionNode, TriggerNode } from "../nodes";
+import { ActionNode } from "../nodes/action-node";
+import { ConditionNode } from "../nodes/condition-node";
+import { TriggerNode } from "../nodes/trigger-node";
 
 const nodeTypes: NodeTypes = {
    action: ActionNode,
@@ -310,16 +311,6 @@ export function AutomationCanvas({
                            >
                               <FileText className="mr-2 size-4" />
                               Transação Atualizada
-                           </DropdownMenuItem>
-                           <DropdownMenuItem
-                              onClick={() =>
-                                 handleAddNodeFromMenu("trigger", {
-                                    triggerType: "webhook.received",
-                                 })
-                              }
-                           >
-                              <Webhook className="mr-2 size-4" />
-                              Webhook Recebido
                            </DropdownMenuItem>
                         </DropdownMenuSubContent>
                      </DropdownMenuSub>

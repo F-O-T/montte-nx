@@ -1,10 +1,7 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 
-export type TriggerTypeFilter =
-   | "transaction.created"
-   | "transaction.updated"
-   | "webhook.received";
+export type TriggerTypeFilter = "transaction.created" | "transaction.updated";
 
 interface AutomationsListContextType {
    triggerType: TriggerTypeFilter | null;

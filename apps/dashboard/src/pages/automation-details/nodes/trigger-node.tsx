@@ -17,7 +17,7 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeType>) {
          <BaseNodeHeader className="rounded-t-md bg-emerald-500 text-white">
             <Zap className="size-4" />
             <BaseNodeHeaderTitle className="text-sm">
-               Trigger
+               Gatilho
             </BaseNodeHeaderTitle>
          </BaseNodeHeader>
          <BaseNodeContent>
@@ -25,11 +25,6 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeType>) {
             <div className="text-xs text-muted-foreground">
                {TRIGGER_TYPE_LABELS[data.triggerType]}
             </div>
-            {data.config?.webhookSource && (
-               <div className="text-xs text-muted-foreground">
-                  Source: {data.config.webhookSource}
-               </div>
-            )}
          </BaseNodeContent>
          <BaseHandle
             className="!border-emerald-500"

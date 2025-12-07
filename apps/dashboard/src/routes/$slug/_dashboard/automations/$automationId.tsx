@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AutomationEditorPage } from "@/pages/automation-editor/ui/automation-editor-page";
+import { AutomationDetailsPage } from "@/pages/automation-details/ui/automation-details-page";
 
 export const Route = createFileRoute(
    "/$slug/_dashboard/automations/$automationId",
 )({
-   component: AutomationEditorPage,
+   component: AutomationDetailsPage,
    staticData: { breadcrumb: "Editar Automação" },
 });

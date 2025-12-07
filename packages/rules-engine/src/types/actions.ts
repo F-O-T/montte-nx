@@ -20,7 +20,7 @@ export type ActionDefinition = {
    description: string;
    category: ActionCategory;
    configSchema: ActionConfigField[];
-   appliesTo: ("transaction" | "webhook")[];
+   appliesTo: "transaction"[];
 };
 
 export type ActionConfigField = {
@@ -145,7 +145,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
       type: "update_description",
    },
    {
-      appliesTo: ["transaction", "webhook"],
+      appliesTo: ["transaction"],
       category: "creation",
       configSchema: [
          {
@@ -203,7 +203,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
       type: "create_transaction",
    },
    {
-      appliesTo: ["transaction", "webhook"],
+      appliesTo: ["transaction"],
       category: "notification",
       configSchema: [
          {
@@ -232,7 +232,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
       type: "send_push_notification",
    },
    {
-      appliesTo: ["transaction", "webhook"],
+      appliesTo: ["transaction"],
       category: "notification",
       configSchema: [
          {
@@ -273,7 +273,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
       type: "send_email",
    },
    {
-      appliesTo: ["transaction", "webhook"],
+      appliesTo: ["transaction"],
       category: "control",
       configSchema: [
          {
@@ -326,7 +326,7 @@ export function getActionDefinition(
 }
 
 export function getActionsForTrigger(
-   triggerType: "transaction" | "webhook",
+   triggerType: "transaction",
 ): ActionDefinition[] {
    return ACTION_DEFINITIONS.filter((def) =>
       def.appliesTo.includes(triggerType),

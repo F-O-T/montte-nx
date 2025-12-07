@@ -59,7 +59,7 @@ export type RuleExecutionContext = {
    organizationId: string;
    event: AutomationEvent;
    dryRun?: boolean;
-   triggeredBy?: "event" | "manual" | "webhook";
+   triggeredBy?: "event" | "manual";
 };
 
 export type RuleExecutionResult = {
@@ -82,7 +82,7 @@ export type TriggerDefinition = {
    type: TriggerType;
    label: string;
    description: string;
-   category: "transaction" | "webhook";
+   category: "transaction";
    configSchema: TriggerConfigField[];
 };
 
@@ -114,33 +114,6 @@ export const TRIGGER_DEFINITIONS: TriggerDefinition[] = [
       description: "Triggers when an existing transaction is modified",
       label: "Transaction Updated",
       type: "transaction.updated",
-   },
-   {
-      category: "webhook",
-      configSchema: [
-         {
-            helpText: "Select the webhook source to listen for",
-            key: "webhookSource",
-            label: "Webhook Source",
-            options: [
-               { label: "Stripe", value: "stripe" },
-               { label: "Asaas", value: "asaas" },
-               { label: "Custom", value: "custom" },
-            ],
-            required: true,
-            type: "select",
-         },
-         {
-            helpText: "Optionally filter by specific event type",
-            key: "webhookEvent",
-            label: "Event Type",
-            placeholder: "e.g., payment_intent.succeeded",
-            type: "string",
-         },
-      ],
-      description: "Triggers when a webhook event is received",
-      label: "Webhook Received",
-      type: "webhook.received",
    },
 ];
 

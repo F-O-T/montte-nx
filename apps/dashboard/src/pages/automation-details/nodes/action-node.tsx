@@ -21,9 +21,7 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
          />
          <BaseNodeHeader className="rounded-t-md bg-blue-500 text-white">
             <Play className="size-4" />
-            <BaseNodeHeaderTitle className="text-sm">
-               Action
-            </BaseNodeHeaderTitle>
+            <BaseNodeHeaderTitle className="text-sm">Ação</BaseNodeHeaderTitle>
          </BaseNodeHeader>
          <BaseNodeContent>
             <div className="text-sm font-medium">{data.label}</div>
@@ -31,7 +29,9 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
                {ACTION_TYPE_LABELS[data.actionType]}
             </div>
             {data.continueOnError && (
-               <div className="text-xs text-amber-600">Continues on error</div>
+               <div className="text-xs text-amber-600">
+                  Continua em caso de erro
+               </div>
             )}
          </BaseNodeContent>
          <BaseHandle

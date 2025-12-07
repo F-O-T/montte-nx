@@ -12,7 +12,7 @@ export const AUTOMATION_QUEUE_NAME = "automation-events";
 export type AutomationJobData = {
    event: AutomationEvent;
    metadata?: {
-      triggeredBy?: "event" | "manual" | "webhook";
+      triggeredBy?: "event" | "manual";
       retryCount?: number;
    };
 };

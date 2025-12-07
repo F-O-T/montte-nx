@@ -33,7 +33,6 @@ import { protectedProcedure, router } from "../trpc";
 const triggerTypeSchema = z.enum([
    "transaction.created",
    "transaction.updated",
-   "webhook.received",
 ]);
 
 const triggerConfigSchema = z.object({}).optional().default({});

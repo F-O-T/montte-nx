@@ -10,7 +10,7 @@ export const RedisConfigSchema = z.object({
 
 export type RedisConfig = z.infer<typeof RedisConfigSchema>;
 
-export const QUEUE_NAMES = ["automation", "notification", "webhook"] as const;
+export const QUEUE_NAMES = ["automation", "notification"] as const;
 
 export const QueueNameSchema = z.enum(QUEUE_NAMES);
 
@@ -42,20 +42,9 @@ export const NotificationJobDataSchema = BaseJobDataSchema.extend({
 
 export type NotificationJobData = z.infer<typeof NotificationJobDataSchema>;
 
-export const WebhookJobDataSchema = BaseJobDataSchema.extend({
-   event: z.string(),
-   headers: z.record(z.string(), z.string()),
-   rawPayload: z.unknown(),
-   signature: z.string().optional(),
-   source: z.string(),
-});
-
-export type WebhookJobData = z.infer<typeof WebhookJobDataSchema>;
-
 export const JobDataSchema = z.union([
    AutomationJobDataSchema,
    NotificationJobDataSchema,
-   WebhookJobDataSchema,
 ]);
 
 export type JobData = z.infer<typeof JobDataSchema>;

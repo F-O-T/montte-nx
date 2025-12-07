@@ -90,9 +90,7 @@ async function saveExecutionLog(
       const relatedEntityId = eventData.id as string | undefined;
       let relatedEntityType: RelatedEntityType | undefined;
 
-      if (event.type === "webhook.received") {
-         relatedEntityType = "webhook";
-      } else if (
+      if (
          event.type === "transaction.created" ||
          event.type === "transaction.updated"
       ) {
@@ -293,7 +291,7 @@ export async function runRulesForEvent(
    db?: DatabaseInstance,
    options?: {
       dryRun?: boolean;
-      triggeredBy?: "event" | "manual" | "webhook";
+      triggeredBy?: "event" | "manual";
    },
 ): Promise<RuleExecutionResult> {
    const applicableRules = rules.filter(

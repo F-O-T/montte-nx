@@ -40,7 +40,6 @@ type AutomationSettingsFormProps = {
    settings: AutomationSettings;
    onSettingsChange: (settings: Partial<AutomationSettings>) => void;
    onTriggerTypeChange?: (triggerType: TriggerType) => void;
-   mode?: "create" | "edit";
 };
 
 const automationSettingsSchema = z.object({
@@ -49,18 +48,13 @@ const automationSettingsSchema = z.object({
    name: z.string().min(1, "Nome é obrigatório"),
    priority: z.number().min(0, "Prioridade deve ser maior ou igual a 0"),
    stopOnFirstMatch: z.boolean(),
-   triggerType: z.enum([
-      "transaction.created",
-      "transaction.updated",
-      "webhook.received",
-   ]),
+   triggerType: z.enum(["transaction.created", "transaction.updated"]),
 });
 
 export function AutomationSettingsForm({
    settings,
    onSettingsChange,
    onTriggerTypeChange,
-   mode = "create",
 }: AutomationSettingsFormProps) {
    const form = useForm({
       defaultValues: {
@@ -234,14 +228,10 @@ export function AutomationSettingsForm({
                         <>
                            <div>
                               <FieldLabel htmlFor={field.name}>
-                                 {mode === "create"
-                                    ? "Ativar após criar"
-                                    : "Ativa"}
+                                 Ativa
                               </FieldLabel>
                               <p className="text-xs text-muted-foreground">
-                                 {mode === "create"
-                                    ? "A automação será ativada imediatamente"
-                                    : "A automação está ativa e será executada"}
+                                 A automação está ativa e será executada
                               </p>
                            </div>
                            <Switch

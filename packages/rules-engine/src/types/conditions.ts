@@ -18,10 +18,7 @@ export type ConditionField =
    | "counterpartyId"
    | "bankAccountId"
    | "tagIds"
-   | "metadata"
-   | "webhookSource"
-   | "webhookEventType"
-   | "webhookPayload";
+   | "metadata";
 
 export type ConditionFieldType =
    | "string"
@@ -36,7 +33,7 @@ export type ConditionFieldDefinition = {
    label: string;
    type: ConditionFieldType;
    operators: ConditionOperator[];
-   category: "transaction" | "webhook" | "common";
+   category: "transaction" | "common";
 };
 
 export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
@@ -145,27 +142,6 @@ export const CONDITION_FIELD_DEFINITIONS: ConditionFieldDefinition[] = [
       label: "Tags",
       operators: ["contains", "not_contains", "is_empty", "is_not_empty"],
       type: "array",
-   },
-   {
-      category: "webhook",
-      key: "webhookSource",
-      label: "Webhook Source",
-      operators: ["equals", "not_equals", "in_list"],
-      type: "string",
-   },
-   {
-      category: "webhook",
-      key: "webhookEventType",
-      label: "Webhook Event Type",
-      operators: ["equals", "not_equals", "contains", "starts_with", "in_list"],
-      type: "string",
-   },
-   {
-      category: "webhook",
-      key: "webhookPayload",
-      label: "Webhook Payload",
-      operators: ["contains", "not_contains", "is_empty", "is_not_empty"],
-      type: "object",
    },
 ];
 

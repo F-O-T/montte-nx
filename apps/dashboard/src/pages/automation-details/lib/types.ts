@@ -52,7 +52,6 @@ export type AutomationFlowState = {
 export const TRIGGER_TYPE_LABELS: Record<TriggerType, string> = {
    "transaction.created": "Transação Criada",
    "transaction.updated": "Transação Atualizada",
-   "webhook.received": "Webhook Recebido",
 };
 
 export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
@@ -68,42 +67,42 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
 };
 
 export const CONDITION_OPERATOR_LABELS: Record<ConditionOperator, string> = {
-   after: "After",
-   before: "Before",
-   between: "Between",
-   contains: "Contains",
-   day_of_month: "Day of Month",
-   day_of_week: "Day of Week",
-   ends_with: "Ends With",
+   after: "Depois",
+   before: "Antes",
+   between: "Entre",
+   contains: "Contém",
+   day_of_month: "Dia do Mês",
+   day_of_week: "Dia da Semana",
+   ends_with: "Termina Com",
    eq: "=",
-   equals: "Equals",
+   equals: "Igual a",
    gt: ">",
    gte: "≥",
-   in_list: "In List",
-   is_business_day: "Is Business Day",
-   is_empty: "Is Empty",
-   is_not_empty: "Is Not Empty",
-   is_weekend: "Is Weekend",
+   in_list: "Na Lista",
+   is_business_day: "É Dia Útil",
+   is_empty: "Está Vazio",
+   is_not_empty: "Não Está Vazio",
+   is_weekend: "É Fim de Semana",
    lt: "<",
    lte: "≤",
    neq: "≠",
-   not_contains: "Not Contains",
-   not_equals: "Not Equals",
-   not_in_list: "Not In List",
-   regex: "Matches Regex",
-   starts_with: "Starts With",
+   not_contains: "Não Contém",
+   not_equals: "Diferente de",
+   not_in_list: "Fora da Lista",
+   regex: "Corresponde a Regex",
+   starts_with: "Começa Com",
 };
 
 export const TRANSACTION_FIELDS = [
-   { label: "Description", type: "string", value: "description" },
-   { label: "Amount", type: "number", value: "amount" },
-   { label: "Type", type: "enum", value: "type" },
-   { label: "Date", type: "date", value: "date" },
-   { label: "Bank Account", type: "reference", value: "bankAccountId" },
-   { label: "Categories", type: "array", value: "categoryIds" },
-   { label: "Cost Center", type: "reference", value: "costCenterId" },
+   { label: "Descrição", type: "string", value: "description" },
+   { label: "Valor", type: "number", value: "amount" },
+   { label: "Tipo", type: "enum", value: "type" },
+   { label: "Data", type: "date", value: "date" },
+   { label: "Conta Bancária", type: "reference", value: "bankAccountId" },
+   { label: "Categorias", type: "array", value: "categoryIds" },
+   { label: "Centro de Custo", type: "reference", value: "costCenterId" },
    { label: "Tags", type: "array", value: "tagIds" },
-   { label: "Counterparty", type: "reference", value: "counterpartyId" },
+   { label: "Contraparte", type: "reference", value: "counterpartyId" },
 ] as const;
 
 export type TransactionField = (typeof TRANSACTION_FIELDS)[number]["value"];

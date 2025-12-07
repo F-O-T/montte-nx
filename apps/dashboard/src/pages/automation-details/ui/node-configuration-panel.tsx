@@ -94,27 +94,19 @@ function TriggerConfigurationForm({
       defaultValues: {
          label: data.label,
          triggerType: data.triggerType,
-         webhookSource: data.config?.webhookSource ?? "",
       },
    });
 
    useEffect(() => {
       form.setFieldValue("label", data.label);
       form.setFieldValue("triggerType", data.triggerType);
-      form.setFieldValue("webhookSource", data.config?.webhookSource ?? "");
    }, [data, form]);
 
    const handleFieldChange = useCallback(
       (field: string, value: unknown) => {
-         if (field === "webhookSource") {
-            onUpdate(nodeId, {
-               config: { ...data.config, webhookSource: value as string },
-            });
-         } else {
-            onUpdate(nodeId, { [field]: value });
-         }
+         onUpdate(nodeId, { [field]: value });
       },
-      [nodeId, data.config, onUpdate],
+      [nodeId, onUpdate],
    );
 
    return (
@@ -169,33 +161,6 @@ function TriggerConfigurationForm({
                )}
             </form.Field>
          </FieldGroup>
-
-         {data.triggerType === "webhook.received" && (
-            <FieldGroup>
-               <form.Field name="webhookSource">
-                  {(field) => (
-                     <Field>
-                        <FieldLabel htmlFor={field.name}>
-                           Origem do Webhook
-                        </FieldLabel>
-                        <Input
-                           id={field.name}
-                           onBlur={field.handleBlur}
-                           onChange={(e) => {
-                              field.handleChange(e.target.value);
-                              handleFieldChange(
-                                 "webhookSource",
-                                 e.target.value,
-                              );
-                           }}
-                           placeholder="ex: stripe, asaas, custom"
-                           value={field.state.value}
-                        />
-                     </Field>
-                  )}
-               </form.Field>
-            </FieldGroup>
-         )}
       </div>
    );
 }

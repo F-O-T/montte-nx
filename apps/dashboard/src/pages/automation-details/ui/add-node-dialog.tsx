@@ -34,13 +34,6 @@ const triggerOptions: NodeOption[] = [
       label: TRIGGER_TYPE_LABELS["transaction.updated"],
       type: "trigger",
    },
-   {
-      data: { triggerType: "webhook.received" },
-      description: "Quando um webhook é recebido",
-      keywords: ["webhook", "recebido", "externo", "trigger", "gatilho"],
-      label: TRIGGER_TYPE_LABELS["webhook.received"],
-      type: "trigger",
-   },
 ];
 
 const conditionOptions: NodeOption[] = [

@@ -23,7 +23,7 @@ export function ConditionNode({ data }: NodeProps<ConditionNodeType>) {
          <BaseNodeHeader className="rounded-t-md bg-amber-500 text-white">
             <Filter className="size-4" />
             <BaseNodeHeaderTitle className="text-sm">
-               Condition
+               Condição
             </BaseNodeHeaderTitle>
             <Badge className="bg-amber-600 text-white" variant="secondary">
                {data.operator}
@@ -45,7 +45,7 @@ export function ConditionNode({ data }: NodeProps<ConditionNodeType>) {
                   ))}
                   {data.conditions.length > 3 && (
                      <div className="text-xs text-muted-foreground">
-                        +{data.conditions.length - 3} more
+                        +{data.conditions.length - 3} mais
                      </div>
                   )}
                </div>

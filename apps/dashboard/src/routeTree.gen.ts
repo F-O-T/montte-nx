@@ -49,7 +49,6 @@ import { Route as SlugDashboardCategoriesCategoryIdRouteImport } from './routes/
 import { Route as SlugDashboardBudgetsBudgetIdRouteImport } from './routes/$slug/_dashboard/budgets/$budgetId'
 import { Route as SlugDashboardBillsBillIdRouteImport } from './routes/$slug/_dashboard/bills.$billId'
 import { Route as SlugDashboardBankAccountsBankAccountIdRouteImport } from './routes/$slug/_dashboard/bank-accounts.$bankAccountId'
-import { Route as SlugDashboardAutomationsNewRouteImport } from './routes/$slug/_dashboard/automations/new'
 import { Route as SlugDashboardAutomationsAutomationIdRouteImport } from './routes/$slug/_dashboard/automations/$automationId'
 
 const ShareTargetRoute = ShareTargetRouteImport.update({
@@ -273,12 +272,6 @@ const SlugDashboardBankAccountsBankAccountIdRoute =
     path: '/bank-accounts/$bankAccountId',
     getParentRoute: () => SlugDashboardRoute,
   } as any)
-const SlugDashboardAutomationsNewRoute =
-  SlugDashboardAutomationsNewRouteImport.update({
-    id: '/automations/new',
-    path: '/automations/new',
-    getParentRoute: () => SlugDashboardRoute,
-  } as any)
 const SlugDashboardAutomationsAutomationIdRoute =
   SlugDashboardAutomationsAutomationIdRouteImport.update({
     id: '/automations/$automationId',
@@ -302,7 +295,6 @@ export interface FileRoutesByFullPath {
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
   '/$slug/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
-  '/$slug/automations/new': typeof SlugDashboardAutomationsNewRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/bills/$billId': typeof SlugDashboardBillsBillIdRoute
   '/$slug/budgets/$budgetId': typeof SlugDashboardBudgetsBudgetIdRoute
@@ -345,7 +337,6 @@ export interface FileRoutesByTo {
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
   '/$slug/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
-  '/$slug/automations/new': typeof SlugDashboardAutomationsNewRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/bills/$billId': typeof SlugDashboardBillsBillIdRoute
   '/$slug/budgets/$budgetId': typeof SlugDashboardBudgetsBudgetIdRoute
@@ -390,7 +381,6 @@ export interface FileRoutesById {
   '/$slug/_dashboard/profile': typeof SlugDashboardProfileRoute
   '/$slug/_dashboard/reports': typeof SlugDashboardReportsRoute
   '/$slug/_dashboard/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
-  '/$slug/_dashboard/automations/new': typeof SlugDashboardAutomationsNewRoute
   '/$slug/_dashboard/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/_dashboard/bills/$billId': typeof SlugDashboardBillsBillIdRoute
   '/$slug/_dashboard/budgets/$budgetId': typeof SlugDashboardBudgetsBudgetIdRoute
@@ -435,7 +425,6 @@ export interface FileRouteTypes {
     | '/$slug/profile'
     | '/$slug/reports'
     | '/$slug/automations/$automationId'
-    | '/$slug/automations/new'
     | '/$slug/bank-accounts/$bankAccountId'
     | '/$slug/bills/$billId'
     | '/$slug/budgets/$budgetId'
@@ -478,7 +467,6 @@ export interface FileRouteTypes {
     | '/$slug/profile'
     | '/$slug/reports'
     | '/$slug/automations/$automationId'
-    | '/$slug/automations/new'
     | '/$slug/bank-accounts/$bankAccountId'
     | '/$slug/bills/$billId'
     | '/$slug/budgets/$budgetId'
@@ -522,7 +510,6 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard/profile'
     | '/$slug/_dashboard/reports'
     | '/$slug/_dashboard/automations/$automationId'
-    | '/$slug/_dashboard/automations/new'
     | '/$slug/_dashboard/bank-accounts/$bankAccountId'
     | '/$slug/_dashboard/bills/$billId'
     | '/$slug/_dashboard/budgets/$budgetId'
@@ -840,13 +827,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SlugDashboardBankAccountsBankAccountIdRouteImport
       parentRoute: typeof SlugDashboardRoute
     }
-    '/$slug/_dashboard/automations/new': {
-      id: '/$slug/_dashboard/automations/new'
-      path: '/automations/new'
-      fullPath: '/$slug/automations/new'
-      preLoaderRoute: typeof SlugDashboardAutomationsNewRouteImport
-      parentRoute: typeof SlugDashboardRoute
-    }
     '/$slug/_dashboard/automations/$automationId': {
       id: '/$slug/_dashboard/automations/$automationId'
       path: '/automations/$automationId'
@@ -862,7 +842,6 @@ interface SlugDashboardRouteChildren {
   SlugDashboardProfileRoute: typeof SlugDashboardProfileRoute
   SlugDashboardReportsRoute: typeof SlugDashboardReportsRoute
   SlugDashboardAutomationsAutomationIdRoute: typeof SlugDashboardAutomationsAutomationIdRoute
-  SlugDashboardAutomationsNewRoute: typeof SlugDashboardAutomationsNewRoute
   SlugDashboardBankAccountsBankAccountIdRoute: typeof SlugDashboardBankAccountsBankAccountIdRoute
   SlugDashboardBillsBillIdRoute: typeof SlugDashboardBillsBillIdRoute
   SlugDashboardBudgetsBudgetIdRoute: typeof SlugDashboardBudgetsBudgetIdRoute
@@ -896,7 +875,6 @@ const SlugDashboardRouteChildren: SlugDashboardRouteChildren = {
   SlugDashboardReportsRoute: SlugDashboardReportsRoute,
   SlugDashboardAutomationsAutomationIdRoute:
     SlugDashboardAutomationsAutomationIdRoute,
-  SlugDashboardAutomationsNewRoute: SlugDashboardAutomationsNewRoute,
   SlugDashboardBankAccountsBankAccountIdRoute:
     SlugDashboardBankAccountsBankAccountIdRoute,
   SlugDashboardBillsBillIdRoute: SlugDashboardBillsBillIdRoute,

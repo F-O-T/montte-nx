@@ -434,15 +434,15 @@ describe("runner", () => {
             name: "Transaction rule",
             triggerType: "transaction.created",
          });
-         const webhookRule = createRule({
-            name: "Webhook rule",
-            triggerType: "webhook.received",
+         const updateRule = createRule({
+            name: "Update rule",
+            triggerType: "transaction.updated",
          });
          const event = createEvent({ type: "transaction.created" });
 
          const result = await runRulesForEvent(event, [
             transactionRule,
-            webhookRule,
+            updateRule,
          ]);
 
          expect(result.rulesEvaluated).toBe(1);

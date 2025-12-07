@@ -29,7 +29,6 @@ import {
    ExternalLink,
    Play,
    Trash2,
-   Webhook,
    Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -42,13 +41,11 @@ type Automation = RouterOutput["automations"]["getAllPaginated"]["rules"][0];
 const triggerTypeLabels: Record<string, string> = {
    "transaction.created": "Transação Criada",
    "transaction.updated": "Transação Atualizada",
-   "webhook.received": "Webhook Recebido",
 };
 
 const triggerTypeIcons: Record<string, typeof Zap> = {
    "transaction.created": Zap,
    "transaction.updated": Activity,
-   "webhook.received": Webhook,
 };
 
 function formatDate(date: Date | string | null): string {
