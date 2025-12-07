@@ -6,7 +6,7 @@
       "nixpacksPlan": {
          "providers": ["..."]
       },
-      "watchPatterns": ["/packages/**"]
+      "watchPatterns": ["/packages/**", "/apps/server/**"]
    },
    "deploy": {
       "multiRegionConfig": {
