@@ -1,3 +1,4 @@
+import { stripe } from "@better-auth/stripe";
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    createDefaultOrganization,
@@ -5,6 +6,8 @@ import {
 } from "@packages/database/repositories/auth-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
+import type { StripeClient } from "@packages/stripe";
+import { PlanName } from "@packages/stripe/constants";
 import {
    type ResendClient,
    type SendEmailOTPOptions,
@@ -21,24 +24,33 @@ import {
    organization,
 } from "better-auth/plugins";
 import { type BuiltInLocales, localization } from "better-auth-localization";
+export const ORGANIZATION_LIMIT = 3;
+
 export interface AuthOptions {
    db: DatabaseInstance;
    resendClient: ResendClient;
+   stripeClient: StripeClient;
+   STRIPE_WEBHOOK_SECRET: string;
 }
-
-export const ORGANIZATION_LIMIT = 3;
+const getCrossSubDomainCookiesConfig = () => {
+   if (isProduction) {
+      return {
+         domain: ".montte.co",
+         enabled: true,
+      };
+   }
+   return { enabled: false };
+};
 
 export const getAuthOptions = (
-   db: DatabaseInstance,
-   resendClient: ResendClient,
+   db: AuthOptions["db"],
+   resendClient: AuthOptions["resendClient"],
+   stripeClient: AuthOptions["stripeClient"],
+   STRIPE_WEBHOOK_SECRET: AuthOptions["STRIPE_WEBHOOK_SECRET"],
 ) =>
    ({
       advanced: {
-         crossSubDomainCookies: {
-            domain: ".montte.co",
-            enabled: isProduction,
-         },
-
+         crossSubDomainCookies: getCrossSubDomainCookiesConfig(),
          database: { generateId: "uuid" },
       },
       database: drizzleAdapter(db, {
@@ -106,6 +118,46 @@ export const getAuthOptions = (
          joins: true,
       },
       plugins: [
+         stripe({
+            createCustomerOnSignUp: true,
+            stripeClient,
+            stripeWebhookSecret: STRIPE_WEBHOOK_SECRET,
+            subscription: {
+               authorizeReference: async ({ user, referenceId }) => {
+                  const membership = await db.query.member.findFirst({
+                     where: (member, { eq, and }) =>
+                        and(
+                           eq(member.organizationId, referenceId),
+                           eq(member.userId, user.id),
+                        ),
+                  });
+                  if (!membership) {
+                     return false;
+                  }
+                  return (
+                     membership.role === "owner" || membership.role === "admin"
+                  );
+               },
+               enabled: true,
+               plans: [
+                  {
+                     annualDiscountPriceId:
+                        serverEnv.STRIPE_BASIC_ANNUAL_PRICE_ID,
+                     name: PlanName.BASIC,
+                     priceId: serverEnv.STRIPE_BASIC_PRICE_ID,
+                  },
+                  {
+                     annualDiscountPriceId:
+                        serverEnv.STRIPE_PRO_ANNUAL_PRICE_ID,
+                     freeTrial: {
+                        days: 14,
+                     },
+                     name: PlanName.PRO,
+                     priceId: serverEnv.STRIPE_PRO_PRICE_ID,
+                  },
+               ],
+            },
+         }),
          localization({
             defaultLocale: "pt-BR", // Use built-in Portuguese translations
             fallbackLocale: "default", // Fallback to English,
@@ -229,7 +281,13 @@ export const getAuthOptions = (
    }) satisfies BetterAuthOptions;
 
 export const createAuth = (options: AuthOptions) => {
-   const authOptions = getAuthOptions(options.db, options.resendClient);
+   const authOptions = getAuthOptions(
+      options.db,
+      options.resendClient,
+      options.stripeClient,
+      options.STRIPE_WEBHOOK_SECRET,
+   );
    return betterAuth(authOptions);
 };
+
 export type AuthInstance = ReturnType<typeof createAuth>;

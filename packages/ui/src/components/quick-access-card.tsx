@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
    Card,
    CardAction,
+   CardContent,
    CardDescription,
    CardHeader,
    CardTitle,
@@ -14,9 +15,11 @@ interface QuickAccessCardProps {
    description: string;
    onClick?: () => void;
    disabled?: boolean;
+   content?: ReactNode;
 }
 
 export function QuickAccessCard({
+   content,
    icon,
    title,
    description,
@@ -50,6 +53,7 @@ export function QuickAccessCard({
             <CardDescription>{description}</CardDescription>
             <CardAction></CardAction>
          </CardHeader>
+         <CardContent>{content}</CardContent>
       </Card>
    );
 }

@@ -16,13 +16,11 @@ import { getInitials } from "@packages/utils/text";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 
 function OrganizationAvatar() {
-   const trpc = useTRPC();
-   const { data: orgData } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const { activeOrganization } = useActiveOrganization();
 
    return (
       <Avatar className="rounded-lg size-10">
@@ -31,7 +29,9 @@ function OrganizationAvatar() {
                <OrganizationLogo />
             </Suspense>
          </ErrorBoundary>
-         <AvatarFallback>{getInitials(orgData?.name ?? "")}</AvatarFallback>
+         <AvatarFallback>
+            {getInitials(activeOrganization?.name ?? "")}
+         </AvatarFallback>
       </Avatar>
    );
 }
@@ -48,15 +48,14 @@ function OrganizationLogo() {
 
 // Content Component
 function OrganizationContent() {
-   const trpc = useTRPC();
-   const { data } = useSuspenseQuery(
-      trpc.organization.getActiveOrganization.queryOptions(),
-   );
+   const { activeOrganization } = useActiveOrganization();
 
    return (
       <ItemContent>
-         <ItemTitle>{data?.name}</ItemTitle>
-         <ItemDescription>{data?.description ?? "No summary"}</ItemDescription>
+         <ItemTitle>{activeOrganization?.name}</ItemTitle>
+         <ItemDescription>
+            {activeOrganization?.description ?? "No summary"}
+         </ItemDescription>
       </ItemContent>
    );
 }

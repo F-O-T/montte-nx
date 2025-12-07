@@ -23,6 +23,8 @@ import { Route as SlugImportOfxRouteImport } from './routes/$slug/import-ofx'
 import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
 import { Route as SlugDashboardReportsRouteImport } from './routes/$slug/_dashboard/reports'
 import { Route as SlugDashboardProfileRouteImport } from './routes/$slug/_dashboard/profile'
+import { Route as SlugDashboardPlansRouteImport } from './routes/$slug/_dashboard/plans'
+import { Route as SlugDashboardManagePlanRouteImport } from './routes/$slug/_dashboard/manage-plan'
 import { Route as SlugDashboardHomeRouteImport } from './routes/$slug/_dashboard/home'
 import { Route as SlugDashboardTransactionsIndexRouteImport } from './routes/$slug/_dashboard/transactions.index'
 import { Route as SlugDashboardTagsIndexRouteImport } from './routes/$slug/_dashboard/tags/index'
@@ -116,6 +118,16 @@ const SlugDashboardReportsRoute = SlugDashboardReportsRouteImport.update({
 const SlugDashboardProfileRoute = SlugDashboardProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => SlugDashboardRoute,
+} as any)
+const SlugDashboardPlansRoute = SlugDashboardPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => SlugDashboardRoute,
+} as any)
+const SlugDashboardManagePlanRoute = SlugDashboardManagePlanRouteImport.update({
+  id: '/manage-plan',
+  path: '/manage-plan',
   getParentRoute: () => SlugDashboardRoute,
 } as any)
 const SlugDashboardHomeRoute = SlugDashboardHomeRouteImport.update({
@@ -278,6 +290,8 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/$slug/home': typeof SlugDashboardHomeRoute
+  '/$slug/manage-plan': typeof SlugDashboardManagePlanRoute
+  '/$slug/plans': typeof SlugDashboardPlansRoute
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
@@ -318,6 +332,8 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/$slug/home': typeof SlugDashboardHomeRoute
+  '/$slug/manage-plan': typeof SlugDashboardManagePlanRoute
+  '/$slug/plans': typeof SlugDashboardPlansRoute
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
@@ -360,6 +376,8 @@ export interface FileRoutesById {
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/$slug/_dashboard/home': typeof SlugDashboardHomeRoute
+  '/$slug/_dashboard/manage-plan': typeof SlugDashboardManagePlanRoute
+  '/$slug/_dashboard/plans': typeof SlugDashboardPlansRoute
   '/$slug/_dashboard/profile': typeof SlugDashboardProfileRoute
   '/$slug/_dashboard/reports': typeof SlugDashboardReportsRoute
   '/$slug/_dashboard/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
@@ -402,6 +420,8 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/home'
+    | '/$slug/manage-plan'
+    | '/$slug/plans'
     | '/$slug/profile'
     | '/$slug/reports'
     | '/$slug/bank-accounts/$bankAccountId'
@@ -442,6 +462,8 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/home'
+    | '/$slug/manage-plan'
+    | '/$slug/plans'
     | '/$slug/profile'
     | '/$slug/reports'
     | '/$slug/bank-accounts/$bankAccountId'
@@ -483,6 +505,8 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/_dashboard/home'
+    | '/$slug/_dashboard/manage-plan'
+    | '/$slug/_dashboard/plans'
     | '/$slug/_dashboard/profile'
     | '/$slug/_dashboard/reports'
     | '/$slug/_dashboard/bank-accounts/$bankAccountId'
@@ -617,6 +641,20 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/$slug/profile'
       preLoaderRoute: typeof SlugDashboardProfileRouteImport
+      parentRoute: typeof SlugDashboardRoute
+    }
+    '/$slug/_dashboard/plans': {
+      id: '/$slug/_dashboard/plans'
+      path: '/plans'
+      fullPath: '/$slug/plans'
+      preLoaderRoute: typeof SlugDashboardPlansRouteImport
+      parentRoute: typeof SlugDashboardRoute
+    }
+    '/$slug/_dashboard/manage-plan': {
+      id: '/$slug/_dashboard/manage-plan'
+      path: '/manage-plan'
+      fullPath: '/$slug/manage-plan'
+      preLoaderRoute: typeof SlugDashboardManagePlanRouteImport
       parentRoute: typeof SlugDashboardRoute
     }
     '/$slug/_dashboard/home': {
@@ -799,6 +837,8 @@ declare module '@tanstack/react-router' {
 
 interface SlugDashboardRouteChildren {
   SlugDashboardHomeRoute: typeof SlugDashboardHomeRoute
+  SlugDashboardManagePlanRoute: typeof SlugDashboardManagePlanRoute
+  SlugDashboardPlansRoute: typeof SlugDashboardPlansRoute
   SlugDashboardProfileRoute: typeof SlugDashboardProfileRoute
   SlugDashboardReportsRoute: typeof SlugDashboardReportsRoute
   SlugDashboardBankAccountsBankAccountIdRoute: typeof SlugDashboardBankAccountsBankAccountIdRoute
@@ -829,6 +869,8 @@ interface SlugDashboardRouteChildren {
 
 const SlugDashboardRouteChildren: SlugDashboardRouteChildren = {
   SlugDashboardHomeRoute: SlugDashboardHomeRoute,
+  SlugDashboardManagePlanRoute: SlugDashboardManagePlanRoute,
+  SlugDashboardPlansRoute: SlugDashboardPlansRoute,
   SlugDashboardProfileRoute: SlugDashboardProfileRoute,
   SlugDashboardReportsRoute: SlugDashboardReportsRoute,
   SlugDashboardBankAccountsBankAccountIdRoute:

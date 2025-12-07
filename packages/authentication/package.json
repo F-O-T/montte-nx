@@ -1,10 +1,12 @@
 {
    "dependencies": {
+      "@better-auth/stripe": "catalog:auth",
       "@packages/database": "workspace:*",
       "@packages/environment": "workspace:*",
+      "@packages/stripe": "workspace:*",
       "@packages/transactional": "workspace:*",
       "better-auth": "catalog:auth",
-      "better-auth-localization": "^2.2.2"
+      "better-auth-localization": "catalog:auth"
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",

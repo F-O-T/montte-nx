@@ -2,6 +2,7 @@ import { z } from "zod";
 import { parseEnv } from "./helpers";
 
 const EnvSchema = z.object({
+   APP_URL: z.string().optional(),
    BETTER_AUTH_GOOGLE_CLIENT_ID: z.string(),
    BETTER_AUTH_GOOGLE_CLIENT_SECRET: z.string(),
    BETTER_AUTH_SECRET: z.string(),
@@ -14,6 +15,12 @@ const EnvSchema = z.object({
    POSTHOG_HOST: z.string(),
    POSTHOG_KEY: z.string(),
    RESEND_API_KEY: z.string(),
+   STRIPE_BASIC_ANNUAL_PRICE_ID: z.string().optional(),
+   STRIPE_BASIC_PRICE_ID: z.string().optional(),
+   STRIPE_PRO_ANNUAL_PRICE_ID: z.string().optional(),
+   STRIPE_PRO_PRICE_ID: z.string().optional(),
+   STRIPE_SECRET_KEY: z.string(),
+   STRIPE_WEBHOOK_SECRET: z.string(),
    VAPID_PRIVATE_KEY: z.string().optional(),
    VAPID_PUBLIC_KEY: z.string().optional(),
    VAPID_SUBJECT: z.string().optional().default("mailto:contato@montte.co"),
