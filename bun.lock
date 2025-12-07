@@ -30,6 +30,7 @@
         "@packages/environment": "workspace:*",
         "@packages/localization": "workspace:*",
         "@packages/posthog": "workspace:*",
+        "@packages/stripe": "workspace:*",
         "@packages/transactional": "workspace:*",
         "@packages/ui": "workspace:*",
         "@packages/utils": "workspace:*",
