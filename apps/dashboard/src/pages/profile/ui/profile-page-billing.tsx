@@ -23,7 +23,7 @@ import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowRight, CreditCard, Crown, Zap } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { useActivePlan } from "@/hooks/use-active-plan";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 
 function ProfilePageBillingErrorFallback(props: FallbackProps) {
    return (
@@ -161,17 +161,17 @@ function NoSubscriptionContent() {
 function ProfilePageBillingContent() {
    const { slug } = useParams({ strict: false }) as { slug: string };
    const navigate = useNavigate();
-   const { currentSubscription } = useActivePlan();
+   const { activeSubscription } = useActiveOrganization();
 
    const handleNavigateToManagePlan = () => {
       navigate({ params: { slug }, to: "/$slug/manage-plan" });
    };
 
-   if (currentSubscription) {
+   if (activeSubscription) {
       return (
          <QuickAccessCard
             content={
-               <ActiveSubscriptionContent planName={currentSubscription.plan} />
+               <ActiveSubscriptionContent planName={activeSubscription.plan} />
             }
             description={translate(
                "dashboard.routes.profile.billing.description",

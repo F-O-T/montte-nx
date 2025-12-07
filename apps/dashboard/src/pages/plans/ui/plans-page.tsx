@@ -21,7 +21,6 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useActivePlan } from "@/hooks/use-active-plan";
 import { betterAuthClient } from "@/integrations/clients";
 
 interface Plan {
@@ -163,11 +162,9 @@ function PlanCard({
 }
 
 function PlansPageContent() {
-   const { activeOrganization } = useActiveOrganization();
+   const { activeOrganization, activeSubscription } = useActiveOrganization();
    const [isAnnual, setIsAnnual] = useState(true);
    const [isLoading, startTransition] = useTransition();
-
-   const { currentSubscription } = useActivePlan();
 
    const handleSelectPlan = async (planName: string) => {
       startTransition(async () => {
@@ -224,7 +221,7 @@ function PlansPageContent() {
          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto w-full">
             {plans.map((plan) => (
                <PlanCard
-                  currentPlan={currentSubscription?.plan}
+                  currentPlan={activeSubscription?.plan}
                   isAnnual={isAnnual}
                   isLoading={isLoading}
                   key={plan.name}
