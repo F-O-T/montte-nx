@@ -28,6 +28,7 @@ COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/rules-engine/package.json ./packages/rules-engine/
 COPY packages/queue/package.json ./packages/queue/
 COPY libraries/ofx/package.json ./libraries/ofx/
+COPY packages/stripe/package.json ./packages/stripe/
 
 
 # Install dependencies

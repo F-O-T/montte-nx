@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { createDb } from "../../database/src/client";
 import { serverEnv } from "../../environment/src/server";
+import { getStripeClient } from "../../stripe/src/index";
 import { getResendClient } from "../../transactional/src/client";
 import { getAuthOptions } from "./server";
 /**
@@ -15,5 +16,10 @@ import { getAuthOptions } from "./server";
  * - https://www.better-auth.com/docs/concepts/cli
  */
 export const auth = betterAuth({
-   ...getAuthOptions(createDb(), getResendClient(serverEnv.RESEND_API_KEY)),
+   ...getAuthOptions(
+      createDb(),
+      getResendClient(serverEnv.RESEND_API_KEY),
+      getStripeClient(serverEnv.STRIPE_SECRET_KEY),
+      serverEnv.STRIPE_WEBHOOK_SECRET,
+   ),
 }) as ReturnType<typeof betterAuth>;

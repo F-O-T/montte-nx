@@ -14,6 +14,7 @@
   "dependencies": {
     "@packages/api": "workspace:*",
     "@packages/authentication": "workspace:*",
+    "@packages/stripe": "workspace:*",
     "@packages/environment": "workspace:*",
     "@packages/localization": "workspace:*",
     "@packages/posthog": "workspace:*",

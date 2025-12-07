@@ -12,6 +12,12 @@ ARG MINIO_SECRET_KEY
 ARG MINIO_BUCKET
 ARG POSTHOG_HOST
 ARG POSTHOG_KEY
+ARG STRIPE_BASIC_PRICE_ID
+ARG STRIPE_PRO_PRICE_ID
+ARG STRIPE_BASIC_ANNUAL_PRICE_ID
+ARG STRIPE_PRO_ANNUAL_PRICE_ID
+ARG STRIPE_SECRET_KEY
+ARG STRIPE_WEBHOOK_SECRET
 
 WORKDIR /app
 
@@ -35,6 +41,7 @@ COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
 COPY packages/rules-engine/package.json ./packages/rules-engine/
 COPY packages/queue/package.json ./packages/queue/
+COPY packages/stripe/package.json ./packages/stripe/
 
 RUN bun install
 
@@ -63,4 +70,3 @@ COPY --from=builder /app/package.json ./package.json
 ARG PORT
 EXPOSE ${PORT}
 CMD ["bun", "./dist/index.js"]
-

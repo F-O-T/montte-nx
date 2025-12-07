@@ -1,3 +1,4 @@
+import { stripeClient } from "@better-auth/stripe/client";
 import {
    adminClient,
    apiKeyClient,
@@ -25,6 +26,7 @@ export const createAuthClient = ({
 }: AuthClientOptions) =>
    createBetterAuthClient({
       baseURL: apiBaseUrl,
+
       fetchOptions: {
          onError: (context) => {
             onError?.({
@@ -38,6 +40,9 @@ export const createAuthClient = ({
          },
       },
       plugins: [
+         stripeClient({
+            subscription: true,
+         }),
          emailOTPClient(),
          apiKeyClient(),
          adminClient(),
