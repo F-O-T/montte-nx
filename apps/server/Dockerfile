@@ -1,6 +1,5 @@
 FROM oven/bun:alpine AS builder
 
-
 ARG DATABASE_URL
 ARG BETTER_AUTH_GOOGLE_CLIENT_ID
 ARG BETTER_AUTH_GOOGLE_CLIENT_SECRET
@@ -13,9 +12,15 @@ ARG MINIO_SECRET_KEY
 ARG MINIO_BUCKET
 ARG POSTHOG_HOST
 ARG POSTHOG_KEY
+ARG STRIPE_BASIC_PRICE_ID
+ARG STRIPE_PRO_PRICE_ID
+ARG STRIPE_BASIC_ANNUAL_PRICE_ID
+ARG STRIPE_PRO_ANNUAL_PRICE_ID
+ARG STRIPE_SECRET_KEY
+ARG STRIPE_WEBHOOK_SECRET
+
 WORKDIR /app
 
-# Copy all package manifests and the lockfile first.
 COPY bun.lock ./
 COPY package.json ./
 COPY apps/server/package.json ./apps/server/
@@ -34,18 +39,16 @@ COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
+COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/queue/package.json ./packages/queue/
 COPY packages/stripe/package.json ./packages/stripe/
 
-
-# Install all dependencies (monorepo-aware)
 RUN bun install
 
-# Copy source code
 COPY . .
 
 ENV NODE_ENV=production
 
-# Build the ofx library first (required dependency)
 RUN cd libraries/ofx && bun run build
 
 RUN bun build \
@@ -55,71 +58,15 @@ RUN bun build \
     --outfile ./dist/index.js \
     ./apps/server/src/index.ts
 
-# ---
-
-# Stage 2: Create a clean, production-only node_modules folder and install ONNX Runtime
-FROM oven/bun:1.2.23 AS deps
-WORKDIR /app
-
-# Copy all package manifests and lockfile again
-COPY bun.lock ./
-COPY package.json ./
-COPY apps/server/package.json ./apps/server/
-COPY tooling/typescript/package.json ./tooling/typescript/
-COPY packages/api/package.json ./packages/api/
-COPY packages/authentication/package.json ./packages/authentication/
-COPY packages/localization/package.json ./packages/localization/
-COPY packages/utils/package.json ./packages/utils/
-COPY packages/notifications/package.json ./packages/notifications/
-COPY packages/database/package.json ./packages/database/
-COPY packages/pdf/package.json ./packages/pdf/
-COPY packages/environment/package.json ./packages/environment/
-COPY packages/files/package.json ./packages/files/
-COPY packages/posthog/package.json ./packages/posthog/
-COPY packages/transactional/package.json ./packages/transactional/
-COPY packages/ofx/package.json ./packages/ofx/
-COPY libraries/ofx/package.json ./libraries/ofx/
-COPY packages/stripe/package.json ./packages/stripe/
-COPY packages/brasil-api/package.json ./packages/brasil-api/
-
-# Install only production dependencies.
-RUN bun install 
-
-# ---
-
-# Stage 3: Create the final, small production image
-FROM oven/bun:alpine AS base
+FROM oven/bun:alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-ARG DATABASE_URL
-ARG BETTER_AUTH_GOOGLE_CLIENT_ID
-ARG BETTER_AUTH_GOOGLE_CLIENT_SECRET
-ARG RESEND_API_KEY
-ARG BETTER_AUTH_SECRET
-ARG BETTER_AUTH_TRUSTED_ORIGINS
-ARG MINIO_ENDPOINT
-ARG MINIO_ACCESS_KEY
-ARG MINIO_SECRET_KEY
-ARG MINIO_BUCKET
-ARG POSTHOG_HOST
-ARG POSTHOG_KEY
-ARG VAPID_PUBLIC_KEY
-ARG VAPID_PRIVATE_KEY
-ARG VAPID_SUBJECT
-
-
-# Copy the pruned, production-only node_modules from the 'deps' stage.
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy the built application from the 'builder' stage
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-
-# Also copy the final package.json to the root of the app directory.
-COPY --from=deps /app/package.json ./package.json
+COPY --from=builder /app/package.json ./package.json
 
 ARG PORT
 EXPOSE ${PORT}
 CMD ["bun", "./dist/index.js"]
-
