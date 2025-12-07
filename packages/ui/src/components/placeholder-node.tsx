@@ -8,7 +8,7 @@ import {
    useNodeId,
    useReactFlow,
 } from "@xyflow/react";
-import React, { type ReactNode, useCallback } from "react";
+import { type ReactNode, useCallback } from "react";
 
 export type PlaceholderNodeProps = Partial<NodeProps> & {
    children?: ReactNode;

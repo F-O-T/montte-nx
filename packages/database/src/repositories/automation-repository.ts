@@ -354,7 +354,6 @@ export async function duplicateAutomationRule(
          throw AppError.notFound("Automation rule not found");
       }
 
-      // biome-ignore lint/correctness/noUnusedVariables: destructuring to exclude these fields from spread
       const {
          id: _id,
          createdAt: _createdAt,

@@ -30,8 +30,6 @@ function mapStatusToLogStatus(
          return "partial";
       case "failed":
          return "failed";
-      case "skipped":
-      case "stopped":
       default:
          return "skipped";
    }

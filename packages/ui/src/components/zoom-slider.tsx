@@ -11,7 +11,6 @@ import {
    useViewport,
 } from "@xyflow/react";
 import { Maximize, Minus, Plus } from "lucide-react";
-import React from "react";
 
 export function ZoomSlider({
    className,

@@ -9,7 +9,7 @@ import {
 } from "@packages/ui/components/select";
 import { cn } from "@packages/ui/lib/utils";
 import { Panel, type PanelProps, useReactFlow, useStore } from "@xyflow/react";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 
 export function ZoomSelect({
    className,
@@ -23,7 +23,7 @@ export function ZoomSelect({
             fitView();
          } else {
             const zoomValue = parseFloat(value);
-            if (!isNaN(zoomValue)) {
+            if (!Number.isNaN(zoomValue)) {
                zoomTo(zoomValue);
             }
          }

@@ -61,6 +61,7 @@ export function NodeTooltipTrigger(props: ComponentProps<"div">) {
    );
 
    return (
+      // biome-ignore lint/a11y/noStaticElementInteractions: tooltip trigger uses mouse events for hover behavior
       <div onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} {...props} />
    );
 }
@@ -92,7 +93,7 @@ export function NodeTooltipContent({
             )}
             isVisible={isVisible}
             position={position}
-            tabIndex={1}
+            tabIndex={0}
             {...props}
          >
             {children}

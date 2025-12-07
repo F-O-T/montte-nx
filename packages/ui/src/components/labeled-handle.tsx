@@ -1,7 +1,7 @@
 import { BaseHandle } from "@packages/ui/components/base-handle";
 import { cn } from "@packages/ui/lib/utils";
 import type { HandleProps } from "@xyflow/react";
-import React, { type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 
 const flexDirections = {
    bottom: "flex-col-reverse justify-end",
@@ -40,9 +40,9 @@ export function LabeledHandle({
             position={position}
             {...handleProps}
          />
-         <label className={cn("text-foreground px-3", labelClassName)}>
+         <span className={cn("text-foreground px-3", labelClassName)}>
             {title}
-         </label>
+         </span>
       </div>
    );
 }

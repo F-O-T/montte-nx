@@ -397,8 +397,13 @@ export const transactionRouter = router({
          );
 
          const validIds = transactions
-            .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t!.id);
+            .filter(
+               (t): t is NonNullable<typeof t> =>
+                  t !== null &&
+                  t !== undefined &&
+                  t.organizationId === organizationId,
+            )
+            .map((t) => t.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
@@ -1049,8 +1054,13 @@ export const transactionRouter = router({
          );
 
          const validIds = transactions
-            .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t!.id);
+            .filter(
+               (t): t is NonNullable<typeof t> =>
+                  t !== null &&
+                  t !== undefined &&
+                  t.organizationId === organizationId,
+            )
+            .map((t) => t.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
@@ -1079,8 +1089,13 @@ export const transactionRouter = router({
          );
 
          const validIds = transactions
-            .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t!.id);
+            .filter(
+               (t): t is NonNullable<typeof t> =>
+                  t !== null &&
+                  t !== undefined &&
+                  t.organizationId === organizationId,
+            )
+            .map((t) => t.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");
@@ -1113,8 +1128,13 @@ export const transactionRouter = router({
          );
 
          const validIds = transactions
-            .filter((t) => t && t.organizationId === organizationId)
-            .map((t) => t!.id);
+            .filter(
+               (t): t is NonNullable<typeof t> =>
+                  t !== null &&
+                  t !== undefined &&
+                  t.organizationId === organizationId,
+            )
+            .map((t) => t.id);
 
          if (validIds.length === 0) {
             throw new Error("No valid transactions found");

@@ -25,16 +25,20 @@ export function useTranslations(lang: SupportedLng) {
       }
 
       const parts = key.split(".");
-      let value: any = translations[lang];
+      let value: unknown = translations[lang];
 
       if (parts.length >= 2) {
          const potentialNamespace = `${parts[0]}.${parts[1]}`;
-         if (potentialNamespace in value) {
-            value = value[potentialNamespace];
+         if (
+            value &&
+            typeof value === "object" &&
+            potentialNamespace in value
+         ) {
+            value = (value as Record<string, unknown>)[potentialNamespace];
             for (let i = 2; i < parts.length; i++) {
                const k = parts[i];
                if (k && value && typeof value === "object" && k in value) {
-                  value = value[k];
+                  value = (value as Record<string, unknown>)[k];
                } else {
                   return key;
                }
