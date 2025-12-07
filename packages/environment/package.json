@@ -20,6 +20,10 @@
       "./server": {
          "default": "./src/server.ts",
          "types": "./dist/src/server.d.ts"
+      },
+      "./worker": {
+         "default": "./src/worker.ts",
+         "types": "./dist/src/worker.d.ts"
       }
    },
    "files": [
