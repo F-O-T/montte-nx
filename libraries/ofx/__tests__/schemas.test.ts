@@ -5,7 +5,6 @@ import {
    bankAccountSchema,
    creditCardAccountSchema,
    ofxDateSchema,
-   schemas,
    statusSchema,
    transactionSchema,
    transactionTypeSchema,
@@ -345,27 +344,5 @@ describe("creditCardAccountSchema", () => {
 
    it("requires ACCTID", () => {
       expect(() => creditCardAccountSchema.parse({})).toThrow();
-   });
-});
-
-describe("schemas export object", () => {
-   it("exports all schemas", () => {
-      expect(schemas.accountType).toBeDefined();
-      expect(schemas.balance).toBeDefined();
-      expect(schemas.bankAccount).toBeDefined();
-      expect(schemas.creditCardAccount).toBeDefined();
-      expect(schemas.ofxDate).toBeDefined();
-      expect(schemas.ofxDocument).toBeDefined();
-      expect(schemas.ofxHeader).toBeDefined();
-      expect(schemas.ofxResponse).toBeDefined();
-      expect(schemas.status).toBeDefined();
-      expect(schemas.transaction).toBeDefined();
-      expect(schemas.transactionList).toBeDefined();
-      expect(schemas.transactionType).toBeDefined();
-   });
-
-   it("schemas are usable for parsing", () => {
-      const status = schemas.status.parse({ CODE: "0", SEVERITY: "INFO" });
-      expect(status.CODE).toBe("0");
    });
 });

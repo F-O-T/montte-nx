@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "contentagen-nx",
-      "dependencies": {
-        "ofx-data-extractor": "^1.4.8",
-      },
       "devDependencies": {
         "@biomejs/biome": "2.3.8",
         "@commitlint/cli": "20.2.0",
@@ -2852,8 +2849,6 @@
     "object.assign": ["object.assign@4.1.7", "", { "dependencies": { "call-bind": "^1.0.8", "call-bound": "^1.0.3", "define-properties": "^1.2.1", "es-object-atoms": "^1.0.0", "has-symbols": "^1.1.0", "object-keys": "^1.1.1" } }, "sha512-nK28WOo+QIjBkDduTINE4JkF/UJJKyf2EJxvJKfblDpyg0Q+pkOHNTL0Qwy6NP6FhE/EnzV73BxxqcJaXY9anw=="],
 
     "ofetch": ["ofetch@1.5.1", "", { "dependencies": { "destr": "^2.0.5", "node-fetch-native": "^1.6.7", "ufo": "^1.6.1" } }, "sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA=="],
-
-    "ofx-data-extractor": ["ofx-data-extractor@1.4.8", "", {}, "sha512-YouH8YOoB9IU/8w7LHpv9fr9zU9qEDdc6DCUb/+iO0KX7+E4IPOgq1gKBf1lLpvOsLaF5lETRqS+ut3uu9RrlQ=="],
 
     "ohash": ["ohash@2.0.11", "", {}, "sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ=="],
 
