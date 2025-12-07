@@ -82,6 +82,10 @@ function ManagePlanPageContent() {
 
             if (data?.url) {
                window.location.href = data.url;
+            } else {
+               toast.error("Falha ao abrir portal de cobrança", {
+                  description: "Tente novamente mais tarde.",
+               });
             }
          } catch (error) {
             console.error("Failed to open billing portal:", error);
