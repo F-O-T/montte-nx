@@ -7,7 +7,7 @@
     "check": "bunx --bun biome check --write --unsafe .",
     "typecheck": "tsc",
     "dev": "vite dev",
-    "start": "vite",
+    "start": "vite preview --host --port ${PORT:-3000}",
     "build": "vite build",
     "preview": "vite preview"
   },
