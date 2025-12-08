@@ -1,6 +1,6 @@
 import {
-   evaluateConditions,
    type EvaluationResult,
+   evaluateConditions,
    type GroupEvaluationResult,
 } from "@f-o-t/condition-evaluator";
 import type { DatabaseInstance } from "@packages/database/client";

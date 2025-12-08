@@ -1,5 +1,3 @@
-import { CircleCheckIcon } from "lucide-react";
-
 const logos = [
    {
       alt: "Nvidia Logo",
@@ -43,51 +41,108 @@ const logos = [
    },
 ];
 
-const features = [
-   { title: "Freelancers managing personal finances" },
-   { title: "Small businesses tracking expenses" },
-   { title: "Growing teams needing financial insights" },
-   { title: "Enterprises with complex reporting needs" },
+const testimonials = [
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
+      handle: "@mariafinance",
+      hidden: false,
+      name: "Maria Santos",
+      quote: "This finance tracker completely changed how I manage my business expenses. Setup took 15 minutes and now I have complete visibility.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+      handle: "@carlosdev",
+      hidden: true,
+      name: "Carlos Silva",
+      quote: "Finally a finance tool that understands freelancers. The automatic categorization saves me hours every month.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
+      handle: "@anaentrepreneur",
+      hidden: false,
+      name: "Ana Costa",
+      quote: "The dashboard is SO clean! A fantastic tool for tracking multiple revenue streams.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pedro",
+      handle: "@pedrobusiness",
+      hidden: false,
+      name: "Pedro Oliveira",
+      quote: "By far this has given me more financial insights than any other tool. The alerts for unusual spending patterns are incredibly useful. Great UX on top of all the features.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Julia",
+      handle: "@juliatech",
+      hidden: false,
+      name: "Julia Ferreira",
+      quote: "One tool to rule them all. This year, this finance tracker won my heart - well designed and thoughtfully built.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas",
+      handle: "@lucasstartup",
+      hidden: false,
+      name: "Lucas Mendes",
+      quote: "I just checked this out and have never been so happy with a financial tool. Perfect for our growing startup.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Beatriz",
+      handle: "@beatrizfreelance",
+      hidden: false,
+      name: "Beatriz Lima",
+      quote: "Looking for expense tracking? I recommend this tool. Perfect support, answered my questions in minutes, and it's the first actually good-looking finance app.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rafael",
+      handle: "@rafaelcfo",
+      hidden: true,
+      name: "Rafael Souza",
+      quote: "Switched from spreadsheets over the weekend, looking pretty good. Finally have real-time insights.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Camila",
+      handle: "@camilaops",
+      hidden: true,
+      name: "Camila Rodrigues",
+      quote: "What are you using for expense tracking and budgeting? For me the go-to is currently this app - love the simplicity and powerful features.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Diego",
+      handle: "@diegofounders",
+      hidden: true,
+      name: "Diego Almeida",
+      quote: "I'm utterly blown away! They do everything. I'm now tracking all my accounts, custom alerts for overspending, bill reminders, and loads more.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fernanda",
+      handle: "@fernandadesign",
+      hidden: true,
+      name: "Fernanda Martins",
+      quote: "Simple, does a great job, and has a generous free plan for those just starting out. I don't remember finding anything close to it years ago.",
+   },
 ];
 
 export default function SocialProof() {
    return (
       <section className="bg-background py-16 sm:py-24">
          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-16 max-lg:flex-col">
-               <div className="flex-1">
-                  <div className="space-y-4">
-                     <p className="text-primary text-sm font-medium uppercase tracking-wide">
-                        Trusted by Thousands
-                     </p>
-                     <h2 className="text-2xl font-semibold md:text-3xl lg:text-4xl">
-                        From Solo Founders to Enterprise Teams
-                     </h2>
-                     <p className="text-muted-foreground text-lg">
-                        Whether you're a freelancer tracking your first invoice
-                        or an enterprise managing complex finances, our platform
-                        scales with your needs. Join businesses of all sizes who
-                        trust us with their financial management.
-                     </p>
-                  </div>
+            <div className="flex flex-col items-center px-4 text-center">
+               <h2 className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-2xl font-semibold text-transparent md:text-4xl lg:text-[44px] lg:leading-tight">
+                  Don't just take our word for it
+               </h2>
+               <p className="text-muted-foreground mt-4 max-w-[624px]">
+                  We're proud to be working with businesses of all sizes - from
+                  individual freelancers to growing enterprises - and are
+                  thankful for their feedback, suggestions, and support.
+               </p>
+            </div>
 
-                  <ul className="mt-10 space-y-5 text-lg font-medium">
-                     {features.map((feature, index) => (
-                        <li className="flex items-center gap-3" key={index}>
-                           <CircleCheckIcon className="text-primary size-5 shrink-0" />
-                           <span>{feature.title}</span>
-                        </li>
-                     ))}
-                  </ul>
-               </div>
+            <div className="mt-14" />
 
-               <div className="w-full flex-1 lg:max-w-md">
-                  <div className="bg-muted/30 border-border rounded-2xl border p-8">
-                     <p className="text-muted-foreground mb-6 text-center text-sm font-medium">
-                        Powering businesses from startups to enterprises
-                     </p>
-                     <div className="relative overflow-hidden">
-                        <div className="animate-scroll flex gap-16">
+            <div className="relative -mb-20 mt-4 flex flex-col items-center overflow-hidden">
+               <div className="mx-auto max-w-[1684px]">
+                  <div className="scale-75 md:scale-100">
+                     <div className="customers-scroll flex justify-center">
+                        <div className="flex min-w-max gap-16 px-8">
                            {[...logos, ...logos].map((logo, index) => (
                               <div
                                  className="flex shrink-0 items-center"
@@ -101,33 +156,49 @@ export default function SocialProof() {
                               </div>
                            ))}
                         </div>
-                        <div className="from-muted/30 pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r to-transparent" />
-                        <div className="from-muted/30 pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l to-transparent" />
-                     </div>
-
-                     <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-                        <div>
-                           <p className="text-2xl font-bold">10K+</p>
-                           <p className="text-muted-foreground text-xs">
-                              Active Users
-                           </p>
-                        </div>
-                        <div>
-                           <p className="text-2xl font-bold">50+</p>
-                           <p className="text-muted-foreground text-xs">
-                              Countries
-                           </p>
-                        </div>
-                        <div>
-                           <p className="text-2xl font-bold">99.9%</p>
-                           <p className="text-muted-foreground text-xs">
-                              Uptime
-                           </p>
-                        </div>
                      </div>
                   </div>
                </div>
+
+               <div className="pointer-events-none absolute inset-0 flex justify-center">
+                  <div className="from-background h-full grow bg-gradient-to-r md:from-50%" />
+                  <div className="min-w-[200px] md:min-w-[1000px]" />
+                  <div className="from-background h-full grow bg-gradient-to-l md:from-50%" />
+               </div>
             </div>
+
+            <div className="mt-24 sm:columns-2 md:columns-3 lg:columns-4">
+               {testimonials.map((testimonial, index) => (
+                  <div
+                     className={`mx-auto max-w-[320px] break-inside-avoid pb-4 ${testimonial.hidden ? "hidden sm:block" : ""}`}
+                     key={index}
+                  >
+                     <div className="bg-card/80 border-border/20 rounded-xl border p-5 backdrop-blur-xl">
+                        <p className="text-foreground/90">
+                           {testimonial.quote}
+                        </p>
+                        <div className="mt-5" />
+                        <div className="-m-5 flex items-start p-5">
+                           <img
+                              alt={testimonial.name}
+                              className="mt-1 size-9 shrink-0 rounded-full"
+                              src={testimonial.avatar}
+                           />
+                           <div className="mx-2 grow">
+                              <div className="text-foreground font-bold">
+                                 {testimonial.name}
+                              </div>
+                              <div className="text-muted-foreground text-sm">
+                                 {testimonial.handle}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               ))}
+            </div>
+
+            <div className="h-32" />
          </div>
 
          <style>{`
@@ -139,10 +210,10 @@ export default function SocialProof() {
                   transform: translateX(-50%);
                }
             }
-            .animate-scroll {
+            .customers-scroll {
                animation: scroll 30s linear infinite;
             }
-            .animate-scroll:hover {
+            .customers-scroll:hover {
                animation-play-state: paused;
             }
          `}</style>

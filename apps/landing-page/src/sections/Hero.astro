@@ -1,121 +1,69 @@
 ---
-import { AlertTriangle, ArrowRight, Check, Github } from "@lucide/astro";
+import { ArrowRight, Github } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import {
-   Announcement,
-   AnnouncementTag,
-   AnnouncementTitle,
-} from "@packages/ui/components/announcement";
 import { Button } from "@packages/ui/components/button";
+import HeroCarousel from "../components/HeroCarousel";
+import LogoCloud from "../components/LogoCloud";
 
 interface Props {
    lang?: SupportedLng;
 }
 
 const { lang: _lang = "pt-BR" } = Astro.props;
-
-const painPoints = [
-   "Gerenciando despesas em múltiplas planilhas?",
-   "Usando apps diferentes para contas pessoais e empresariais?",
-   "Com dificuldade para rastrear despesas compartilhadas em equipes?",
-   "Preocupado com privacidade de dados e dependência de fornecedor?",
-];
-
-const benefits = [
-   "Comece grátis hoje",
-   "Hospede no seu servidor",
-   "Propriedade total dos dados",
-   "Sem dependência de fornecedor",
-];
 ---
 
 <section class="min-h-screen" id="hero">
-   <div class="relative flex flex-col justify-center items-center py-12 sm:py-16 lg:py-24">
-      <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-         <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div class="flex flex-col gap-8">
-               <div class="flex flex-col gap-6">
-                  <Announcement>
-                     <AnnouncementTag className="bg-primary text-primary-foreground">Código Aberto</AnnouncementTag>
-                     <AnnouncementTitle>
-                        100% Grátis e Auto-Hospedável
-                     </AnnouncementTitle>
-                  </Announcement>
+   <div class="max-w-7xl px-4 sm:px-6 pb-24 md:pb-48 mx-auto flex flex-col md:flex-row">
+      <div class="flex-1 z-30 pt-24 md:pt-32 text-center md:text-left">
+         <div class="flex md:hidden w-full justify-center mb-6">
+            <span class="text-2xl font-bold text-primary">Montte</span>
+         </div>
 
-                  <h1 class="text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
-                     <span class="text-primary">Montte:</span> Finanças Open-Source Sob Seu Controle
-                  </h1>
+         <h1 class="text-foreground mt-5 hero-heading-gradient font-medium md:mt-8 max-w-[520px] mx-auto md:mx-0 pb-2 text-[36px] md:text-[50px] leading-[110%]">
+            <span>Controle financeiro open-source sob seu comando</span>
+         </h1>
 
-                  <p class="text-muted-foreground text-lg sm:text-xl">
-                     Rastreamento inteligente de despesas com workspaces colaborativos.
-                     <br class="hidden sm:block" />
-                     Com uma fração da complexidade.
-                  </p>
+         <p class="mt-4 md:mt-2 text-muted-foreground md:text-[20px] max-md:text-center max-w-[480px] mx-auto md:mx-0">
+            Rastreamento inteligente de despesas com workspaces colaborativos.
+            <br class="hidden md:block" />
+            Com uma fracao da complexidade.
+         </p>
 
-                  <div class="flex flex-wrap items-center gap-4">
-<a href="/signup">
-                         <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
-                            <span>Comece Grátis na Nuvem</span>
-                            <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                         </Button>
-                      </a>
-                      <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
-                         <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
-                            <Github class="size-5" />
-                            Auto-Hospede via GitHub
-                         </Button>
-                      </a>
-                  </div>
-               </div>
-
-               <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
-                  {benefits.map((benefit) => (
-                     <div class="flex items-center gap-2">
-                        <div class="flex size-5 items-center justify-center rounded-full bg-primary/10">
-                           <Check class="size-3 text-primary" />
-                        </div>
-                        <span class="text-sm text-muted-foreground">{benefit}</span>
-                     </div>
-                  ))}
-               </div>
+         <div class="mt-8 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-center md:justify-start">
+               <a href="/signup" class="w-full max-w-[316px] sm:max-w-none sm:w-auto">
+                  <Button size="lg" className="group relative overflow-hidden rounded-xl h-[52px] px-6 w-full sm:w-auto">
+                     <span>Comece Gratis</span>
+                     <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+               </a>
+               <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer" class="w-full max-w-[316px] sm:max-w-none sm:w-auto">
+                  <Button variant="outline" size="lg" className="rounded-xl h-[52px] px-6 gap-2 w-full sm:w-auto border-border/50 bg-background/10 backdrop-blur-sm">
+                     <Github class="size-5" />
+                     Auto-Hospede
+                  </Button>
+               </a>
             </div>
 
-            <div class="flex flex-col gap-6 p-6 sm:p-8 rounded-2xl bg-muted/50 border border-border/50">
-<div class="flex items-start gap-3">
-                   <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10">
-                      <AlertTriangle class="size-5 text-amber-500" />
-                   </div>
-                   <div>
-                      <h2 class="text-lg font-semibold text-foreground">
-                         Cansado de planilhas e apps espalhados?
-                      </h2>
-                      <p class="text-sm text-muted-foreground mt-1">
-                         Você não está sozinho. Veja com o que a maioria das pessoas luta:
-                      </p>
-                   </div>
-                </div>
-
-               <div class="space-y-3">
-                  <p class="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                     Você está:
-                  </p>
-                  <ul class="space-y-3">
-                     {painPoints.map((point) => (
-                        <li class="flex items-start gap-3 p-3 rounded-xl bg-background/50 border border-border/30">
-                           <span class="flex-shrink-0 mt-0.5 text-amber-500">•</span>
-                           <span class="text-foreground">{point}</span>
-                        </li>
-                     ))}
-                  </ul>
-               </div>
-
-               <div class="pt-4 border-t border-border/50">
-                  <p class="text-center">
-                     <span class="text-primary font-semibold">Então o Montte é para você.</span>
-                  </p>
-               </div>
+            <div class="w-full flex justify-center md:justify-start md:pl-1">
+               <p class="mt-6 text-sm text-muted-foreground max-md:max-w-[315px] max-md:text-center">
+                  100% gratuito e open-source. Hospede no seu servidor.
+                  <br class="max-md:hidden" />
+                  Propriedade total dos dados. Sem dependencia de fornecedor.
+               </p>
             </div>
+         </div>
+
+         <div class="mt-10 max-w-[480px] mx-auto md:mx-0">
+            <LogoCloud client:load />
+         </div>
+      </div>
+
+      <div class="flex-1 flex items-center justify-end relative flex-col mt-12 md:mt-0 sm:min-h-[450px] md:min-h-[550px]">
+         <div class="sm:absolute w-full sm:w-[600px] md:w-[700px] lg:w-[800px] md:-left-12 sm:-top-6 md:top-8">
+            <HeroCarousel client:load />
          </div>
       </div>
    </div>
 </section>
+

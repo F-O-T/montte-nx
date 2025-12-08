@@ -11,6 +11,8 @@
       "@packages/ui": "workspace:*",
       "@tailwindcss/vite": "catalog:ui",
       "astro": "catalog:astro",
+      "embla-carousel-autoplay": "^8.6.0",
+      "motion": "^12.23.25",
       "react": "catalog:react",
       "react-dom": "catalog:react",
       "sonner": "catalog:ui",
