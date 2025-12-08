@@ -9,12 +9,10 @@ export default defineConfig({
          VITE_POSTHOG_HOST: envField.string({
             access: "public",
             context: "client",
-            optional: true,
          }),
          VITE_POSTHOG_KEY: envField.string({
             access: "public",
             context: "client",
-            optional: true,
          }),
       },
    },
