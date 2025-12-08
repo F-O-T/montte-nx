@@ -1,6 +1,6 @@
 ---
 import "@packages/ui/globals.css";
-import { POSTHOG_HOST, POSTHOG_KEY } from "astro:env/client";
+import { VITE_POSTHOG_HOST, VITE_POSTHOG_KEY } from "astro:env/client";
 import type { SupportedLng } from "@packages/localization";
 import { translate } from "@packages/localization";
 import { getAstroPosthogConfig } from "@packages/posthog/client";
@@ -14,8 +14,8 @@ const brandName = translate("common.brand.name", { lng: lang });
 const brandDescription = translate("common.brand.description", { lng: lang });
 
 const posthogEnv = {
-   VITE_POSTHOG_HOST: POSTHOG_HOST ?? "",
-   VITE_POSTHOG_KEY: POSTHOG_KEY ?? "",
+   VITE_POSTHOG_HOST,
+   VITE_POSTHOG_KEY,
 };
 ---
 

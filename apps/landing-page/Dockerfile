@@ -44,9 +44,10 @@ COPY apps/landing-page/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set and expose the port. Default to 4321 if not provided.
+ARG VITE_POSTHOG_HOST
+ARG VITE_POSTHOG_KEY
+
 ARG PORT
-ARG PUBLIC_POSTHOG_HOST
-ARG PUBLIC_POSTHOG_KEY
 
 ENV PORT=${PORT}
 EXPOSE ${PORT}

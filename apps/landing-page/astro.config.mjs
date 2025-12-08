@@ -6,12 +6,12 @@ import { defineConfig, envField } from "astro/config";
 export default defineConfig({
    env: {
       schema: {
-         POSTHOG_HOST: envField.string({
+         VITE_POSTHOG_HOST: envField.string({
             access: "public",
             context: "client",
             optional: true,
          }),
-         POSTHOG_KEY: envField.string({
+         VITE_POSTHOG_KEY: envField.string({
             access: "public",
             context: "client",
             optional: true,
