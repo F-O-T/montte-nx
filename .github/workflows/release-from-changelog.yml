@@ -24,15 +24,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Bun & Nx Setup
+        uses: ./.github/actions/setup-bun-nx
         with:
-          node-version: '18'
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
+          nx-cache-server: ${{ secrets.NX_CACHE_SERVER }}
+          nx-cache-token: ${{ secrets.NX_CACHE_TOKEN }}
 
       - name: Determine tag
         id: tag
