@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-12-08
+
+### Added
+
+- Binary buffer parsing with automatic encoding detection
+  - `parseBuffer(Uint8Array)` - Parse OFX from binary data with correct encoding
+  - `parseBufferOrThrow(Uint8Array)` - Throwing variant of parseBuffer
+  - `getEncodingFromCharset(charset)` - Get TextDecoder encoding from OFX CHARSET value
+- UTF-8 auto-detection for files that declare wrong encoding (common in Brazilian banks)
+- Support for `BANKACCTFROM` as alternative to `CCACCTFROM` in credit card statements (Brazilian bank variation)
+- SONRS normalization to handle `DTSERVER`/`LANGUAGE` inside `STATUS` (malformed but common in Brazilian OFX)
+- Auto-generation of `FITID` for transactions missing it (deterministic hash from date+amount+name)
+- Streaming API now supports encoding detection via `StreamOptions.encoding`
+
+### Changed
+
+- `FITID` is now optional in transaction schema (auto-generated if missing)
+- `TRNUID` and `STATUS` are now optional in statement transaction responses
+- Improved single-line header parsing for compact OFX files
+
+### Fixed
+
+- Portuguese/Latin characters (ã, é, ç, etc.) now correctly preserved when parsing Windows-1252 or ISO-8859-1 encoded files
+- Files declaring CHARSET:1252 but actually encoded as UTF-8 now parse correctly via auto-detection
+
+### Encoding Support
+
+Supported charset mappings:
+- `1252`, `WINDOWS-1252`, `CP1252` → `windows-1252`
+- `8859-1`, `ISO-8859-1`, `LATIN1`, `LATIN-1` → `iso-8859-1`
+- `UTF-8`, `UTF8`, `NONE`, `` → `utf-8`
+
 ## [2.0.0] - 2025-12-07
 
 ### Changed

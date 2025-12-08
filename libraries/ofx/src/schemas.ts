@@ -121,7 +121,7 @@ export const transactionSchema = z.object({
    DTAVAIL: ofxDateSchema.optional(),
    DTPOSTED: ofxDateSchema,
    DTUSER: ofxDateSchema.optional(),
-   FITID: z.string(),
+   FITID: z.string().optional(),
    MEMO: z.string().optional(),
    NAME: z.string().optional(),
    PAYEEID: z.string().optional(),
@@ -144,6 +144,15 @@ export const accountTypeSchema = z.enum([
 
 export type OFXAccountType = z.infer<typeof accountTypeSchema>;
 
+export const extendedAccountTypeSchema = z.enum([
+   "CHECKING",
+   "SAVINGS",
+   "MONEYMRKT",
+   "CREDITLINE",
+   "CD",
+   "CREDITCARD",
+]);
+
 export const bankAccountSchema = z.object({
    ACCTID: z.string(),
    ACCTKEY: z.string().optional(),
@@ -153,6 +162,14 @@ export const bankAccountSchema = z.object({
 });
 
 export type OFXBankAccount = z.infer<typeof bankAccountSchema>;
+
+export const flexibleBankAccountSchema = z.object({
+   ACCTID: z.string(),
+   ACCTKEY: z.string().optional(),
+   ACCTTYPE: extendedAccountTypeSchema.optional(),
+   BANKID: z.string().optional(),
+   BRANCHID: z.string().optional(),
+});
 
 export const creditCardAccountSchema = z.object({
    ACCTID: z.string(),
@@ -189,14 +206,19 @@ export type OFXBankStatementResponse = z.infer<
    typeof bankStatementResponseSchema
 >;
 
-export const creditCardStatementResponseSchema = z.object({
-   AVAILBAL: balanceSchema.optional(),
-   BANKTRANLIST: transactionListSchema.optional(),
-   CCACCTFROM: creditCardAccountSchema,
-   CURDEF: z.string().default("USD"),
-   LEDGERBAL: balanceSchema.optional(),
-   MKTGINFO: z.string().optional(),
-});
+export const creditCardStatementResponseSchema = z
+   .object({
+      AVAILBAL: balanceSchema.optional(),
+      BANKACCTFROM: flexibleBankAccountSchema.optional(),
+      BANKTRANLIST: transactionListSchema.optional(),
+      CCACCTFROM: creditCardAccountSchema.optional(),
+      CURDEF: z.string().default("USD"),
+      LEDGERBAL: balanceSchema.optional(),
+      MKTGINFO: z.string().optional(),
+   })
+   .refine((data) => data.CCACCTFROM || data.BANKACCTFROM, {
+      message: "Either CCACCTFROM or BANKACCTFROM is required",
+   });
 
 export type OFXCreditCardStatementResponse = z.infer<
    typeof creditCardStatementResponseSchema
@@ -214,9 +236,9 @@ export const signOnResponseSchema = z.object({
 export type OFXSignOnResponse = z.infer<typeof signOnResponseSchema>;
 
 export const bankStatementTransactionResponseSchema = z.object({
-   STATUS: statusSchema,
+   STATUS: statusSchema.optional(),
    STMTRS: bankStatementResponseSchema.optional(),
-   TRNUID: z.string(),
+   TRNUID: z.string().optional(),
 });
 
 export type OFXBankStatementTransactionResponse = z.infer<
@@ -225,8 +247,8 @@ export type OFXBankStatementTransactionResponse = z.infer<
 
 export const creditCardStatementTransactionResponseSchema = z.object({
    CCSTMTRS: creditCardStatementResponseSchema.optional(),
-   STATUS: statusSchema,
-   TRNUID: z.string(),
+   STATUS: statusSchema.optional(),
+   TRNUID: z.string().optional(),
 });
 
 export type OFXCreditCardStatementTransactionResponse = z.infer<

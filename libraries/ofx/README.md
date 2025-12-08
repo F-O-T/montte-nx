@@ -11,10 +11,16 @@ bun add @fot/ofx
 ## Quick Start
 
 ```typescript
-import { parse, getTransactions, getBalance } from "@fot/ofx";
+import { parse, parseBuffer, getTransactions, getBalance } from "@fot/ofx";
+import { readFileSync } from "node:fs";
 
-const ofxContent = fs.readFileSync("statement.ofx", "utf-8");
+// For files with known UTF-8 encoding
+const ofxContent = readFileSync("statement.ofx", "utf-8");
 const result = parse(ofxContent);
+
+// For files with unknown encoding (recommended for Brazilian banks)
+const buffer = readFileSync("statement.ofx");
+const result = parseBuffer(new Uint8Array(buffer));
 
 if (result.success) {
   const transactions = getTransactions(result.data);
@@ -54,6 +60,31 @@ try {
 } catch (error) {
   // ZodError
 }
+```
+
+#### `parseBuffer(buffer: Uint8Array): ParseResult<OFXDocument>`
+
+Parses an OFX file from binary data with automatic encoding detection. This is the recommended method for files from Brazilian banks or any file with non-UTF-8 encoding.
+
+```typescript
+import { readFileSync } from "node:fs";
+
+const buffer = readFileSync("extrato.ofx");
+const result = parseBuffer(new Uint8Array(buffer));
+
+if (result.success) {
+  // Portuguese characters like "Cartão" are correctly preserved
+  console.log(result.data);
+}
+```
+
+#### `parseBufferOrThrow(buffer: Uint8Array): OFXDocument`
+
+Parses an OFX file from binary data and throws on validation errors.
+
+```typescript
+const buffer = readFileSync("extrato.ofx");
+const doc = parseBufferOrThrow(new Uint8Array(buffer));
 ```
 
 ### Extraction Functions
@@ -229,6 +260,39 @@ console.log("Accounts:", result.accounts);
 console.log("Balances:", result.balances);
 ```
 
+## Encoding Support
+
+The library automatically detects and handles various character encodings commonly used in OFX files, especially from Brazilian banks.
+
+### Supported Charsets
+
+| OFX CHARSET Value | Encoding Used |
+| ----------------- | ------------- |
+| `1252`, `WINDOWS-1252`, `CP1252` | windows-1252 |
+| `8859-1`, `ISO-8859-1`, `LATIN1`, `LATIN-1` | iso-8859-1 |
+| `UTF-8`, `UTF8`, `NONE`, (empty) | utf-8 |
+
+### UTF-8 Auto-Detection
+
+Some OFX files declare `CHARSET:1252` but are actually encoded as UTF-8. The library automatically detects this and uses UTF-8 when appropriate, ensuring characters like `Transação` are correctly preserved.
+
+### Best Practices
+
+For files from Brazilian banks or any file with unknown encoding, use `parseBuffer()` instead of `parse()`:
+
+```typescript
+import { parseBuffer } from "@fot/ofx";
+import { readFileSync } from "node:fs";
+
+// Correct: Read as binary, let the library detect encoding
+const buffer = readFileSync("extrato.ofx");
+const result = parseBuffer(new Uint8Array(buffer));
+
+// Avoid: Reading as UTF-8 string may corrupt Windows-1252 characters
+// const content = readFileSync("extrato.ofx", "utf-8");
+// const result = parse(content);
+```
+
 ## Types
 
 ### OFXTransaction
@@ -238,7 +302,7 @@ interface OFXTransaction {
   TRNTYPE: OFXTransactionType;
   DTPOSTED: OFXDate;
   TRNAMT: number;
-  FITID: string;
+  FITID?: string; // Optional, auto-generated if missing
   NAME?: string;
   MEMO?: string;
   CHECKNUM?: string;

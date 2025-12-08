@@ -12,6 +12,26 @@ interface TagStackItem {
    content: Record<string, unknown>;
 }
 
+const CHARSET_MAP: Record<string, string> = {
+   "1252": "windows-1252",
+   "WINDOWS-1252": "windows-1252",
+   CP1252: "windows-1252",
+   "8859-1": "iso-8859-1",
+   "ISO-8859-1": "iso-8859-1",
+   LATIN1: "iso-8859-1",
+   "LATIN-1": "iso-8859-1",
+   "UTF-8": "utf-8",
+   UTF8: "utf-8",
+   NONE: "utf-8",
+   "": "utf-8",
+};
+
+export function getEncodingFromCharset(charset?: string): string {
+   if (!charset) return "utf-8";
+   const normalized = charset.toUpperCase().trim();
+   return CHARSET_MAP[normalized] ?? "windows-1252";
+}
+
 const ENTITY_MAP: Record<string, string> = {
    "&amp;": "&",
    "&apos;": "'",
@@ -99,6 +119,19 @@ export function sgmlToObject(sgml: string): Record<string, unknown> {
    return result;
 }
 
+function generateFitId(txn: Record<string, unknown>, index: number): string {
+   const date = String(txn.DTPOSTED ?? "");
+   const amount = String(txn.TRNAMT ?? "0");
+   const name = String(txn.NAME ?? txn.MEMO ?? "");
+   const input = `${date}:${amount}:${name}:${index}`;
+   let hash = 0;
+   for (let i = 0; i < input.length; i++) {
+      hash = (hash << 5) - hash + input.charCodeAt(i);
+      hash = hash & hash;
+   }
+   return `AUTO${Math.abs(hash).toString(16).toUpperCase().padStart(8, "0")}`;
+}
+
 function normalizeResponseArray(
    msgs: Record<string, unknown>,
    responseKey: string,
@@ -116,7 +149,37 @@ function normalizeResponseArray(
          | undefined;
       if (tranList?.STMTTRN !== undefined) {
          tranList.STMTTRN = toArray(tranList.STMTTRN);
+         const transactions = tranList.STMTTRN as Array<
+            Record<string, unknown>
+         >;
+         transactions.forEach((txn, idx) => {
+            if (!txn.FITID) {
+               txn.FITID = generateFitId(txn, idx);
+            }
+         });
       }
+   }
+}
+
+function normalizeSignOn(data: Record<string, unknown>): void {
+   const ofx = data.OFX as Record<string, unknown> | undefined;
+   if (!ofx) return;
+
+   const signonMsgs = ofx.SIGNONMSGSRSV1 as Record<string, unknown> | undefined;
+   const sonrs = signonMsgs?.SONRS as Record<string, unknown> | undefined;
+   if (!sonrs) return;
+
+   const status = sonrs.STATUS as Record<string, unknown> | undefined;
+   if (!status) return;
+
+   if (!sonrs.DTSERVER && status.DTSERVER) {
+      sonrs.DTSERVER = status.DTSERVER;
+      delete status.DTSERVER;
+   }
+
+   if (!sonrs.LANGUAGE && status.LANGUAGE) {
+      sonrs.LANGUAGE = status.LANGUAGE;
+      delete status.LANGUAGE;
    }
 }
 
@@ -125,6 +188,8 @@ export function normalizeTransactions(
 ): Record<string, unknown> {
    const ofx = data.OFX as Record<string, unknown> | undefined;
    if (!ofx) return data;
+
+   normalizeSignOn(data);
 
    const bankMsgs = ofx.BANKMSGSRSV1 as Record<string, unknown> | undefined;
    if (bankMsgs) {
@@ -227,6 +292,172 @@ export function parse(content: string): ParseResult<OFXDocument> {
 
 export function parseOrThrow(content: string): OFXDocument {
    const result = parse(content);
+   if (!result.success) {
+      throw result.error;
+   }
+   return result.data;
+}
+
+function isValidUtf8(buffer: Uint8Array): boolean {
+   let i = 0;
+   while (i < buffer.length) {
+      const byte = buffer[i];
+      if (byte === undefined) break;
+
+      if (byte <= 0x7f) {
+         i++;
+      } else if ((byte & 0xe0) === 0xc0) {
+         const b1 = buffer[i + 1];
+         if (i + 1 >= buffer.length || b1 === undefined || (b1 & 0xc0) !== 0x80)
+            return false;
+         i += 2;
+      } else if ((byte & 0xf0) === 0xe0) {
+         const b1 = buffer[i + 1];
+         const b2 = buffer[i + 2];
+         if (
+            i + 2 >= buffer.length ||
+            b1 === undefined ||
+            b2 === undefined ||
+            (b1 & 0xc0) !== 0x80 ||
+            (b2 & 0xc0) !== 0x80
+         )
+            return false;
+         i += 3;
+      } else if ((byte & 0xf8) === 0xf0) {
+         const b1 = buffer[i + 1];
+         const b2 = buffer[i + 2];
+         const b3 = buffer[i + 3];
+         if (
+            i + 3 >= buffer.length ||
+            b1 === undefined ||
+            b2 === undefined ||
+            b3 === undefined ||
+            (b1 & 0xc0) !== 0x80 ||
+            (b2 & 0xc0) !== 0x80 ||
+            (b3 & 0xc0) !== 0x80
+         )
+            return false;
+         i += 4;
+      } else {
+         return false;
+      }
+   }
+   return true;
+}
+
+function hasUtf8MultiByte(buffer: Uint8Array): boolean {
+   for (let i = 0; i < buffer.length; i++) {
+      const byte = buffer[i];
+      if (byte !== undefined && byte > 0x7f) {
+         return true;
+      }
+   }
+   return false;
+}
+
+function parseHeaderFromBuffer(buffer: Uint8Array): {
+   header: OFXHeader;
+   encoding: string;
+} {
+   const maxHeaderSize = Math.min(buffer.length, 1000);
+   const headerSection = new TextDecoder("ascii").decode(
+      buffer.slice(0, maxHeaderSize),
+   );
+
+   const header: Record<string, string> = {};
+
+   const singleLineMatch = headerSection.match(
+      /^(OFXHEADER:\d+.*?)(?=<OFX|<\?xml)/is,
+   );
+   if (singleLineMatch?.[1]) {
+      const headerPart = singleLineMatch[1];
+      const fieldRegex = /(\w+):([^\s<]+)/g;
+      let fieldMatch = fieldRegex.exec(headerPart);
+      while (fieldMatch !== null) {
+         const key = fieldMatch[1];
+         const value = fieldMatch[2];
+         if (key && value !== undefined) {
+            header[key] = value;
+         }
+         fieldMatch = fieldRegex.exec(headerPart);
+      }
+   } else {
+      const lines = headerSection.split(/\r?\n/);
+      for (const line of lines) {
+         const trimmed = line.trim();
+         if (trimmed.startsWith("<?xml") || trimmed.startsWith("<OFX")) {
+            break;
+         }
+
+         const match = trimmed.match(/^(\w+):(.*)$/);
+         if (match?.[1] && match[2] !== undefined) {
+            header[match[1]] = match[2];
+         }
+
+         if (trimmed === "" && Object.keys(header).length > 0) {
+            break;
+         }
+      }
+   }
+
+   const parsedHeader = ofxHeaderSchema.parse(header);
+   let encoding = getEncodingFromCharset(parsedHeader.CHARSET);
+
+   if (
+      encoding !== "utf-8" &&
+      hasUtf8MultiByte(buffer) &&
+      isValidUtf8(buffer)
+   ) {
+      encoding = "utf-8";
+   }
+
+   return { encoding, header: parsedHeader };
+}
+
+export function parseBuffer(buffer: Uint8Array): ParseResult<OFXDocument> {
+   try {
+      if (!(buffer instanceof Uint8Array)) {
+         return {
+            error: new z.ZodError([
+               {
+                  code: "invalid_type",
+                  expected: "object",
+                  message: "Expected Uint8Array",
+                  path: [],
+               },
+            ]),
+            success: false,
+         };
+      }
+
+      if (buffer.length === 0) {
+         return {
+            error: new z.ZodError([
+               {
+                  code: "custom",
+                  message: "Buffer cannot be empty",
+                  path: [],
+               },
+            ]),
+            success: false,
+         };
+      }
+
+      const { encoding } = parseHeaderFromBuffer(buffer);
+      const decoder = new TextDecoder(encoding);
+      const content = decoder.decode(buffer);
+
+      return parse(content);
+   } catch (err) {
+      if (err instanceof z.ZodError) {
+         return { error: err, success: false };
+      }
+      throw err;
+   }
+}
+
+export function parseBufferOrThrow(buffer: Uint8Array): OFXDocument {
+   const result = parseBuffer(buffer);
    if (!result.success) {
       throw result.error;
    }

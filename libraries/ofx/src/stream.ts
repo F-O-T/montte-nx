@@ -1,3 +1,4 @@
+import { getEncodingFromCharset } from "./parser";
 import {
    balanceSchema,
    bankAccountSchema,
@@ -10,6 +11,10 @@ import {
    ofxHeaderSchema,
    transactionSchema,
 } from "./schemas";
+
+export interface StreamOptions {
+   encoding?: string;
+}
 
 export type StreamEvent =
    | { type: "header"; data: OFXHeader }
@@ -100,6 +105,7 @@ function tryParseBalance(obj: unknown): OFXBalance | null {
 
 export async function* parseStream(
    input: ReadableStream<Uint8Array> | AsyncIterable<string>,
+   options?: StreamOptions,
 ): AsyncGenerator<StreamEvent> {
    const state: ParserState = {
       buffer: "",
@@ -111,7 +117,8 @@ export async function* parseStream(
       transactionCount: 0,
    };
 
-   const decoder = new TextDecoder();
+   let detectedEncoding: string | undefined = options?.encoding;
+   let decoder = new TextDecoder(detectedEncoding ?? "utf-8");
    const tagRegex = /<(\/?)([\w.]+)>([^<]*)/g;
 
    let pendingLedgerBalance: OFXBalance | undefined;
@@ -129,6 +136,14 @@ export async function* parseStream(
          if (headerResult) {
             state.headerParsed = true;
             state.inHeader = false;
+
+            if (!detectedEncoding && headerResult.header.CHARSET) {
+               detectedEncoding = getEncodingFromCharset(
+                  headerResult.header.CHARSET,
+               );
+               decoder = new TextDecoder(detectedEncoding);
+            }
+
             yield { data: headerResult.header, type: "header" };
             state.buffer = state.buffer.slice(headerResult.bodyStart);
          } else {
@@ -244,7 +259,44 @@ export async function* parseStream(
 
    if (input instanceof ReadableStream) {
       const reader = input.getReader();
+      const initialChunks: Uint8Array[] = [];
+      let headerFound = false;
+
       try {
+         while (!headerFound) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            initialChunks.push(value);
+
+            const combined = new Uint8Array(
+               initialChunks.reduce((sum, chunk) => sum + chunk.length, 0),
+            );
+            let offset = 0;
+            for (const chunk of initialChunks) {
+               combined.set(chunk, offset);
+               offset += chunk.length;
+            }
+
+            const headerSection = new TextDecoder("ascii").decode(
+               combined.slice(0, Math.min(combined.length, 1000)),
+            );
+
+            if (
+               headerSection.includes("<OFX") ||
+               headerSection.includes("<?xml")
+            ) {
+               const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
+               if (charsetMatch && !detectedEncoding) {
+                  detectedEncoding = getEncodingFromCharset(charsetMatch[1]);
+                  decoder = new TextDecoder(detectedEncoding);
+               }
+               headerFound = true;
+
+               const content = decoder.decode(combined);
+               yield* processChunk(content);
+            }
+         }
+
          while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -269,6 +321,7 @@ export async function* parseStream(
 
 export async function parseStreamToArray(
    input: ReadableStream<Uint8Array> | AsyncIterable<string>,
+   options?: StreamOptions,
 ): Promise<{
    header?: OFXHeader;
    transactions: OFXTransaction[];
@@ -286,7 +339,7 @@ export async function parseStreamToArray(
       transactions: [],
    };
 
-   for await (const event of parseStream(input)) {
+   for await (const event of parseStream(input, options)) {
       switch (event.type) {
          case "header":
             result.header = event.data;
