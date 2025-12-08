@@ -4,22 +4,18 @@ export const prerender = true;
 import {
    ArrowRight,
    Building2,
-   Calendar,
    Check,
    ChevronDown,
    ChevronRight,
-   FileText,
    Github,
    Headphones,
+   Lock,
    Mail,
-   MessageSquare,
    Server,
-   Settings,
    Shield,
-   Users,
+   Zap,
 } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import { supportedLanguages } from "@/i18n/config";
 import StickyNavbar from "../../components/StickyNavbar.astro";
 import Layout from "../../layouts/Landing.astro";
@@ -34,173 +30,62 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 const lang = (locale || "pt-BR") as SupportedLng;
 
-const heroStats = [
-   { label: "SLA de Uptime", value: "99,9%" },
-   { label: "Suporte Prioritário", value: "24/7" },
-   { label: "Em Progresso", value: "SOC 2" },
-   { label: "Usuários e Workspaces", value: "Ilimitados" },
+const trustedByLogos = [
+   { name: "Startup A", initial: "SA" },
+   { name: "Tech Corp", initial: "TC" },
+   { name: "Finance Pro", initial: "FP" },
+   { name: "Growth Inc", initial: "GI" },
+   { name: "Scale Labs", initial: "SL" },
+   { name: "Data Flow", initial: "DF" },
 ];
 
-const enterpriseFeatures = [
+const collaborationFeatures = [
+   { icon: "Shield", title: "Dados em seu controle" },
+   { icon: "Lock", title: "SLA Garantido 99.9%" },
+   { icon: "Check", title: "SOC 2 Type 2 (em progresso)" },
+   { icon: "Shield", title: "GDPR Compliant" },
+];
+
+const supportFeatures = [
    {
+      icon: "Clock",
+      title: "Suporte 24/7",
       description:
-         "Escale sua equipe sem limitações por assento. Adicione departamentos, subsidiárias e equipes de projeto livremente.",
-      icon: "Users",
-      title: "Usuários e Workspaces Ilimitados",
+         "Obtenha ajuda sempre que precisar. Nossos engenheiros de suporte estão prontos para auxiliar.",
    },
    {
-      description:
-         "SSO/SAML, integração com Active Directory, whitelist de IP e políticas de retenção de dados personalizadas.",
-      icon: "Shield",
-      title: "Segurança Avançada",
-   },
-   {
-      description:
-         "Hospedagem dedicada opcional para máximo desempenho e requisitos de conformidade.",
-      icon: "Server",
-      title: "Infraestrutura Dedicada",
-   },
-   {
-      description:
-         "Gerente de conta dedicado, suporte 24/7, onboarding personalizado e revisões de negócio trimestrais.",
       icon: "Headphones",
-      title: "Suporte Prioritário",
-   },
-   {
+      title: "Migração sem stress",
       description:
-         "Cobrança flexível, DPAs personalizados, SLAs sob medida e acordos amigáveis para procurement.",
-      icon: "FileText",
-      title: "Contratos Personalizados",
+         "Trabalhe com nossos especialistas e migre de sistemas legados complexos para o Montte.",
    },
+];
+
+const costComparison = [
+   { name: "Datadog", price: "$870,000", percentage: 100 },
+   { name: "ELK stack", price: "$128,000", percentage: 14.7 },
+   { name: "Amazon CloudWatch", price: "$100,000", percentage: 11.5 },
+];
+
+const optimizationFeatures = [
    {
+      icon: "Zap",
+      title: "Escalabilidade confiável",
       description:
-         "Opções white-label, integrações personalizadas, acesso à API e automação de workflow.",
-      icon: "Settings",
-      title: "Personalização Avançada",
-   },
-];
-
-const securityCurrentPractices = [
-   "Criptografia ponta a ponta (TLS 1.3+)",
-   "Criptografia em repouso (AES-256)",
-   "Auditorias de segurança regulares (trimestrais)",
-   "Programa de divulgação responsável (bug bounty)",
-   "Autenticação multi-fator (2FA/MFA)",
-   "Controle de acesso baseado em função (RBAC)",
-   "Log de auditoria (retenção de 6 meses)",
-   "Testes de penetração regulares",
-   "Código open source (qualquer um pode auditar)",
-];
-
-const complianceRoadmap = [
-   {
-      items: [
-         "Conformidade GDPR (implementação completa)",
-         "Conformidade CCPA (privacidade EUA)",
-         "Auditoria SOC 2 Tipo II (iniciada)",
-      ],
-      quarter: "T2 2025",
+         "Processe milhares de transações por dia. Performance estável mesmo com picos de volume.",
    },
    {
-      items: [
-         "Certificação ISO 27001 (segurança da informação)",
-         "Conclusão SOC 2 Tipo II (conclusão esperada)",
-      ],
-      quarter: "T3 2025",
+      icon: "Shield",
+      title: "Seguro e conformante",
+      description:
+         "Controle custos e uso enquanto gerencia armazenamento e acesso de dados. SOC 2, GDPR e mais.",
    },
    {
-      items: [
-         "Arquitetura pronta para HIPAA (se necessário por clientes enterprise)",
-      ],
-      quarter: "S2 2025",
+      icon: "Headphones",
+      title: "Suporte especializado",
+      description:
+         "Nossa equipe técnica dedicada está aqui para ajudar. Do onboarding a otimizações. Sem bots.",
    },
-];
-
-const securityTiers = [
-   {
-      features: [
-         "Criptografia TLS (em trânsito)",
-         "Criptografia AES-256 (em repouso)",
-         "Segurança de senha (hashing, salting)",
-         "2FA disponível (opcional)",
-      ],
-      tier: "Grátis e Pro",
-   },
-   {
-      features: [
-         "Todos os recursos Grátis/Pro",
-         "2FA avançado (SMS, TOTP, chaves de hardware)",
-         "Whitelist de IP",
-         "Gestão de sessões",
-         "Logs de auditoria (retenção completa)",
-         "Controle de acesso baseado em função",
-      ],
-      tier: "Equipe",
-   },
-   {
-      features: [
-         "Todos os recursos Equipe",
-         "Autenticação SSO / SAML",
-         "Integração com Active Directory",
-         "Políticas de retenção de dados personalizadas",
-         "Revisão de segurança dedicada",
-         "DPA personalizado (Acordo de Processamento de Dados)",
-         "Conformidade com seus requisitos",
-      ],
-      tier: "Enterprise",
-   },
-];
-
-const enterpriseSupport = [
-   "Gerente de conta dedicado",
-   "Contato de conformidade (para certificações)",
-   "Revisão de segurança personalizada (antes do go-live)",
-   "Check-ins regulares de conformidade",
-   "Suporte para seus requisitos de auditoria",
-];
-
-const integrations = [
-   {
-      items: [
-         "Okta",
-         "Azure AD",
-         "Google Workspace",
-         "OneLogin",
-         "SAML Personalizado",
-      ],
-      name: "Provedores SSO",
-   },
-   {
-      items: ["QuickBooks", "Xero", "NetSuite", "SAP", "ERP Personalizado"],
-      name: "Contabilidade",
-   },
-   {
-      items: ["Slack", "Microsoft Teams", "Notion", "Webhooks", "Zapier"],
-      name: "Produtividade",
-   },
-   {
-      items: [
-         "API REST",
-         "GraphQL",
-         "Exportação em Massa",
-         "Relatórios Personalizados",
-         "Data Warehouse",
-      ],
-      name: "Dados",
-   },
-];
-
-const pricingFeatures = [
-   { feature: "Usuários", value: "Ilimitados" },
-   { feature: "Workspaces", value: "Ilimitados" },
-   { feature: "Transações", value: "Ilimitadas" },
-   { feature: "Retenção de dados", value: "Personalizada" },
-   { feature: "Acesso à API", value: "Total" },
-   { feature: "SSO/SAML", value: "Incluído" },
-   { feature: "Suporte dedicado", value: "24/7" },
-   { feature: "SLA", value: "99,9%" },
-   { feature: "Integrações personalizadas", value: "Disponível" },
-   { feature: "Opção on-premise", value: "Disponível" },
 ];
 
 const faqs = [
@@ -216,469 +101,413 @@ const faqs = [
    },
    {
       answer:
-         "O preço Enterprise é baseado nas necessidades da sua organização - número de workspaces, nível de suporte e tipo de implantação. Entre em contato conosco para uma cotação personalizada de acordo com seus requisitos.",
+         "O preço Enterprise é baseado nas necessidades da sua organização - número de workspaces, nível de suporte e tipo de implantação. Entre em contato conosco para uma cotação personalizada.",
       question: "Como funciona o preço?",
    },
    {
       answer:
-         "Somos transparentes: ainda não temos certificações formais, mas estamos trabalhando ativamente em direção ao SOC 2 Tipo II e ISO 27001 (veja nosso roadmap acima). Nossas práticas de segurança são sólidas - a documentação vem depois.",
+         "Estamos trabalhando ativamente em direção ao SOC 2 Tipo II e ISO 27001. Nossas práticas de segurança são sólidas - a documentação formal vem em seguida.",
       question: "Quais certificações vocês têm?",
    },
    {
       answer:
-         "Sim. Completamos questionários de segurança para clientes enterprise. Nossa equipe de conformidade trabalhará com suas equipes de segurança e procurement.",
-      question: "Vocês podem assinar nosso questionário de segurança?",
-   },
-   {
-      answer:
-         "Sim. Oferecemos pilotos de 30-90 dias para clientes enterprise avaliarem o Montte com sua equipe antes de se comprometer com uma implantação completa.",
+         "Sim. Oferecemos pilotos de 30-90 dias para clientes enterprise avaliarem o Montte com sua equipe antes de se comprometer.",
       question: "Vocês oferecem um programa piloto?",
-   },
-];
-
-const testimonials = [
-   {
-      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Carlos",
-      name: "Carlos R.",
-      quote: "Migrar para o Montte Enterprise simplificou nossas operações financeiras em 12 departamentos. Os workspaces ilimitados significam que cada equipe tem autonomia enquanto mantemos supervisão central.",
-      role: "CFO, Empresa de Tecnologia",
-   },
-   {
-      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Michelle",
-      name: "Michelle T.",
-      quote: "A integração SSO foi perfeita. Nossa equipe de TI tinha preocupações sobre segurança - a natureza open-source do Montte e o roadmap transparente os convenceram.",
-      role: "Diretora de TI, Serviços Financeiros",
-   },
-   {
-      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=David",
-      name: "David L.",
-      quote: "Avaliamos 5 ferramentas financeiras enterprise. A transparência de preços do Montte e a ausência de taxas por assento tornaram o cálculo de ROI simples. O suporte tem sido excepcional.",
-      role: "Gerente de Operações, Manufatura",
    },
 ];
 ---
 
 <Layout lang={lang}>
-   <div class="flex flex-col">
+   <div class="flex flex-col enterprise-page">
       <StickyNavbar lang={lang}/>
 
       <!-- Hero Section -->
-      <section class="py-16 md:py-24 bg-gradient-to-b from-primary/5 to-transparent">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-4xl mx-auto">
-               <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8">
-                  <Building2 class="w-4 h-4 text-primary" />
-                  <span class="text-sm font-medium text-primary">Enterprise</span>
+      <section class="relative z-10 mx-auto px-6 sm:px-10 flex flex-col items-center enterprise-hero-bg w-full max-w-[1520px] pt-32 sm:pt-40 pb-16">
+         <p class="enterprise-title-gradient text-transparent text-sm sm:text-base uppercase font-bold text-center tracking-[0.29em]">
+            Montte para empresas
+         </p>
+
+         <h1 class="mt-6 pb-2 enterprise-hero-text inline-block text-transparent font-semibold tracking-tight text-center text-[40px] sm:text-[56px] lg:text-[70px] leading-[103%] max-w-[800px]">
+            Plataforma financeira para as melhores empresas
+         </h1>
+
+         <p class="mt-4 sm:text-lg md:text-xl text-center max-w-[350px] sm:max-w-[590px] text-muted-foreground">
+            Dê à sua equipe as ferramentas para centralizar, proteger e simplificar suas finanças.
+            Aumente a velocidade do time, redefina colaboração e otimize custos com Montte.
+         </p>
+
+         <a
+            class="mt-10 flex items-center justify-center font-medium text-center gap-2 select-none border shadow-lg enterprise-demo-button w-[300px] h-[52px] text-base rounded-xl text-white transition hover:brightness-110"
+            href="mailto:enterprise@montte.co"
+         >
+            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+               <Building2 class="w-4 h-4 text-primary" />
+            </div>
+            Agendar demo enterprise
+            <ChevronRight class="w-4 h-4" />
+         </a>
+      </section>
+
+      <!-- Trusted By Section -->
+      <section class="py-12 container mx-auto flex flex-col items-center max-w-[1320px]">
+         <p class="text-center text-base text-muted-foreground max-w-[200px] sm:max-w-none">
+            Usado pelas melhores equipes de finanças
+         </p>
+
+         <div class="mt-8 flex flex-wrap justify-center gap-8 px-6 md:px-12 lg:px-16">
+            {trustedByLogos.map((logo) => (
+               <div class="flex items-center justify-center w-24 h-12 rounded-lg enterprise-card-bg border enterprise-border">
+                  <span class="text-sm font-semibold text-muted-foreground">{logo.initial}</span>
                </div>
+            ))}
+         </div>
 
-               <h1 class="text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
-                  Gestão Financeira{" "}
-                  <span class="text-primary">Construída para Escala</span>
-               </h1>
+         <div class="mt-12 w-full enterprise-gradient-hr h-px"></div>
+      </section>
 
-               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
-                  Usuários ilimitados. Segurança avançada. Suporte dedicado.
-                  Tudo o que sua organização precisa para gerenciar finanças em escala - sem preço por assento.
+      <!-- Performance Section -->
+      <section class="py-16 md:py-24 container mx-auto flex flex-col items-center max-w-[951px] px-6">
+         <p class="enterprise-title-gradient text-transparent text-sm sm:text-base uppercase font-bold text-center tracking-[0.045em]">
+            Performance imbatível
+         </p>
+
+         <h2 class="mt-6 pb-2 enterprise-hero-text inline-block text-transparent font-semibold tracking-tight text-center leading-none text-[36px] md:text-[52px] max-w-[500px]">
+            Gerencie finanças na velocidade que você quiser
+         </h2>
+
+         <p class="mt-4 text-lg md:text-xl text-center max-w-[500px] text-muted-foreground">
+            Você define a velocidade. Obtenha respostas para questões financeiras mais rápido do que nunca
+            e melhore rapidamente a tomada de decisões.
+         </p>
+
+         <div class="mt-12 lg:mt-16 w-full flex flex-col lg:flex-row gap-5">
+            <div class="flex-1 border rounded-xl backdrop-blur-2xl flex flex-col-reverse sm:flex-row lg:flex-col-reverse sm:justify-end enterprise-card-bg enterprise-border">
+               <div class="grow enterprise-lines-bg sm:mr-3 min-h-[120px]"></div>
+               <div class="px-8 py-8 max-w-[350px]">
+                  <p class="text-muted-foreground">Processe até</p>
+                  <h3 class="mt-4 text-[32px] md:text-[44px] leading-[90%]">
+                     <span class="enterprise-primary-gradient text-transparent">Milhares</span>
+                     <br />
+                     <span class="text-foreground">de transações por dia</span>
+                  </h3>
+                  <p class="mt-4 text-muted-foreground lg:-mr-8">
+                     Infraestrutura otimizada para operações financeiras de alta escala.
+                  </p>
+               </div>
+            </div>
+
+            <div class="lg:flex-1 flex flex-col sm:flex-row lg:flex-col gap-5">
+               <div class="flex-1 p-8 border rounded-xl backdrop-blur-2xl flex flex-col justify-end enterprise-card-bg enterprise-border">
+                  <h4 class="mt-16 font-bold text-lg md:text-xl text-foreground leading-[124%]">Consultas rápidas = decisões rápidas</h4>
+                  <p class="mt-2 text-muted-foreground">
+                     Pare de esperar relatórios carregarem. Gaste mais tempo analisando
+                     e menos esperando, mesmo com grandes volumes de dados.
+                  </p>
+               </div>
+               <div class="flex-1 p-8 border rounded-xl backdrop-blur-2xl flex flex-col justify-end enterprise-card-bg enterprise-border">
+                  <h4 class="mt-16 font-bold text-lg md:text-xl text-foreground leading-[124%]">Escalabilidade infinita, zero-config</h4>
+                  <p class="mt-2 text-muted-foreground">
+                     Escalamos tudo automaticamente. Pare de se preocupar com picos de uso
+                     e aproveite performance ininterrupta.
+                  </p>
+               </div>
+            </div>
+         </div>
+
+         <div class="mt-20 md:mt-24 w-full enterprise-gradient-hr h-px"></div>
+      </section>
+
+      <!-- Collaboration Section -->
+      <section class="py-16 md:py-24 relative container mx-auto flex flex-col items-center max-w-[951px] px-6">
+         <p class="enterprise-title-gradient text-transparent text-sm sm:text-base uppercase font-bold text-center tracking-[0.045em]">
+            Trabalhe melhor em equipe
+         </p>
+
+         <h2 class="mt-6 pb-2 enterprise-hero-text inline-block text-transparent font-semibold tracking-tight text-center leading-none text-[36px] md:text-[52px] max-w-[520px]">
+            Mais colaboração.
+            <br />
+            Menos complexidade.
+         </h2>
+
+         <p class="mt-4 text-lg md:text-xl text-center max-w-[520px] text-muted-foreground">
+            Veja o que seus colegas estão trabalhando, comente e compartilhe relatórios.
+            Gestão financeira moderna é um esporte coletivo.
+         </p>
+
+         <div class="mt-16 mx-0 sm:mx-10 md:mx-0 flex flex-col-reverse md:flex-row items-center gap-14 w-full">
+            <div class="flex-1 enterprise-deployments-bg rounded-2xl max-w-[420px] overflow-hidden border enterprise-border">
+               <div class="h-48 enterprise-card-image flex items-center justify-center">
+                  <Server class="w-16 h-16 text-primary/50" />
+               </div>
+               <div class="p-8">
+                  <p class="font-bold text-foreground text-lg">O que são implantações Enterprise?</p>
+                  <p class="mt-4 text-muted-foreground">
+                     Clientes enterprise usando Montte podem armazenar seus dados em suas próprias contas cloud.
+                     Implantações enterprise estão disponíveis para todos os principais provedores.
+                     <a class="underline text-primary hover:text-primary/80 transition-colors" href="mailto:enterprise@montte.co">Contate vendas</a> para mais detalhes.
+                  </p>
+               </div>
+            </div>
+
+            <div class="flex-1">
+               <h3 class="font-bold text-foreground text-[32px] md:text-[36px] leading-[120%] tracking-[-0.01em]">
+                  Mantenha seus dados na sua cloud.
+               </h3>
+               <p class="mt-4 text-lg md:text-xl max-w-[400px] text-muted-foreground">
+                  Armazene todos os seus dados financeiros na sua conta cloud. Mantenha conformidade e controle com a plataforma Montte.
                </p>
 
-               <div class="flex flex-wrap justify-center gap-4 mt-8">
-                  <a href="#contact">
-                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
-                        <span>Fale com Vendas</span>
-                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                     </Button>
+               <a class="mt-6 group inline-flex items-center text-lg text-primary" href="#faq">
+                  <span class="mr-2">Ver segurança e conformidade</span>
+                  <ArrowRight class="w-4 h-4 transition-transform group-hover:translate-x-1" />
+               </a>
+
+               <div class="my-10 md:mt-16 w-full enterprise-gradient-hr h-px"></div>
+
+               <div class="flex flex-col gap-6 text-foreground text-lg">
+                  {collaborationFeatures.map((feature) => (
+                     <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                           {feature.icon === "Shield" && <Shield class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Lock" && <Lock class="w-5 h-5 text-primary" />}
+                           {feature.icon === "Check" && <Check class="w-5 h-5 text-primary" />}
+                        </div>
+                        <span>{feature.title}</span>
+                     </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <div class="w-full enterprise-gradient-hr h-px max-w-[951px] mx-auto"></div>
+
+      <!-- Support Section -->
+      <section class="py-16 md:py-24 relative container mx-auto flex flex-col items-center max-w-[951px] px-6">
+         <p class="enterprise-title-gradient text-transparent text-sm sm:text-base uppercase font-bold text-center tracking-[0.045em]">
+            Suporte técnico de concierge
+         </p>
+
+         <h2 class="mt-6 pb-2 enterprise-hero-text inline-block text-transparent font-semibold tracking-tight text-center leading-none text-[36px] md:text-[52px]">
+            Suporte especializado de engenharia
+         </h2>
+
+         <p class="mt-4 text-lg md:text-xl text-center max-w-[600px] text-muted-foreground">
+            Nossa equipe de suporte técnico dedicada está aqui para ajudar. Do onboarding e integração
+            a otimizações e irregularidades. Sem bots, apenas engenheiros talentosos.
+         </p>
+
+         <div class="mt-12 grow flex flex-col md:flex-row gap-5 w-full">
+            {supportFeatures.map((feature) => (
+               <div class="flex-1 py-8 px-8 border rounded-xl enterprise-card-bg enterprise-border max-w-[420px] mx-auto md:mx-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 32 32" fill="none">
+                     {feature.icon === "Clock" && (
+                        <path d="M16.0001 10.3333V16L19.6667 19.6666M28.3334 16C28.3334 22.8115 22.8116 28.3333 16.0001 28.3333C9.18857 28.3333 3.66675 22.8115 3.66675 16C3.66675 9.18845 9.18857 3.66663 16.0001 3.66663C22.8116 3.66663 28.3334 9.18845 28.3334 16Z" stroke="url(#enterprise-gradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                     )}
+                     {feature.icon === "Headphones" && (
+                        <path d="M6.33341 13V12.6666C6.33341 7.69606 10.6613 3.66663 16.0001 3.66663C21.3388 3.66663 25.6667 7.69606 25.6667 12.6666V13M16.0001 26.1904V27C16.0001 27.7363 16.597 28.3333 17.3334 28.3333H20.0001C23.3138 28.3333 26.0001 25.647 26.0001 22.3333M5.66675 13H7.66675V21.6666H5.66675C4.56218 21.6666 3.66675 20.7712 3.66675 19.6666V15C3.66675 13.8954 4.56218 13 5.66675 13ZM24.3334 13H26.3334C27.438 13 28.3334 13.8954 28.3334 15V19.6666C28.3334 20.7712 27.438 21.6666 26.3334 21.6666H24.3334V13Z" stroke="url(#enterprise-gradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                     )}
+                     <defs>
+                        <linearGradient id="enterprise-gradient" x1="16.0001" y1="3.66663" x2="36.66" y2="42.0007" gradientUnits="userSpaceOnUse">
+                           <stop stop-color="#9AA4F1"></stop>
+                           <stop offset="1" stop-color="#DBDFFA"></stop>
+                        </linearGradient>
+                     </defs>
+                  </svg>
+                  <div class="mt-5 font-semibold text-lg text-foreground">{feature.title}</div>
+                  <p class="mt-2 text-muted-foreground">{feature.description}</p>
+               </div>
+            ))}
+         </div>
+      </section>
+
+      <div class="w-full enterprise-gradient-hr h-px max-w-[951px] mx-auto"></div>
+
+      <!-- Optimize Section -->
+      <section class="container mx-auto px-6 sm:px-16 mb-12 md:mb-16 lg:mb-20 mt-16 lg:mt-24 flex flex-col items-center max-w-[983px]">
+         <div class="uppercase text-sm sm:text-base font-bold leading-[121%] tracking-[0.045em]">
+            <div class="enterprise-title-gradient text-transparent">Otimize custos</div>
+         </div>
+
+         <h3 class="my-6 enterprise-secondary-gradient text-transparent font-semibold text-center max-w-[600px] text-[36px] lg:text-[52px] leading-[108%] tracking-[-0.005em]">
+            Amado por desenvolvedores, confiado por empresas
+         </h3>
+
+         <div class="mt-8 lg:mt-12 flex flex-col md:flex-row items-center md:items-start gap-10">
+            {optimizationFeatures.map((feature) => (
+               <div class="flex-1 max-w-[330px]">
+                  <div class="flex">
+                     <div class="shrink-0 pb-5 border-b-2 border-primary text-primary">
+                        {feature.icon === "Zap" && <Zap class="w-6 h-6" />}
+                        {feature.icon === "Shield" && <Shield class="w-6 h-6" />}
+                        {feature.icon === "Headphones" && <Headphones class="w-6 h-6" />}
+                     </div>
+                     <div class="grow border-b enterprise-border-subtle"></div>
+                  </div>
+                  <p class="mt-5 text-foreground font-semibold lg:text-lg">{feature.title}</p>
+                  <p class="mt-3 text-muted-foreground">{feature.description}</p>
+               </div>
+            ))}
+         </div>
+      </section>
+
+      <!-- Cost Comparison Section -->
+      <section class="mb-10 px-6 flex justify-center">
+         <div class="p-3 flex flex-col md:flex-row border rounded-2xl max-w-[1008px] w-full enterprise-border enterprise-card-bg">
+            <div class="enterprise-costs-bg rounded-xl px-8 py-6 flex flex-col max-w-[488px]">
+               <div class="mb-8 grow flex flex-col justify-center">
+                  <h3 class="font-semibold text-[26px] md:text-[32px] leading-[120%] tracking-[-0.01em]">
+                     <div class="enterprise-primary-gradient text-transparent">Reduza custos.</div>
+                     <div class="enterprise-secondary-gradient text-transparent">Otimize investimento em tech.</div>
+                  </h3>
+                  <p class="my-5 max-w-[365px] text-muted-foreground">
+                     Criamos economias significativas através de arquitetura moderna,
+                     open-source e uma pipeline de dados customizada.
+                     Passamos as economias para você.
+                  </p>
+                  <a class="-m-1 p-1 group inline-flex items-center text-primary" href="/pricing">
+                     <span class="mr-2">Ver preços</span>
+                     <ArrowRight class="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </a>
-                  <a href="#security">
-                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
-                        <Shield class="size-5" />
-                        Segurança e Conformidade
-                     </Button>
-                  </a>
                </div>
-
-               <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-                  {heroStats.map((stat) => (
-                     <div class="text-center">
-                        <p class="text-2xl md:text-3xl font-bold text-primary">{stat.value}</p>
-                        <p class="text-sm text-muted-foreground">{stat.label}</p>
-                     </div>
-                  ))}
-               </div>
-            </div>
-         </div>
-      </section>
-
-      <!-- Enterprise Features -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Recursos Enterprise
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Tudo o Que Você Precisa para Escalar
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Construído para organizações que precisam de mais do que rastreamento financeiro básico.
+               <p class="pt-5 border-t enterprise-border-subtle text-[11px] leading-[145%] text-muted-foreground">
+                  * Aproximação apenas. Custos precisos dependem da implementação.
                </p>
             </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {enterpriseFeatures.map((feature) => (
-                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
-                     <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 mb-4">
-                        {feature.icon === "Users" && <Users class="w-6 h-6 text-primary" />}
-                        {feature.icon === "Shield" && <Shield class="w-6 h-6 text-primary" />}
-                        {feature.icon === "Server" && <Server class="w-6 h-6 text-primary" />}
-                        {feature.icon === "Headphones" && <Headphones class="w-6 h-6 text-primary" />}
-                        {feature.icon === "FileText" && <FileText class="w-6 h-6 text-primary" />}
-                        {feature.icon === "Settings" && <Settings class="w-6 h-6 text-primary" />}
-                     </div>
-                     <h3 class="font-semibold text-foreground mb-2">{feature.title}</h3>
-                     <p class="text-muted-foreground text-sm">{feature.description}</p>
-                  </div>
-               ))}
-            </div>
-         </div>
-      </section>
-
-      <!-- Security & Compliance Section -->
-      <section id="security" class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Segurança e Roadmap
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Segurança e Conformidade - Integradas
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Levamos segurança a sério porque suas finanças dependem disso.
-               </p>
-            </div>
-
-            <!-- Current Security Practices -->
-            <div class="mb-12">
-               <h3 class="text-xl font-semibold text-foreground mb-6 text-center">Práticas Atuais de Segurança</h3>
-               <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-                  {securityCurrentPractices.map((practice) => (
-                     <div class="flex items-start gap-3 p-4 rounded-xl bg-background border border-border/50">
-                        <Check class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span class="text-sm text-muted-foreground">{practice}</span>
-                     </div>
-                  ))}
+            <div class="pt-6 md:py-6 flex-1">
+               <div class="px-6 md:px-12">
+                  <div class="text-sm text-muted-foreground">Comparação de exemplo</div>
+                  <div class="text-foreground font-semibold">Logging 200TB/mês, retido por 30 dias</div>
                </div>
-            </div>
 
-            <!-- Compliance Roadmap -->
-            <div class="mb-12">
-               <h3 class="text-xl font-semibold text-foreground mb-6 text-center">Roadmap de Conformidade</h3>
-               <p class="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Estamos trabalhando ativamente em certificações da indústria. Aqui está nosso cronograma:
-               </p>
-               <div class="grid md:grid-cols-3 gap-6">
-                  {complianceRoadmap.map((item, index) => (
-                     <div class={`p-6 rounded-2xl bg-background border ${index === 0 ? 'border-primary/30' : 'border-border/50'}`}>
-                        <div class="flex items-center gap-2 mb-4">
-                           <Calendar class={`w-5 h-5 ${index === 0 ? 'text-primary' : 'text-muted-foreground'}`} />
-                           <span class="font-semibold text-foreground">{item.quarter}</span>
-{index === 0 && (
-                               <span class="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">Ativo</span>
-                            )}
+               <div class="my-6 w-full enterprise-gradient-hr h-px"></div>
+
+               {costComparison.map((item, index) => (
+                  <>
+                     <div class="px-6 md:px-12">
+                        <div class="flex items-center gap-3">
+                           <div class="shrink-0 w-4 h-4 rounded bg-muted/30 flex items-center justify-center">
+                              <span class="text-[8px] text-muted-foreground font-bold">{item.name.charAt(0)}</span>
+                           </div>
+                           <div class="text-foreground font-medium">{item.name}</div>
                         </div>
-                        <ul class="space-y-2">
-                           {item.items.map((i) => (
-                              <li class="flex items-start gap-2 text-sm text-muted-foreground">
-                                 <ChevronRight class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                 <span>{i}</span>
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
-                  ))}
-               </div>
-            </div>
-
-            <!-- Transparency Note -->
-            <div class="p-6 rounded-2xl bg-primary/5 border border-primary/20 max-w-3xl mx-auto mb-12">
-               <h4 class="font-semibold text-foreground mb-3">Por Que Somos Transparentes Sobre Isso</h4>
-               <p class="text-muted-foreground text-sm leading-relaxed">
-                  Muitas empresas alegam certificações sem realmente tê-las.
-                  Estamos sendo honestos: ainda não as temos, mas estamos construindo em direção a elas.
-                  Você não está confiando em um checkbox. Você está confiando em nosso compromisso de conquistá-lo.
-               </p>
-               <p class="mt-4 text-muted-foreground text-sm leading-relaxed">
-                  Clientes enterprise: trabalharemos com você em suas necessidades específicas de conformidade.
-                  Temos as práticas de segurança em vigor. A documentação vem depois.
-               </p>
-            </div>
-
-            <!-- Security Features by Tier -->
-            <div>
-               <h3 class="text-xl font-semibold text-foreground mb-6 text-center">Recursos de Segurança por Plano</h3>
-               <div class="grid md:grid-cols-3 gap-6">
-                  {securityTiers.map((tier, index) => (
-                     <div class={`p-6 rounded-2xl border ${index === 2 ? 'bg-primary/5 border-primary/30' : 'bg-background border-border/50'}`}>
-                        <h4 class={`font-semibold mb-4 ${index === 2 ? 'text-primary' : 'text-foreground'}`}>{tier.tier}</h4>
-                        <ul class="space-y-2">
-                           {tier.features.map((feature) => (
-                              <li class="flex items-start gap-2 text-sm text-muted-foreground">
-                                 <Check class={`w-4 h-4 flex-shrink-0 mt-0.5 ${index === 2 ? 'text-primary' : 'text-primary'}`} />
-                                 <span>{feature}</span>
-                              </li>
-                           ))}
-                        </ul>
-                     </div>
-                  ))}
-               </div>
-            </div>
-
-            <!-- Enterprise Support -->
-            <div class="mt-12 p-6 rounded-2xl bg-background border border-border/50">
-               <h4 class="font-semibold text-foreground mb-4 text-center">Suporte Enterprise para Conformidade</h4>
-               <div class="flex flex-wrap justify-center gap-4">
-                  {enterpriseSupport.map((item) => (
-                     <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50">
-                        <Check class="w-4 h-4 text-primary" />
-                        <span class="text-sm text-muted-foreground">{item}</span>
-                     </div>
-                  ))}
-               </div>
-            </div>
-         </div>
-      </section>
-
-      <!-- Integrations -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Integrações
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Funciona Com Sua Stack
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Conecte o Montte às suas ferramentas e workflows existentes.
-               </p>
-            </div>
-
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               {integrations.map((category) => (
-                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50">
-                     <h3 class="font-semibold text-foreground mb-4">{category.name}</h3>
-                     <ul class="space-y-2">
-                        {category.items.map((item) => (
-                           <li class="text-sm text-muted-foreground flex items-center gap-2">
-                              <Check class="w-4 h-4 text-primary" />
-                              {item}
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-               ))}
-            </div>
-         </div>
-      </section>
-
-      <!-- Pricing Overview -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Preços
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Preços Enterprise Simples e Transparentes
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Sem taxas por assento. Sem custos surpresa. Preços personalizados baseados nas suas necessidades.
-               </p>
-            </div>
-
-            <div class="max-w-2xl mx-auto">
-               <div class="p-8 rounded-2xl bg-background border border-primary/30">
-                  <div class="text-center mb-8">
-                     <p class="text-sm text-muted-foreground uppercase tracking-wider">Enterprise</p>
-                     <p class="text-4xl font-bold text-foreground mt-2">Personalizado</p>
-                     <p class="text-muted-foreground mt-2">Sob medida para sua organização</p>
-                  </div>
-
-                  <div class="grid sm:grid-cols-2 gap-4 mb-8">
-                     {pricingFeatures.map((item) => (
-                        <div class="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                           <span class="text-sm text-muted-foreground">{item.feature}</span>
-                           <span class="text-sm font-medium text-foreground">{item.value}</span>
+                        <div class="mt-3 rounded-full enterprise-progress-bg p-[1px]">
+                           <div
+                              class="h-2 rounded-full enterprise-progress-gradient"
+                              style={`width: ${item.percentage}%`}
+                           ></div>
                         </div>
-                     ))}
-                  </div>
-
-                  <div class="text-center">
-                     <a href="#contact">
-                        <Button size="lg" className="w-full sm:w-auto rounded-xl h-12 px-8">
-                           Solicite uma Cotação Personalizada
-                           <ArrowRight class="size-4 ml-2" />
-                        </Button>
-                     </a>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </section>
-
-      <!-- Testimonials -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Confiado por Organizações em Crescimento
-               </h2>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-               {testimonials.map((testimonial) => (
-                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
-                     <div class="flex-1">
-                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
-                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                        </svg>
-                        <p class="text-foreground leading-relaxed">
-                           "{testimonial.quote}"
-                        </p>
-                     </div>
-
-                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
-                        <img
-                           src={testimonial.avatar}
-                           alt={testimonial.name}
-                           class="w-12 h-12 rounded-full bg-muted"
-                           loading="lazy"
-                        />
-                        <div>
-                           <p class="font-semibold text-foreground">{testimonial.name}</p>
-                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        <div class="text-sm mt-1 text-muted-foreground">
+                           {item.price}/mês
                         </div>
                      </div>
-                  </div>
+                     {index < costComparison.length - 1 && (
+                        <div class="my-5 w-full enterprise-gradient-hr h-px"></div>
+                     )}
+                  </>
                ))}
+
+               <div class="mt-6 mx-4 md:mx-8 px-6 py-4 enterprise-montte-gradient shrink-0 rounded-xl">
+                  <div class="flex justify-between items-center gap-5">
+                     <div class="flex items-center gap-3">
+                        <div class="shrink-0 w-4 h-4 flex items-center justify-center">
+                           <svg width="15" height="12" viewBox="0 0 15 12" fill="none" class="text-foreground">
+                              <path d="M7.5 0L15 12H0L7.5 0Z" fill="currentColor"/>
+                           </svg>
+                        </div>
+                        <div class="font-medium text-foreground">Montte</div>
+                     </div>
+                     <div class="hidden sm:flex px-3 py-1 rounded-full text-xs border items-center enterprise-badge">
+                        Usuários ilimitados
+                     </div>
+                  </div>
+                  <div class="mt-3 rounded-full enterprise-montte-progress-border p-[1px]">
+                     <div class="h-2 rounded-full w-[5.7%] enterprise-montte-progress"></div>
+                  </div>
+                  <div class="text-sm mt-1 text-muted-foreground">
+                     $50,000/mês
+                  </div>
+               </div>
             </div>
          </div>
+      </section>
+
+      <!-- Trusted By Section (repeated) -->
+      <section class="py-12 container mx-auto flex flex-col items-center max-w-[1320px]">
+         <p class="text-center text-base text-muted-foreground max-w-[200px] sm:max-w-none">
+            Usado pelas melhores equipes de finanças
+         </p>
+
+         <div class="mt-8 flex flex-wrap justify-center gap-8 px-6 md:px-12 lg:px-16">
+            {trustedByLogos.map((logo) => (
+               <div class="flex items-center justify-center w-24 h-12 rounded-lg enterprise-card-bg border enterprise-border">
+                  <span class="text-sm font-semibold text-muted-foreground">{logo.initial}</span>
+               </div>
+            ))}
+         </div>
+
+         <div class="mt-12 w-full enterprise-gradient-hr h-px"></div>
       </section>
 
       <!-- FAQ Section -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <h2 class="text-2xl font-semibold md:text-3xl">
-                  FAQ Enterprise
-               </h2>
-            </div>
+      <section id="faq" class="py-16 md:py-24 container mx-auto flex flex-col items-center max-w-[951px] px-6">
+         <h2 class="text-2xl font-semibold md:text-3xl text-foreground text-center">
+            FAQ Enterprise
+         </h2>
 
-            <div class="max-w-3xl mx-auto space-y-4">
-               {faqs.map((faq) => (
-                  <details class="group p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
-                     <summary class="flex items-center justify-between cursor-pointer list-none">
-                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
-                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
-                     </summary>
-                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
-                  </details>
-               ))}
-            </div>
+         <div class="mt-12 max-w-3xl mx-auto space-y-4 w-full">
+            {faqs.map((faq) => (
+               <details class="group p-6 rounded-2xl enterprise-card-bg border enterprise-border hover:border-primary/30 transition-all">
+                  <summary class="flex items-center justify-between cursor-pointer list-none">
+                     <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
+                     <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <p class="mt-4 text-muted-foreground">{faq.answer}</p>
+               </details>
+            ))}
          </div>
       </section>
 
-      <!-- Contact Section -->
-      <section id="contact" class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Comece Agora
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Vamos Conversar Sobre Suas Necessidades
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg">
-                  Nossa equipe enterprise trabalhará com você para entender seus requisitos
-                  e criar uma solução personalizada para sua organização.
-               </p>
+      <!-- Final CTA Section -->
+      <section class="py-20 md:py-28 lg:py-36 enterprise-cta-bg">
+         <div class="container mx-auto flex flex-col items-center px-6">
+            <div class="flex items-center gap-2 mb-4">
+               <svg width="154" height="21" viewBox="0 0 154 21" fill="none" class="text-foreground scale-75 md:scale-100">
+                  <text x="0" y="17" fill="currentColor" font-size="20" font-weight="bold" font-family="system-ui, sans-serif">Montte</text>
+               </svg>
+            </div>
 
-               <div class="flex flex-wrap justify-center gap-4 mt-8">
-                  <a href="mailto:enterprise@montte.co">
-                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
-                        <Mail class="size-5 mr-2" />
-                        <span>enterprise@montte.co</span>
-                     </Button>
-                  </a>
-                  <a href="#" target="_blank" rel="noopener noreferrer">
-                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
-                        <MessageSquare class="size-5" />
-                        Agende uma Demo
-                     </Button>
-                  </a>
-               </div>
+            <h2 class="mt-2 md:mt-4 font-bold text-foreground text-center text-[28px] md:text-[44px] lg:text-[56px] leading-[98%]">
+               Sua gestão financeira evolui hoje
+            </h2>
 
-               <div class="mt-12 p-6 rounded-2xl bg-muted/30 border border-border/50">
-                  <h3 class="font-semibold text-foreground mb-4">O Que Acontece Depois?</h3>
-                  <div class="grid sm:grid-cols-3 gap-4 text-left">
-                     <div class="flex items-start gap-3">
-                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm flex-shrink-0">
-                           1
-                        </div>
-                        <div>
-                           <p class="font-medium text-foreground">Chamada de Descoberta</p>
-                           <p class="text-sm text-muted-foreground">Conhecemos seus requisitos</p>
-                        </div>
-                     </div>
-                     <div class="flex items-start gap-3">
-                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm flex-shrink-0">
-                           2
-                        </div>
-                        <div>
-                           <p class="font-medium text-foreground">Demo Personalizada</p>
-                           <p class="text-sm text-muted-foreground">Veja o Montte configurado para você</p>
-                        </div>
-                     </div>
-                     <div class="flex items-start gap-3">
-                        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm flex-shrink-0">
-                           3
-                        </div>
-                        <div>
-                           <p class="font-medium text-foreground">Programa Piloto</p>
-                           <p class="text-sm text-muted-foreground">Teste de 30-90 dias com sua equipe</p>
-                        </div>
-                     </div>
+            <p class="mt-5 text-center md:text-lg text-muted-foreground max-w-[400px] md:max-w-[500px]">
+               Montte permite que você veja dentro de qualquer operação financeira, resolva qualquer problema
+               e tome decisões com confiança.
+            </p>
+
+            <div class="mt-8 flex flex-col sm:flex-row gap-4">
+               <a
+                  class="flex items-center justify-center font-medium text-center gap-2 select-none border shadow-lg enterprise-cta-button w-[280px] sm:w-auto h-[52px] px-6 text-base rounded-xl transition hover:brightness-110"
+                  href="mailto:enterprise@montte.co"
+               >
+                  <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                     <Mail class="w-3.5 h-3.5" />
                   </div>
-               </div>
-            </div>
-         </div>
-      </section>
+                  Agendar demo enterprise
+                  <ChevronRight class="w-4 h-4" />
+               </a>
 
-      <!-- Final CTA -->
-      <section class="py-16 md:py-24 bg-gradient-to-t from-primary/5 to-transparent">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto">
-               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Pronto para Escalar Suas Operações Financeiras?
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg">
-                  Junte-se a organizações que confiam no Montte para sua gestão financeira.
-               </p>
-
-               <div class="flex flex-wrap justify-center gap-4 mt-8">
-                  <a href="mailto:enterprise@montte.co">
-                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
-                        <span>Fale com Vendas Enterprise</span>
-                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                     </Button>
-                  </a>
-                  <a href="https://github.com/montte/montte" target="_blank" rel="noopener noreferrer">
-                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
-                        <Github class="size-5" />
-                        Ver no GitHub
-                     </Button>
-                  </a>
-               </div>
+               <a
+                  class="flex items-center justify-center font-medium text-center gap-2 select-none border enterprise-outline-button w-[280px] sm:w-auto h-[52px] px-6 text-base rounded-xl transition hover:brightness-110"
+                  href="https://github.com/montte/montte"
+                  target="_blank"
+                  rel="noopener noreferrer"
+               >
+                  <Github class="w-5 h-5" />
+                  Ver no GitHub
+               </a>
             </div>
          </div>
       </section>
@@ -686,3 +515,153 @@ const testimonials = [
       <Footer lang={lang}/>
    </div>
 </Layout>
+
+<style>
+   .enterprise-page {
+      --enterprise-dark: oklch(0.12 0.02 265);
+      --enterprise-card: oklch(0.15 0.025 265);
+   }
+
+   .enterprise-hero-bg {
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.35 0.15 163 / 0.15), transparent);
+   }
+
+   .enterprise-title-gradient {
+      background: linear-gradient(135deg, oklch(0.75 0.15 163), oklch(0.85 0.12 163));
+      -webkit-background-clip: text;
+      background-clip: text;
+   }
+
+   .enterprise-hero-text {
+      background: linear-gradient(180deg, var(--foreground) 0%, var(--muted-foreground) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+   }
+
+   .enterprise-primary-gradient {
+      background: linear-gradient(135deg, oklch(0.72 0.19 149), oklch(0.65 0.17 163));
+      -webkit-background-clip: text;
+      background-clip: text;
+   }
+
+   .enterprise-secondary-gradient {
+      background: linear-gradient(180deg, var(--foreground) 20%, var(--muted-foreground) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+   }
+
+   .enterprise-demo-button {
+      background: linear-gradient(135deg, oklch(0.18 0.03 265), oklch(0.22 0.035 265));
+      border-color: oklch(0.45 0.08 163 / 0.3);
+   }
+
+   .enterprise-demo-button:hover {
+      border-color: oklch(0.55 0.1 163 / 0.5);
+   }
+
+   .enterprise-card-bg {
+      background: oklch(0.95 0.01 265 / 0.5);
+   }
+
+   :global(.dark) .enterprise-card-bg {
+      background: oklch(0.18 0.025 265 / 0.8);
+   }
+
+   .enterprise-border {
+      border-color: oklch(0.45 0.08 163 / 0.2);
+   }
+
+   .enterprise-border-subtle {
+      border-color: oklch(0.45 0.08 163 / 0.1);
+   }
+
+   .enterprise-gradient-hr {
+      background: linear-gradient(90deg, transparent, oklch(0.45 0.08 163 / 0.3), transparent);
+   }
+
+   .enterprise-lines-bg {
+      background-image: repeating-linear-gradient(
+         0deg,
+         transparent,
+         transparent 10px,
+         oklch(0.72 0.15 163 / 0.05) 10px,
+         oklch(0.72 0.15 163 / 0.05) 11px
+      );
+   }
+
+   .enterprise-card-image {
+      background: linear-gradient(135deg, oklch(0.72 0.15 163 / 0.2), oklch(0.72 0.15 163 / 0.05));
+   }
+
+   .enterprise-deployments-bg {
+      background: oklch(0.95 0.01 265 / 0.5);
+   }
+
+   :global(.dark) .enterprise-deployments-bg {
+      background: oklch(0.18 0.025 265 / 0.8);
+   }
+
+   .enterprise-costs-bg {
+      background: linear-gradient(135deg, oklch(0.92 0.03 163 / 0.5), oklch(0.95 0.01 265 / 0.3));
+   }
+
+   :global(.dark) .enterprise-costs-bg {
+      background: linear-gradient(135deg, oklch(0.2 0.05 163 / 0.3), oklch(0.15 0.02 265 / 0.5));
+   }
+
+   .enterprise-progress-bg {
+      background: oklch(0.1 0.02 265);
+   }
+
+   :global(.dark) .enterprise-progress-bg {
+      background: oklch(0.08 0.015 265);
+   }
+
+   .enterprise-progress-gradient {
+      background: linear-gradient(90deg, oklch(0.72 0.15 163 / 0.8), oklch(0.65 0.17 163));
+   }
+
+   .enterprise-montte-gradient {
+      background: linear-gradient(135deg, oklch(0.15 0.03 265), oklch(0.12 0.02 265));
+      border: 1px solid oklch(0.15 0.02 265 / 0.3);
+   }
+
+   :global(.dark) .enterprise-montte-gradient {
+      background: linear-gradient(135deg, oklch(0.15 0.03 265), oklch(0.12 0.02 265));
+   }
+
+   .enterprise-montte-progress-border {
+      background: linear-gradient(90deg, oklch(0.72 0.15 163), oklch(0.65 0.17 163));
+      border-radius: 9999px;
+   }
+
+   .enterprise-montte-progress {
+      background: oklch(0.15 0.02 265);
+   }
+
+   .enterprise-badge {
+      background: oklch(0.15 0.02 265);
+      border-color: oklch(0.15 0.02 265 / 0.3);
+      color: var(--foreground);
+   }
+
+   .enterprise-cta-bg {
+      background: linear-gradient(180deg, transparent 0%, oklch(0.72 0.15 163 / 0.05) 50%, transparent 100%);
+   }
+
+   .enterprise-cta-button {
+      background: oklch(0.55 0.15 163);
+      border-color: oklch(0.55 0.15 163);
+      color: var(--primary-foreground);
+   }
+
+   .enterprise-outline-button {
+      background: transparent;
+      border-color: oklch(0.45 0.08 163 / 0.3);
+      color: var(--foreground);
+   }
+
+   .enterprise-outline-button:hover {
+      border-color: oklch(0.55 0.1 163 / 0.5);
+   }
+</style>

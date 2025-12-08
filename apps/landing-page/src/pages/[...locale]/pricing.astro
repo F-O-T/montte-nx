@@ -1,79 +1,715 @@
 ---
 export const prerender = true;
 
-import type { SupportedLng } from "@packages/localization";
 import {
-   PricingCards,
-   PricingComparison,
-   PricingFAQ,
-   TransparencyTable,
-} from "@/components/pricing-components";
+   ChartPie,
+   Check,
+   CreditCard,
+   FileText,
+   FolderSync,
+   LayoutDashboard,
+   Lock,
+   Server,
+   Settings,
+   Users,
+   Wallet,
+   Zap,
+} from "@lucide/astro";
 import StickyNavbar from "@/components/StickyNavbar.astro";
-import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Landing.astro";
-import CTA from "@/sections/CTA.astro";
+import Landing from "@/layouts/Landing.astro";
 import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
-   return supportedLanguages.map((locale) => ({
-      params: { locale: locale === "pt-BR" ? undefined : locale },
-   }));
+   return [
+      { params: { locale: undefined } },
+      { params: { locale: "en" } },
+      { params: { locale: "de" } },
+      { params: { locale: "es" } },
+   ];
 }
 
-const { locale } = Astro.params;
-const lang = (locale || "pt-BR") as SupportedLng;
+const navCategories = [
+   { id: "transactions", label: "Transacoes", icon: "CreditCard" },
+   { id: "analytics", label: "Analises", icon: "ChartPie" },
+   { id: "collaboration", label: "Colaboracao", icon: "Users" },
+   { id: "infrastructure", label: "Infraestrutura", icon: "Server" },
+   { id: "enterprise", label: "Enterprise", icon: "Lock" },
+];
+
+const freeFeatures = [
+   "Transacoes ilimitadas",
+   "Importacao de banco OFX",
+   "50 MB de armazenamento",
+   "1 conta financeira",
+   "Orcamento basico",
+   "Anexos de recibos",
+];
+
+const transactionsFeatures = {
+   title: "Transacoes",
+   description:
+      "Gerencie todas as suas transacoes financeiras com recursos avancados de categorizacao e divisao.",
+   included: {
+      label: "Incluido",
+      value: "Transacoes ilimitadas",
+   },
+   addons: [
+      { name: "Importacao OFX/CSV", price: "incluido" },
+      {
+         name: "Transacoes divididas avancadas",
+         price: "R$9 por workspace/mes",
+      },
+      {
+         name: "Categorizacao automatica por IA",
+         price: "R$19 por workspace/mes",
+      },
+   ],
+   features: [
+      "Importacao de extratos bancarios",
+      "Categorizacao manual",
+      "Filtros avancados",
+      "Busca por texto",
+      "Anexos de comprovantes",
+      "Tags personalizadas",
+      "Transacoes recorrentes",
+      "Divisao entre categorias",
+      "Exportacao CSV/PDF",
+      "Historico completo",
+      "Notas e comentarios",
+      "Duplicacao inteligente",
+   ],
+};
+
+const analyticsFeatures = {
+   title: "Analises",
+   description:
+      "Visualize suas financas com dashboards interativos e relatorios detalhados.",
+   included: {
+      label: "Incluido",
+      value: "Relatorios basicos",
+   },
+   addons: [
+      { name: "Analises avancadas", price: "R$19 por workspace/mes" },
+      { name: "Previsao de gastos por IA", price: "R$29 por workspace/mes" },
+      {
+         name: "Exportacao de relatorios ilimitada",
+         price: "R$9 por workspace/mes",
+      },
+   ],
+   features: [
+      "Dashboard resumo",
+      "Graficos de gastos mensais",
+      "Comparativo por periodo",
+      "Relatorio por categoria",
+      "Tendencias de gastos",
+      "Meta vs realizado",
+      "Fluxo de caixa",
+      "Relatorios personalizados",
+      "Exportacao PDF/Excel",
+      "Agendamento de relatorios",
+      "Compartilhamento de dashboards",
+      "Alertas de anomalias",
+   ],
+};
+
+const collaborationFeatures = {
+   title: "Colaboracao",
+   description:
+      "Compartilhe financas com sua familia ou equipe com controles de acesso granulares.",
+   included: {
+      label: "Membros gratuitos",
+      value: "Ilimitados (somente visualizacao)",
+   },
+   tiers: [
+      {
+         name: "Membro Editor",
+         description: "Pode criar e editar transacoes",
+         price: "R$0",
+         period: "por membro/mes",
+      },
+      {
+         name: "Workspace Pro",
+         description: "Acesso completo a analises, colaboracao e automacoes",
+         price: "R$49",
+         period: "por workspace/mes",
+      },
+   ],
+   features: [
+      "Convites por e-mail",
+      "Permissoes por funcao",
+      "Workspaces compartilhados",
+      "Orcamentos colaborativos",
+      "Comentarios em transacoes",
+      "Historico de alteracoes",
+      "Notificacoes em tempo real",
+      "Aprovacao de gastos",
+      "Logs de auditoria",
+      "Sincronizacao automatica",
+      "Chat interno",
+      "Mencoes @usuario",
+   ],
+};
+
+const infrastructureFeatures = {
+   title: "Infraestrutura",
+   description:
+      "Armazenamento seguro e escalavel para todos os seus dados financeiros e anexos.",
+   included: {
+      label: "Incluido",
+      value: "50 MB armazenamento",
+   },
+   addons: [
+      { name: "Armazenamento adicional", price: "R$5 por 1 GB/mes" },
+      { name: "Retencao estendida (5 anos)", price: "R$19 por workspace/mes" },
+      { name: "Backup dedicado", price: "R$29 por workspace/mes" },
+   ],
+   features: [
+      "Backup automatico diario",
+      "Criptografia AES-256",
+      "CDN global",
+      "Importacao OFX nativa",
+      "Exportacao completa",
+      "API REST",
+      "Webhooks",
+      "99.9% SLA uptime",
+      "Multi-regiao",
+      "Recuperacao de desastres",
+      "Compressao inteligente",
+      "Cache otimizado",
+   ],
+};
+
+const enterpriseFeatures = {
+   title: "Enterprise",
+   description:
+      "Seguranca avancada, conformidade e suporte dedicado para grandes organizacoes.",
+   security: {
+      title: "Seguranca e Conformidade",
+      description:
+         "Mantenha seus dados seguros e em conformidade com regulamentacoes.",
+      tiers: [
+         { name: "SSO com Google", price: "incluido" },
+         { name: "SSO com Azure/Okta", price: "R$5 por usuario/mes" },
+         { name: "SAML Generico", price: "enterprise" },
+      ],
+      features: [
+         "Autenticacao 2FA",
+         "Logs de auditoria",
+         "Controle de sessao",
+         "IP allowlist",
+         "Conformidade LGPD",
+         "Criptografia em repouso",
+         "Politicas de senha",
+         "Gestao de dispositivos",
+      ],
+   },
+   support: {
+      title: "Suporte Dedicado",
+      description: "Obtenha ajuda prioritaria quando voce precisar.",
+      tiers: [
+         { name: "Suporte por e-mail", price: "incluido" },
+         { name: "Suporte prioritario (4h SLA)", price: "R$99 por mes" },
+         { name: "Gerente de conta dedicado", price: "enterprise" },
+      ],
+      features: [
+         "Base de conhecimento",
+         "Documentacao completa",
+         "Suporte da comunidade",
+         "Onboarding guiado",
+         "Treinamento personalizado",
+         "Revisoes trimestrais",
+      ],
+   },
+};
+
+const bundles = [
+   {
+      name: "Starter",
+      priceMonthly: 29,
+      priceYearly: 24,
+      discount: "17%",
+      specs: [
+         { label: "Contas", val: "5" },
+         { label: "Armazenamento", val: "1 GB" },
+         { label: "Membros", val: "3" },
+      ],
+   },
+   {
+      name: "Growth",
+      priceMonthly: 79,
+      priceYearly: 66,
+      discount: "17%",
+      specs: [
+         { label: "Contas", val: "15" },
+         { label: "Armazenamento", val: "5 GB" },
+         { label: "Membros", val: "10" },
+      ],
+   },
+   {
+      name: "Scale",
+      priceMonthly: 149,
+      priceYearly: 124,
+      discount: "17%",
+      specs: [
+         { label: "Contas", val: "50" },
+         { label: "Armazenamento", val: "25 GB" },
+         { label: "Membros", val: "25" },
+      ],
+   },
+   {
+      name: "Enterprise",
+      priceMonthly: 299,
+      priceYearly: 249,
+      discount: "17%",
+      specs: [
+         { label: "Contas", val: "Ilimitado" },
+         { label: "Armazenamento", val: "100 GB" },
+         { label: "Membros", val: "Ilimitado" },
+      ],
+   },
+];
+
+const faqs = [
+   {
+      question: "O que esta incluido no plano gratis?",
+      answer:
+         "O plano gratis inclui transacoes ilimitadas, importacao OFX, 50 MB de armazenamento, 1 conta financeira e orcamento basico. Perfeito para comegar a organizar suas financas pessoais.",
+   },
+   {
+      question: "Posso usar o Montte gratuitamente para sempre?",
+      answer:
+         "Sim! O plano gratis e completamente gratuito para sempre. Voce tambem pode auto-hospedar a versao open-source sem limites.",
+   },
+   {
+      question: "Como funciona o preco do workspace Pro?",
+      answer:
+         "O workspace Pro custa R$49/mes e da acesso completo a analises avancadas, colaboracao ilimitada e todas as automacoes. Membros adicionais com permissao de edicao sao gratuitos.",
+   },
+   {
+      question: "Voces oferecem desconto para cobranca anual?",
+      answer:
+         "Sim! Com cobranca anual voce economiza aproximadamente 17% (equivalente a ~2 meses gratis).",
+   },
+   {
+      question: "Posso trocar de plano a qualquer momento?",
+      answer:
+         "Sim, voce pode fazer upgrade ou downgrade a qualquer momento. O valor sera calculado proporcionalmente.",
+   },
+   {
+      question: "Voces oferecem reembolso?",
+      answer:
+         "Oferecemos garantia de devolucao em 30 dias para todos os planos pagos, sem perguntas.",
+   },
+];
 ---
 
-<Layout lang={lang}>
-   <div class="flex flex-col">
-      <StickyNavbar lang={lang}/>
+<Landing>
+   <StickyNavbar />
 
-      <section class="bg-background">
-         <div class="pt-24 md:pt-32 lg:pt-48">
-            <div class="mx-auto grid max-w-5xl items-end gap-4 px-6 text-center">
-               <h1 class="text-balance text-5xl font-semibold lg:text-6xl">
-                   Preços <span class="bg-linear-to-b from-foreground/50 to-foreground/95 bg-clip-text text-transparent [-webkit-text-stroke:0.5px_var(--color-foreground)]">Simples</span>
-                </h1>
-                <p class="text-muted-foreground mx-auto max-w-lg text-balance text-lg lg:text-xl">
-                   Comece grátis. Evolua conforme cresce. Sempre dono dos seus dados.
-                </p>
+   <div class="bg-background min-h-screen font-sans text-muted-foreground selection:bg-primary selection:text-primary-foreground">
+      <!-- HERO SECTION -->
+      <section class="pt-24 pb-12 px-4 relative overflow-hidden">
+         <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 opacity-50 blur-[120px] rounded-full pointer-events-none"></div>
+
+         <div class="container mx-auto max-w-[1200px] text-center relative z-10">
+            <h1 class="text-foreground text-5xl md:text-6xl font-bold tracking-tight mb-6">Precos</h1>
+            <p class="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+               Experimente o Montte hoje sem riscos com nossa garantia de devolucao de 30 dias.
+            </p>
+
+            <!-- Toggle Switch -->
+            <div class="flex flex-col items-center justify-center">
+               <label class="flex items-center gap-4 cursor-pointer group select-none">
+                  <span class="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors" id="label-monthly">Mensal</span>
+                  <div class="relative">
+                     <input type="checkbox" id="pricing-toggle" class="peer sr-only" checked />
+                     <div class="w-14 h-7 bg-muted border border-border rounded-full peer-focus:ring-2 peer-focus:ring-primary/40 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-6 after:w-6 after:transition-all shadow-inner"></div>
+                  </div>
+                  <span class="text-sm font-medium text-foreground transition-colors" id="label-yearly">Anual</span>
+               </label>
+               <span class="mt-3 text-xs font-medium text-primary">Ganhe ~2 meses gratis</span>
             </div>
          </div>
       </section>
 
-      <section>
-         <div class="pb-16 pt-12 md:pb-32">
-            <div class="mx-auto max-w-5xl px-6">
-               <PricingCards client:load />
-            </div>
+      <!-- MAIN LAYOUT WITH SIDEBAR -->
+      <div class="container mx-auto max-w-[1200px] px-4 pb-20">
+         <div class="flex flex-col lg:flex-row gap-8">
+            <!-- LEFT SIDEBAR NAV -->
+            <aside class="lg:w-64 shrink-0">
+               <div class="lg:sticky lg:top-24 space-y-6">
+                  <!-- Category Navigation -->
+                  <nav class="space-y-1">
+                     <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3">Plataforma</div>
+                     <a href="#transactions" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+                        <CreditCard class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                        <span class="text-muted-foreground group-hover:text-foreground">Transacoes</span>
+                     </a>
+                     <a href="#analytics" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+                        <ChartPie class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                        <span class="text-muted-foreground group-hover:text-foreground">Analises</span>
+                     </a>
+                     <a href="#collaboration" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+                        <Users class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                        <span class="text-muted-foreground group-hover:text-foreground">Colaboracao</span>
+                     </a>
+
+                     <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6">Infraestrutura</div>
+                     <a href="#infrastructure" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+                        <Server class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                        <span class="text-muted-foreground group-hover:text-foreground">Armazenamento</span>
+                     </a>
+
+                     <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6">Enterprise</div>
+                     <a href="#security" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+                        <Lock class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                        <span class="text-muted-foreground group-hover:text-foreground">Seguranca</span>
+                     </a>
+                  </nav>
+
+                  <!-- Billing Toggle (Sidebar) -->
+                  <div class="p-4 rounded-lg bg-card border border-border">
+                     <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-foreground">Pagar anualmente</span>
+                        <label class="relative cursor-pointer">
+                           <input type="checkbox" id="pricing-toggle-sidebar" class="peer sr-only" checked />
+                           <div class="w-10 h-5 bg-muted border border-border rounded-full peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground peer-checked:after:bg-primary-foreground after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+                        </label>
+                     </div>
+                     <p class="text-xs text-primary mt-2">Ganhe ~2 meses gratis</p>
+                  </div>
+               </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main class="flex-1 space-y-16">
+               <!-- FREE TIER SUMMARY -->
+               <section class="rounded-xl border border-border bg-gradient-to-b from-card to-background overflow-hidden">
+                  <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                     <div>
+                        <h2 class="text-foreground text-xl font-bold mb-2">Gratis para projetos pessoais</h2>
+                        <div class="flex items-baseline gap-2 mb-3">
+                           <span class="text-foreground text-5xl font-bold tracking-tighter">R$0</span>
+                           <span class="text-sm text-muted-foreground">por mes</span>
+                        </div>
+                     </div>
+                     <a href="https://app.montte.co/auth/sign-up" class="shrink-0 inline-flex items-center justify-center px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors">
+                        Comecar gratis
+                     </a>
+                  </div>
+                  <div class="border-t border-dashed border-border px-6 md:px-8 py-6">
+                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        {freeFeatures.map((feature) => (
+                           <div class="flex items-center gap-2">
+                              <Check class="w-4 h-4 text-muted-foreground shrink-0" />
+                              <span>{feature}</span>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               </section>
+
+               <!-- STARTS AT SECTION -->
+               <section>
+                  <h2 class="text-foreground text-3xl font-bold mb-3">Comeca em apenas R$29</h2>
+                  <p class="text-muted-foreground mb-8 max-w-xl">
+                     Inclui workspace completo com analises avancadas, colaboracao e todas as automacoes para voce aproveitar toda a plataforma.
+                  </p>
+
+                  <!-- Bundles Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                     {bundles.map((bundle) => (
+                        <div class="rounded-lg border border-border bg-card p-5 hover:border-primary/40 transition-colors group">
+                           <div class="flex justify-between items-start mb-3">
+                              <span class="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">{bundle.name}</span>
+                           </div>
+                           <div class="flex items-end gap-2 mb-1">
+                              <div class="text-foreground text-3xl font-bold tracking-tighter">
+                                 <span class="price-monthly">R${bundle.priceMonthly}</span>
+                                 <span class="price-yearly hidden">R${bundle.priceYearly}</span>
+                              </div>
+                              <div class="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded mb-1">
+                                 {bundle.discount} OFF
+                              </div>
+                           </div>
+                           <p class="text-xs text-muted-foreground mb-4">por mes cobrado anualmente</p>
+                           <div class="space-y-3 pt-4 border-t border-dashed border-border">
+                              {bundle.specs.map((spec) => (
+                                 <div class="flex justify-between items-center text-xs">
+                                    <span class="text-muted-foreground">{spec.label}</span>
+                                    <span class="text-foreground font-mono font-medium">{spec.val}</span>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               </section>
+
+               <!-- TRANSACTIONS SECTION -->
+               <section id="transactions" class="scroll-mt-24">
+                  <h2 class="text-foreground text-3xl font-bold mb-2">{transactionsFeatures.title}</h2>
+                  <p class="text-muted-foreground mb-8 max-w-2xl">{transactionsFeatures.description}</p>
+
+                  <!-- Pricing Table -->
+                  <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
+                     <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+                        <span class="font-medium text-foreground">{transactionsFeatures.included.label}</span>
+                        <span class="text-sm font-medium text-primary">{transactionsFeatures.included.value}</span>
+                     </div>
+                     {transactionsFeatures.addons.map((addon, index) => (
+                        <div class={`flex items-center justify-between px-6 py-4 ${index < transactionsFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+                           <div class="flex items-center gap-2">
+                              <Zap class="w-4 h-4 text-primary" />
+                              <span class="text-sm">{addon.name}</span>
+                           </div>
+                           <span class={`text-sm ${addon.price === 'incluido' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{addon.price}</span>
+                        </div>
+                     ))}
+                  </div>
+
+                  <!-- Features Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                     {transactionsFeatures.features.map((feature) => (
+                        <div class="flex items-center gap-2">
+                           <Check class="w-4 h-4 text-primary shrink-0" />
+                           <span class="text-muted-foreground">{feature}</span>
+                        </div>
+                     ))}
+                  </div>
+               </section>
+
+               <!-- ANALYTICS SECTION -->
+               <section id="analytics" class="scroll-mt-24">
+                  <h2 class="text-foreground text-3xl font-bold mb-2">{analyticsFeatures.title}</h2>
+                  <p class="text-muted-foreground mb-8 max-w-2xl">{analyticsFeatures.description}</p>
+
+                  <!-- Pricing Table -->
+                  <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
+                     <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+                        <span class="font-medium text-foreground">{analyticsFeatures.included.label}</span>
+                        <span class="text-sm font-medium text-primary">{analyticsFeatures.included.value}</span>
+                     </div>
+                     {analyticsFeatures.addons.map((addon, index) => (
+                        <div class={`flex items-center justify-between px-6 py-4 ${index < analyticsFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+                           <div class="flex items-center gap-2">
+                              <Zap class="w-4 h-4 text-primary" />
+                              <span class="text-sm">{addon.name}</span>
+                           </div>
+                           <span class="text-sm text-muted-foreground">{addon.price}</span>
+                        </div>
+                     ))}
+                  </div>
+
+                  <!-- Features Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                     {analyticsFeatures.features.map((feature) => (
+                        <div class="flex items-center gap-2">
+                           <Check class="w-4 h-4 text-primary shrink-0" />
+                           <span class="text-muted-foreground">{feature}</span>
+                        </div>
+                     ))}
+                  </div>
+               </section>
+
+               <!-- COLLABORATION SECTION -->
+               <section id="collaboration" class="scroll-mt-24">
+                  <h2 class="text-foreground text-3xl font-bold mb-2">{collaborationFeatures.title}</h2>
+                  <p class="text-muted-foreground mb-8 max-w-2xl">{collaborationFeatures.description}</p>
+
+                  <!-- Two Tier Cards -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                     {collaborationFeatures.tiers.map((tier, index) => (
+                        <div class={`rounded-xl border p-6 ${index === 1 ? 'border-primary/50 bg-card' : 'border-border bg-gradient-to-b from-card to-background'}`}>
+                           <h3 class="text-foreground font-bold text-lg mb-1">{tier.name}</h3>
+                           <p class="text-sm text-muted-foreground mb-4">{tier.description}</p>
+                           <div class="flex items-baseline gap-1">
+                              <span class="text-foreground text-4xl font-bold tracking-tighter">{tier.price}</span>
+                              <span class="text-sm text-muted-foreground">{tier.period}</span>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+
+                  <!-- Features Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                     {collaborationFeatures.features.map((feature) => (
+                        <div class="flex items-center gap-2">
+                           <Check class="w-4 h-4 text-primary shrink-0" />
+                           <span class="text-muted-foreground">{feature}</span>
+                        </div>
+                     ))}
+                  </div>
+               </section>
+
+               <!-- INFRASTRUCTURE SECTION -->
+               <section id="infrastructure" class="scroll-mt-24">
+                  <h2 class="text-foreground text-3xl font-bold mb-2">{infrastructureFeatures.title}</h2>
+                  <p class="text-muted-foreground mb-8 max-w-2xl">{infrastructureFeatures.description}</p>
+
+                  <!-- Pricing Table -->
+                  <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
+                     <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+                        <span class="font-medium text-foreground">{infrastructureFeatures.included.label}</span>
+                        <span class="text-sm font-medium text-primary">{infrastructureFeatures.included.value}</span>
+                     </div>
+                     {infrastructureFeatures.addons.map((addon, index) => (
+                        <div class={`flex items-center justify-between px-6 py-4 ${index < infrastructureFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+                           <div class="flex items-center gap-2">
+                              <Zap class="w-4 h-4 text-primary" />
+                              <span class="text-sm">{addon.name}</span>
+                           </div>
+                           <span class="text-sm text-muted-foreground">{addon.price}</span>
+                        </div>
+                     ))}
+                  </div>
+
+                  <!-- Features Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+                     {infrastructureFeatures.features.map((feature) => (
+                        <div class="flex items-center gap-2">
+                           <Check class="w-4 h-4 text-primary shrink-0" />
+                           <span class="text-muted-foreground">{feature}</span>
+                        </div>
+                     ))}
+                  </div>
+               </section>
+
+               <!-- ENTERPRISE SECTION -->
+               <section id="security" class="scroll-mt-24">
+                  <h2 class="text-foreground text-3xl font-bold mb-8">Enterprise</h2>
+
+                  <!-- Security Subsection -->
+                  <div class="mb-12">
+                     <h3 class="text-foreground text-xl font-bold mb-2">{enterpriseFeatures.security.title}</h3>
+                     <p class="text-muted-foreground mb-6 max-w-2xl">{enterpriseFeatures.security.description}</p>
+
+                     <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
+                        {enterpriseFeatures.security.tiers.map((tier, index) => (
+                           <div class={`flex items-center justify-between px-6 py-4 ${index < enterpriseFeatures.security.tiers.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+                              <span class="text-sm">{tier.name}</span>
+                              <span class={`text-sm ${tier.price === 'incluido' ? 'text-primary font-medium' : tier.price === 'enterprise' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                                 {tier.price === 'enterprise' ? 'enterprise' : tier.price}
+                              </span>
+                           </div>
+                        ))}
+                     </div>
+
+                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        {enterpriseFeatures.security.features.map((feature) => (
+                           <div class="flex items-center gap-2">
+                              <Check class="w-4 h-4 text-primary shrink-0" />
+                              <span class="text-muted-foreground">{feature}</span>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+
+                  <!-- Support Subsection -->
+                  <div class="mb-12">
+                     <h3 class="text-foreground text-xl font-bold mb-2">{enterpriseFeatures.support.title}</h3>
+                     <p class="text-muted-foreground mb-6 max-w-2xl">{enterpriseFeatures.support.description}</p>
+
+                     <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
+                        {enterpriseFeatures.support.tiers.map((tier, index) => (
+                           <div class={`flex items-center justify-between px-6 py-4 ${index < enterpriseFeatures.support.tiers.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+                              <span class="text-sm">{tier.name}</span>
+                              <span class={`text-sm ${tier.price === 'incluido' ? 'text-primary font-medium' : tier.price === 'enterprise' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                                 {tier.price === 'enterprise' ? 'enterprise' : tier.price}
+                              </span>
+                           </div>
+                        ))}
+                     </div>
+
+                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                        {enterpriseFeatures.support.features.map((feature) => (
+                           <div class="flex items-center gap-2">
+                              <Check class="w-4 h-4 text-primary shrink-0" />
+                              <span class="text-muted-foreground">{feature}</span>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+
+                  <!-- Enterprise CTA -->
+                  <div class="rounded-xl border border-border bg-gradient-to-r from-card to-background p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                     <div class="absolute -right-20 -top-20 w-96 h-96 bg-primary opacity-5 blur-[120px] rounded-full pointer-events-none"></div>
+                     <div class="relative z-10">
+                        <h3 class="text-foreground text-2xl font-bold mb-2">Pronto para Enterprise</h3>
+                        <p class="text-muted-foreground">Entre em contato para uma cotacao personalizada.</p>
+                        <p class="text-sm text-muted-foreground/80 mt-2">Descubra por que as melhores equipes confiam no Montte.</p>
+                     </div>
+                     <div class="flex flex-col gap-3 shrink-0 relative z-10">
+                        <a href="/enterprise" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors">
+                           Agendar demo
+                        </a>
+                        <a href="mailto:enterprise@montte.co" class="text-sm text-primary text-center hover:underline">Obter cotacao por e-mail</a>
+                     </div>
+                  </div>
+               </section>
+
+               <!-- FAQ SECTION -->
+               <section class="pt-8">
+                  <div class="text-center mb-12">
+                     <h2 class="text-foreground text-3xl md:text-4xl font-bold mb-4">Perguntas frequentes</h2>
+                     <p class="text-muted-foreground max-w-2xl mx-auto">
+                        Projetamos nossos produtos e processos com seguranca em mente. Seguimos as melhores praticas do setor para manter seus dados seguros.
+                     </p>
+                  </div>
+
+                  <div class="max-w-3xl mx-auto divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+                     {faqs.map((faq, index) => (
+                        <details class="group">
+                           <summary class="flex items-center justify-between px-6 py-5 cursor-pointer list-none">
+                              <span class="font-medium text-foreground">{faq.question}</span>
+                              <svg class="w-5 h-5 text-muted-foreground shrink-0 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                              </svg>
+                           </summary>
+                           <div class="px-6 pb-5 text-sm text-muted-foreground">
+                              {faq.answer}
+                           </div>
+                        </details>
+                     ))}
+                  </div>
+               </section>
+            </main>
          </div>
-      </section>
-
-      <section class="bg-background pb-16 md:pt-18">
-         <div class="mx-auto max-w-6xl px-6">
-            <div class="mx-auto mb-12 max-w-xl text-balance text-center md:mb-16">
-               <h2 class="text-2xl font-semibold md:text-3xl">
-                   Compare Todos os Recursos
-                </h2>
-                <p class="text-muted-foreground mt-4">
-                   Veja exatamente o que está incluído em cada plano.
-                </p>
-            </div>
-
-            <PricingComparison client:load />
-         </div>
-      </section>
-
-      <section class="py-16 md:py-24">
-         <TransparencyTable client:load />
-      </section>
-
-      <section class="py-16 md:py-24">
-         <PricingFAQ client:load />
-      </section>
-
-      <CTA lang={lang} />
-
-      <Footer lang={lang}/>
+      </div>
    </div>
-</Layout>
+
+   <Footer />
+</Landing>
+
+<script>
+   function syncToggles() {
+      const mainToggle = document.getElementById('pricing-toggle') as HTMLInputElement;
+      const sidebarToggle = document.getElementById('pricing-toggle-sidebar') as HTMLInputElement;
+      const monthlyEls = document.querySelectorAll('.price-monthly');
+      const yearlyEls = document.querySelectorAll('.price-yearly');
+
+      function updatePrices(isYearly: boolean) {
+         monthlyEls.forEach(el => el.classList.toggle('hidden', isYearly));
+         yearlyEls.forEach(el => el.classList.toggle('hidden', !isYearly));
+      }
+
+      if (mainToggle && sidebarToggle) {
+         mainToggle.addEventListener('change', (e) => {
+            const isYearly = (e.target as HTMLInputElement).checked;
+            sidebarToggle.checked = isYearly;
+            updatePrices(isYearly);
+         });
+
+         sidebarToggle.addEventListener('change', (e) => {
+            const isYearly = (e.target as HTMLInputElement).checked;
+            mainToggle.checked = isYearly;
+            updatePrices(isYearly);
+         });
+
+         updatePrices(mainToggle.checked);
+      }
+   }
+
+   document.addEventListener('DOMContentLoaded', syncToggles);
+   document.addEventListener('astro:page-load', syncToggles);
+</script>

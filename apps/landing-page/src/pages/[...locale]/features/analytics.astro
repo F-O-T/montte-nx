@@ -2,29 +2,20 @@
 export const prerender = true;
 
 import {
-   AlertCircle,
    ArrowRight,
    BarChart3,
-   Check,
-   ChevronDown,
-   Clock,
-   Eye,
+   ChevronRight,
    FileText,
    Layers,
    LineChart,
-   Link as LinkIcon,
-   PieChart,
+   Sparkles,
    Target,
    TrendingUp,
    Wallet,
 } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import {
-   Announcement,
-   AnnouncementTag,
-   AnnouncementTitle,
-} from "@packages/ui/components/announcement";
 import { Button } from "@packages/ui/components/button";
+import LogoCloud from "@/components/LogoCloud";
 import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
 import Layout from "@/layouts/Landing.astro";
@@ -39,221 +30,88 @@ export function getStaticPaths() {
 const { locale } = Astro.params;
 const lang = (locale || "pt-BR") as SupportedLng;
 
-const problemPoints = [
-   "Você tem transações. Mas entende seus padrões de gastos?",
-   "Está gastando mais ou menos do que no mês passado?",
-   "Para onde o dinheiro realmente está indo?",
-   "A maioria dos apps despeja dados brutos. O Montte transforma dados em insights.",
-];
-
-const cashFlowFeatures = [
+const testimonials = [
    {
-      icon: "LineChart",
-      points: [
-         "Linha de receitas (azul)",
-         "Linha de despesas (vermelho)",
-         "Fluxo de caixa líquido (barras verde/vermelho)",
-         "Período de datas personalizável",
-      ],
-      title: "Gráficos de Fluxo de Caixa",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Taylor",
+      handle: "@taylorfinance",
+      name: "Taylor M.",
+      quote: "O painel de evolução financeira mudou a forma como penso sobre dinheiro. Ver meu patrimônio crescer mês a mês é incrivelmente motivador. Aumentei minhas economias em 30% só pela visibilidade.",
    },
    {
-      icon: "TrendingUp",
-      points: [
-         "Identifique gastos sazonais (maior em dezembro?)",
-         "Tendências mensais/anuais",
-         "Linha de tendência (receita crescendo? despesas diminuindo?)",
-         "Detecção de anomalias (meses incomuns destacados)",
-      ],
-      title: "Reconhecimento de Padrões",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Morgan",
+      handle: "@morganagency",
+      name: "Morgan L.",
+      quote: "Finalmente consigo ver quais projetos são lucrativos. Descobri que meu maior cliente é na verdade o menos lucrativo.",
    },
    {
-      icon: "Eye",
-      points: [
-         "Clique em um mês → veja todas as transações",
-         "Filtre por categoria",
-         "Compare com períodos anteriores",
-         "Exporte relatórios detalhados",
-      ],
-      title: "Análise Detalhada",
-   },
-];
-
-const evolutionFeatures = [
-   {
-      icon: "Wallet",
-      points: [
-         "Ativos (saldos bancários, investimentos)",
-         "Passivos (dívida do cartão, empréstimos)",
-         "Patrimônio líquido ao longo do tempo",
-         "Progressão mensal",
-      ],
-      title: "Acompanhamento do Patrimônio",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=AlexK",
+      handle: "@alexcfo",
+      name: "Alex K.",
+      quote: "Nossa equipe financeira costumava passar horas criando relatórios no Excel. Agora só abrimos o painel do Montte nas reuniões. Economizamos 5 horas por semana.",
    },
    {
-      icon: "PieChart",
-      points: [
-         "Gráfico de pizza: onde o patrimônio está alocado",
-         "Por tipo de conta (corrente, poupança, investimento)",
-         "Atribuição de crescimento",
-         "Acompanhamento de volatilidade",
-      ],
-      title: "Detalhamento de Ativos",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Sarah",
+      handle: "@sarahstartup",
+      name: "Sarah P.",
+      quote: "O Montte é a melhor ferramenta de análise financeira que já usei. Simples, poderosa e bonita.",
    },
    {
-      icon: "Target",
-      points: [
-         "Meta de patrimônio líquido",
-         "Progresso em direção à meta",
-         "Prazo para atingir o objetivo",
-         "Contribuição mensal necessária",
-      ],
-      title: "Visualização de Metas",
-   },
-];
-
-const categoryFeatures = [
-   {
-      icon: "PieChart",
-      points: [
-         "Gráfico de pizza ou barras de gastos por categoria",
-         "Principais categorias de gastos destacadas",
-         "Comparação mês a mês",
-         "Porcentagem do gasto total",
-      ],
-      title: "Detalhamento por Categoria",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Carlos",
+      handle: "@carlosdev",
+      name: "Carlos R.",
+      quote: "Mudei do Excel para o Montte e nunca mais olhei para trás. Os gráficos são incríveis e os insights são acionáveis.",
    },
    {
-      icon: "BarChart3",
-      points: [
-         "Receita vs gastos por projeto",
-         "Métricas de lucratividade",
-         "Detalhamento de custos por projeto",
-         "Análise de horas faturáveis vs não faturáveis",
-      ],
-      title: "Análise de Projetos",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Julia",
+      handle: "@juliafreelance",
+      name: "Julia F.",
+      quote: "Como freelancer, preciso entender para onde meu dinheiro vai. O Montte me dá essa visibilidade sem complicação.",
    },
    {
-      icon: "Layers",
-      points: [
-         "Gastos por centro de custo",
-         "Orçamento vs realizado por centro de custo",
-         "Regras de alocação (dividir custos entre centros)",
-         "Análise por departamento",
-      ],
-      title: "Relatórios por Centro de Custo",
-   },
-];
-
-const plannedVsActualFeatures = [
-   {
-      icon: "FileText",
-      points: [
-         "Planejado vs realizado lado a lado",
-         "Variação total (acima/abaixo)",
-         "Detalhamento de variação por categoria",
-         "Variação YTD",
-      ],
-      title: "Relatórios de Variação Orçamentária",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Pedro",
+      handle: "@pedrobiz",
+      name: "Pedro S.",
+      quote: "Recomendo o Montte para qualquer pequeno empresário. A análise de categoria e projeto é excepcional.",
    },
    {
-      icon: "Clock",
-      points: [
-         "Taxa de pagamentos em dia",
-         "Média de dias para pagamento",
-         "Acompanhamento de pagamentos atrasados",
-         "Custos com multas",
-      ],
-      title: "Métricas de Desempenho de Pagamentos",
-   },
-   {
-      icon: "TrendingUp",
-      points: [
-         "Previsões anteriores vs resultados reais",
-         "Melhoria das previsões ao longo do tempo",
-         "Ajustes sazonais nas previsões",
-         "Métricas de confiança",
-      ],
-      title: "Precisão das Previsões",
+      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Ana",
+      handle: "@anafintech",
+      name: "Ana M.",
+      quote: "Tentei várias ferramentas antes do Montte. Nenhuma chegou perto em termos de UX e funcionalidade.",
    },
 ];
 
 const relatedFeatures = [
    {
-      description: "Transações são a fonte de dados",
+      description: "Relatórios bonitos e interativos",
       href: "/features/smart-transactions",
-      title: "Capture Toda Transação",
+      title: "Transações Inteligentes",
    },
    {
-      description: "Métricas de contas nos relatórios",
+      description: "Acompanhe contas a pagar e receber",
       href: "/features/bill-tracking",
-      title: "Contas Sem Estresse",
+      title: "Gestão de Contas",
    },
    {
-      description: "Comparação orçamento vs realizado",
+      description: "Planejamento orçamentário completo",
       href: "/features/budgeting",
-      title: "Orçamentos que Funcionam",
+      title: "Orçamentos",
    },
    {
       description: "Análises em nível de equipe",
       href: "/features/collaboration",
-      title: "Compartilhe Finanças",
-   },
-];
-
-const testimonials = [
-   {
-      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Taylor",
-      name: "Taylor M.",
-      quote: "O painel de evolução financeira mudou a forma como penso sobre dinheiro. Ver meu patrimônio crescer mês a mês é incrivelmente motivador. Aumentei minhas economias em 30% só pela visibilidade.",
-      role: "Usuário Individual",
-      tag: "Individual",
+      title: "Colaboração",
    },
    {
-      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Morgan",
-      name: "Morgan L.",
-      quote: "Finalmente consigo ver quais projetos são lucrativos. Descobri que meu maior cliente é na verdade o menos lucrativo. As análises de projetos do Montte me ajudaram a ajustar meus preços adequadamente.",
-      role: "Dono de Agência",
-      tag: "Empresário",
+      description: "Tracing e métricas avançadas",
+      href: "/features/open-source",
+      title: "Open Source",
    },
    {
-      avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=AlexK",
-      name: "Alex K.",
-      quote: "Nossa equipe financeira costumava passar horas criando relatórios no Excel. Agora só abrimos o painel do Montte nas reuniões. Economizamos 5 horas por semana.",
-      role: "Diretor Financeiro",
-      tag: "Equipe",
-   },
-];
-
-const faqs = [
-   {
-      answer:
-         "Sim. Exporte para PDF, CSV ou Excel. Totalmente formatado e pronto para compartilhar.",
-      question: "Posso exportar relatórios?",
-   },
-   {
-      answer:
-         "Até onde seus dados existirem. Da data inicial até hoje. Sem limite.",
-      question: "Até quando as análises retroagem?",
-   },
-   {
-      answer:
-         "Sim. Escolha quais gráficos exibir, reordene-os, personalização total.",
-      question: "Posso personalizar os widgets do painel?",
-   },
-   {
-      answer:
-         "Sim. Veja relatórios na moeda base ou em moeda específica. Conversão automática.",
-      question: "O Montte suporta múltiplas moedas?",
-   },
-   {
-      answer: "Sim (se você tiver permissão). Filtre por membro da equipe.",
-      question: "Posso ver gastos de membros da equipe nas análises?",
-   },
-   {
-      answer:
-         "Em tempo real. Os gráficos atualizam conforme novas transações são adicionadas.",
-      question: "Com que frequência as análises são atualizadas?",
+      coming: true,
+      description: "Detecção automática de problemas",
+      href: "#",
+      title: "Alertas Inteligentes",
    },
 ];
 ---
@@ -263,412 +121,508 @@ const faqs = [
       <StickyNavbar lang={lang}/>
 
       <!-- Hero Section -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-4xl mx-auto">
-               <Announcement className="justify-center">
-                  <AnnouncementTag className="bg-primary text-primary-foreground">Feito para 2025</AnnouncementTag>
-                  <AnnouncementTitle>
-                     Análises e Insights Financeiros
-                  </AnnouncementTitle>
-               </Announcement>
-
-               <h1 class="mt-8 text-3xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl leading-tight">
-                  Entenda Seu Dinheiro com{" "}
-                  <span class="text-primary">Insights Reais</span>
+      <section class="pt-16 md:pt-32 pb-10 md:pb-0">
+         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center flex flex-col items-center">
+               <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium leading-[1.1] bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent">
+                  Análises financeiras<br/>
+                  feitas para 2025
                </h1>
-
-               <p class="mt-6 text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto">
-                  Painéis bonitos e interativos revelam o que realmente está acontecendo com suas finanças.
-                  Veja padrões. Identifique tendências. Tome decisões baseadas em dados.
+               <p class="mt-5 text-lg md:text-xl text-muted-foreground max-w-[510px]">
+                  Painéis inteligentes com insights em tempo real, tudo em um produto lindamente feito.
                </p>
-
-               <div class="flex flex-wrap justify-center gap-4 mt-8">
+               <div class="mt-10 w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center">
                   <a href="/signup">
-                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
-                        <span>Comece Grátis</span>
-                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                     <Button size="lg" className="w-full sm:w-auto h-12 px-6 rounded-xl">
+                        Comece Grátis
                      </Button>
                   </a>
                   <a href="/book-demo">
-                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
-                        <Eye class="size-5" />
-                        Ver Demo do Painel
+                     <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-6 rounded-xl">
+                        Agendar Demo
                      </Button>
                   </a>
                </div>
-
-               <p class="mt-8 text-sm text-muted-foreground">
-                  Usuários ganham{" "}
-                  <span class="font-semibold text-foreground">3,5 horas por semana</span>{" "}
-                  de volta usando os insights do Montte
+               <p class="mt-5 text-sm text-muted-foreground">
+                  Procurando uma solução enterprise?{" "}
+                  <a class="text-foreground underline underline-offset-4 hover:text-primary transition" href="/book-demo">
+                     Fale conosco
+                  </a>
                </p>
             </div>
          </div>
+         <img
+            width="1200"
+            height="600"
+            alt="Dashboard de análises financeiras"
+            class="md:hidden w-full relative -z-10 mt-8"
+            src="https://placehold.co/1200x600/0f0f23/22c55e?text=Analytics+Dashboard"
+            loading="lazy"
+         />
       </section>
 
-      <!-- Problem Hook Section -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-               <div>
-                  <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
-                     Dados Sem Insights São Inúteis
-                  </h2>
-                  <p class="mt-4 text-muted-foreground text-lg">
-                     A maioria dos apps despeja dados brutos em você. Planilhas cheias de números. Sem contexto. Sem significado.
-                     O Montte transforma seus dados financeiros em insights acionáveis que você realmente pode usar.
-                  </p>
-               </div>
-
-               <div class="p-6 rounded-2xl bg-background border border-border/50">
-                  <h3 class="text-lg font-semibold text-foreground mb-4">O Problema:</h3>
-                  <ul class="space-y-3">
-                     {problemPoints.map((point, index) => (
-                        <li class={`flex items-start gap-3 p-3 rounded-xl ${index < 3 ? 'bg-red-500/5 border border-red-500/10' : 'bg-primary/5 border border-primary/10'}`}>
-                           {index < 3 ? (
-                              <AlertCircle class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                           ) : (
-                              <Check class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                           )}
-                           <span class={index < 3 ? "text-muted-foreground" : "text-foreground"}>{point}</span>
-                        </li>
-                     ))}
-                  </ul>
-               </div>
-            </div>
+      <!-- Logo Cloud Section -->
+      <section class="relative mt-4 flex flex-col items-center overflow-hidden">
+         <div class="mx-auto max-w-7xl px-4">
+            <p class="mb-4 md:mb-10 text-muted-foreground text-center text-sm md:text-base">
+               Utilizado por equipes de engenharia e finanças
+            </p>
+         </div>
+         <div class="w-full">
+            <LogoCloud client:load />
          </div>
       </section>
+
+      <!-- Separator -->
+      <hr class="container mx-auto relative z-10 border-t border-border/30 mt-8"/>
 
       <!-- Feature 1: Cash Flow Analytics -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Recurso 1
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Veja Receitas vs. Despesas ao Longo do Tempo
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Dinheiro entrando. Dinheiro saindo. Fluxo de caixa líquido. Veja padrões sazonais e tendências de uma só vez.
-               </p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-               {cashFlowFeatures.map((feature) => (
-                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
-                     <div class="flex items-center gap-3 mb-4">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-                           {feature.icon === "LineChart" && <LineChart class="w-5 h-5 text-primary" />}
-                           {feature.icon === "TrendingUp" && <TrendingUp class="w-5 h-5 text-primary" />}
-                           {feature.icon === "Eye" && <Eye class="w-5 h-5 text-primary" />}
-                        </div>
-                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
-                     </div>
-                     <ul class="space-y-2">
-                        {feature.points.map((point) => (
-                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span>{point}</span>
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-               ))}
-            </div>
-
-            <!-- Visual placeholder -->
-            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+      <section class="py-16 md:py-32 relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+         <div class="mx-auto flex flex-col items-center">
+            <h2 class="mt-2 pb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent font-bold text-center text-2xl md:text-4xl leading-[1.08] max-w-[629px]">
+               Fluxo de caixa em tempo real
+            </h2>
+            <p class="mt-3 text-muted-foreground text-center max-w-[441px]">
+               Dinheiro entrando. Dinheiro saindo. Veja padrões sazonais e tendências de uma só vez.
+            </p>
+         </div>
+         <div class="mx-auto relative flex flex-col md:flex-row max-w-[940px] mt-12">
+            <div class="flex-1 md:mt-16 md:w-1/2">
                <img
-                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Cash+Flow+Analytics+Chart"
-                  alt="Gráfico de fluxo de caixa mostrando receitas, despesas e fluxo líquido com linhas de tendência"
-                  class="w-full"
+                  width="582"
+                  height="525"
+                  alt="Gráfico de fluxo de caixa"
+                  class="md:w-[582px] max-w-none md:ml-[-66px] -mb-12 rounded-2xl border border-border/30"
+                  src="https://placehold.co/582x525/0f0f23/22c55e?text=Cash+Flow+Chart"
                   loading="lazy"
                />
+               <div class="ml-3 md:ml-0">
+                  <h3 class="text-foreground font-bold text-lg md:text-2xl leading-[1.17] max-w-[335px]">
+                     Visualize receitas vs. despesas ao longo do tempo
+                  </h3>
+                  <p class="mt-3 text-sm md:text-base text-muted-foreground max-w-[350px]">
+                     Sincronizamos automaticamente todos os eventos entre suas contas bancárias e sua visualização no Montte.
+                  </p>
+               </div>
+            </div>
+            <div class="flex-1 mt-32 md:w-1/2">
+               <div class="relative mt-4 pl-9 pr-5 py-6 rounded-xl border border-border/30 bg-card">
+                  <div class="absolute z-10 inset-0 w-full overflow-hidden rounded-xl">
+                     <img
+                        width="581"
+                        height="443"
+                        alt="Instruções de análise"
+                        class="relative -top-8 md:-top-36 -left-8 max-w-none opacity-40"
+                        src="https://placehold.co/581x443/0f0f23/22c55e?text=Pattern+Detection"
+                        loading="lazy"
+                     />
+                  </div>
+                  <div class="relative mt-64 md:mt-32">
+                     <h4 class="text-foreground font-medium flex items-center gap-2">
+                        <TrendingUp class="w-4 h-4 text-primary" />
+                        Reconhecimento de padrões
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Identifique gastos sazonais e tendências automaticamente. Detecção de anomalias destaca meses incomuns.
+                     </p>
+                  </div>
+               </div>
+               <div class="relative mt-6 pl-9 pr-6 py-6 rounded-xl border overflow-hidden border-border/30 bg-card">
+                  <div class="absolute inset-0">
+                     <img
+                        width="470"
+                        height="294"
+                        alt="Análise detalhada"
+                        src="https://placehold.co/470x294/0f0f23/22c55e?text=Drill+Down"
+                        class="opacity-40"
+                        loading="lazy"
+                     />
+                  </div>
+                  <div class="relative z-10 mt-[40%]">
+                     <h4 class="text-foreground font-medium flex items-center gap-2">
+                        <LineChart class="w-4 h-4 text-primary" />
+                        Análise drill-down instantânea
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Clique em qualquer ponto para ver transações detalhadas. Filtre por categoria e compare com períodos anteriores.
+                     </p>
+                  </div>
+               </div>
             </div>
          </div>
       </section>
 
-      <!-- Feature 2: Financial Evolution Dashboard -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Recurso 2
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Acompanhe o Crescimento do Seu Patrimônio
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Veja seu patrimônio crescer ao longo do tempo. Visualize o impacto das suas economias e investimentos.
-               </p>
-            </div>
+      <!-- Separator -->
+      <hr class="container mx-auto relative z-10 border-t border-border/30"/>
 
-            <div class="grid md:grid-cols-3 gap-6">
-               {evolutionFeatures.map((feature) => (
-                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
-                     <div class="flex items-center gap-3 mb-4">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-                           {feature.icon === "Wallet" && <Wallet class="w-5 h-5 text-primary" />}
-                           {feature.icon === "PieChart" && <PieChart class="w-5 h-5 text-primary" />}
-                           {feature.icon === "Target" && <Target class="w-5 h-5 text-primary" />}
-                        </div>
-                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
-                     </div>
-                     <ul class="space-y-2">
-                        {feature.points.map((point) => (
-                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span>{point}</span>
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-               ))}
-            </div>
-
-            <!-- Visual placeholder -->
-            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+      <!-- Feature 2: Net Worth Evolution -->
+      <section class="py-16 md:py-32 relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+         <div class="mx-auto flex flex-col items-center">
+            <h2 class="mt-2 pb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent font-bold text-center text-2xl md:text-4xl leading-[1.08] max-w-[629px]">
+               Evolução patrimonial
+            </h2>
+            <p class="mt-3 text-muted-foreground text-center max-w-[388px]">
+               Acompanhe o crescimento do seu patrimônio. Fácil de configurar, mais fácil de manter.
+            </p>
+            <div class="lg:relative -left-12 -z-10 lg:-mt-48 xl:-mt-60 text-base mx-10 lg:mx-0">
                <img
-                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Net+Worth+Evolution+Dashboard"
-                  alt="Gráfico de linha do patrimônio líquido ao longo de 12 meses com gráfico de pizza de alocação de ativos e projeção de meta"
-                  class="w-full"
+                  width="1377"
+                  height="1065"
+                  alt="Dashboard de patrimônio"
+                  class="hidden lg:block rounded-2xl border border-border/30"
+                  src="https://placehold.co/1377x1065/0f0f23/22c55e?text=Net+Worth+Dashboard"
                   loading="lazy"
                />
-            </div>
-         </div>
-      </section>
-
-      <!-- Feature 3: Category & Project Breakdown -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Recurso 3
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Veja Para Onde o Dinheiro Realmente Vai
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Explore categorias em detalhes. Veja a lucratividade dos projetos. Entenda a distribuição dos gastos.
-               </p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-               {categoryFeatures.map((feature) => (
-                  <div class="p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
-                     <div class="flex items-center gap-3 mb-4">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-                           {feature.icon === "PieChart" && <PieChart class="w-5 h-5 text-primary" />}
-                           {feature.icon === "BarChart3" && <BarChart3 class="w-5 h-5 text-primary" />}
-                           {feature.icon === "Layers" && <Layers class="w-5 h-5 text-primary" />}
-                        </div>
-                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
-                     </div>
-                     <ul class="space-y-2">
-                        {feature.points.map((point) => (
-                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span>{point}</span>
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-               ))}
-            </div>
-
-            <!-- Visual placeholder -->
-            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
                <img
-                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Category+Breakdown+Charts"
-                  alt="Gráfico de pizza mostrando para onde vai o dinheiro com detalhamento por categoria e comparação mês a mês"
-                  class="w-full"
+                  width="393"
+                  height="449"
+                  alt="Dashboard de patrimônio mobile"
+                  class="mt-16 mb-8 mx-auto lg:hidden rounded-2xl border border-border/30"
+                  src="https://placehold.co/393x449/0f0f23/22c55e?text=Net+Worth"
                   loading="lazy"
                />
+               <div class="flex flex-col md:flex-row items-center md:items-start gap-5 lg:block sm:w-[590px] lg:w-auto">
+                  <div class="lg:absolute top-[300px] xl:top-[390px] left-[160px] xl:left-[260px] max-w-[285px] lg:max-w-[220px]">
+                     <h3 class="font-medium text-foreground flex items-center gap-2">
+                        <Wallet class="w-4 h-4 text-primary" />
+                        Acompanhe ativos e passivos
+                     </h3>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Veja seu patrimônio líquido ao longo do tempo. Saldos bancários, investimentos e dívidas em um só lugar.
+                     </p>
+                  </div>
+                  <hr class="md:hidden -mx-10 my-6 border-t border-border/30"/>
+                  <div class="lg:absolute top-[516px] xl:top-[670px] left-[690px] xl:left-[900px] max-w-[285px] lg:max-w-[266px]">
+                     <h3 class="font-medium text-foreground flex items-center gap-2">
+                        <Target class="w-4 h-4 text-primary" />
+                        Visualização de metas
+                     </h3>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Defina metas de patrimônio e acompanhe o progresso. Veja quanto falta e quando vai atingir.
+                     </p>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="mt-20 lg:-mt-28 mx-auto flex flex-col md:flex-row items-stretch gap-5 md:w-[965px]">
+            <div class="flex-1">
+               <div class="relative rounded-xl border overflow-hidden border-border/30 bg-card">
+                  <img
+                     width="470"
+                     height="294"
+                     alt="Detalhamento de ativos"
+                     class="max-w-none"
+                     src="https://placehold.co/470x294/0f0f23/22c55e?text=Asset+Breakdown"
+                     loading="lazy"
+                  />
+                  <div class="relative pl-9 pr-6 pb-6 mt-[-88px]">
+                     <h4 class="text-foreground font-medium">
+                        Detalhamento de ativos
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Veja onde seu patrimônio está alocado por tipo de conta: corrente, poupança, investimento.
+                     </p>
+                  </div>
+               </div>
+            </div>
+            <div class="flex-1">
+               <div class="relative rounded-xl border border-border/30 bg-card overflow-hidden">
+                  <img
+                     width="469"
+                     height="294"
+                     alt="Integrações"
+                     class="max-w-full mx-auto"
+                     src="https://placehold.co/469x294/0f0f23/22c55e?text=Integrations"
+                     loading="lazy"
+                  />
+                  <div class="relative -mt-24 lg:-mt-28 pl-9 pr-6 pb-6">
+                     <h4 class="text-foreground font-medium">
+                        Importação automática via OFX
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Importe extratos bancários em segundos. Suporte a múltiplos bancos brasileiros.
+                     </p>
+                  </div>
+               </div>
             </div>
          </div>
       </section>
 
-      <!-- Feature 4: Planned vs. Actual Analysis -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Recurso 4
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Precisão do Orçamento e Desempenho
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg max-w-3xl mx-auto">
-                  Quão perto você chegou do seu orçamento? Está melhorando com o tempo?
-               </p>
-            </div>
+      <!-- Separator -->
+      <hr class="container mx-auto relative z-10 border-t border-border/30"/>
 
-            <div class="grid md:grid-cols-3 gap-6">
-               {plannedVsActualFeatures.map((feature) => (
-                  <div class="p-6 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
-                     <div class="flex items-center gap-3 mb-4">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-                           {feature.icon === "FileText" && <FileText class="w-5 h-5 text-primary" />}
-                           {feature.icon === "Clock" && <Clock class="w-5 h-5 text-primary" />}
-                           {feature.icon === "TrendingUp" && <TrendingUp class="w-5 h-5 text-primary" />}
-                        </div>
-                        <h3 class="font-semibold text-foreground">{feature.title}</h3>
-                     </div>
-                     <ul class="space-y-2">
-                        {feature.points.map((point) => (
-                           <li class="flex items-start gap-2 text-sm text-muted-foreground">
-                              <Check class="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                              <span>{point}</span>
-                           </li>
-                        ))}
-                     </ul>
-                  </div>
-               ))}
-            </div>
-
-            <!-- Visual placeholder -->
-            <div class="mt-12 rounded-2xl overflow-hidden border border-border/50">
+      <!-- Feature 3: Category Breakdown -->
+      <section class="py-16 md:py-32 relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+         <div class="mx-auto flex flex-col items-center">
+            <h2 class="mt-2 pb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent font-bold text-center text-2xl md:text-4xl leading-[1.08] max-w-[629px]">
+               Para onde vai o dinheiro
+            </h2>
+            <p class="mt-3 text-muted-foreground text-center max-w-[388px]">
+               Explore categorias em detalhes. Veja a distribuição dos gastos e identifique oportunidades.
+            </p>
+         </div>
+         <div class="md:-mt-20 mx-auto relative flex flex-col md:flex-row max-w-[920px]">
+            <div class="flex-1 -mt-10 md:mt-36 relative -z-10 md:w-1/2">
                <img
-                  src="https://placehold.co/1200x600/0f0f23/22c55e?text=Budget+vs+Actual+Comparison"
-                  alt="Comparação Orçamento vs Realizado mostrando planejado, realizado e variação com métricas de desempenho"
-                  class="w-full"
+                  width="600"
+                  height="403"
+                  alt="Gráfico de categorias"
+                  class="md:w-[600px] max-w-none ml-[-40px] md:ml-[-66px] -mb-8 rounded-2xl border border-border/30"
+                  src="https://placehold.co/600x403/0f0f23/22c55e?text=Category+Charts"
                   loading="lazy"
                />
+               <div class="ml-3 md:ml-0 max-w-[335px]">
+                  <h3 class="text-foreground font-bold text-lg md:text-2xl leading-[1.17]">
+                     Gráficos interativos de categorias
+                  </h3>
+                  <p class="mt-3 text-sm md:text-base text-muted-foreground max-w-[342px]">
+                     Gráficos de pizza e barras mostram suas principais categorias de gastos. Compare mês a mês automaticamente.
+                  </p>
+               </div>
+            </div>
+            <div class="flex-1 mt-32 md:w-1/2">
+               <div class="relative mt-4 pl-9 pr-5 py-6 rounded-xl border border-border/30 bg-card">
+                  <div class="absolute inset-0 lg:w-full xl:w-full overflow-hidden rounded-xl">
+                     <img
+                        width="471"
+                        height="295"
+                        alt="Análise por projeto"
+                        src="https://placehold.co/471x295/0f0f23/22c55e?text=Project+Analysis"
+                        class="opacity-40"
+                        loading="lazy"
+                     />
+                  </div>
+                  <div class="relative mt-40">
+                     <h4 class="text-foreground font-medium flex items-center gap-2">
+                        <BarChart3 class="w-4 h-4 text-primary" />
+                        Análise por projeto
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Receita vs gastos por projeto. Métricas de lucratividade e detalhamento de custos.
+                     </p>
+                  </div>
+               </div>
+               <div class="relative mt-6 pl-9 pr-6 py-6 rounded-xl border overflow-hidden border-border/30 bg-card/80">
+                  <div class="absolute inset-0 lg:w-full xl:w-full">
+                     <img
+                        width="470"
+                        height="294"
+                        alt="Centro de custo"
+                        src="https://placehold.co/470x294/0f0f23/22c55e?text=Cost+Center"
+                        class="opacity-40"
+                        loading="lazy"
+                     />
+                  </div>
+                  <div class="relative mt-[40%]">
+                     <h4 class="text-foreground font-medium flex items-center gap-2">
+                        <Layers class="w-4 h-4 text-primary" />
+                        Relatórios por centro de custo
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Gastos por centro de custo. Orçamento vs realizado com regras de alocação.
+                     </p>
+                  </div>
+               </div>
             </div>
          </div>
       </section>
 
-      <!-- Related Features Section -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <span class="text-primary text-sm font-medium uppercase tracking-wider">
-                  Funciona Com
-               </span>
-               <h2 class="mt-4 text-2xl font-semibold md:text-3xl">
-                  Esses Recursos Trabalham Juntos
-               </h2>
-            </div>
+      <!-- Separator -->
+      <hr class="container mx-auto relative z-10 border-t border-border/30"/>
 
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               {relatedFeatures.map((feature) => (
-                  <a
-                     href={feature.href}
-                     class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
-                  >
-                     <div class="flex items-center gap-2 mb-2">
-                        <LinkIcon class="w-4 h-4 text-primary" />
-                        <h3 class="font-semibold text-foreground group-hover:text-primary transition-colors">
-                           {feature.title}
-                        </h3>
-                     </div>
-                     <p class="text-sm text-muted-foreground">{feature.description}</p>
-                  </a>
-               ))}
+      <!-- Feature 4: AI & Smart Features -->
+      <section class="py-16 md:py-32 relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+         <div class="mx-auto flex flex-col items-center">
+            <h2 class="mt-2 pb-2 bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent font-bold text-center text-2xl md:text-4xl leading-[1.08] max-w-[629px]">
+               Insights inteligentes
+            </h2>
+            <p class="mt-3 text-muted-foreground text-center max-w-[441px]">
+               Identificação automática de padrões e sugestões para melhorar suas finanças.
+            </p>
+         </div>
+         <div class="md:mt-10 mx-auto relative flex flex-col md:flex-row max-w-[1000px]">
+            <div class="flex-1 pr-10 md:w-1/2">
+               <img
+                  width="600"
+                  height="541"
+                  alt="Insights inteligentes"
+                  class="relative md:absolute -z-10 -left-8 md:-left-36 -top-10 md:-top-5 -m-10 md:m-0 w-[calc(130%+80px)] max-w-none md:w-[783px] rounded-2xl border border-border/30"
+                  src="https://placehold.co/600x541/0f0f23/22c55e?text=Smart+Insights"
+                  loading="lazy"
+               />
+               <div class="md:h-[490px]"></div>
+               <div class="ml-3 md:ml-0 -mt-48 md:mt-0">
+                  <h3 class="text-foreground font-bold text-lg md:text-2xl leading-[1.17]">
+                     Detecção de anomalias
+                  </h3>
+                  <p class="mt-3 text-sm md:text-base text-muted-foreground max-w-[342px]">
+                     10 transações fora do padrão? Identificamos automaticamente e alertamos você para revisar.
+                  </p>
+               </div>
+            </div>
+            <div class="flex-1 mt-12 md:mt-0 md:w-1/2">
+               <div class="relative mt-4 rounded-xl border overflow-hidden border-border/30 bg-card">
+                  <div class="absolute inset-0">
+                     <img
+                        width="478"
+                        height="301"
+                        alt="Categorização automática"
+                        class="absolute max-w-none top-0 right-0 opacity-40"
+                        src="https://placehold.co/478x301/0f0f23/22c55e?text=Auto+Categorize"
+                        loading="lazy"
+                     />
+                  </div>
+                  <div class="pl-9 pr-5 pb-6 relative mt-[40%]">
+                     <h4 class="text-foreground font-medium flex items-center gap-2">
+                        <Sparkles class="w-4 h-4 text-primary" />
+                        Categorização automática
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Analisamos descrições de transações e categorizamos automaticamente. Você só revisa se quiser.
+                     </p>
+                  </div>
+               </div>
+               <div class="relative mt-6 pl-9 pr-6 py-6 rounded-xl border overflow-hidden lg:overflow-visible border-border/30 bg-card">
+                  <div class="absolute inset-0">
+                     <img
+                        width="700"
+                        alt="Relatórios automáticos"
+                        class="relative max-w-none -top-14 -left-[52px] opacity-40"
+                        src="https://placehold.co/700x400/0f0f23/22c55e?text=Auto+Reports"
+                        loading="lazy"
+                     />
+                  </div>
+                  <div class="relative mt-[max(150px,40%)]">
+                     <h4 class="text-foreground font-medium flex items-center gap-2">
+                        <FileText class="w-4 h-4 text-primary" />
+                        Relatórios exportáveis
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        Exporte para PDF, CSV ou Excel. Totalmente formatado e pronto para compartilhar.
+                     </p>
+                  </div>
+               </div>
             </div>
          </div>
       </section>
 
-      <!-- Social Proof / Testimonials Section -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Insights que Geram Resultados
-               </h2>
-            </div>
+      <!-- Separator -->
+      <hr class="container mx-auto relative z-10 border-t border-border/30"/>
 
-            <div class="grid md:grid-cols-3 gap-6">
-               {testimonials.map((testimonial) => (
-                  <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
-                     <span class="absolute -top-3 left-6 px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary border border-primary/20">
-                        {testimonial.tag}
-                     </span>
-
-                     <div class="flex-1">
-                        <svg class="w-8 h-8 text-primary/30 mb-4" fill="currentColor" viewBox="0 0 24 24">
-                           <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                        </svg>
-                        <p class="text-foreground leading-relaxed">
-                           "{testimonial.quote}"
-                        </p>
+      <!-- Related Features Grid -->
+      <section class="py-16 md:py-24 container mx-auto max-w-[1104px] px-4 sm:px-6 lg:px-8">
+         <h2 class="mt-2 pb-2 text-foreground font-bold text-center mx-auto text-2xl md:text-3xl leading-[1.08] max-w-[480px]">
+            Tudo que você precisa para tomar decisões melhores
+         </h2>
+         <div class="flex flex-wrap justify-center items-stretch gap-7 mt-12 md:mt-16">
+            {relatedFeatures.map((feature) => (
+               <div class={`flex-1 border rounded-xl overflow-hidden border-border/30 bg-card min-w-full sm:min-w-[336px] sm:max-w-[336px] min-h-[280px] ${feature.coming ? 'relative' : ''}`}>
+                  {feature.coming && (
+                     <div class="absolute top-5 right-4 px-3 py-2 text-xs leading-none rounded-full border text-primary border-primary/20 bg-primary/10">
+                        Em breve
                      </div>
+                  )}
+                  <img
+                     width="336"
+                     height="200"
+                     alt={feature.title}
+                     src={`https://placehold.co/336x200/0f0f23/22c55e?text=${encodeURIComponent(feature.title)}`}
+                     class="w-full"
+                     loading="lazy"
+                  />
+                  <div class="pb-8 pl-6 pr-5">
+                     <h4 class="text-foreground font-medium -mt-20">
+                        {feature.title}
+                     </h4>
+                     <p class="mt-2 text-sm text-muted-foreground">
+                        {feature.description}
+                     </p>
+                     {!feature.coming && (
+                        <a href={feature.href} class="mt-4 inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                           Saiba mais
+                           <ChevronRight class="w-4 h-4" />
+                        </a>
+                     )}
+                  </div>
+               </div>
+            ))}
+         </div>
+      </section>
 
-                     <div class="flex items-center gap-4 mt-6 pt-6 border-t border-border/50">
+      <!-- Separator -->
+      <hr class="container mx-auto relative z-10 border-t border-border/30"/>
+
+      <!-- Testimonials Section -->
+      <section class="container mx-auto py-16 md:py-32 px-4 sm:px-6 lg:px-8">
+         <div class="flex flex-col items-center text-center">
+            <h4 class="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent text-2xl md:text-3xl lg:text-4xl font-bold leading-[1.08]">
+               Não acredite apenas em nós
+            </h4>
+            <p class="mt-4 max-w-[624px] text-muted-foreground">
+               Temos orgulho de trabalhar com empresas de todos os tamanhos e somos gratos pelo feedback, sugestões e apoio.
+            </p>
+         </div>
+
+         <div class="mt-14 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
+            {testimonials.map((testimonial, index) => (
+               <div class={`break-inside-avoid mx-auto pb-4 max-w-[320px] ${index > 5 ? 'hidden sm:block' : ''}`}>
+                  <div class="p-5 rounded-xl border bg-card/80 border-border/30">
+                     <p class="text-sm text-foreground">
+                        {testimonial.quote}
+                     </p>
+                     <div class="mt-5"></div>
+                     <div class="-m-5 p-5 flex items-start">
                         <img
-                           src={testimonial.avatar}
+                           width="37"
+                           height="37"
                            alt={testimonial.name}
-                           class="w-12 h-12 rounded-full bg-muted"
+                           class="mt-1 shrink-0 rounded-full bg-muted"
+                           src={testimonial.avatar}
                            loading="lazy"
                         />
-                        <div>
-                           <p class="font-semibold text-foreground">{testimonial.name}</p>
-                           <p class="text-sm text-muted-foreground">{testimonial.role}</p>
+                        <div class="mx-2 grow">
+                           <div class="font-bold text-sm text-foreground">
+                              {testimonial.name}
+                           </div>
+                           <div class="text-xs text-muted-foreground">
+                              {testimonial.handle}
+                           </div>
                         </div>
                      </div>
                   </div>
-               ))}
-            </div>
+               </div>
+            ))}
          </div>
       </section>
 
-      <!-- FAQ Section -->
-      <section class="py-16 md:py-24">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-               <h2 class="text-2xl font-semibold md:text-3xl">
-                  Perguntas Frequentes
-               </h2>
-            </div>
-
-            <div class="max-w-3xl mx-auto space-y-4">
-               {faqs.map((faq) => (
-                  <details class="group p-6 rounded-2xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all">
-                     <summary class="flex items-center justify-between cursor-pointer list-none">
-                        <h3 class="font-semibold text-foreground pr-4">{faq.question}</h3>
-                        <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
-                     </summary>
-                     <p class="mt-4 text-muted-foreground">{faq.answer}</p>
-                  </details>
-               ))}
-            </div>
-         </div>
-      </section>
+      <!-- Separator -->
+      <hr class="container mx-auto border-t border-border/30"/>
 
       <!-- Final CTA Section -->
-      <section class="py-16 md:py-24 bg-muted/30">
-         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto">
-               <h2 class="text-2xl font-semibold md:text-3xl lg:text-4xl">
-                  Comece a Entender Seu Dinheiro
-               </h2>
-               <p class="mt-4 text-muted-foreground text-lg">
-                  Obtenha insights que transformam a forma como você gerencia suas finanças.
-               </p>
-
-               <div class="flex flex-wrap justify-center gap-4 mt-8">
-                  <a href="/book-demo">
-                     <Button size="lg" className="group relative overflow-hidden rounded-xl h-12 px-6">
-                        <span>Ver Demo das Análises</span>
-                        <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-                     </Button>
-                  </a>
-                  <a href="/signup">
-                     <Button variant="outline" size="lg" className="rounded-xl h-12 px-6 gap-2">
-                        <BarChart3 class="size-5" />
-                        Comece Grátis o Painel
-                     </Button>
-                  </a>
-               </div>
-
-               <p class="mt-6 text-sm text-muted-foreground">
-                  Veja a história do seu dinheiro com gráficos e relatórios interativos.
-               </p>
+      <div class="mx-auto py-24 md:py-32 max-w-7xl px-4 sm:px-6 lg:px-8">
+         <section class="flex flex-col items-center">
+            <h2 class="mt-2 md:mt-5 font-medium bg-gradient-to-b from-foreground to-foreground/60 bg-clip-text text-transparent text-center text-2xl md:text-4xl leading-[1.1]">
+               Comece em 30 segundos
+            </h2>
+            <p class="mt-5 text-center text-muted-foreground max-w-[400px] md:max-w-[483px]">
+               Painéis inteligentes com insights em tempo real, tudo em um produto lindamente feito.
+            </p>
+            <div class="mt-10 w-full sm:w-auto flex flex-col sm:flex-row gap-3 items-center">
+               <a href="/signup">
+                  <Button size="lg" className="w-full sm:w-auto h-12 px-6 rounded-xl group">
+                     Comece Grátis
+                     <ArrowRight class="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+               </a>
             </div>
-         </div>
-      </section>
+            <p class="mt-5 text-sm text-muted-foreground text-center">
+               Comece a analisar grátis ou{" "}
+               <a class="text-foreground underline underline-offset-4 hover:text-primary transition" href="/book-demo">
+                  agende uma demo
+               </a>
+            </p>
+         </section>
+      </div>
 
       <Footer lang={lang}/>
    </div>
