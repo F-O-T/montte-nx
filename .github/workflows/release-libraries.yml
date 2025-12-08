@@ -3,7 +3,7 @@ name: Release Libraries
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'libraries/**/CHANGELOG.md'
       - 'libraries/**/package.json'
