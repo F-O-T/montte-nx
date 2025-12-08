@@ -59,7 +59,7 @@ const posthogEnv = {
       <meta property="og:image" content="/og-image.webp">
       <meta property="og:url" content="https://montte.co">
       <meta property="og:type" content="website">
-      {import.meta.env.PROD && posthogEnv.VITE_POSTHOG_KEY && <script set:html={getAstroPosthogConfig(posthogEnv)}
+      {import.meta.env.PROD && <script set:html={getAstroPosthogConfig()}
       is:inline/>}
       <title>
          {brandName} - Gestão Financeira Simples e Open Source
