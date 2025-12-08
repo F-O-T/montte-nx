@@ -5,25 +5,13 @@
       "jsxImportSource": "react",
       "moduleResolution": "bundler",
       "paths": {
-         "@/*": [
-            "./src/*"
-         ],
-         "@packages/ui/*": [
-            "../../packages/ui/src/*"
-         ]
+         "@/*": ["./src/*"],
+         "@packages/ui/*": ["../../packages/ui/src/*"]
       }
    },
-   "exclude": [
-      "node_modules",
-      "dist"
-   ],
+   "exclude": ["node_modules", "dist"],
    "extends": "@tooling/typescript/astro.json",
-   "include": [
-      ".astro/types.d.ts",
-      "**/*.ts",
-      "**/*.astro",
-      "**/*.tsx"
-   ],
+   "include": [".astro/types.d.ts", "**/*.ts", "**/*.astro", "**/*.tsx"],
    "references": [
       {
          "path": "../../packages/utils"

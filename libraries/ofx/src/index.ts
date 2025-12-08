@@ -14,7 +14,14 @@ export {
    generateCreditCardStatement,
    generateHeader,
 } from "./generator";
-export { type ParseResult, parse, parseOrThrow } from "./parser";
+export {
+   getEncodingFromCharset,
+   type ParseResult,
+   parse,
+   parseBuffer,
+   parseBufferOrThrow,
+   parseOrThrow,
+} from "./parser";
 export type {
    OFXAccountType,
    OFXBalance,
@@ -38,5 +45,10 @@ export type {
    OFXTransactionList,
    OFXTransactionType,
 } from "./schemas";
-export { parseStream, parseStreamToArray, type StreamEvent } from "./stream";
+export {
+   parseStream,
+   parseStreamToArray,
+   type StreamEvent,
+   type StreamOptions,
+} from "./stream";
 export { formatOfxDate } from "./utils";

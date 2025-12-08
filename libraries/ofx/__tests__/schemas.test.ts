@@ -251,9 +251,10 @@ describe("transactionSchema", () => {
       expect(() => transactionSchema.parse(withoutAmount)).toThrow();
    });
 
-   it("requires FITID", () => {
+   it("allows optional FITID", () => {
       const { FITID: _, ...withoutFitId } = minimalTransaction;
-      expect(() => transactionSchema.parse(withoutFitId)).toThrow();
+      const result = transactionSchema.parse(withoutFitId);
+      expect(result.FITID).toBeUndefined();
    });
 });
 

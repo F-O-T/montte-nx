@@ -1,0 +1,293 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+      </STATUS>
+      <DTSERVER>20180620142652[-5:EST]
+      <LANGUAGE>ENG
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    
+    <STMTTRNRS>
+      <TRNUID>1
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+      </STATUS>
+      <STMTRS>
+        <CURDEF>GBP
+        <BANKACCTFROM>
+          <BANKID>492900
+          <ACCTID>20852653408310
+          <ACCTTYPE>CHECKING
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20180531142652[-5:EST]
+          <DTEND>20180620142652[-5:EST]
+          
+          <STMTTRN>
+            <TRNTYPE>DIRECTDEP
+            <DTPOSTED>20180619000000[-5:EST]
+            <TRNAMT>240.00
+            <FITID>+201806190000002
+            
+            <NAME>KOLOR SKEMES LIMIT WITHPRINT-600
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180619000000[-5:EST]
+            <TRNAMT>-15.79
+            <FITID>+201806190000001
+            
+            <NAME>AMAZON EU AMAZON.C LUXEMBOURG ON
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180618000000[-5:EST]
+            <TRNAMT>-75.55
+            <FITID>+201806180000001
+            
+            <NAME>SAINSBURYS PETROL ON 17 JUN BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>DIRECTDEBIT
+            <DTPOSTED>20180612000000[-5:EST]
+            <TRNAMT>-4081.99
+            <FITID>+201806120000001
+            
+            <NAME>HMRC VAT 28079556851 0418 DDR
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180608000000[-5:EST]
+            <TRNAMT>-7.69
+            <FITID>+201806080000001
+            
+            <NAME>FORGE.LARAVEL.COM USA AMOUNT IN 
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180606000000[-5:EST]
+            <TRNAMT>-62.35
+            <FITID>+201806060000001
+            
+            <NAME>123 REG R/T ON 05 JUN BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180605000000[-5:EST]
+            <TRNAMT>0.98
+            <FITID>+201806050000004
+            
+            <NAME>Loyalty Reward 13 Apr - 13 May
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180605000000[-5:EST]
+            <TRNAMT>-6.50
+            <FITID>+201806050000003
+            
+            <NAME>CHARGES COMMISSION FOR PERIOD 13
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>PAYMENT
+            <DTPOSTED>20180605000000[-5:EST]
+            <TRNAMT>-20.01
+            <FITID>+201806050000002
+            
+            <NAME>SEDGEMOOR SERVICE ON 04 JUN CLP
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180605000000[-5:EST]
+            <TRNAMT>-199.00
+            <FITID>+201806050000001
+            
+            <NAME>APPLE STORE R393 ON 04 JUN BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180604000000[-5:EST]
+            <TRNAMT>-193.72
+            <FITID>+201806040000005
+            
+            <NAME>JLT ONLINE ON 01 JUN BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180604000000[-5:EST]
+            <TRNAMT>-34.80
+            <FITID>+201806040000004
+            
+            <NAME>FREEAGENT ON 02 JUN BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180604000000[-5:EST]
+            <TRNAMT>-19.06
+            <FITID>+201806040000003
+            
+            <NAME>DIGITALOCEAN.COM USA AMOUNT IN U
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180604000000[-5:EST]
+            <TRNAMT>-3.30
+            <FITID>+201806040000002
+            
+            <NAME>GOOGLE *SVCSAPPS_s IRELAND ON 02
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>DIRECTDEBIT
+            <DTPOSTED>20180604000000[-5:EST]
+            <TRNAMT>-258.44
+            <FITID>+201806040000001
+            
+            <NAME>HISCOX DD 0440778/0008588588 DDR
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180601000000[-5:EST]
+            <TRNAMT>-9.99
+            <FITID>+201806010000001
+            
+            <NAME>Amazon UK Marketpl LUXEMBOURG ON
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>PAYMENT
+            <DTPOSTED>20180531000000[-5:EST]
+            <TRNAMT>-25.00
+            <FITID>+201805310000004
+            
+            <NAME>APPLE STORE R393 ON 30 MAY CLP
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180531000000[-5:EST]
+            <TRNAMT>-999.00
+            <FITID>+201805310000003
+            
+            <NAME>APPLE STORE R393 ON 30 MAY BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180531000000[-5:EST]
+            <TRNAMT>-8.99
+            <FITID>+201805310000002
+            
+            <NAME>Amazon UK Marketpl LUXEMBOURG ON
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180531000000[-5:EST]
+            <TRNAMT>-0.74
+            <FITID>+201805310000001
+            
+            <NAME>GOOGLE *CLOUD_00DE IRELAND ON 30
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180530000000[-5:EST]
+            <TRNAMT>-124.50
+            <FITID>+201805300000003
+            
+            <NAME>AGCO VALTRA GERMANY AMOUNT IN EU
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180530000000[-5:EST]
+            <TRNAMT>-34.56
+            <FITID>+201805300000002
+            
+            <NAME>Amazon UK Marketpl LUXEMBOURG ON
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180530000000[-5:EST]
+            <TRNAMT>-12.65
+            <FITID>+201805300000001
+            
+            <NAME>Amazon UK Marketpl LUXEMBOURG ON
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180529000000[-5:EST]
+            <TRNAMT>25.00
+            <FITID>+201805290000002
+            
+            <NAME>POPLARS EQST SIMMONE BRAGG STO
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180529000000[-5:EST]
+            <TRNAMT>-48.52
+            <FITID>+201805290000001
+            
+            <NAME>SAINSBURYS PETROL ON 26 MAY BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180524000000[-5:EST]
+            <TRNAMT>-67.95
+            <FITID>+201805240000001
+            
+            <NAME>SAINSBURYS PETROL ON 23 MAY BDC
+          </STMTTRN>
+          
+          <STMTTRN>
+            <TRNTYPE>OTHER
+            <DTPOSTED>20180521000000[-5:EST]
+            <TRNAMT>-15.99
+            <FITID>+201805210000001
+            
+            <NAME>SCREWFIX DIRECT ON 19 MAY BDC
+          </STMTTRN>
+          
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>1920.70
+          <DTASOF>20180619000000[-5:EST]
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+    
+  </BANKMSGSRSV1>
+</OFX>
