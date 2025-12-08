@@ -2,6 +2,7 @@
 import type { SupportedLng } from "@packages/localization";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
+import { BetaBanner } from "./BetaBanner.tsx";
 import Logo from "./Logo.astro";
 import { MobileMenu } from "./mobile-menu";
 import { NavMenu } from "./nav-menu";
@@ -57,6 +58,8 @@ const brandName = translate("common.brand.name", { lng: lang });
       </div>
    </div>
 </nav>
+
+<BetaBanner client:load />
 
 <div class="h-16"></div>
 
