@@ -1,6 +1,9 @@
 ---
+import { Image } from "astro:assets";
 import { ArrowRight } from "@lucide/astro";
 import { Button } from "@packages/ui/components/button";
+import transactionsCard from "../assets/cards/automation-preview.png";
+import dreCard from "../assets/cards/report-preview.png";
 
 interface Props {
    title?: string[];
@@ -39,15 +42,19 @@ const {
             </div>
 
             <div class="absolute bottom-0 left-14 max-lg:hidden pointer-events-none">
-<div class="w-80 h-48 rounded-t-xl bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-sm border border-white/10 flex items-center justify-center">
-                   <div class="text-white/40 text-sm">Prévia do Dashboard</div>
-                </div>
+               <Image
+                  src={transactionsCard}
+                  alt="Prévia do Dashboard"
+                  class="w-80 rounded-t-xl border border-white/10"
+               />
              </div>
 
              <div class="absolute top-0 right-4 max-lg:hidden pointer-events-none">
-                <div class="w-80 h-48 rounded-b-xl bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-sm border border-white/10 flex items-center justify-center">
-                   <div class="text-white/40 text-sm">Prévia dos Relatórios</div>
-                </div>
+               <Image
+                  src={dreCard}
+                  alt="Prévia dos Relatórios"
+                  class="w-80 rounded-b-xl border border-white/10"
+               />
              </div>
          </div>
       </div>
