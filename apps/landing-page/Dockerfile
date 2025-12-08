@@ -28,6 +28,9 @@ COPY . .
 # Build the landing page application.
 # The build output will be in /app/apps/landing-page/dist
 ENV NODE_ENV=production
+ARG VITE_POSTHOG_HOST
+ARG VITE_POSTHOG_KEY
+
 RUN bun run --filter=landing-page build
 
 # ---
@@ -44,8 +47,6 @@ COPY apps/landing-page/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Set and expose the port. Default to 4321 if not provided.
-ARG VITE_POSTHOG_HOST
-ARG VITE_POSTHOG_KEY
 
 ARG PORT
 
