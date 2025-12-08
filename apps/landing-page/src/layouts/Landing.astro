@@ -27,7 +27,11 @@ const posthogEnv = {
       <meta name="viewport" content="width=device-width">
       <meta
          name="description"
-         content={`${brandName} - ${brandDescription}`}
+         content={`${brandDescription}`}
+      >
+      <meta
+         name="title"
+         content={brandName}
       >
       <meta
          name="keywords"
@@ -59,10 +63,12 @@ const posthogEnv = {
       <meta property="og:image" content="/og-image.webp">
       <meta property="og:url" content="https://montte.co">
       <meta property="og:type" content="website">
-      {import.meta.env.PROD && <script set:html={getAstroPosthogConfig()}
+      {import.meta.env.PROD && <script set:html={getAstroPosthogConfig(
+         posthogEnv
+      )}
       is:inline/>}
       <title>
-         {brandName} - Gestão Financeira Simples e Open Source
+         {brandName} - {brandDescription} 
       </title>
    </head>
    <body>
