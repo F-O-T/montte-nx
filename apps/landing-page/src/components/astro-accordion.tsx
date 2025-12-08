@@ -15,19 +15,19 @@ interface Props {
 
 export function AstroAccordion({ data }: Props) {
    return (
-      <BaseAccordion collapsible type="single">
+      <BaseAccordion className="space-y-4" collapsible type="single">
          {data.map((item) => {
             return (
                <AccordionItem
-                  className="border-b last:border-b-0"
+                  className="p-4 rounded-lg bg-secondary/50 dark:bg-secondary/30 border border-primary/20 hover:border-primary/30 transition-all"
                   key={item.id}
                   value={item.id}
                >
-                  <AccordionTrigger className="cursor-pointer text-base hover:no-underline">
+                  <AccordionTrigger className="cursor-pointer text-lg font-semibold text-foreground hover:no-underline">
                      {item.question}
                   </AccordionTrigger>
-                  <AccordionContent>
-                     <p className="text-base">{item.answer}</p>
+                  <AccordionContent className="text-muted-foreground leading-relaxed">
+                     <p>{item.answer}</p>
                   </AccordionContent>
                </AccordionItem>
             );

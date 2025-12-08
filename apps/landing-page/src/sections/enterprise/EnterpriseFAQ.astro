@@ -1,93 +1,88 @@
 ---
-import { ChevronDown } from "@lucide/astro";
+import { type FAQCategory, type FAQItem, FAQTabs } from "@/components/faq-tabs";
 
-interface FAQ {
-   question: string;
-   answer: string;
-}
-
-interface Props {
-   items?: FAQ[];
-}
-
-const defaultItems: FAQ[] = [
-   {
-      question: "Qual o custo real do plano Enterprise?",
-      answer:
-         "R$ 499/mês com usuários ilimitados, contas ilimitadas e suporte prioritário. Sem cobrança por transação ou integrações. Implantação na sua cloud tem custo adicional baseado em infraestrutura (AWS/Google/Azure). Contrate anualmente e ganhe 2 meses grátis.",
-   },
-   {
-      question: "Posso hospedar o Montte na minha própria infraestrutura?",
-      answer:
-         "Sim. Como somos open-source, você pode hospedar na sua conta AWS, Google Cloud ou Azure. Mantemos o código atualizado e você controla onde os dados ficam. Ideal para conformidade com LGPD ou políticas de segurança internas. Entre em contato para discutir implantação dedicada.",
-   },
-   {
-      question: "Como funciona a migração dos nossos dados atuais?",
-      answer:
-         "Importamos arquivos OFX, CSVs e planilhas do seu sistema atual. Configuramos categorias personalizadas do seu negócio e treinamos sua equipe (CFO, contador, gerentes). Processo completo leva 5-10 dias úteis. Suporte dedicado durante toda a migração.",
-   },
-   {
-      question: "O Montte tem certificações de segurança?",
-      answer:
-         "Estamos em processo de certificação SOC 2 Tipo II (previsão Q2 2026). Já seguimos boas práticas: criptografia em repouso e em trânsito, autenticação de dois fatores, logs de auditoria completos e backups diários. Por sermos open-source, você pode auditar o código a qualquer momento.",
-   },
-   {
-      question: "Posso testar antes de contratar?",
-      answer:
-         "Sim. Oferecemos trial de 30 dias com todos os recursos Enterprise. Sem cartão de crédito necessário. Também agendamos demos personalizadas onde mostramos o sistema com dados do seu contexto. Entre em contato para começar.",
-   },
-   {
-      question: "E se precisarmos de integrações específicas?",
-      answer:
-         "Já integramos com principais bancos brasileiros via Open Finance/OFX e exportamos para contabilidade (SPED, DRE, DFC). Integrações customizadas com seu ERP, CRM ou BI podem ser desenvolvidas. Como somos open-source, sua equipe técnica também pode contribuir com integrações.",
-   },
+const categories: Category[] = [
+   { id: "pricing", label: "Preços e Planos" },
+   { id: "infrastructure", label: "Infraestrutura" },
+   { id: "security", label: "Segurança" },
+   { id: "migration", label: "Migração e Suporte" },
 ];
 
-const { items = defaultItems } = Astro.props;
+const faqItems: FAQItem[] = [
+   {
+      answer:
+         "R$ 249/mês com usuários ilimitados, contas bancárias ilimitadas e suporte prioritário. Não há cobrança adicional por transação, integração ou módulo. A modalidade self-hosted na sua nuvem (AWS/Google Cloud/Azure) tem custo adicional baseado no uso de infraestrutura. Contrate anualmente e ganhe 2 meses de cortesia (equivalente a R$ 2.490/ano).",
+      category: "pricing",
+      id: "enterprise-faq-1",
+      question: "Qual é o custo real do plano para empresas?",
+   },
+   {
+      answer:
+         "Sim. Oferecemos período de teste de 14 dias com acesso completo aos recursos corporativos. Não é necessário cadastrar cartão de crédito. Também agendamos demonstrações personalizadas ao vivo, onde configuramos o sistema com cenários reais do seu negócio. Agende pelo chat ou pelo e-mail comercial@montte.com.br.",
+      category: "pricing",
+      id: "enterprise-faq-5",
+      question: "Posso testar antes de contratar?",
+   },
+   {
+      answer:
+         "Sim. Por ser open-source, você pode realizar self-hosting na sua conta AWS, Google Cloud ou Azure. Fornecemos scripts de implantação, atualizações contínuas e documentação técnica completa. Você mantém controle total sobre onde os dados residem, o que é ideal para conformidade com a LGPD ou políticas corporativas de governança. Consulte nossa equipe para discutir arquitetura dedicada.",
+      category: "infrastructure",
+      id: "enterprise-faq-2",
+      question: "Posso hospedar o Montte na minha própria infraestrutura?",
+   },
+   {
+      answer:
+         "Oferecemos suporte para importação de arquivos OFX/CSV e integrações com os principais bancos brasileiros. Exportamos dados para contabilidade nos formatos SPED, DRE e DFC. Integrações personalizadas com ERP, CRM, BI ou sistemas legados podem ser desenvolvidas sob demanda. Como o código é aberto, sua equipe técnica também pode contribuir ou construir conectores proprietários.",
+      category: "infrastructure",
+      id: "enterprise-faq-6",
+      question: "E se precisarmos de integrações personalizadas?",
+   },
+   {
+      answer:
+         "Estamos em processo de certificação SOC 2 Type II (previsão para o segundo trimestre de 2026). Já implementamos as melhores práticas de segurança: criptografia AES-256 em repouso e TLS 1.3 em trânsito, autenticação multifator (MFA), logs de auditoria imutáveis e backups automáticos diários com retenção de 90 dias. Por sermos open-source, você pode auditar o código-fonte a qualquer momento ou contratar auditorias independentes.",
+      category: "security",
+      id: "enterprise-faq-4",
+      question: "O Montte possui certificações de segurança?",
+   },
+   {
+      answer:
+         "Sim. Clientes corporativos possuem SLA de 99,9% de disponibilidade garantido contratualmente. Isso inclui monitoramento 24/7 com alertas automáticos, equipe de plantão para incidentes críticos e janelas de manutenção programadas previamente. Em caso de violação do SLA, aplicamos créditos proporcionais automaticamente na sua próxima fatura.",
+      category: "security",
+      id: "enterprise-faq-7",
+      question: "Vocês oferecem SLA de disponibilidade?",
+   },
+   {
+      answer:
+         "Importamos históricos através de arquivos OFX, CSVs ou planilhas do seu sistema atual. Mapeamos categorias personalizadas, centros de custo e estrutura contábil do seu negócio. O processo inclui treinamento prático para CFO, controller, contador e gerentes financeiros. A migração típica leva de 7 a 14 dias úteis, com suporte dedicado em todas as etapas.",
+      category: "migration",
+      id: "enterprise-faq-3",
+      question: "Como funciona a migração dos dados atuais?",
+   },
+   {
+      answer:
+         "Clientes corporativos possuem suporte prioritário via e-mail (suporte@montte.com.br), chat ao vivo e telefone/WhatsApp em horário comercial (9h às 18h, dias úteis). Empresas com mais de 50 usuários recebem Customer Success Manager dedicado. SLA de resposta: até 2 horas para incidentes críticos (P0), 4 horas para alta prioridade (P1) e 8 horas para demais casos.",
+      category: "migration",
+      id: "enterprise-faq-8",
+      question: "Qual é o nível de suporte oferecido?",
+   },
+];
 ---
 
-<section id="faq" class="py-16 md:py-24 container mx-auto flex flex-col items-center max-w-[951px] px-6">
-  <p class="text-sm uppercase font-bold text-center tracking-widest text-primary mb-4">
-    Perguntas frequentes
-  </p>
-  
-  <h2 class="text-3xl font-semibold md:text-4xl text-foreground text-center max-w-2xl">
-    Tudo que você precisa saber sobre Montte Enterprise
-  </h2>
+<section id="faq" class="relative px-4 pt-18 md:pt-28 flex flex-col gap-12 items-center container max-w-7xl mx-auto overflow-hidden">
+   <div class="flex flex-col gap-12 items-center z-10">
+      <p class="text-sm text-primary uppercase font-bold text-center tracking-widest">
+         Perguntas frequentes
+      </p>
 
-  <div class="mt-12 max-w-3xl mx-auto space-y-4 w-full">
-    {items.map((faq, index) => (
-      <details class="group p-6 rounded-2xl enterprise-card-bg border enterprise-border hover:border-primary/30 transition-all">
-        <summary class="flex items-center justify-between cursor-pointer list-none">
-          <h3 class="font-semibold text-foreground text-lg pr-4">{faq.question}</h3>
-          <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
-        </summary>
-        <p class="mt-4 text-muted-foreground leading-relaxed">{faq.answer}</p>
-      </details>
-    ))}
-  </div>
+      <h3 class="inline-block font-semibold tracking-tight text-center text-3xl md:text-5xl leading-tight max-w-3xl text-foreground">
+         Tudo que você precisa saber sobre o <span class="text-primary">
+            Montte
+         </span> Empresas
 
-  <div class="mt-12 text-center">
-    <p class="text-muted-foreground mb-4">Ainda tem dúvidas?</p>
-    <a 
-      href="mailto:enterprise@montte.co" 
-      class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
-    >
-      Falar com especialista
-    </a>
-  </div>
+      </h3>
+   </div>
+
+   <div class="w-full">
+      <FAQTabs client:load categories={categories} items={faqItems} />
+   </div>
 </section>
-
-<style>
-  .enterprise-card-bg {
-    background: oklch(0.95 0.01 265 / 0.5);
-  }
-
-  :global(.dark) .enterprise-card-bg {
-    background: oklch(0.18 0.025 265 / 0.8);
-  }
-
-  .enterprise-border {
-    border-color: oklch(0.45 0.08 163 / 0.2);
-  }
-</style>
