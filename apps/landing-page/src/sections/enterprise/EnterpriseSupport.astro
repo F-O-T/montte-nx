@@ -1,0 +1,70 @@
+---
+import { Clock, Headphones, MessageSquare, Users } from "@lucide/astro";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardTitle,
+} from "@packages/ui/components/card";
+
+const features = [
+   {
+      icon: "MessageSquare",
+      title: "Resposta em até 1 dia útil",
+      description:
+         "Engenheiros dedicados, não chatbots. Dúvidas sobre importação OFX, integrações bancárias ou relatórios personalizados respondidas por quem construiu o sistema.",
+   },
+   {
+      icon: "Users",
+      title: "Onboarding guiado para sua equipe",
+      description:
+         "Migramos seus dados históricos, configuramos categorias do seu negócio e treinamos CFO, contador e gerentes. Você fica operacional em dias, não meses.",
+   },
+] as const;
+
+const iconComponents = {
+   MessageSquare,
+   Users,
+};
+---
+
+<section class="relative px-4 py-18 md:py-28 flex flex-col gap-12 items-center container max-w-7xl mx-auto overflow-hidden">
+  <div class="flex flex-col gap-6 items-center z-10">
+    <p class="text-sm uppercase font-bold text-center tracking-widest text-primary">
+      Suporte que entende de finanças
+    </p>
+
+    <h2 class="inline-block font-semibold tracking-tight text-center text-3xl md:text-5xl leading-tight max-w-3xl text-foreground">
+      Equipe técnica dedicada ao seu sucesso
+    </h2>
+
+    <p class="sm:text-xl text-center max-w-sm sm:max-w-xl text-foreground/70">
+      Do onboarding à operação diária: suporte em português, que entende de contabilidade 
+      e finanças. Sem bots, sem scripts genéricos.
+    </p>
+  </div>
+
+  <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+    {features.map((feature) => {
+      const IconComponent = iconComponents[feature.icon];
+      return (
+        <Card className="flex-1 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="flex flex-col gap-4 items-start">
+            <div class="size-12 rounded-lg bg-primary/10 flex items-center justify-center">
+              <IconComponent 
+                class="size-6 stroke-primary stroke-[1.5]" 
+                aria-hidden="true" 
+              />
+            </div>
+            <CardTitle className="font-semibold text-xl text-foreground">
+              {feature.title}
+            </CardTitle>
+            <CardDescription className="text-base text-muted-foreground leading-relaxed">
+              {feature.description}
+            </CardDescription>
+          </CardContent>
+        </Card>
+      );
+    })}
+  </div>
+</section>

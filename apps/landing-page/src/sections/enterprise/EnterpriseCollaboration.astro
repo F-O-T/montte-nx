@@ -1,0 +1,92 @@
+---
+import { Image } from "astro:assets";
+import { ArrowRight, Check, Lock, Shield } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
+import {
+   Card,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { Separator } from "@packages/ui/components/separator";
+import enterpriseShield from "../../assets/cards/enterprise-shield.png";
+
+const collaborationFeatures = [
+   { title: "Controle quem vê cada conta e transação", icon: "Lock" },
+   { title: "Rastreie toda alteração com autor e timestamp", icon: "Shield" },
+   { title: "Aprovações de despesas direto na plataforma", icon: "Check" },
+];
+---
+
+<section class="relative px-4 py-18 md:py-28 flex flex-col gap-12 items-center container max-w-7xl mx-auto overflow-hidden">
+  <div class="flex flex-col gap-6 items-center z-10">
+    <p class="text-sm uppercase font-bold text-center tracking-widest text-primary">
+      Sua equipe, finalmente sincronizada
+    </p>
+
+    <h2 class="inline-block font-semibold tracking-tight text-center text-3xl md:text-5xl leading-tight max-w-3xl text-foreground">
+      Colaboração sem planilhas.
+      <br />
+      Controle sem burocracia.
+    </h2>
+
+    <p class="sm:text-xl text-center max-w-sm sm:max-w-xl text-foreground/70">
+      CFO, contador e gerente financeiro trabalhando no mesmo dado, ao mesmo tempo. 
+      Comente transações, aprove despesas e compartilhe dashboards em tempo real.
+    </p>
+  </div>
+
+  <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+    <Card className="overflow-hidden relative pt-0 border-none"> 
+      <Image
+         class="object-cover object-top w-full h-full" 
+         src={enterpriseShield} 
+         alt="Painel de controle enterprise do Montte"
+      />
+
+      <CardHeader>
+        <CardTitle className="font-semibold text-xl md:text-2xl leading-tight">
+          Quer hospedar na sua própria cloud?
+        </CardTitle>
+        <CardDescription className="text-base">
+          Implantamos o Montte na sua conta AWS, Google Cloud ou Azure. 
+          Seus dados ficam no Brasil, você mantém controle total e ainda recebe atualizações automáticas da plataforma.
+          <a class="underline text-primary hover:text-primary/80 transition-colors ml-1" href="mailto:enterprise@montte.co">Falar com especialista</a> sobre implantação dedicada.
+        </CardDescription>
+      </CardHeader>
+    </Card>
+
+    <!-- Text + features -->
+    <div class="flex flex-col gap-8">
+      <h3 class="font-bold text-2xl md:text-3xl leading-[120%] tracking-[-0.01em] text-foreground">
+        Seus dados onde você quiser. Sem compromissos.
+      </h3>
+      <p class="text-lg md:text-xl max-w-[520px] text-muted-foreground">
+        Escolha entre nossa cloud segura ou hospede na sua própria infraestrutura. 
+        Exporte tudo a qualquer momento. Open-source significa que você nunca fica preso.
+      </p>
+
+      <a class="inline-flex gap-2 items-center text-lg text-primary group" href="#security">
+        <span>Ver segurança e conformidade</span>
+        <ArrowRight class="size-4 transition-transform group-hover:translate-x-1" />
+      </a>
+
+      <Separator className="bg-gradient-to-r from-transparent via-primary/20 to-transparent"/>
+
+      <div class="flex flex-col gap-8 text-foreground text-lg">
+        {collaborationFeatures.map((feature) => (
+          <div class="flex items-start gap-4">
+            <div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+              {feature.icon === "Shield" && (
+                <Shield class="size-4 text-primary" />
+              )}
+              {feature.icon === "Lock" && <Lock class="size-4 text-primary" />}
+              {feature.icon === "Check" && <Check class="size-4 text-primary" />}
+            </div>
+            <span class="font-medium leading-snug">{feature.title}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,81 @@
+---
+import { Headphones, Shield, Zap } from "@lucide/astro";
+
+interface OptimizationFeature {
+   icon: string;
+   title: string;
+   description: string;
+}
+
+interface Props {
+   features?: OptimizationFeature[];
+}
+
+const defaultFeatures: OptimizationFeature[] = [
+   {
+      icon: "Zap",
+      title: "Escalabilidade confiável",
+      description:
+         "Processe milhares de transações por dia. Performance estável mesmo com picos de volume.",
+   },
+   {
+      icon: "Shield",
+      title: "Seguro e conformante",
+      description:
+         "Controle custos e uso enquanto gerencia armazenamento e acesso de dados. SOC 2, GDPR e mais.",
+   },
+   {
+      icon: "Headphones",
+      title: "Suporte especializado",
+      description:
+         "Nossa equipe técnica dedicada está aqui para ajudar. Do onboarding a otimizações. Sem bots.",
+   },
+];
+
+const { features = defaultFeatures } = Astro.props;
+---
+
+<section class="container mx-auto px-6 sm:px-16 mb-12 md:mb-16 lg:mb-20 mt-16 lg:mt-24 flex flex-col items-center max-w-[983px]">
+  <div class="uppercase text-sm sm:text-base font-bold leading-[121%] tracking-[0.045em]">
+    <div class="enterprise-title-gradient text-transparent">Otimize custos</div>
+  </div>
+
+  <h3 class="my-6 enterprise-secondary-gradient text-transparent font-semibold text-center max-w-[600px] text-[36px] lg:text-[52px] leading-[108%] tracking-[-0.005em]">
+    Amado por desenvolvedores, confiado por empresas
+  </h3>
+
+  <div class="mt-8 lg:mt-12 flex flex-col md:flex-row items-center md:items-start gap-10">
+    {features.map((feature) => (
+      <div class="flex-1 max-w-[330px]">
+        <div class="flex">
+          <div class="shrink-0 pb-5 border-b-2 border-primary text-primary">
+            {feature.icon === "Zap" && <Zap class="w-6 h-6" />}
+            {feature.icon === "Shield" && <Shield class="w-6 h-6" />}
+            {feature.icon === "Headphones" && <Headphones class="w-6 h-6" />}
+          </div>
+          <div class="grow border-b enterprise-border-subtle"></div>
+        </div>
+        <p class="mt-5 text-foreground font-semibold lg:text-lg">{feature.title}</p>
+        <p class="mt-3 text-muted-foreground">{feature.description}</p>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .enterprise-title-gradient {
+    background: linear-gradient(135deg, oklch(0.75 0.15 163), oklch(0.85 0.12 163));
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .enterprise-secondary-gradient {
+    background: linear-gradient(180deg, var(--foreground) 20%, var(--muted-foreground) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+
+  .enterprise-border-subtle {
+    border-color: oklch(0.45 0.08 163 / 0.1);
+  }
+</style>

@@ -1,0 +1,112 @@
+---
+import { ArrowRight } from "@lucide/astro";
+import { Card, CardContent } from "@packages/ui/components/card";
+
+const costItems = [
+   { name: "Plataforma Enterprise típica", price: "R$ 5.000", percentage: 100 },
+   { name: "Solução importada + IOF", price: "R$ 3.200", percentage: 64 },
+   { name: "Planilhas + contador extra", price: "R$ 2.500", percentage: 50 },
+] as const;
+---
+
+<section class="relative px-4 py-18 md:py-28 flex flex-col gap-12 items-center container max-w-7xl mx-auto overflow-hidden">
+  <Card className="flex flex-col md:flex-row w-full max-w-[1008px] bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 border-primary/20 overflow-hidden">
+    
+    {/* Left Panel - CTA & Info */}
+    <div class="p-8 md:p-12 flex flex-col justify-between max-w-[488px] bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
+      <div class="mb-8 grow flex flex-col justify-center">
+        <h3 class="font-semibold text-[26px] md:text-[32px] leading-[120%] tracking-[-0.01em]">
+          <span class="block bg-gradient-to-br from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent">
+            Economize até 90%.
+          </span>
+          <span class="block bg-gradient-to-b from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
+            Invista em crescimento, não em software.
+          </span>
+        </h3>
+        <p class="my-5 max-w-[365px] text-muted-foreground">
+          Open-source elimina taxas de licença abusivas. Infraestrutura moderna reduz custos operacionais. 
+          Você paga apenas pelo valor que recebe, não por usuário ou transação.
+        </p>
+        <a class="-m-1 p-1 group inline-flex items-center text-primary font-medium hover:text-primary/80 transition-colors" href="/pricing">
+          <span class="mr-2">Ver preços transparentes</span>
+          <ArrowRight class="w-4 h-4 transition-transform group-hover:translate-x-1" />
+        </a>
+      </div>
+      <p class="pt-5 border-t border-primary/10 text-[11px] leading-[145%] text-muted-foreground">
+        * Comparação baseada em empresas com 10-50 funcionários processando 5.000+ transações/mês. Valores médios de mercado em 2025.
+      </p>
+    </div>
+
+    {/* Right Panel - Comparison Chart */}
+    <div class="py-8 flex-1 bg-background/40">
+      <div class="px-6 md:px-12">
+        <div class="text-sm text-muted-foreground">Comparação de custo mensal</div>
+        <div class="text-foreground font-semibold">Gestão financeira para PME (10 usuários)</div>
+      </div>
+
+      <div class="my-6 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
+
+      {costItems.map((item, index) => (
+        <>
+          <div class="px-6 md:px-12">
+            <div class="flex items-center gap-3">
+              <div class="shrink-0 w-5 h-5 rounded bg-muted flex items-center justify-center">
+                <span class="text-[10px] text-muted-foreground font-bold">{index + 1}</span>
+              </div>
+              <div class="text-foreground font-medium text-sm">{item.name}</div>
+            </div>
+            
+            {/* Progress Bar Container */}
+            <div class="mt-3 rounded-full bg-muted/50 p-[1px]">
+              <div
+                class="h-2 rounded-full bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60"
+                style={`width: ${item.percentage}%`}
+              ></div>
+            </div>
+            <div class="text-sm mt-1 text-muted-foreground">
+              {item.price}/mês
+            </div>
+          </div>
+          {index < costItems.length - 1 && (
+            <div class="my-5 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
+          )}
+        </>
+      ))}
+
+      {/* Montte Special Card */}
+      <div class="mt-6 mx-4 md:mx-8 px-6 py-4 bg-primary/10 border border-primary/20 shrink-0 rounded-xl relative overflow-hidden">
+        {/* Subtle background glow effect */}
+        <div class="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none"></div>
+        
+        <div class="relative z-10">
+          <div class="flex justify-between items-center gap-5">
+            <div class="flex items-center gap-3">
+               {/* Montte Logo */}
+              <div class="shrink-0 w-4 h-4 flex items-center justify-center text-primary">
+                <svg width="100%" height="100%" viewBox="0 0 15 12" fill="none" class="w-full h-full">
+                  <path d="M7.5 0L15 12H0L7.5 0Z" fill="currentColor"/>
+                </svg>
+              </div>
+              <div class="font-bold text-foreground">Montte Enterprise</div>
+            </div>
+            <div class="hidden sm:flex px-3 py-1 rounded-full text-xs border border-primary/20 bg-background/50 items-center text-primary font-medium">
+              Usuários ilimitados
+            </div>
+          </div>
+          
+          {/* Montte Progress Bar */}
+          <div class="mt-3 rounded-full bg-primary/20 p-[2px]">
+            <div class="h-2 rounded-full bg-gradient-to-r from-primary to-primary/80" style="width: 10%"></div>
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <div class="text-foreground font-semibold">R$ 499/mês</div>
+            <div class="text-xs text-primary font-medium">Economize 90%</div>
+          </div>
+          <div class="mt-2 text-xs text-muted-foreground">
+            Contas ilimitadas · Integrações bancárias · Suporte dedicado
+          </div>
+        </div>
+      </div>
+    </div>
+  </Card>
+</section>

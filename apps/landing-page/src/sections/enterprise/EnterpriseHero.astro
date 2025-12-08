@@ -1,0 +1,67 @@
+---
+
+import { Image } from "astro:assets";
+import { MessageSquare } from "@lucide/astro";
+import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
+import enterpriseHeroDark from "../../assets/background/enterprise-hero-dark.png";
+import enterpriseHeroLight from "../../assets/background/enterprise-hero-light.png";
+import LogoCloud from "../../components/LogoCloud.astro";
+
+// Preload images for better performance
+---
+
+	<link rel="preload" as="image" href={enterpriseHeroLight.src} type="image/png">
+	<link rel="preload" as="image" href={enterpriseHeroDark.src} type="image/png">
+
+	<div class="absolute inset-0 z-10">
+		<Image
+			src={enterpriseHeroLight}
+			alt="Enterprise hero background"
+			class="absolute inset-0 w-full h-full object-cover opacity-100 dark:opacity-0 transition-opacity duration-300"
+			priority={true}
+		/>
+		<Image
+			src={enterpriseHeroDark}
+			alt="Enterprise hero background"
+			class="absolute inset-0 w-full h-full object-cover opacity-0 dark:opacity-100 transition-opacity duration-300"
+			priority={true}
+		/>
+		<!-- Overlay for better text readability -->
+		<div class="absolute inset-0 bg-background/80 dark:bg-background/85 pointer-events-none"></div>
+		<!-- Bottom gradient to fade images to the next section using only Tailwind -->
+		<div class="absolute inset-x-0 bottom-0 h-40 md:h-56 pointer-events-none bg-gradient-to-b from-transparent to-background dark:to-background/85"></div>
+	</div>
+<section class="relative px-4 py-18 md:py-28 flex flex-col gap-12 items-center container max-w-7xl mx-auto overflow-hidden">
+	<!-- Background Images -->
+   <div class="flex flex-col gap-12 items-center z-10">
+
+      <p class=" text-base  uppercase font-bold text-center tracking-[0.20em]">
+<span class="text-primary">Montte</span> para empresas
+         </p>
+
+   <h1 class="
+ inline-block font-semibold tracking-tight text-center text-4xl sm:text-6xl lg:text-7xl leading-tight max-w-3xl text-foreground
+">
+Gestão financeira que escala com seu negócio
+         </h1>
+
+   <p class="
+      sm:text-xl text-center max-w-sm sm:max-w-xl text-foreground/70
+">
+
+Centralize dados, automatize processos e tome decisões mais rápidas.
+Infraestrutura enterprise com a simplicidade que sua equipe merece.
+         </p>
+
+    <Button className=" flex items-center gap-2 w-full sm:w-2/6"  size="lg">
+            <MessageSquare class="size-4" />
+      Fale conosco
+   </Button>
+   </div>
+    <div class="z-10">
+
+      <LogoCloud client:load/>
+   </div>
+      </section>
+

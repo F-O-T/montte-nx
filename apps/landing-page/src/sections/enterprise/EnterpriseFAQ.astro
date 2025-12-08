@@ -1,0 +1,93 @@
+---
+import { ChevronDown } from "@lucide/astro";
+
+interface FAQ {
+   question: string;
+   answer: string;
+}
+
+interface Props {
+   items?: FAQ[];
+}
+
+const defaultItems: FAQ[] = [
+   {
+      question: "Qual o custo real do plano Enterprise?",
+      answer:
+         "R$ 499/mês com usuários ilimitados, contas ilimitadas e suporte prioritário. Sem cobrança por transação ou integrações. Implantação na sua cloud tem custo adicional baseado em infraestrutura (AWS/Google/Azure). Contrate anualmente e ganhe 2 meses grátis.",
+   },
+   {
+      question: "Posso hospedar o Montte na minha própria infraestrutura?",
+      answer:
+         "Sim. Como somos open-source, você pode hospedar na sua conta AWS, Google Cloud ou Azure. Mantemos o código atualizado e você controla onde os dados ficam. Ideal para conformidade com LGPD ou políticas de segurança internas. Entre em contato para discutir implantação dedicada.",
+   },
+   {
+      question: "Como funciona a migração dos nossos dados atuais?",
+      answer:
+         "Importamos arquivos OFX, CSVs e planilhas do seu sistema atual. Configuramos categorias personalizadas do seu negócio e treinamos sua equipe (CFO, contador, gerentes). Processo completo leva 5-10 dias úteis. Suporte dedicado durante toda a migração.",
+   },
+   {
+      question: "O Montte tem certificações de segurança?",
+      answer:
+         "Estamos em processo de certificação SOC 2 Tipo II (previsão Q2 2026). Já seguimos boas práticas: criptografia em repouso e em trânsito, autenticação de dois fatores, logs de auditoria completos e backups diários. Por sermos open-source, você pode auditar o código a qualquer momento.",
+   },
+   {
+      question: "Posso testar antes de contratar?",
+      answer:
+         "Sim. Oferecemos trial de 30 dias com todos os recursos Enterprise. Sem cartão de crédito necessário. Também agendamos demos personalizadas onde mostramos o sistema com dados do seu contexto. Entre em contato para começar.",
+   },
+   {
+      question: "E se precisarmos de integrações específicas?",
+      answer:
+         "Já integramos com principais bancos brasileiros via Open Finance/OFX e exportamos para contabilidade (SPED, DRE, DFC). Integrações customizadas com seu ERP, CRM ou BI podem ser desenvolvidas. Como somos open-source, sua equipe técnica também pode contribuir com integrações.",
+   },
+];
+
+const { items = defaultItems } = Astro.props;
+---
+
+<section id="faq" class="py-16 md:py-24 container mx-auto flex flex-col items-center max-w-[951px] px-6">
+  <p class="text-sm uppercase font-bold text-center tracking-widest text-primary mb-4">
+    Perguntas frequentes
+  </p>
+  
+  <h2 class="text-3xl font-semibold md:text-4xl text-foreground text-center max-w-2xl">
+    Tudo que você precisa saber sobre Montte Enterprise
+  </h2>
+
+  <div class="mt-12 max-w-3xl mx-auto space-y-4 w-full">
+    {items.map((faq, index) => (
+      <details class="group p-6 rounded-2xl enterprise-card-bg border enterprise-border hover:border-primary/30 transition-all">
+        <summary class="flex items-center justify-between cursor-pointer list-none">
+          <h3 class="font-semibold text-foreground text-lg pr-4">{faq.question}</h3>
+          <ChevronDown class="w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+        <p class="mt-4 text-muted-foreground leading-relaxed">{faq.answer}</p>
+      </details>
+    ))}
+  </div>
+
+  <div class="mt-12 text-center">
+    <p class="text-muted-foreground mb-4">Ainda tem dúvidas?</p>
+    <a 
+      href="mailto:enterprise@montte.co" 
+      class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+    >
+      Falar com especialista
+    </a>
+  </div>
+</section>
+
+<style>
+  .enterprise-card-bg {
+    background: oklch(0.95 0.01 265 / 0.5);
+  }
+
+  :global(.dark) .enterprise-card-bg {
+    background: oklch(0.18 0.025 265 / 0.8);
+  }
+
+  .enterprise-border {
+    border-color: oklch(0.45 0.08 163 / 0.2);
+  }
+</style>
