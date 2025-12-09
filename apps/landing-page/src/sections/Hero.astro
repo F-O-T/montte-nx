@@ -3,7 +3,6 @@ import { ArrowRight, Github } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import HeroCarousel from "../components/HeroCarousel";
-import LogoCloud from "../components/LogoCloud";
 
 interface Props {
    lang?: SupportedLng;
@@ -55,7 +54,6 @@ const { lang: _lang = "pt-BR" } = Astro.props;
          </div>
 
          <div class="mt-10 max-w-[480px] mx-auto md:mx-0">
-            <LogoCloud client:load />
          </div>
       </div>
 

@@ -2,18 +2,28 @@
 import { Image } from "astro:assets";
 import { Separator } from "@packages/ui/components/separator";
 import { cn } from "@packages/ui/lib/utils";
+import { AstroTooltip } from "./astro-tooltip";
 import { motion } from "motion/react";
 import csLogo from "../assets/logo-cloud/costa-e-sa-adv.png";
 import somaLogo from "../assets/logo-cloud/somahub.webp";
+
+export interface Props {
+   variant?: "compact";
+}
+
+const { variant } = Astro.props;
+const isCompact = variant === "compact";
 
 const baseLogos = [
    {
       alt: "Costa e Sá Advogados",
       src: csLogo,
+      href: "https://www.costaesa.adv.br/",
    },
    {
       alt: "Soma Hub",
       src: somaLogo,
+      href: "https://www.somahub.net.br/",
    },
 ];
 
@@ -23,11 +33,15 @@ const logos = Array(12)
    .flatMap(() => baseLogos);
 ---
 
-<div class={cn("w-full overflow-hidden flex flex-col gap-12 items-center justify-center")}>
-   <p class=" text-muted-foreground text-center ">
-      Empresas que confiam em nós
-   </p>
+<div class={cn(isCompact?"gap-4":"gap-8","w-full overflow-hidden flex flex-col items-center justify-center")}>
+   { !isCompact && (
+   <p class="text-foreground/50 text-center">
+         Empresas que confiam em nós
+      </p>
+   ) }
+   <Separator className="bg-gradient-to-r from-transparent via-primary/20 to-transparent"/>
    <div class="relative">
+
       <motion.div
          client:load
          animate={{ x: "-50%" }}
@@ -39,22 +53,21 @@ const logos = Array(12)
             repeat: Number.POSITIVE_INFINITY,
          }}
       >
-         {logos.map((logo, index) => (
-            <div
-               class="flex shrink-0 items-center justify-center"
-               key={`${logo.alt}-${index}`}
-            >
-               <Image
-                  alt={logo.alt}
-               src={logo.src}
-                                       class="h-8 w-auto opacity-60 hover:opacity-100 transition-opacity "
+         {logos.map((logo) => (
+         <AstroTooltip client:load content={logo.alt} >
 
-               />
-            </div>
-         ))}
+                   <a href={logo.href} aria-label={ logo.alt} target="_blank" rel="noopener noreferrer" class="inline-block flex shrink-0 items-center justify-center">
+                      <Image
+                         alt={logo.alt}
+                         src={logo.src}
+                         class={cn(isCompact ? "h-4" : "h-8", "invert dark:invert-0 w-auto opacity-60 hover:opacity-100 transition-opacity")}
+                      />
+                   </a>
+         </AstroTooltip>
+          ))}
       </motion.div>
-      <div class="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
-      <div class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent" />
+      <div class="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[inherit] to-transparent" />
+      <div class="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[inherit] to-transparent" />
    </div>
 
 </div>

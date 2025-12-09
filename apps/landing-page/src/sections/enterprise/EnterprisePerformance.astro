@@ -40,16 +40,17 @@ import enterpriseTransactions from "../../assets/cards/enterprise-transactions.p
       <!-- Left Card - Background covers entire card -->
 <Card className=" overflow-hidden relative bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 ">
    <!-- Background image covering entire card -->
-   <div class="grow sm:mr-4  ">
-      <Image
-         class=" object-cover rounded-r-lg w-full h-full" 
-         src={enterpriseTransactions} 
-         alt="Tabela de transações empresariais"
-      />
-   </div>
+    <div class="grow sm:mr-4  relative">
+       <Image
+          class="object-cover rounded-r-lg w-full h-full" 
+          src={enterpriseTransactions} 
+          alt="Tabela de transações empresariais"
+       />
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-primary/5 pointer-events-none rounded-r-lg"/>
+    </div>
 
-         <CardHeader class=" text-base">
-            <CardDescription class=" text-muted-foreground">
+         <CardHeader >
+            <CardDescription >
 Processe até
             </CardDescription>
             <CardTitle className="text-3xl md:text-4xl leading-tight font-bold">
@@ -61,7 +62,7 @@ Processe até
          <span class="text-foreground">de transações por dia</span>
 
             </CardTitle>
-            <CardDescription class=" text-muted-foreground">
+            <CardDescription >
 
          Infraestrutura otimizada para operações financeiras de alta escala.
             </CardDescription>
@@ -71,8 +72,11 @@ Processe até
        <div class="flex flex-col gap-4">
           <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 overflow-hidden relative  flex-1">
 
-             <CardContent className="relative p-8 flex flex-col justify-end h-full gap-4">
-                   <Image class="w-full object-contain rounded-md  max-h-40 rounded-b-lg" src={dreImage} alt="DRE image" loading="lazy" />
+              <CardContent className="relative p-8 flex flex-col justify-end h-full gap-4">
+                     <div class="relative">
+                        <Image class="w-full object-contain rounded-md  max-h-40 rounded-b-lg" src={dreImage} alt="DRE image" loading="lazy" />
+                   <div class="absolute max-h-40 inset-0 bg-gradient-to-t from-transparent via-transparent to-primary/5 pointer-events-none rounded-md"/>
+                     </div>
                 <CardTitle className="font-semibold text-xl md:text-2xl leading-tight">
                    Relatórios que carregam antes de você piscar
                 </CardTitle>

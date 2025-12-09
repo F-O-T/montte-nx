@@ -17,17 +17,18 @@ const brandName = translate("common.brand.name", { lng: lang });
 
 <nav
    id="sticky-navbar"
-   class="fixed top-0 inset-x-0 h-16 bg-background/80 backdrop-blur-md border-b dark:border-slate-700/70 z-50 shadow-sm shadow-black/5 dark:shadow-black/20"
+   class="fixed top-0 inset-x-0 h-16 bg-background/50 backdrop-blur-md border-b border-primary/1 z-50 shadow-sm [background-image:linear-gradient(to_right,transparent,theme(colors.primary/5),transparent)] [background-position:0_100%] [background-size:100%_1px] [background-repeat:no-repeat]"
 >
    <div class="h-full flex items-center justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div
+      <a
+         href="/"
          class="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
       >
          <Logo size={32} class="text-primary"/>
          <span class="text-xl font-bold text-foreground hidden sm:block">
             {brandName}
          </span>
-      </div>
+      </a>
 
       <div class="hidden md:block">
          <NavMenu lang={lang} client:load/>
@@ -60,17 +61,7 @@ const brandName = translate("common.brand.name", { lng: lang });
 
 
 
-<style>
-   @supports (backdrop-filter: blur(12px)) {
-      #sticky-navbar {
-         backdrop-filter: blur(12px) saturate(150%);
-      }
 
-      :global(.dark) #sticky-navbar {
-         border-color: rgba(255, 255, 255, 0.1);
-      }
-   }
-</style>
 
 <script>
    function initStickyNavbar() {
