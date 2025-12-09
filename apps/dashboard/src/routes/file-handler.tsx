@@ -79,12 +79,15 @@ function FileHandlerComponent() {
 
                   const fileHandle = launchParams.files[0];
                   const file = await fileHandle.getFile();
-                  const content = await file.text();
+                  const arrayBuffer = await file.arrayBuffer();
+                  const base64Content = btoa(
+                     String.fromCharCode(...new Uint8Array(arrayBuffer)),
+                  );
 
                   sessionStorage.setItem(
                      "montte:pending-ofx-import",
                      JSON.stringify({
-                        content,
+                        content: base64Content,
                         filename: file.name,
                         timestamp: Date.now(),
                      }),

@@ -63,9 +63,12 @@ export function ImportOfxForm({ bankAccountId }: ImportOfxFormProps) {
 
       for (const file of acceptedFiles) {
          try {
-            const content = await file.text();
+            const arrayBuffer = await file.arrayBuffer();
+            const base64Content = btoa(
+               String.fromCharCode(...new Uint8Array(arrayBuffer)),
+            );
             newFiles.push({
-               content,
+               content: base64Content,
                name: file.name,
             });
          } catch (error) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parseOfxContent } from "../src/index";
+import { parseOfxBuffer, parseOfxContent } from "../src/index";
 
 const createValidOfxContent = (transactions: string = "") => `
 OFXHEADER:100
@@ -255,7 +255,11 @@ describe("ofx parser", () => {
       });
 
       it("should handle various transaction types", async () => {
-         const transactionTypes = [
+         const transactionTypes: Array<{
+            amount: string;
+            expected: "income" | "expense";
+            type: string;
+         }> = [
             { amount: "100.00", expected: "income", type: "CREDIT" },
             { amount: "-100.00", expected: "expense", type: "DEBIT" },
             { amount: "-50.00", expected: "expense", type: "ATM" },
@@ -347,6 +351,190 @@ DATA:OFXSGML
 
          expect(result[0]?.date).toBeInstanceOf(Date);
          expect(result[0]?.fitid).toBe("TXN_TZ");
+      });
+   });
+
+   describe("parseOfxBuffer", () => {
+      const createValidOfxBuffer = (transactions: string, charset = "1252") => {
+         const content = `OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:${charset}
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+<SIGNONMSGSRSV1>
+<SONRS>
+<STATUS>
+<CODE>0
+<SEVERITY>INFO
+</STATUS>
+<DTSERVER>20231215120000
+<LANGUAGE>POR
+</SONRS>
+</SIGNONMSGSRSV1>
+<BANKMSGSRSV1>
+<STMTTRNRS>
+<TRNUID>1001
+<STATUS>
+<CODE>0
+<SEVERITY>INFO
+</STATUS>
+<STMTRS>
+<CURDEF>BRL
+<BANKACCTFROM>
+<BANKID>123456789
+<ACCTID>987654321
+<ACCTTYPE>CHECKING
+</BANKACCTFROM>
+<BANKTRANLIST>
+<DTSTART>20231201000000
+<DTEND>20231231235959
+${transactions}
+</BANKTRANLIST>
+</STMTRS>
+</STMTTRNRS>
+</BANKMSGSRSV1>
+</OFX>
+`;
+         return content;
+      };
+
+      it("should parse Portuguese characters with Windows-1252 encoding", async () => {
+         const portugueseText = "Pagamento de água e eletricidade";
+         const transaction = `
+<STMTTRN>
+<TRNTYPE>DEBIT
+<DTPOSTED>20231215120000[-3:BRT]
+<TRNAMT>-150.00
+<FITID>BR001
+<MEMO>${portugueseText}
+</STMTTRN>
+`;
+         const ofxContent = createValidOfxBuffer(transaction);
+         const encoder = new TextEncoder();
+         const buffer = encoder.encode(ofxContent);
+
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toHaveLength(1);
+         expect(result[0]?.description).toContain("Pagamento");
+         expect(result[0]?.fitid).toBe("BR001");
+         expect(result[0]?.type).toBe("expense");
+      });
+
+      it("should parse Brazilian bank transaction with accented characters", async () => {
+         const transaction = `
+<STMTTRN>
+<TRNTYPE>DEBIT
+<DTPOSTED>20231215120000[-3:BRT]
+<TRNAMT>-89.90
+<FITID>BR002
+<MEMO>Compra no cartão - São Paulo
+</STMTTRN>
+`;
+         const ofxContent = createValidOfxBuffer(transaction);
+         const buffer = new TextEncoder().encode(ofxContent);
+
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toHaveLength(1);
+         expect(result[0]?.description).toContain("Paulo");
+         expect(result[0]?.amount).toBe(89.9);
+      });
+
+      it("should parse multiple Portuguese transactions", async () => {
+         const transactions = `
+<STMTTRN>
+<TRNTYPE>DEBIT
+<DTPOSTED>20231210100000[-3:BRT]
+<TRNAMT>-45.00
+<FITID>BR003
+<MEMO>Farmácia - medicação
+</STMTTRN>
+<STMTTRN>
+<TRNTYPE>CREDIT
+<DTPOSTED>20231211120000[-3:BRT]
+<TRNAMT>3500.00
+<FITID>BR004
+<MEMO>Salário mensal - Proventos
+</STMTTRN>
+<STMTTRN>
+<TRNTYPE>DEBIT
+<DTPOSTED>20231212150000[-3:BRT]
+<TRNAMT>-120.50
+<FITID>BR005
+<MEMO>Supermercado - alimentação
+</STMTTRN>
+`;
+         const ofxContent = createValidOfxBuffer(transactions);
+         const buffer = new TextEncoder().encode(ofxContent);
+
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toHaveLength(3);
+         expect(result[0]?.type).toBe("expense");
+         expect(result[1]?.type).toBe("income");
+         expect(result[2]?.type).toBe("expense");
+      });
+
+      it("should handle common Portuguese special characters", async () => {
+         const transaction = `
+<STMTTRN>
+<TRNTYPE>DEBIT
+<DTPOSTED>20231215120000[-3:BRT]
+<TRNAMT>-200.00
+<FITID>BR006
+<MEMO>Ação promocional - João e Maria Ltda
+</STMTTRN>
+`;
+         const ofxContent = createValidOfxBuffer(transaction);
+         const buffer = new TextEncoder().encode(ofxContent);
+
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toHaveLength(1);
+         expect(result[0]?.fitid).toBe("BR006");
+      });
+
+      it("should parse buffer with UTF-8 encoding", async () => {
+         const transaction = `
+<STMTTRN>
+<TRNTYPE>DEBIT
+<DTPOSTED>20231215120000[-3:BRT]
+<TRNAMT>-75.00
+<FITID>BR007
+<MEMO>Café e pão de queijo
+</STMTTRN>
+`;
+         const ofxContent = createValidOfxBuffer(transaction, "UTF-8");
+         const buffer = new TextEncoder().encode(ofxContent);
+
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toHaveLength(1);
+         expect(result[0]?.amount).toBe(75);
+      });
+
+      it("should throw AppError for invalid buffer content", () => {
+         const invalidContent = "This is not valid OFX content";
+         const buffer = new TextEncoder().encode(invalidContent);
+
+         expect(parseOfxBuffer(buffer)).rejects.toThrow(
+            "Failed to parse OFX file",
+         );
+      });
+
+      it("should throw AppError for empty buffer", () => {
+         const buffer = new Uint8Array(0);
+
+         expect(parseOfxBuffer(buffer)).rejects.toThrow(
+            "Failed to parse OFX file",
+         );
       });
    });
 });
