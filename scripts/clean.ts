@@ -35,6 +35,7 @@ const CLEAN_TARGETS = [
    "apps/*/.cache",
    "apps/*/node_modules",
 
+   "libraries/*/dist",
    "packages/*/dist",
    "packages/*/.mastra",
    "packages/*/.cache",

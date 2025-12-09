@@ -11,14 +11,17 @@
    "extends": "@tooling/typescript/internal-package.json",
    "include": ["src"],
    "references": [
-      {
-         "path": "../environment"
-      },
-      {
-         "path": "../database"
-      },
-      {
-         "path": "../transactional"
-      }
-   ]
+    {
+      "path": "../transactional"
+    },
+    {
+      "path": "../stripe"
+    },
+    {
+      "path": "../environment"
+    },
+    {
+      "path": "../database"
+    }
+  ]
 }
