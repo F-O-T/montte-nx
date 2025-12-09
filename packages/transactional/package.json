@@ -26,7 +26,7 @@
    "scripts": {
       "build": "tsc --build",
       "check": "biome check --write ./src",
-      "typecheck": "bunx --bun tsc "
+      "typecheck": "tsc "
    },
    "type": "module",
    "version": "0.8.1"

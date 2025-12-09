@@ -19,7 +19,7 @@
       "check": "bunx --bun biome check --write .",
       "dev": "bun run --watch src/index.ts",
       "start": "./worker",
-      "typecheck": "bunx --bun tsc"
+      "typecheck": "tsc"
    },
    "type": "module",
    "version": "0.1.0"
