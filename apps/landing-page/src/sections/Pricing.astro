@@ -1,5 +1,12 @@
 ---
-import { Check, Cloud, Github, Rocket, Server } from "@lucide/astro";
+import {
+   Check,
+   Github,
+   Rocket,
+   Server,
+   Sparkles,
+   Building2,
+} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
 
 interface Props {
@@ -8,146 +15,281 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const selfHostedFeatures = [
-   "Todos os recursos principais incluídos",
-   "Suporte da comunidade (GitHub, Discussões)",
-   "Totalmente grátis. Para sempre.",
-   "Propriedade total dos dados",
-   "Auto-hospedado na sua infraestrutura",
-   "Zero dependência de fornecedor",
-];
-
-const cloudFeatures = [
-   "Todos os recursos principais (paridade com auto-hospedado)",
-   "Backups diários automáticos",
-   "SLA de 99,9% de uptime",
-   "Suporte prioritário por e-mail",
-   "Escalabilidade gerenciada",
-   "Convites fáceis para equipe",
+const plans = [
+   {
+      name: "Free",
+      icon: Server,
+      tagline: "Para sempre",
+      price: "R$0",
+      period: "/mês",
+      description:
+         "Controle completo das suas finanças pessoais. 100% funcional, para sempre.",
+      cta: "Comece Grátis",
+      ctaHref: "/signup",
+      ctaVariant: "outline" as const,
+      selfHostOptions: true,
+      features: [
+         "Transações ilimitadas",
+         "Contas bancárias ilimitadas",
+         "Categorias e tags ilimitadas",
+         "Importação OFX",
+         "Split de transações",
+         "Linking de transferências",
+         "Contas a pagar/receber",
+         "Orçamentos (até 10)",
+         "Automação básica (até 5 regras)",
+         "Dashboard e relatórios básicos",
+         "Export CSV",
+         "Mobile-responsive",
+      ],
+      limitations: [
+         "Sem anexos de arquivos",
+         "Sem DRE e centros de custo",
+         "Sem export OFX/PDF",
+         "Apenas você no workspace",
+      ],
+   },
+   {
+      name: "Plus",
+      icon: Sparkles,
+      tagline: "Pessoal Premium",
+      price: "R$10",
+      period: "/mês",
+      annualPrice: "ou R$100/ano (2 meses grátis)",
+      description:
+         "Automação poderosa e recursos profissionais. Ideal para freelancers e MEIs.",
+      cta: "Teste 30 Dias Grátis",
+      ctaHref: "/signup?plan=plus",
+      ctaVariant: "primary" as const,
+      badge: "Mais Popular",
+      popular: true,
+      features: [
+         "✨ Tudo do Free +",
+         "Anexos ilimitados (recibos/notas)",
+         "Backup automático diário",
+         "Export OFX e PDF",
+         "Automação ilimitada com visual builder",
+         "Lógica complexa (AND/OR) e Regex",
+         "Templates de juros (IPCA/SELIC/CDI)",
+         "Parcelamentos customizados",
+         "Orçamentos ilimitados com rollover",
+         "Notificações push personalizadas",
+         "Temas e ícones customizados",
+         "+ 1 membro no workspace",
+         "Suporte prioritário (48h)",
+      ],
+      highlight: "Menos de R$0,33/dia",
+   },
+   {
+      name: "Business",
+      icon: Building2,
+      tagline: "Para empresas",
+      price: "R$39",
+      period: "/mês",
+      annualPrice: "ou R$390/ano (1 mês grátis)",
+      description:
+         "Gestão financeira completa para MEI, PMEs e pequenos escritórios contábeis.",
+      cta: "Teste 30 Dias Grátis",
+      ctaHref: "/signup?plan=business",
+      ctaVariant: "outline" as const,
+      features: [
+         "✨ Tudo do Plus +",
+         "Centros de custo ilimitados",
+         "DRE Gerencial e Fiscal",
+         "Modo Business (budgets strict)",
+         "Multi-organização (até 3)",
+         "Até 10 membros com roles",
+         "Permissões granulares",
+         "Audit log completo",
+         "API REST + Webhooks",
+         "Dashboard executivo",
+         "Relatórios consolidados",
+         "White-label básico",
+         "Suporte prioritário (24h) + Chat",
+      ],
+      highlight: "Cresce com você até Enterprise",
+   },
 ];
 ---
 
 <section id="pricing" class="py-16 md:py-24 bg-muted/50">
    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
       <div class="text-center mb-12 md:mb-16">
          <span class="text-primary text-sm font-medium uppercase tracking-wider">
             Preços
          </span>
          <h2 class="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl">
-            Preços Simples. Controle Real.
+            Preços Simples. Sem Surpresas.
          </h2>
          <p class="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
-            Escolha o modelo de implantação que funciona para você.
+            Do grátis para sempre ao plano empresarial. Evolua conforme suas necessidades crescem.
          </p>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-         <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border border-border/50 hover:border-primary/30 transition-all">
-<div class="flex items-center gap-3 mb-4">
-                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-muted">
-                   <Server class="w-6 h-6 text-foreground" />
-                </div>
-                <div>
-                   <h3 class="text-xl font-semibold text-foreground">Auto-Hospedado</h3>
-                   <span class="text-sm text-primary font-medium">Grátis Para Sempre</span>
-                </div>
-             </div>
+      <!-- Pricing Cards -->
+      <div class="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12">
+         {plans.map((plan) => {
+            const Icon = plan.icon;
+            const isPopular = plan.popular;
+            
+            return (
+               <div class={`relative flex flex-col p-6 md:p-8 rounded-2xl bg-background transition-all ${
+                  isPopular 
+                     ? 'border-2 border-primary shadow-xl shadow-primary/10 md:scale-105 md:-mt-4 md:mb-4' 
+                     : 'border border-border/50 hover:border-primary/30'
+               }`}>
+                  {plan.badge && (
+                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-medium rounded-full bg-primary text-primary-foreground whitespace-nowrap">
+                        {plan.badge}
+                     </div>
+                  )}
 
-             <p class="text-muted-foreground mb-2">
-                Implante o Montte na sua própria infraestrutura.
-             </p>
-             <p class="text-sm text-muted-foreground/80 mb-6">
-                Nuvem (AWS, Digital Ocean, etc.) ou on-premise.
-             </p>
+                  {/* Header */}
+                  <div class="mb-6">
+                     <div class={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${
+                        isPopular ? 'bg-primary/10' : 'bg-muted'
+                     }`}>
+                        <Icon class={`w-6 h-6 ${isPopular ? 'text-primary' : 'text-foreground'}`} />
+                     </div>
+                     <h3 class="text-2xl font-bold text-foreground">{plan.name}</h3>
+                     <p class="text-sm text-primary font-medium mt-1">{plan.tagline}</p>
+                  </div>
 
-<div class="flex items-baseline gap-1 mb-6">
-                <span class="text-4xl font-bold text-foreground">R$0</span>
-                <span class="text-muted-foreground">/mês</span>
-             </div>
+                  {/* Price */}
+                  <div class="mb-4">
+                     <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-foreground">{plan.price}</span>
+                        <span class="text-muted-foreground">{plan.period}</span>
+                     </div>
+                     {plan.annualPrice && (
+                        <p class="text-sm text-muted-foreground mt-2">
+                           {plan.annualPrice}
+                        </p>
+                     )}
+                     {plan.highlight && (
+                        <p class="text-xs text-primary font-medium mt-2">
+                           💡 {plan.highlight}
+                        </p>
+                     )}
+                  </div>
 
-            <ul class="space-y-3 mb-8 flex-1">
-               {selfHostedFeatures.map((feature) => (
-                  <li class="flex items-start gap-3">
-                     <span class="flex-shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/10">
-                        <Check class="w-3 h-3 text-primary" />
-                     </span>
-                     <span class="text-sm text-muted-foreground">{feature}</span>
-                  </li>
-               ))}
-            </ul>
+                  {/* Description */}
+                  <p class="text-sm text-muted-foreground mb-6 min-h-[48px]">
+                     {plan.description}
+                  </p>
 
-<div class="space-y-3 mt-auto">
-                <a
-                   href="https://github.com/montte/montte"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors"
-                >
-                   <Github class="w-5 h-5" />
-                   Auto-Hospede via GitHub
-                </a>
-                <a
-                   href="https://vercel.com/new/clone?repository-url=https://github.com/montte/montte"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl border border-border hover:bg-muted transition-colors font-medium text-foreground"
-                >
-                   <Rocket class="w-5 h-5" />
-                   Deploy na Vercel
-                </a>
-             </div>
+                  {/* CTA */}
+                  <a
+                     href={plan.ctaHref}
+                     class={`flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl font-medium transition-colors mb-6 ${
+                        plan.ctaVariant === 'primary'
+                           ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25'
+                           : 'border-2 border-border hover:border-primary hover:bg-muted text-foreground'
+                     }`}
+                  >
+                     {plan.cta}
+                  </a>
+
+                  {/* Self-host options for Free */}
+                  {plan.selfHostOptions && (
+                     <div class="pb-6 mb-6 border-b border-border">
+                        <p class="text-xs text-muted-foreground mb-3 text-center font-medium">
+                           Ou auto-hospede gratuitamente:
+                        </p>
+                        <div class="flex gap-2">
+                           <a
+                              href="https://github.com/montte/montte"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm"
+                           >
+                              <Github class="w-4 h-4" />
+                              GitHub
+                           </a>
+                           <a
+                              href="https://vercel.com/new/clone?repository-url=https://github.com/montte/montte"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm"
+                           >
+                              <Rocket class="w-4 h-4" />
+                              Vercel
+                           </a>
+                        </div>
+                     </div>
+                  )}
+
+                  {/* Features */}
+                  <div class="flex-1">
+                     <p class="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
+                        Recursos incluídos:
+                     </p>
+                     <ul class="space-y-2.5 text-sm">
+                        {plan.features.map((feature) => (
+                           <li class="flex items-start gap-3">
+                              <span class="flex-shrink-0 mt-0.5">
+                                 <Check class={`w-4 h-4 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
+                              </span>
+                              <span class="text-muted-foreground">{feature}</span>
+                           </li>
+                        ))}
+                     </ul>
+                     
+                     {plan.limitations && (
+                        <div class="mt-4 pt-4 border-t border-border/50">
+                           <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                              Limitações:
+                           </p>
+                           <ul class="space-y-1.5 text-xs">
+                              {plan.limitations.map((limitation) => (
+                                 <li class="flex items-start gap-2 text-muted-foreground/70">
+                                    <span class="flex-shrink-0 mt-0.5">×</span>
+                                    <span>{limitation}</span>
+                                 </li>
+                              ))}
+                           </ul>
+                        </div>
+                     )}
+                  </div>
+               </div>
+            );
+         })}
+      </div>
+
+      <!-- Additional Info -->
+      <div class="mt-12 text-center space-y-6">
+         <div class="max-w-3xl mx-auto">
+            <p class="text-sm text-muted-foreground">
+               <strong class="text-foreground">Todos os planos pagos incluem:</strong> 30 dias de teste grátis 
+               (sem cartão necessário), cancelamento a qualquer momento, migração gratuita entre planos, 
+               e upgrade/downgrade imediato. <strong>Free é 100% funcional para sempre.</strong>
+            </p>
+         </div>
+         
+         <div class="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+            <span class="flex items-center gap-2">
+               <Check class="w-4 h-4 text-primary" />
+               <strong>Open Source</strong>
+            </span>
+            <span class="flex items-center gap-2">
+               <Check class="w-4 h-4 text-primary" />
+               <strong>Self-host disponível</strong>
+            </span>
+            <span class="flex items-center gap-2">
+               <Check class="w-4 h-4 text-primary" />
+               <strong>Seus dados, suas regras</strong>
+            </span>
+            <span class="flex items-center gap-2">
+               <Check class="w-4 h-4 text-primary" />
+               <strong>Zero lock-in</strong>
+            </span>
          </div>
 
-         <div class="relative flex flex-col p-6 md:p-8 rounded-2xl bg-background border-2 border-primary/50 hover:border-primary transition-all shadow-lg shadow-primary/5">
-<div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-medium rounded-full bg-primary text-primary-foreground">
-                Recomendado
-             </div>
-
-             <div class="flex items-center gap-3 mb-4">
-                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">
-                   <Cloud class="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                   <h3 class="text-xl font-semibold text-foreground">Nuvem Gerenciada</h3>
-                   <span class="text-sm text-primary font-medium">Hospedado pelo Montte</span>
-                </div>
-             </div>
-
-             <p class="text-muted-foreground mb-2">
-                Nós gerenciamos servidores, atualizações e backups.
-             </p>
-             <p class="text-sm text-muted-foreground/80 mb-6">
-                Você foca nas suas finanças.
-             </p>
-
-             <div class="flex items-baseline gap-1 mb-6">
-                <span class="text-sm text-muted-foreground">A partir de</span>
-                <span class="text-4xl font-bold text-foreground ml-2">R$49</span>
-                <span class="text-muted-foreground">/mês por workspace</span>
-             </div>
-
-            <ul class="space-y-3 mb-8 flex-1">
-               {cloudFeatures.map((feature) => (
-                  <li class="flex items-start gap-3">
-                     <span class="flex-shrink-0 mt-0.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/20">
-                        <Check class="w-3 h-3 text-primary" />
-                     </span>
-                     <span class="text-sm text-muted-foreground">{feature}</span>
-                  </li>
-               ))}
-            </ul>
-
-<div class="space-y-3 mt-auto">
-                <a
-                   href="/signup"
-                   class="flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-                >
-                   Comece o Teste Grátis de 14 Dias
-                </a>
-                <p class="text-center text-xs text-muted-foreground">
-                   Sem cartão necessário. Cancele quando quiser.
-                </p>
-             </div>
+         <div class="pt-6">
+            <a href="/faq" class="text-sm text-primary hover:underline font-medium">
+               Perguntas frequentes sobre preços →
+            </a>
          </div>
       </div>
    </div>
