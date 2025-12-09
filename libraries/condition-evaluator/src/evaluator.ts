@@ -1,4 +1,4 @@
-import { evaluateConditionValue } from "./operators/index.ts";
+import { evaluateConditionValue } from "./operators";
 import {
    Condition,
    ConditionGroup,
@@ -6,7 +6,7 @@ import {
    type EvaluationResult,
    type GroupEvaluationResult,
    isConditionGroup,
-} from "./schemas.ts";
+} from "./schemas";
 
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
    const parts = path.split(".");
