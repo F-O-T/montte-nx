@@ -9,39 +9,74 @@
 
 ## ✨ Key Features
 
--   **Smart Transaction Management**:
-    -   Log income, expenses, and transfers with ease.
-    -   **Split Categorization**: Divide a single transaction amount across multiple categories.
-    -   **Attachments**: Upload and store receipts/documents (PDF, Images) securely.
-    -   **Transfer Matching**: Intelligent linking of transfers between accounts.
--   **Comprehensive Bill Tracking**:
-    -   Manage accounts payable and receivable.
-    -   **Installments**: Native support for creating bills with installments (equal or custom amounts).
-    -   **Recurrence**: Robust recurrence patterns (monthly, quarterly, semiannual, annual).
-    -   **Interest & Penalties**: Configurable templates for calculating fines, daily/monthly interest, and monetary correction on overdue bills.
--   **Bank Accounts & Integration**:
-    -   Manage multiple account types (Checking, Savings, Investment).
-    -   **OFX Import**: Parse and import bank statements via OFX files.
-    -   **BrasilAPI**: Integrated bank list retrieval.
--   **Advanced Budgeting**:
-    -   Create budgets targeting Categories, Tags, or Cost Centers.
-    -   **Rollover**: Option to carry over unused balances to the next period.
-    -   Visual progress tracking and forecasting.
--   **Organization & Taxonomy**:
-    -   **Categorization**: Organize via Categories, Tags, and Cost Centers.
-    -   **Counterparties**: Manage a directory of Clients and Suppliers.
--   **Collaborative Workspaces**:
-    -   Multi-tenant Organization structure.
-    -   Team management and Member invites.
-    -   Role-based access control (Owner, Admin, Member).
+### 💳 Core Financial Management
+-   **Transaction Management**:
+    -   Complete CRUD operations for income, expenses, and transfers
+    -   **Split Categorization**: Divide single transactions across multiple categories
+    -   **File Attachments**: Upload receipts and documents (PDF, Images)
+    -   **Bulk Operations**: Bulk delete, categorize, and transfer linking
+    -   **Smart Transfer Matching**: Automatic linking of outgoing/incoming transfers
+-   **Bank Accounts**:
+    -   Manage checking, savings, and investment accounts
+    -   **OFX Integration**: Import/export OFX files with deduplication
+    -   **BrasilAPI**: Fetch Brazilian bank data automatically
+    -   Account archiving without data loss
+-   **Bills & Receivables**:
+    -   Track payable and receivable bills (Pending, Paid, Overdue)
+    -   **Flexible Recurrence**: Monthly, quarterly, semiannual, annual patterns
+    -   **Installment Plans**: Equal or custom installment amounts
+    -   **Interest & Penalties**: Automated calculation with configurable templates
+    -   **Monetary Correction**: Support for IPCA, SELIC, CDI indices
+
+### 📊 Planning & Control
+-   **Budget Management**:
+    -   Set targets by categories, tags, or cost centers
+    -   **Personal vs Business Modes**: Gamified/simple vs strict budgeting
+    -   **Budget Rollover**: Carry balances between periods
+    -   **Smart Alerts**: Configurable notification thresholds
+    -   **Visual Progress**: Progress bars and spending forecasts
+-   **Organization Tools**:
+    -   Hierarchical categories with custom colors and icons
+    -   Flexible tagging system
+    -   Cost centers for business expense allocation
+
+### 🤖 Automation & Intelligence
+-   **Rules Engine**:
+    -   **Visual Builder**: React Flow-based rule creation interface
+    -   **Triggers**: Transaction created/updated events
+    -   **Complex Conditions**: AND/OR logic groups with multiple criteria
+    -   **Automated Actions**: Categorize, tag, set cost centers, modify descriptions
+    -   **Notifications**: Send push notifications and emails
+    -   **Execution Logs**: Detailed history of automation runs
+
+### 📈 Analytics & Reporting
+-   **Dashboard**: Net balance overview, income vs expenses, recent activity
 -   **Financial Reports**:
-    -   Interactive Cash Flow charts.
-    -   Financial Evolution & Planned vs. Actual analysis.
-    -   Payment Performance metrics (on-time vs. overdue stats).
--   **Platform & Security**:
-    -   **Authentication**: Secure Email/Password and Google OAuth (via Better Auth).
-    -   **Session Management**: Monitor and revoke active device sessions.
-    -   **Internationalization**: Native support for localization (currently pt-BR).
+    -   **DRE Gerencial**: Managerial income statements
+    -   **DRE Fiscal**: Fiscal statements with planned vs realized analysis
+    -   **PDF Export**: Generate downloadable report versions
+-   **Interactive Charts**:
+    -   Cash flow evolution
+    -   Category breakdown (pie/bar charts)
+    -   Monthly trends
+    -   Payment performance analysis
+
+### 🔐 Administration & Security
+-   **Authentication**:
+    -   Email/password and Google OAuth via Better Auth
+    -   Email verification and password recovery
+    -   Magic link authentication
+    -   Session management with device tracking
+-   **Multi-tenant Architecture**:
+    -   Organization workspaces
+    -   Team management and member invitations
+    -   Role-based access control (Owner, Admin, Member)
+-   **Billing Integration**: Stripe-powered subscription management
+-   **Settings & Preferences**:
+    -   Theme switching (Light/Dark/System)
+    -   Language support (pt-BR)
+    -   Telemetry opt-in/out (PostHog)
+    -   Web push notification controls
 
 ## 🚀 Tech Stack
 
@@ -88,6 +123,7 @@ Shared internal libraries used to modularize the application logic.
 Standalone libraries developed within the repo that could potentially be published separately.
 
 -   **`ofx`**: Core logic and types for extracting data from OFX file formats.
+-   **`condition-evaluator`**: Rule engine for evaluating complex conditional logic in automation rules.
 
 ## 🤝 Contributing
 
