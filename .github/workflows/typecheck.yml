@@ -27,6 +27,9 @@ jobs:
           nx-cache-server: ${{ secrets.NX_CACHE_SERVER }}
           nx-cache-token: ${{ secrets.NX_CACHE_TOKEN }}
 
+      - name: Build libraries
+        run: bunx nx run-many -t build --projects="libraries/*"
+
       - name: Run Nx affected typecheck
         run: bunx nx affected -t typecheck --base=origin/master --head=HEAD
 
