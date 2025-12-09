@@ -17,7 +17,7 @@ import {
    findTransactionsByBankAccountIdPaginated,
    findTransactionsForExport,
 } from "@packages/database/repositories/transaction-repository";
-import { generateOfxContent, parseOfxContent } from "@packages/ofx";
+import { generateOfxContent, parseOfxBuffer } from "@packages/ofx";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -294,7 +294,14 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const transactions = await parseOfxContent(input.content);
+
+         const binaryString = atob(input.content);
+         const bytes = new Uint8Array(binaryString.length);
+         for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+         }
+
+         const transactions = await parseOfxBuffer(bytes);
 
          const createdTransactions = [];
 

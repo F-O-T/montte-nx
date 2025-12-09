@@ -1,4 +1,9 @@
-import { generateBankStatement, getTransactions, parse } from "@f-o-t/ofx";
+import {
+   generateBankStatement,
+   getTransactions,
+   parse,
+   parseBuffer,
+} from "@f-o-t/ofx";
 import { AppError } from "@packages/utils/errors";
 import { normalizeText } from "@packages/utils/text";
 
@@ -60,17 +65,15 @@ type OFXAccountType =
    | "CREDITLINE"
    | "CD";
 
-export async function parseOfxContent(content: string) {
-   const result = parse(content);
+interface ParsedTransaction {
+   amount: number;
+   date: Date;
+   description: string;
+   fitid: string;
+   type: "expense" | "income";
+}
 
-   if (!result.success) {
-      throw AppError.validation("Failed to parse OFX file", {
-         cause: result.error,
-      });
-   }
-
-   const transactions = getTransactions(result.data) as Transaction[];
-
+function mapTransactions(transactions: Transaction[]): ParsedTransaction[] {
    return transactions.map((trn) => {
       const amount = trn.TRNAMT;
       const date = trn.DTPOSTED.toDate();
@@ -83,6 +86,32 @@ export async function parseOfxContent(content: string) {
          type: amount < 0 ? "expense" : "income",
       };
    });
+}
+
+export async function parseOfxContent(content: string) {
+   const result = parse(content);
+
+   if (!result.success) {
+      throw AppError.validation("Failed to parse OFX file", {
+         cause: result.error,
+      });
+   }
+
+   const transactions = getTransactions(result.data) as Transaction[];
+   return mapTransactions(transactions);
+}
+
+export async function parseOfxBuffer(buffer: Uint8Array) {
+   const result = parseBuffer(buffer);
+
+   if (!result.success) {
+      throw AppError.validation("Failed to parse OFX file", {
+         cause: result.error,
+      });
+   }
+
+   const transactions = getTransactions(result.data) as Transaction[];
+   return mapTransactions(transactions);
 }
 
 export interface ExportTransaction {

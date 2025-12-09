@@ -31,7 +31,7 @@
    "scripts": {
       "build": "tsc --build",
       "test": "bun test",
-      "typecheck": "bunx --bun tsc"
+      "typecheck": "tsc"
    },
    "type": "module",
    "version": "0.1.0"

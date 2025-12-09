@@ -33,7 +33,7 @@
       "build": "tsc --build",
       "check": "biome check --write ./src",
       "test": "bun test",
-      "typecheck": "bunx --bun tsc  "
+      "typecheck": "tsc"
    },
    "type": "module",
    "version": "0.12.0"

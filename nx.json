@@ -68,7 +68,7 @@
       },
       "typecheck": {
          "cache": true,
-         "dependsOn": ["^typecheck"],
+         "dependsOn": ["^build"],
          "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
          "outputs": []
       }

@@ -1,15 +1,15 @@
-import type { Condition } from "../schemas.ts";
-import { evaluateArray } from "./array.ts";
-import { evaluateBoolean } from "./boolean.ts";
-import { evaluateDate } from "./date.ts";
-import { evaluateNumber } from "./number.ts";
-import { evaluateString } from "./string.ts";
+import type { Condition } from "../schemas";
+import { evaluateArray } from "./array";
+import { evaluateBoolean } from "./boolean";
+import { evaluateDate } from "./date";
+import { evaluateNumber } from "./number";
+import { evaluateString } from "./string";
 
-export { evaluateArray } from "./array.ts";
-export { evaluateBoolean } from "./boolean.ts";
-export { evaluateDate } from "./date.ts";
-export { evaluateNumber } from "./number.ts";
-export { evaluateString } from "./string.ts";
+export { evaluateArray } from "./array";
+export { evaluateBoolean } from "./boolean";
+export { evaluateDate } from "./date";
+export { evaluateNumber } from "./number";
+export { evaluateString } from "./string";
 
 export function evaluateConditionValue(
    condition: Condition,

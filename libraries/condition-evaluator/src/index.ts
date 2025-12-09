@@ -3,7 +3,7 @@ export {
    evaluateCondition,
    evaluateConditionGroup,
    evaluateConditions,
-} from "./evaluator.ts";
+} from "./evaluator";
 export {
    evaluateArray,
    evaluateBoolean,
@@ -11,11 +11,11 @@ export {
    evaluateDate,
    evaluateNumber,
    evaluateString,
-} from "./operators/index.ts";
+} from "./operators";
 export type {
    ConditionGroupInput,
    GroupEvaluationResultInput,
-} from "./schemas.ts";
+} from "./schemas";
 export {
    ArrayCondition,
    ArrayOperator,
@@ -34,4 +34,4 @@ export {
    NumberOperator,
    StringCondition,
    StringOperator,
-} from "./schemas.ts";
+} from "./schemas";

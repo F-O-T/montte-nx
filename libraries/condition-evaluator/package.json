@@ -61,9 +61,9 @@
       "test": "bun test",
       "test:coverage": "bun test --coverage",
       "test:watch": "bun test --watch",
-      "typecheck": "tsc --noEmit"
+      "typecheck": "tsc"
    },
    "type": "module",
    "types": "./dist/index.d.ts",
-   "version": "1.0.0"
+   "version": "1.0.1"
 }
