@@ -14,47 +14,56 @@ import {
    <div class="lg:sticky lg:top-24 space-y-6">
        <!-- Category Navigation -->
        <nav class="space-y-1">
-          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3">Recursos</div>
+          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 px-3">Plataforma</div>
+
           <a href="#core" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
-             <Wallet class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-             <span class="text-muted-foreground group-hover:text-foreground">Gerenciamento Financeiro</span>
+             <Wallet class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+             <span class="text-muted-foreground group-hover:text-foreground font-medium">Gestão de Caixa</span>
           </a>
+
           <a href="#planning" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
-             <LayoutDashboard class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-             <span class="text-muted-foreground group-hover:text-foreground">Planejamento</span>
+             <LayoutDashboard class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+             <span class="text-muted-foreground group-hover:text-foreground font-medium">Previsibilidade</span>
           </a>
+
           <a href="#automation" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
-             <Zap class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-              <span class="text-muted-foreground group-hover:text-foreground">Automações</span>
-           </a>
-           <a href="#analytics" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
-             <ChartPie class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-             <span class="text-muted-foreground group-hover:text-foreground">Análises</span>
+             <Zap class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span class="text-muted-foreground group-hover:text-foreground font-medium">Automação Inteligente</span>
            </a>
 
-           <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6">Equipe</div>
+           <a href="#analytics" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <ChartPie class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+             <span class="text-muted-foreground group-hover:text-foreground font-medium">Relatórios e DRE</span>
+           </a>
+
+           <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6 px-3">Organização</div>
+
            <a href="#team" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
-             <Users class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-             <span class="text-muted-foreground group-hover:text-foreground">Colaboração</span>
+             <Users class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+             <span class="text-muted-foreground group-hover:text-foreground font-medium">Time e Permissões</span>
           </a>
 
-          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6">Enterprise</div>
+          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6 px-3">Corporativo</div>
+
           <a href="#enterprise" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
-             <Lock class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-             <span class="text-muted-foreground group-hover:text-foreground">Enterprise</span>
+             <Lock class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+             <span class="text-muted-foreground group-hover:text-foreground font-medium">Segurança e SLA</span>
           </a>
        </nav>
 
       <!-- Billing Toggle (Sidebar) -->
-      <div class="p-4 rounded-lg bg-card border border-border">
-         <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-foreground">Pagar anualmente</span>
+      <div class="p-4 rounded-xl bg-gradient-to-br from-card to-muted/30 border border-border shadow-sm">
+         <div class="flex items-center justify-between mb-1">
+            <span class="text-sm font-semibold text-foreground">Economia Anual</span>
             <label class="relative cursor-pointer">
                <input type="checkbox" id="pricing-toggle-sidebar" class="peer sr-only" checked />
-               <div class="w-10 h-5 bg-muted border border-border rounded-full peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground peer-checked:after:bg-primary-foreground after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+               <div class="w-9 h-5 bg-muted border border-border rounded-full peer-checked:bg-primary peer-checked:border-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-muted-foreground peer-checked:after:bg-background after:rounded-full after:h-4 after:w-4 after:transition-all shadow-sm"></div>
             </label>
          </div>
-          <p class="text-xs text-primary mt-2">Ganhe ~2 meses grátis</p>
+          <div class="flex items-center gap-2">
+             <span class="text-xs text-muted-foreground">Aplicar desconto de</span>
+             <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">20% OFF</span>
+          </div>
       </div>
    </div>
 </aside>
