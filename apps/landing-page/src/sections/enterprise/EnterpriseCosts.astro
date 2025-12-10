@@ -54,7 +54,7 @@ const costItems = [
             <div class="text-foreground font-medium">Gestão financeira para PME (10 usuários)</div>
          </div>
 
-         <Separator className="my-6 bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+         <Separator className="my-6 bg-linear-to-r from-transparent via-border/30 to-transparent" />
 
          {costItems.map((item, index) => (
             <>
@@ -66,14 +66,14 @@ const costItems = [
                      <div class="text-foreground font-medium">{item.name}</div>
                   </div>
                   <div class="mt-3 rounded-full bg-muted/30 p-px">
-                     <div class:list={["h-2 rounded-full bg-gradient-to-r from-muted-foreground/60 to-muted-foreground/40", item.widthClass]} />
+                     <div class:list={["h-2 rounded-full bg-linear-to-r from-muted-foreground/60 to-muted-foreground/40", item.widthClass]} />
                   </div>
                   <div class="text-sm mt-1.5 text-muted-foreground">
                      {item.price}/mês
                   </div>
                </div>
                {index < costItems.length - 1 && (
-                  <Separator className="my-6 bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+                  <Separator className="my-6 bg-linear-to-r from-transparent via-border/30 to-transparent" />
                )}
             </>
          ))}

@@ -146,7 +146,7 @@ export function FeatureCarousel({
             <button
                aria-label="Anterior"
                className={cn(
-                  "pointer-events-auto h-full w-[calc((100vw-1280px)/2)] bg-gradient-to-r from-background via-background/70 to-transparent",
+                  "pointer-events-auto h-full w-[calc((100vw-1280px)/2)] bg-linear-to-r from-background via-background/70 to-transparent",
                   !canScrollPrev && "cursor-default opacity-0",
                )}
                disabled={!canScrollPrev}

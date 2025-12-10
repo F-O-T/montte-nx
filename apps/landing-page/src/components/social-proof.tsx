@@ -126,7 +126,7 @@ export default function SocialProof() {
       <section className="bg-background py-16 sm:py-24">
          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center px-4 text-center">
-               <h2 className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-2xl font-semibold text-transparent md:text-4xl lg:text-[44px] lg:leading-tight">
+               <h2 className="bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-2xl font-semibold text-transparent md:text-4xl lg:text-[44px] lg:leading-tight">
                   Don't just take our word for it
                </h2>
                <p className="text-muted-foreground mt-4 max-w-[624px]">
@@ -161,7 +161,7 @@ export default function SocialProof() {
                </div>
 
                <div className="pointer-events-none absolute inset-0 flex justify-center">
-                  <div className="from-background h-full grow bg-gradient-to-r md:from-50%" />
+                  <div className="from-background h-full grow bg-linear-to-r md:from-50%" />
                   <div className="min-w-[200px] md:min-w-[1000px]" />
                   <div className="from-background h-full grow bg-gradient-to-l md:from-50%" />
                </div>
