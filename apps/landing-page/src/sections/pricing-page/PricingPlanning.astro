@@ -1,0 +1,64 @@
+---
+import { Check, Zap } from "@lucide/astro";
+
+const planningFeatures = {
+   title: "Planejamento e Controle",
+   description:
+      "Crie orcamentos, gerencie contas a pagar/receber e planeje seu futuro financeiro.",
+   included: {
+      label: "Basico incluido",
+      value: "Orcamentos simples",
+   },
+   addons: [
+      { name: "Orcamentos avancados com rollover", price: "Pro" },
+      { name: "Gerenciamento de contas a pagar/receber", price: "Pro" },
+      { name: "Calculo de juros e multas automatico", price: "Pro" },
+   ],
+   features: [
+      "Orcamentos por categorias, tags ou centros de custo",
+      "Modos: Pessoal (Gamificado) vs Empresarial (Estrito)",
+      "Rollover de saldos positivos/negativos",
+      "Alertas configuraveis de limite (80%, 100%)",
+      "Barras de progresso visuais e previsoes",
+      "Contas a pagar/receber (Pendente, Pago, Vencido)",
+      "Recorrencia: Mensal, Trimestral, Semestral, Anual",
+      "Parcelas com valores iguais ou personalizados",
+      "Templates para calculo de juros (Diario/Mensal %)",
+      "Indices de correcao (IPCA/SELIC/CDI)",
+      "Calculo automatico de valores atualizados",
+   ],
+};
+---
+
+<!-- PLANNING SECTION -->
+<section id="planning" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-2">{planningFeatures.title}</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">{planningFeatures.description}</p>
+
+   <!-- Pricing Table -->
+   <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+         <span class="font-medium text-foreground">{planningFeatures.included.label}</span>
+         <span class="text-sm font-medium text-primary">{planningFeatures.included.value}</span>
+      </div>
+      {planningFeatures.addons.map((addon, index) => (
+         <div class={`flex items-center justify-between px-6 py-4 ${index < planningFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+            <div class="flex items-center gap-2">
+               <Zap class="w-4 h-4 text-primary" />
+               <span class="text-sm">{addon.name}</span>
+            </div>
+            <span class={`text-sm ${addon.price === 'Pro' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{addon.price}</span>
+         </div>
+      ))}
+   </div>
+
+   <!-- Features Grid -->
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+      {planningFeatures.features.map((feature) => (
+         <div class="flex items-center gap-2">
+            <Check class="w-4 h-4 text-primary shrink-0" />
+            <span class="text-muted-foreground">{feature}</span>
+         </div>
+      ))}
+   </div>
+</section>

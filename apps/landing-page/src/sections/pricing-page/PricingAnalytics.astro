@@ -1,0 +1,65 @@
+---
+import { Check, Zap } from "@lucide/astro";
+
+const analyticsFeatures = {
+   title: "Analises e Relatorios",
+   description:
+      "Dashboards interativos e relatorios detalhados para tomada de decisao inteligente.",
+   included: {
+      label: "Basico incluido",
+      value: "Dashboard resumido",
+   },
+   addons: [
+      { name: "Relatorios personalizados (DRE)", price: "Pro" },
+      { name: "Exportacao PDF ilimitada", price: "Pro" },
+      { name: "Previsoes e analises preditivas", price: "Enterprise" },
+   ],
+   features: [
+      "Dashboard com saldo liquido",
+      "Receitas vs Despesas detalhado",
+      "Atividades recentes",
+      "Relatorio DRE Gerencial",
+      "Relatorio DRE Fiscal (Planejado vs Realizado)",
+      "Exportacao de relatorios em PDF",
+      "Graficos: Evolucao do fluxo de caixa",
+      "Distribuicao por categoria (Pizza/Barra)",
+      "Tendencias mensais",
+      "Performance de pagamentos (No prazo vs Atrasado)",
+      "Filtros e periodos personalizaveis",
+      "Comparativos entre periodos",
+   ],
+};
+---
+
+<!-- ANALYTICS SECTION -->
+<section id="analytics" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-2">{analyticsFeatures.title}</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">{analyticsFeatures.description}</p>
+
+   <!-- Pricing Table -->
+   <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+         <span class="font-medium text-foreground">{analyticsFeatures.included.label}</span>
+         <span class="text-sm font-medium text-primary">{analyticsFeatures.included.value}</span>
+      </div>
+      {analyticsFeatures.addons.map((addon, index) => (
+         <div class={`flex items-center justify-between px-6 py-4 ${index < analyticsFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+            <div class="flex items-center gap-2">
+               <Zap class="w-4 h-4 text-primary" />
+               <span class="text-sm">{addon.name}</span>
+            </div>
+            <span class={`text-sm ${addon.price === 'Pro' ? 'text-primary font-medium' : addon.price === 'Enterprise' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{addon.price}</span>
+         </div>
+      ))}
+   </div>
+
+   <!-- Features Grid -->
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+      {analyticsFeatures.features.map((feature) => (
+         <div class="flex items-center gap-2">
+            <Check class="w-4 h-4 text-primary shrink-0" />
+            <span class="text-muted-foreground">{feature}</span>
+         </div>
+      ))}
+   </div>
+</section>

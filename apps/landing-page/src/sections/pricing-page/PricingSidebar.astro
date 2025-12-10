@@ -1,0 +1,60 @@
+---
+import {
+   ChartPie,
+   LayoutDashboard,
+   Lock,
+   Users,
+   Wallet,
+   Zap,
+} from "@lucide/astro";
+---
+
+<!-- LEFT SIDEBAR NAV -->
+<aside class="lg:w-64 shrink-0">
+   <div class="lg:sticky lg:top-24 space-y-6">
+       <!-- Category Navigation -->
+       <nav class="space-y-1">
+          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3">Recursos</div>
+          <a href="#core" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <Wallet class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+             <span class="text-muted-foreground group-hover:text-foreground">Gerenciamento Financeiro</span>
+          </a>
+          <a href="#planning" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <LayoutDashboard class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+             <span class="text-muted-foreground group-hover:text-foreground">Planejamento</span>
+          </a>
+          <a href="#automation" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <Zap class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+             <span class="text-muted-foreground group-hover:text-foreground">Automacoes</span>
+          </a>
+          <a href="#analytics" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <ChartPie class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+             <span class="text-muted-foreground group-hover:text-foreground">Analises</span>
+          </a>
+
+          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6">Equipe</div>
+          <a href="#team" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <Users class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+             <span class="text-muted-foreground group-hover:text-foreground">Colaboracao</span>
+          </a>
+
+          <div class="text-xs uppercase font-bold tracking-widest text-muted-foreground/60 mb-3 mt-6">Enterprise</div>
+          <a href="#enterprise" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm hover:bg-muted/50 transition-colors group">
+             <Lock class="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+             <span class="text-muted-foreground group-hover:text-foreground">Enterprise</span>
+          </a>
+       </nav>
+
+      <!-- Billing Toggle (Sidebar) -->
+      <div class="p-4 rounded-lg bg-card border border-border">
+         <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-foreground">Pagar anualmente</span>
+            <label class="relative cursor-pointer">
+               <input type="checkbox" id="pricing-toggle-sidebar" class="peer sr-only" checked />
+               <div class="w-10 h-5 bg-muted border border-border rounded-full peer-checked:bg-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground peer-checked:after:bg-primary-foreground after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+            </label>
+         </div>
+         <p class="text-xs text-primary mt-2">Ganhe ~2 meses gratis</p>
+      </div>
+   </div>
+</aside>

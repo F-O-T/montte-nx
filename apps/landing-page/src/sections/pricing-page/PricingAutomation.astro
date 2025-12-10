@@ -1,0 +1,64 @@
+---
+import { Check, Zap } from "@lucide/astro";
+
+const automationFeatures = {
+   title: "Automacoes e Inteligencia",
+   description:
+      "Crie regras inteligentes para automatizar tarefas repetitivas e economizar tempo.",
+   included: {
+      label: "Basico incluido",
+      value: "5 regras por workspace",
+   },
+   addons: [
+      { name: "Regras ilimitadas", price: "Pro" },
+      { name: "Acoes avancadas (email, notificacoes)", price: "Pro" },
+      { name: "Condicoes complexas com grupos AND/OR", price: "Pro" },
+   ],
+   features: [
+      "Editor visual baseado em React Flow",
+      "Gatilhos: Transacao Criada, Transacao Atualizada",
+      "Condicoes complexas (grupos AND/OR)",
+      "Baseado em valor, descricao, tipo, conta bancaria",
+      "Acoes: Auto-categorizar",
+      "Adicionar/Remover tags",
+      "Definir centro de custo",
+      "Modificar descricao (suporte Regex/Template)",
+      "Enviar notificacoes push",
+      "Enviar e-mails automaticos",
+      "Logs detalhados de execucao (Sucesso/Falha/Ignorado)",
+   ],
+};
+---
+
+<!-- AUTOMATION SECTION -->
+<section id="automation" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-2">{automationFeatures.title}</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">{automationFeatures.description}</p>
+
+   <!-- Pricing Table -->
+   <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+         <span class="font-medium text-foreground">{automationFeatures.included.label}</span>
+         <span class="text-sm font-medium text-primary">{automationFeatures.included.value}</span>
+      </div>
+      {automationFeatures.addons.map((addon, index) => (
+         <div class={`flex items-center justify-between px-6 py-4 ${index < automationFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
+            <div class="flex items-center gap-2">
+               <Zap class="w-4 h-4 text-primary" />
+               <span class="text-sm">{addon.name}</span>
+            </div>
+            <span class={`text-sm ${addon.price === 'Pro' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{addon.price}</span>
+         </div>
+      ))}
+   </div>
+
+   <!-- Features Grid -->
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+      {automationFeatures.features.map((feature) => (
+         <div class="flex items-center gap-2">
+            <Check class="w-4 h-4 text-primary shrink-0" />
+            <span class="text-muted-foreground">{feature}</span>
+         </div>
+      ))}
+   </div>
+</section>

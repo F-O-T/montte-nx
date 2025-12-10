@@ -1,0 +1,151 @@
+---
+import { Check } from "@lucide/astro";
+
+const enterpriseFeatures = {
+   title: "Enterprise",
+   description:
+      "Seguranca avancada, conformidade e suporte dedicado para grandes organizacoes.",
+   security: {
+      title: "Seguranca e Conformidade",
+      description:
+         "Mantenha seus dados seguros e em conformidade com regulamentacoes.",
+      tiers: [
+         { name: "SSO com Google", price: "incluido" },
+         { name: "SSO com Azure/Okta", price: "R$5 por usuario/mes" },
+         { name: "SAML Generico", price: "enterprise" },
+      ],
+      features: [
+         "Autenticacao 2FA",
+         "Logs de auditoria",
+         "Controle de sessao",
+         "IP allowlist",
+         "Conformidade LGPD",
+         "Criptografia em repouso",
+         "Politicas de senha",
+         "Gestao de dispositivos",
+      ],
+   },
+   support: {
+      title: "Suporte Dedicado",
+      description: "Obtenha ajuda prioritaria quando voce precisar.",
+      tiers: [
+         { name: "Suporte por e-mail", price: "incluido" },
+         { name: "Suporte prioritario (4h SLA)", price: "R$99 por mes" },
+         { name: "Gerente de conta dedicado", price: "enterprise" },
+      ],
+      features: [
+         "Base de conhecimento",
+         "Documentacao completa",
+         "Suporte da comunidade",
+         "Onboarding guiado",
+         "Treinamento personalizado",
+         "Revisoes trimestrais",
+      ],
+   },
+};
+---
+
+<!-- ENTERPRISE SECTION -->
+<section id="enterprise" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-8">Enterprise</h2>
+
+   <!-- Security Subsection -->
+   <div class="mb-12">
+      <h3 class="text-foreground text-xl font-bold mb-2">Seguranca e Conformidade</h3>
+      <p class="text-muted-foreground mb-6 max-w-2xl">
+         Mantenha seus dados seguros e em conformidade com regulamentacoes.
+      </p>
+
+      <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
+         {[
+            { name: "Autenticacao Better Auth (Email/Password, Google OAuth)", price: "incluido" },
+            { name: "Verificacao de email e recuperacao de senha", price: "incluido" },
+            { name: "Magic Links para acesso rapido", price: "incluido" },
+            { name: "SSO com Google", price: "incluido" },
+            { name: "SSO com Azure/Okta", price: "Enterprise" },
+            { name: "SAML Generico", price: "Enterprise" },
+         ].map((tier, index) => (
+            <div class={`flex items-center justify-between px-6 py-4 ${index < 6 ? 'border-b border-dashed border-border' : ''}`}>
+               <span class="text-sm">{tier.name}</span>
+               <span class={`text-sm ${tier.price === 'incluido' ? 'text-primary font-medium' : tier.price === 'Enterprise' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                  {tier.price}
+               </span>
+            </div>
+         ))}
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+         {[
+            "Autenticacao 2FA",
+            "Logs de auditoria completos",
+            "Controle de sessao multi-dispositivo",
+            "IP allowlist",
+            "Conformidade LGPD",
+            "Criptografia em repouso e em trânsito",
+            "Politicas de senha configuraveis",
+            "Gestao de dispositivos",
+         ].map((feature) => (
+            <div class="flex items-center gap-2">
+               <Check class="w-4 h-4 text-primary shrink-0" />
+               <span class="text-muted-foreground">{feature}</span>
+            </div>
+         ))}
+      </div>
+   </div>
+
+   <!-- Support Subsection -->
+   <div class="mb-12">
+      <h3 class="text-foreground text-xl font-bold mb-2">Suporte Dedicado</h3>
+      <p class="text-muted-foreground mb-6 max-w-2xl">
+         Obtenha ajuda prioritaria quando voce precisar.
+      </p>
+
+      <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
+         {[
+            { name: "Suporte por e-mail", price: "incluido" },
+            { name: "Suporte prioritario (4h SLA)", price: "Business" },
+            { name: "Gerente de conta dedicado", price: "Enterprise" },
+            { name: "Suporte 24/7", price: "Enterprise" },
+         ].map((tier, index) => (
+            <div class={`flex items-center justify-between px-6 py-4 ${index < 3 ? 'border-b border-dashed border-border' : ''}`}>
+               <span class="text-sm">{tier.name}</span>
+               <span class={`text-sm ${tier.price === 'incluido' ? 'text-primary font-medium' : tier.price === 'Enterprise' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                  {tier.price}
+               </span>
+            </div>
+         ))}
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+         {[
+            "Base de conhecimento completa",
+            "Documentacao detalhada",
+            "Suporte da comunidade",
+            "Onboarding guiado",
+            "Treinamento personalizado",
+            "Revisoes trimestrais",
+         ].map((feature) => (
+            <div class="flex items-center gap-2">
+               <Check class="w-4 h-4 text-primary shrink-0" />
+               <span class="text-muted-foreground">{feature}</span>
+            </div>
+         ))}
+      </div>
+   </div>
+
+   <!-- Enterprise CTA -->
+   <div class="rounded-xl border border-border bg-gradient-to-r from-card to-background p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+      <div class="absolute -right-20 -top-20 w-96 h-96 bg-primary opacity-5 blur-[120px] rounded-full pointer-events-none"></div>
+      <div class="relative z-10">
+         <h3 class="text-foreground text-2xl font-bold mb-2">Pronto para Enterprise</h3>
+         <p class="text-muted-foreground">Entre em contato para uma cotacao personalizada.</p>
+         <p class="text-sm text-muted-foreground/80 mt-2">Descubra por que as melhores equipes confiam no Montte.</p>
+      </div>
+      <div class="flex flex-col gap-3 shrink-0 relative z-10">
+         <a href="/enterprise" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:bg-foreground/90 transition-colors">
+            Agendar demo
+         </a>
+         <a href="mailto:enterprise@montte.co" class="text-sm text-primary text-center hover:underline">Obter cotacao por e-mail</a>
+      </div>
+   </div>
+</section>

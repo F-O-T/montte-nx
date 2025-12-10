@@ -1,0 +1,70 @@
+---
+const faqs = [
+   {
+      question: "O que esta incluido no plano Free?",
+      answer:
+         "O plano Free inclui transacoes ilimitadas, importacao/exportacao OFX, categorias e tags personalizadas, dashboard basico, relatorios simples, autenticacao segura e 50 MB de armazenamento. Perfeito para controle financeiro pessoal.",
+   },
+   {
+      question: "Qual a diferenca entre os planos Pro e Business?",
+      answer:
+         "O plano Pro e para usuarios avancados e pequenas equipes, incluindo orcamentos avancados, automacoes ilimitadas e relatorios DRE. O plano Business adiciona recursos corporativos como centros de custo, fluxos de aprovacao, API e suporte dedicado.",
+   },
+   {
+      question: "Como funcionam as automacoes?",
+      answer:
+         "Com nosso editor visual React Flow, voce cria regras com gatilhos (transacao criada/atualizada), condicoes complexas (AND/OR) e acoes automaticas como categorizar, adicionar tags, enviar notificacoes e e-mails. O plano Free inclui 5 regras, Pro inclui ilimitadas.",
+   },
+   {
+      question: "O Montte suporta contas a pagar e receber?",
+      answer:
+         "Sim! Nos planos Pro e superiores voce pode gerenciar contas a pagar e receber com controle de status (Pendente, Pago, Vencido), recorrencia mensal/trimestral/semestral/anual, parcelas personalizadas e calculo automatico de juros e multas.",
+   },
+   {
+      question: "Posso usar o Montte gratuitamente para sempre?",
+      answer:
+         "Sim! O plano Free e completamente gratuito para sempre. Voce tambem pode auto-hospedar a versao open-source sem limites.",
+   },
+   {
+      question: "Voces oferecem desconto para cobranca anual?",
+      answer:
+         "Sim! Com cobranca anual voce economiza ate 20% dependendo do plano (equivalente a ~2-3 meses gratis).",
+   },
+   {
+      question: "Posso trocar de plano a qualquer momento?",
+      answer:
+         "Sim, voce pode fazer upgrade ou downgrade a qualquer momento. O valor sera calculado proporcionalmente e voce nao perde seus dados.",
+   },
+   {
+      question: "Voces oferecem reembolso?",
+      answer:
+         "Oferecemos garantia de devolucao em 30 dias para todos os planos pagos, sem perguntas.",
+   },
+];
+---
+
+<!-- FAQ SECTION -->
+<section class="pt-8">
+   <div class="text-center mb-12">
+      <h2 class="text-foreground text-3xl md:text-4xl font-bold mb-4">Perguntas frequentes</h2>
+      <p class="text-muted-foreground max-w-2xl mx-auto">
+         Projetamos nossos produtos e processos com seguranca em mente. Seguimos as melhores praticas do setor para manter seus dados seguros.
+      </p>
+   </div>
+
+   <div class="max-w-3xl mx-auto divide-y divide-border rounded-xl border border-border bg-card overflow-hidden">
+      {faqs.map((faq, index) => (
+         <details class="group">
+            <summary class="flex items-center justify-between px-6 py-5 cursor-pointer list-none">
+               <span class="font-medium text-foreground">{faq.question}</span>
+               <svg class="w-5 h-5 text-muted-foreground shrink-0 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+               </svg>
+            </summary>
+            <div class="px-6 pb-5 text-sm text-muted-foreground">
+               {faq.answer}
+            </div>
+         </details>
+      ))}
+   </div>
+</section>

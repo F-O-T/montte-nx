@@ -1,0 +1,77 @@
+---
+import { Check } from "@lucide/astro";
+---
+
+<!-- TEAM SECTION -->
+<section id="team" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-2">Colaboracao e Equipes</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">
+      Trabalhe em equipe com controle de acesso granular e gerenciamento multi-tenant.
+   </p>
+
+   <!-- Features Grid -->
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-8">
+      {[
+         "Multi-tenant (Organizacoes)",
+         "Criacao de equipes",
+         "Convites por e-mail",
+         "Controle de acesso baseado em papeis (Owner, Admin, Member)",
+         "Workspaces compartilhados",
+         "Sessao multi-dispositivo",
+         "Revogacao remota de acesso",
+         "Logs de atividade",
+         "Configuracoes de notificacoes",
+         "Web Push para bills e orcamentos",
+         "Suporte a multi-idiomas (PT-BR)",
+         "Tema claro/escuro/sistema",
+      ].map((feature) => (
+         <div class="flex items-center gap-2">
+            <Check class="w-4 h-4 text-primary shrink-0" />
+            <span class="text-muted-foreground">{feature}</span>
+         </div>
+      ))}
+   </div>
+
+   <!-- Team Tiers -->
+   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="rounded-xl border border-border bg-gradient-to-b from-card to-background p-6">
+         <h3 class="text-foreground font-bold text-lg mb-1">Free</h3>
+         <p class="text-sm text-muted-foreground mb-4">Para uso pessoal</p>
+         <div class="flex items-baseline gap-1 mb-4">
+            <span class="text-foreground text-4xl font-bold tracking-tighter">R$0</span>
+            <span class="text-sm text-muted-foreground">por mes</span>
+         </div>
+         <ul class="space-y-2 text-sm text-muted-foreground">
+            <li>• 1 workspace</li>
+            <li>• Acesso individual</li>
+            <li>• Recursos basicos</li>
+         </ul>
+      </div>
+      <div class="rounded-xl border border-primary/50 bg-card p-6">
+         <h3 class="text-foreground font-bold text-lg mb-1">Pro</h3>
+         <p class="text-sm text-muted-foreground mb-4">Para pequenas equipes</p>
+         <div class="flex items-baseline gap-1 mb-4">
+            <span class="text-foreground text-4xl font-bold tracking-tighter">R$39</span>
+            <span class="text-sm text-muted-foreground">por mes</span>
+         </div>
+         <ul class="space-y-2 text-sm text-muted-foreground">
+            <li>• Ate 5 workspaces</li>
+            <li>• Ate 10 membros</li>
+            <li>• Todos os recursos Pro</li>
+         </ul>
+      </div>
+      <div class="rounded-xl border border-border bg-gradient-to-b from-card to-background p-6">
+         <h3 class="text-foreground font-bold text-lg mb-1">Business</h3>
+         <p class="text-sm text-muted-foreground mb-4">Para empresas</p>
+         <div class="flex items-baseline gap-1 mb-4">
+            <span class="text-foreground text-4xl font-bold tracking-tighter">R$99</span>
+            <span class="text-sm text-muted-foreground">por mes</span>
+         </div>
+         <ul class="space-y-2 text-sm text-muted-foreground">
+            <li>• Workspaces ilimitados</li>
+            <li>• Membros ilimitados</li>
+            <li>• Recursos empresariais</li>
+         </ul>
+      </div>
+   </div>
+</section>
