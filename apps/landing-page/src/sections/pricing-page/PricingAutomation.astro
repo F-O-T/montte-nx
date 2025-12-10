@@ -44,7 +44,7 @@ const automationFeatures = {
       {automationFeatures.addons.map((addon, index) => (
          <div class={`flex items-center justify-between px-6 py-4 ${index < automationFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
             <div class="flex items-center gap-2">
-               <Zap class="w-4 h-4 text-primary" />
+               <Zap class="size-4 text-primary" />
                <span class="text-sm">{addon.name}</span>
             </div>
             <span class={`text-sm ${addon.price === 'Pro' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{addon.price}</span>
@@ -56,7 +56,7 @@ const automationFeatures = {
    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
       {automationFeatures.features.map((feature) => (
          <div class="flex items-center gap-2">
-            <Check class="w-4 h-4 text-primary shrink-0" />
+            <Check class="size-4 text-primary shrink-0" />
             <span class="text-muted-foreground">{feature}</span>
          </div>
       ))}
