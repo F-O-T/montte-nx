@@ -1,24 +1,37 @@
-<!-- HERO SECTION -->
 <section class="pt-24 pb-12 px-4 relative overflow-hidden">
    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 opacity-50 blur-[120px] rounded-full pointer-events-none"></div>
 
    <div class="container mx-auto max-w-[1200px] text-center relative z-10">
-       <h1 class="text-foreground text-5xl md:text-6xl font-bold tracking-tight mb-6">Preços</h1>
+       <span class="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4 tracking-wide uppercase">
+          Planos flexíveis
+       </span>
+
+       <h1 class="text-foreground text-5xl md:text-6xl font-bold tracking-tight mb-6">
+          Investimento que se paga <br class="hidden md:block" /> com organização.
+       </h1>
+
        <p class="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-          Experimente o Montte hoje sem riscos com nossa garantia de devolução de 30 dias.
+          Escolha o plano ideal para o seu momento atual. Faça upgrade ou cancele a qualquer hora.
+          <span class="block mt-1 text-foreground/80 text-base">Garantia total de devolução em 30 dias.</span>
        </p>
 
-      <!-- Toggle Switch -->
       <div class="flex flex-col items-center justify-center">
-         <label class="flex items-center gap-4 cursor-pointer group select-none">
-            <span class="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors" id="label-monthly">Mensal</span>
+         <label class="flex items-center gap-4 cursor-pointer group select-none relative">
+            <span class="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors" id="label-monthly">Pagamento Mensal</span>
             <div class="relative">
                <input type="checkbox" id="pricing-toggle" class="peer sr-only" checked />
                <div class="w-14 h-7 bg-muted border border-border rounded-full peer-focus:ring-2 peer-focus:ring-primary/40 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-6 after:w-6 after:transition-all shadow-inner"></div>
             </div>
-            <span class="text-sm font-medium text-foreground transition-colors" id="label-yearly">Anual</span>
+            <span class="text-sm font-bold text-foreground transition-colors" id="label-yearly">Pagamento Anual</span>
+
+            <div class="absolute -right-[100px] -top-6 hidden md:block">
+               <span class="text-xs text-primary font-handwriting rotate-12 block">Melhor opção!</span>
+               <svg class="w-6 h-6 text-primary rotate-90 transform translate-y-1 -translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </div>
          </label>
-          <span class="mt-3 text-xs font-medium text-primary">Ganhe ~2 meses grátis</span>
+          <span class="mt-3 text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
+             Economize 20% (2 meses grátis)
+          </span>
       </div>
    </div>
 </section>
