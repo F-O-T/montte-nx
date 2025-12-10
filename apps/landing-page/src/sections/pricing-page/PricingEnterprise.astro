@@ -3,44 +3,44 @@ import { Check } from "@lucide/astro";
 
 const enterpriseFeatures = {
    title: "Enterprise",
-   description:
-      "Seguranca avancada, conformidade e suporte dedicado para grandes organizacoes.",
-   security: {
-      title: "Seguranca e Conformidade",
-      description:
-         "Mantenha seus dados seguros e em conformidade com regulamentacoes.",
-      tiers: [
-         { name: "SSO com Google", price: "incluido" },
-         { name: "SSO com Azure/Okta", price: "R$5 por usuario/mes" },
-         { name: "SAML Generico", price: "enterprise" },
-      ],
-      features: [
-         "Autenticacao 2FA",
-         "Logs de auditoria",
-         "Controle de sessao",
-         "IP allowlist",
-         "Conformidade LGPD",
-         "Criptografia em repouso",
-         "Politicas de senha",
-         "Gestao de dispositivos",
-      ],
-   },
-   support: {
-      title: "Suporte Dedicado",
-      description: "Obtenha ajuda prioritaria quando voce precisar.",
-      tiers: [
-         { name: "Suporte por e-mail", price: "incluido" },
-         { name: "Suporte prioritario (4h SLA)", price: "R$99 por mes" },
-         { name: "Gerente de conta dedicado", price: "enterprise" },
-      ],
-      features: [
-         "Base de conhecimento",
-         "Documentacao completa",
-         "Suporte da comunidade",
-         "Onboarding guiado",
-         "Treinamento personalizado",
-         "Revisoes trimestrais",
-      ],
+    description:
+       "Segurança avançada, conformidade e suporte dedicado para grandes organizações.",
+    security: {
+       title: "Segurança e Conformidade",
+       description:
+          "Mantenha seus dados seguros e em conformidade com regulamentações.",
+       tiers: [
+          { name: "SSO com Google", price: "incluído" },
+          { name: "SSO com Azure/Okta", price: "R$5 por usuário/mês" },
+          { name: "SAML Genérico", price: "enterprise" },
+       ],
+       features: [
+          "Autenticação 2FA",
+          "Logs de auditoria",
+          "Controle de sessão",
+          "IP allowlist",
+          "Conformidade LGPD",
+          "Criptografia em repouso",
+          "Políticas de senha",
+          "Gestão de dispositivos",
+       ],
+    },
+    support: {
+       title: "Suporte Dedicado",
+       description: "Obtenha ajuda prioritária quando você precisar.",
+       tiers: [
+          { name: "Suporte por e-mail", price: "incluído" },
+          { name: "Suporte prioritário (4h SLA)", price: "R$99 por mês" },
+          { name: "Gerente de conta dedicado", price: "enterprise" },
+       ],
+       features: [
+          "Base de conhecimento",
+          "Documentação completa",
+          "Suporte da comunidade",
+          "Onboarding guiado",
+          "Treinamento personalizado",
+          "Revisões trimestrais",
+       ],
    },
 };
 ---
@@ -51,20 +51,20 @@ const enterpriseFeatures = {
 
    <!-- Security Subsection -->
    <div class="mb-12">
-      <h3 class="text-foreground text-xl font-bold mb-2">Seguranca e Conformidade</h3>
-      <p class="text-muted-foreground mb-6 max-w-2xl">
-         Mantenha seus dados seguros e em conformidade com regulamentacoes.
-      </p>
+       <h3 class="text-foreground text-xl font-bold mb-2">Segurança e Conformidade</h3>
+       <p class="text-muted-foreground mb-6 max-w-2xl">
+          Mantenha seus dados seguros e em conformidade com regulamentações.
+       </p>
 
       <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
-         {[
-            { name: "Autenticacao Better Auth (Email/Password, Google OAuth)", price: "incluido" },
-            { name: "Verificacao de email e recuperacao de senha", price: "incluido" },
-            { name: "Magic Links para acesso rapido", price: "incluido" },
-            { name: "SSO com Google", price: "incluido" },
-            { name: "SSO com Azure/Okta", price: "Enterprise" },
-            { name: "SAML Generico", price: "Enterprise" },
-         ].map((tier, index) => (
+          {[
+             { name: "Autenticação Better Auth (Email/Password, Google OAuth)", price: "incluído" },
+             { name: "Verificação de email e recuperação de senha", price: "incluído" },
+             { name: "Magic Links para acesso rápido", price: "incluído" },
+             { name: "SSO com Google", price: "incluído" },
+             { name: "SSO com Azure/Okta", price: "Enterprise" },
+             { name: "SAML Genérico", price: "Enterprise" },
+          ].map((tier, index) => (
             <div class={`flex items-center justify-between px-6 py-4 ${index < 6 ? 'border-b border-dashed border-border' : ''}`}>
                <span class="text-sm">{tier.name}</span>
                <span class={`text-sm ${tier.price === 'incluido' ? 'text-primary font-medium' : tier.price === 'Enterprise' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
@@ -75,16 +75,16 @@ const enterpriseFeatures = {
       </div>
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-         {[
-            "Autenticacao 2FA",
-            "Logs de auditoria completos",
-            "Controle de sessao multi-dispositivo",
-            "IP allowlist",
-            "Conformidade LGPD",
-            "Criptografia em repouso e em trânsito",
-            "Politicas de senha configuraveis",
-            "Gestao de dispositivos",
-         ].map((feature) => (
+          {[
+             "Autenticação 2FA",
+             "Logs de auditoria completos",
+             "Controle de sessão multi-dispositivo",
+             "IP allowlist",
+             "Conformidade LGPD",
+             "Criptografia em repouso e em trânsito",
+             "Políticas de senha configuráveis",
+             "Gestão de dispositivos",
+          ].map((feature) => (
             <div class="flex items-center gap-2">
                <Check class="w-4 h-4 text-primary shrink-0" />
                <span class="text-muted-foreground">{feature}</span>
@@ -96,14 +96,14 @@ const enterpriseFeatures = {
    <!-- Support Subsection -->
    <div class="mb-12">
       <h3 class="text-foreground text-xl font-bold mb-2">Suporte Dedicado</h3>
-      <p class="text-muted-foreground mb-6 max-w-2xl">
-         Obtenha ajuda prioritaria quando voce precisar.
-      </p>
+       <p class="text-muted-foreground mb-6 max-w-2xl">
+          Obtenha ajuda prioritária quando você precisar.
+       </p>
 
-      <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
-         {[
-            { name: "Suporte por e-mail", price: "incluido" },
-            { name: "Suporte prioritario (4h SLA)", price: "Business" },
+       <div class="rounded-xl border border-border bg-card overflow-hidden mb-6">
+          {[
+             { name: "Suporte por e-mail", price: "incluído" },
+             { name: "Suporte prioritário (4h SLA)", price: "Business" },
             { name: "Gerente de conta dedicado", price: "Enterprise" },
             { name: "Suporte 24/7", price: "Enterprise" },
          ].map((tier, index) => (
