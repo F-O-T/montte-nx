@@ -4,20 +4,20 @@ const plans = [
       name: "Free",
       priceMonthly: 0,
       priceYearly: 0,
-      description: "Perfeito para controle financeiro pessoal",
+      description: "Sua porta de entrada para a organização financeira.",
        specs: [
-          { label: "Workspaces", val: "1" },
-          { label: "Transações", val: "Ilimitadas" },
-          { label: "Armazenamento", val: "50 MB" },
-          { label: "Regras de automação", val: "5" },
+          { label: "Acesso", val: "Pessoal" },
+          { label: "Histórico", val: "Ilimitado" },
+          { label: "Anexos", val: "50 MB" },
+          { label: "Automações", val: "5 fluxos" },
        ],
        features: [
-          "Transações ilimitadas",
-          "Importação/exportação OFX",
-          "Categorias e tags personalizadas",
-          "Dashboard básico",
-          "Relatórios simples",
-          "Autenticação segura",
+          "Lançamentos ilimitados",
+          "Conciliação Bancária (OFX)",
+          "Gestão de Categorias e Tags",
+          "Visão Mensal de Caixa",
+          "Modo Escuro / Claro",
+          "App Mobile e Desktop",
        ],
       highlighted: false,
    },
@@ -25,24 +25,22 @@ const plans = [
       name: "Pro",
       priceMonthly: 39,
       priceYearly: 32,
-      discount: "18%",
-       description: "Para usuários avançados e pequenas equipes",
+      discount: "20%",
+       description: "Poder total: automação, DRE e previsibilidade de caixa.",
        specs: [
-          { label: "Workspaces", val: "5" },
-          { label: "Transações", val: "Ilimitadas" },
-          { label: "Armazenamento", val: "5 GB" },
-          { label: "Regras de automação", val: "Ilimitadas" },
+          { label: "Acesso", val: "Até 10 un." },
+          { label: "Histórico", val: "Ilimitado" },
+          { label: "Anexos", val: "5 GB" },
+          { label: "Automações", val: "Ilimitadas" },
        ],
        features: [
-          "Todos os recursos do Free",
-          "Orçamentos avançados com rollover",
-          "Contas a pagar/receber",
-          "Cálculo automático de juros e multas",
-          "Regras de automação ilimitadas",
-          "Relatórios DRE Gerencial e Fiscal",
-          "Exportação PDF ilimitada",
-          "Membros da equipe (até 10)",
-          "Suporte prioritário",
+          "Fluxo de Caixa (Pagar/Receber)",
+          "Orçamento Flexível (Rollover)",
+          "DRE Gerencial e Fiscal",
+          "Cálculo Automático de Juros",
+          "Automações Ilimitadas",
+          "Relatórios em PDF Personalizados",
+          "Suporte Prioritário",
        ],
       highlighted: true,
    },
@@ -51,46 +49,43 @@ const plans = [
       priceMonthly: 99,
       priceYearly: 79,
       discount: "20%",
-      description: "Para empresas em crescimento",
+      description: "Governança, centros de custo e controle de aprovações.",
        specs: [
-          { label: "Workspaces", val: "20" },
-          { label: "Transações", val: "Ilimitadas" },
-          { label: "Armazenamento", val: "25 GB" },
-          { label: "Membros", val: "Ilimitados" },
+          { label: "Acesso", val: "Ilimitado" },
+          { label: "Auditoria", val: "Completa" },
+          { label: "Anexos", val: "25 GB" },
+          { label: "API", val: "Liberada" },
        ],
        features: [
-          "Todos os recursos do Pro",
-          "Centros de custo personalizados",
-          "Aprovação de fluxos de gastos",
-          "Integrações via API",
-          "Webhooks personalizados",
-          "Logs de auditoria completos",
-          "Backup dedicado",
-          "SLA de 99.9%",
-          "Onboarding personalizado",
+          "Gestão de Centros de Custo",
+          "Workflow de Aprovação de Gastos",
+          "Rateio Avançado de Despesas",
+          "API Pública e Webhooks",
+          "Trilha de Auditoria (Logs)",
+          "Backup em Nuvem Dedicado",
+          "Onboarding Assistido",
        ],
       highlighted: false,
    },
    {
       name: "Enterprise",
-      priceMonthly: "Personalizado",
-      priceYearly: "Personalizado",
-       description: "Para grandes organizações",
+      priceMonthly: "Sob Consulta",
+      priceYearly: "Sob Consulta",
+       description: "Segurança de nível bancário e SLA garantido.",
        specs: [
-          { label: "Workspaces", val: "Ilimitados" },
-          { label: "Transações", val: "Ilimitadas" },
-          { label: "Armazenamento", val: "Personalizado" },
-          { label: "Membros", val: "Ilimitados" },
+          { label: "Acesso", val: "SSO/SAML" },
+          { label: "SLA", val: "Personalizado" },
+          { label: "Anexos", val: "Customizável" },
+          { label: "Suporte", val: "24/7 VIP" },
        ],
       features: [
-         "Todos os recursos do Business",
-         "SSO (SAML, Azure, Google)",
-         "Conformidade LGPD completa",
-         "Gerente de conta dedicado",
-         "SLA personalizado",
-         "Treinamento para equipe",
-         "Ambiente dedicado (opcional)",
-         "Suporte 24/7",
+         "Single Sign-On (SSO) Corporativo",
+         "Conformidade Total LGPD",
+         "Gestão de Acesso (RBAC) Granular",
+         "Gerente de Conta (CSM) Dedicado",
+         "Contrato e Faturamento Flexível",
+         "Ambiente Isolado (Single-tenant)",
+         "Treinamento In-Company",
       ],
       highlighted: false,
    },
@@ -99,22 +94,30 @@ const plans = [
 
 <!-- STARTS AT SECTION -->
 <section>
-   <h2 class="text-foreground text-3xl font-bold mb-3">Começa em apenas R$29</h2>
-   <p class="text-muted-foreground mb-8 max-w-xl">
-      Inclui workspace completo com análises avançadas, colaboração e todas as automações para você aproveitar toda a plataforma.
-   </p>
+   <div class="mb-10 text-center md:text-left">
+      <h2 class="text-foreground text-3xl font-bold mb-3">Planos que escalam com você</h2>
+      <p class="text-muted-foreground max-w-2xl">
+         Comece grátis para organizar sua vida pessoal ou escolha os planos pagos para ter o poder da automação e inteligência financeira na sua empresa.
+      </p>
+   </div>
 
    <!-- Plans Grid -->
    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {plans.map((plan) => (
-         <div class={`rounded-lg border p-5 hover:border-primary/40 transition-colors group ${plan.highlighted ? "border-primary/50 bg-card" : "border-border bg-gradient-to-b from-card to-background"}`}>
+         <div class={`rounded-xl border p-5 hover:border-primary/40 transition-all duration-300 group flex flex-col h-full ${plan.highlighted ? "border-primary/60 bg-card shadow-lg shadow-primary/5 ring-1 ring-primary/20" : "border-border bg-gradient-to-b from-card to-background/50"}`}>
+
             <div class="flex justify-between items-start mb-3">
-               <span class="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">{plan.name}</span>
+               <span class={`text-sm font-bold transition-colors ${plan.highlighted ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}>
+                  {plan.name}
+               </span>
                {plan.highlighted && (
-                  <span class="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-1 rounded">Popular</span>
+                  <span class="text-[10px] uppercase font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full tracking-wide">
+                     Mais Escolhido
+                  </span>
                )}
             </div>
-            <div class="flex items-end gap-2 mb-1">
+
+            <div class="flex items-end gap-2 mb-2">
                <div class="text-foreground text-3xl font-bold tracking-tighter">
                   {typeof plan.priceMonthly === 'number' ? (
                      <>
@@ -122,23 +125,55 @@ const plans = [
                         <span class="price-yearly hidden">R${plan.priceYearly}</span>
                      </>
                   ) : (
-                     <span class="text-lg">{plan.priceMonthly}</span>
+                     <span class="text-xl md:text-2xl">{plan.priceMonthly}</span>
                   )}
                </div>
-               {plan.discount && (
-                  <div class="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded mb-1">
-                     {plan.discount} OFF
-                  </div>
+
+               {typeof plan.priceMonthly === 'number' && (
+                   <div class="flex flex-col mb-1">
+                       <span class="text-xs text-muted-foreground font-medium">/mês</span>
+                   </div>
                )}
             </div>
-            <p class="text-xs text-muted-foreground mb-4">{plan.description}</p>
-            <div class="space-y-3 pt-4 border-t border-dashed border-border">
+
+            {/* Discount Badge positioned logically */}
+             {plan.discount && (
+                  <div class="self-start text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded mb-4 price-yearly hidden">
+                     Economize {plan.discount} no anual
+                  </div>
+               )}
+
+            <p class="text-xs text-muted-foreground mb-6 leading-relaxed min-h-[40px]">
+               {plan.description}
+            </p>
+
+            {/* Technical Specs Mini-Table */}
+            <div class="space-y-2 py-4 border-t border-dashed border-border bg-muted/20 -mx-5 px-5 mb-4">
                {plan.specs.map((spec) => (
                   <div class="flex justify-between items-center text-xs">
-                     <span class="text-muted-foreground">{spec.label}</span>
-                     <span class="text-foreground font-mono font-medium">{spec.val}</span>
+                     <span class="text-muted-foreground font-medium">{spec.label}</span>
+                     <span class="text-foreground font-mono font-semibold">{spec.val}</span>
                   </div>
                ))}
+            </div>
+
+            {/* Feature List */}
+            <ul class="space-y-2.5 mt-auto">
+                {plan.features.map((feature) => (
+                    <li class="text-xs text-muted-foreground flex items-start gap-2">
+                        <svg class={`w-3.5 h-3.5 shrink-0 mt-0.5 ${plan.highlighted ? "text-primary" : "text-muted-foreground/70"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span class="leading-tight">{feature}</span>
+                    </li>
+                ))}
+            </ul>
+
+            {/* CTA Button placeholder (Opcional, caso queira adicionar botões) */}
+            <div class="mt-6 pt-4 border-t border-border">
+                <a href="#" class={`block w-full py-2 px-4 rounded-lg text-xs font-bold text-center transition-colors ${plan.highlighted ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted hover:bg-muted/80 text-foreground"}`}>
+                    {plan.priceMonthly === 0 ? "Criar conta grátis" : plan.name === "Enterprise" ? "Falar com Consultor" : "Começar Agora"}
+                </a>
             </div>
          </div>
       ))}
