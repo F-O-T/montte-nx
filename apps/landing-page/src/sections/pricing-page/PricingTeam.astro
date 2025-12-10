@@ -1,29 +1,28 @@
 ---
-import { Check } from "@lucide/astro";
+import { Check, ShieldCheck } from "@lucide/astro";
 ---
 
 <!-- TEAM SECTION -->
 <section id="team" class="scroll-mt-24">
-    <h2 class="text-foreground text-3xl font-bold mb-2">Colaboração e Equipes</h2>
+    <h2 class="text-foreground text-3xl font-bold mb-2">Gestão de Time e Acessos</h2>
     <p class="text-muted-foreground mb-8 max-w-2xl">
-       Trabalhe em equipe com controle de acesso granular e gerenciamento multi-tenant.
+       Delegue o operacional sem perder o controle. Convide sócios, assistentes e contadores com permissões personalizadas.
     </p>
 
-    <!-- Features Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-10">
        {[
-          "Multi-tenant (Organizações)",
-          "Criação de equipes",
-          "Convites por e-mail",
-          "Controle de acesso baseado em papéis (Owner, Admin, Member)",
-          "Workspaces compartilhados",
-          "Sessão multi-dispositivo",
-          "Revogação remota de acesso",
-          "Logs de atividade",
-          "Configurações de notificações",
-          "Web Push para bills e orçamentos",
-          "Suporte a multi-idiomas (PT-BR)",
-          "Tema claro/escuro/sistema",
+          "Múltiplas Empresas (CNPJs)",
+          "Convite seguro por e-mail",
+          "Permissões: Leitor, Editor, Admin",
+          "Acesso exclusivo para Contador",
+          "Trilha de Auditoria (Quem fez o quê)",
+          "Workspaces Segregados",
+          "Revogação de acesso em 1 clique",
+          "Sessões ativas por dispositivo",
+          "Alertas de atividades suspeitas",
+          "Notificações de edição de saldo",
+          "Hierarquia de aprovação",
+          "Histórico de alterações",
        ].map((feature) => (
          <div class="flex items-center gap-2">
             <Check class="w-4 h-4 text-primary shrink-0" />
@@ -32,45 +31,55 @@ import { Check } from "@lucide/astro";
       ))}
    </div>
 
-   <!-- Team Tiers -->
    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div class="rounded-xl border border-border bg-gradient-to-b from-card to-background p-6">
-         <h3 class="text-foreground font-bold text-lg mb-1">Free</h3>
-         <p class="text-sm text-muted-foreground mb-4">Para uso pessoal</p>
-          <div class="flex items-baseline gap-1 mb-4">
+      <div class="rounded-xl border border-border bg-card/50 p-6 flex flex-col">
+         <div class="mb-4">
+             <h3 class="text-foreground font-bold text-lg">Pessoal</h3>
+             <p class="text-sm text-muted-foreground">Para o "Eu-quipe" (Solo)</p>
+         </div>
+          <div class="flex items-baseline gap-1 mb-6">
              <span class="text-foreground text-4xl font-bold tracking-tighter">R$0</span>
-             <span class="text-sm text-muted-foreground">por mês</span>
+             <span class="text-sm text-muted-foreground">/mês</span>
           </div>
-          <ul class="space-y-2 text-sm text-muted-foreground">
-             <li>• 1 workspace</li>
-             <li>• Acesso individual</li>
-             <li>• Recursos básicos</li>
+          <ul class="space-y-3 text-sm text-muted-foreground mt-auto">
+             <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>1 Usuário (Você)</li>
+             <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>1 Workspace Pessoal</li>
+             <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>Segurança Padrão</li>
           </ul>
       </div>
-      <div class="rounded-xl border border-primary/50 bg-card p-6">
-         <h3 class="text-foreground font-bold text-lg mb-1">Pro</h3>
-         <p class="text-sm text-muted-foreground mb-4">Para pequenas equipes</p>
-          <div class="flex items-baseline gap-1 mb-4">
+
+      <div class="rounded-xl border border-primary/40 bg-card p-6 relative flex flex-col shadow-lg shadow-primary/5">
+         <div class="absolute -top-3 left-6 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">
+            Recomendado
+         </div>
+         <div class="mb-4">
+             <h3 class="text-foreground font-bold text-lg">Pequenas Equipes</h3>
+             <p class="text-sm text-muted-foreground">Sócios + Contador</p>
+         </div>
+          <div class="flex items-baseline gap-1 mb-6">
              <span class="text-foreground text-4xl font-bold tracking-tighter">R$39</span>
-             <span class="text-sm text-muted-foreground">por mês</span>
+             <span class="text-sm text-muted-foreground">/mês</span>
           </div>
-          <ul class="space-y-2 text-sm text-muted-foreground">
-             <li>• Até 5 workspaces</li>
-             <li>• Até 10 membros</li>
-             <li>• Todos os recursos Pro</li>
+          <ul class="space-y-3 text-sm text-foreground/80 font-medium mt-auto">
+             <li class="flex items-center gap-2"><Check class="w-4 h-4 text-primary" /> Até 10 Membros</li>
+             <li class="flex items-center gap-2"><Check class="w-4 h-4 text-primary" /> 5 Workspaces (CNPJs)</li>
+             <li class="flex items-center gap-2"><Check class="w-4 h-4 text-primary" /> Permissões Avançadas</li>
           </ul>
       </div>
-      <div class="rounded-xl border border-border bg-gradient-to-b from-card to-background p-6">
-         <h3 class="text-foreground font-bold text-lg mb-1">Business</h3>
-         <p class="text-sm text-muted-foreground mb-4">Para empresas</p>
-          <div class="flex items-baseline gap-1 mb-4">
+
+      <div class="rounded-xl border border-border bg-card/50 p-6 flex flex-col">
+         <div class="mb-4">
+             <h3 class="text-foreground font-bold text-lg">Corporativo</h3>
+             <p class="text-sm text-muted-foreground">Depto. Financeiro Completo</p>
+         </div>
+          <div class="flex items-baseline gap-1 mb-6">
              <span class="text-foreground text-4xl font-bold tracking-tighter">R$99</span>
-             <span class="text-sm text-muted-foreground">por mês</span>
+             <span class="text-sm text-muted-foreground">/mês</span>
           </div>
-         <ul class="space-y-2 text-sm text-muted-foreground">
-            <li>• Workspaces ilimitados</li>
-            <li>• Membros ilimitados</li>
-            <li>• Recursos empresariais</li>
+         <ul class="space-y-3 text-sm text-muted-foreground mt-auto">
+            <li class="flex items-center gap-2"><ShieldCheck class="w-4 h-4 text-foreground" /> Membros Ilimitados</li>
+            <li class="flex items-center gap-2"><ShieldCheck class="w-4 h-4 text-foreground" /> Workspaces Ilimitados</li>
+            <li class="flex items-center gap-2"><ShieldCheck class="w-4 h-4 text-foreground" /> Logs de Auditoria Totais</li>
          </ul>
       </div>
    </div>
