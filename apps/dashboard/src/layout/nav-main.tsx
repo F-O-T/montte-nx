@@ -81,18 +81,6 @@ export function NavMain() {
          url: "/$slug/bills",
       },
       {
-         icon: ArrowDownRight,
-         id: "payables",
-         title: translate("dashboard.layout.nav-main.bills.payables"),
-         url: "/$slug/bills?type=payable",
-      },
-      {
-         icon: ArrowUpRight,
-         id: "receivables",
-         title: translate("dashboard.layout.nav-main.bills.receivables"),
-         url: "/$slug/bills?type=receivable",
-      },
-      {
          icon: Users,
          id: "counterparties",
          title: translate("dashboard.layout.nav-main.bills.counterparties"),
