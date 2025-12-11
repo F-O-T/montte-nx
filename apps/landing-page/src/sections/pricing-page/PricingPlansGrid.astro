@@ -144,11 +144,11 @@ const plans = [
                 ))}
             </ul>
 
-            <div class="pt-2 border-t border-border/0">
-                <a href="#" class={`block w-full py-3 px-4 rounded-lg text-sm font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98] ${plan.highlighted ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20" : "bg-muted hover:bg-muted/80 text-foreground"}`}>
-                    {plan.name === "Enterprise" ? "Falar com Consultor" : "Começar Agora"}
-                </a>
-            </div>
+             <div class="pt-2 border-t border-border/0">
+                 <a href="#" aria-label={`Selecionar plano ${plan.name}`} class={`block w-full py-3 px-4 rounded-lg text-sm font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98] ${plan.highlighted ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20" : "bg-muted hover:bg-muted/80 text-foreground"}`}>
+                     {plan.name === "Enterprise" ? "Falar com Consultor" : "Começar Agora"}
+                 </a>
+             </div>
          </div>
       ))}
    </div>
