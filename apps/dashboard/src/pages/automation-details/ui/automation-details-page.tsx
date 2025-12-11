@@ -189,7 +189,7 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
             </Button>
          </div>
 
-         <div className="flex-1">
+         <div className="relative flex-1">
             <AutomationBuilder
                automationId={automationId}
                initialEdges={edges}

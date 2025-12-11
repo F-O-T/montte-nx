@@ -21,37 +21,51 @@
    },
    "exports": {
       "./actions/handlers/*": {
-         "default": "./src/actions/handlers/*.ts"
+         "default": "./src/actions/handlers/*.ts",
+         "types": "./dist/src/actions/handlers/*.d.ts"
       },
       "./actions/*": {
-         "default": "./src/actions/*.ts"
+         "default": "./src/actions/*.ts",
+         "types": "./dist/src/actions/*.d.ts"
       },
       "./analysis/*": {
-         "default": "./src/analysis/*.ts"
+         "default": "./src/analysis/*.ts",
+         "types": "./dist/src/analysis/*.d.ts"
       },
       "./engine/*": {
-         "default": "./src/engine/*.ts"
+         "default": "./src/engine/*.ts",
+         "types": "./dist/src/engine/*.d.ts"
       },
       "./queue/*": {
-         "default": "./src/queue/*.ts"
+         "default": "./src/queue/*.ts",
+         "types": "./dist/src/queue/*.d.ts"
       },
       "./simulation/*": {
-         "default": "./src/simulation/*.ts"
+         "default": "./src/simulation/*.ts",
+         "types": "./dist/src/simulation/*.d.ts"
       },
       "./triggers/*": {
-         "default": "./src/triggers/*.ts"
+         "default": "./src/triggers/*.ts",
+         "types": "./dist/src/triggers/*.d.ts"
       },
       "./types/*": {
-         "default": "./src/types/*.ts"
+         "default": "./src/types/*.ts",
+         "types": "./dist/src/types/*.d.ts"
       },
       "./utils/*": {
-         "default": "./src/utils/*.ts"
+         "default": "./src/utils/*.ts",
+         "types": "./dist/src/utils/*.d.ts"
       },
       "./validation/*": {
-         "default": "./src/validation/*.ts"
+         "default": "./src/validation/*.ts",
+         "types": "./dist/src/validation/*.d.ts"
       },
       "./versioning/*": {
-         "default": "./src/versioning/*.ts"
+         "default": "./src/versioning/*.ts",
+         "types": "./dist/src/versioning/*.d.ts"
       }
-   }
+   },
+   "files": [
+      "dist"
+   ]
 }

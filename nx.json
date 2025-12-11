@@ -47,7 +47,7 @@
    "targetDefaults": {
       "build": {
          "cache": true,
-         "dependsOn": ["^build:all"],
+         "dependsOn": ["^build"],
          "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
          "outputs": []
       },
