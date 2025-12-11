@@ -45,6 +45,7 @@ COPY packages/stripe/package.json ./packages/stripe/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
+
 RUN bun install
 
 COPY . .

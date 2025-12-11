@@ -16,6 +16,7 @@ COPY packages/queue/package.json ./packages/queue/
 COPY packages/workflows/package.json ./packages/workflows/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/notifications/package.json ./packages/notifications/
+
 COPY packages/utils/package.json ./packages/utils/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
