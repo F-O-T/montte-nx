@@ -12,20 +12,26 @@ import {
    useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
-import { Save, Settings } from "lucide-react";
-import { Suspense, useCallback, useState } from "react";
+import { Check, Loader2, Settings, XCircle } from "lucide-react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { flowDataToSchema, schemaToFlowData } from "../lib/flow-serialization";
-import {
-   getValidationErrorsSummary,
-   validateAllNodes,
-} from "../lib/node-validation";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { AutomationBuilder } from "./automation-builder";
 import { AutomationSettingsForm } from "./automation-settings-form";
+
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+function formatTimestamp(date: Date): string {
+   return date.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+   });
+}
 
 type AutomationSettings = {
    description: string;
@@ -60,6 +66,43 @@ function AutomationDetailsErrorFallback({
    );
 }
 
+function SaveStatusIndicator({
+   lastSavedAt,
+   status,
+}: {
+   lastSavedAt: Date | null;
+   status: SaveStatus;
+}) {
+   if (status === "saving") {
+      return (
+         <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
+            <Loader2 className="size-3.5 animate-spin" />
+            Salvando...
+         </span>
+      );
+   }
+
+   if (status === "error") {
+      return (
+         <span className="text-destructive flex items-center gap-1.5 text-sm">
+            <XCircle className="size-3.5" />
+            Erro ao salvar
+         </span>
+      );
+   }
+
+   if (status === "saved" && lastSavedAt) {
+      return (
+         <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
+            <Check className="size-3.5" />
+            Salvo às {formatTimestamp(lastSavedAt)}
+         </span>
+      );
+   }
+
+   return null;
+}
+
 function AutomationDetailsContent({ automationId }: { automationId: string }) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
@@ -88,33 +131,86 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
    const [nodes, setNodes] = useState<AutomationNode[]>(initialFlowData.nodes);
    const [edges, setEdges] = useState<AutomationEdge[]>(initialFlowData.edges);
 
+   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+
+   const settingsRef = useRef(settings);
+   const nodesRef = useRef(nodes);
+   const edgesRef = useRef(edges);
+
+   useEffect(() => {
+      settingsRef.current = settings;
+   }, [settings]);
+
+   useEffect(() => {
+      nodesRef.current = nodes;
+   }, [nodes]);
+
+   useEffect(() => {
+      edgesRef.current = edges;
+   }, [edges]);
+
    const updateMutation = useMutation(
       trpc.automations.update.mutationOptions({
          onError: (error) => {
+            setSaveStatus("error");
             toast.error(`Erro ao salvar: ${error.message}`);
          },
          onSuccess: () => {
             queryClient.invalidateQueries({
                queryKey: [["automations"]],
             });
-            toast.success("Automação salva com sucesso");
+            setSaveStatus("saved");
+            setLastSavedAt(new Date());
          },
       }),
    );
+
+   const performSave = useCallback(() => {
+      const currentSettings = settingsRef.current;
+      const currentNodes = nodesRef.current;
+      const currentEdges = edgesRef.current;
+
+      const schemaData = flowDataToSchema(currentNodes, currentEdges);
+
+      setSaveStatus("saving");
+
+      updateMutation.mutate({
+         data: {
+            actions: schemaData.actions as Action[],
+            conditions: schemaData.conditions as ConditionGroup[],
+            description: currentSettings.description || null,
+            flowData: {
+               edges: currentEdges as unknown[],
+               nodes: currentNodes as unknown[],
+            },
+            isActive: currentSettings.isActive,
+            name: currentSettings.name || "Automação sem nome",
+            priority: currentSettings.priority,
+            stopOnFirstMatch: currentSettings.stopOnFirstMatch,
+            triggerType: currentSettings.triggerType,
+         },
+         id: automationId,
+      });
+   }, [automationId, updateMutation]);
+
+   const debouncedSave = useDebouncedCallback(performSave, 1500);
 
    const handleFlowChange = useCallback(
       (newNodes: AutomationNode[], newEdges: AutomationEdge[]) => {
          setNodes(newNodes);
          setEdges(newEdges);
+         debouncedSave();
       },
-      [],
+      [debouncedSave],
    );
 
    const handleSettingsChange = useCallback(
       (newSettings: Partial<AutomationSettings>) => {
          setSettings((prev) => ({ ...prev, ...newSettings }));
+         debouncedSave();
       },
-      [],
+      [debouncedSave],
    );
 
    const handleOpenSettings = useCallback(() => {
@@ -128,60 +224,17 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
       });
    }, [openSheet, settings, handleSettingsChange]);
 
-   const handleSave = () => {
-      if (!settings.name.trim()) {
-         toast.error("Nome é obrigatório");
-         handleOpenSettings();
-         return;
-      }
-
-      const nodesValidation = validateAllNodes(nodes);
-      if (!nodesValidation.valid) {
-         toast.error(getValidationErrorsSummary(nodesValidation));
-         return;
-      }
-
-      const schemaData = flowDataToSchema(nodes, edges);
-
-      if (schemaData.actions.length === 0) {
-         toast.error("Adicione pelo menos uma ação à automação");
-         return;
-      }
-
-      updateMutation.mutate({
-         data: {
-            actions: schemaData.actions as Action[],
-            conditions: schemaData.conditions as ConditionGroup[],
-            description: settings.description || null,
-            flowData: {
-               edges: edges as unknown[],
-               nodes: nodes as unknown[],
-            },
-            isActive: settings.isActive,
-            name: settings.name,
-            priority: settings.priority,
-            stopOnFirstMatch: settings.stopOnFirstMatch,
-            triggerType: settings.triggerType,
-         },
-         id: automationId,
-      });
-   };
-
    return (
       <div className="relative -m-4 h-[calc(100%+2rem)] overflow-hidden">
-         <div className="absolute right-4 top-4 z-10 flex gap-2">
+         <div className="absolute right-4 top-4 z-10 flex items-center gap-3">
+            <SaveStatusIndicator
+               lastSavedAt={lastSavedAt}
+               status={saveStatus}
+            />
+
             <Button onClick={handleOpenSettings} size="sm" variant="outline">
                <Settings className="size-4" />
                Configurações
-            </Button>
-
-            <Button
-               disabled={updateMutation.isPending}
-               onClick={handleSave}
-               size="sm"
-            >
-               <Save className="size-4" />
-               {updateMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
          </div>
 
