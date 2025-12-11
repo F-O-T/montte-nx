@@ -51,8 +51,12 @@ COPY . .
 
 ENV NODE_ENV=production
 
-RUN cd libraries/ofx && bun run build
-RUN cd libraries/rules-engine && bun run build
+WORKDIR /app/libraries/ofx
+RUN bun run build
+WORKDIR /app
+WORKDIR /app/libraries/rules-engine
+RUN bun run build
+WORKDIR /app
 
 RUN bun build \
     --minify-whitespace \

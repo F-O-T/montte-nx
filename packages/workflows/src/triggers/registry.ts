@@ -32,7 +32,11 @@ export function createTriggerRegistry(): TriggerRegistry {
 
       getAll(): TriggerDefinition[] {
          const custom = Array.from(customTriggers.values());
-         return [...TRIGGER_DEFINITIONS, ...custom];
+         const customTypes = new Set(custom.map((def) => def.type));
+         const filteredBuiltIns = TRIGGER_DEFINITIONS.filter(
+            (def) => !customTypes.has(def.type),
+         );
+         return [...filteredBuiltIns, ...custom];
       },
 
       getByCategory(
@@ -42,7 +46,16 @@ export function createTriggerRegistry(): TriggerRegistry {
          const custom = Array.from(customTriggers.values()).filter(
             (def) => def.category === category,
          );
-         return [...builtIn, ...custom];
+         const merged = new Map<TriggerType, TriggerDefinition>();
+         // First insert built-in triggers
+         for (const def of builtIn) {
+            merged.set(def.type, def);
+         }
+         // Then overwrite with custom triggers (custom wins)
+         for (const def of custom) {
+            merged.set(def.type, def);
+         }
+         return Array.from(merged.values());
       },
 
       getLabel(type: TriggerType): string {

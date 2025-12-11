@@ -8,6 +8,8 @@ import {
    createSkippedResult,
 } from "../types";
 
+const EMAIL_FROM = "Finance tracker <support@app.contentagen.com>";
+
 export const sendEmailHandler: ActionHandler = {
    type: "send_email",
 
@@ -53,10 +55,19 @@ export const sendEmailHandler: ActionHandler = {
          });
       }
 
+      if (!context.resendClient) {
+         return createActionResult(
+            action,
+            false,
+            undefined,
+            "Email client not configured",
+         );
+      }
+
       try {
-         // TODO: Integrate with @packages/transactional for actual email sending
-         console.log("[Workflow] Send email action:", {
-            body: processedBody,
+         await context.resendClient.emails.send({
+            from: EMAIL_FROM,
+            html: processedBody,
             subject: processedSubject,
             to: recipientEmail,
          });

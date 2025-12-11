@@ -4,6 +4,7 @@ import type {
    Condition,
    ConditionGroup,
    ConditionGroupInput,
+   ConditionOperator,
    ConditionType,
    DateOperator,
    EvaluationContext,
@@ -20,6 +21,7 @@ export type {
    Condition,
    ConditionGroup,
    ConditionGroupInput,
+   ConditionOperator,
    ConditionType,
    DateOperator,
    EvaluationContext,
@@ -29,13 +31,6 @@ export type {
    NumberOperator,
    StringOperator,
 };
-
-export type ConditionOperator =
-   | StringOperator
-   | NumberOperator
-   | BooleanOperator
-   | DateOperator
-   | ArrayOperator;
 
 export type ConditionFieldDefinition = {
    field: string;

@@ -1,9 +1,10 @@
 import type { DatabaseInstance } from "@packages/database/client";
 import type { Action } from "@packages/database/schema";
+import type { Resend } from "resend";
 import type { ActionExecutionResult } from "../types/actions";
 import { isStopExecutionResult } from "./handlers/stop-execution";
 import { getActionHandler } from "./registry";
-import type { ActionHandlerContext } from "./types";
+import type { ActionHandlerContext, VapidConfig } from "./types";
 
 export type ActionsExecutionContext = {
    db: DatabaseInstance;
@@ -11,6 +12,8 @@ export type ActionsExecutionContext = {
    eventData: Record<string, unknown>;
    ruleId: string;
    dryRun?: boolean;
+   resendClient?: Resend;
+   vapidConfig?: VapidConfig;
 };
 
 export type ActionsExecutionResult = {
@@ -37,7 +40,9 @@ export async function executeActions(
       dryRun: context.dryRun,
       eventData: context.eventData,
       organizationId: context.organizationId,
+      resendClient: context.resendClient,
       ruleId: context.ruleId,
+      vapidConfig: context.vapidConfig,
    };
 
    for (const action of actions) {

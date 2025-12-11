@@ -1,6 +1,8 @@
 import type { DatabaseInstance } from "@packages/database/client";
 import type { ConnectionOptions, WorkerOptions } from "@packages/queue/bullmq";
 import { type Job, Worker } from "@packages/queue/bullmq";
+import type { Resend } from "resend";
+import type { VapidConfig } from "../actions/types";
 import { createWorkflowRunner } from "../engine/runner";
 import type { WorkflowExecutionResult } from "../types/rules";
 import {
@@ -13,6 +15,8 @@ export type WorkflowWorkerConfig = {
    connection: ConnectionOptions;
    db: DatabaseInstance;
    concurrency?: number;
+   resendClient?: Resend;
+   vapidConfig?: VapidConfig;
    onCompleted?: (
       job: Job<WorkflowJobData, WorkflowJobResult>,
       result: WorkflowJobResult,
@@ -23,7 +27,7 @@ export type WorkflowWorkerConfig = {
    ) => void | Promise<void>;
    onProgress?: (
       job: Job<WorkflowJobData, WorkflowJobResult>,
-      progress: number,
+      progress: string | boolean | number | object,
    ) => void | Promise<void>;
 };
 
@@ -35,9 +39,18 @@ export type WorkflowWorker = {
 export function createWorkflowWorker(
    config: WorkflowWorkerConfig,
 ): WorkflowWorker {
-   const { connection, db, concurrency = 5, onCompleted, onFailed } = config;
+   const {
+      connection,
+      db,
+      concurrency = 5,
+      resendClient,
+      vapidConfig,
+      onCompleted,
+      onFailed,
+      onProgress,
+   } = config;
 
-   const runner = createWorkflowRunner({ db });
+   const runner = createWorkflowRunner({ db, resendClient, vapidConfig });
 
    const workerOptions: WorkerOptions = {
       concurrency,
@@ -83,6 +96,10 @@ export function createWorkflowWorker(
       worker.on("failed", onFailed);
    }
 
+   if (onProgress) {
+      worker.on("progress", onProgress);
+   }
+
    return {
       close: async () => {
          await worker.close();
@@ -94,8 +111,10 @@ export function createWorkflowWorker(
 export async function processWorkflowJob(
    job: Job<WorkflowJobData, WorkflowJobResult>,
    db: DatabaseInstance,
+   resendClient?: Resend,
+   vapidConfig?: VapidConfig,
 ): Promise<WorkflowJobResult> {
-   const runner = createWorkflowRunner({ db });
+   const runner = createWorkflowRunner({ db, resendClient, vapidConfig });
    const { event } = job.data;
 
    try {

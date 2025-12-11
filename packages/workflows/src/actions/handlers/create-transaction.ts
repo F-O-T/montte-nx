@@ -25,8 +25,11 @@ export const createTransactionHandler: ActionHandler = {
          dateField,
       } = action.config;
 
-      if (!type) {
-         return createSkippedResult(action, "Transaction type is required");
+      if (type !== "income" && type !== "expense") {
+         return createSkippedResult(
+            action,
+            "Transaction type must be 'income' or 'expense'",
+         );
       }
 
       if (!description) {
@@ -86,7 +89,7 @@ export const createTransactionHandler: ActionHandler = {
                date: transactionDate,
                description: processedDescription,
                organizationId: context.organizationId,
-               type: type === "expense" ? "expense" : "income",
+               type,
             })
             .returning();
 

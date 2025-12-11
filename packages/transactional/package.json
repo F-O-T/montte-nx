@@ -15,6 +15,10 @@
       "./client": {
          "default": "./src/client.tsx",
          "types": "./dist/src/client.d.ts"
+      },
+      "./utils": {
+         "default": "./src/utils.ts",
+         "types": "./dist/src/utils.d.ts"
       }
    },
    "files": [

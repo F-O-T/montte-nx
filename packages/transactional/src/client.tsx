@@ -1,21 +1,18 @@
 import { AppError } from "@packages/utils/errors";
-import { Resend } from "resend";
+import type { Resend } from "resend";
 import OrganizationInvitationEmail from "./emails/organization-invitation";
 import OTPEmail from "./emails/otp";
+import WorkflowNotificationEmail from "./emails/workflow-notification";
+import type { SendWorkflowEmailOptions } from "./utils";
+
+export type { SendWorkflowEmailOptions };
+export { getResendClient, type ResendClient } from "./utils";
 
 export interface SendEmailOTPOptions {
    email: string;
    otp: string;
    type: "sign-in" | "email-verification" | "forget-password";
 }
-export type ResendClient = ReturnType<typeof getResendClient>;
-export const getResendClient = (RESEND_API_KEY: string) => {
-   if (!RESEND_API_KEY) {
-      throw AppError.validation("RESEND_API_KEY is required");
-   }
-   const internalClient = new Resend(RESEND_API_KEY);
-   return internalClient;
-};
 
 export interface SendOrganizationInvitationOptions {
    email: string;
@@ -72,5 +69,17 @@ export const sendEmailOTP = async (
       react: <OTPEmail otp={otp} type={type} />,
       subject: getSubject(),
       to: email,
+   });
+};
+
+export const sendWorkflowEmail = async (
+   client: Resend,
+   { to, subject, body }: SendWorkflowEmailOptions,
+) => {
+   await client.emails.send({
+      from: `${name} <support@app.contentagen.com>`,
+      react: <WorkflowNotificationEmail body={body} />,
+      subject,
+      to,
    });
 };

@@ -35,6 +35,15 @@ export const sendPushNotificationHandler: ActionHandler = {
          });
       }
 
+      if (!context.vapidConfig) {
+         return createActionResult(
+            action,
+            false,
+            undefined,
+            "Push notification not configured",
+         );
+      }
+
       try {
          const members = await getOrganizationMembers(
             context.db,
@@ -51,11 +60,6 @@ export const sendPushNotificationHandler: ActionHandler = {
             );
          }
 
-         const vapidPublicKey = process.env.VAPID_PUBLIC_KEY ?? "";
-         const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY ?? "";
-         const vapidSubject =
-            process.env.VAPID_SUBJECT ?? "mailto:contato@montte.co";
-
          const result = await sendPushNotificationToUser({
             db: context.db,
             payload: {
@@ -64,9 +68,9 @@ export const sendPushNotificationHandler: ActionHandler = {
                title: processedTitle,
             },
             userId: owner.userId,
-            vapidPrivateKey,
-            vapidPublicKey,
-            vapidSubject,
+            vapidPrivateKey: context.vapidConfig.privateKey,
+            vapidPublicKey: context.vapidConfig.publicKey,
+            vapidSubject: context.vapidConfig.subject,
          });
 
          return createActionResult(action, result.success, {

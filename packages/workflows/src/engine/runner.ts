@@ -1,7 +1,9 @@
 import { evaluate } from "@f-o-t/condition-evaluator";
 import type { DatabaseInstance } from "@packages/database/client";
 import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
+import type { Resend } from "resend";
 import { executeActions } from "../actions/executor";
+import type { VapidConfig } from "../actions/types";
 import type { TransactionEventData, WorkflowEvent } from "../types/events";
 import type {
    ExecutedAction,
@@ -18,6 +20,8 @@ import {
 export type WorkflowRunnerConfig = {
    db: DatabaseInstance;
    dryRun?: boolean;
+   resendClient?: Resend;
+   vapidConfig?: VapidConfig;
 };
 
 export type WorkflowRunner = {
@@ -31,7 +35,7 @@ export type WorkflowRunner = {
 export function createWorkflowRunner(
    config: WorkflowRunnerConfig,
 ): WorkflowRunner {
-   const { db, dryRun = false } = config;
+   const { db, dryRun = false, resendClient, vapidConfig } = config;
 
    async function processEvent(
       event: WorkflowEvent,
@@ -47,12 +51,10 @@ export function createWorkflowRunner(
          event.type,
       );
 
+      // Rules are already ordered by priority (descending) from the repository query
       const rules = dbRules.map(toWorkflowRule);
-      const sortedRules = rules.sort(
-         (a: WorkflowRule, b: WorkflowRule) => b.priority - a.priority,
-      );
 
-      for (const rule of sortedRules) {
+      for (const rule of rules) {
          const result = await processEventForRule(event, rule);
          results.push(result);
 
@@ -105,7 +107,9 @@ export function createWorkflowRunner(
                dryRun,
                eventData: context,
                organizationId: event.organizationId,
+               resendClient,
                ruleId: rule.id,
+               vapidConfig,
             });
 
             for (const actionResult of executionResult.results) {

@@ -1,6 +1,13 @@
 import type { DatabaseInstance } from "@packages/database/client";
 import type { Action } from "@packages/database/schema";
+import type { Resend } from "resend";
 import type { ActionExecutionResult } from "../types/actions";
+
+export type VapidConfig = {
+   publicKey: string;
+   privateKey: string;
+   subject: string;
+};
 
 export type ActionHandlerContext = {
    db: DatabaseInstance;
@@ -8,6 +15,8 @@ export type ActionHandlerContext = {
    eventData: Record<string, unknown>;
    ruleId: string;
    dryRun?: boolean;
+   resendClient?: Resend;
+   vapidConfig?: VapidConfig;
 };
 
 export type ActionHandler = {

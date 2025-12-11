@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { count, eq, max } from "drizzle-orm";
+import { and, count, eq, inArray, not, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import {
    type AutomationRuleVersionDiff,
@@ -7,29 +7,11 @@ import {
    automationRuleVersion,
    type RuleChangeType,
 } from "../schemas/automations";
+import type { AutomationRule } from "./automation-repository";
 
 export type AutomationRuleVersion = typeof automationRuleVersion.$inferSelect;
 export type NewAutomationRuleVersion =
    typeof automationRuleVersion.$inferInsert;
-
-async function getLatestVersionNumber(
-   dbClient: DatabaseInstance,
-   ruleId: string,
-): Promise<number> {
-   try {
-      const result = await dbClient
-         .select({ maxVersion: max(automationRuleVersion.version) })
-         .from(automationRuleVersion)
-         .where(eq(automationRuleVersion.ruleId, ruleId));
-
-      return result[0]?.maxVersion || 0;
-   } catch (err) {
-      propagateError(err);
-      throw AppError.database(
-         `Failed to get latest version number: ${(err as Error).message}`,
-      );
-   }
-}
 
 export async function createVersion(
    dbClient: DatabaseInstance,
@@ -43,9 +25,8 @@ export async function createVersion(
    },
 ): Promise<AutomationRuleVersion> {
    try {
-      const latestVersion = await getLatestVersionNumber(dbClient, data.ruleId);
-      const newVersion = latestVersion + 1;
-
+      // Use a subquery to atomically compute the next version number
+      // This eliminates the TOCTOU race condition between reading max version and inserting
       const result = await dbClient
          .insert(automationRuleVersion)
          .values({
@@ -55,7 +36,11 @@ export async function createVersion(
             diff: data.diff,
             ruleId: data.ruleId,
             snapshot: data.snapshot,
-            version: newVersion,
+            version: sql`(
+               SELECT COALESCE(MAX(${automationRuleVersion.version}), 0) + 1
+               FROM ${automationRuleVersion}
+               WHERE ${automationRuleVersion.ruleId} = ${data.ruleId}
+            )`,
          })
          .returning();
 
@@ -243,28 +228,18 @@ export async function pruneOldVersions(
 
       const idsToKeep = versionsToKeep.map((v) => v.id);
 
-      const allVersions = await dbClient.query.automationRuleVersion.findMany({
-         columns: { id: true },
-         where: (version, { eq: eqFn }) => eqFn(version.ruleId, ruleId),
-      });
+      // Single delete query using NOT IN to avoid fetching all versions
+      const result = await dbClient
+         .delete(automationRuleVersion)
+         .where(
+            and(
+               eq(automationRuleVersion.ruleId, ruleId),
+               not(inArray(automationRuleVersion.id, idsToKeep)),
+            ),
+         )
+         .returning();
 
-      const idsToDelete = allVersions
-         .filter((v) => !idsToKeep.includes(v.id))
-         .map((v) => v.id);
-
-      if (idsToDelete.length === 0) {
-         return 0;
-      }
-
-      let deletedCount = 0;
-      for (const id of idsToDelete) {
-         await dbClient
-            .delete(automationRuleVersion)
-            .where(eq(automationRuleVersion.id, id));
-         deletedCount++;
-      }
-
-      return deletedCount;
+      return result.length;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -310,29 +285,15 @@ export function computeDiff(
    return diff;
 }
 
-export function createSnapshotFromRule(rule: {
-   id: string;
-   name: string;
-   description?: string | null;
-   triggerType: string;
-   triggerConfig: Record<string, never> | null;
-   conditions: unknown[];
-   actions: unknown[];
-   flowData?: unknown | null;
-   isActive: boolean;
-   priority: number;
-   stopOnFirstMatch?: boolean | null;
-   tags: string[];
-   category?: string | null;
-   metadata: Record<string, unknown>;
-}): AutomationRuleVersionSnapshot {
+export function createSnapshotFromRule(
+   rule: AutomationRule,
+): AutomationRuleVersionSnapshot {
    return {
-      actions: rule.actions as AutomationRuleVersionSnapshot["actions"],
+      actions: rule.actions,
       category: rule.category,
-      conditions:
-         rule.conditions as AutomationRuleVersionSnapshot["conditions"],
+      conditions: rule.conditions,
       description: rule.description,
-      flowData: rule.flowData as AutomationRuleVersionSnapshot["flowData"],
+      flowData: rule.flowData,
       id: rule.id,
       isActive: rule.isActive,
       metadata: rule.metadata,
@@ -340,9 +301,7 @@ export function createSnapshotFromRule(rule: {
       priority: rule.priority,
       stopOnFirstMatch: rule.stopOnFirstMatch,
       tags: rule.tags,
-      triggerConfig:
-         rule.triggerConfig as AutomationRuleVersionSnapshot["triggerConfig"],
-      triggerType:
-         rule.triggerType as AutomationRuleVersionSnapshot["triggerType"],
+      triggerConfig: rule.triggerConfig ?? {},
+      triggerType: rule.triggerType,
    };
 }

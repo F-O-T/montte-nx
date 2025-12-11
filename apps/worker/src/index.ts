@@ -5,6 +5,7 @@ import {
    closeRedisConnection,
    createRedisConnection,
 } from "@packages/queue/connection";
+import { getResendClient } from "@packages/transactional/utils";
 import { createWorkflowWorker } from "@packages/workflows/queue/consumer";
 import { initializeWorkflowQueue } from "@packages/workflows/queue/producer";
 import type {
@@ -19,6 +20,19 @@ const db = createDb({ databaseUrl: env.DATABASE_URL });
 
 const redisConnection = createRedisConnection(env.REDIS_URL);
 
+const resendClient = env.RESEND_API_KEY
+   ? getResendClient(env.RESEND_API_KEY)
+   : undefined;
+
+const vapidConfig =
+   env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY
+      ? {
+           privateKey: env.VAPID_PRIVATE_KEY,
+           publicKey: env.VAPID_PUBLIC_KEY,
+           subject: env.VAPID_SUBJECT ?? "mailto:contato@montte.co",
+        }
+      : undefined;
+
 console.log("Starting workflow worker...");
 
 let isShuttingDown = false;
@@ -29,6 +43,8 @@ const { worker, close } = createWorkflowWorker({
    concurrency: env.WORKER_CONCURRENCY || 5,
    connection: redisConnection,
    db,
+   resendClient,
+   vapidConfig,
    onCompleted: async (
       job: Job<WorkflowJobData, WorkflowJobResult>,
       result: WorkflowJobResult,
