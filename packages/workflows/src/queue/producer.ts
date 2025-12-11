@@ -35,7 +35,7 @@ export async function enqueueWorkflowEvent(
 
    const job = await queue.add(event.type, jobData, {
       delay: options.delay,
-      jobId: options.jobId ?? `${event.type}:${event.id}`,
+      jobId: options.jobId ?? `${event.type}-${event.id}`,
       priority: options.priority,
    });
 
