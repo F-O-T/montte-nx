@@ -97,6 +97,11 @@ export function createMockDbWithError(errorMessage: string) {
             where: mock(() => ({
                limit: mock(() => Promise.reject(error)),
             })),
+            leftJoin: mock(() => ({
+               where: mock(() => ({
+                  limit: mock(() => Promise.reject(error)),
+               })),
+            })),
          })),
       })),
       insert: mock(() => ({
@@ -118,6 +123,10 @@ export function createMockDbWithError(errorMessage: string) {
       })),
       query: {
          transaction: {
+            findFirst: mock(() => Promise.reject(error)),
+            findMany: mock(() => Promise.reject(error)),
+         },
+         automationRule: {
             findFirst: mock(() => Promise.reject(error)),
             findMany: mock(() => Promise.reject(error)),
          },
