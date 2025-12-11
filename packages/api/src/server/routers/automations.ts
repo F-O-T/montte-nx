@@ -19,6 +19,7 @@ import {
    toggleAutomationRule,
    updateAutomationRule,
 } from "@packages/database/repositories/automation-repository";
+import { getVersionHistory } from "@packages/database/repositories/automation-version-repository";
 import type {
    Action,
    ConditionGroup,
@@ -384,6 +385,37 @@ export const automationRouter = router({
             return getAutomationLogStats(resolvedCtx.db, organizationId, {
                endDate: input.endDate,
                startDate: input.startDate,
+            });
+         }),
+   }),
+
+   versions: router({
+      getHistory: protectedProcedure
+         .input(
+            z.object({
+               limit: z.coerce.number().min(1).max(100).default(20),
+               page: z.coerce.number().min(1).default(1),
+               ruleId: z.string(),
+            }),
+         )
+         .query(async ({ ctx, input }) => {
+            const resolvedCtx = await ctx;
+            const organizationId = resolvedCtx.organizationId;
+
+            const rule = await findAutomationRuleById(
+               resolvedCtx.db,
+               input.ruleId,
+            );
+
+            if (!rule || rule.organizationId !== organizationId) {
+               throw new Error("Automation rule not found");
+            }
+
+            const offset = (input.page - 1) * input.limit;
+
+            return getVersionHistory(resolvedCtx.db, input.ruleId, {
+               limit: input.limit,
+               offset,
             });
          }),
    }),

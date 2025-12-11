@@ -23,6 +23,7 @@ import { flowDataToSchema, schemaToFlowData } from "../lib/flow-serialization";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { AutomationBuilder } from "./automation-builder";
 import { AutomationSettingsForm } from "./automation-settings-form";
+import type { ViewMode } from "./canvas-toolbar";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 
@@ -133,6 +134,7 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
 
    const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
    const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+   const [viewMode, setViewMode] = useState<ViewMode>("editor");
 
    const settingsRef = useRef(settings);
    const nodesRef = useRef(nodes);
@@ -226,17 +228,19 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
 
    return (
       <div className="relative -m-4 h-[calc(100%+2rem)] overflow-hidden">
-         <div className="absolute right-4 top-4 z-10 flex items-center gap-3">
-            <SaveStatusIndicator
-               lastSavedAt={lastSavedAt}
-               status={saveStatus}
-            />
+         {viewMode === "editor" && (
+            <div className="absolute right-4 top-4 z-10 flex items-center gap-3">
+               <SaveStatusIndicator
+                  lastSavedAt={lastSavedAt}
+                  status={saveStatus}
+               />
 
-            <Button onClick={handleOpenSettings} size="sm" variant="outline">
-               <Settings className="size-4" />
-               Configurações
-            </Button>
-         </div>
+               <Button onClick={handleOpenSettings} size="sm" variant="outline">
+                  <Settings className="size-4" />
+                  Configurações
+               </Button>
+            </div>
+         )}
 
          <div className="size-full">
             <AutomationBuilder
@@ -244,6 +248,7 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
                initialEdges={edges}
                initialNodes={nodes}
                onChange={handleFlowChange}
+               onViewModeChange={setViewMode}
             />
          </div>
       </div>
