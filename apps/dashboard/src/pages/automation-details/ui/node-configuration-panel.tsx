@@ -1,4 +1,9 @@
-import type { ActionType, TriggerType } from "@packages/database/schema";
+import type {
+   ActionType,
+   CategorySplitConfig,
+   CategorySplitMode,
+   TriggerType,
+} from "@packages/database/schema";
 import {
    Alert,
    AlertDescription,
@@ -13,6 +18,7 @@ import {
    FieldLabel,
 } from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
+import { MoneyInput } from "@packages/ui/components/money-input";
 import { MultiSelect } from "@packages/ui/components/multi-select";
 import {
    Select,
@@ -24,10 +30,14 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { Switch } from "@packages/ui/components/switch";
 import { Textarea } from "@packages/ui/components/textarea";
+import {
+   getPercentageRemaining,
+   isPercentageSumValid,
+} from "@packages/utils/split";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Tag, X } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useTRPC } from "@/integrations/clients";
@@ -453,19 +463,6 @@ function ActionConfigurationForm({
       value: tag.id,
    }));
 
-   const categoryOptions = categories.map((category) => ({
-      icon: (
-         <div
-            className="flex size-4 items-center justify-center rounded"
-            style={{ backgroundColor: category.color }}
-         >
-            <IconDisplay iconName={category.icon as IconName} size={10} />
-         </div>
-      ),
-      label: category.name,
-      value: category.id,
-   }));
-
    const costCenterOptions = [
       { label: "Nenhum", value: "" },
       ...costCenters.map((cc) => ({
@@ -561,34 +558,14 @@ function ActionConfigurationForm({
          )}
 
          {data.actionType === "set_category" && (
-            <FieldGroup>
-               <form.Field name="categoryId">
-                  {(field) => (
-                     <Field>
-                        <FieldLabel htmlFor={field.name}>Categoria</FieldLabel>
-                        {categoriesLoading ? (
-                           <Skeleton className="h-10 w-full" />
-                        ) : (
-                           <Combobox
-                              className="w-full"
-                              emptyMessage="Nenhuma categoria encontrada"
-                              onValueChange={(value) => {
-                                 field.handleChange(value);
-                                 handleFieldChange("categoryId", value);
-                              }}
-                              options={categoryOptions}
-                              placeholder="Selecione a categoria..."
-                              searchPlaceholder="Buscar categoria..."
-                              value={field.state.value}
-                           />
-                        )}
-                        <FieldDescription>
-                           A categoria que será definida para a transação
-                        </FieldDescription>
-                     </Field>
-                  )}
-               </form.Field>
-            </FieldGroup>
+            <CategorySplitConfiguration
+               categories={categories}
+               categoriesLoading={categoriesLoading}
+               config={data.config}
+               onUpdate={(updates) =>
+                  onUpdate(nodeId, { config: { ...data.config, ...updates } })
+               }
+            />
          )}
 
          {data.actionType === "set_cost_center" && (
@@ -895,6 +872,293 @@ function ActionConfigurationForm({
                )}
             </form.Field>
          </div>
+      </div>
+   );
+}
+
+type CategorySplitConfigurationProps = {
+   categories: {
+      id: string;
+      name: string;
+      color: string;
+      icon: string | null;
+   }[];
+   categoriesLoading: boolean;
+   config: {
+      categoryIds?: string[];
+      categorySplitMode?: CategorySplitMode;
+      categorySplits?: CategorySplitConfig[];
+      dynamicSplitPattern?: string;
+   };
+   onUpdate: (
+      updates: Partial<CategorySplitConfigurationProps["config"]>,
+   ) => void;
+};
+
+const EMPTY_SPLITS: CategorySplitConfig[] = [];
+const EMPTY_IDS: string[] = [];
+
+function CategorySplitConfiguration({
+   categories,
+   categoriesLoading,
+   config,
+   onUpdate,
+}: CategorySplitConfigurationProps) {
+   const mode = config.categorySplitMode ?? "equal";
+   const selectedIds = config.categoryIds ?? EMPTY_IDS;
+   const dynamicPattern = config.dynamicSplitPattern ?? "";
+
+   const splits = useMemo(
+      () => config.categorySplits ?? EMPTY_SPLITS,
+      [config.categorySplits],
+   );
+
+   const [localSplits, setLocalSplits] =
+      useState<CategorySplitConfig[]>(splits);
+
+   useEffect(() => {
+      setLocalSplits(splits);
+   }, [splits]);
+
+   const handleModeChange = useCallback(
+      (newMode: CategorySplitMode) => {
+         onUpdate({
+            categorySplitMode: newMode,
+            categorySplits: newMode === "dynamic" ? [] : localSplits,
+         });
+      },
+      [onUpdate, localSplits],
+   );
+
+   const handleCategoryChange = useCallback(
+      (newCategoryIds: string[]) => {
+         const newSplits = newCategoryIds.map((categoryId) => {
+            const existing = localSplits.find(
+               (s) => s.categoryId === categoryId,
+            );
+            if (existing) return existing;
+            return { categoryId, value: 0 };
+         });
+         setLocalSplits(newSplits);
+         onUpdate({
+            categoryIds: newCategoryIds,
+            categorySplits: newSplits,
+         });
+      },
+      [onUpdate, localSplits],
+   );
+
+   const handleSplitValueChange = useCallback(
+      (categoryId: string, value: number) => {
+         const newSplits = localSplits.map((s) =>
+            s.categoryId === categoryId ? { ...s, value } : s,
+         );
+         setLocalSplits(newSplits);
+         onUpdate({ categorySplits: newSplits });
+      },
+      [onUpdate, localSplits],
+   );
+
+   const handlePatternChange = useCallback(
+      (pattern: string) => {
+         onUpdate({ dynamicSplitPattern: pattern });
+      },
+      [onUpdate],
+   );
+
+   const categoryOptions = categories.map((category) => ({
+      icon: (
+         <div
+            className="flex size-4 items-center justify-center rounded"
+            style={{ backgroundColor: category.color }}
+         >
+            <IconDisplay iconName={category.icon as IconName} size={10} />
+         </div>
+      ),
+      label: category.name,
+      value: category.id,
+   }));
+
+   const selectedCategories = categories.filter((c) =>
+      selectedIds.includes(c.id),
+   );
+
+   const isPercentageMode = mode === "percentage";
+   const isFixedMode = mode === "fixed";
+   const isDynamicMode = mode === "dynamic";
+   const showSplitValues =
+      (isPercentageMode || isFixedMode) && selectedIds.length > 1;
+
+   const percentageValid = isPercentageMode
+      ? isPercentageSumValid(localSplits)
+      : true;
+   const percentageRemaining = isPercentageMode
+      ? getPercentageRemaining(localSplits)
+      : 0;
+
+   return (
+      <div className="space-y-4">
+         <FieldGroup>
+            <Field>
+               <FieldLabel>Modo de Categorizacao</FieldLabel>
+               <Select
+                  onValueChange={(v) =>
+                     handleModeChange(v as CategorySplitMode)
+                  }
+                  value={mode}
+               >
+                  <SelectTrigger>
+                     <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                     <SelectItem value="equal">
+                        Categoria Unica / Divisao Igual
+                     </SelectItem>
+                     <SelectItem value="percentage">Por Percentual</SelectItem>
+                     <SelectItem value="fixed">Por Valor Fixo</SelectItem>
+                     <SelectItem value="dynamic">
+                        Extrair da Descricao
+                     </SelectItem>
+                  </SelectContent>
+               </Select>
+               <FieldDescription>
+                  {mode === "equal" &&
+                     "Selecione uma ou mais categorias. Se multiplas, o valor sera dividido igualmente."}
+                  {mode === "percentage" &&
+                     "Defina o percentual para cada categoria. A soma deve ser 100%."}
+                  {mode === "fixed" &&
+                     "Defina valores fixos. Serao ajustados proporcionalmente ao valor da transacao."}
+                  {mode === "dynamic" &&
+                     'Extrai categorias e percentuais da descricao. Ex: "alimentacao 80% limpeza 20%"'}
+               </FieldDescription>
+            </Field>
+         </FieldGroup>
+
+         {!isDynamicMode && (
+            <FieldGroup>
+               <Field>
+                  <FieldLabel>Categorias</FieldLabel>
+                  {categoriesLoading ? (
+                     <Skeleton className="h-10 w-full" />
+                  ) : (
+                     <MultiSelect
+                        className="w-full"
+                        emptyMessage="Nenhuma categoria encontrada"
+                        onChange={handleCategoryChange}
+                        options={categoryOptions}
+                        placeholder="Selecione as categorias..."
+                        selected={selectedIds}
+                     />
+                  )}
+               </Field>
+            </FieldGroup>
+         )}
+
+         {showSplitValues && (
+            <div className="space-y-3 rounded-lg border p-3">
+               <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                     {isPercentageMode
+                        ? "Percentual por categoria"
+                        : "Valor por categoria"}
+                  </span>
+                  {isPercentageMode && (
+                     <span
+                        className={`text-sm ${
+                           !percentageValid
+                              ? "font-medium text-destructive"
+                              : localSplits.some((s) => s.value > 0)
+                                ? "font-medium text-green-600"
+                                : "text-muted-foreground"
+                        }`}
+                     >
+                        {localSplits.every((s) => s.value === 0)
+                           ? "Defina os percentuais"
+                           : percentageValid
+                             ? "Soma = 100%"
+                             : percentageRemaining > 0
+                               ? `Falta: ${percentageRemaining.toFixed(1)}%`
+                               : `Excede: ${Math.abs(percentageRemaining).toFixed(1)}%`}
+                     </span>
+                  )}
+               </div>
+
+               {selectedCategories.map((category) => {
+                  const split = localSplits.find(
+                     (s) => s.categoryId === category.id,
+                  );
+                  const value = split?.value ?? 0;
+
+                  return (
+                     <div className="flex items-center gap-2" key={category.id}>
+                        <div className="flex min-w-[140px] items-center gap-2">
+                           <div
+                              className="flex size-6 items-center justify-center rounded"
+                              style={{ backgroundColor: category.color }}
+                           >
+                              <IconDisplay
+                                 iconName={category.icon as IconName | null}
+                                 size={14}
+                              />
+                           </div>
+                           <span className="truncate text-sm">
+                              {category.name}
+                           </span>
+                        </div>
+
+                        {isPercentageMode ? (
+                           <div className="flex flex-1 items-center gap-1">
+                              <Input
+                                 className="flex-1"
+                                 max={100}
+                                 min={0}
+                                 onChange={(e) =>
+                                    handleSplitValueChange(
+                                       category.id,
+                                       Number(e.target.value) || 0,
+                                    )
+                                 }
+                                 placeholder="0"
+                                 type="number"
+                                 value={value || ""}
+                              />
+                              <span className="text-sm text-muted-foreground">
+                                 %
+                              </span>
+                           </div>
+                        ) : (
+                           <MoneyInput
+                              className="flex-1"
+                              onChange={(v) =>
+                                 handleSplitValueChange(category.id, v || 0)
+                              }
+                              placeholder="0,00"
+                              value={value}
+                              valueInCents
+                           />
+                        )}
+                     </div>
+                  );
+               })}
+            </div>
+         )}
+
+         {isDynamicMode && (
+            <FieldGroup>
+               <Field>
+                  <FieldLabel>Padrao de Extracao (Regex)</FieldLabel>
+                  <Input
+                     onChange={(e) => handlePatternChange(e.target.value)}
+                     placeholder="(\w+)\s+(\d+)%"
+                     value={dynamicPattern}
+                  />
+                  <FieldDescription>
+                     Regex para extrair categoria e percentual da descricao. O
+                     padrao default captura: "alimentacao 80% limpeza 20%"
+                  </FieldDescription>
+               </Field>
+            </FieldGroup>
+         )}
       </div>
    );
 }

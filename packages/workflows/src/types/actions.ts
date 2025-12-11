@@ -32,7 +32,8 @@ export type ActionConfigField = {
       | "boolean"
       | "select"
       | "multiselect"
-      | "template";
+      | "template"
+      | "category-split";
    required?: boolean;
    defaultValue?: unknown;
    options?: { value: string; label: string }[];
@@ -50,15 +51,38 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
       category: "categorization",
       configSchema: [
          {
-            helpText: "Select the category to assign",
-            key: "categoryId",
-            label: "Category",
+            defaultValue: "equal",
+            helpText: "Como dividir o valor entre as categorias",
+            key: "categorySplitMode",
+            label: "Modo de Divisao",
+            options: [
+               { label: "Categoria Unica / Divisao Igual", value: "equal" },
+               { label: "Por Percentual", value: "percentage" },
+               { label: "Por Valor Fixo", value: "fixed" },
+               { label: "Extrair da Descricao", value: "dynamic" },
+            ],
             required: true,
             type: "select",
          },
+         {
+            helpText: "Selecione as categorias para atribuir",
+            key: "categoryIds",
+            label: "Categorias",
+            type: "category-split",
+         },
+         {
+            helpText:
+               "Regex para extrair categoria e percentual da descricao. Ex: alimentacao 80% limpeza 20%",
+            key: "dynamicSplitPattern",
+            label: "Padrao de Extracao (Regex)",
+            placeholder: "(\\w+)\\s+(\\d+)%",
+            type: "string",
+            dependsOn: { field: "categorySplitMode", value: "dynamic" },
+         },
       ],
-      description: "Assign a category to the transaction",
-      label: "Set Category",
+      description:
+         "Atribuir uma ou mais categorias a transacao, com opcao de divisao",
+      label: "Definir Categoria",
       type: "set_category",
    },
    {

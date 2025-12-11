@@ -75,8 +75,19 @@ export type ActionType =
    | "send_email"
    | "stop_execution";
 
+export type CategorySplitMode = "equal" | "percentage" | "fixed" | "dynamic";
+
+export type CategorySplitConfig = {
+   categoryId: string;
+   value: number;
+};
+
 export type ActionConfig = {
    categoryId?: string;
+   categoryIds?: string[];
+   categorySplitMode?: CategorySplitMode;
+   categorySplits?: CategorySplitConfig[];
+   dynamicSplitPattern?: string;
    mode?: "replace" | "append" | "prepend";
    tagIds?: string[];
    costCenterId?: string;

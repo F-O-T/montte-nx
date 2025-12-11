@@ -1,3 +1,4 @@
+import { isPercentageSumValid } from "@packages/utils/split";
 import { ACTION_DEFINITIONS } from "@packages/workflows/types/actions";
 import type {
    ActionNodeData,
@@ -35,9 +36,13 @@ const ACTION_FIELD_LABELS: Record<string, string> = {
    bankAccountId: "Conta Bancária",
    body: "Corpo",
    categoryId: "Categoria",
+   categoryIds: "Categorias",
+   categorySplitMode: "Modo de Divisão",
+   categorySplits: "Valores da Divisão",
    costCenterId: "Centro de Custo",
    customEmail: "E-mail Personalizado",
    description: "Descrição",
+   dynamicSplitPattern: "Padrão de Extração",
    mode: "Modo",
    subject: "Assunto",
    tagIds: "Tags",
@@ -59,6 +64,42 @@ function isFieldEmpty(value: unknown): boolean {
    return false;
 }
 
+function validateSetCategoryAction(config: ActionNodeData["config"]): string[] {
+   const errors: string[] = [];
+   const { categoryId, categoryIds, categorySplitMode, categorySplits } =
+      config;
+
+   const mode = categorySplitMode ?? "equal";
+   const isDynamicMode = mode === "dynamic";
+
+   const hasCategories = categoryId || (categoryIds && categoryIds.length > 0);
+
+   if (!hasCategories && !isDynamicMode) {
+      errors.push(
+         "Selecione pelo menos uma categoria (exceto no modo dinâmico)",
+      );
+   }
+
+   if (
+      (mode === "percentage" || mode === "fixed") &&
+      categoryIds &&
+      categoryIds.length > 1
+   ) {
+      if (!categorySplits || categorySplits.length === 0) {
+         errors.push("Defina os valores de divisão para cada categoria");
+      } else if (mode === "percentage") {
+         if (!isPercentageSumValid(categorySplits)) {
+            const sum = categorySplits.reduce((acc, s) => acc + s.value, 0);
+            errors.push(
+               `A soma dos percentuais deve ser 100% (atual: ${sum}%)`,
+            );
+         }
+      }
+   }
+
+   return errors;
+}
+
 export function validateActionNode(data: ActionNodeData): ValidationResult {
    const errors: string[] = [];
    const definition = ACTION_DEFINITIONS.find(
@@ -69,19 +110,24 @@ export function validateActionNode(data: ActionNodeData): ValidationResult {
       return { errors: ["Tipo de ação desconhecido"], valid: false };
    }
 
-   for (const field of definition.configSchema) {
-      if (!field.required) continue;
+   if (data.actionType === "set_category") {
+      const setCategoryErrors = validateSetCategoryAction(data.config);
+      errors.push(...setCategoryErrors);
+   } else {
+      for (const field of definition.configSchema) {
+         if (!field.required) continue;
 
-      if (field.dependsOn) {
-         const dependencyValue = data.config[field.dependsOn.field];
-         if (dependencyValue !== field.dependsOn.value) {
-            continue;
+         if (field.dependsOn) {
+            const dependencyValue = data.config[field.dependsOn.field];
+            if (dependencyValue !== field.dependsOn.value) {
+               continue;
+            }
          }
-      }
 
-      const value = data.config[field.key];
-      if (isFieldEmpty(value)) {
-         errors.push(`${getFieldLabel(field.key)} é obrigatório`);
+         const value = data.config[field.key];
+         if (isFieldEmpty(value)) {
+            errors.push(`${getFieldLabel(field.key)} é obrigatório`);
+         }
       }
    }
 
