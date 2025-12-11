@@ -174,4 +174,175 @@ describe("String Operators", () => {
          ).toBe(true);
       });
    });
+
+   describe("one_of", () => {
+      it("returns true when value is in array", () => {
+         expect(
+            evaluateString("one_of", "apple", ["apple", "banana", "cherry"]),
+         ).toBe(true);
+      });
+
+      it("returns false when value is not in array", () => {
+         expect(
+            evaluateString("one_of", "grape", ["apple", "banana", "cherry"]),
+         ).toBe(false);
+      });
+
+      it("is case insensitive by default", () => {
+         expect(evaluateString("one_of", "APPLE", ["apple", "banana"])).toBe(
+            true,
+         );
+      });
+
+      it("respects caseSensitive option", () => {
+         expect(
+            evaluateString("one_of", "APPLE", ["apple", "banana"], {
+               caseSensitive: true,
+            }),
+         ).toBe(false);
+      });
+   });
+
+   describe("not_one_of", () => {
+      it("returns true when value is not in array", () => {
+         expect(
+            evaluateString("not_one_of", "grape", ["apple", "banana"]),
+         ).toBe(true);
+      });
+
+      it("returns false when value is in array", () => {
+         expect(
+            evaluateString("not_one_of", "apple", ["apple", "banana"]),
+         ).toBe(false);
+      });
+   });
+
+   describe("contains_any", () => {
+      it("returns true if string contains any substring", () => {
+         expect(
+            evaluateString("contains_any", "hello world", ["foo", "world"]),
+         ).toBe(true);
+      });
+
+      it("returns false if string contains none of the substrings", () => {
+         expect(
+            evaluateString("contains_any", "hello world", ["foo", "bar"]),
+         ).toBe(false);
+      });
+
+      it("is case insensitive by default", () => {
+         expect(evaluateString("contains_any", "HELLO WORLD", ["world"])).toBe(
+            true,
+         );
+      });
+
+      it("returns false for non-array expected", () => {
+         expect(evaluateString("contains_any", "hello", "hello")).toBe(false);
+      });
+
+      it("returns false for empty array", () => {
+         expect(evaluateString("contains_any", "hello", [])).toBe(false);
+      });
+   });
+
+   describe("contains_all", () => {
+      it("returns true if string contains all substrings", () => {
+         expect(
+            evaluateString("contains_all", "hello world", ["hello", "world"]),
+         ).toBe(true);
+      });
+
+      it("returns false if string is missing any substring", () => {
+         expect(
+            evaluateString("contains_all", "hello world", ["hello", "foo"]),
+         ).toBe(false);
+      });
+
+      it("returns false for non-array expected", () => {
+         expect(evaluateString("contains_all", "hello", "hello")).toBe(false);
+      });
+
+      it("returns true for empty array", () => {
+         expect(evaluateString("contains_all", "hello", [])).toBe(true);
+      });
+
+      it("is case insensitive by default", () => {
+         expect(
+            evaluateString("contains_all", "HELLO WORLD", ["hello", "world"]),
+         ).toBe(true);
+      });
+   });
+
+   describe("ilike", () => {
+      it("matches exact string (case insensitive)", () => {
+         expect(evaluateString("ilike", "Hello", "hello")).toBe(true);
+         expect(evaluateString("ilike", "HELLO", "hello")).toBe(true);
+      });
+
+      it("matches with % wildcard (any characters)", () => {
+         expect(evaluateString("ilike", "hello world", "hello%")).toBe(true);
+         expect(evaluateString("ilike", "hello world", "%world")).toBe(true);
+         expect(
+            evaluateString("ilike", "hello beautiful world", "%beautiful%"),
+         ).toBe(true);
+         expect(evaluateString("ilike", "hello", "hello%")).toBe(true);
+      });
+
+      it("matches with _ wildcard (single character)", () => {
+         expect(evaluateString("ilike", "hello", "h_llo")).toBe(true);
+         expect(evaluateString("ilike", "hello", "h___o")).toBe(true);
+         expect(evaluateString("ilike", "hello", "h____")).toBe(true);
+         expect(evaluateString("ilike", "hello", "h_____")).toBe(false);
+         expect(evaluateString("ilike", "hello", "h__")).toBe(false);
+      });
+
+      it("combines % and _ wildcards", () => {
+         expect(evaluateString("ilike", "hello world", "h_llo%")).toBe(true);
+         expect(evaluateString("ilike", "test123", "%_23")).toBe(true);
+      });
+
+      it("escapes regex special characters", () => {
+         expect(evaluateString("ilike", "hello.world", "hello.world")).toBe(
+            true,
+         );
+         expect(evaluateString("ilike", "hello[world", "hello[world")).toBe(
+            true,
+         );
+         expect(evaluateString("ilike", "hello(test)", "hello(test)")).toBe(
+            true,
+         );
+      });
+
+      it("returns false when pattern does not match", () => {
+         expect(evaluateString("ilike", "hello", "world%")).toBe(false);
+         expect(evaluateString("ilike", "hi", "hello")).toBe(false);
+      });
+
+      it("handles empty pattern", () => {
+         expect(evaluateString("ilike", "", "")).toBe(true);
+         expect(evaluateString("ilike", "hello", "")).toBe(false);
+      });
+
+      it("handles pattern with only wildcards", () => {
+         expect(evaluateString("ilike", "anything", "%")).toBe(true);
+         expect(evaluateString("ilike", "a", "_")).toBe(true);
+         expect(evaluateString("ilike", "ab", "_")).toBe(false);
+      });
+   });
+
+   describe("not_ilike", () => {
+      it("returns true when pattern does not match", () => {
+         expect(evaluateString("not_ilike", "hello", "world%")).toBe(true);
+      });
+
+      it("returns false when pattern matches", () => {
+         expect(evaluateString("not_ilike", "hello world", "hello%")).toBe(
+            false,
+         );
+      });
+
+      it("is case insensitive", () => {
+         expect(evaluateString("not_ilike", "HELLO", "hello")).toBe(false);
+      });
+   });
 });

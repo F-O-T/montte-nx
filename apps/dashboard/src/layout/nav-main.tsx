@@ -10,8 +10,6 @@ import {
 } from "@packages/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-   ArrowDownRight,
-   ArrowUpRight,
    BarChart3,
    Building2,
    CirclePlus,
