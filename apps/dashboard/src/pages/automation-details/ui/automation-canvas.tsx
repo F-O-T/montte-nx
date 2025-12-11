@@ -3,6 +3,7 @@ import {
    Background,
    BackgroundVariant,
    type Connection,
+   type EdgeTypes,
    type NodeTypes,
    type OnEdgesChange,
    type OnNodesChange,
@@ -18,6 +19,7 @@ import {
    FileText,
    FolderTree,
    GitBranch,
+   Link2Off,
    Mail,
    Play,
    Plus,
@@ -30,6 +32,7 @@ import {
 import { useCallback, useMemo, useRef, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import type { ActionType, TriggerType } from "@packages/database/schema";
+import { DeletableEdge } from "../edges/deletable-edge";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { ActionNode } from "../nodes/action-node";
 import { ConditionNode } from "../nodes/condition-node";
@@ -40,6 +43,10 @@ const nodeTypes: NodeTypes = {
    action: ActionNode,
    condition: ConditionNode,
    trigger: TriggerNode,
+};
+
+const edgeTypes: EdgeTypes = {
+   deletable: DeletableEdge,
 };
 
 const NODE_WIDTH = 280;
@@ -215,6 +222,26 @@ export function AutomationCanvas({
       setMenu(null);
    }, [menu, onDuplicateNode]);
 
+   const { setEdges } = useReactFlow();
+
+   const handleDisconnectNode = useCallback(() => {
+      if (menu?.node) {
+         setEdges((eds) =>
+            eds.filter(
+               (e) => e.source !== menu.node?.id && e.target !== menu.node?.id,
+            ),
+         );
+      }
+      setMenu(null);
+   }, [menu, setEdges]);
+
+   const nodeConnectionCount = useMemo(() => {
+      if (!menu?.node) return 0;
+      return edges.filter(
+         (e) => e.source === menu.node?.id || e.target === menu.node?.id,
+      ).length;
+   }, [menu, edges]);
+
    const handleToggleConnections = useCallback(() => {
       setShowConnections((prev) => !prev);
    }, []);
@@ -232,6 +259,7 @@ export function AutomationCanvas({
       () => ({
          animated: true,
          style: { strokeWidth: 2 },
+         type: "deletable",
       }),
       [],
    );
@@ -259,6 +287,7 @@ export function AutomationCanvas({
                defaultEdgeOptions={defaultEdgeOptions}
                deleteKeyCode={null}
                edges={visibleEdges}
+               edgeTypes={edgeTypes}
                elementsSelectable={false}
                fitView
                fitViewOptions={{ padding: 0.2 }}
@@ -289,6 +318,7 @@ export function AutomationCanvas({
             defaultEdgeOptions={defaultEdgeOptions}
             deleteKeyCode={["Backspace", "Delete"]}
             edges={visibleEdges}
+            edgeTypes={edgeTypes}
             elementsSelectable
             fitView
             fitViewOptions={{ padding: 0.2 }}
@@ -546,6 +576,18 @@ export function AutomationCanvas({
                      <Copy className="size-4" />
                      Duplicar
                   </div>
+               )}
+               {nodeConnectionCount > 0 && (
+                  <>
+                     <div className={separatorClass} />
+                     <div
+                        className={menuItemClass}
+                        onClick={handleDisconnectNode}
+                     >
+                        <Link2Off className="size-4" />
+                        Remover Conexoes ({nodeConnectionCount})
+                     </div>
+                  </>
                )}
                <div className={separatorClass} />
                <div

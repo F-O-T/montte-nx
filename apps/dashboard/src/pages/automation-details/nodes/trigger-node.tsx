@@ -1,4 +1,3 @@
-import { BaseHandle } from "@packages/ui/components/base-handle";
 import {
    BaseNode,
    BaseNodeContent,
@@ -10,6 +9,7 @@ import { Position } from "@xyflow/react";
 import { Zap } from "lucide-react";
 import type { TriggerNode as TriggerNodeType } from "../lib/types";
 import { TRIGGER_TYPE_LABELS } from "../lib/types";
+import { AutomationHandle } from "./automation-handle";
 
 export function TriggerNode({ data }: NodeProps<TriggerNodeType>) {
    return (
@@ -25,13 +25,13 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeType>) {
                {TRIGGER_TYPE_LABELS[data.triggerType]}
             </div>
          </BaseNodeContent>
-         <BaseHandle
+         <AutomationHandle
             className="!border-emerald-500"
             id="bottom"
             position={Position.Bottom}
             type="source"
          />
-         <BaseHandle
+         <AutomationHandle
             className="!border-emerald-500"
             id="right"
             position={Position.Right}

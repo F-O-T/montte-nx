@@ -19,6 +19,10 @@ import { toast } from "sonner";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { flowDataToSchema, schemaToFlowData } from "../lib/flow-serialization";
+import {
+   getValidationErrorsSummary,
+   validateAllNodes,
+} from "../lib/node-validation";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { AutomationBuilder } from "./automation-builder";
 import { AutomationSettingsForm } from "./automation-settings-form";
@@ -131,6 +135,12 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
          return;
       }
 
+      const nodesValidation = validateAllNodes(nodes);
+      if (!nodesValidation.valid) {
+         toast.error(getValidationErrorsSummary(nodesValidation));
+         return;
+      }
+
       const schemaData = flowDataToSchema(nodes, edges);
 
       if (schemaData.actions.length === 0) {
@@ -158,7 +168,7 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
    };
 
    return (
-      <div className="relative -m-4 flex h-full flex-col">
+      <div className="relative -m-4 h-[calc(100%+2rem)] overflow-hidden">
          <div className="absolute right-4 top-4 z-10 flex gap-2">
             <Button onClick={handleOpenSettings} size="sm" variant="outline">
                <Settings className="size-4" />
@@ -175,7 +185,7 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
             </Button>
          </div>
 
-         <div className="relative flex-1">
+         <div className="size-full">
             <AutomationBuilder
                automationId={automationId}
                initialEdges={edges}
