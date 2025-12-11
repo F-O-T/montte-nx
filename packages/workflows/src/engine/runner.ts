@@ -1,7 +1,7 @@
 import { evaluate } from "@f-o-t/condition-evaluator";
 import type { DatabaseInstance } from "@packages/database/client";
-import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
 import { createAutomationLog } from "@packages/database/repositories/automation-log-repository";
+import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
 import type {
    ActionExecutionLogResult,
    AutomationLogStatus,

@@ -92,13 +92,11 @@ function TriggerConfigurationForm({
 }: TriggerConfigurationFormProps) {
    const form = useForm({
       defaultValues: {
-         label: data.label,
          triggerType: data.triggerType,
       },
    });
 
    useEffect(() => {
-      form.setFieldValue("label", data.label);
       form.setFieldValue("triggerType", data.triggerType);
    }, [data, form]);
 
@@ -111,25 +109,6 @@ function TriggerConfigurationForm({
 
    return (
       <div className="space-y-4">
-         <FieldGroup>
-            <form.Field name="label">
-               {(field) => (
-                  <Field>
-                     <FieldLabel htmlFor={field.name}>Rótulo</FieldLabel>
-                     <Input
-                        id={field.name}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                           field.handleChange(e.target.value);
-                           handleFieldChange("label", e.target.value);
-                        }}
-                        value={field.state.value}
-                     />
-                  </Field>
-               )}
-            </form.Field>
-         </FieldGroup>
-
          <FieldGroup>
             <form.Field name="triggerType">
                {(field) => (
@@ -178,15 +157,13 @@ function ConditionConfigurationForm({
 }: ConditionConfigurationFormProps) {
    const form = useForm({
       defaultValues: {
-         label: data.label,
          operator: data.operator,
       },
    });
 
    useEffect(() => {
-      form.setFieldValue("label", data.label);
       form.setFieldValue("operator", data.operator);
-   }, [data.label, data.operator, form]);
+   }, [data.operator, form]);
 
    const handleFieldChange = useCallback(
       (field: string, value: unknown) => {
@@ -252,25 +229,6 @@ function ConditionConfigurationForm({
 
    return (
       <div className="space-y-4">
-         <FieldGroup>
-            <form.Field name="label">
-               {(field) => (
-                  <Field>
-                     <FieldLabel htmlFor={field.name}>Rótulo</FieldLabel>
-                     <Input
-                        id={field.name}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                           field.handleChange(e.target.value);
-                           handleFieldChange("label", e.target.value);
-                        }}
-                        value={field.state.value}
-                     />
-                  </Field>
-               )}
-            </form.Field>
-         </FieldGroup>
-
          <FieldGroup>
             <form.Field name="operator">
                {(field) => (
@@ -409,7 +367,6 @@ function ActionConfigurationForm({
          continueOnError: data.continueOnError ?? false,
          costCenterId: (data.config.costCenterId as string) ?? "",
          customEmail: (data.config.customEmail as string) ?? "",
-         label: data.label,
          mode: (data.config.mode as string) ?? "replace",
          reason: (data.config.reason as string) ?? "",
          subject: (data.config.subject as string) ?? "",
@@ -421,7 +378,6 @@ function ActionConfigurationForm({
    });
 
    useEffect(() => {
-      form.setFieldValue("label", data.label);
       form.setFieldValue("actionType", data.actionType);
       form.setFieldValue("continueOnError", data.continueOnError ?? false);
       form.setFieldValue("tagIds", (data.config.tagIds as string[]) ?? []);
@@ -448,8 +404,8 @@ function ActionConfigurationForm({
 
    const handleFieldChange = useCallback(
       (field: string, value: unknown) => {
-         if (field === "label" || field === "continueOnError") {
-            onUpdate(nodeId, { [field]: value });
+         if (field === "continueOnError") {
+            onUpdate(nodeId, { continueOnError: value as boolean });
          } else if (field === "actionType") {
             onUpdate(nodeId, { actionType: value as ActionType, config: {} });
          } else {
@@ -488,25 +444,6 @@ function ActionConfigurationForm({
 
    return (
       <div className="space-y-4">
-         <FieldGroup>
-            <form.Field name="label">
-               {(field) => (
-                  <Field>
-                     <FieldLabel htmlFor={field.name}>Rótulo</FieldLabel>
-                     <Input
-                        id={field.name}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                           field.handleChange(e.target.value);
-                           handleFieldChange("label", e.target.value);
-                        }}
-                        value={field.state.value}
-                     />
-                  </Field>
-               )}
-            </form.Field>
-         </FieldGroup>
-
          <FieldGroup>
             <form.Field name="actionType">
                {(field) => (

@@ -17,20 +17,26 @@ export function ConditionNode({ data }: NodeProps<ConditionNodeType>) {
       <BaseNode className="min-w-[200px] border-amber-500">
          <BaseHandle
             className="!border-amber-500"
+            id="top"
             position={Position.Top}
+            type="target"
+         />
+         <BaseHandle
+            className="!border-amber-500"
+            id="left"
+            position={Position.Left}
             type="target"
          />
          <BaseNodeHeader className="rounded-t-md bg-amber-500 text-white">
             <Filter className="size-4" />
             <BaseNodeHeaderTitle className="text-sm">
-               Condição
+               {data.label}
             </BaseNodeHeaderTitle>
             <Badge className="bg-amber-600 text-white" variant="secondary">
                {data.operator}
             </Badge>
          </BaseNodeHeader>
          <BaseNodeContent>
-            <div className="text-sm font-medium">{data.label}</div>
             {data.conditions.length > 0 && (
                <div className="space-y-1">
                   {data.conditions.slice(0, 3).map((condition) => (
@@ -53,7 +59,14 @@ export function ConditionNode({ data }: NodeProps<ConditionNodeType>) {
          </BaseNodeContent>
          <BaseHandle
             className="!border-amber-500"
+            id="bottom"
             position={Position.Bottom}
+            type="source"
+         />
+         <BaseHandle
+            className="!border-amber-500"
+            id="right"
+            position={Position.Right}
             type="source"
          />
       </BaseNode>

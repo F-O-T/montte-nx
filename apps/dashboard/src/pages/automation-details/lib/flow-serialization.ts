@@ -203,7 +203,9 @@ export function ruleDataToNodes(
       edges.push({
          id: `edge-${lastNodeId}-${conditionId}`,
          source: lastNodeId,
+         sourceHandle: "bottom",
          target: conditionId,
+         targetHandle: "top",
       });
 
       lastNodeId = conditionId;
@@ -227,7 +229,9 @@ export function ruleDataToNodes(
       edges.push({
          id: `edge-${lastNodeId}-${actionId}`,
          source: lastNodeId,
+         sourceHandle: "bottom",
          target: actionId,
+         targetHandle: "top",
       });
 
       lastNodeId = actionId;
