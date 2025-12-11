@@ -1,5 +1,5 @@
 import { translate } from "@packages/localization";
-import { PlanName, STRIPE_PLANS } from "@packages/stripe/constants";
+import { PlanName } from "@packages/stripe/constants";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -11,6 +11,7 @@ import {
 } from "@packages/ui/components/card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import {
    ArrowRight,
@@ -25,7 +26,7 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { betterAuthClient } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 function ManagePlanPageErrorFallback(props: FallbackProps) {
    return createErrorFallback({
@@ -51,13 +52,16 @@ function ManagePlanPageSkeleton() {
 function ManagePlanPageContent() {
    const { slug } = useParams({ strict: false }) as { slug: string };
    const { activeOrganization, activeSubscription } = useActiveOrganization();
+   const trpc = useTRPC();
    const [isLoading, startTransition] = useTransition();
+
+   const { data: plans } = useSuspenseQuery(trpc.plans.list.queryOptions());
 
    if (!activeSubscription) {
       return null;
    }
 
-   const plan = STRIPE_PLANS.find(
+   const plan = plans.find(
       (p) => p.name.toLowerCase() === activeSubscription.plan.toLowerCase(),
    );
 

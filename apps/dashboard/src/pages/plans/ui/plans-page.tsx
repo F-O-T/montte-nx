@@ -1,5 +1,5 @@
 import { translate } from "@packages/localization";
-import { PlanName, STRIPE_PLANS } from "@packages/stripe/constants";
+import { PlanName } from "@packages/stripe/constants";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -15,13 +15,14 @@ import {
    ToggleGroup,
    ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { betterAuthClient } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 interface Plan {
    name: string;
@@ -33,18 +34,6 @@ interface Plan {
    icon: React.ReactNode;
    highlighted?: boolean;
 }
-
-const plans: Plan[] = STRIPE_PLANS.map((plan) => {
-   return {
-      ...plan,
-      icon:
-         plan.name === PlanName.BASIC ? (
-            <Zap className="size-6" />
-         ) : (
-            <Crown className="size-6" />
-         ),
-   };
-});
 
 function PlansPageErrorFallback(props: FallbackProps) {
    return createErrorFallback({
@@ -163,8 +152,29 @@ function PlanCard({
 
 function PlansPageContent() {
    const { activeOrganization, activeSubscription } = useActiveOrganization();
+   const trpc = useTRPC();
    const [isAnnual, setIsAnnual] = useState(true);
    const [isLoading, startTransition] = useTransition();
+
+   const { data: dbPlans } = useSuspenseQuery(trpc.plans.list.queryOptions());
+
+   const plans: Plan[] = dbPlans.map((p) => {
+      const isBasic = p.name === PlanName.BASIC;
+      return {
+         annualPrice: p.priceAnnualLabel,
+         description: p.description,
+         displayName: p.displayName,
+         features: p.features,
+         highlighted: p.highlighted,
+         icon: isBasic ? (
+            <Zap className="size-6" />
+         ) : (
+            <Crown className="size-6" />
+         ),
+         name: p.name,
+         price: p.priceMonthlyLabel,
+      };
+   });
 
    const handleSelectPlan = async (planName: string) => {
       startTransition(async () => {

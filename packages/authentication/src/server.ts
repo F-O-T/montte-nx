@@ -4,10 +4,10 @@ import {
    createDefaultOrganization,
    findMemberByUserId,
 } from "@packages/database/repositories/auth-repository";
+import { listPlansForBetterAuth } from "@packages/database/repositories/plan-repository";
 import { getDomain, isProduction } from "@packages/environment/helpers";
 import { serverEnv } from "@packages/environment/server";
 import type { StripeClient } from "@packages/stripe";
-import { PlanName } from "@packages/stripe/constants";
 import {
    type ResendClient,
    type SendEmailOTPOptions,
@@ -145,23 +145,7 @@ export const getAuthOptions = (
                      allow_promotion_codes: true,
                   },
                }),
-               plans: [
-                  {
-                     annualDiscountPriceId:
-                        serverEnv.STRIPE_BASIC_ANNUAL_PRICE_ID,
-                     name: PlanName.BASIC,
-                     priceId: serverEnv.STRIPE_BASIC_PRICE_ID,
-                  },
-                  {
-                     annualDiscountPriceId:
-                        serverEnv.STRIPE_PRO_ANNUAL_PRICE_ID,
-                     freeTrial: {
-                        days: 14,
-                     },
-                     name: PlanName.PRO,
-                     priceId: serverEnv.STRIPE_PRO_PRICE_ID,
-                  },
-               ],
+               plans: async () => await listPlansForBetterAuth(db),
             },
          }),
          localization({
