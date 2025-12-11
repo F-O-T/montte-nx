@@ -133,7 +133,7 @@
     },
     "libraries/condition-evaluator": {
       "name": "@f-o-t/condition-evaluator",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "dependencies": {
         "zod": "4.1.13",
       },
@@ -175,7 +175,7 @@
       "name": "@f-o-t/rules-engine",
       "version": "1.0.0",
       "dependencies": {
-        "@f-o-t/condition-evaluator": "workspace:*",
+        "@f-o-t/condition-evaluator": "1.4.1",
         "zod": "4.1.13",
       },
       "devDependencies": {
