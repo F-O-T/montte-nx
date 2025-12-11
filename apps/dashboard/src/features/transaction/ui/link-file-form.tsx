@@ -36,6 +36,7 @@ import {
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
 import { useTRPC } from "@/integrations/clients";
 import type { Transaction } from "./transaction-list";
 
@@ -63,6 +64,7 @@ export function LinkFileForm({ transaction, onSuccess }: LinkFileFormProps) {
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+   const { uploadToPresignedUrl } = usePresignedUpload();
 
    const { data: attachments, isLoading: isLoadingAttachments } = useQuery({
       ...trpc.transactions.getAttachments.queryOptions({
@@ -71,16 +73,29 @@ export function LinkFileForm({ transaction, onSuccess }: LinkFileFormProps) {
       enabled: !!transaction?.id,
    });
 
-   const addAttachmentMutation = useMutation(
-      trpc.transactions.addAttachment.mutationOptions({
+   const requestUploadUrlMutation = useMutation(
+      trpc.transactions.requestAttachmentUploadUrl.mutationOptions(),
+   );
+
+   const confirmUploadMutation = useMutation(
+      trpc.transactions.confirmAttachmentUpload.mutationOptions({
          onError: (error) => {
             toast.error(error.message || "Falha ao anexar arquivo");
          },
          onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAttachments.queryKey({
+                  transactionId: transaction?.id || "",
+               }),
+            });
             toast.success("Arquivo anexado com sucesso");
             onSuccess?.();
          },
       }),
+   );
+
+   const cancelUploadMutation = useMutation(
+      trpc.transactions.cancelAttachmentUpload.mutationOptions(),
    );
 
    const deleteAttachmentMutation = useMutation(
@@ -89,6 +104,11 @@ export function LinkFileForm({ transaction, onSuccess }: LinkFileFormProps) {
             toast.error(error.message || "Falha ao remover arquivo");
          },
          onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAttachments.queryKey({
+                  transactionId: transaction?.id || "",
+               }),
+            });
             toast.success("Arquivo removido com sucesso");
          },
       }),
@@ -113,19 +133,6 @@ export function LinkFileForm({ transaction, onSuccess }: LinkFileFormProps) {
       });
    }, []);
 
-   const convertToBase64 = (file: File): Promise<string> => {
-      return new Promise((resolve, reject) => {
-         const reader = new FileReader();
-         reader.onload = () => {
-            const result = reader.result as string;
-            const base64 = result.split(",")[1];
-            resolve(base64 || "");
-         };
-         reader.onerror = reject;
-         reader.readAsDataURL(file);
-      });
-   };
-
    const handleUploadAll = async () => {
       if (!transaction || pendingFiles.length === 0) return;
 
@@ -137,16 +144,43 @@ export function LinkFileForm({ transaction, onSuccess }: LinkFileFormProps) {
             prev.map((p, idx) => (idx === i ? { ...p, uploading: true } : p)),
          );
 
+         let uploadData: {
+            presignedUrl: string;
+            storageKey: string;
+            attachmentId: string;
+            contentType: string;
+            fileSize: number;
+         } | null = null;
+
          try {
-            const base64 = await convertToBase64(pending.file);
-            await addAttachmentMutation.mutateAsync({
+            uploadData = await requestUploadUrlMutation.mutateAsync({
                contentType: pending.file.type,
-               fileBuffer: base64,
                fileName: pending.file.name,
                fileSize: pending.file.size,
                transactionId: transaction.id,
             });
+
+            await uploadToPresignedUrl(
+               uploadData.presignedUrl,
+               pending.file,
+               pending.file.type,
+            );
+
+            await confirmUploadMutation.mutateAsync({
+               attachmentId: uploadData.attachmentId,
+               contentType: pending.file.type,
+               fileName: pending.file.name,
+               fileSize: pending.file.size,
+               storageKey: uploadData.storageKey,
+               transactionId: transaction.id,
+            });
          } catch {
+            if (uploadData?.storageKey) {
+               cancelUploadMutation.mutate({
+                  storageKey: uploadData.storageKey,
+                  transactionId: transaction.id,
+               });
+            }
             setPendingFiles((prev) =>
                prev.map((p, idx) =>
                   idx === i ? { ...p, uploading: false } : p,

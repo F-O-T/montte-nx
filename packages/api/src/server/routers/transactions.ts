@@ -28,7 +28,12 @@ import {
    findTransferLogByTransactionId,
 } from "@packages/database/repositories/transfer-log-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
-import { streamFileForProxy, uploadFile } from "@packages/files/client";
+import {
+   deleteFile,
+   generatePresignedPutUrl,
+   streamFileForProxy,
+   verifyFileExists,
+} from "@packages/files/client";
 import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { enqueueWorkflowEvent } from "@packages/workflows/queue/producer";
@@ -39,6 +44,14 @@ import {
 } from "@packages/workflows/types/events";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
+
+const ALLOWED_ATTACHMENT_TYPES = [
+   "application/pdf",
+   "image/jpeg",
+   "image/png",
+   "image/webp",
+];
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10MB
 
 const categorySplitSchema = z.object({
    categoryId: z.string().uuid(),
@@ -128,19 +141,23 @@ function buildTransactionEventData(
 }
 
 export const transactionRouter = router({
-   addAttachment: protectedProcedure
+   requestAttachmentUploadUrl: protectedProcedure
       .input(
          z.object({
-            contentType: z.string(),
-            fileBuffer: z.string(),
+            contentType: z
+               .string()
+               .refine((val) => ALLOWED_ATTACHMENT_TYPES.includes(val), {
+                  message: "File type must be PDF, JPEG, PNG, or WebP",
+               }),
             fileName: z.string(),
-            fileSize: z.number().optional(),
+            fileSize: z
+               .number()
+               .max(MAX_ATTACHMENT_SIZE, "File size must be less than 10MB"),
             transactionId: z.string(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         const { fileName, fileBuffer, contentType, fileSize, transactionId } =
-            input;
+         const { fileName, contentType, fileSize, transactionId } = input;
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
@@ -157,24 +174,136 @@ export const transactionRouter = router({
          }
 
          const attachmentId = crypto.randomUUID();
-         const key = `transactions/${organizationId}/${transactionId}/attachments/${attachmentId}/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
+         const storageKey = `transactions/${organizationId}/${transactionId}/attachments/${attachmentId}/${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return {
+            presignedUrl,
+            storageKey,
+            attachmentId,
+            contentType,
+            fileSize,
+         };
+      }),
+
+   confirmAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            attachmentId: z.string(),
+            contentType: z.string(),
+            fileName: z.string(),
+            fileSize: z.number(),
+            storageKey: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const {
+            attachmentId,
+            contentType,
+            fileName,
+            fileSize,
+            storageKey,
+            transactionId,
+         } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("Transaction not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `transactions/${organizationId}/${transactionId}/attachments/`,
+            )
+         ) {
+            throw new Error("Invalid storage key for this transaction");
+         }
 
          const bucketName = resolvedCtx.minioBucket;
          const minioClient = resolvedCtx.minioClient;
 
-         await uploadFile(key, buffer, contentType, bucketName, minioClient);
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw new Error("File was not uploaded successfully");
+         }
 
          const attachment = await createTransactionAttachment(resolvedCtx.db, {
             contentType,
             fileName,
-            fileSize: fileSize || buffer.length,
+            fileSize: fileSize || fileInfo.size,
             id: attachmentId,
-            storageKey: key,
+            storageKey,
             transactionId,
          });
 
          return attachment;
+      }),
+
+   cancelAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            storageKey: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey, transactionId } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("Transaction not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `transactions/${organizationId}/${transactionId}/attachments/`,
+            )
+         ) {
+            throw new Error("Invalid storage key for this transaction");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         try {
+            await deleteFile(storageKey, bucketName, minioClient);
+         } catch (error) {
+            console.error("Error deleting cancelled upload:", error);
+         }
+
+         return { success: true };
       }),
 
    completeTransferLink: protectedProcedure
@@ -1155,14 +1284,20 @@ export const transactionRouter = router({
    uploadAttachment: protectedProcedure
       .input(
          z.object({
-            contentType: z.string(),
-            fileBuffer: z.string(),
+            contentType: z
+               .string()
+               .refine((val) => ALLOWED_ATTACHMENT_TYPES.includes(val), {
+                  message: "File type must be PDF, JPEG, PNG, or WebP",
+               }),
             fileName: z.string(),
+            fileSize: z
+               .number()
+               .max(MAX_ATTACHMENT_SIZE, "File size must be less than 10MB"),
             transactionId: z.string(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         const { fileName, fileBuffer, contentType, transactionId } = input;
+         const { fileName, contentType, fileSize, transactionId } = input;
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
@@ -1178,37 +1313,82 @@ export const transactionRouter = router({
             throw new Error("Transaction not found");
          }
 
+         const timestamp = Date.now();
+         const storageKey = `transactions/${organizationId}/${transactionId}/attachment/${timestamp}-${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return { presignedUrl, storageKey, contentType, fileSize };
+      }),
+
+   confirmUploadAttachment: protectedProcedure
+      .input(
+         z.object({
+            storageKey: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey, transactionId } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw new Error("Transaction not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `transactions/${organizationId}/${transactionId}/attachment/`,
+            )
+         ) {
+            throw new Error("Invalid storage key for this transaction");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw new Error("File was not uploaded successfully");
+         }
+
          if (existingTransaction.attachmentKey) {
             try {
-               const bucketName = resolvedCtx.minioBucket;
-               const minioClient = resolvedCtx.minioClient;
-               await minioClient.removeObject(
-                  bucketName,
+               await deleteFile(
                   existingTransaction.attachmentKey,
+                  bucketName,
+                  minioClient,
                );
             } catch (error) {
                console.error("Error deleting old attachment:", error);
             }
          }
 
-         const key = `transactions/${organizationId}/${transactionId}/attachment/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
-
-         const bucketName = resolvedCtx.minioBucket;
-         const minioClient = resolvedCtx.minioClient;
-
-         const url = await uploadFile(
-            key,
-            buffer,
-            contentType,
-            bucketName,
-            minioClient,
-         );
-
          await updateTransaction(resolvedCtx.db, transactionId, {
-            attachmentKey: key,
+            attachmentKey: storageKey,
          });
 
-         return { key, url };
+         return { key: storageKey };
       }),
 });

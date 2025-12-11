@@ -58,7 +58,9 @@ import {
 } from "lucide-react";
 import { type ChangeEvent, Suspense, useRef, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { toast } from "sonner";
 import { DefaultHeader } from "@/default/default-header";
+import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -76,6 +78,7 @@ function BillDetailsContent() {
    const queryClient = useQueryClient();
    const { activeOrganization } = useActiveOrganization();
    const fileInputRef = useRef<HTMLInputElement>(null);
+   const { uploadToPresignedUrl } = usePresignedUpload();
 
    const [uploadingFile, setUploadingFile] = useState(false);
    const [downloadingAttachmentId, setDownloadingAttachmentId] = useState<
@@ -119,16 +122,25 @@ function BillDetailsContent() {
       enabled: !!bill?.installmentGroupId,
    });
 
-   const addAttachmentMutation = useMutation(
-      trpc.bills.addAttachment.mutationOptions({
+   const requestUploadUrlMutation = useMutation(
+      trpc.bills.requestAttachmentUploadUrl.mutationOptions(),
+   );
+
+   const confirmUploadMutation = useMutation(
+      trpc.bills.confirmAttachmentUpload.mutationOptions({
          onError: () => {
             setUploadingFile(false);
          },
          onSuccess: () => {
             refetchAttachments();
             setUploadingFile(false);
+            toast.success("Arquivo anexado com sucesso");
          },
       }),
+   );
+
+   const cancelUploadMutation = useMutation(
+      trpc.bills.cancelAttachmentUpload.mutationOptions(),
    );
 
    const deleteAttachmentMutation = useMutation(
@@ -148,24 +160,42 @@ function BillDetailsContent() {
       if (!file) return;
 
       setUploadingFile(true);
-      try {
-         const buffer = await file.arrayBuffer();
-         const base64 = btoa(
-            new Uint8Array(buffer).reduce(
-               (data, byte) => data + String.fromCharCode(byte),
-               "",
-            ),
-         );
 
-         await addAttachmentMutation.mutateAsync({
+      let uploadData: {
+         presignedUrl: string;
+         storageKey: string;
+         attachmentId: string;
+         contentType: string;
+         fileSize: number;
+      } | null = null;
+
+      try {
+         uploadData = await requestUploadUrlMutation.mutateAsync({
             billId,
             contentType: file.type,
-            fileBuffer: base64,
             fileName: file.name,
             fileSize: file.size,
          });
+
+         await uploadToPresignedUrl(uploadData.presignedUrl, file, file.type);
+
+         await confirmUploadMutation.mutateAsync({
+            attachmentId: uploadData.attachmentId,
+            billId,
+            contentType: file.type,
+            fileName: file.name,
+            fileSize: file.size,
+            storageKey: uploadData.storageKey,
+         });
       } catch {
+         if (uploadData?.storageKey) {
+            cancelUploadMutation.mutate({
+               billId,
+               storageKey: uploadData.storageKey,
+            });
+         }
          setUploadingFile(false);
+         toast.error("Falha ao anexar arquivo");
       }
 
       if (fileInputRef.current) {

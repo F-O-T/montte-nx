@@ -1,6 +1,6 @@
 # @f-o-t/rules-engine
 
-A fully type-safe, functional, enterprise-grade rules orchestration engine for TypeScript. Built on top of `@f-o-t/condition-evaluator` for condition evaluation.
+A fully type-safe, functional, rules orchestration engine for TypeScript. Built on top of `@f-o-t/condition-evaluator` for condition evaluation.
 
 ## Features
 
