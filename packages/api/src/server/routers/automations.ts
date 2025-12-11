@@ -19,6 +19,12 @@ import {
    toggleAutomationRule,
    updateAutomationRule,
 } from "@packages/database/repositories/automation-repository";
+import {
+   computeDiff,
+   createSnapshotFromRule,
+   createVersion,
+   getVersionHistory,
+} from "@packages/database/repositories/automation-version-repository";
 import type {
    Action,
    ConditionGroup,
@@ -26,6 +32,7 @@ import type {
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
+import type { AutomationRuleVersionSnapshot } from "@packages/database/schemas/automations";
 import { enqueueManualWorkflowRun } from "@packages/workflows/queue/producer";
 import {
    createTransactionCreatedEvent,
@@ -164,16 +171,29 @@ export const automationRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.session?.user?.id;
 
-         return createAutomationRule(resolvedCtx.db, {
+         const createdRule = await createAutomationRule(resolvedCtx.db, {
             ...input,
             actions: input.actions as Action[],
             conditions: input.conditions as ConditionGroup[],
-            createdBy: resolvedCtx.session?.user?.id,
+            createdBy: userId,
             flowData: input.flowData as FlowData | undefined,
             organizationId,
             triggerConfig: input.triggerConfig as TriggerConfig,
          });
+
+         if (createdRule) {
+            const snapshot = createSnapshotFromRule(createdRule);
+            await createVersion(resolvedCtx.db, {
+               changeType: "created",
+               changedBy: userId,
+               ruleId: createdRule.id,
+               snapshot: snapshot as AutomationRuleVersionSnapshot,
+            });
+         }
+
+         return createdRule;
       }),
 
    delete: protectedProcedure
@@ -388,6 +408,37 @@ export const automationRouter = router({
          }),
    }),
 
+   versions: router({
+      getHistory: protectedProcedure
+         .input(
+            z.object({
+               limit: z.coerce.number().min(1).max(100).default(20),
+               page: z.coerce.number().min(1).default(1),
+               ruleId: z.string(),
+            }),
+         )
+         .query(async ({ ctx, input }) => {
+            const resolvedCtx = await ctx;
+            const organizationId = resolvedCtx.organizationId;
+
+            const rule = await findAutomationRuleById(
+               resolvedCtx.db,
+               input.ruleId,
+            );
+
+            if (!rule || rule.organizationId !== organizationId) {
+               throw new Error("Automation rule not found");
+            }
+
+            const offset = (input.page - 1) * input.limit;
+
+            return getVersionHistory(resolvedCtx.db, input.ruleId, {
+               limit: input.limit,
+               offset,
+            });
+         }),
+   }),
+
    toggle: protectedProcedure
       .input(
          z.object({
@@ -508,6 +559,7 @@ export const automationRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.session?.user?.id;
 
          const existingRule = await findAutomationRuleById(
             resolvedCtx.db,
@@ -518,14 +570,39 @@ export const automationRouter = router({
             throw new Error("Automation rule not found");
          }
 
-         return updateAutomationRule(resolvedCtx.db, input.id, {
-            ...input.data,
-            actions: input.data.actions as Action[] | undefined,
-            conditions: input.data.conditions as ConditionGroup[] | undefined,
-            flowData: input.data.flowData as FlowData | undefined | null,
-            triggerConfig: input.data.triggerConfig as
-               | TriggerConfig
-               | undefined,
-         });
+         const oldSnapshot = createSnapshotFromRule(existingRule);
+
+         const updatedRule = await updateAutomationRule(
+            resolvedCtx.db,
+            input.id,
+            {
+               ...input.data,
+               actions: input.data.actions as Action[] | undefined,
+               conditions: input.data.conditions as
+                  | ConditionGroup[]
+                  | undefined,
+               flowData: input.data.flowData as FlowData | undefined | null,
+               triggerConfig: input.data.triggerConfig as
+                  | TriggerConfig
+                  | undefined,
+            },
+         );
+
+         if (updatedRule) {
+            const newSnapshot = createSnapshotFromRule(updatedRule);
+            const diff = computeDiff(oldSnapshot, newSnapshot);
+
+            if (diff.length > 0) {
+               await createVersion(resolvedCtx.db, {
+                  changeType: "updated",
+                  changedBy: userId,
+                  diff,
+                  ruleId: input.id,
+                  snapshot: newSnapshot as AutomationRuleVersionSnapshot,
+               });
+            }
+         }
+
+         return updatedRule;
       }),
 });

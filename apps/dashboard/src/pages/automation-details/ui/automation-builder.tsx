@@ -46,6 +46,8 @@ import {
 } from "../lib/flow-serialization";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { AutomationCanvas } from "./automation-canvas";
+import { AutomationVersionHistoryView } from "./automation-version-history-view";
+import type { ViewMode } from "./canvas-toolbar";
 import { NodeConfigurationPanel } from "./node-configuration-panel";
 
 type AutomationBuilderProps = {
@@ -53,6 +55,7 @@ type AutomationBuilderProps = {
    initialNodes?: AutomationNode[];
    initialEdges?: AutomationEdge[];
    onChange?: (nodes: AutomationNode[], edges: AutomationEdge[]) => void;
+   onViewModeChange?: (mode: ViewMode) => void;
    readOnly?: boolean;
 };
 
@@ -61,6 +64,7 @@ function AutomationBuilderContent({
    initialNodes = [],
    initialEdges = [],
    onChange,
+   onViewModeChange,
    readOnly = false,
 }: AutomationBuilderProps) {
    const [nodes, setNodes, onNodesChange] =
@@ -68,7 +72,12 @@ function AutomationBuilderContent({
    const [edges, setEdges, onEdgesChange] =
       useEdgesState<AutomationEdge>(initialEdges);
    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+   const [viewMode, setViewMode] = useState<ViewMode>("editor");
    const { fitView } = useReactFlow();
+
+   useEffect(() => {
+      onViewModeChange?.(viewMode);
+   }, [viewMode, onViewModeChange]);
 
    const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
    const hasTrigger = nodes.some((n) => n.type === "trigger");
@@ -201,22 +210,31 @@ function AutomationBuilderContent({
 
    return (
       <div className="relative h-full w-full">
-         <AutomationCanvas
-            edges={edges}
-            hasTrigger={hasTrigger}
-            nodes={nodes}
-            onAddNode={handleAddNode}
-            onAutoLayout={handleAutoLayout}
-            onConnect={onConnect}
-            onDeleteNode={handleDeleteNode}
-            onDuplicateNode={handleDuplicateNode}
-            onEdgesChange={onEdgesChange}
-            onNodeSelect={handleNodeSelect}
-            onNodesChange={onNodesChange}
-            readOnly={readOnly}
-         />
+         {viewMode === "history" && automationId ? (
+            <AutomationVersionHistoryView
+               automationId={automationId}
+               onBackToEditor={() => setViewMode("editor")}
+            />
+         ) : (
+            <AutomationCanvas
+               edges={edges}
+               hasTrigger={hasTrigger}
+               nodes={nodes}
+               onAddNode={handleAddNode}
+               onAutoLayout={handleAutoLayout}
+               onConnect={onConnect}
+               onDeleteNode={handleDeleteNode}
+               onDuplicateNode={handleDuplicateNode}
+               onEdgesChange={onEdgesChange}
+               onNodeSelect={handleNodeSelect}
+               onNodesChange={onNodesChange}
+               onViewModeChange={automationId ? setViewMode : undefined}
+               readOnly={readOnly}
+               viewMode={viewMode}
+            />
+         )}
 
-         {selectedNode && !readOnly && (
+         {selectedNode && !readOnly && viewMode === "editor" && (
             <NodeDetailsPanel
                node={selectedNode}
                onClose={handleClosePanel}
@@ -225,7 +243,9 @@ function AutomationBuilderContent({
             />
          )}
 
-         {automationId && <ActivityPanel automationId={automationId} />}
+         {automationId && viewMode === "editor" && (
+            <ActivityPanel automationId={automationId} />
+         )}
       </div>
    );
 }

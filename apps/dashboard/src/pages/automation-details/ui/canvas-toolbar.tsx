@@ -17,18 +17,24 @@ import { cn } from "@packages/ui/lib/utils";
 import { Panel, useReactFlow } from "@xyflow/react";
 import {
    Cable,
+   History,
    LayoutGrid,
    Maximize,
    Minus,
+   Pencil,
    Plus,
    RotateCcw,
 } from "lucide-react";
+
+export type ViewMode = "editor" | "history";
 
 type CanvasToolbarProps = {
    showConnections: boolean;
    onToggleConnections: () => void;
    onAutoLayout: () => void;
    className?: string;
+   viewMode?: ViewMode;
+   onViewModeChange?: (mode: ViewMode) => void;
 };
 
 export function CanvasToolbar({
@@ -36,8 +42,15 @@ export function CanvasToolbar({
    onToggleConnections,
    onAutoLayout,
    className,
+   viewMode = "editor",
+   onViewModeChange,
 }: CanvasToolbarProps) {
    const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+   const handleToggleViewMode = () => {
+      const newMode = viewMode === "editor" ? "history" : "editor";
+      onViewModeChange?.(newMode);
+   };
 
    const handleResetCanvas = () => {
       fitView({ duration: 300, padding: 0.2 });
@@ -122,6 +135,33 @@ export function CanvasToolbar({
             </TooltipTrigger>
             <TooltipContent side="right">Ajustar a Tela</TooltipContent>
          </Tooltip>
+
+         {onViewModeChange && (
+            <>
+               <Separator className="my-0.5" />
+
+               <Tooltip>
+                  <TooltipTrigger asChild>
+                     <Button
+                        onClick={handleToggleViewMode}
+                        size="icon"
+                        variant={viewMode === "history" ? "default" : "outline"}
+                     >
+                        {viewMode === "editor" ? (
+                           <History className="size-4" />
+                        ) : (
+                           <Pencil className="size-4" />
+                        )}
+                     </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                     {viewMode === "editor"
+                        ? "Ver Historico"
+                        : "Voltar ao Editor"}
+                  </TooltipContent>
+               </Tooltip>
+            </>
+         )}
       </Panel>
    );
 }

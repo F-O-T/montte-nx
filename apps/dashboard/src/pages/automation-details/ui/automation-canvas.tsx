@@ -38,7 +38,7 @@ import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { ActionNode } from "../nodes/action-node";
 import { ConditionNode } from "../nodes/condition-node";
 import { TriggerNode } from "../nodes/trigger-node";
-import { CanvasToolbar } from "./canvas-toolbar";
+import { CanvasToolbar, type ViewMode } from "./canvas-toolbar";
 
 const nodeTypes: NodeTypes = {
    action: ActionNode,
@@ -109,6 +109,8 @@ type AutomationCanvasProps = {
    onAutoLayout?: (nodes: AutomationNode[]) => void;
    readOnly?: boolean;
    hasTrigger?: boolean;
+   viewMode?: ViewMode;
+   onViewModeChange?: (mode: ViewMode) => void;
 };
 
 export function AutomationCanvas({
@@ -124,6 +126,8 @@ export function AutomationCanvas({
    onAutoLayout,
    readOnly = false,
    hasTrigger = false,
+   viewMode = "editor",
+   onViewModeChange,
 }: AutomationCanvasProps) {
    const { screenToFlowPosition, fitView } = useReactFlow();
    const ref = useRef<HTMLDivElement>(null);
@@ -305,7 +309,9 @@ export function AutomationCanvas({
                   className="hidden md:flex"
                   onAutoLayout={handleAutoLayout}
                   onToggleConnections={handleToggleConnections}
+                  onViewModeChange={onViewModeChange}
                   showConnections={showConnections}
+                  viewMode={viewMode}
                />
             </ReactFlow>
          </div>
@@ -341,7 +347,9 @@ export function AutomationCanvas({
                className="hidden md:flex"
                onAutoLayout={handleAutoLayout}
                onToggleConnections={handleToggleConnections}
+               onViewModeChange={onViewModeChange}
                showConnections={showConnections}
+               viewMode={viewMode}
             />
 
             {!nodes.length && (
