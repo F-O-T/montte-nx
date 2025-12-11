@@ -187,6 +187,14 @@ function AutomationBuilderContent({
       [nodes, edges, setNodes, onChange],
    );
 
+   const handleAutoLayout = useCallback(
+      (layoutedNodes: AutomationNode[]) => {
+         setNodes(layoutedNodes);
+         onChange?.(layoutedNodes, edges);
+      },
+      [setNodes, edges, onChange],
+   );
+
    const handleClosePanel = useCallback(() => {
       setSelectedNodeId(null);
    }, []);
@@ -198,6 +206,7 @@ function AutomationBuilderContent({
             hasTrigger={hasTrigger}
             nodes={nodes}
             onAddNode={handleAddNode}
+            onAutoLayout={handleAutoLayout}
             onConnect={onConnect}
             onDeleteNode={handleDeleteNode}
             onDuplicateNode={handleDuplicateNode}

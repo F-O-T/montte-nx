@@ -1,4 +1,4 @@
-import { ZoomSlider } from "@packages/ui/components/zoom-slider";
+import Dagre from "@dagrejs/dagre";
 import {
    Background,
    BackgroundVariant,
@@ -34,12 +34,42 @@ import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { ActionNode } from "../nodes/action-node";
 import { ConditionNode } from "../nodes/condition-node";
 import { TriggerNode } from "../nodes/trigger-node";
+import { CanvasToolbar } from "./canvas-toolbar";
 
 const nodeTypes: NodeTypes = {
    action: ActionNode,
    condition: ConditionNode,
    trigger: TriggerNode,
 };
+
+const NODE_WIDTH = 280;
+const NODE_HEIGHT = 150;
+
+function getAutoLayoutedNodes(
+   nodes: AutomationNode[],
+   edges: AutomationEdge[],
+): AutomationNode[] {
+   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+   g.setGraph({ rankdir: "TB", nodesep: 80, ranksep: 120 });
+
+   for (const node of nodes) {
+      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+   }
+
+   for (const edge of edges) {
+      g.setEdge(edge.source, edge.target);
+   }
+
+   Dagre.layout(g);
+
+   return nodes.map((node) => {
+      const position = g.node(node.id);
+      const x = position.x - NODE_WIDTH / 2;
+      const y = position.y - NODE_HEIGHT / 2;
+
+      return { ...node, position: { x, y } };
+   });
+}
 
 type MenuState = {
    type: "canvas" | "node";
@@ -68,6 +98,7 @@ type AutomationCanvasProps = {
    ) => void;
    onDeleteNode?: (nodeId: string) => void;
    onDuplicateNode?: (nodeId: string) => void;
+   onAutoLayout?: (nodes: AutomationNode[]) => void;
    readOnly?: boolean;
    hasTrigger?: boolean;
 };
@@ -82,13 +113,15 @@ export function AutomationCanvas({
    onAddNode,
    onDeleteNode,
    onDuplicateNode,
+   onAutoLayout,
    readOnly = false,
    hasTrigger = false,
 }: AutomationCanvasProps) {
-   const { screenToFlowPosition } = useReactFlow();
+   const { screenToFlowPosition, fitView } = useReactFlow();
    const ref = useRef<HTMLDivElement>(null);
    const [menu, setMenu] = useState<MenuState>(null);
    const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+   const [showConnections, setShowConnections] = useState(true);
 
    const handleNodeClick = useCallback(
       (event: React.MouseEvent, node: AutomationNode) => {
@@ -182,12 +215,31 @@ export function AutomationCanvas({
       setMenu(null);
    }, [menu, onDuplicateNode]);
 
+   const handleToggleConnections = useCallback(() => {
+      setShowConnections((prev) => !prev);
+   }, []);
+
+   const handleAutoLayout = useCallback(() => {
+      if (nodes.length === 0) return;
+      const layoutedNodes = getAutoLayoutedNodes(nodes, edges);
+      onAutoLayout?.(layoutedNodes);
+      setTimeout(() => {
+         fitView({ duration: 300, padding: 0.2 });
+      }, 50);
+   }, [nodes, edges, onAutoLayout, fitView]);
+
    const defaultEdgeOptions = useMemo(
       () => ({
          animated: true,
          style: { strokeWidth: 2 },
       }),
       [],
+   );
+
+   const visibleEdges = useMemo(
+      () =>
+         showConnections ? edges : edges.map((e) => ({ ...e, hidden: true })),
+      [edges, showConnections],
    );
 
    const menuItemClass =
@@ -206,7 +258,7 @@ export function AutomationCanvas({
                className="bg-muted/30"
                defaultEdgeOptions={defaultEdgeOptions}
                deleteKeyCode={null}
-               edges={edges}
+               edges={visibleEdges}
                elementsSelectable={false}
                fitView
                fitViewOptions={{ padding: 0.2 }}
@@ -219,7 +271,12 @@ export function AutomationCanvas({
                onNodesChange={onNodesChange}
             >
                <Background gap={16} size={1} variant={BackgroundVariant.Dots} />
-               <ZoomSlider className="hidden md:flex" position="bottom-left" />
+               <CanvasToolbar
+                  className="hidden md:flex"
+                  onAutoLayout={handleAutoLayout}
+                  onToggleConnections={handleToggleConnections}
+                  showConnections={showConnections}
+               />
             </ReactFlow>
          </div>
       );
@@ -231,7 +288,7 @@ export function AutomationCanvas({
             className="bg-muted/30"
             defaultEdgeOptions={defaultEdgeOptions}
             deleteKeyCode={["Backspace", "Delete"]}
-            edges={edges}
+            edges={visibleEdges}
             elementsSelectable
             fitView
             fitViewOptions={{ padding: 0.2 }}
@@ -249,13 +306,18 @@ export function AutomationCanvas({
          >
             <Background gap={16} size={1} variant={BackgroundVariant.Dots} />
 
-            <ZoomSlider className="hidden md:flex" position="bottom-left" />
+            <CanvasToolbar
+               className="hidden md:flex"
+               onAutoLayout={handleAutoLayout}
+               onToggleConnections={handleToggleConnections}
+               showConnections={showConnections}
+            />
 
             {!nodes.length && (
                <Panel className="mt-20" position="top-center">
                   <div className="rounded-lg border bg-background p-6 text-center shadow-sm">
                      <div className="text-sm text-muted-foreground">
-                        Clique com o botão direito para adicionar nós
+                        Clique com o botao direito para adicionar nos
                      </div>
                   </div>
                </Panel>
@@ -269,7 +331,7 @@ export function AutomationCanvas({
             >
                <div className={labelClass}>
                   <Plus className="size-4" />
-                  Adicionar Nó
+                  Adicionar No
                </div>
                <div className={separatorClass} />
 
@@ -297,7 +359,7 @@ export function AutomationCanvas({
                               }
                            >
                               <Play className="size-4" />
-                              Transação Criada
+                              Transacao Criada
                            </div>
                            <div
                               className={menuItemClass}
@@ -308,7 +370,7 @@ export function AutomationCanvas({
                               }
                            >
                               <FileText className="size-4" />
-                              Transação Atualizada
+                              Transacao Atualizada
                            </div>
                         </div>
                      )}
@@ -323,7 +385,7 @@ export function AutomationCanvas({
                   <div className={submenuTriggerClass}>
                      <span className="flex items-center gap-2">
                         <GitBranch className="size-4 text-blue-500" />
-                        Condição
+                        Condicao
                      </span>
                      <ChevronRight className="size-4" />
                   </div>
@@ -359,7 +421,7 @@ export function AutomationCanvas({
                   <div className={submenuTriggerClass}>
                      <span className="flex items-center gap-2">
                         <Play className="size-4 text-green-500" />
-                        Ação
+                        Acao
                      </span>
                      <ChevronRight className="size-4" />
                   </div>
@@ -416,7 +478,7 @@ export function AutomationCanvas({
                            }
                         >
                            <FileText className="size-4" />
-                           Atualizar Descrição
+                           Atualizar Descricao
                         </div>
                         <div className={separatorClass} />
                         <div
@@ -428,7 +490,7 @@ export function AutomationCanvas({
                            }
                         >
                            <Bell className="size-4" />
-                           Enviar Notificação Push
+                           Enviar Notificacao Push
                         </div>
                         <div
                            className={menuItemClass}
@@ -451,7 +513,7 @@ export function AutomationCanvas({
                            }
                         >
                            <Plus className="size-4" />
-                           Criar Transação
+                           Criar Transacao
                         </div>
                         <div
                            className={menuItemClass}
@@ -462,7 +524,7 @@ export function AutomationCanvas({
                            }
                         >
                            <StopCircle className="size-4" />
-                           Parar Execução
+                           Parar Execucao
                         </div>
                      </div>
                   )}
