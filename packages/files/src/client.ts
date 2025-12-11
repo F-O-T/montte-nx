@@ -127,3 +127,42 @@ export async function getFileInfo(
    const stat = await minioClient.statObject(bucketName, fileName);
    return { contentType: stat.metaData["content-type"], size: stat.size };
 }
+
+export async function generatePresignedPutUrl(
+   fileName: string,
+   bucketName: string,
+   minioClient: MinioClient,
+   expirySeconds = 300,
+): Promise<string> {
+   const bucketExists = await minioClient.bucketExists(bucketName);
+   if (!bucketExists) {
+      await minioClient.makeBucket(bucketName);
+   }
+   return minioClient.presignedPutObject(bucketName, fileName, expirySeconds);
+}
+
+export async function verifyFileExists(
+   fileName: string,
+   bucketName: string,
+   minioClient: MinioClient,
+): Promise<{ exists: boolean; size: number; contentType: string } | null> {
+   try {
+      const stat = await minioClient.statObject(bucketName, fileName);
+      return {
+         contentType:
+            stat.metaData?.["content-type"] ?? "application/octet-stream",
+         exists: true,
+         size: stat.size,
+      };
+   } catch {
+      return null;
+   }
+}
+
+export async function deleteFile(
+   fileName: string,
+   bucketName: string,
+   minioClient: MinioClient,
+): Promise<void> {
+   await minioClient.removeObject(bucketName, fileName);
+}

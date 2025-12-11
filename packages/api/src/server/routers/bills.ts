@@ -29,7 +29,12 @@ import {
    updateBill,
 } from "@packages/database/repositories/bill-repository";
 import { createTransaction } from "@packages/database/repositories/transaction-repository";
-import { streamFileForProxy, uploadFile } from "@packages/files/client";
+import {
+   deleteFile,
+   generatePresignedPutUrl,
+   streamFileForProxy,
+   verifyFileExists,
+} from "@packages/files/client";
 import {
    generateFutureDates,
    getNextDueDate,
@@ -40,6 +45,14 @@ import {
    createBillWithInstallmentsSchema,
 } from "../schemas/bill";
 import { protectedProcedure, router } from "../trpc";
+
+const ALLOWED_ATTACHMENT_TYPES = [
+   "application/pdf",
+   "image/jpeg",
+   "image/png",
+   "image/webp",
+];
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10MB
 
 const updateBillSchema = z.object({
    amount: z.number().optional(),
@@ -88,18 +101,23 @@ const filterSchema = z.object({
 });
 
 export const billRouter = router({
-   addAttachment: protectedProcedure
+   requestAttachmentUploadUrl: protectedProcedure
       .input(
          z.object({
             billId: z.string(),
-            contentType: z.string(),
-            fileBuffer: z.string(),
+            contentType: z
+               .string()
+               .refine((val) => ALLOWED_ATTACHMENT_TYPES.includes(val), {
+                  message: "File type must be PDF, JPEG, PNG, or WebP",
+               }),
             fileName: z.string(),
-            fileSize: z.number().optional(),
+            fileSize: z
+               .number()
+               .max(MAX_ATTACHMENT_SIZE, "File size must be less than 10MB"),
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         const { billId, fileName, fileBuffer, contentType, fileSize } = input;
+         const { billId, fileName, contentType, fileSize } = input;
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
@@ -110,25 +128,126 @@ export const billRouter = router({
          }
 
          const attachmentId = crypto.randomUUID();
-         const key = `bills/${organizationId}/${billId}/attachments/${attachmentId}/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
+         const storageKey = `bills/${organizationId}/${billId}/attachments/${attachmentId}/${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return {
+            presignedUrl,
+            storageKey,
+            attachmentId,
+            contentType,
+            fileSize,
+         };
+      }),
+
+   confirmAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            attachmentId: z.string(),
+            billId: z.string(),
+            contentType: z.string(),
+            fileName: z.string(),
+            fileSize: z.number(),
+            storageKey: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const {
+            attachmentId,
+            billId,
+            contentType,
+            fileName,
+            fileSize,
+            storageKey,
+         } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingBill = await findBillById(resolvedCtx.db, billId);
+
+         if (!existingBill || existingBill.organizationId !== organizationId) {
+            throw new Error("Bill not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `bills/${organizationId}/${billId}/attachments/`,
+            )
+         ) {
+            throw new Error("Invalid storage key for this bill");
+         }
 
          const bucketName = resolvedCtx.minioBucket;
          const minioClient = resolvedCtx.minioClient;
 
-         await uploadFile(key, buffer, contentType, bucketName, minioClient);
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw new Error("File was not uploaded successfully");
+         }
 
          const attachment = await createBillAttachment(resolvedCtx.db, {
             billId,
             contentType,
             fileName,
-            fileSize: fileSize || buffer.length,
+            fileSize: fileSize || fileInfo.size,
             id: attachmentId,
-            storageKey: key,
+            storageKey,
          });
 
          return attachment;
       }),
+
+   cancelAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            billId: z.string(),
+            storageKey: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { billId, storageKey } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingBill = await findBillById(resolvedCtx.db, billId);
+
+         if (!existingBill || existingBill.organizationId !== organizationId) {
+            throw new Error("Bill not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `bills/${organizationId}/${billId}/attachments/`,
+            )
+         ) {
+            throw new Error("Invalid storage key for this bill");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         try {
+            await deleteFile(storageKey, bucketName, minioClient);
+         } catch (error) {
+            console.error("Error deleting cancelled upload:", error);
+         }
+
+         return { success: true };
+      }),
+
    complete: protectedProcedure
       .input(
          z.object({

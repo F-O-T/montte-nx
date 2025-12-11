@@ -1,13 +1,18 @@
 {
    "$schema": "https://json.schemastore.org/tsconfig",
    "compilerOptions": {
+      "types": [
+         "bun-types"
+      ],
       "allowJs": true,
       "checkJs": true,
       "disableSourceOfProjectReferenceRedirect": false,
       "esModuleInterop": true,
       "incremental": true,
       "isolatedModules": true,
-      "lib": ["ES2022"],
+      "lib": [
+         "ES2022"
+      ],
       "module": "es2022",
       "moduleDetection": "force",
       "moduleResolution": "bundler",
