@@ -55,6 +55,10 @@
          "description": "Adicione uma nova transação ao seu registro financeiro.",
          "title": "Adicionar Nova Transação"
       },
+      "duplicate": {
+         "description": "Crie uma cópia desta transação com os mesmos dados.",
+         "title": "Duplicar Transação"
+      },
       "edit": {
          "description": "Modifique os detalhes da transação selecionada.",
          "title": "Editar Transação"
@@ -81,6 +85,10 @@
             "placeholder": "Selecione a data inicial"
          },
          "title": "Filtrar Transações"
+      },
+      "refund": {
+         "description": "Crie uma transação de estorno para reverter esta transação.",
+         "title": "Estornar Transação"
       }
    },
    "link-file": {
@@ -100,9 +108,12 @@
    },
    "list-section": {
       "actions": {
+         "create-bill": "Criar Conta",
          "delete": "Excluir transação",
+         "duplicate": "Duplicar",
          "edit": "Editar transação",
          "label": "Gerencie sua transação",
+         "refund": "Estornar",
          "view-details": "Ver detalhes"
       },
       "description": "Veja todas as suas transações financeiras aqui.",

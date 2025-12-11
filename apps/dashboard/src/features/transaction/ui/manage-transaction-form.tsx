@@ -75,11 +75,33 @@ type TransactionFormValues = {
    type: "expense" | "income";
 };
 
+type DuplicateTransactionData = {
+   amount: number;
+   bankAccountId: string;
+   categoryIds: string[];
+   costCenterId: string;
+   description: string;
+   tagIds: string[];
+   type: "expense" | "income";
+};
+
+type RefundTransactionData = {
+   amount: number;
+   bankAccountId: string;
+   categoryIds: string[];
+   costCenterId: string;
+   originalDescription: string;
+   tagIds: string[];
+   type: "expense" | "income";
+};
+
 type ManageTransactionFormProps = {
    transaction?: Transaction;
    defaultCategoryIds?: string[];
    defaultCostCenterId?: string;
    defaultTagIds?: string[];
+   duplicateFrom?: DuplicateTransactionData;
+   refundFrom?: RefundTransactionData;
 };
 
 export function ManageTransactionForm({
@@ -87,10 +109,14 @@ export function ManageTransactionForm({
    defaultCategoryIds = [],
    defaultCostCenterId = "",
    defaultTagIds = [],
+   duplicateFrom,
+   refundFrom,
 }: ManageTransactionFormProps) {
    const trpc = useTRPC();
    const { closeSheet } = useSheet();
    const isEditMode = !!transaction;
+   const isDuplicateMode = !!duplicateFrom;
+   const isRefundMode = !!refundFrom;
 
    const [budgetImpactParams, setBudgetImpactParams] = useState<{
       amount: number;
@@ -146,8 +172,29 @@ export function ManageTransactionForm({
          title: translate("dashboard.routes.transactions.features.edit.title"),
       };
 
-      return isEditMode ? editTexts : createTexts;
-   }, [isEditMode]);
+      const duplicateTexts = {
+         description: translate(
+            "dashboard.routes.transactions.features.duplicate.description",
+         ),
+         title: translate(
+            "dashboard.routes.transactions.features.duplicate.title",
+         ),
+      };
+
+      const refundTexts = {
+         description: translate(
+            "dashboard.routes.transactions.features.refund.description",
+         ),
+         title: translate(
+            "dashboard.routes.transactions.features.refund.title",
+         ),
+      };
+
+      if (isEditMode) return editTexts;
+      if (isDuplicateMode) return duplicateTexts;
+      if (isRefundMode) return refundTexts;
+      return createTexts;
+   }, [isEditMode, isDuplicateMode, isRefundMode]);
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
@@ -263,20 +310,43 @@ export function ManageTransactionForm({
       defaultValues: {
          amount: transaction?.amount
             ? Math.round(Number(transaction.amount) * 100)
-            : 0,
-         bankAccountId: transaction?.bankAccountId || "",
+            : duplicateFrom?.amount
+              ? Math.round(duplicateFrom.amount * 100)
+              : refundFrom?.amount
+                ? Math.round(refundFrom.amount * 100)
+                : 0,
+         bankAccountId:
+            transaction?.bankAccountId ||
+            duplicateFrom?.bankAccountId ||
+            refundFrom?.bankAccountId ||
+            "",
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
+            duplicateFrom?.categoryIds ||
+            refundFrom?.categoryIds ||
             defaultCategoryIds,
-         costCenterId: transaction?.costCenterId || defaultCostCenterId,
+         costCenterId:
+            transaction?.costCenterId ||
+            duplicateFrom?.costCenterId ||
+            refundFrom?.costCenterId ||
+            defaultCostCenterId,
          date: transaction?.date ? new Date(transaction.date) : new Date(),
-         description: transaction?.description || "",
+         description:
+            transaction?.description ||
+            duplicateFrom?.description ||
+            (refundFrom ? `Estorno: ${refundFrom.originalDescription}` : "") ||
+            "",
          tagIds:
             transaction?.transactionTags?.map((tt) => tt.tag.id) ||
+            duplicateFrom?.tagIds ||
+            refundFrom?.tagIds ||
             defaultTagIds,
          type: (transaction?.type === "transfer"
             ? "expense"
-            : transaction?.type || "expense") as "expense" | "income",
+            : transaction?.type ||
+              duplicateFrom?.type ||
+              (refundFrom?.type === "expense" ? "income" : "expense") ||
+              "expense") as "expense" | "income",
       },
       onSubmit: async ({ value, formApi }) => {
          if (!value.amount || !value.description) {
