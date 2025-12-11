@@ -114,6 +114,7 @@ const createRuleBuilder = <
          return update({ conditions: conditionsOrBuilder });
       },
 
+      // biome-ignore lint/suspicious/noThenProperty: Intentional fluent API method for rule builder (when().then())
       then: (type, payload) => {
          return update({
             consequences: [

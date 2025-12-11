@@ -10,7 +10,7 @@
       "@packages/ofx": "workspace:*",
       "@packages/pdf": "workspace:*",
       "@packages/posthog": "workspace:*",
-      "@packages/rules-engine": "workspace:*",
+      "@packages/workflows": "workspace:*",
       "@packages/utils": "workspace:*",
 
       "@trpc/client": "catalog:trpc",

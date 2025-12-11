@@ -51,7 +51,13 @@ export type ConditionOperator =
    | DateOperator
    | ArrayOperator;
 
-export type ConditionType = "string" | "number" | "boolean" | "date" | "array";
+export type ConditionType =
+   | "string"
+   | "number"
+   | "boolean"
+   | "date"
+   | "array"
+   | "custom";
 
 export type TriggerType = "transaction.created" | "transaction.updated";
 
@@ -111,6 +117,7 @@ export const automationRule = pgTable(
    "automation_rule",
    {
       actions: jsonb("actions").$type<Action[]>().notNull().default([]),
+      category: text("category"),
       conditions: jsonb("conditions")
          .$type<ConditionGroup[]>()
          .notNull()
@@ -121,12 +128,17 @@ export const automationRule = pgTable(
       flowData: jsonb("flow_data").$type<FlowData>(),
       id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
       isActive: boolean("is_active").notNull().default(true),
+      metadata: jsonb("metadata")
+         .$type<Record<string, unknown>>()
+         .notNull()
+         .default({}),
       name: text("name").notNull(),
       organizationId: uuid("organization_id")
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),
       priority: integer("priority").notNull().default(0),
       stopOnFirstMatch: boolean("stop_on_first_match").default(false),
+      tags: text("tags").array().notNull().default([]),
       triggerConfig: jsonb("trigger_config").$type<TriggerConfig>().default({}),
       triggerType: text("trigger_type").$type<TriggerType>().notNull(),
       updatedAt: timestamp("updated_at")
@@ -147,12 +159,14 @@ export const automationRule = pgTable(
          table.triggerType,
          table.isActive,
       ),
+      index("idx_automation_rule_category").on(table.category),
    ],
 );
 
 export type AutomationLogStatus = "success" | "partial" | "failed" | "skipped";
 export type TriggeredBy = "event" | "manual";
 export type RelatedEntityType = "transaction";
+export type RuleChangeType = "created" | "updated" | "restored" | "deleted";
 
 export type ConditionEvaluationLogResult = {
    conditionId: string;
@@ -225,6 +239,7 @@ export const automationRuleRelations = relations(
          fields: [automationRule.organizationId],
          references: [organization.id],
       }),
+      versions: many(automationRuleVersion),
    }),
 );
 
@@ -238,3 +253,66 @@ export const automationLogRelations = relations(automationLog, ({ one }) => ({
       references: [automationRule.id],
    }),
 }));
+
+export type AutomationRuleVersionSnapshot = {
+   id: string;
+   name: string;
+   description?: string | null;
+   triggerType: TriggerType;
+   triggerConfig: TriggerConfig;
+   conditions: ConditionGroup[];
+   actions: Action[];
+   flowData?: FlowData | null;
+   isActive: boolean;
+   priority: number;
+   stopOnFirstMatch?: boolean | null;
+   tags: string[];
+   category?: string | null;
+   metadata: Record<string, unknown>;
+};
+
+export type AutomationRuleVersionDiff = {
+   field: string;
+   oldValue: unknown;
+   newValue: unknown;
+}[];
+
+export const automationRuleVersion = pgTable(
+   "automation_rule_version",
+   {
+      changeDescription: text("change_description"),
+      changedAt: timestamp("changed_at").defaultNow().notNull(),
+      changedBy: uuid("changed_by").references(() => user.id),
+      changeType: text("change_type").$type<RuleChangeType>().notNull(),
+      diff: jsonb("diff").$type<AutomationRuleVersionDiff>(),
+      id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+      ruleId: uuid("rule_id")
+         .notNull()
+         .references(() => automationRule.id, { onDelete: "cascade" }),
+      snapshot: jsonb("snapshot")
+         .$type<AutomationRuleVersionSnapshot>()
+         .notNull(),
+      version: integer("version").notNull(),
+   },
+   (table) => [
+      index("idx_automation_rule_version_rule").on(table.ruleId),
+      unique("automation_rule_version_rule_version_unique").on(
+         table.ruleId,
+         table.version,
+      ),
+   ],
+);
+
+export const automationRuleVersionRelations = relations(
+   automationRuleVersion,
+   ({ one }) => ({
+      changedByUser: one(user, {
+         fields: [automationRuleVersion.changedBy],
+         references: [user.id],
+      }),
+      rule: one(automationRule, {
+         fields: [automationRuleVersion.ruleId],
+         references: [automationRule.id],
+      }),
+   }),
+);

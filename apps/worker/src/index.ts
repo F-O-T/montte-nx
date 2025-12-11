@@ -1,68 +1,85 @@
 import { createDb } from "@packages/database/client";
-import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
-import type { TriggerType } from "@packages/database/schema";
 import { workerEnv as env } from "@packages/environment/worker";
+import type { Job } from "@packages/queue/bullmq";
 import {
    closeRedisConnection,
    createRedisConnection,
 } from "@packages/queue/connection";
-import { startAutomationConsumer } from "@packages/rules-engine/queue/consumer";
-import type { AutomationRule } from "@packages/rules-engine/types/rules";
+import { getResendClient } from "@packages/transactional/utils";
+import { createWorkflowWorker } from "@packages/workflows/queue/consumer";
+import { initializeWorkflowQueue } from "@packages/workflows/queue/producer";
+import type {
+   WorkflowJobData,
+   WorkflowJobResult,
+} from "@packages/workflows/queue/queues";
 
 const MEMORY_THRESHOLD_MB = 512;
 const HEALTH_CHECK_INTERVAL_MS = 30000;
 
 const db = createDb({ databaseUrl: env.DATABASE_URL });
 
-createRedisConnection(env.REDIS_URL);
+const redisConnection = createRedisConnection(env.REDIS_URL);
 
-console.log("Starting automation worker...");
+const resendClient = env.RESEND_API_KEY
+   ? getResendClient(env.RESEND_API_KEY)
+   : undefined;
+
+const vapidConfig =
+   env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY
+      ? {
+           privateKey: env.VAPID_PRIVATE_KEY,
+           publicKey: env.VAPID_PUBLIC_KEY,
+           subject: env.VAPID_SUBJECT ?? "mailto:contato@montte.co",
+        }
+      : undefined;
+
+console.log("Starting workflow worker...");
 
 let isShuttingDown = false;
 
-const { worker, stop } = await startAutomationConsumer({
+initializeWorkflowQueue(redisConnection);
+
+const { worker, close } = createWorkflowWorker({
    concurrency: env.WORKER_CONCURRENCY || 5,
+   connection: redisConnection,
    db,
-   getRulesForOrganization: async (
-      organizationId: string,
-      triggerType: string,
+   resendClient,
+   vapidConfig,
+   onCompleted: async (
+      job: Job<WorkflowJobData, WorkflowJobResult>,
+      result: WorkflowJobResult,
    ) => {
-      const rules = await findActiveAutomationRulesByTrigger(
-         db,
-         organizationId,
-         triggerType as TriggerType,
-      );
-      return rules as unknown as AutomationRule[];
-   },
-   onJobCompleted: async (job, result) => {
       console.log(
-         `[Job Completed] ${job.id}: ${result.rulesExecuted}/${result.rulesEvaluated} rules executed in ${result.duration}ms`,
+         `[Job Completed] ${job.id}: ${result.rulesMatched}/${result.rulesEvaluated} rules matched`,
       );
 
       if (global.gc) {
          global.gc();
       }
    },
-   onJobFailed: async (job, error) => {
+   onFailed: async (
+      job: Job<WorkflowJobData, WorkflowJobResult> | undefined,
+      error: Error,
+   ) => {
       console.error(`[Job Failed] ${job?.id}: ${error.message}`);
    },
 });
 
 console.log(
-   `Automation worker started with concurrency: ${env.WORKER_CONCURRENCY || 5}`,
+   `Workflow worker started with concurrency: ${env.WORKER_CONCURRENCY || 5}`,
 );
 
-worker.on("active", (job) => {
+worker.on("active", (job: Job<WorkflowJobData, WorkflowJobResult>) => {
    console.log(
       `[Job Active] ${job.id}: Processing ${job.data.event.type} event`,
    );
 });
 
-worker.on("stalled", (jobId) => {
+worker.on("stalled", (jobId: string) => {
    console.warn(`[Job Stalled] ${jobId}`);
 });
 
-worker.on("error", (error) => {
+worker.on("error", (error: Error) => {
    console.error("[Worker Error]", error);
 });
 
@@ -85,7 +102,7 @@ async function gracefulShutdown(signal: string) {
       await worker.pause();
 
       console.log("Waiting for active jobs to complete...");
-      await stop();
+      await close();
 
       console.log("Closing Redis connection...");
       await closeRedisConnection();

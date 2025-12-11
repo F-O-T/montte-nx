@@ -16,7 +16,7 @@
          "path": "../utils"
       },
       {
-         "path": "../rules-engine"
+         "path": "../workflows"
       },
       {
          "path": "../posthog"

@@ -13,9 +13,12 @@ COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
 COPY packages/queue/package.json ./packages/queue/
-COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/workflows/package.json ./packages/workflows/
+COPY packages/transactional/package.json ./packages/transactional/
+COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/utils/package.json ./packages/utils/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
+COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
 RUN bun install
 
