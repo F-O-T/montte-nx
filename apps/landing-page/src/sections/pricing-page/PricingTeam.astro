@@ -32,9 +32,10 @@ import { Check, ShieldCheck } from "@lucide/astro";
    </div>
 
    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Card 1: FREE -->
       <div class="rounded-xl border border-border bg-card/50 p-6 flex flex-col">
          <div class="mb-4">
-             <h3 class="text-foreground font-bold text-lg">Pessoal</h3>
+             <h3 class="text-foreground font-bold text-lg">Free</h3>
              <p class="text-sm text-muted-foreground">Para o "Eu-quipe" (Solo)</p>
          </div>
           <div class="flex items-baseline gap-1 mb-6">
@@ -48,18 +49,22 @@ import { Check, ShieldCheck } from "@lucide/astro";
           </ul>
       </div>
 
+      <!-- Card 2: PRO -->
       <div class="rounded-xl border border-primary/40 bg-card p-6 relative flex flex-col shadow-lg shadow-primary/5">
          <div class="absolute -top-3 left-6 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">
             Recomendado
          </div>
          <div class="mb-4">
-             <h3 class="text-foreground font-bold text-lg">Pequenas Equipes</h3>
+             <h3 class="text-foreground font-bold text-lg">Pro</h3>
              <p class="text-sm text-muted-foreground">Sócios + Contador</p>
          </div>
-          <div class="flex items-baseline gap-1 mb-6">
-             <span class="text-foreground text-4xl font-bold tracking-tighter">R$39</span>
-             <span class="text-sm text-muted-foreground">/mês</span>
-          </div>
+           <div class="flex items-baseline gap-1 mb-6">
+              <span class="text-foreground text-4xl font-bold tracking-tighter">
+                  <span class="price-monthly">R$39</span>
+                  <span class="price-yearly hidden">R$32</span>
+              </span>
+              <span class="text-sm text-muted-foreground">/mês</span>
+           </div>
           <ul class="space-y-3 text-sm text-foreground/80 font-medium mt-auto">
              <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> Até 10 Membros</li>
              <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> 5 Workspaces (CNPJs)</li>
@@ -67,15 +72,19 @@ import { Check, ShieldCheck } from "@lucide/astro";
           </ul>
       </div>
 
+      <!-- Card 3: BUSINESS -->
       <div class="rounded-xl border border-border bg-card/50 p-6 flex flex-col">
          <div class="mb-4">
-             <h3 class="text-foreground font-bold text-lg">Corporativo</h3>
+             <h3 class="text-foreground font-bold text-lg">Business</h3>
              <p class="text-sm text-muted-foreground">Depto. Financeiro Completo</p>
          </div>
-          <div class="flex items-baseline gap-1 mb-6">
-             <span class="text-foreground text-4xl font-bold tracking-tighter">R$99</span>
-             <span class="text-sm text-muted-foreground">/mês</span>
-          </div>
+           <div class="flex items-baseline gap-1 mb-6">
+              <span class="text-foreground text-4xl font-bold tracking-tighter">
+                  <span class="price-monthly">R$99</span>
+                  <span class="price-yearly hidden">R$79</span>
+              </span>
+              <span class="text-sm text-muted-foreground">/mês</span>
+           </div>
          <ul class="space-y-3 text-sm text-muted-foreground mt-auto">
             <li class="flex items-center gap-2"><ShieldCheck class="size-4 text-foreground" /> Membros Ilimitados</li>
             <li class="flex items-center gap-2"><ShieldCheck class="size-4 text-foreground" /> Workspaces Ilimitados</li>
