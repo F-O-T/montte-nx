@@ -40,7 +40,7 @@ export type TransactionUpdatedEvent = BaseEvent<
    TransactionEventData
 >;
 
-export type AutomationEvent = TransactionCreatedEvent | TransactionUpdatedEvent;
+export type WorkflowEvent = TransactionCreatedEvent | TransactionUpdatedEvent;
 
 export function createTransactionCreatedEvent(
    organizationId: string,
@@ -69,7 +69,7 @@ export function createTransactionUpdatedEvent(
 }
 
 export function isTransactionEvent(
-   event: AutomationEvent,
+   event: WorkflowEvent,
 ): event is TransactionCreatedEvent | TransactionUpdatedEvent {
    return (
       event.type === "transaction.created" ||

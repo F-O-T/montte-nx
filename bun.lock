@@ -101,9 +101,9 @@
         "@packages/environment": "workspace:*",
         "@packages/files": "workspace:*",
         "@packages/posthog": "workspace:*",
-        "@packages/rules-engine": "workspace:*",
         "@packages/transactional": "workspace:*",
         "@packages/utils": "workspace:*",
+        "@packages/workflows": "workspace:*",
         "@trpc/server": "catalog:trpc",
         "elysia": "catalog:server",
         "web-push": "^3.6.7",
@@ -122,8 +122,8 @@
         "@packages/database": "workspace:*",
         "@packages/environment": "workspace:*",
         "@packages/queue": "workspace:*",
-        "@packages/rules-engine": "workspace:*",
         "@packages/utils": "workspace:*",
+        "@packages/workflows": "workspace:*",
       },
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
@@ -206,8 +206,8 @@
         "@packages/ofx": "workspace:*",
         "@packages/pdf": "workspace:*",
         "@packages/posthog": "workspace:*",
-        "@packages/rules-engine": "workspace:*",
         "@packages/utils": "workspace:*",
+        "@packages/workflows": "workspace:*",
         "@trpc/client": "catalog:trpc",
         "@trpc/server": "catalog:trpc",
         "superjson": "catalog:trpc",
@@ -371,19 +371,6 @@
         "typescript": "catalog:development",
       },
     },
-    "packages/rules-engine": {
-      "name": "@packages/rules-engine",
-      "version": "0.1.0",
-      "dependencies": {
-        "@f-o-t/condition-evaluator": "workspace:*",
-        "@packages/database": "workspace:*",
-        "@packages/queue": "workspace:*",
-      },
-      "devDependencies": {
-        "@tooling/typescript": "workspace:*",
-        "typescript": "catalog:development",
-      },
-    },
     "packages/stripe": {
       "name": "@packages/stripe",
       "version": "0.3.0",
@@ -493,6 +480,20 @@
         "@trpc/server": "catalog:trpc",
         "slugify": "^1.6.6",
         "zod": "catalog:validation",
+      },
+      "devDependencies": {
+        "@tooling/typescript": "workspace:*",
+        "typescript": "catalog:development",
+      },
+    },
+    "packages/workflows": {
+      "name": "@packages/workflows",
+      "version": "0.1.0",
+      "dependencies": {
+        "@f-o-t/condition-evaluator": "workspace:*",
+        "@f-o-t/rules-engine": "workspace:*",
+        "@packages/database": "workspace:*",
+        "@packages/queue": "workspace:*",
       },
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
@@ -1264,8 +1265,6 @@
 
     "@packages/queue": ["@packages/queue@workspace:packages/queue"],
 
-    "@packages/rules-engine": ["@packages/rules-engine@workspace:packages/rules-engine"],
-
     "@packages/stripe": ["@packages/stripe@workspace:packages/stripe"],
 
     "@packages/transactional": ["@packages/transactional@workspace:packages/transactional"],
@@ -1273,6 +1272,8 @@
     "@packages/ui": ["@packages/ui@workspace:packages/ui"],
 
     "@packages/utils": ["@packages/utils@workspace:packages/utils"],
+
+    "@packages/workflows": ["@packages/workflows@workspace:packages/workflows"],
 
     "@posthog/core": ["@posthog/core@1.7.1", "", { "dependencies": { "cross-spawn": "^7.0.6" } }, "sha512-kjK0eFMIpKo9GXIbts8VtAknsoZ18oZorANdtuTj1CbgS28t4ZVq//HAWhnxEuXRTrtkd+SUJ6Ux3j2Af8NCuA=="],
 

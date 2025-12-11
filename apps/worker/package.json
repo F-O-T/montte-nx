@@ -3,7 +3,7 @@
       "@packages/database": "workspace:*",
       "@packages/environment": "workspace:*",
       "@packages/queue": "workspace:*",
-      "@packages/rules-engine": "workspace:*",
+      "@packages/workflows": "workspace:*",
       "@packages/utils": "workspace:*"
    },
    "devDependencies": {

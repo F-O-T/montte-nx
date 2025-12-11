@@ -39,10 +39,11 @@ COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
-COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/workflows/package.json ./packages/workflows/
 COPY packages/queue/package.json ./packages/queue/
 COPY packages/stripe/package.json ./packages/stripe/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
+COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
 RUN bun install
 
@@ -51,6 +52,7 @@ COPY . .
 ENV NODE_ENV=production
 
 RUN cd libraries/ofx && bun run build
+RUN cd libraries/rules-engine && bun run build
 
 RUN bun build \
     --minify-whitespace \

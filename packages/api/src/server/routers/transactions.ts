@@ -30,12 +30,13 @@ import {
 import type { CategorySplit } from "@packages/database/schemas/transactions";
 import { streamFileForProxy, uploadFile } from "@packages/files/client";
 import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
-import {
-   emitTransactionCreatedEvent,
-   emitTransactionUpdatedEvent,
-} from "@packages/rules-engine/queue/producer";
-import type { TransactionEventData } from "@packages/rules-engine/types/events";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
+import { enqueueWorkflowEvent } from "@packages/workflows/queue/producer";
+import {
+   createTransactionCreatedEvent,
+   createTransactionUpdatedEvent,
+   type TransactionEventData,
+} from "@packages/workflows/types/events";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -315,10 +316,11 @@ export const transactionRouter = router({
          }
 
          if (createdTransaction) {
-            emitTransactionCreatedEvent(
+            const event = createTransactionCreatedEvent(
                organizationId,
                buildTransactionEventData(createdTransaction),
-            ).catch((err: unknown) => {
+            );
+            enqueueWorkflowEvent(event).catch((err: unknown) => {
                console.error("Error emitting transaction created event:", err);
             });
          }
@@ -1025,10 +1027,11 @@ export const transactionRouter = router({
 
          if (finalTransaction) {
             const previousData = buildTransactionEventData(existingTransaction);
-            emitTransactionUpdatedEvent(
+            const event = createTransactionUpdatedEvent(
                organizationId,
                buildTransactionEventData(finalTransaction, previousData),
-            ).catch((err: unknown) => {
+            );
+            enqueueWorkflowEvent(event).catch((err: unknown) => {
                console.error("Error emitting transaction updated event:", err);
             });
          }

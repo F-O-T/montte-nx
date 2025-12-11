@@ -26,8 +26,12 @@ import type {
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
-import { emitManualTrigger } from "@packages/rules-engine/queue/producer";
-import type { AutomationEvent } from "@packages/rules-engine/types/events";
+import { enqueueManualWorkflowRun } from "@packages/workflows/queue/producer";
+import {
+   createTransactionCreatedEvent,
+   createTransactionUpdatedEvent,
+   type WorkflowEvent,
+} from "@packages/workflows/types/events";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -451,32 +455,31 @@ export const automationRouter = router({
             type: "expense" as const,
          };
 
-         const event: AutomationEvent = {
-            data: {
-               amount: txData.amount,
-               bankAccountId: txData.bankAccountId ?? null,
-               categoryIds: txData.categoryIds ?? [],
-               costCenterId: txData.costCenterId ?? null,
-               counterpartyId: txData.counterpartyId ?? null,
-               date: txData.date ?? new Date().toISOString(),
-               description: txData.description,
-               id: txData.id ?? crypto.randomUUID(),
-               metadata: txData.metadata ?? {},
-               organizationId,
-               tagIds: txData.tagIds ?? [],
-               type: txData.type,
-            },
-            id: crypto.randomUUID(),
+         const eventData = {
+            amount: txData.amount,
+            bankAccountId: txData.bankAccountId ?? null,
+            categoryIds: txData.categoryIds ?? [],
+            costCenterId: txData.costCenterId ?? null,
+            counterpartyId: txData.counterpartyId ?? null,
+            date: txData.date ?? new Date().toISOString(),
+            description: txData.description,
+            id: txData.id ?? crypto.randomUUID(),
+            metadata: txData.metadata ?? {},
             organizationId,
-            timestamp: new Date().toISOString(),
-            type: rule.triggerType,
+            tagIds: txData.tagIds ?? [],
+            type: txData.type,
          };
 
-         const job = await emitManualTrigger(event);
+         const event: WorkflowEvent =
+            rule.triggerType === "transaction.created"
+               ? createTransactionCreatedEvent(organizationId, eventData)
+               : createTransactionUpdatedEvent(organizationId, eventData);
+
+         const jobId = await enqueueManualWorkflowRun(event);
 
          return {
             eventId: event.id,
-            jobId: job.id,
+            jobId,
             status: "queued",
             triggerType: rule.triggerType,
          };

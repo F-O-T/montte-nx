@@ -27,7 +27,7 @@
          "path": "../../packages/transactional"
       },
       {
-         "path": "../../packages/rules-engine"
+         "path": "../../packages/workflows"
       },
       {
          "path": "../../packages/posthog"

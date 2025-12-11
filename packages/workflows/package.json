@@ -1,0 +1,57 @@
+{
+   "name": "@packages/workflows",
+   "version": "0.1.0",
+   "private": true,
+   "type": "module",
+   "license": "Apache-2.0",
+   "scripts": {
+      "build": "tsc --build",
+      "test": "bun test",
+      "typecheck": "tsc"
+   },
+   "dependencies": {
+      "@f-o-t/condition-evaluator": "workspace:*",
+      "@f-o-t/rules-engine": "workspace:*",
+      "@packages/database": "workspace:*",
+      "@packages/queue": "workspace:*"
+   },
+   "devDependencies": {
+      "@tooling/typescript": "workspace:*",
+      "typescript": "catalog:development"
+   },
+   "exports": {
+      "./actions/handlers/*": {
+         "default": "./src/actions/handlers/*.ts"
+      },
+      "./actions/*": {
+         "default": "./src/actions/*.ts"
+      },
+      "./analysis/*": {
+         "default": "./src/analysis/*.ts"
+      },
+      "./engine/*": {
+         "default": "./src/engine/*.ts"
+      },
+      "./queue/*": {
+         "default": "./src/queue/*.ts"
+      },
+      "./simulation/*": {
+         "default": "./src/simulation/*.ts"
+      },
+      "./triggers/*": {
+         "default": "./src/triggers/*.ts"
+      },
+      "./types/*": {
+         "default": "./src/types/*.ts"
+      },
+      "./utils/*": {
+         "default": "./src/utils/*.ts"
+      },
+      "./validation/*": {
+         "default": "./src/validation/*.ts"
+      },
+      "./versioning/*": {
+         "default": "./src/versioning/*.ts"
+      }
+   }
+}

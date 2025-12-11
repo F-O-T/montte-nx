@@ -38,7 +38,7 @@
          "path": "./packages/notifications"
       },
       {
-         "path": "./packages/rules-engine"
+         "path": "./packages/workflows"
       },
       {
          "path": "./packages/queue"
