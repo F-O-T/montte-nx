@@ -55,16 +55,27 @@ const actionTypeSchema = z.enum([
    "stop_execution",
 ]);
 
+const categorySplitConfigSchema = z.object({
+   categoryId: z.string(),
+   value: z.number().min(0),
+});
+
 const actionConfigSchema = z.object({
    amountField: z.string().optional(),
    amountFixed: z.number().optional(),
    bankAccountId: z.string().optional(),
    body: z.string().optional(),
    categoryId: z.string().optional(),
+   categoryIds: z.array(z.string()).optional(),
+   categorySplitMode: z
+      .enum(["equal", "percentage", "fixed", "dynamic"])
+      .optional(),
+   categorySplits: z.array(categorySplitConfigSchema).optional(),
    costCenterId: z.string().optional(),
    customEmail: z.string().optional(),
    dateField: z.string().optional(),
    description: z.string().optional(),
+   dynamicSplitPattern: z.string().optional(),
    mode: z.enum(["replace", "append", "prepend"]).optional(),
    reason: z.string().optional(),
    subject: z.string().optional(),

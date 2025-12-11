@@ -1,6 +1,15 @@
+import { findCategoriesByOrganizationId } from "@packages/database/repositories/category-repository";
 import type { Action } from "@packages/database/schema";
-import { transactionCategory } from "@packages/database/schema";
-import { and, eq } from "drizzle-orm";
+import { transaction, transactionCategory } from "@packages/database/schema";
+import {
+   adjustFixedSplitsProportionally,
+   type CategorySplit,
+   calculateEqualSplits,
+   calculateSplitsFromPercentage,
+   createCategoryMap,
+   parseDynamicSplits,
+} from "@packages/utils/split";
+import { eq } from "drizzle-orm";
 import {
    type ActionHandler,
    type ActionHandlerContext,
@@ -12,12 +21,19 @@ export const setCategoryHandler: ActionHandler = {
    type: "set_category",
 
    async execute(action: Action, context: ActionHandlerContext) {
-      const { categoryId } = action.config;
-      const transactionId = context.eventData.id as string;
+      const {
+         categoryId,
+         categoryIds,
+         categorySplitMode,
+         categorySplits,
+         dynamicSplitPattern,
+      } = action.config;
 
-      if (!categoryId) {
-         return createSkippedResult(action, "No category ID provided");
-      }
+      const transactionId = context.eventData.id as string;
+      const transactionAmount = Math.round(
+         Math.abs(Number(context.eventData.amount ?? 0)) * 100,
+      );
+      const description = (context.eventData.description as string) ?? "";
 
       if (!transactionId) {
          return createActionResult(
@@ -28,34 +44,96 @@ export const setCategoryHandler: ActionHandler = {
          );
       }
 
-      if (context.dryRun) {
-         return createActionResult(action, true, {
-            categoryId,
-            dryRun: true,
-            transactionId,
-         });
-      }
+      let finalCategoryIds: string[] = [];
+      let finalSplits: CategorySplit[] | null = null;
 
       try {
-         const existing = await context.db
-            .select()
-            .from(transactionCategory)
-            .where(
-               and(
-                  eq(transactionCategory.transactionId, transactionId),
-                  eq(transactionCategory.categoryId, categoryId),
-               ),
-            )
-            .limit(1);
+         if (categorySplitMode === "dynamic") {
+            const categories = await findCategoriesByOrganizationId(
+               context.db,
+               context.organizationId,
+            );
+            const categoryMap = createCategoryMap(categories);
+            const parsed = parseDynamicSplits(
+               description,
+               categoryMap,
+               transactionAmount,
+               dynamicSplitPattern,
+            );
 
-         if (existing.length === 0) {
-            await context.db.insert(transactionCategory).values({
-               categoryId,
+            if (parsed && parsed.length > 0) {
+               finalCategoryIds = parsed.map((s) => s.categoryId);
+               finalSplits = parsed;
+            }
+         } else if (categorySplitMode === "equal" && categoryIds?.length) {
+            finalCategoryIds = categoryIds;
+            if (categoryIds.length > 1) {
+               finalSplits = calculateEqualSplits(
+                  categoryIds,
+                  transactionAmount,
+               );
+            }
+         } else if (
+            categorySplitMode === "percentage" &&
+            categorySplits?.length
+         ) {
+            finalCategoryIds = categorySplits.map((s) => s.categoryId);
+            finalSplits = calculateSplitsFromPercentage(
+               categorySplits,
+               transactionAmount,
+            );
+         } else if (categorySplitMode === "fixed" && categorySplits?.length) {
+            finalCategoryIds = categorySplits.map((s) => s.categoryId);
+            finalSplits = adjustFixedSplitsProportionally(
+               categorySplits,
+               transactionAmount,
+            );
+         } else if (categoryIds?.length) {
+            finalCategoryIds = categoryIds;
+            if (categoryIds.length > 1) {
+               finalSplits = calculateEqualSplits(
+                  categoryIds,
+                  transactionAmount,
+               );
+            }
+         } else if (categoryId) {
+            finalCategoryIds = [categoryId];
+         }
+
+         if (finalCategoryIds.length === 0) {
+            return createSkippedResult(action, "No categories to set");
+         }
+
+         if (context.dryRun) {
+            return createActionResult(action, true, {
+               categoryIds: finalCategoryIds,
+               dryRun: true,
+               splits: finalSplits,
                transactionId,
             });
          }
 
-         return createActionResult(action, true, { categoryId, transactionId });
+         await context.db
+            .delete(transactionCategory)
+            .where(eq(transactionCategory.transactionId, transactionId));
+
+         await context.db.insert(transactionCategory).values(
+            finalCategoryIds.map((catId) => ({
+               categoryId: catId,
+               transactionId,
+            })),
+         );
+
+         await context.db
+            .update(transaction)
+            .set({ categorySplits: finalSplits })
+            .where(eq(transaction.id, transactionId));
+
+         return createActionResult(action, true, {
+            categoryIds: finalCategoryIds,
+            splits: finalSplits,
+            transactionId,
+         });
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
@@ -65,9 +143,36 @@ export const setCategoryHandler: ActionHandler = {
 
    validate(config) {
       const errors: string[] = [];
-      if (!config.categoryId) {
-         errors.push("Category ID is required");
+      const { categoryId, categoryIds, categorySplitMode, categorySplits } =
+         config;
+
+      const hasCategories =
+         categoryId || (categoryIds && categoryIds.length > 0);
+      const isDynamicMode = categorySplitMode === "dynamic";
+
+      if (!hasCategories && !isDynamicMode) {
+         errors.push(
+            "At least one category is required (unless using dynamic mode)",
+         );
       }
+
+      if (
+         (categorySplitMode === "percentage" ||
+            categorySplitMode === "fixed") &&
+         (!categorySplits || categorySplits.length === 0)
+      ) {
+         errors.push("Split values are required for percentage/fixed mode");
+      }
+
+      if (categorySplitMode === "percentage" && categorySplits) {
+         const sum = categorySplits.reduce((acc, s) => acc + s.value, 0);
+         if (Math.abs(100 - sum) > 0.01) {
+            errors.push(
+               `Percentage splits must sum to 100% (current: ${sum}%)`,
+            );
+         }
+      }
+
       return { errors, valid: errors.length === 0 };
    },
 };
