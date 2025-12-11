@@ -5,10 +5,7 @@
       "declaration": true,
       "declarationMap": true,
       "emitDeclarationOnly": true,
-      "lib": [
-         "dom",
-         "ES2022"
-      ],
+      "lib": ["dom", "ES2022"],
       "noEmit": false,
       "outDir": "${configDir}/dist",
       "sourceMap": true

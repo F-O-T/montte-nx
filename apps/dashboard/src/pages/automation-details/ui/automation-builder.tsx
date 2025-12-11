@@ -29,13 +29,15 @@ import {
    ChevronUp,
    CircleSlash,
    Filter,
+   Pencil,
    Play,
    SkipForward,
+   Trash2,
    X,
    XCircle,
    Zap,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
 import {
    createDefaultActionNode,
@@ -209,6 +211,7 @@ function AutomationBuilderContent({
             <NodeDetailsPanel
                node={selectedNode}
                onClose={handleClosePanel}
+               onDelete={handleDeleteNode}
                onUpdate={handleNodeUpdate}
             />
          )}
@@ -239,11 +242,87 @@ const NODE_TYPE_CONFIG = {
 type NodeDetailsPanelProps = {
    node: AutomationNode;
    onClose: () => void;
+   onDelete: (nodeId: string) => void;
    onUpdate: (nodeId: string, data: Partial<AutomationNode["data"]>) => void;
 };
 
-function NodeDetailsPanel({ node, onClose, onUpdate }: NodeDetailsPanelProps) {
-   const [activeTab, setActiveTab] = useState<"config">("config");
+function EditableTitle({
+   value,
+   onChange,
+   placeholder,
+}: {
+   value: string;
+   onChange: (value: string) => void;
+   placeholder?: string;
+}) {
+   const [isEditing, setIsEditing] = useState(false);
+   const [localValue, setLocalValue] = useState(value);
+   const inputRef = useRef<HTMLInputElement>(null);
+
+   useEffect(() => {
+      setLocalValue(value);
+   }, [value]);
+
+   useEffect(() => {
+      if (isEditing && inputRef.current) {
+         inputRef.current.focus();
+         inputRef.current.select();
+      }
+   }, [isEditing]);
+
+   const handleSave = () => {
+      setIsEditing(false);
+      const trimmed = localValue.trim();
+      if (trimmed && trimmed !== value) {
+         onChange(trimmed);
+      } else {
+         setLocalValue(value || placeholder || "");
+      }
+   };
+
+   const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+         handleSave();
+      } else if (e.key === "Escape") {
+         setLocalValue(value || placeholder || "");
+         setIsEditing(false);
+      }
+   };
+
+   if (isEditing) {
+      return (
+         <input
+            className="flex-1 bg-transparent text-lg font-semibold outline-none border-b border-primary"
+            onBlur={handleSave}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            ref={inputRef}
+            value={localValue}
+         />
+      );
+   }
+
+   return (
+      <button
+         className="group flex flex-1 items-center gap-2 text-left"
+         onClick={() => setIsEditing(true)}
+         type="button"
+      >
+         <span className="text-lg font-semibold border-b border-transparent group-hover:border-muted-foreground/50 transition-colors">
+            {value || placeholder}
+         </span>
+         <Pencil className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      </button>
+   );
+}
+
+function NodeDetailsPanel({
+   node,
+   onClose,
+   onDelete,
+   onUpdate,
+}: NodeDetailsPanelProps) {
+   const [activeTab, setActiveTab] = useState<"config" | "settings">("config");
    const nodeType = node.type as keyof typeof NODE_TYPE_CONFIG;
    const config = NODE_TYPE_CONFIG[nodeType];
    const NodeIcon = config.icon;
@@ -251,12 +330,14 @@ function NodeDetailsPanel({ node, onClose, onUpdate }: NodeDetailsPanelProps) {
    return (
       <div className="absolute left-4 top-4 z-20 flex max-h-[calc(100%-2rem)] w-[420px] flex-col overflow-hidden rounded-xl border bg-background/95 shadow-xl backdrop-blur-sm">
          <div className="flex items-center gap-3 px-5 pt-4">
-            <NodeIcon className={cn("size-5", config.color)} />
-            <h2 className="text-lg font-semibold">
-               {node.data.label || config.label}
-            </h2>
+            <NodeIcon className={cn("size-5 shrink-0", config.color)} />
+            <EditableTitle
+               onChange={(newLabel) => onUpdate(node.id, { label: newLabel })}
+               placeholder={config.label}
+               value={node.data.label}
+            />
             <Button
-               className="ml-auto size-8"
+               className="ml-auto size-8 shrink-0"
                onClick={onClose}
                size="icon"
                variant="ghost"
@@ -281,15 +362,57 @@ function NodeDetailsPanel({ node, onClose, onUpdate }: NodeDetailsPanelProps) {
                   <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
                )}
             </button>
+            <button
+               className={cn(
+                  "relative py-3 text-sm font-medium transition-colors",
+                  activeTab === "settings"
+                     ? "text-foreground"
+                     : "text-muted-foreground hover:text-foreground",
+               )}
+               onClick={() => setActiveTab("settings")}
+               type="button"
+            >
+               Settings
+               {activeTab === "settings" && (
+                  <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
+               )}
+            </button>
          </div>
 
          <ScrollArea className="flex-1">
             <div className="p-5">
-               <NodeConfigurationPanel
-                  node={node}
-                  onClose={onClose}
-                  onUpdate={onUpdate}
-               />
+               {activeTab === "config" && (
+                  <NodeConfigurationPanel
+                     node={node}
+                     onClose={onClose}
+                     onUpdate={onUpdate}
+                  />
+               )}
+               {activeTab === "settings" && (
+                  <div className="space-y-4">
+                     <div className="rounded-md border p-3">
+                        <p className="text-xs text-muted-foreground">
+                           ID do Node
+                        </p>
+                        <p className="font-mono text-sm">{node.id}</p>
+                     </div>
+                     <div className="rounded-md border p-3">
+                        <p className="text-xs text-muted-foreground">Tipo</p>
+                        <p className="text-sm">{config.label}</p>
+                     </div>
+                     <Button
+                        className="w-full"
+                        onClick={() => {
+                           onDelete(node.id);
+                           onClose();
+                        }}
+                        variant="destructive"
+                     >
+                        <Trash2 className="mr-2 size-4" />
+                        Deletar Node
+                     </Button>
+                  </div>
+               )}
             </div>
          </ScrollArea>
       </div>

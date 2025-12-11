@@ -17,18 +17,24 @@ export function TriggerNode({ data }: NodeProps<TriggerNodeType>) {
          <BaseNodeHeader className="rounded-t-md bg-emerald-500 text-white">
             <Zap className="size-4" />
             <BaseNodeHeaderTitle className="text-sm">
-               Gatilho
+               {data.label}
             </BaseNodeHeaderTitle>
          </BaseNodeHeader>
          <BaseNodeContent>
-            <div className="text-sm font-medium">{data.label}</div>
             <div className="text-xs text-muted-foreground">
                {TRIGGER_TYPE_LABELS[data.triggerType]}
             </div>
          </BaseNodeContent>
          <BaseHandle
             className="!border-emerald-500"
+            id="bottom"
             position={Position.Bottom}
+            type="source"
+         />
+         <BaseHandle
+            className="!border-emerald-500"
+            id="right"
+            position={Position.Right}
             type="source"
          />
       </BaseNode>
