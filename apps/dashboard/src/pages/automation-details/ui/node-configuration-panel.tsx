@@ -1,4 +1,9 @@
 import type { ActionType, TriggerType } from "@packages/database/schema";
+import {
+   Alert,
+   AlertDescription,
+   AlertTitle,
+} from "@packages/ui/components/alert";
 import { Button } from "@packages/ui/components/button";
 import { Combobox } from "@packages/ui/components/combobox";
 import {
@@ -21,11 +26,15 @@ import { Switch } from "@packages/ui/components/switch";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
-import { Tag, X } from "lucide-react";
+import { AlertTriangle, Tag, X } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useTRPC } from "@/integrations/clients";
+import {
+   validateActionNode,
+   validateConditionNode,
+} from "../lib/node-validation";
 import type {
    ActionNodeData,
    AutomationNode,
@@ -155,6 +164,8 @@ function ConditionConfigurationForm({
    data,
    onUpdate,
 }: ConditionConfigurationFormProps) {
+   const validation = validateConditionNode(data);
+
    const form = useForm({
       defaultValues: {
          operator: data.operator,
@@ -229,6 +240,18 @@ function ConditionConfigurationForm({
 
    return (
       <div className="space-y-4">
+         {!validation.valid && (
+            <Alert variant="destructive">
+               <AlertTriangle className="size-4" />
+               <AlertTitle>Configuração incompleta</AlertTitle>
+               <AlertDescription>
+                  {validation.errors.map((error) => (
+                     <div key={error}>{error}</div>
+                  ))}
+               </AlertDescription>
+            </Alert>
+         )}
+
          <FieldGroup>
             <form.Field name="operator">
                {(field) => (
@@ -347,6 +370,7 @@ function ActionConfigurationForm({
    data,
    onUpdate,
 }: ActionConfigurationFormProps) {
+   const validation = validateActionNode(data);
    const trpc = useTRPC();
 
    const { data: tags = [], isLoading: tagsLoading } = useQuery(
@@ -444,6 +468,18 @@ function ActionConfigurationForm({
 
    return (
       <div className="space-y-4">
+         {!validation.valid && (
+            <Alert variant="destructive">
+               <AlertTriangle className="size-4" />
+               <AlertTitle>Configuração incompleta</AlertTitle>
+               <AlertDescription>
+                  {validation.errors.map((error) => (
+                     <div key={error}>{error}</div>
+                  ))}
+               </AlertDescription>
+            </Alert>
+         )}
+
          <FieldGroup>
             <form.Field name="actionType">
                {(field) => (
