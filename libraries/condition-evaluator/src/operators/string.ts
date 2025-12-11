@@ -78,6 +78,43 @@ export const stringOperators: Record<StringOperator, StringEvaluatorFn> = {
          (item) => normalize(String(item), options) === normalizedActual,
       );
    },
+
+   one_of: (actual, expected, options) => {
+      return stringOperators.in(actual, expected, options);
+   },
+
+   not_one_of: (actual, expected, options) => {
+      return stringOperators.not_in(actual, expected, options);
+   },
+
+   contains_any: (actual, expected, options) => {
+      if (!Array.isArray(expected)) return false;
+      const normalizedActual = normalize(actual, options);
+      return expected.some((substring) =>
+         normalizedActual.includes(normalize(String(substring), options)),
+      );
+   },
+
+   contains_all: (actual, expected, options) => {
+      if (!Array.isArray(expected)) return false;
+      const normalizedActual = normalize(actual, options);
+      return expected.every((substring) =>
+         normalizedActual.includes(normalize(String(substring), options)),
+      );
+   },
+
+   ilike: (actual, expected) => {
+      const pattern = String(expected ?? "")
+         .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+         .replace(/%/g, ".*")
+         .replace(/_/g, ".");
+      const regex = new RegExp(`^${pattern}$`, "i");
+      return regex.test(actual);
+   },
+
+   not_ilike: (actual, expected, options) => {
+      return !stringOperators.ilike(actual, expected, options);
+   },
 };
 
 export function evaluateString(

@@ -16,6 +16,12 @@ export const StringOperator = z.enum([
    "is_not_empty",
    "in",
    "not_in",
+   "one_of",
+   "not_one_of",
+   "contains_any",
+   "contains_all",
+   "ilike",
+   "not_ilike",
 ]);
 
 export type StringOperator = z.infer<typeof StringOperator>;
@@ -26,11 +32,13 @@ export const StringCondition = z.object({
    field: z.string(),
    operator: StringOperator,
    value: z.union([z.string(), z.array(z.string())]).optional(),
+   valueRef: z.string().optional(),
    options: z
       .object({
          caseSensitive: z.boolean().optional(),
          negate: z.boolean().optional(),
          trim: z.boolean().optional(),
+         weight: z.number().min(0).optional(),
       })
       .optional(),
 });
@@ -54,18 +62,32 @@ export const NumberOperator = z.enum([
 
 export type NumberOperator = z.infer<typeof NumberOperator>;
 
-export const NumberCondition = z.object({
-   id: z.string(),
-   type: z.literal("number"),
-   field: z.string(),
-   operator: NumberOperator,
-   value: z.union([z.number(), z.tuple([z.number(), z.number()])]).optional(),
-   options: z
-      .object({
-         negate: z.boolean().optional(),
-      })
-      .optional(),
-});
+export const NumberCondition = z
+   .object({
+      id: z.string(),
+      type: z.literal("number"),
+      field: z.string(),
+      operator: NumberOperator,
+      value: z
+         .union([z.number(), z.tuple([z.number(), z.number()])])
+         .optional(),
+      valueRef: z.string().optional(),
+      options: z
+         .object({
+            negate: z.boolean().optional(),
+            weight: z.number().min(0).optional(),
+         })
+         .optional(),
+   })
+   .refine(
+      (data) => {
+         if (data.operator === "between" || data.operator === "not_between") {
+            return data.value !== undefined;
+         }
+         return data.value !== undefined || data.valueRef !== undefined;
+      },
+      { message: "Either 'value' or 'valueRef' must be provided" },
+   );
 
 export type NumberCondition = z.infer<typeof NumberCondition>;
 
@@ -83,9 +105,11 @@ export const BooleanCondition = z.object({
    field: z.string(),
    operator: BooleanOperator,
    value: z.boolean().optional(),
+   valueRef: z.string().optional(),
    options: z
       .object({
          negate: z.boolean().optional(),
+         weight: z.number().min(0).optional(),
       })
       .optional(),
 });
@@ -128,9 +152,11 @@ export const DateCondition = z.object({
          z.array(z.number()),
       ])
       .optional(),
+   valueRef: z.string().optional(),
    options: z
       .object({
          negate: z.boolean().optional(),
+         weight: z.number().min(0).optional(),
       })
       .optional(),
 });
@@ -161,9 +187,11 @@ export const ArrayCondition = z.object({
    field: z.string(),
    operator: ArrayOperator,
    value: z.union([z.unknown(), z.array(z.unknown()), z.number()]).optional(),
+   valueRef: z.string().optional(),
    options: z
       .object({
          negate: z.boolean().optional(),
+         weight: z.number().min(0).optional(),
       })
       .optional(),
 });
@@ -171,16 +199,40 @@ export const ArrayCondition = z.object({
 export type ArrayCondition = z.infer<typeof ArrayCondition>;
 
 // =============================================================================
+// Custom Condition (for plugin system)
+// =============================================================================
+
+export const CustomCondition = z.object({
+   id: z.string(),
+   type: z.literal("custom"),
+   field: z.string(),
+   operator: z.string(),
+   value: z.unknown().optional(),
+   valueRef: z.string().optional(),
+   options: z
+      .object({
+         negate: z.boolean().optional(),
+         weight: z.number().min(0).optional(),
+      })
+      .passthrough()
+      .optional(),
+});
+
+export type CustomCondition = z.infer<typeof CustomCondition>;
+
+// =============================================================================
 // Condition (Discriminated Union)
 // =============================================================================
 
-export const Condition = z.discriminatedUnion("type", [
+const BaseCondition = z.discriminatedUnion("type", [
    StringCondition,
    NumberCondition,
    BooleanCondition,
    DateCondition,
    ArrayCondition,
 ]);
+
+export const Condition = z.union([BaseCondition, CustomCondition]);
 
 export type Condition = z.infer<typeof Condition>;
 
@@ -196,6 +248,9 @@ export type ConditionGroupInput = {
    id: string;
    operator: LogicalOperator;
    conditions: (Condition | ConditionGroupInput)[];
+   scoringMode?: "binary" | "weighted";
+   threshold?: number;
+   weight?: number;
 };
 
 export const ConditionGroup: z.ZodType<ConditionGroupInput> = z.lazy(() =>
@@ -203,6 +258,9 @@ export const ConditionGroup: z.ZodType<ConditionGroupInput> = z.lazy(() =>
       id: z.string(),
       operator: LogicalOperator,
       conditions: z.array(z.union([Condition, ConditionGroup])),
+      scoringMode: z.enum(["binary", "weighted"]).optional(),
+      threshold: z.number().optional(),
+      weight: z.number().min(0).optional(),
    }),
 );
 
@@ -212,6 +270,36 @@ export type ConditionGroup = z.infer<typeof ConditionGroup>;
 // Evaluation Results
 // =============================================================================
 
+export const EvaluationMetadata = z.object({
+   valueSource: z.enum(["static", "reference"]),
+   resolvedRef: z.string().optional(),
+});
+
+export type EvaluationMetadata = z.infer<typeof EvaluationMetadata>;
+
+export const NumericDiff = z.object({
+   type: z.literal("numeric"),
+   applicable: z.literal(true),
+   numericDistance: z.number(),
+   proximity: z.number(),
+});
+
+export const DateDiff = z.object({
+   type: z.literal("date"),
+   applicable: z.literal(true),
+   milliseconds: z.number(),
+   humanReadable: z.string(),
+});
+
+export const NotApplicableDiff = z.object({
+   type: z.enum(["numeric", "date", "string", "boolean", "array"]),
+   applicable: z.literal(false),
+});
+
+export const DiffAnalysis = z.union([NumericDiff, DateDiff, NotApplicableDiff]);
+
+export type DiffAnalysis = z.infer<typeof DiffAnalysis>;
+
 export const EvaluationResult = z.object({
    conditionId: z.string(),
    passed: z.boolean(),
@@ -220,6 +308,9 @@ export const EvaluationResult = z.object({
    actualValue: z.unknown(),
    expectedValue: z.unknown().optional(),
    error: z.string().optional(),
+   reason: z.string().optional(),
+   metadata: EvaluationMetadata.optional(),
+   diff: DiffAnalysis.optional(),
 });
 
 export type EvaluationResult = z.infer<typeof EvaluationResult>;
@@ -229,6 +320,11 @@ export type GroupEvaluationResultInput = {
    operator: LogicalOperator;
    passed: boolean;
    results: (EvaluationResult | GroupEvaluationResultInput)[];
+   scoringMode?: "binary" | "weighted";
+   totalScore?: number;
+   maxPossibleScore?: number;
+   threshold?: number;
+   scorePercentage?: number;
 };
 
 export const GroupEvaluationResult: z.ZodType<GroupEvaluationResultInput> =
@@ -238,6 +334,11 @@ export const GroupEvaluationResult: z.ZodType<GroupEvaluationResultInput> =
          operator: LogicalOperator,
          passed: z.boolean(),
          results: z.array(z.union([EvaluationResult, GroupEvaluationResult])),
+         scoringMode: z.enum(["binary", "weighted"]).optional(),
+         totalScore: z.number().optional(),
+         maxPossibleScore: z.number().optional(),
+         threshold: z.number().optional(),
+         scorePercentage: z.number().optional(),
       }),
    );
 

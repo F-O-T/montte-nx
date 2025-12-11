@@ -14,13 +14,17 @@ export { evaluateString } from "./string";
 export function evaluateConditionValue(
    condition: Condition,
    actualValue: unknown,
+   resolvedExpected?: unknown,
 ): boolean {
    switch (condition.type) {
       case "string":
          return evaluateString(
             condition.operator,
             actualValue,
-            condition.value as string | string[] | undefined,
+            (resolvedExpected ?? condition.value) as
+               | string
+               | string[]
+               | undefined,
             condition.options,
          );
 
@@ -28,21 +32,47 @@ export function evaluateConditionValue(
          return evaluateNumber(
             condition.operator,
             actualValue,
-            condition.value as number | [number, number] | undefined,
+            (resolvedExpected ?? condition.value) as
+               | number
+               | [number, number]
+               | undefined,
          );
 
       case "boolean":
          return evaluateBoolean(
             condition.operator,
             actualValue,
-            condition.value as boolean | undefined,
+            (resolvedExpected ?? condition.value) as boolean | undefined,
          );
 
       case "date":
-         return evaluateDate(condition.operator, actualValue, condition.value);
+         return evaluateDate(
+            condition.operator,
+            actualValue,
+            (resolvedExpected ?? condition.value) as
+               | string
+               | Date
+               | number
+               | [string | Date | number, string | Date | number]
+               | number[]
+               | undefined,
+         );
 
       case "array":
-         return evaluateArray(condition.operator, actualValue, condition.value);
+         return evaluateArray(
+            condition.operator,
+            actualValue,
+            (resolvedExpected ?? condition.value) as
+               | unknown
+               | unknown[]
+               | number
+               | undefined,
+         );
+
+      case "custom":
+         throw new Error(
+            `Custom conditions must be evaluated through createEvaluator()`,
+         );
 
       default: {
          const _exhaustive: never = condition;
