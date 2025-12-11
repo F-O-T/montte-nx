@@ -7,10 +7,15 @@ import {
 } from "@packages/queue/connection";
 import { getResendClient } from "@packages/transactional/utils";
 import { createWorkflowWorker } from "@packages/workflows/queue/consumer";
+import { createMaintenanceWorker } from "@packages/workflows/queue/maintenance-consumer";
 import { initializeWorkflowQueue } from "@packages/workflows/queue/producer";
-import type {
-   WorkflowJobData,
-   WorkflowJobResult,
+import {
+   closeMaintenanceQueue,
+   createMaintenanceQueue,
+   type MaintenanceJobData,
+   type MaintenanceJobResult,
+   type WorkflowJobData,
+   type WorkflowJobResult,
 } from "@packages/workflows/queue/queues";
 
 const MEMORY_THRESHOLD_MB = 512;
@@ -38,6 +43,42 @@ console.log("Starting workflow worker...");
 let isShuttingDown = false;
 
 initializeWorkflowQueue(redisConnection);
+
+const maintenanceQueue = createMaintenanceQueue(redisConnection);
+
+await maintenanceQueue.add(
+   "cleanup-automation-logs",
+   { type: "cleanup-automation-logs", retentionDays: 7 },
+   {
+      jobId: "cleanup-automation-logs-daily",
+      repeat: { pattern: "0 0 * * *" },
+   },
+);
+
+console.log("Scheduled daily automation log cleanup job (7 day retention)");
+
+const { worker: maintenanceWorker, close: closeMaintenanceWorker } =
+   createMaintenanceWorker({
+      concurrency: 1,
+      connection: redisConnection,
+      db,
+      onCompleted: async (
+         job: Job<MaintenanceJobData, MaintenanceJobResult>,
+         result: MaintenanceJobResult,
+      ) => {
+         console.log(
+            `[Maintenance Completed] ${job.name}: deleted ${result.deletedCount} logs`,
+         );
+      },
+      onFailed: async (
+         job: Job<MaintenanceJobData, MaintenanceJobResult> | undefined,
+         error: Error,
+      ) => {
+         console.error(`[Maintenance Failed] ${job?.name}: ${error.message}`);
+      },
+   });
+
+console.log("Maintenance worker started");
 
 const { worker, close } = createWorkflowWorker({
    concurrency: env.WORKER_CONCURRENCY || 5,
@@ -98,11 +139,16 @@ async function gracefulShutdown(signal: string) {
    }, 30000);
 
    try {
-      console.log("Pausing worker to stop accepting new jobs...");
+      console.log("Pausing workers to stop accepting new jobs...");
       await worker.pause();
+      await maintenanceWorker.pause();
 
       console.log("Waiting for active jobs to complete...");
       await close();
+      await closeMaintenanceWorker();
+
+      console.log("Closing queues...");
+      await closeMaintenanceQueue();
 
       console.log("Closing Redis connection...");
       await closeRedisConnection();
