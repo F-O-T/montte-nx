@@ -161,6 +161,10 @@
          "title": "Editar Conta",
          "updating": "Atualizando..."
       },
+      "from-transaction": {
+         "description": "Crie uma conta a pagar/receber recorrente baseada nesta transação",
+         "title": "Criar Conta a partir de Transação"
+      },
       "filter": {
          "actions": {
             "clear-filters": "Limpar Filtros"

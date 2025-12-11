@@ -58,8 +58,17 @@ import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { useBillListOptional } from "./bill-list-context";
 
+export type FromTransactionData = {
+   amount: number;
+   bankAccountId?: string;
+   categoryId?: string;
+   description: string;
+   type: "expense" | "income";
+};
+
 export type ManageBillFormProps = {
    bill?: Bill;
+   fromTransaction?: FromTransactionData;
 };
 
 const steps = [
@@ -70,7 +79,7 @@ const steps = [
 
 const { Stepper } = defineStepper(...steps);
 
-export function ManageBillForm({ bill }: ManageBillFormProps) {
+export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
    const { closeSheet } = useSheet();
    const trpc = useTRPC();
    const [categoryComboboxOpen, setCategoryComboboxOpen] = useState(false);
@@ -80,6 +89,9 @@ export function ManageBillForm({ bill }: ManageBillFormProps) {
 
    const billListContext = useBillListOptional();
    const currentFilterType = billListContext?.currentFilterType;
+
+   const isEditMode = !!bill;
+   const isFromTransactionMode = !!fromTransaction;
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
@@ -101,8 +113,6 @@ export function ManageBillForm({ bill }: ManageBillFormProps) {
       () => bankAccounts.filter((account) => account.status === "active"),
       [bankAccounts],
    );
-
-   const isEditMode = !!bill;
 
    const createBillMutation = useMutation(
       trpc.bills.create.mutationOptions({
@@ -161,34 +171,59 @@ export function ManageBillForm({ bill }: ManageBillFormProps) {
               | undefined,
            type: bill.type as "expense" | "income",
         }
-      : {
-           amount: 0,
-           bankAccountId: "",
-           category: "",
-           counterpartyId: "",
-           description: "",
-           dueDate: new Date(),
-           hasInstallments: false,
-           installmentAmountType: "equal" as "equal" | "custom",
-           installmentCount: 2,
-           installmentCustomAmounts: [] as number[],
-           installmentCustomDays: 30,
-           installmentIntervalType: "monthly" as
-              | "monthly"
-              | "biweekly"
-              | "weekly"
-              | "custom",
-           interestTemplateId: "",
-           isRecurring: false,
-           issueDate: undefined as Date | undefined,
-           notes: "",
-           recurrencePattern: undefined as RecurrencePattern | undefined,
-           type: (currentFilterType === "payable"
-              ? "expense"
-              : currentFilterType === "receivable"
-                ? "income"
-                : "expense") as "expense" | "income",
-        };
+      : fromTransaction
+        ? {
+             amount: fromTransaction.amount,
+             bankAccountId: fromTransaction.bankAccountId || "",
+             category: fromTransaction.categoryId || "",
+             counterpartyId: "",
+             description: fromTransaction.description,
+             dueDate: new Date(),
+             hasInstallments: false,
+             installmentAmountType: "equal" as "equal" | "custom",
+             installmentCount: 2,
+             installmentCustomAmounts: [] as number[],
+             installmentCustomDays: 30,
+             installmentIntervalType: "monthly" as
+                | "monthly"
+                | "biweekly"
+                | "weekly"
+                | "custom",
+             interestTemplateId: "",
+             isRecurring: true,
+             issueDate: undefined as Date | undefined,
+             notes: "",
+             recurrencePattern: "monthly" as RecurrencePattern | undefined,
+             type: fromTransaction.type,
+          }
+        : {
+             amount: 0,
+             bankAccountId: "",
+             category: "",
+             counterpartyId: "",
+             description: "",
+             dueDate: new Date(),
+             hasInstallments: false,
+             installmentAmountType: "equal" as "equal" | "custom",
+             installmentCount: 2,
+             installmentCustomAmounts: [] as number[],
+             installmentCustomDays: 30,
+             installmentIntervalType: "monthly" as
+                | "monthly"
+                | "biweekly"
+                | "weekly"
+                | "custom",
+             interestTemplateId: "",
+             isRecurring: false,
+             issueDate: undefined as Date | undefined,
+             notes: "",
+             recurrencePattern: undefined as RecurrencePattern | undefined,
+             type: (currentFilterType === "payable"
+                ? "expense"
+                : currentFilterType === "receivable"
+                  ? "income"
+                  : "expense") as "expense" | "income",
+          };
 
    const form = useForm({
       defaultValues: editValues,
@@ -297,8 +332,19 @@ export function ManageBillForm({ bill }: ManageBillFormProps) {
          title: translate("dashboard.routes.bills.features.edit-bill.title"),
       };
 
-      return isEditMode ? editTexts : createTexts;
-   }, [isEditMode]);
+      const fromTransactionTexts = {
+         description: translate(
+            "dashboard.routes.bills.features.from-transaction.description",
+         ),
+         title: translate(
+            "dashboard.routes.bills.features.from-transaction.title",
+         ),
+      };
+
+      if (isEditMode) return editTexts;
+      if (isFromTransactionMode) return fromTransactionTexts;
+      return createTexts;
+   }, [isEditMode, isFromTransactionMode]);
 
    const isPending =
       createBillMutation.isPending || updateBillMutation.isPending;

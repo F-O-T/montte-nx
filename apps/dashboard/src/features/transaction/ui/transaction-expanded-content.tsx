@@ -8,15 +8,19 @@ import type { Row } from "@tanstack/react-table";
 import {
    ArrowLeftRight,
    ArrowRight,
+   CalendarPlus,
+   Copy,
    Eye,
    FolderOpen,
    Paperclip,
    Pencil,
+   RotateCcw,
    Split,
    Trash2,
 } from "lucide-react";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
+import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 import { CategorizeForm } from "./categorize-form";
 import { CategorySplitForm } from "./category-split-form";
 import { LinkFileForm } from "./link-file-form";
@@ -50,6 +54,77 @@ export function TransactionExpandedContent({
    const hasSplit = categorySplits && categorySplits.length > 0;
 
    const { deleteTransaction } = useDeleteTransaction({ transaction });
+
+   const handleDuplicate = () => {
+      openSheet({
+         children: (
+            <ManageTransactionForm
+               duplicateFrom={{
+                  amount: Number(transaction.amount),
+                  bankAccountId: transaction.bankAccountId || "",
+                  categoryIds:
+                     transaction.transactionCategories?.map(
+                        (tc) => tc.category.id,
+                     ) || [],
+                  costCenterId: transaction.costCenterId || "",
+                  description: transaction.description,
+                  tagIds:
+                     transaction.transactionTags?.map((tt) => tt.tag.id) || [],
+                  type:
+                     transaction.type === "transfer"
+                        ? "expense"
+                        : (transaction.type as "expense" | "income"),
+               }}
+            />
+         ),
+      });
+   };
+
+   const handleRefund = () => {
+      openSheet({
+         children: (
+            <ManageTransactionForm
+               refundFrom={{
+                  amount: Number(transaction.amount),
+                  bankAccountId: transaction.bankAccountId || "",
+                  categoryIds:
+                     transaction.transactionCategories?.map(
+                        (tc) => tc.category.id,
+                     ) || [],
+                  costCenterId: transaction.costCenterId || "",
+                  originalDescription: transaction.description,
+                  tagIds:
+                     transaction.transactionTags?.map((tt) => tt.tag.id) || [],
+                  type:
+                     transaction.type === "transfer"
+                        ? "expense"
+                        : (transaction.type as "expense" | "income"),
+               }}
+            />
+         ),
+      });
+   };
+
+   const handleCreateBill = () => {
+      const primaryCategoryId =
+         transaction.transactionCategories?.[0]?.category.id;
+      openSheet({
+         children: (
+            <ManageBillForm
+               fromTransaction={{
+                  amount: Math.abs(Number(transaction.amount)),
+                  bankAccountId: transaction.bankAccountId || undefined,
+                  categoryId: primaryCategoryId,
+                  description: transaction.description,
+                  type:
+                     transaction.type === "transfer"
+                        ? "expense"
+                        : (transaction.type as "expense" | "income"),
+               }}
+            />
+         ),
+      });
+   };
 
    const isTransfer = transaction.type === "transfer";
    const isNotTransfer = !isTransfer;
@@ -288,6 +363,27 @@ export function TransactionExpandedContent({
             >
                <Pencil className="size-4" />
                Editar
+            </Button>
+
+            <Button onClick={handleDuplicate} size="sm" variant="outline">
+               <Copy className="size-4" />
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.duplicate",
+               )}
+            </Button>
+
+            <Button onClick={handleRefund} size="sm" variant="outline">
+               <RotateCcw className="size-4" />
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.refund",
+               )}
+            </Button>
+
+            <Button onClick={handleCreateBill} size="sm" variant="outline">
+               <CalendarPlus className="size-4" />
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.create-bill",
+               )}
             </Button>
 
             <Button onClick={deleteTransaction} size="sm" variant="destructive">

@@ -11,10 +11,19 @@ import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, Pencil, Split, Trash2 } from "lucide-react";
+import {
+   CalendarPlus,
+   Copy,
+   Eye,
+   Pencil,
+   RotateCcw,
+   Split,
+   Trash2,
+} from "lucide-react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useSheet } from "@/hooks/use-sheet";
+import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 import { ManageTransactionForm } from "./manage-transaction-form";
 import type { Category, Transaction } from "./transaction-list";
 import { useDeleteTransaction } from "./use-delete-transaction";
@@ -51,6 +60,77 @@ function TransactionActionsCell({
 }) {
    const { openSheet } = useSheet();
    const { deleteTransaction } = useDeleteTransaction({ transaction });
+
+   const handleDuplicate = () => {
+      openSheet({
+         children: (
+            <ManageTransactionForm
+               duplicateFrom={{
+                  amount: Number(transaction.amount),
+                  bankAccountId: transaction.bankAccountId || "",
+                  categoryIds:
+                     transaction.transactionCategories?.map(
+                        (tc) => tc.category.id,
+                     ) || [],
+                  costCenterId: transaction.costCenterId || "",
+                  description: transaction.description,
+                  tagIds:
+                     transaction.transactionTags?.map((tt) => tt.tag.id) || [],
+                  type:
+                     transaction.type === "transfer"
+                        ? "expense"
+                        : (transaction.type as "expense" | "income"),
+               }}
+            />
+         ),
+      });
+   };
+
+   const handleRefund = () => {
+      openSheet({
+         children: (
+            <ManageTransactionForm
+               refundFrom={{
+                  amount: Number(transaction.amount),
+                  bankAccountId: transaction.bankAccountId || "",
+                  categoryIds:
+                     transaction.transactionCategories?.map(
+                        (tc) => tc.category.id,
+                     ) || [],
+                  costCenterId: transaction.costCenterId || "",
+                  originalDescription: transaction.description,
+                  tagIds:
+                     transaction.transactionTags?.map((tt) => tt.tag.id) || [],
+                  type:
+                     transaction.type === "transfer"
+                        ? "expense"
+                        : (transaction.type as "expense" | "income"),
+               }}
+            />
+         ),
+      });
+   };
+
+   const handleCreateBill = () => {
+      const primaryCategoryId =
+         transaction.transactionCategories?.[0]?.category.id;
+      openSheet({
+         children: (
+            <ManageBillForm
+               fromTransaction={{
+                  amount: Math.abs(Number(transaction.amount)),
+                  bankAccountId: transaction.bankAccountId || undefined,
+                  categoryId: primaryCategoryId,
+                  description: transaction.description,
+                  type:
+                     transaction.type === "transfer"
+                        ? "expense"
+                        : (transaction.type as "expense" | "income"),
+               }}
+            />
+         ),
+      });
+   };
 
    return (
       <div className="flex justify-end gap-1">
@@ -93,6 +173,42 @@ function TransactionActionsCell({
             <TooltipContent>
                {translate(
                   "dashboard.routes.transactions.list-section.actions.edit",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button onClick={handleDuplicate} size="icon" variant="outline">
+                  <Copy className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.duplicate",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button onClick={handleRefund} size="icon" variant="outline">
+                  <RotateCcw className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.refund",
+               )}
+            </TooltipContent>
+         </Tooltip>
+         <Tooltip>
+            <TooltipTrigger asChild>
+               <Button onClick={handleCreateBill} size="icon" variant="outline">
+                  <CalendarPlus className="size-4" />
+               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+               {translate(
+                  "dashboard.routes.transactions.list-section.actions.create-bill",
                )}
             </TooltipContent>
          </Tooltip>
