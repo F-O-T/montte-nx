@@ -1,7 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import { z } from "zod";
-import { createOperator, createEvaluator } from "../src/plugins";
-import type { EvaluationContext, ConditionGroup } from "../src/schemas";
+import { createEvaluator } from "../src/plugins/create-evaluator";
+import { createOperator } from "../src/plugins/create-operator";
+import type { ConditionGroup, EvaluationContext } from "../src/schemas";
 
 describe("Plugin System", () => {
    describe("createOperator", () => {

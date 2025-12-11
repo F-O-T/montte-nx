@@ -1,43 +1,40 @@
 // =============================================================================
 // Evaluation Functions
 // =============================================================================
+
+export type { DependencyInfo } from "./dependencies";
+// =============================================================================
+// Static Analysis
+// =============================================================================
+export { extractDependencies } from "./dependencies";
 export {
    evaluate,
    evaluateCondition,
    evaluateConditionGroup,
    evaluateConditions,
+   evaluateConditionValue,
 } from "./evaluator";
-
 // =============================================================================
 // Low-level Operator Functions
 // =============================================================================
-export {
-   evaluateArray,
-   evaluateBoolean,
-   evaluateConditionValue,
-   evaluateDate,
-   evaluateNumber,
-   evaluateString,
-} from "./operators";
-
-// =============================================================================
-// Static Analysis
-// =============================================================================
-export { extractDependencies } from "./dependencies";
-export type { DependencyInfo } from "./dependencies";
-
+export { evaluateArray } from "./operators/array";
+export { evaluateBoolean } from "./operators/boolean";
+export { evaluateDate } from "./operators/date";
+export { evaluateNumber } from "./operators/number";
+export { evaluateString } from "./operators/string";
+export { createEvaluator } from "./plugins/create-evaluator";
 // =============================================================================
 // Plugin System
 // =============================================================================
-export { createOperator, createEvaluator } from "./plugins";
+export { createOperator } from "./plugins/create-operator";
 export type {
-   CustomOperatorConfig,
-   OperatorMap,
-   EvaluatorConfig,
-   CustomCondition as PluginCustomCondition,
    ConditionType,
+   CustomCondition as PluginCustomCondition,
+   CustomOperatorConfig,
+   EvaluatorConfig,
    InferOperatorNames,
-} from "./plugins";
+   OperatorMap,
+} from "./plugins/types";
 
 // =============================================================================
 // Schemas & Types
