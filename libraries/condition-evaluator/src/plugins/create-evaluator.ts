@@ -1,19 +1,19 @@
+import { evaluateConditionValue as builtInEvaluateValue } from "../evaluator";
 import type {
    Condition,
    ConditionGroup,
+   DiffAnalysis,
    EvaluationContext,
+   EvaluationMetadata,
    EvaluationResult,
    GroupEvaluationResult,
-   EvaluationMetadata,
-   DiffAnalysis,
 } from "../schemas";
 import { isConditionGroup } from "../schemas";
-import { evaluateConditionValue as builtInEvaluateValue } from "../operators";
 import type {
    CustomCondition,
    EvaluatorConfig,
-   OperatorMap,
    InferOperatorNames,
+   OperatorMap,
 } from "./types";
 
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
