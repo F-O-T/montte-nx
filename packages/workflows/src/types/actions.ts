@@ -287,6 +287,22 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
       label: "Stop Execution",
       type: "stop_execution",
    },
+   {
+      appliesTo: ["transaction"],
+      category: "modification",
+      configSchema: [
+         {
+            helpText: "Select the destination account for the transfer",
+            key: "toBankAccountId",
+            label: "Destination Account",
+            required: true,
+            type: "select",
+         },
+      ],
+      description: "Mark the transaction as a transfer to another account",
+      label: "Mark as Transfer",
+      type: "mark_as_transfer",
+   },
 ];
 
 export type ActionExecutionContext = {

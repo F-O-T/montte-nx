@@ -1,6 +1,7 @@
 import type { Action } from "@packages/database/schema";
 import { addTagHandler } from "./handlers/add-tag";
 import { createTransactionHandler } from "./handlers/create-transaction";
+import { markAsTransferHandler } from "./handlers/mark-as-transfer";
 import { removeTagHandler } from "./handlers/remove-tag";
 import { sendEmailHandler } from "./handlers/send-email";
 import { sendPushNotificationHandler } from "./handlers/send-push-notification";
@@ -41,6 +42,7 @@ export function initializeDefaultHandlers(): void {
    registerActionHandler(setCostCenterHandler);
    registerActionHandler(updateDescriptionHandler);
    registerActionHandler(createTransactionHandler);
+   registerActionHandler(markAsTransferHandler);
    registerActionHandler(sendPushNotificationHandler);
    registerActionHandler(sendEmailHandler);
    registerActionHandler(stopExecutionHandler);

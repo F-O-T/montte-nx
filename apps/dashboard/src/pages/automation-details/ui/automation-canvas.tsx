@@ -12,6 +12,7 @@ import {
    useReactFlow,
 } from "@xyflow/react";
 import {
+   ArrowLeftRight,
    Bell,
    Building,
    ChevronRight,
@@ -544,6 +545,17 @@ export function AutomationCanvas({
                         >
                            <Plus className="size-4" />
                            Criar Transacao
+                        </div>
+                        <div
+                           className={menuItemClass}
+                           onClick={() =>
+                              handleAddNode("action", {
+                                 actionType: "mark_as_transfer",
+                              })
+                           }
+                        >
+                           <ArrowLeftRight className="size-4" />
+                           Marcar como Transferencia
                         </div>
                         <div
                            className={menuItemClass}

@@ -382,6 +382,9 @@ function ActionConfigurationForm({
    const { data: costCenters = [], isLoading: costCentersLoading } = useQuery(
       trpc.costCenters.getAll.queryOptions(),
    );
+   const { data: bankAccounts = [], isLoading: bankAccountsLoading } = useQuery(
+      trpc.bankAccounts.getAll.queryOptions(),
+   );
 
    const form = useForm({
       defaultValues: {
@@ -397,6 +400,7 @@ function ActionConfigurationForm({
          tagIds: (data.config.tagIds as string[]) ?? [],
          title: (data.config.title as string) ?? "",
          to: (data.config.to as string) ?? "owner",
+         toBankAccountId: (data.config.toBankAccountId as string) ?? "",
          value: (data.config.value as string) ?? "",
       },
    });
@@ -424,6 +428,10 @@ function ActionConfigurationForm({
       );
       form.setFieldValue("subject", (data.config.subject as string) ?? "");
       form.setFieldValue("reason", (data.config.reason as string) ?? "");
+      form.setFieldValue(
+         "toBankAccountId",
+         (data.config.toBankAccountId as string) ?? "",
+      );
    }, [data, form]);
 
    const handleFieldChange = useCallback(
@@ -465,6 +473,11 @@ function ActionConfigurationForm({
          value: cc.id,
       })),
    ];
+
+   const bankAccountOptions = bankAccounts.map((account) => ({
+      label: account.name ?? "Sem nome",
+      value: account.id,
+   }));
 
    return (
       <div className="space-y-4">
@@ -804,6 +817,39 @@ function ActionConfigurationForm({
                   </form.Field>
                </FieldGroup>
             </>
+         )}
+
+         {data.actionType === "mark_as_transfer" && (
+            <FieldGroup>
+               <form.Field name="toBankAccountId">
+                  {(field) => (
+                     <Field>
+                        <FieldLabel htmlFor={field.name}>
+                           Conta Destino
+                        </FieldLabel>
+                        {bankAccountsLoading ? (
+                           <Skeleton className="h-10 w-full" />
+                        ) : (
+                           <Combobox
+                              className="w-full"
+                              emptyMessage="Nenhuma conta encontrada"
+                              onValueChange={(value) => {
+                                 field.handleChange(value);
+                                 handleFieldChange("toBankAccountId", value);
+                              }}
+                              options={bankAccountOptions}
+                              placeholder="Selecione a conta destino..."
+                              searchPlaceholder="Buscar conta..."
+                              value={field.state.value}
+                           />
+                        )}
+                        <FieldDescription>
+                           A conta para onde a transferência será feita
+                        </FieldDescription>
+                     </Field>
+                  )}
+               </form.Field>
+            </FieldGroup>
          )}
 
          {data.actionType === "stop_execution" && (

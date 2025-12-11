@@ -59,6 +59,7 @@ export const TRIGGER_TYPE_LABELS: Record<TriggerType, string> = {
 export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
    add_tag: "Adicionar Tag",
    create_transaction: "Criar Transação",
+   mark_as_transfer: "Marcar como Transferência",
    remove_tag: "Remover Tag",
    send_email: "Enviar E-mail",
    send_push_notification: "Enviar Notificação Push",
