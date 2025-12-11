@@ -70,6 +70,7 @@ export type ActionType =
    | "set_cost_center"
    | "update_description"
    | "create_transaction"
+   | "mark_as_transfer"
    | "send_push_notification"
    | "send_email"
    | "stop_execution";
@@ -86,6 +87,7 @@ export type ActionConfig = {
    amountFixed?: number;
    description?: string;
    bankAccountId?: string;
+   toBankAccountId?: string;
    dateField?: string;
    title?: string;
    body?: string;

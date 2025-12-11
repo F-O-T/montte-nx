@@ -473,6 +473,7 @@ const TRIGGERED_BY_LABELS: Record<TriggeredBy, string> = {
 const ACTION_TYPE_LABELS: Record<ActionType, string> = {
    add_tag: "Adicionar tag",
    create_transaction: "Criar transação",
+   mark_as_transfer: "Marcar como transferência",
    remove_tag: "Remover tag",
    send_email: "Enviar e-mail",
    send_push_notification: "Enviar notificação",

@@ -43,6 +43,7 @@ const ACTION_FIELD_LABELS: Record<string, string> = {
    tagIds: "Tags",
    title: "Título",
    to: "Destinatário",
+   toBankAccountId: "Conta Destino",
    type: "Tipo",
    value: "Valor",
 };
