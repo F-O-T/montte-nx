@@ -11,12 +11,11 @@ import {
    useQueryClient,
    useSuspenseQuery,
 } from "@tanstack/react-query";
-import { Link, useParams } from "@tanstack/react-router";
-import { ArrowLeft, Save, Settings } from "lucide-react";
+import { useParams } from "@tanstack/react-router";
+import { Save, Settings } from "lucide-react";
 import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
-import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { flowDataToSchema, schemaToFlowData } from "../lib/flow-serialization";
@@ -58,7 +57,6 @@ function AutomationDetailsErrorFallback({
 }
 
 function AutomationDetailsContent({ automationId }: { automationId: string }) {
-   const { activeOrganization } = useActiveOrganization();
    const trpc = useTRPC();
    const queryClient = useQueryClient();
    const { openSheet } = useSheet();
@@ -161,18 +159,6 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
 
    return (
       <div className="relative -m-4 flex h-full flex-col">
-         <div className="absolute left-4 top-4 z-10 flex gap-2">
-            <Button asChild size="sm" variant="outline">
-               <Link
-                  params={{ slug: activeOrganization.slug }}
-                  to="/$slug/automations"
-               >
-                  <ArrowLeft className="size-4" />
-                  Voltar
-               </Link>
-            </Button>
-         </div>
-
          <div className="absolute right-4 top-4 z-10 flex gap-2">
             <Button onClick={handleOpenSettings} size="sm" variant="outline">
                <Settings className="size-4" />
