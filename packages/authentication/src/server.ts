@@ -1,9 +1,6 @@
 import { stripe } from "@better-auth/stripe";
 import { createBetterAuthStorage } from "@packages/cache/better-auth";
-import {
-   createRedisConnection,
-   getRedisConnection,
-} from "@packages/cache/connection";
+import { createRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    createDefaultOrganization,
