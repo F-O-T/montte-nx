@@ -1,6 +1,7 @@
 {
    "dependencies": {
       "@better-auth/stripe": "catalog:auth",
+      "@packages/cache": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/environment": "workspace:*",
       "@packages/stripe": "workspace:*",

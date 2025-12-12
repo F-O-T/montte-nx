@@ -1,4 +1,6 @@
 import { stripe } from "@better-auth/stripe";
+import { createBetterAuthStorage } from "@packages/cache/better-auth";
+import { createRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    createDefaultOrganization,
@@ -24,6 +26,9 @@ import {
    organization,
 } from "better-auth/plugins";
 import { type BuiltInLocales, localization } from "better-auth-localization";
+
+// Initialize Redis connection for session caching
+const redis = createRedisConnection(serverEnv.REDIS_URL);
 export const ORGANIZATION_LIMIT = 3;
 
 export interface AuthOptions {
@@ -56,6 +61,7 @@ export const getAuthOptions = (
       database: drizzleAdapter(db, {
          provider: "pg",
       }),
+      secondaryStorage: createBetterAuthStorage(redis),
       databaseHooks: {
          session: {
             create: {

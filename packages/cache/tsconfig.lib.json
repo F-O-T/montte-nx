@@ -7,7 +7,7 @@
   ],
   "references": [
     {
-      "path": "../cache/tsconfig.lib.json"
+      "path": "../environment/tsconfig.lib.json"
     }
   ]
 }

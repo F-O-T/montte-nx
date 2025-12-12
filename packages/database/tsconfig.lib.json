@@ -3,6 +3,11 @@
    "include": ["src"],
    "exclude": ["**/*.test.ts", "**/__tests__/**"],
    "references": [
-      { "path": "../utils/tsconfig.lib.json" }
-   ]
+    {
+      "path": "../utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libraries/condition-evaluator"
+    }
+  ]
 }

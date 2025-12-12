@@ -4,6 +4,7 @@
       "@packages/arcjet": "workspace:*",
       "@packages/authentication": "workspace:*",
       "@packages/brasil-api": "workspace:*",
+      "@packages/cache": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",

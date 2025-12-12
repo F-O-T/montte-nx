@@ -4,6 +4,8 @@ import {
    TRPC_RATE_LIMITS,
 } from "@packages/arcjet/config";
 import type { AuthInstance } from "@packages/authentication/server";
+import { createCacheClient, TTL } from "@packages/cache/client";
+import { getRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
 import type { MinioClient } from "@packages/files/client";
@@ -14,6 +16,10 @@ import { sanitizeData } from "@packages/utils/sanitization";
 import { initTRPC } from "@trpc/server";
 import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
+
+// Initialize cache client for lazy caching
+const redis = getRedisConnection()!;
+const cache = createCacheClient(redis);
 
 export const createTRPCContext = async ({
    auth,
@@ -319,3 +325,32 @@ export const protectedProcedure = baseProcedure
    .use(arcjetProtectedMiddleware)
    .use(isAuthed)
    .use(telemetryMiddleware);
+
+// Helper to wrap a query function with lazy caching
+export function withCache<T>(
+   cacheKey: string,
+   fetcher: () => Promise<T>,
+   ttl: number = TTL.LONG,
+): () => Promise<T> {
+   return async (): Promise<T> => {
+      // Check cache first
+      const cached = await cache.getJSON<T>(cacheKey);
+      if (cached !== null) {
+         console.log(`[Cache] Hit for key: ${cacheKey}`);
+         return cached;
+      }
+
+      // Fetch fresh data
+      const result = await fetcher();
+
+      // Store in cache (fire and forget)
+      cache.setJSON(cacheKey, result, ttl).catch((error) => {
+         console.error(`[Cache] Failed to cache key ${cacheKey}:`, error);
+      });
+      console.log(`[Cache] Stored key: ${cacheKey} with TTL: ${ttl}s`);
+
+      return result;
+   };
+}
+
+export { TTL };

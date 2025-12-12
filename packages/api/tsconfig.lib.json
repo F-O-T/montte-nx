@@ -6,5 +6,53 @@
       "types": ["vite/client"]
    },
    "include": ["src"],
-   "exclude": ["**/*.test.ts", "**/__tests__/**", "node_modules"]
+  "exclude": [
+    "**/*.test.ts",
+    "**/__tests__/**",
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../utils/tsconfig.lib.json"
+    },
+    {
+      "path": "../workflows/tsconfig.lib.json"
+    },
+    {
+      "path": "../posthog/tsconfig.lib.json"
+    },
+    {
+      "path": "../pdf/tsconfig.lib.json"
+    },
+    {
+      "path": "../ofx/tsconfig.lib.json"
+    },
+    {
+      "path": "../notifications/tsconfig.lib.json"
+    },
+    {
+      "path": "../localization/tsconfig.lib.json"
+    },
+    {
+      "path": "../files/tsconfig.lib.json"
+    },
+    {
+      "path": "../database/tsconfig.lib.json"
+    },
+    {
+      "path": "../cache/tsconfig.lib.json"
+    },
+    {
+      "path": "../brasil-api/tsconfig.lib.json"
+    },
+    {
+      "path": "../authentication/tsconfig.lib.json"
+    },
+    {
+      "path": "../arcjet/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libraries/condition-evaluator"
+    }
+  ]
 }

@@ -39,6 +39,7 @@ COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
+COPY packages/cache/package.json ./packages/cache/
 COPY packages/workflows/package.json ./packages/workflows/
 COPY packages/queue/package.json ./packages/queue/
 COPY packages/stripe/package.json ./packages/stripe/

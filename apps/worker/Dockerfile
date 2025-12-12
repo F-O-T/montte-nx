@@ -12,6 +12,7 @@ COPY apps/worker/package.json ./apps/worker/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/database/package.json ./packages/database/
 COPY packages/environment/package.json ./packages/environment/
+COPY packages/cache/package.json ./packages/cache/
 COPY packages/queue/package.json ./packages/queue/
 COPY packages/workflows/package.json ./packages/workflows/
 COPY packages/transactional/package.json ./packages/transactional/
