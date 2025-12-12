@@ -31,8 +31,7 @@ import {
 import { type BuiltInLocales, localization } from "better-auth-localization";
 
 // Initialize Redis connection for session caching
-createRedisConnection(serverEnv.REDIS_URL);
-const redis = getRedisConnection();
+const redis = createRedisConnection(serverEnv.REDIS_URL);
 export const ORGANIZATION_LIMIT = 3;
 
 export interface AuthOptions {
@@ -65,7 +64,7 @@ export const getAuthOptions = (
       database: drizzleAdapter(db, {
          provider: "pg",
       }),
-      secondaryStorage: redis ? createBetterAuthStorage(redis) : undefined,
+      secondaryStorage: createBetterAuthStorage(redis),
       databaseHooks: {
          session: {
             create: {

@@ -4,7 +4,7 @@ import {
    TRPC_RATE_LIMITS,
 } from "@packages/arcjet/config";
 import type { AuthInstance } from "@packages/authentication/server";
-import { type CacheClient, createCacheClient, TTL } from "@packages/cache/client";
+import { createCacheClient, TTL } from "@packages/cache/client";
 import { getRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
@@ -18,8 +18,8 @@ import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
 // Initialize cache client for lazy caching
-const redis = getRedisConnection();
-const cache: CacheClient | null = redis ? createCacheClient(redis) : null;
+const redis = getRedisConnection()!;
+const cache = createCacheClient(redis);
 
 export const createTRPCContext = async ({
    auth,
@@ -333,10 +333,6 @@ export function withCache<T>(
    ttl: number = TTL.LONG,
 ): () => Promise<T> {
    return async (): Promise<T> => {
-      if (!cache) {
-         return fetcher();
-      }
-
       // Check cache first
       const cached = await cache.getJSON<T>(cacheKey);
       if (cached !== null) {
