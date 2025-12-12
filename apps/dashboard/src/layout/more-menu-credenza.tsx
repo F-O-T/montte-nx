@@ -134,7 +134,7 @@ export function MoreMenuCredenza() {
          <CredenzaHeader>
             <CredenzaTitle>Menu</CredenzaTitle>
          </CredenzaHeader>
-         <CredenzaBody className="pb-8">
+         <CredenzaBody className="pb-[calc(2rem+env(safe-area-inset-bottom))]">
             <div className="flex flex-col gap-6">
                {sections.map((section) => (
                   <div key={section.title}>
