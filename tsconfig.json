@@ -1,32 +1,30 @@
 {
    "extends": "@tooling/typescript/base.json",
+   "files": [],
    "references": [
     {
-      "path": "./packages/transactional"
+      "path": "./packages/arcjet"
     },
     {
-      "path": "./packages/environment"
+      "path": "./packages/authentication"
+    },
+    {
+      "path": "./packages/brasil-api"
     },
     {
       "path": "./packages/database"
     },
     {
-      "path": "./packages/posthog"
+      "path": "./packages/environment"
     },
     {
       "path": "./packages/files"
     },
     {
-      "path": "./packages/ui"
-    },
-    {
       "path": "./packages/localization"
     },
     {
-      "path": "./packages/utils"
-    },
-    {
-      "path": "./packages/brasil-api"
+      "path": "./packages/notifications"
     },
     {
       "path": "./packages/ofx"
@@ -35,16 +33,25 @@
       "path": "./packages/pdf"
     },
     {
-      "path": "./packages/notifications"
-    },
-    {
-      "path": "./packages/workflows"
+      "path": "./packages/posthog"
     },
     {
       "path": "./packages/queue"
     },
     {
       "path": "./packages/stripe"
+    },
+    {
+      "path": "./packages/transactional"
+    },
+    {
+      "path": "./packages/ui"
+    },
+    {
+      "path": "./packages/utils"
+    },
+    {
+      "path": "./packages/workflows"
     }
   ]
 }

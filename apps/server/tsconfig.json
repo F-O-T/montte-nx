@@ -40,6 +40,12 @@
     },
     {
       "path": "../../packages/database"
+    },
+    {
+      "path": "../../packages/authentication"
+    },
+    {
+      "path": "../../packages/arcjet"
     }
   ]
 }

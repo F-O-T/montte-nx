@@ -10,8 +10,11 @@
       "src"
    ],
    "references": [
-      {
-         "path": "../environment"
-      }
-   ]
+    {
+      "path": "../authentication"
+    },
+    {
+      "path": "../environment"
+    }
+  ]
 }

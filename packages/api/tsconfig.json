@@ -1,24 +1,28 @@
 {
-  "compilerOptions": {
-    "composite": false,
-    "declaration": false,
-    "declarationMap": false,
-    "emitDeclarationOnly": false,
-    "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "ES2022"
-    ],
-    "types": [
-      "vite/client"
-    ]
-  },
-  "exclude": [
-    "node_modules"
-  ],
-  "extends": "@tooling/typescript/internal-package.json",
-  "include": [
-    "src",
-    "__tests__/*.test.ts"
-  ],
+   "compilerOptions": {
+      "composite": false,
+      "declaration": false,
+      "declarationMap": false,
+      "emitDeclarationOnly": false,
+      "jsx": "react-jsx",
+      "lib": ["dom", "ES2022"],
+      "types": ["vite/client"]
+   },
+   "exclude": ["node_modules"],
+   "extends": "@tooling/typescript/internal-package.json",
+   "include": ["src", "__tests__/*.test.ts"],
+   "references": [
+      { "path": "../arcjet" },
+      { "path": "../authentication" },
+      { "path": "../brasil-api" },
+      { "path": "../database" },
+      { "path": "../files" },
+      { "path": "../localization" },
+      { "path": "../notifications" },
+      { "path": "../ofx" },
+      { "path": "../pdf" },
+      { "path": "../posthog" },
+      { "path": "../utils" },
+      { "path": "../workflows" }
+   ]
 }

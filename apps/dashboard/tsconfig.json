@@ -5,6 +5,8 @@
     "**/*.tsx"
   ],
   "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
     "types": [
       "vite/client",
       "vite-plugin-pwa/client"
@@ -55,6 +57,9 @@
     },
     {
       "path": "../../packages/stripe"
+    },
+    {
+      "path": "../../packages/authentication"
     }
   ]
 }
