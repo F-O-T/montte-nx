@@ -1,3 +1,8 @@
+import {
+   arcjetInstance,
+   BOT_DETECTION,
+   TRPC_RATE_LIMITS,
+} from "@packages/arcjet/config";
 import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
@@ -13,7 +18,7 @@ import SuperJSON from "superjson";
 export const createTRPCContext = async ({
    auth,
    db,
-   headers,
+   request,
    minioClient,
    minioBucket,
    posthog,
@@ -24,30 +29,20 @@ export const createTRPCContext = async ({
    minioClient: MinioClient;
    minioBucket: string;
    posthog: PostHog;
-   headers: Headers;
+   request: Request;
    responseHeaders: Headers;
-}): Promise<{
-   minioBucket: string;
-   db: DatabaseInstance;
-   minioClient: MinioClient;
-   auth: AuthInstance;
-   headers: Headers;
-   posthog: PostHog;
-   session: AuthInstance["$Infer"]["Session"] | null;
-   language: SupportedLng;
-   responseHeaders: Headers;
-   organizationId: string;
-}> => {
-   const session = await auth.api.getSession({
-      headers,
-   });
+}) => {
+   const headers = request.headers;
+   const session = await auth.api.getSession({ headers });
 
    const language = headers.get("x-locale") as SupportedLng;
 
    if (language) {
       changeLanguage(language);
    }
+
    const organizationId = session?.session.activeOrganizationId || "";
+
    return {
       auth,
       db,
@@ -57,6 +52,7 @@ export const createTRPCContext = async ({
       minioClient,
       organizationId,
       posthog,
+      request,
       responseHeaders,
       session,
    };
@@ -69,6 +65,82 @@ export const t = initTRPC
    });
 
 export const router = t.router;
+
+const arcjetPublicMiddleware = t.middleware(async ({ ctx, next }) => {
+   const resolvedCtx = await ctx;
+
+   if (!arcjetInstance) {
+      return next();
+   }
+
+   const aj = arcjetInstance
+      .withRule(TRPC_RATE_LIMITS.PUBLIC)
+      .withRule(BOT_DETECTION);
+
+   const decision = await aj.protect(resolvedCtx.request, { requested: 1 });
+
+   console.log(
+      `[Arcjet tRPC Public] ${decision.conclusion} - ${decision.reason.type}`,
+   );
+
+   if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+         throw APIError.tooManyRequests(
+            "Too many requests. Please try again later.",
+         );
+      }
+
+      if (decision.reason.isBot()) {
+         throw APIError.forbidden("Automated requests are not permitted.");
+      }
+
+      if (decision.reason.isShield()) {
+         throw APIError.forbidden("Request blocked for security reasons.");
+      }
+
+      throw APIError.forbidden("Access denied.");
+   }
+
+   return next();
+});
+
+const arcjetProtectedMiddleware = t.middleware(async ({ ctx, next }) => {
+   const resolvedCtx = await ctx;
+
+   if (!arcjetInstance) {
+      return next();
+   }
+
+   const aj = arcjetInstance
+      .withRule(TRPC_RATE_LIMITS.PROTECTED)
+      .withRule(BOT_DETECTION);
+
+   const decision = await aj.protect(resolvedCtx.request, { requested: 1 });
+
+   console.log(
+      `[Arcjet tRPC Protected] ${decision.conclusion} - ${decision.reason.type} - user:${resolvedCtx.session?.user?.id || "anonymous"}`,
+   );
+
+   if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+         throw APIError.tooManyRequests(
+            "Too many requests. Please try again later.",
+         );
+      }
+
+      if (decision.reason.isBot()) {
+         throw APIError.forbidden("Automated requests are not permitted.");
+      }
+
+      if (decision.reason.isShield()) {
+         throw APIError.forbidden("Request blocked for security reasons.");
+      }
+
+      throw APIError.forbidden("Access denied.");
+   }
+
+   return next();
+});
 
 const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
    console.log(`Request: ${type} ${path}`);
@@ -88,6 +160,7 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
          "This endpoint does not accept API Key authentication.",
       );
    }
+
    if (!resolvedCtx.session?.user) {
       throw APIError.forbidden("Access denied.");
    }
@@ -120,36 +193,6 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
       ctx: {
          organizationId,
          session: { ...resolvedCtx.session },
-      },
-   });
-});
-
-const sdkAuth = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-   // 1. Get the Authorization header from the incoming request.
-   const authHeader = resolvedCtx.headers.get("sdk-api-key");
-   if (!authHeader) {
-      throw APIError.unauthorized("Missing API Key.");
-   }
-
-   const apiKeyData = await resolvedCtx.auth.api.verifyApiKey({
-      body: { key: authHeader },
-      headers: resolvedCtx.headers,
-   });
-
-   if (!apiKeyData.valid) {
-      throw APIError.unauthorized("Invalid API Key.");
-   }
-   const session = await resolvedCtx.auth.api.getSession({
-      headers: new Headers({
-         "sdk-api-key": authHeader,
-      }),
-   });
-   return next({
-      ctx: {
-         session: {
-            ...session,
-         },
       },
    });
 });
@@ -242,11 +285,11 @@ const telemetryMiddleware = t.middleware(
    },
 );
 
-export const publicProcedure = t.procedure
-   .use(loggerMiddleware)
-   .use(timingMiddleware);
+const baseProcedure = t.procedure.use(loggerMiddleware).use(timingMiddleware);
 
-export const protectedProcedure = publicProcedure
+export const publicProcedure = baseProcedure.use(arcjetPublicMiddleware);
+
+export const protectedProcedure = baseProcedure
+   .use(arcjetProtectedMiddleware)
    .use(isAuthed)
    .use(telemetryMiddleware);
-export const sdkProcedure = publicProcedure.use(sdkAuth);

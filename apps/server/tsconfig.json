@@ -15,6 +15,9 @@
    "extends": "@tooling/typescript/base.json",
    "references": [
       {
+         "path": "../../packages/arcjet"
+      },
+      {
          "path": "../../packages/stripe"
       },
       {

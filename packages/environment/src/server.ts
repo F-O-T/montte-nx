@@ -2,6 +2,8 @@ import { z } from "zod";
 import { parseEnv } from "./helpers";
 
 const EnvSchema = z.object({
+   ARCJET_ENV: z.enum(["development", "production"]).default("development"),
+   ARCJET_KEY: z.string().optional(),
    APP_URL: z.string().optional(),
    BETTER_AUTH_GOOGLE_CLIENT_ID: z.string(),
    BETTER_AUTH_GOOGLE_CLIENT_SECRET: z.string(),
