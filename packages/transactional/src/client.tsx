@@ -21,7 +21,7 @@ export interface SendOrganizationInvitationOptions {
    teamName: string;
    inviteLink: string;
 }
-const name = "Finance tracker";
+const name = "Montte";
 export const sendOrganizationInvitation = async (
    client: Resend,
    {

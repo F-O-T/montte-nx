@@ -1,13 +1,48 @@
-import { Heading, Img, Section } from "@react-email/components";
+import { Img, Section, Text } from "@react-email/components";
+
+const logoSvg = `<svg width="1987" height="1278" viewBox="0 0 1987 1278" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M455.313 377.152L0.812988 1275.15L904.813 1276.15L455.313 377.152Z" fill="#0C5343" stroke="#0C5448"/>
+<path d="M1613.81 1276.15L995.313 1276.65L681.813 656.152L682.313 655.152L994.313 1.15186L1614.81 1276.15H1613.81Z" fill="#42B46E" stroke="#42B46E"/>
+<path d="M1394.81 655.152L1533.31 376.652L1985.8 1276.15H1701.81L1394.81 655.152Z" fill="#379255" stroke="#379255"/>
+</svg>`;
+
+const logoBase64 = `data:image/svg+xml;base64,${Buffer.from(logoSvg).toString("base64")}`;
 
 export const DefaultHeading = () => {
    return (
-      <Section>
-         <Img
-            alt={"finance-tracker-logo"}
-            className="w-20 h-20 rounded-full border-2 border-[var(--color-border)] shadow-sm mx-auto"
-         />
-         <Heading className="text-center">Finance tracker</Heading>
+      <Section
+         style={{
+            backgroundColor: "#0C5343",
+            padding: "32px 24px",
+            textAlign: "center",
+         }}
+      >
+         <table cellPadding="0" cellSpacing="0" style={{ margin: "0 auto" }}>
+            <tr>
+               <td style={{ verticalAlign: "middle", paddingRight: "12px" }}>
+                  <Img
+                     src={logoBase64}
+                     width="48"
+                     height="32"
+                     alt="Montte"
+                     style={{ display: "block" }}
+                  />
+               </td>
+               <td style={{ verticalAlign: "middle" }}>
+                  <Text
+                     style={{
+                        color: "#ffffff",
+                        fontSize: "28px",
+                        fontWeight: 700,
+                        letterSpacing: "-0.5px",
+                        margin: 0,
+                     }}
+                  >
+                     Montte
+                  </Text>
+               </td>
+            </tr>
+         </table>
       </Section>
    );
 };
