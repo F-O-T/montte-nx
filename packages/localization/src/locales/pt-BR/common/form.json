@@ -18,7 +18,7 @@
       "placeholder": "Selecione seu banco"
    },
    "category": {
-      "create": "Criar categoria \"{name}\"",
+      "create": "Criar categoria",
       "description": "Agrupe suas transações por tipo de gasto ou receita para análises detalhadas",
       "label": "Categoria",
       "placeholder": "Selecione uma categoria"
@@ -32,7 +32,7 @@
       "placeholder": "Confirme sua senha"
    },
    "cost-center": {
-      "create": "Criar centro de custo \"{name}\"",
+      "create": "Criar centro de custo ",
       "description": "Associe a departamentos, projetos ou áreas para controle orçamentário",
       "label": "Centro de Custo",
       "none": "Nenhum",
@@ -104,7 +104,7 @@
       "placeholder": "Selecione o status"
    },
    "tags": {
-      "create": "Criar tag \"{name}\"",
+      "create": "Criar tag ",
       "description": "Adicione marcadores personalizados para filtrar e organizar suas transações",
       "label": "Tags",
       "placeholder": "Selecione as tags"
