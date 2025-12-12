@@ -6,6 +6,7 @@
       { "path": "./packages/arcjet/tsconfig.lib.json" },
       { "path": "./packages/authentication/tsconfig.lib.json" },
       { "path": "./packages/brasil-api/tsconfig.lib.json" },
+      { "path": "./packages/cache/tsconfig.lib.json" },
       { "path": "./packages/database/tsconfig.lib.json" },
       { "path": "./packages/environment/tsconfig.lib.json" },
       { "path": "./packages/files/tsconfig.lib.json" },

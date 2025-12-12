@@ -202,6 +202,7 @@
         "@packages/arcjet": "workspace:*",
         "@packages/authentication": "workspace:*",
         "@packages/brasil-api": "workspace:*",
+        "@packages/cache": "workspace:*",
         "@packages/database": "workspace:*",
         "@packages/files": "workspace:*",
         "@packages/localization": "workspace:*",
@@ -240,6 +241,7 @@
       "version": "0.8.1",
       "dependencies": {
         "@better-auth/stripe": "catalog:auth",
+        "@packages/cache": "workspace:*",
         "@packages/database": "workspace:*",
         "@packages/environment": "workspace:*",
         "@packages/stripe": "workspace:*",
@@ -255,6 +257,18 @@
     "packages/brasil-api": {
       "name": "@packages/brasil-api",
       "version": "0.3.0",
+      "devDependencies": {
+        "@tooling/typescript": "workspace:*",
+        "typescript": "catalog:development",
+      },
+    },
+    "packages/cache": {
+      "name": "@packages/cache",
+      "version": "0.1.0",
+      "dependencies": {
+        "@packages/environment": "workspace:*",
+        "ioredis": "catalog:workers",
+      },
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
         "typescript": "catalog:development",
@@ -376,8 +390,9 @@
       "name": "@packages/queue",
       "version": "0.1.0",
       "dependencies": {
-        "bullmq": "^5.34.8",
-        "ioredis": "^5.4.2",
+        "@packages/cache": "workspace:*",
+        "bullmq": "catalog:workers",
+        "ioredis": "catalog:workers",
         "zod": "catalog:validation",
       },
       "devDependencies": {
@@ -627,7 +642,7 @@
     },
     "workers": {
       "bullmq": "5.58.7",
-      "ioredis": "5.7.0",
+      "ioredis": "5.8.2",
     },
   },
   "packages": {
@@ -1292,6 +1307,8 @@
     "@packages/authentication": ["@packages/authentication@workspace:packages/authentication"],
 
     "@packages/brasil-api": ["@packages/brasil-api@workspace:packages/brasil-api"],
+
+    "@packages/cache": ["@packages/cache@workspace:packages/cache"],
 
     "@packages/database": ["@packages/database@workspace:packages/database"],
 
@@ -2041,7 +2058,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bullmq": ["bullmq@5.65.1", "", { "dependencies": { "cron-parser": "^4.9.0", "ioredis": "^5.8.2", "msgpackr": "^1.11.2", "node-abort-controller": "^3.1.1", "semver": "^7.5.4", "tslib": "^2.0.0", "uuid": "^11.1.0" } }, "sha512-QgDAzX1G9L5IRy4Orva5CfQTXZT+5K+OfO/kbPrAqN+pmL9LJekCzxijXehlm/u2eXfWPfWvIdJJIqiuz3WJSg=="],
+    "bullmq": ["bullmq@5.58.7", "", { "dependencies": { "cron-parser": "^4.9.0", "ioredis": "^5.4.1", "msgpackr": "^1.11.2", "node-abort-controller": "^3.1.1", "semver": "^7.5.4", "tslib": "^2.0.0", "uuid": "^11.1.0" } }, "sha512-rqsKV/ip76wU90q7Cxpr1vS/6PYIVbhuzqr3wgILgjS6XbsnJtWyYrK23jqWHs9+m6/NXM4+62hyf8CSBpufAw=="],
 
     "bumpp": ["bumpp@10.3.2", "", { "dependencies": { "ansis": "^4.2.0", "args-tokenizer": "^0.3.0", "c12": "^3.3.2", "cac": "^6.7.14", "escalade": "^3.2.0", "jsonc-parser": "^3.3.1", "package-manager-detector": "^1.5.0", "semver": "^7.7.3", "tinyexec": "^1.0.2", "tinyglobby": "^0.2.15", "yaml": "^2.8.1" }, "bin": { "bumpp": "bin/bumpp.mjs" } }, "sha512-yUUkVx5zpTywLNX97MlrqtpanI7eMMwFwLntWR2EBVDw3/Pm3aRIzCoDEGHATLIiHK9PuJC7xWI4XNWqXItSPg=="],
 

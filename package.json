@@ -170,7 +170,7 @@
          },
          "workers": {
             "bullmq": "5.58.7",
-            "ioredis": "5.7.0"
+            "ioredis": "5.8.2"
          }
       },
       "packages": [
