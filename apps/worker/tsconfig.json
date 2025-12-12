@@ -13,20 +13,23 @@
    },
    "extends": "@tooling/typescript/base.json",
    "references": [
-      {
-         "path": "../../packages/database"
-      },
-      {
-         "path": "../../packages/environment"
-      },
-      {
-         "path": "../../packages/queue"
-      },
-      {
-         "path": "../../packages/workflows"
-      },
-      {
-         "path": "../../packages/utils"
-      }
-   ]
+    {
+      "path": "../../packages/transactional"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/workflows"
+    },
+    {
+      "path": "../../packages/queue"
+    },
+    {
+      "path": "../../packages/environment"
+    },
+    {
+      "path": "../../packages/database"
+    }
+  ]
 }
