@@ -67,7 +67,7 @@ const app = new Elysia({
          const res = await fetchRequestHandler({
             createContext: async () =>
                await trpcApi.createTRPCContext({
-                  headers: opts.request.headers,
+                  request: opts.request,
                   responseHeaders,
                }),
             endpoint: "/trpc",

@@ -1,17 +1,83 @@
-import { Body, Container, Head, Html, Tailwind } from "@react-email/components";
+import {
+   Body,
+   Container,
+   Font,
+   Head,
+   Html,
+   Preview,
+   Tailwind,
+} from "@react-email/components";
 import type { ReactNode } from "react";
 
-export const DefaultEmailLayout = ({ children }: { children: ReactNode }) => {
+interface DefaultEmailLayoutProps {
+   children: ReactNode;
+   preview?: string;
+}
+
+export const DefaultEmailLayout = ({
+   children,
+   preview,
+}: DefaultEmailLayoutProps) => {
    return (
-      <Html>
-         <Head />
-         <Tailwind>
-            <Body className="p-8">
-               <Container className="bg-neutral-200 p-2 rounded-lg">
+      <Tailwind
+         config={{
+            theme: {
+               extend: {
+                  colors: {
+                     primary: {
+                        DEFAULT: "#42B46E",
+                        dark: "#0C5343",
+                        light: "#379255",
+                     },
+                     background: "#f5f7f6",
+                     foreground: "#1a1a2e",
+                     muted: "#6b7280",
+                     card: "#ffffff",
+                     border: "#e5e7eb",
+                  },
+                  borderRadius: {
+                     DEFAULT: "0.8rem",
+                  },
+               },
+            },
+         }}
+      >
+         <Html>
+            <Head>
+               <Font
+                  fontFamily="Montserrat"
+                  fallbackFontFamily="Arial"
+                  webFont={{
+                     url: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
+                     format: "woff2",
+                  }}
+                  fontWeight={400}
+                  fontStyle="normal"
+               />
+            </Head>
+            {preview && <Preview>{preview}</Preview>}
+            <Body
+               style={{
+                  backgroundColor: "#f5f7f6",
+                  fontFamily: "Montserrat, Arial, sans-serif",
+                  margin: 0,
+                  padding: 0,
+               }}
+            >
+               <Container
+                  style={{
+                     backgroundColor: "#ffffff",
+                     borderRadius: "12px",
+                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                     margin: "40px auto",
+                     maxWidth: "520px",
+                     overflow: "hidden",
+                  }}
+               >
                   {children}
                </Container>
             </Body>
-         </Tailwind>
-      </Html>
+         </Html>
+      </Tailwind>
    );
 };

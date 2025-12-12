@@ -1,6 +1,7 @@
 {
    "dependencies": {
       "@f-o-t/condition-evaluator": "workspace:*",
+      "@packages/arcjet": "workspace:*",
       "@packages/authentication": "workspace:*",
       "@packages/brasil-api": "workspace:*",
       "@packages/database": "workspace:*",

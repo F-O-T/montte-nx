@@ -1,46 +1,24 @@
 {
-   "compilerOptions": {
-      "composite": false,
-      "declaration": false,
-      "declarationMap": false,
-      "emitDeclarationOnly": false,
-      "jsx": "react-jsx",
-      "lib": ["dom", "ES2022"],
-      "types": ["vite/client"]
-   },
-   "exclude": ["node_modules"],
-   "extends": "@tooling/typescript/internal-package.json",
-   "include": ["src", "__tests__/*.test.ts"],
-   "references": [
-      {
-         "path": "../utils"
-      },
-      {
-         "path": "../workflows"
-      },
-      {
-         "path": "../posthog"
-      },
-      {
-         "path": "../pdf"
-      },
-      {
-         "path": "../ofx"
-      },
-      {
-         "path": "../notifications"
-      },
-      {
-         "path": "../localization"
-      },
-      {
-         "path": "../files"
-      },
-      {
-         "path": "../database"
-      },
-      {
-         "path": "../brasil-api"
-      }
-   ]
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "jsx": "react-jsx",
+    "lib": [
+      "dom",
+      "ES2022"
+    ],
+    "types": [
+      "vite/client"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "extends": "@tooling/typescript/internal-package.json",
+  "include": [
+    "src",
+    "__tests__/*.test.ts"
+  ],
 }

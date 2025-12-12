@@ -64,19 +64,19 @@ export const createApi = ({
 }) => {
    return {
       createTRPCContext: async ({
-         headers,
+         request,
          responseHeaders,
       }: {
-         headers: Headers;
+         request: Request;
          responseHeaders: Headers;
       }) =>
          await createTRPCContextInternal({
             auth,
             db,
-            headers,
             minioBucket,
             minioClient,
             posthog,
+            request,
             responseHeaders,
          }),
       trpcRouter: appRouter,

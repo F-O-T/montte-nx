@@ -3,6 +3,7 @@
       "@elysiajs/cors": "catalog:server",
       "@elysiajs/openapi": "^1.4.11",
       "@packages/api": "workspace:*",
+      "@packages/arcjet": "workspace:*",
       "@packages/authentication": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/environment": "workspace:*",

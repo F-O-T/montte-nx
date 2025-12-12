@@ -11,11 +11,15 @@ export default function WorkflowNotificationEmail({
    body,
 }: WorkflowNotificationEmailProps) {
    return (
-      <DefaultEmailLayout>
+      <DefaultEmailLayout preview="Notificação do seu fluxo de trabalho">
          <DefaultHeading />
-         <Section className="bg-white p-4 space-y-2 rounded-t-lg">
+         <Section style={{ padding: "32px 24px" }}>
             <div
-               className="text-foreground text-base"
+               style={{
+                  color: "#1a1a2e",
+                  fontSize: "15px",
+                  lineHeight: "24px",
+               }}
                dangerouslySetInnerHTML={{ __html: body }}
             />
          </Section>
@@ -25,5 +29,9 @@ export default function WorkflowNotificationEmail({
 }
 
 WorkflowNotificationEmail.PreviewProps = {
-   body: "<p>Hello!</p><p>A new transaction of <strong>R$ 150,00</strong> was created in your account.</p><p>Description: Monthly subscription payment</p>",
-};
+   body: `
+      <p style="margin: 0 0 16px 0;">Olá!</p>
+      <p style="margin: 0 0 16px 0;">Uma nova transação de <strong style="color: #42B46E;">R$ 150,00</strong> foi registrada na sua conta.</p>
+      <p style="margin: 0; color: #6b7280;">Descrição: Pagamento de assinatura mensal</p>
+   `,
+} satisfies WorkflowNotificationEmailProps;

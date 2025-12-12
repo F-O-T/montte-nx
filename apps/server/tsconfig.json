@@ -14,32 +14,32 @@
    },
    "extends": "@tooling/typescript/base.json",
    "references": [
-      {
-         "path": "../../packages/stripe"
-      },
-      {
-         "path": "../../packages/queue"
-      },
-      {
-         "path": "../../packages/utils"
-      },
-      {
-         "path": "../../packages/transactional"
-      },
-      {
-         "path": "../../packages/workflows"
-      },
-      {
-         "path": "../../packages/posthog"
-      },
-      {
-         "path": "../../packages/files"
-      },
-      {
-         "path": "../../packages/environment"
-      },
-      {
-         "path": "../../packages/database"
-      }
-   ]
+    {
+      "path": "../../packages/stripe"
+    },
+    {
+      "path": "../../packages/queue"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/transactional"
+    },
+    {
+      "path": "../../packages/workflows"
+    },
+    {
+      "path": "../../packages/posthog"
+    },
+    {
+      "path": "../../packages/files"
+    },
+    {
+      "path": "../../packages/environment"
+    },
+    {
+      "path": "../../packages/database"
+    }
+  ]
 }

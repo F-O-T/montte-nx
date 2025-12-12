@@ -21,7 +21,7 @@ export interface SendOrganizationInvitationOptions {
    teamName: string;
    inviteLink: string;
 }
-const name = "Finance tracker";
+const name = "Montte";
 export const sendOrganizationInvitation = async (
    client: Resend,
    {
@@ -34,7 +34,7 @@ export const sendOrganizationInvitation = async (
 ) => {
    const subject = `Convite para se juntar à equipe ${teamName} no ContentaGen`;
    await client.emails.send({
-      from: `${name} <support@app.contentagen.com>`,
+      from: `${name} <suporte@montte.co>`,
       react: (
          <OrganizationInvitationEmail
             invitedByEmail={invitedByEmail}
@@ -65,7 +65,7 @@ export const sendEmailOTP = async (
       }
    };
    await client.emails.send({
-      from: `${name} <support@app.contentagen.com>`,
+      from: `${name} <suporte@montte.co>`,
       react: <OTPEmail otp={otp} type={type} />,
       subject: getSubject(),
       to: email,
@@ -77,7 +77,7 @@ export const sendWorkflowEmail = async (
    { to, subject, body }: SendWorkflowEmailOptions,
 ) => {
    await client.emails.send({
-      from: `${name} <support@app.contentagen.com>`,
+      from: `${name} <suporte@montte.co>`,
       react: <WorkflowNotificationEmail body={body} />,
       subject,
       to,
