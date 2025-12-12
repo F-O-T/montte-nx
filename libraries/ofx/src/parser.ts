@@ -360,9 +360,9 @@ function parseHeaderFromBuffer(buffer: Uint8Array): {
    encoding: string;
 } {
    const maxHeaderSize = Math.min(buffer.length, 1000);
-   const headerSection = new TextDecoder("iso-8859-1" as const).decode(
-      buffer.slice(0, maxHeaderSize),
-   );
+   const headerSection = new TextDecoder(
+      "iso-8859-1" as unknown as "utf-8",
+   ).decode(buffer.slice(0, maxHeaderSize));
 
    const header: Record<string, string> = {};
 
@@ -444,7 +444,7 @@ export function parseBuffer(buffer: Uint8Array): ParseResult<OFXDocument> {
       }
 
       const { encoding } = parseHeaderFromBuffer(buffer);
-      const decoder = new TextDecoder(encoding);
+      const decoder = new TextDecoder(encoding as "utf-8");
       const content = decoder.decode(buffer);
 
       return parse(content);
