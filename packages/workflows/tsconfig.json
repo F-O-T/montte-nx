@@ -1,25 +1,4 @@
 {
-   "extends": "@tooling/typescript/internal-package.json",
-   "compilerOptions": {
-      "outDir": "./dist",
-      "rootDir": "."
-   },
-  "include": [
-    "src/**/*.ts",
-    "__tests__/**/*.ts"
-  ],
-  "references": [
-    {
-      "path": "../utils"
-    },
-    {
-      "path": "../notifications"
-    },
-    {
-      "path": "../queue"
-    },
-    {
-      "path": "../database"
-    }
-  ]
+   "extends": "@tooling/typescript/typecheck.json",
+   "include": ["src/**/*.ts", "__tests__/**/*.ts"]
 }

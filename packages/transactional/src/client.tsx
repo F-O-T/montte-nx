@@ -1,4 +1,3 @@
-import { AppError } from "@packages/utils/errors";
 import type { Resend } from "resend";
 import OrganizationInvitationEmail from "./emails/organization-invitation";
 import OTPEmail from "./emails/otp";

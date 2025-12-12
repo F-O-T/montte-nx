@@ -1,4 +1,5 @@
 {
+   "extends": "@tooling/typescript/base.json",
    "compilerOptions": {
       "baseUrl": ".",
       "esModuleInterop": true,
@@ -11,35 +12,5 @@
       "strict": true,
       "target": "ES2021",
       "types": ["bun-types"]
-   },
-   "extends": "@tooling/typescript/base.json",
-   "references": [
-    {
-      "path": "../../packages/stripe"
-    },
-    {
-      "path": "../../packages/queue"
-    },
-    {
-      "path": "../../packages/utils"
-    },
-    {
-      "path": "../../packages/transactional"
-    },
-    {
-      "path": "../../packages/workflows"
-    },
-    {
-      "path": "../../packages/posthog"
-    },
-    {
-      "path": "../../packages/files"
-    },
-    {
-      "path": "../../packages/environment"
-    },
-    {
-      "path": "../../packages/database"
-    }
-  ]
+   }
 }

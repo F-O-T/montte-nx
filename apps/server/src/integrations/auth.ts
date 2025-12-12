@@ -9,15 +9,15 @@ export const resendClient = getResendClient(env.RESEND_API_KEY);
 export const stripeClient = getStripeClient(env.STRIPE_SECRET_KEY);
 
 const authInstance = createAuth({
-	db,
-	resendClient,
-	STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET,
-	stripeClient,
+   db,
+   resendClient,
+   STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET,
+   stripeClient,
 });
 
 const protectedHandler = await wrapAuthHandler(authInstance);
 
 export const auth = {
-	...authInstance,
-	handler: protectedHandler,
+   ...authInstance,
+   handler: protectedHandler,
 };

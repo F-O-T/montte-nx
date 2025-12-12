@@ -1,11 +1,7 @@
 {
+   "extends": "@tooling/typescript/typecheck.json",
    "compilerOptions": {
       "jsx": "react-jsx"
    },
-   "extends": "@tooling/typescript/internal-package.json",
-   "references": [
-      {
-         "path": "../utils"
-      }
-   ]
+   "include": ["src"]
 }
