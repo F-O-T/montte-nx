@@ -30,6 +30,8 @@ COPY packages/queue/package.json ./packages/queue/
 COPY libraries/ofx/package.json ./libraries/ofx/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY packages/stripe/package.json ./packages/stripe/
+COPY packages/arcjet/package.json ./packages/arcjet/
+
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
 
