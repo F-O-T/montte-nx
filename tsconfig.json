@@ -1,25 +1,5 @@
 {
    "extends": "@tooling/typescript/base.json",
    "files": [],
-   "references": [
-      { "path": "./packages/api/tsconfig.lib.json" },
-      { "path": "./packages/arcjet/tsconfig.lib.json" },
-      { "path": "./packages/authentication/tsconfig.lib.json" },
-      { "path": "./packages/brasil-api/tsconfig.lib.json" },
-      { "path": "./packages/cache/tsconfig.lib.json" },
-      { "path": "./packages/database/tsconfig.lib.json" },
-      { "path": "./packages/environment/tsconfig.lib.json" },
-      { "path": "./packages/files/tsconfig.lib.json" },
-      { "path": "./packages/localization/tsconfig.lib.json" },
-      { "path": "./packages/notifications/tsconfig.lib.json" },
-      { "path": "./packages/ofx/tsconfig.lib.json" },
-      { "path": "./packages/pdf/tsconfig.lib.json" },
-      { "path": "./packages/posthog/tsconfig.lib.json" },
-      { "path": "./packages/queue/tsconfig.lib.json" },
-      { "path": "./packages/stripe/tsconfig.lib.json" },
-      { "path": "./packages/transactional/tsconfig.lib.json" },
-      { "path": "./packages/ui/tsconfig.lib.json" },
-      { "path": "./packages/utils/tsconfig.lib.json" },
-      { "path": "./packages/workflows/tsconfig.lib.json" }
-   ]
+   "references": []
 }
