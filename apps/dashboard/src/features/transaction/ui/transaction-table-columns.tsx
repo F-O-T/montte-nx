@@ -1,7 +1,6 @@
 import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
-import { ItemMedia } from "@packages/ui/components/item";
 import {
    Tooltip,
    TooltipContent,
@@ -239,24 +238,6 @@ export function createTransactionColumns(
 ): ColumnDef<Transaction>[] {
    return [
       {
-         cell: ({ row }) => {
-            const transaction = row.original;
-            const category = getCategoryDetails(transaction, categories);
-
-            return (
-               <ItemMedia
-                  style={{ backgroundColor: category.color }}
-                  variant="icon"
-               >
-                  <IconDisplay iconName={category.icon as IconName} size={16} />
-               </ItemMedia>
-            );
-         },
-         header: "",
-         id: "icon",
-         size: 48,
-      },
-      {
          accessorKey: "description",
          cell: ({ row }) => {
             const transaction = row.original;
@@ -322,13 +303,14 @@ export function createTransactionColumns(
 
             return (
                <Badge
-                  className="font-normal truncate max-w-[120px]"
+                  className="font-normal truncate max-w-[150px] gap-1.5"
                   style={{
                      backgroundColor: `${category.color}20`,
                      color: category.color,
                   }}
                   variant="secondary"
                >
+                  <IconDisplay iconName={category.icon as IconName} size={14} />
                   {category.name}
                </Badge>
             );
