@@ -13,6 +13,7 @@ export {
    evaluateConditionGroup,
    evaluateConditions,
    evaluateConditionValue,
+   isConditionGroup,
 } from "./evaluator";
 // =============================================================================
 // Low-level Operator Functions
@@ -59,7 +60,6 @@ export {
    EvaluationMetadata,
    EvaluationResult,
    GroupEvaluationResult,
-   isConditionGroup,
    LogicalOperator,
    NumberCondition,
    NumberOperator,

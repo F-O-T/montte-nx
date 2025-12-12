@@ -1,5 +1,4 @@
 import {
-   isConditionGroup,
    type ArrayOperator as LibArrayOperator,
    type BooleanOperator as LibBooleanOperator,
    type Condition as LibCondition,
@@ -41,8 +40,6 @@ export type EvaluationContext = LibEvaluationContext;
 export type EvaluationResult = LibEvaluationResult;
 export type GroupEvaluationResult = LibGroupEvaluationResult;
 export type GroupEvaluationResultInput = LibGroupEvaluationResultInput;
-
-export { isConditionGroup };
 
 export type ConditionOperator =
    | StringOperator

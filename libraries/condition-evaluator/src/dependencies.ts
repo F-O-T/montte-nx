@@ -1,5 +1,5 @@
+import { isConditionGroup } from "./evaluator";
 import type { Condition, ConditionGroup } from "./schemas";
-import { isConditionGroup } from "./schemas";
 
 export type DependencyInfo = {
    fields: string[];

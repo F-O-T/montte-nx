@@ -355,12 +355,3 @@ export const EvaluationContext = z.object({
 
 export type EvaluationContext = z.infer<typeof EvaluationContext>;
 
-// =============================================================================
-// Helper to check if item is a ConditionGroup
-// =============================================================================
-
-export function isConditionGroup(
-   item: Condition | ConditionGroup,
-): item is ConditionGroup {
-   return "conditions" in item && "operator" in item && !("field" in item);
-}

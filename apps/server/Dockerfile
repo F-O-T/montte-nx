@@ -56,7 +56,8 @@ ENV NODE_ENV=production
 
 WORKDIR /app/libraries/ofx
 RUN bun run build
-WORKDIR /app
+WORKDIR /app/libraries/condition-evaluator
+RUN bun run build
 WORKDIR /app/libraries/rules-engine
 RUN bun run build
 WORKDIR /app

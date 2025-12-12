@@ -11,8 +11,13 @@ import {
    type EvaluationMetadata,
    type EvaluationResult,
    type GroupEvaluationResult,
-   isConditionGroup,
 } from "./schemas";
+
+export function isConditionGroup(
+   item: Condition | ConditionGroup,
+): item is ConditionGroup {
+   return "conditions" in item && "operator" in item && !("field" in item);
+}
 
 export function evaluateConditionValue(
    condition: Condition,

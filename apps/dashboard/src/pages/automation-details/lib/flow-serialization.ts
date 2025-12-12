@@ -1,3 +1,4 @@
+import { isConditionGroup } from "@f-o-t/condition-evaluator";
 import type {
    Action,
    ActionConfig,
@@ -10,7 +11,6 @@ import type {
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
-import { isConditionGroup } from "@packages/database/schema";
 import type {
    ActionNodeData,
    AutomationEdge,

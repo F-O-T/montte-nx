@@ -1,4 +1,7 @@
-import { evaluateConditionValue as builtInEvaluateValue } from "../evaluator";
+import {
+   evaluateConditionValue as builtInEvaluateValue,
+   isConditionGroup,
+} from "../evaluator";
 import type {
    Condition,
    ConditionGroup,
@@ -8,7 +11,6 @@ import type {
    EvaluationResult,
    GroupEvaluationResult,
 } from "../schemas";
-import { isConditionGroup } from "../schemas";
 import type {
    CustomCondition,
    EvaluatorConfig,
