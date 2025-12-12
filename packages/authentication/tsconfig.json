@@ -7,21 +7,11 @@
       "emitDeclarationOnly": false,
       "jsx": "react-jsx"
    },
-   "exclude": ["node_modules"],
+   "exclude": [
+      "node_modules"
+   ],
    "extends": "@tooling/typescript/internal-package.json",
-   "include": ["src"],
-   "references": [
-      {
-         "path": "../transactional"
-      },
-      {
-         "path": "../stripe"
-      },
-      {
-         "path": "../environment"
-      },
-      {
-         "path": "../database"
-      }
-   ]
+   "include": [
+      "src"
+   ],
 }

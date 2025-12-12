@@ -10,13 +10,13 @@ import {
 
 async function extractEmailFromRequest(
    request: Request,
-): Promise<{ email: string | undefined; clonedRequest: Request }> {
-   const clonedRequest = request.clone();
+): Promise<{ email: string | undefined }> {
    try {
-      const body = await clonedRequest.json();
-      return { email: body?.email, clonedRequest: request };
+      const body = (await request.clone().json()) as Record<string, unknown>;
+      const email = typeof body?.email === "string" ? body.email : undefined;
+      return { email };
    } catch {
-      return { email: undefined, clonedRequest: request };
+      return { email: undefined };
    }
 }
 
@@ -39,16 +39,25 @@ export async function wrapAuthHandler(
 
          if (isSignup && request.method === "POST") {
             const { email } = await extractEmailFromRequest(request);
+            const trimmedEmail = email?.trim();
 
-            const aj = arcjetInstance
-               .withRule(rateLimitRule)
-               .withRule(BOT_DETECTION)
-               .withRule(EMAIL_VALIDATION);
+            if (trimmedEmail) {
+               const aj = arcjetInstance
+                  .withRule(rateLimitRule)
+                  .withRule(BOT_DETECTION)
+                  .withRule(EMAIL_VALIDATION);
 
-            decision = await aj.protect(request, {
-               requested: 1,
-               email: email || "",
-            });
+               decision = await aj.protect(request, {
+                  requested: 1,
+                  email: trimmedEmail,
+               });
+            } else {
+               const aj = arcjetInstance
+                  .withRule(rateLimitRule)
+                  .withRule(BOT_DETECTION);
+
+               decision = await aj.protect(request, { requested: 1 });
+            }
          } else {
             const aj = arcjetInstance
                .withRule(rateLimitRule)

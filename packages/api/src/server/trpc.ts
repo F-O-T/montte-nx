@@ -33,7 +33,16 @@ export const createTRPCContext = async ({
    responseHeaders: Headers;
 }) => {
    const headers = request.headers;
-   const session = await auth.api.getSession({ headers });
+
+   let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+   try {
+      session = await auth.api.getSession({ headers });
+   } catch (error: unknown) {
+      console.error(
+         "[tRPC Context] getSession() failed, continuing without session",
+         error,
+      );
+   }
 
    const language = headers.get("x-locale") as SupportedLng;
 
@@ -41,7 +50,7 @@ export const createTRPCContext = async ({
       changeLanguage(language);
    }
 
-   const organizationId = session?.session.activeOrganizationId || "";
+   const organizationId = session?.session?.activeOrganizationId || "";
 
    return {
       auth,
@@ -77,7 +86,19 @@ const arcjetPublicMiddleware = t.middleware(async ({ ctx, next }) => {
       .withRule(TRPC_RATE_LIMITS.PUBLIC)
       .withRule(BOT_DETECTION);
 
-   const decision = await aj.protect(resolvedCtx.request, { requested: 1 });
+   const decision = await aj
+      .protect(resolvedCtx.request, { requested: 1 })
+      .catch((error: unknown) => {
+         console.error(
+            "[Arcjet tRPC Public] protect() failed, allowing request (fail-open)",
+            error,
+         );
+         return null;
+      });
+
+   if (!decision) {
+      return next();
+   }
 
    console.log(
       `[Arcjet tRPC Public] ${decision.conclusion} - ${decision.reason.type}`,
@@ -115,10 +136,22 @@ const arcjetProtectedMiddleware = t.middleware(async ({ ctx, next }) => {
       .withRule(TRPC_RATE_LIMITS.PROTECTED)
       .withRule(BOT_DETECTION);
 
-   const decision = await aj.protect(resolvedCtx.request, { requested: 1 });
+   const decision = await aj
+      .protect(resolvedCtx.request, { requested: 1 })
+      .catch((error: unknown) => {
+         console.error(
+            "[Arcjet tRPC Protected] protect() failed, allowing request (fail-open)",
+            error,
+         );
+         return null;
+      });
+
+   if (!decision) {
+      return next();
+   }
 
    console.log(
-      `[Arcjet tRPC Protected] ${decision.conclusion} - ${decision.reason.type} - user:${resolvedCtx.session?.user?.id || "anonymous"}`,
+      `[Arcjet tRPC Protected] ${decision.conclusion} - ${decision.reason.type}`,
    );
 
    if (decision.isDenied()) {
@@ -153,13 +186,6 @@ const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
 
 const isAuthed = t.middleware(async ({ ctx, next }) => {
    const resolvedCtx = await ctx;
-   const apikey = resolvedCtx.headers.get("sdk-api-key");
-
-   if (apikey) {
-      throw APIError.forbidden(
-         "This endpoint does not accept API Key authentication.",
-      );
-   }
 
    if (!resolvedCtx.session?.user) {
       throw APIError.forbidden("Access denied.");

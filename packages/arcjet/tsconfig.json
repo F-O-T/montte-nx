@@ -1,11 +1,6 @@
 {
    "compilerOptions": {
-      "jsx": "react-jsx",
-      "baseUrl": ".",
-      "composite": false,
-      "declaration": false,
-      "declarationMap": false,
-      "emitDeclarationOnly": false
+      "jsx": "react-jsx"
    },
    "exclude": [
       "node_modules"
