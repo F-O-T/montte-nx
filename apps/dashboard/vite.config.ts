@@ -6,6 +6,12 @@ import { VitePWA } from "vite-plugin-pwa";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 export default defineConfig({
+   resolve: {
+      alias: {
+         "@packages/ui/globals.css": "/home/yorizel/Documents/finance-tracker/packages/ui/src/styles/globals.css",
+         "@packages/ui": "/home/yorizel/Documents/finance-tracker/packages/ui/src",
+      },
+   },
    plugins: [
       tsConfigPaths({ projects: ["./tsconfig.json"] }),
       tailwindcss(),
