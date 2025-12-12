@@ -15,12 +15,12 @@ export default function WorkflowNotificationEmail({
          <DefaultHeading />
          <Section style={{ padding: "32px 24px" }}>
             <div
+               dangerouslySetInnerHTML={{ __html: body }}
                style={{
                   color: "#1a1a2e",
                   fontSize: "15px",
                   lineHeight: "24px",
                }}
-               dangerouslySetInnerHTML={{ __html: body }}
             />
          </Section>
          <DefaultFooter />

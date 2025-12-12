@@ -45,14 +45,14 @@ export const DefaultEmailLayout = ({
          <Html>
             <Head>
                <Font
-                  fontFamily="Montserrat"
                   fallbackFontFamily="Arial"
+                  fontFamily="Montserrat"
+                  fontStyle="normal"
+                  fontWeight={400}
                   webFont={{
                      url: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
                      format: "woff2",
                   }}
-                  fontWeight={400}
-                  fontStyle="normal"
                />
             </Head>
             {preview && <Preview>{preview}</Preview>}

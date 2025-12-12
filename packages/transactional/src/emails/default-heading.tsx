@@ -21,11 +21,11 @@ export const DefaultHeading = () => {
             <tr>
                <td style={{ verticalAlign: "middle", paddingRight: "12px" }}>
                   <Img
-                     src={logoBase64}
-                     width="48"
-                     height="32"
                      alt="Montte"
+                     height="32"
+                     src={logoBase64}
                      style={{ display: "block" }}
+                     width="48"
                   />
                </td>
                <td style={{ verticalAlign: "middle" }}>
