@@ -1,0 +1,10 @@
+{
+   "extends": "@tooling/typescript/internal-package-nocomposite.json",
+   "compilerOptions": {
+      "jsx": "react-jsx",
+      "lib": ["dom", "ES2022"],
+      "types": ["vite/client"]
+   },
+   "include": ["src"],
+   "exclude": ["**/*.test.ts", "**/__tests__/**", "node_modules"]
+}

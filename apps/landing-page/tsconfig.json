@@ -1,4 +1,5 @@
 {
+   "extends": "@tooling/typescript/astro.json",
    "compilerOptions": {
       "baseUrl": ".",
       "jsx": "react-jsx",
@@ -10,20 +11,5 @@
       }
    },
    "exclude": ["node_modules", "dist"],
-   "extends": "@tooling/typescript/astro.json",
-   "include": [".astro/types.d.ts", "**/*.ts", "**/*.astro", "**/*.tsx"],
-   "references": [
-      {
-         "path": "../../packages/utils"
-      },
-      {
-         "path": "../../packages/ui"
-      },
-      {
-         "path": "../../packages/posthog"
-      },
-      {
-         "path": "../../packages/localization"
-      }
-   ]
+   "include": [".astro/types.d.ts", "**/*.ts", "**/*.astro", "**/*.tsx"]
 }

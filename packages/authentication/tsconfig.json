@@ -1,15 +1,9 @@
 {
+   "extends": "@tooling/typescript/typecheck.json",
    "compilerOptions": {
       "baseUrl": ".",
       "jsx": "react-jsx"
    },
-   "exclude": ["node_modules"],
-   "extends": "@tooling/typescript/internal-package.json",
    "include": ["src"],
-   "references": [
-      { "path": "../database" },
-      { "path": "../environment" },
-      { "path": "../stripe" },
-      { "path": "../transactional" }
-   ]
+   "exclude": ["node_modules"]
 }

@@ -1,4 +1,5 @@
 {
-   "extends": "@tooling/typescript/internal-package.json",
-   "include": ["src"]
+   "extends": "@tooling/typescript/typecheck.json",
+   "include": ["src"],
+   "references": []
 }

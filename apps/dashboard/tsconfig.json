@@ -1,65 +1,18 @@
 {
-  "extends": "@tooling/typescript/vite.json",
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "compilerOptions": {
-    "declaration": false,
-    "declarationMap": false,
-    "types": [
-      "vite/client",
-      "vite-plugin-pwa/client"
-    ],
-    "useDefineForClassFields": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable",
-      "WebWorker"
-    ],
-    "module": "ESNext",
-    "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@packages/ui/*": [
-        "../../packages/ui/src/*"
-      ]
-    }
-  },
-  "references": [
-    {
-      "path": "../../packages/workflows"
-    },
-    {
-      "path": "../../packages/database"
-    },
-    {
-      "path": "../../packages/utils"
-    },
-    {
-      "path": "../../packages/ui"
-    },
-    {
-      "path": "../../packages/transactional"
-    },
-    {
-      "path": "../../packages/posthog"
-    },
-    {
-      "path": "../../packages/localization"
-    },
-    {
-      "path": "../../packages/environment"
-    },
-    {
-      "path": "../../packages/stripe"
-    },
-    {
-      "path": "../../packages/authentication"
-    }
-  ]
+   "extends": "@tooling/typescript/vite.json",
+   "include": ["**/*.ts", "**/*.tsx"],
+   "compilerOptions": {
+      "declaration": false,
+      "declarationMap": false,
+      "types": ["vite/client", "vite-plugin-pwa/client"],
+      "useDefineForClassFields": true,
+      "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
+      "module": "ESNext",
+      "jsx": "react-jsx",
+      "baseUrl": ".",
+      "paths": {
+         "@/*": ["./src/*"],
+         "@packages/ui/*": ["../../packages/ui/src/*"]
+      }
+   }
 }

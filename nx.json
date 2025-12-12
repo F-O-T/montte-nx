@@ -21,12 +21,11 @@
          "plugin": "@nx/js/typescript",
          "options": {
             "build": {
-               "buildDepsName": "build-deps",
-               "configName": "tsconfig.json",
-               "targetName": "build",
-               "watchDepsName": "watch-deps"
+               "configName": "tsconfig.lib.json",
+               "targetName": "build"
             },
             "typecheck": {
+               "configName": "tsconfig.json",
                "targetName": "typecheck"
             }
          }
