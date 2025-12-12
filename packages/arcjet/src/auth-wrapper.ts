@@ -28,13 +28,13 @@ export async function wrapAuthHandler(
          return authInstance.handler(request);
       }
 
-      const url = new URL(request.url);
-      const pathname = url.pathname;
-
-      const rateLimitRule = getAuthEndpointRateLimit(pathname);
-      const isSignup = isSignupEndpoint(pathname);
-
       try {
+         const url = new URL(request.url);
+         const pathname = url.pathname;
+
+         const rateLimitRule = getAuthEndpointRateLimit(pathname);
+         const isSignup = isSignupEndpoint(pathname);
+
          let decision: ArcjetDecision;
 
          if (isSignup && request.method === "POST") {
@@ -74,25 +74,25 @@ export async function wrapAuthHandler(
             const reason = decision.reason;
 
             if (reason.isRateLimit()) {
+               const retryAfterSeconds = reason.resetTime
+                  ? Math.max(
+                       0,
+                       Math.ceil(
+                          (reason.resetTime.getTime() - Date.now()) / 1000,
+                       ),
+                    )
+                  : 60;
+
                return new Response(
                   JSON.stringify({
                      error: "Too many requests. Please try again later.",
-                     retryAfter: reason.resetTime
-                        ? Math.ceil(
-                             (reason.resetTime.getTime() - Date.now()) / 1000,
-                          )
-                        : 60,
+                     retryAfter: retryAfterSeconds,
                   }),
                   {
                      status: 429,
                      headers: {
                         "Content-Type": "application/json",
-                        "Retry-After": reason.resetTime
-                           ? Math.ceil(
-                                (reason.resetTime.getTime() - Date.now()) /
-                                   1000,
-                             ).toString()
-                           : "60",
+                        "Retry-After": retryAfterSeconds.toString(),
                      },
                   },
                );
