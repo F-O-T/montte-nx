@@ -1,5 +1,5 @@
 import { translate } from "@packages/localization";
-import { PlanName, STRIPE_PLANS } from "@packages/stripe/constants";
+import { PlanName } from "@packages/stripe/constants";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -19,11 +19,13 @@ import {
 } from "@packages/ui/components/item";
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { Skeleton } from "@packages/ui/components/skeleton";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowRight, CreditCard, Crown, Zap } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useTRPC } from "@/integrations/clients";
 
 function ProfilePageBillingErrorFallback(props: FallbackProps) {
    return (
@@ -93,7 +95,9 @@ function ProfilePageBillingSkeleton() {
 }
 
 function ActiveSubscriptionContent({ planName }: { planName: string }) {
-   const plan = STRIPE_PLANS.find(
+   const trpc = useTRPC();
+   const { data: plans } = useSuspenseQuery(trpc.plans.list.queryOptions());
+   const plan = plans.find(
       (p) => p.name.toLowerCase() === planName.toLowerCase(),
    );
 
@@ -117,7 +121,7 @@ function ActiveSubscriptionContent({ planName }: { planName: string }) {
             </div>
          </div>
          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold">{plan.price}</span>
+            <span className="text-2xl font-bold">{plan.priceMonthlyLabel}</span>
             <span className="text-muted-foreground">/mês</span>
          </div>
       </div>

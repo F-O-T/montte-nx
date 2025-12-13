@@ -10,6 +10,7 @@ export * from "./schemas/custom-reports";
 export * from "./schemas/interest-templates";
 export * from "./schemas/notification-preferences";
 export * from "./schemas/notifications";
+export * from "./schemas/plans";
 export * from "./schemas/push-subscriptions";
 export * from "./schemas/tags";
 export * from "./schemas/transactions";
