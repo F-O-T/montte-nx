@@ -44,7 +44,9 @@ RUN bun install
 COPY . .
 
 # Build the condition-evaluator library
-RUN cd libraries/condition-evaluator && bun run build
+WORKDIR /app/libraries/condition-evaluator
+RUN bun run build
+WORKDIR /app
 
 # Build the dashboard application
 ENV NODE_ENV=production
