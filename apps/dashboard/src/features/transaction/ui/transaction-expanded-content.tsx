@@ -1,4 +1,9 @@
 import { translate } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { formatDecimalCurrency } from "@packages/utils/money";
@@ -12,20 +17,27 @@ import {
    Copy,
    Eye,
    FolderOpen,
+   Landmark,
    Paperclip,
    Pencil,
+   PiggyBank,
    RotateCcw,
    Split,
    Trash2,
+   TrendingUp,
 } from "lucide-react";
+import type { IconName } from "@/features/icon-selector/lib/available-icons";
+import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 import { CategorizeForm } from "./categorize-form";
 import { CategorySplitForm } from "./category-split-form";
+import { DuplicateTransactionSheet } from "./duplicate-transaction-sheet";
 import { LinkFileForm } from "./link-file-form";
 import { ManageTransactionForm } from "./manage-transaction-form";
 import { MarkAsTransferForm } from "./mark-as-transfer-form";
+import { RecurrenceTransactionSheet } from "./recurrence-transaction-sheet";
+import { RefundTransactionSheet } from "./refund-transaction-sheet";
 import type { Category, Transaction } from "./transaction-list";
 import { useDeleteTransaction } from "./use-delete-transaction";
 
@@ -40,6 +52,17 @@ type TransactionExpandedContentProps = {
    categories: Category[];
    slug: string;
 };
+
+function getAccountTypeIcon(type: string | null | undefined) {
+   switch (type) {
+      case "savings":
+         return PiggyBank;
+      case "investment":
+         return TrendingUp;
+      default:
+         return Landmark;
+   }
+}
 
 export function TransactionExpandedContent({
    row,
@@ -58,22 +81,20 @@ export function TransactionExpandedContent({
    const handleDuplicate = () => {
       openSheet({
          children: (
-            <ManageTransactionForm
-               duplicateFrom={{
-                  amount: Number(transaction.amount),
-                  bankAccountId: transaction.bankAccountId || "",
+            <DuplicateTransactionSheet
+               transaction={{
+                  amount: transaction.amount,
+                  bankAccountId: transaction.bankAccountId,
                   categoryIds:
                      transaction.transactionCategories?.map(
                         (tc) => tc.category.id,
                      ) || [],
-                  costCenterId: transaction.costCenterId || "",
+                  costCenterId: transaction.costCenterId,
+                  date: new Date(transaction.date),
                   description: transaction.description,
                   tagIds:
                      transaction.transactionTags?.map((tt) => tt.tag.id) || [],
-                  type:
-                     transaction.type === "transfer"
-                        ? "expense"
-                        : (transaction.type as "expense" | "income"),
+                  type: transaction.type as "expense" | "income" | "transfer",
                }}
             />
          ),
@@ -83,43 +104,38 @@ export function TransactionExpandedContent({
    const handleRefund = () => {
       openSheet({
          children: (
-            <ManageTransactionForm
-               refundFrom={{
-                  amount: Number(transaction.amount),
-                  bankAccountId: transaction.bankAccountId || "",
+            <RefundTransactionSheet
+               transaction={{
+                  amount: transaction.amount,
+                  bankAccountId: transaction.bankAccountId,
                   categoryIds:
                      transaction.transactionCategories?.map(
                         (tc) => tc.category.id,
                      ) || [],
-                  costCenterId: transaction.costCenterId || "",
-                  originalDescription: transaction.description,
+                  costCenterId: transaction.costCenterId,
+                  date: new Date(transaction.date),
+                  description: transaction.description,
                   tagIds:
                      transaction.transactionTags?.map((tt) => tt.tag.id) || [],
-                  type:
-                     transaction.type === "transfer"
-                        ? "expense"
-                        : (transaction.type as "expense" | "income"),
+                  type: transaction.type as "expense" | "income" | "transfer",
                }}
             />
          ),
       });
    };
 
-   const handleCreateBill = () => {
+   const handleCreateRecurrence = () => {
       const primaryCategoryId =
          transaction.transactionCategories?.[0]?.category.id;
       openSheet({
          children: (
-            <ManageBillForm
-               fromTransaction={{
-                  amount: Math.abs(Number(transaction.amount)),
-                  bankAccountId: transaction.bankAccountId || undefined,
+            <RecurrenceTransactionSheet
+               transaction={{
+                  amount: transaction.amount,
+                  bankAccountId: transaction.bankAccountId,
                   categoryId: primaryCategoryId,
                   description: transaction.description,
-                  type:
-                     transaction.type === "transfer"
-                        ? "expense"
-                        : (transaction.type as "expense" | "income"),
+                  type: transaction.type as "expense" | "income" | "transfer",
                }}
             />
          ),
@@ -144,38 +160,119 @@ export function TransactionExpandedContent({
 
    return (
       <div className="p-4 space-y-4">
-         {hasSplit && (
-            <div>
-               <p className="text-xs text-muted-foreground mb-2">
-                  Divisão por Categoria
-               </p>
-               <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-                  {categorySplits.map((split) => {
-                     const cat = categories.find(
-                        (c) => c.id === split.categoryId,
-                     );
-                     if (!cat) return null;
-                     return (
-                        <div
-                           className="flex items-center justify-between gap-3 p-2 rounded-md bg-muted/50"
-                           key={split.categoryId}
-                        >
-                           <div className="flex items-center gap-2">
-                              <div
-                                 className="size-3 rounded-sm shrink-0"
-                                 style={{ backgroundColor: cat.color }}
-                              />
-                              <span className="text-sm truncate">
+         {(hasSplit ||
+            tags.length > 0 ||
+            transaction.costCenter ||
+            transaction.bankAccount ||
+            attachments.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2">
+               {hasSplit && (
+                  <>
+                     {categorySplits.map((split) => {
+                        const cat = categories.find(
+                           (c) => c.id === split.categoryId,
+                        );
+                        if (!cat) return null;
+                        return (
+                           <Announcement key={split.categoryId}>
+                              <AnnouncementTag
+                                 className="flex items-center gap-1.5"
+                                 style={{
+                                    backgroundColor: `${cat.color}20`,
+                                    color: cat.color,
+                                 }}
+                              >
+                                 <IconDisplay
+                                    iconName={(cat.icon || "Tag") as IconName}
+                                    size={14}
+                                 />
                                  {cat.name}
-                              </span>
-                           </div>
-                           <span className="text-sm font-medium shrink-0">
-                              {formatDecimalCurrency(split.value / 100)}
-                           </span>
-                        </div>
-                     );
-                  })}
-               </div>
+                              </AnnouncementTag>
+                              <AnnouncementTitle>
+                                 {formatDecimalCurrency(split.value / 100)}
+                              </AnnouncementTitle>
+                           </Announcement>
+                        );
+                     })}
+                     {(tags.length > 0 ||
+                        transaction.costCenter ||
+                        transaction.bankAccount ||
+                        attachments.length > 0) && (
+                        <div className="h-4 w-px bg-border" />
+                     )}
+                  </>
+               )}
+
+               {tags.length > 0 && (
+                  <>
+                     {tags.map((transactionTag) => (
+                        <Link
+                           key={transactionTag.tag.id}
+                           params={{ slug, tagId: transactionTag.tag.id }}
+                           to="/$slug/tags/$tagId"
+                        >
+                           <Badge
+                              className="cursor-pointer hover:opacity-80 transition-opacity"
+                              style={{
+                                 backgroundColor: transactionTag.tag.color,
+                              }}
+                              variant="secondary"
+                           >
+                              {transactionTag.tag.name}
+                           </Badge>
+                        </Link>
+                     ))}
+                     {(transaction.costCenter ||
+                        transaction.bankAccount ||
+                        attachments.length > 0) && (
+                        <div className="h-4 w-px bg-border" />
+                     )}
+                  </>
+               )}
+
+               {transaction.costCenter && (
+                  <>
+                     <Announcement>
+                        <AnnouncementTag>Centro de Custo</AnnouncementTag>
+                        <AnnouncementTitle>
+                           {transaction.costCenter.name}
+                        </AnnouncementTitle>
+                     </Announcement>
+                     {(transaction.bankAccount || attachments.length > 0) && (
+                        <div className="h-4 w-px bg-border" />
+                     )}
+                  </>
+               )}
+
+               {transaction.bankAccount && (
+                  <>
+                     <Announcement>
+                        <AnnouncementTag className="flex items-center gap-1.5">
+                           <Landmark className="size-3.5" />
+                           Conta
+                        </AnnouncementTag>
+                        <AnnouncementTitle>
+                           {transaction.bankAccount.name}
+                        </AnnouncementTitle>
+                     </Announcement>
+                     {attachments.length > 0 && (
+                        <div className="h-4 w-px bg-border" />
+                     )}
+                  </>
+               )}
+
+               {attachments.length > 0 && (
+                  <Announcement>
+                     <AnnouncementTag className="flex items-center gap-1.5">
+                        <Paperclip className="size-3.5" />
+                        Anexos
+                     </AnnouncementTag>
+                     <AnnouncementTitle>
+                        {attachments.length}{" "}
+                        {attachments.length === 1 ? "arquivo" : "arquivos"}
+                     </AnnouncementTitle>
+                  </Announcement>
+               )}
             </div>
          )}
 
@@ -184,6 +281,13 @@ export function TransactionExpandedContent({
             (() => {
                const amount = Number.parseFloat(transaction.amount);
                const isIncoming = amount > 0;
+               const formattedAmount = formatDecimalCurrency(Math.abs(amount));
+               const FromIcon = getAccountTypeIcon(
+                  transferLog.fromBankAccount?.type,
+               );
+               const ToIcon = getAccountTypeIcon(
+                  transferLog.toBankAccount?.type,
+               );
 
                return (
                   <div>
@@ -196,90 +300,32 @@ export function TransactionExpandedContent({
                            {isIncoming ? "Entrada" : "Saída"}
                         </Badge>
                      </div>
-                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                        <div className="flex-1">
-                           <p className="text-[10px] uppercase text-muted-foreground mb-0.5">
-                              Origem
-                           </p>
-                           <p className="text-sm font-medium">
+                     <div className="flex flex-wrap items-center gap-2">
+                        <Announcement>
+                           <AnnouncementTag className="flex items-center gap-1.5">
+                              <FromIcon className="size-3.5" />
                               {transferLog.fromBankAccount?.name}
-                           </p>
-                           <p className="text-xs text-muted-foreground">
-                              {transferLog.fromBankAccount?.bank}
-                           </p>
-                        </div>
-                        <ArrowRight className="size-4 text-muted-foreground shrink-0" />
-                        <div className="flex-1 text-right">
-                           <p className="text-[10px] uppercase text-muted-foreground mb-0.5">
-                              Destino
-                           </p>
-                           <p className="text-sm font-medium">
+                           </AnnouncementTag>
+                           <AnnouncementTitle className="text-destructive">
+                              -{formattedAmount}
+                           </AnnouncementTitle>
+                        </Announcement>
+
+                        <ArrowRight className="size-4 text-muted-foreground" />
+
+                        <Announcement>
+                           <AnnouncementTag className="flex items-center gap-1.5">
+                              <ToIcon className="size-3.5" />
                               {transferLog.toBankAccount?.name}
-                           </p>
-                           <p className="text-xs text-muted-foreground">
-                              {transferLog.toBankAccount?.bank}
-                           </p>
-                        </div>
+                           </AnnouncementTag>
+                           <AnnouncementTitle className="text-green-600">
+                              +{formattedAmount}
+                           </AnnouncementTitle>
+                        </Announcement>
                      </div>
                   </div>
                );
             })()}
-
-         {tags.length > 0 && (
-            <div>
-               <p className="text-xs text-muted-foreground mb-2">Tags</p>
-               <div className="flex flex-wrap gap-1">
-                  {tags.map((transactionTag) => (
-                     <Link
-                        key={transactionTag.tag.id}
-                        params={{ slug, tagId: transactionTag.tag.id }}
-                        to="/$slug/tags/$tagId"
-                     >
-                        <Badge
-                           className="cursor-pointer hover:opacity-80 transition-opacity"
-                           style={{
-                              backgroundColor: transactionTag.tag.color,
-                           }}
-                           variant="secondary"
-                        >
-                           {transactionTag.tag.name}
-                        </Badge>
-                     </Link>
-                  ))}
-               </div>
-            </div>
-         )}
-
-         {transaction.costCenter && (
-            <div>
-               <p className="text-xs text-muted-foreground mb-1">
-                  Centro de Custo
-               </p>
-               <p className="text-sm font-medium">
-                  {transaction.costCenter.name}
-               </p>
-            </div>
-         )}
-
-         {transaction.bankAccount && (
-            <div>
-               <p className="text-xs text-muted-foreground mb-1">Conta</p>
-               <p className="text-sm font-medium">
-                  {transaction.bankAccount.name}
-               </p>
-            </div>
-         )}
-
-         {attachments.length > 0 && (
-            <div>
-               <p className="text-xs text-muted-foreground mb-1">Anexos</p>
-               <Badge variant="outline">
-                  <Paperclip className="size-3 mr-1.5" />
-                  {attachments.length}{" "}
-                  {attachments.length === 1 ? "arquivo" : "arquivos"}
-               </Badge>
-            </div>
-         )}
 
          <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
             {isNotTransfer && (
@@ -379,7 +425,7 @@ export function TransactionExpandedContent({
                )}
             </Button>
 
-            <Button onClick={handleCreateBill} size="sm" variant="outline">
+            <Button onClick={handleCreateRecurrence} size="sm" variant="outline">
                <CalendarPlus className="size-4" />
                {translate(
                   "dashboard.routes.transactions.list-section.actions.create-bill",

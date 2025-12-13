@@ -15,9 +15,19 @@ export const createBillSchema = z.object({
    isRecurring: z.boolean().optional().default(false),
    issueDate: z.date().optional(),
    notes: z.string().optional(),
+   occurrenceCount: z.number().min(1).max(365).optional(),
+   occurrenceUntilDate: z.date().optional(),
    originalAmount: z.number().optional(),
    recurrencePattern: z
-      .enum(["monthly", "quarterly", "semiannual", "annual"])
+      .enum([
+         "daily",
+         "weekly",
+         "biweekly",
+         "monthly",
+         "quarterly",
+         "semiannual",
+         "annual",
+      ])
       .optional(),
    totalInstallments: z.number().optional(),
    type: z.enum(["expense", "income"], { error: "Tipo é obrigatório" }),

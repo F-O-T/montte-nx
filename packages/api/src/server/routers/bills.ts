@@ -37,7 +37,9 @@ import {
 } from "@packages/files/client";
 import {
    generateFutureDates,
+   generateFutureDatesUntil,
    getNextDueDate,
+   type RecurrencePattern,
 } from "@packages/utils/recurrence";
 import { z } from "zod";
 import {
@@ -67,7 +69,15 @@ const updateBillSchema = z.object({
    issueDate: z.string().optional(),
    notes: z.string().optional(),
    recurrencePattern: z
-      .enum(["monthly", "quarterly", "semiannual", "annual"])
+      .enum([
+         "daily",
+         "weekly",
+         "biweekly",
+         "monthly",
+         "quarterly",
+         "semiannual",
+         "annual",
+      ])
       .optional(),
    type: z.enum(["income", "expense"]).optional(),
 });
@@ -333,15 +343,34 @@ export const billRouter = router({
          });
 
          if (input.isRecurring && input.recurrencePattern) {
-            const futureDueDates = generateFutureDates(
-               new Date(input.dueDate),
-               input.recurrencePattern,
-            );
+            let futureDueDates: Date[];
+
+            if (input.occurrenceUntilDate) {
+               futureDueDates = generateFutureDatesUntil(
+                  new Date(input.dueDate),
+                  input.recurrencePattern,
+                  new Date(input.occurrenceUntilDate),
+               );
+            } else {
+               futureDueDates = generateFutureDates(
+                  new Date(input.dueDate),
+                  input.recurrencePattern,
+                  input.occurrenceCount,
+               );
+            }
+
             const futureIssueDates = input.issueDate
-               ? generateFutureDates(
-                    new Date(input.issueDate),
-                    input.recurrencePattern,
-                 )
+               ? input.occurrenceUntilDate
+                  ? generateFutureDatesUntil(
+                       new Date(input.issueDate),
+                       input.recurrencePattern,
+                       new Date(input.occurrenceUntilDate),
+                    )
+                  : generateFutureDates(
+                       new Date(input.issueDate),
+                       input.recurrencePattern,
+                       input.occurrenceCount,
+                    )
                : [];
 
             const futureBillsPromises = futureDueDates.map((dueDate, index) => {
@@ -486,21 +515,13 @@ export const billRouter = router({
 
          const nextDueDate = getNextDueDate(
             existingBill.dueDate,
-            existingBill.recurrencePattern as
-               | "monthly"
-               | "quarterly"
-               | "semiannual"
-               | "annual",
+            existingBill.recurrencePattern as RecurrencePattern,
          );
 
          const nextIssueDate = existingBill.issueDate
             ? getNextDueDate(
                  existingBill.issueDate,
-                 existingBill.recurrencePattern as
-                    | "monthly"
-                    | "quarterly"
-                    | "semiannual"
-                    | "annual",
+                 existingBill.recurrencePattern as RecurrencePattern,
               )
             : nextDueDate;
 

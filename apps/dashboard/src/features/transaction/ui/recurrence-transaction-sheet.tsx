@@ -1,0 +1,448 @@
+import { translate } from "@packages/localization";
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from "@packages/ui/components/alert";
+import { Button } from "@packages/ui/components/button";
+import {
+	Choicebox,
+	ChoiceboxIndicator,
+	ChoiceboxItem,
+	ChoiceboxItemDescription,
+	ChoiceboxItemHeader,
+	ChoiceboxItemTitle,
+} from "@packages/ui/components/choicebox";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@packages/ui/components/collapsible";
+import { DatePicker } from "@packages/ui/components/date-picker";
+import { Input } from "@packages/ui/components/input";
+import { Label } from "@packages/ui/components/label";
+import {
+	SheetDescription,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "@packages/ui/components/sheet";
+import {
+	generateFutureDatesUntil,
+	getDefaultFutureOccurrences,
+	type RecurrencePattern,
+} from "@packages/utils/recurrence";
+import { useMutation } from "@tanstack/react-query";
+import { CalendarCheck, Check, ChevronDown } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useSheet } from "@/hooks/use-sheet";
+import { useTRPC } from "@/integrations/clients";
+
+type RecurrenceTransactionSheetProps = {
+	transaction: {
+		amount: string;
+		bankAccountId: string | null;
+		categoryId: string | undefined;
+		description: string;
+		type: "expense" | "income" | "transfer";
+	};
+};
+
+type FrequencyOption = "daily" | "weekly" | "biweekly" | "monthly" | "yearly";
+type OccurrenceOption = "auto" | "count" | "until-date";
+type Step = "frequency" | "occurrence" | "review";
+
+const frequencyOptions: FrequencyOption[] = [
+	"daily",
+	"weekly",
+	"biweekly",
+	"monthly",
+	"yearly",
+];
+
+const occurrenceOptions: OccurrenceOption[] = ["auto", "count", "until-date"];
+
+const frequencyToPattern: Record<FrequencyOption, RecurrencePattern> = {
+	biweekly: "biweekly",
+	daily: "daily",
+	monthly: "monthly",
+	weekly: "weekly",
+	yearly: "annual",
+};
+
+const frequencyLabels: Record<FrequencyOption, string> = {
+	biweekly: "Quinzenal",
+	daily: "Diario",
+	monthly: "Mensal",
+	weekly: "Semanal",
+	yearly: "Anual",
+};
+
+const occurrenceLabels: Record<OccurrenceOption, string> = {
+	auto: "Automatico",
+	count: "Numero de vezes",
+	"until-date": "Ate uma data",
+};
+
+export function RecurrenceTransactionSheet({
+	transaction,
+}: RecurrenceTransactionSheetProps) {
+	const trpc = useTRPC();
+	const { closeSheet } = useSheet();
+
+	const [startDate, setStartDate] = useState<Date>(new Date());
+	const [frequency, setFrequency] = useState<FrequencyOption | null>(null);
+	const [occurrenceOption, setOccurrenceOption] =
+		useState<OccurrenceOption | null>(null);
+	const [occurrenceCount, setOccurrenceCount] = useState<number>(12);
+	const [untilDate, setUntilDate] = useState<Date | undefined>(undefined);
+	const [currentStep, setCurrentStep] = useState<Step>("frequency");
+
+	const createBillMutation = useMutation(trpc.bills.create.mutationOptions());
+
+	const recurrencePattern = frequency ? frequencyToPattern[frequency] : null;
+
+	const previewCount = useMemo(() => {
+		if (!recurrencePattern || !occurrenceOption) return 0;
+
+		if (occurrenceOption === "auto") {
+			return getDefaultFutureOccurrences(recurrencePattern) + 1;
+		}
+		if (occurrenceOption === "count") {
+			return occurrenceCount + 1;
+		}
+		if (occurrenceOption === "until-date" && untilDate) {
+			return (
+				generateFutureDatesUntil(startDate, recurrencePattern, untilDate)
+					.length + 1
+			);
+		}
+		return 1;
+	}, [
+		recurrencePattern,
+		occurrenceOption,
+		occurrenceCount,
+		untilDate,
+		startDate,
+	]);
+
+	const handleFrequencySelect = (value: string) => {
+		setFrequency(value as FrequencyOption);
+		setCurrentStep("occurrence");
+	};
+
+	const handleOccurrenceSelect = (value: string) => {
+		setOccurrenceOption(value as OccurrenceOption);
+		if (value !== "count" && value !== "until-date") {
+			setCurrentStep("review");
+		}
+	};
+
+	const handleOccurrenceConfirm = () => {
+		setCurrentStep("review");
+	};
+
+	const handleSubmit = async () => {
+		if (!recurrencePattern || !occurrenceOption) return;
+
+		const billType =
+			transaction.type === "transfer" ? "expense" : transaction.type;
+
+		await createBillMutation.mutateAsync({
+			amount: Math.abs(Number(transaction.amount)),
+			bankAccountId: transaction.bankAccountId || undefined,
+			categoryId: transaction.categoryId,
+			description: transaction.description,
+			dueDate: startDate,
+			isRecurring: true,
+			recurrencePattern,
+			type: billType,
+			...(occurrenceOption === "count" && { occurrenceCount }),
+			...(occurrenceOption === "until-date" &&
+				untilDate && { occurrenceUntilDate: untilDate }),
+		});
+
+		toast.success(
+			translate("dashboard.routes.transactions.features.recurrence.success"),
+		);
+		closeSheet();
+	};
+
+	const isSubmitDisabled =
+		createBillMutation.isPending ||
+		!frequency ||
+		!occurrenceOption ||
+		currentStep !== "review" ||
+		(occurrenceOption === "count" && occurrenceCount < 1) ||
+		(occurrenceOption === "until-date" && !untilDate) ||
+		(occurrenceOption === "until-date" && untilDate && untilDate <= startDate);
+
+	return (
+		<>
+			<SheetHeader>
+				<SheetTitle>
+					{translate(
+						"dashboard.routes.transactions.features.recurrence.title",
+					)}
+				</SheetTitle>
+				<SheetDescription>
+					{translate(
+						"dashboard.routes.transactions.features.recurrence.description",
+					)}
+				</SheetDescription>
+			</SheetHeader>
+
+			<div className="px-4 flex-1 overflow-y-auto">
+				<div className="space-y-4 py-4">
+					{/* Start Date - Always visible */}
+					<div className="space-y-2">
+						<Label>
+							{translate(
+								"dashboard.routes.transactions.features.recurrence.start-date",
+							)}
+						</Label>
+						<DatePicker
+							date={startDate}
+							onSelect={(date) => date && setStartDate(date)}
+							className="w-full"
+						/>
+					</div>
+
+					{/* Step 1: Frequency */}
+					<Collapsible
+						open={currentStep === "frequency"}
+						onOpenChange={(open) => {
+							if (open) {
+								setCurrentStep("frequency");
+							} else if (frequency) {
+								setCurrentStep("occurrence");
+							}
+						}}
+					>
+						<CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors">
+							<div className="flex items-center gap-3">
+								<div
+									className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
+										frequency
+											? "bg-primary text-primary-foreground"
+											: "bg-muted text-muted-foreground"
+									}`}
+								>
+									{frequency ? <Check className="h-3.5 w-3.5" /> : "1"}
+								</div>
+								<div className="text-left">
+									<div className="font-medium">
+										{translate(
+											"dashboard.routes.transactions.features.recurrence.frequency.title",
+										)}
+									</div>
+									<div className="text-sm text-muted-foreground">
+										{frequency && currentStep !== "frequency"
+											? frequencyLabels[frequency]
+											: "Escolha com que frequencia a conta se repete"}
+									</div>
+								</div>
+							</div>
+							<ChevronDown
+								className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+									currentStep === "frequency" ? "rotate-180" : ""
+								}`}
+							/>
+						</CollapsibleTrigger>
+						<CollapsibleContent>
+							<div className="pt-4">
+								<Choicebox
+									value={frequency || ""}
+									onValueChange={handleFrequencySelect}
+								>
+									{frequencyOptions.map((option) => (
+										<ChoiceboxItem
+											key={option}
+											value={option}
+											id={`freq-${option}`}
+										>
+											<ChoiceboxItemHeader>
+												<ChoiceboxItemTitle>
+													{translate(
+														`dashboard.routes.transactions.features.recurrence.frequency.${option}.title`,
+													)}
+												</ChoiceboxItemTitle>
+												<ChoiceboxItemDescription>
+													{translate(
+														`dashboard.routes.transactions.features.recurrence.frequency.${option}.description`,
+													)}
+												</ChoiceboxItemDescription>
+											</ChoiceboxItemHeader>
+											<ChoiceboxIndicator id={`freq-${option}`} />
+										</ChoiceboxItem>
+									))}
+								</Choicebox>
+							</div>
+						</CollapsibleContent>
+					</Collapsible>
+
+					{/* Step 2: Occurrence */}
+					<Collapsible
+						open={currentStep === "occurrence"}
+						onOpenChange={(open) => {
+							if (open && frequency) {
+								setCurrentStep("occurrence");
+							} else if (occurrenceOption) {
+								setCurrentStep("review");
+							} else if (frequency) {
+								setCurrentStep("frequency");
+							}
+						}}
+					>
+						<CollapsibleTrigger
+							className={`flex w-full items-center justify-between rounded-lg border p-4 transition-colors ${
+								frequency
+									? "hover:bg-muted/50"
+									: "opacity-50 cursor-not-allowed"
+							}`}
+							disabled={!frequency}
+						>
+							<div className="flex items-center gap-3">
+								<div
+									className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
+										occurrenceOption
+											? "bg-primary text-primary-foreground"
+											: "bg-muted text-muted-foreground"
+									}`}
+								>
+									{occurrenceOption ? <Check className="h-3.5 w-3.5" /> : "2"}
+								</div>
+								<div className="text-left">
+									<div className="font-medium">
+										{translate(
+											"dashboard.routes.transactions.features.recurrence.occurrence.title",
+										)}
+									</div>
+									<div className="text-sm text-muted-foreground">
+										{occurrenceOption && currentStep !== "occurrence" ? (
+											<>
+												{occurrenceLabels[occurrenceOption]}
+												{occurrenceOption === "count" &&
+													` (${occurrenceCount}x)`}
+												{occurrenceOption === "until-date" &&
+													untilDate &&
+													` (${untilDate.toLocaleDateString("pt-BR")})`}
+											</>
+										) : (
+											"Defina quantas vezes a conta sera criada"
+										)}
+									</div>
+								</div>
+							</div>
+							<ChevronDown
+								className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+									currentStep === "occurrence" ? "rotate-180" : ""
+								}`}
+							/>
+						</CollapsibleTrigger>
+						<CollapsibleContent>
+							<div className="pt-4 space-y-4">
+								<Choicebox
+									value={occurrenceOption || ""}
+									onValueChange={handleOccurrenceSelect}
+								>
+									{occurrenceOptions.map((option) => (
+										<ChoiceboxItem
+											key={option}
+											value={option}
+											id={`occ-${option}`}
+										>
+											<ChoiceboxItemHeader>
+												<ChoiceboxItemTitle>
+													{translate(
+														`dashboard.routes.transactions.features.recurrence.occurrence.${option}.title`,
+													)}
+												</ChoiceboxItemTitle>
+												<ChoiceboxItemDescription>
+													{translate(
+														`dashboard.routes.transactions.features.recurrence.occurrence.${option}.description`,
+													)}
+												</ChoiceboxItemDescription>
+											</ChoiceboxItemHeader>
+											<ChoiceboxIndicator id={`occ-${option}`} />
+										</ChoiceboxItem>
+									))}
+								</Choicebox>
+
+								{occurrenceOption === "count" && (
+									<div className="space-y-2">
+										<Label>
+											{translate(
+												"dashboard.routes.transactions.features.recurrence.occurrence.count.input-label",
+											)}
+										</Label>
+										<Input
+											type="number"
+											min={1}
+											max={365}
+											value={occurrenceCount}
+											onChange={(e) =>
+												setOccurrenceCount(Number(e.target.value) || 1)
+											}
+										/>
+										<Button
+											onClick={handleOccurrenceConfirm}
+											size="sm"
+											className="w-full mt-2"
+										>
+											Confirmar
+										</Button>
+									</div>
+								)}
+
+								{occurrenceOption === "until-date" && (
+									<div className="space-y-2">
+										<DatePicker
+											date={untilDate}
+											onSelect={(date) => {
+												setUntilDate(date);
+												if (date) {
+													setCurrentStep("review");
+												}
+											}}
+											className="w-full"
+										/>
+									</div>
+								)}
+							</div>
+						</CollapsibleContent>
+					</Collapsible>
+
+					{/* Preview - Shows when all steps are complete */}
+					{frequency && occurrenceOption && currentStep === "review" && (
+						<Alert>
+							<CalendarCheck className="h-4 w-4" />
+							<AlertTitle>
+								{previewCount} contas serao criadas
+							</AlertTitle>
+							<AlertDescription>
+								{frequencyLabels[frequency]} a partir de{" "}
+								{startDate.toLocaleDateString("pt-BR")}
+							</AlertDescription>
+						</Alert>
+					)}
+				</div>
+			</div>
+
+			<SheetFooter>
+				<Button
+					onClick={handleSubmit}
+					disabled={isSubmitDisabled}
+					className="w-full"
+				>
+					{createBillMutation.isPending
+						? translate("common.actions.loading")
+						: translate(
+								"dashboard.routes.transactions.features.recurrence.submit",
+							)}
+				</Button>
+			</SheetFooter>
+		</>
+	);
+}

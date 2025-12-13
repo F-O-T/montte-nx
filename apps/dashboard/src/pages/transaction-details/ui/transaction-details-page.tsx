@@ -29,14 +29,16 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { CategorizeForm } from "@/features/transaction/ui/categorize-form";
 import { CategorySplitForm } from "@/features/transaction/ui/category-split-form";
+import { DuplicateTransactionSheet } from "@/features/transaction/ui/duplicate-transaction-sheet";
 import { LinkFileForm } from "@/features/transaction/ui/link-file-form";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { MarkAsTransferForm } from "@/features/transaction/ui/mark-as-transfer-form";
+import { RecurrenceTransactionSheet } from "@/features/transaction/ui/recurrence-transaction-sheet";
+import { RefundTransactionSheet } from "@/features/transaction/ui/refund-transaction-sheet";
 import { useDeleteTransaction } from "@/features/transaction/ui/use-delete-transaction";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 import { TransactionCategorizationSection } from "./transaction-categories-section";
 import { TransactionDetailsSection } from "./transaction-details-section";
 import { TransactionStats } from "./transaction-stats";
@@ -70,22 +72,20 @@ function TransactionContent() {
       if (!transaction) return;
       openSheet({
          children: (
-            <ManageTransactionForm
-               duplicateFrom={{
-                  amount: Number(transaction.amount),
-                  bankAccountId: transaction.bankAccountId || "",
+            <DuplicateTransactionSheet
+               transaction={{
+                  amount: transaction.amount,
+                  bankAccountId: transaction.bankAccountId,
                   categoryIds:
                      transaction.transactionCategories?.map(
                         (tc) => tc.category.id,
                      ) || [],
-                  costCenterId: transaction.costCenterId || "",
+                  costCenterId: transaction.costCenterId,
+                  date: new Date(transaction.date),
                   description: transaction.description,
                   tagIds:
                      transaction.transactionTags?.map((tt) => tt.tag.id) || [],
-                  type:
-                     transaction.type === "transfer"
-                        ? "expense"
-                        : (transaction.type as "expense" | "income"),
+                  type: transaction.type as "expense" | "income" | "transfer",
                }}
             />
          ),
@@ -96,44 +96,39 @@ function TransactionContent() {
       if (!transaction) return;
       openSheet({
          children: (
-            <ManageTransactionForm
-               refundFrom={{
-                  amount: Number(transaction.amount),
-                  bankAccountId: transaction.bankAccountId || "",
+            <RefundTransactionSheet
+               transaction={{
+                  amount: transaction.amount,
+                  bankAccountId: transaction.bankAccountId,
                   categoryIds:
                      transaction.transactionCategories?.map(
                         (tc) => tc.category.id,
                      ) || [],
-                  costCenterId: transaction.costCenterId || "",
-                  originalDescription: transaction.description,
+                  costCenterId: transaction.costCenterId,
+                  date: new Date(transaction.date),
+                  description: transaction.description,
                   tagIds:
                      transaction.transactionTags?.map((tt) => tt.tag.id) || [],
-                  type:
-                     transaction.type === "transfer"
-                        ? "expense"
-                        : (transaction.type as "expense" | "income"),
+                  type: transaction.type as "expense" | "income" | "transfer",
                }}
             />
          ),
       });
    };
 
-   const handleCreateBill = () => {
+   const handleCreateRecurrence = () => {
       if (!transaction) return;
       const primaryCategoryId =
          transaction.transactionCategories?.[0]?.category.id;
       openSheet({
          children: (
-            <ManageBillForm
-               fromTransaction={{
-                  amount: Math.abs(Number(transaction.amount)),
-                  bankAccountId: transaction.bankAccountId || undefined,
+            <RecurrenceTransactionSheet
+               transaction={{
+                  amount: transaction.amount,
+                  bankAccountId: transaction.bankAccountId,
                   categoryId: primaryCategoryId,
                   description: transaction.description,
-                  type:
-                     transaction.type === "transfer"
-                        ? "expense"
-                        : (transaction.type as "expense" | "income"),
+                  type: transaction.type as "expense" | "income" | "transfer",
                }}
             />
          ),
@@ -247,7 +242,7 @@ function TransactionContent() {
                   "dashboard.routes.transactions.list-section.actions.refund",
                )}
             </Button>
-            <Button onClick={handleCreateBill} size="sm" variant="outline">
+            <Button onClick={handleCreateRecurrence} size="sm" variant="outline">
                <CalendarPlus className="size-4" />
                {translate(
                   "dashboard.routes.transactions.list-section.actions.create-bill",

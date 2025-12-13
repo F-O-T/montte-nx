@@ -17,9 +17,21 @@ import { initTRPC } from "@trpc/server";
 import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
-// Initialize cache client for lazy caching
-const redis = getRedisConnection()!;
-const cache = createCacheClient(redis);
+// Initialize cache client lazily
+let cache: ReturnType<typeof createCacheClient> | null = null;
+
+function getCache() {
+   if (!cache) {
+      const redis = getRedisConnection();
+      if (!redis) {
+         throw new Error(
+            "[Cache] Redis connection not initialized. Ensure createRedisConnection() is called before using cache.",
+         );
+      }
+      cache = createCacheClient(redis);
+   }
+   return cache;
+}
 
 export const createTRPCContext = async ({
    auth,
@@ -333,8 +345,10 @@ export function withCache<T>(
    ttl: number = TTL.LONG,
 ): () => Promise<T> {
    return async (): Promise<T> => {
+      const cacheClient = getCache();
+
       // Check cache first
-      const cached = await cache.getJSON<T>(cacheKey);
+      const cached = await cacheClient.getJSON<T>(cacheKey);
       if (cached !== null) {
          console.log(`[Cache] Hit for key: ${cacheKey}`);
          return cached;
@@ -344,7 +358,7 @@ export function withCache<T>(
       const result = await fetcher();
 
       // Store in cache (fire and forget)
-      cache.setJSON(cacheKey, result, ttl).catch((error) => {
+      cacheClient.setJSON(cacheKey, result, ttl).catch((error) => {
          console.error(`[Cache] Failed to cache key ${cacheKey}:`, error);
       });
       console.log(`[Cache] Stored key: ${cacheKey} with TTL: ${ttl}s`);
