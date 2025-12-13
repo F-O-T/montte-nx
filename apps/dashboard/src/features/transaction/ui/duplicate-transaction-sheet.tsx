@@ -48,7 +48,24 @@ export function DuplicateTransactionSheet({
 	const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
 
 	const createTransactionMutation = useMutation(
-		trpc.transactions.create.mutationOptions(),
+		trpc.transactions.create.mutationOptions({
+			onSuccess: () => {
+				toast.success(
+					translate(
+						"dashboard.routes.transactions.notifications.create-success",
+					),
+				);
+				closeSheet();
+			},
+			onError: (error) => {
+				console.error("Failed to duplicate transaction:", error);
+				toast.error(
+					translate(
+						"dashboard.routes.transactions.notifications.create-error",
+					),
+				);
+			},
+		}),
 	);
 
 	const getDuplicateDate = (): Date => {
@@ -58,15 +75,20 @@ export function DuplicateTransactionSheet({
 			case "today":
 				return new Date();
 			case "custom":
-				return customDate || new Date();
+				if (!customDate) {
+					throw new Error(
+						"Custom date is required when dateOption is 'custom'",
+					);
+				}
+				return customDate;
 		}
 	};
 
-	const handleSubmit = async () => {
+	const handleSubmit = () => {
 		const duplicateType =
 			transaction.type === "transfer" ? "expense" : transaction.type;
 
-		await createTransactionMutation.mutateAsync({
+		createTransactionMutation.mutate({
 			amount: Number(transaction.amount),
 			bankAccountId: transaction.bankAccountId || undefined,
 			categoryIds: transaction.categoryIds,
@@ -76,13 +98,6 @@ export function DuplicateTransactionSheet({
 			tagIds: transaction.tagIds,
 			type: duplicateType,
 		});
-
-		toast.success(
-			translate(
-				"dashboard.routes.transactions.notifications.create-success",
-			),
-		);
-		closeSheet();
 	};
 
 	const isSubmitDisabled =
@@ -143,15 +158,12 @@ export function DuplicateTransactionSheet({
 			</div>
 
 			<SheetFooter>
-				<Button
-					onClick={handleSubmit}
-					disabled={isSubmitDisabled}
-				>
+				<Button onClick={handleSubmit} disabled={isSubmitDisabled}>
 					{createTransactionMutation.isPending
 						? translate("common.actions.loading")
 						: translate(
-								"dashboard.routes.transactions.features.duplicate.submit",
-							)}
+							"dashboard.routes.transactions.features.duplicate.submit",
+						)}
 				</Button>
 			</SheetFooter>
 		</>
