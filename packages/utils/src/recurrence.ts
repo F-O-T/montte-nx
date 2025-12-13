@@ -1,4 +1,7 @@
 export type RecurrencePattern =
+   | "daily"
+   | "weekly"
+   | "biweekly"
    | "monthly"
    | "quarterly"
    | "semiannual"
@@ -16,6 +19,15 @@ export function getNextDueDate(
    const nextDate = new Date(currentDueDate);
 
    switch (pattern) {
+      case "daily":
+         nextDate.setDate(nextDate.getDate() + 1);
+         break;
+      case "weekly":
+         nextDate.setDate(nextDate.getDate() + 7);
+         break;
+      case "biweekly":
+         nextDate.setDate(nextDate.getDate() + 14);
+         break;
       case "monthly":
          nextDate.setMonth(nextDate.getMonth() + 1);
          break;
@@ -36,9 +48,12 @@ export function getNextDueDate(
 export function getRecurrenceLabel(pattern: RecurrencePattern): string {
    const labels: Record<RecurrencePattern, string> = {
       annual: "Anual",
+      biweekly: "Quinzenal",
+      daily: "Diario",
       monthly: "Mensal",
       quarterly: "Trimestral",
       semiannual: "Semestral",
+      weekly: "Semanal",
    };
 
    return labels[pattern];
@@ -53,9 +68,12 @@ export function getDefaultFutureOccurrences(
 ): number {
    const defaults: Record<RecurrencePattern, number> = {
       annual: 5,
+      biweekly: 24,
+      daily: 30,
       monthly: 12,
       quarterly: 8,
       semiannual: 6,
+      weekly: 52,
    };
 
    return defaults[pattern];
@@ -73,6 +91,24 @@ export function generateFutureDates(
    for (let i = 0; i < occurrences; i++) {
       currentDate = getNextDueDate(currentDate, pattern);
       dates.push(new Date(currentDate));
+   }
+
+   return dates;
+}
+
+export function generateFutureDatesUntil(
+   baseDate: Date,
+   pattern: RecurrencePattern,
+   untilDate: Date,
+): Date[] {
+   const dates: Date[] = [];
+   let currentDate = new Date(baseDate);
+
+   while (currentDate < untilDate) {
+      currentDate = getNextDueDate(currentDate, pattern);
+      if (currentDate <= untilDate) {
+         dates.push(new Date(currentDate));
+      }
    }
 
    return dates;

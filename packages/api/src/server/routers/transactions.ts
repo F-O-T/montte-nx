@@ -920,7 +920,6 @@ export const transactionRouter = router({
          const results = await Promise.all(
             validTransactions.map(async (t) => {
                const amount = Number(t.amount);
-               const isOutgoing = amount < 0;
 
                await updateTransaction(resolvedCtx.db, t.id, {
                   type: "transfer",
@@ -969,17 +968,13 @@ export const transactionRouter = router({
                }
 
                await createTransferLog(resolvedCtx.db, {
-                  fromBankAccountId: isOutgoing
-                     ? (t.bankAccountId as string)
-                     : input.toBankAccountId,
-                  fromTransactionId: isOutgoing ? t.id : counterpartId,
+                  fromBankAccountId: t.bankAccountId as string,
+                  fromTransactionId: t.id,
                   id: crypto.randomUUID(),
                   notes: null,
                   organizationId,
-                  toBankAccountId: isOutgoing
-                     ? input.toBankAccountId
-                     : (t.bankAccountId as string),
-                  toTransactionId: isOutgoing ? counterpartId : t.id,
+                  toBankAccountId: input.toBankAccountId,
+                  toTransactionId: counterpartId,
                });
 
                return t.id;
