@@ -12,7 +12,9 @@ const EnvSchema = z.object({
    DATABASE_URL: z.string(),
    MINIO_ACCESS_KEY: z.string(),
    MINIO_BUCKET: z.string().default("content-writer"),
-   MINIO_ENDPOINT: z.string(),
+   MINIO_ENDPOINT: z.string().refine((val) => !/\$\{\{.*\}\}/.test(val), {
+      message: "MINIO_ENDPOINT looks like an unresolved template placeholder.",
+   }),
    MINIO_SECRET_KEY: z.string(),
    POSTHOG_HOST: z.string(),
    POSTHOG_KEY: z.string(),

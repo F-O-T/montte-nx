@@ -17,6 +17,7 @@ import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
+import { plansRouter } from "./routers/plans";
 import { pushNotificationRouter } from "./routers/push-notifications";
 import { reportRouter } from "./routers/reports";
 import { sessionRouter } from "./routers/session";
@@ -42,6 +43,7 @@ export const appRouter = router({
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
+   plans: plansRouter,
    pushNotifications: pushNotificationRouter,
    reports: reportRouter,
    session: sessionRouter,
