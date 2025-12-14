@@ -67,7 +67,7 @@ function NavUserCredenza({
             >
                <Link
                   params={{ slug: activeOrganization.slug }}
-                  to="/$slug/profile"
+                  to="/$slug/settings"
                >
                   <UserCircleIcon />
                   {translate("dashboard.layout.nav-user.main.account")}

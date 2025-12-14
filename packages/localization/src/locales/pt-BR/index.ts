@@ -23,6 +23,7 @@ import onboardingPtBr from "./dashboard/routes/onboarding.json";
 import organizationPtBr from "./dashboard/routes/organization.json";
 import profilePtBr from "./dashboard/routes/profile.json";
 import reportsPtBr from "./dashboard/routes/reports.json";
+import settingsPtBr from "./dashboard/routes/settings.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
 import tagsPtBr from "./dashboard/routes/tags.json";
@@ -60,6 +61,7 @@ const resources = {
             organization: organizationPtBr,
             profile: profilePtBr,
             reports: reportsPtBr,
+            settings: settingsPtBr,
             "sign-in": signInPtBr,
             "sign-up": signUpPtBr,
             tags: tagsPtBr,

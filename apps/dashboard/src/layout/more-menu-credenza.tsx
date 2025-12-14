@@ -110,9 +110,9 @@ const sections: { title: string; items: NavItem[] }[] = [
       items: [
          {
             icon: Settings,
-            id: "profile",
-            label: "Perfil",
-            url: "/$slug/profile",
+            id: "settings",
+            label: "Configurações",
+            url: "/$slug/settings",
          },
       ],
       title: "Conta",

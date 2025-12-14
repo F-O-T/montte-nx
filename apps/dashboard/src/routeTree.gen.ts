@@ -21,6 +21,7 @@ import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-v
 import { Route as SlugOnboardingRouteImport } from './routes/$slug/onboarding'
 import { Route as SlugImportOfxRouteImport } from './routes/$slug/import-ofx'
 import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
+import { Route as SlugDashboardSettingsRouteImport } from './routes/$slug/_dashboard/settings'
 import { Route as SlugDashboardReportsRouteImport } from './routes/$slug/_dashboard/reports'
 import { Route as SlugDashboardProfileRouteImport } from './routes/$slug/_dashboard/profile'
 import { Route as SlugDashboardPlansRouteImport } from './routes/$slug/_dashboard/plans'
@@ -28,6 +29,7 @@ import { Route as SlugDashboardManagePlanRouteImport } from './routes/$slug/_das
 import { Route as SlugDashboardHomeRouteImport } from './routes/$slug/_dashboard/home'
 import { Route as SlugDashboardTransactionsIndexRouteImport } from './routes/$slug/_dashboard/transactions.index'
 import { Route as SlugDashboardTagsIndexRouteImport } from './routes/$slug/_dashboard/tags/index'
+import { Route as SlugDashboardSettingsIndexRouteImport } from './routes/$slug/_dashboard/settings/index'
 import { Route as SlugDashboardOrganizationIndexRouteImport } from './routes/$slug/_dashboard/organization/index'
 import { Route as SlugDashboardInterestTemplatesIndexRouteImport } from './routes/$slug/_dashboard/interest-templates/index'
 import { Route as SlugDashboardCustomReportsIndexRouteImport } from './routes/$slug/_dashboard/custom-reports.index'
@@ -40,6 +42,11 @@ import { Route as SlugDashboardBankAccountsIndexRouteImport } from './routes/$sl
 import { Route as SlugDashboardAutomationsIndexRouteImport } from './routes/$slug/_dashboard/automations/index'
 import { Route as SlugDashboardTransactionsTransactionIdRouteImport } from './routes/$slug/_dashboard/transactions.$transactionId'
 import { Route as SlugDashboardTagsTagIdRouteImport } from './routes/$slug/_dashboard/tags/$tagId'
+import { Route as SlugDashboardSettingsSecurityRouteImport } from './routes/$slug/_dashboard/settings/security'
+import { Route as SlugDashboardSettingsProfileRouteImport } from './routes/$slug/_dashboard/settings/profile'
+import { Route as SlugDashboardSettingsPreferencesRouteImport } from './routes/$slug/_dashboard/settings/preferences'
+import { Route as SlugDashboardSettingsNotificationsRouteImport } from './routes/$slug/_dashboard/settings/notifications'
+import { Route as SlugDashboardSettingsBillingRouteImport } from './routes/$slug/_dashboard/settings/billing'
 import { Route as SlugDashboardOrganizationTeamsRouteImport } from './routes/$slug/_dashboard/organization/teams'
 import { Route as SlugDashboardOrganizationMembersRouteImport } from './routes/$slug/_dashboard/organization/members'
 import { Route as SlugDashboardOrganizationInvitesRouteImport } from './routes/$slug/_dashboard/organization/invites'
@@ -112,6 +119,11 @@ const SlugDashboardRoute = SlugDashboardRouteImport.update({
   id: '/_dashboard',
   getParentRoute: () => SlugRoute,
 } as any)
+const SlugDashboardSettingsRoute = SlugDashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => SlugDashboardRoute,
+} as any)
 const SlugDashboardReportsRoute = SlugDashboardReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -148,6 +160,12 @@ const SlugDashboardTagsIndexRoute = SlugDashboardTagsIndexRouteImport.update({
   path: '/tags/',
   getParentRoute: () => SlugDashboardRoute,
 } as any)
+const SlugDashboardSettingsIndexRoute =
+  SlugDashboardSettingsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => SlugDashboardSettingsRoute,
+  } as any)
 const SlugDashboardOrganizationIndexRoute =
   SlugDashboardOrganizationIndexRouteImport.update({
     id: '/organization/',
@@ -218,6 +236,36 @@ const SlugDashboardTagsTagIdRoute = SlugDashboardTagsTagIdRouteImport.update({
   path: '/tags/$tagId',
   getParentRoute: () => SlugDashboardRoute,
 } as any)
+const SlugDashboardSettingsSecurityRoute =
+  SlugDashboardSettingsSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => SlugDashboardSettingsRoute,
+  } as any)
+const SlugDashboardSettingsProfileRoute =
+  SlugDashboardSettingsProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => SlugDashboardSettingsRoute,
+  } as any)
+const SlugDashboardSettingsPreferencesRoute =
+  SlugDashboardSettingsPreferencesRouteImport.update({
+    id: '/preferences',
+    path: '/preferences',
+    getParentRoute: () => SlugDashboardSettingsRoute,
+  } as any)
+const SlugDashboardSettingsNotificationsRoute =
+  SlugDashboardSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => SlugDashboardSettingsRoute,
+  } as any)
+const SlugDashboardSettingsBillingRoute =
+  SlugDashboardSettingsBillingRouteImport.update({
+    id: '/billing',
+    path: '/billing',
+    getParentRoute: () => SlugDashboardSettingsRoute,
+  } as any)
 const SlugDashboardOrganizationTeamsRoute =
   SlugDashboardOrganizationTeamsRouteImport.update({
     id: '/organization/teams',
@@ -308,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/$slug/plans': typeof SlugDashboardPlansRoute
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
+  '/$slug/settings': typeof SlugDashboardSettingsRouteWithChildren
   '/$slug/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/bills/$billId': typeof SlugDashboardBillsBillIdRoute
@@ -320,6 +369,11 @@ export interface FileRoutesByFullPath {
   '/$slug/organization/invites': typeof SlugDashboardOrganizationInvitesRoute
   '/$slug/organization/members': typeof SlugDashboardOrganizationMembersRoute
   '/$slug/organization/teams': typeof SlugDashboardOrganizationTeamsRoute
+  '/$slug/settings/billing': typeof SlugDashboardSettingsBillingRoute
+  '/$slug/settings/notifications': typeof SlugDashboardSettingsNotificationsRoute
+  '/$slug/settings/preferences': typeof SlugDashboardSettingsPreferencesRoute
+  '/$slug/settings/profile': typeof SlugDashboardSettingsProfileRoute
+  '/$slug/settings/security': typeof SlugDashboardSettingsSecurityRoute
   '/$slug/tags/$tagId': typeof SlugDashboardTagsTagIdRoute
   '/$slug/transactions/$transactionId': typeof SlugDashboardTransactionsTransactionIdRoute
   '/$slug/automations': typeof SlugDashboardAutomationsIndexRoute
@@ -332,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/$slug/custom-reports': typeof SlugDashboardCustomReportsIndexRoute
   '/$slug/interest-templates': typeof SlugDashboardInterestTemplatesIndexRoute
   '/$slug/organization': typeof SlugDashboardOrganizationIndexRoute
+  '/$slug/settings/': typeof SlugDashboardSettingsIndexRoute
   '/$slug/tags': typeof SlugDashboardTagsIndexRoute
   '/$slug/transactions': typeof SlugDashboardTransactionsIndexRoute
 }
@@ -364,6 +419,11 @@ export interface FileRoutesByTo {
   '/$slug/organization/invites': typeof SlugDashboardOrganizationInvitesRoute
   '/$slug/organization/members': typeof SlugDashboardOrganizationMembersRoute
   '/$slug/organization/teams': typeof SlugDashboardOrganizationTeamsRoute
+  '/$slug/settings/billing': typeof SlugDashboardSettingsBillingRoute
+  '/$slug/settings/notifications': typeof SlugDashboardSettingsNotificationsRoute
+  '/$slug/settings/preferences': typeof SlugDashboardSettingsPreferencesRoute
+  '/$slug/settings/profile': typeof SlugDashboardSettingsProfileRoute
+  '/$slug/settings/security': typeof SlugDashboardSettingsSecurityRoute
   '/$slug/tags/$tagId': typeof SlugDashboardTagsTagIdRoute
   '/$slug/transactions/$transactionId': typeof SlugDashboardTransactionsTransactionIdRoute
   '/$slug/automations': typeof SlugDashboardAutomationsIndexRoute
@@ -376,6 +436,7 @@ export interface FileRoutesByTo {
   '/$slug/custom-reports': typeof SlugDashboardCustomReportsIndexRoute
   '/$slug/interest-templates': typeof SlugDashboardInterestTemplatesIndexRoute
   '/$slug/organization': typeof SlugDashboardOrganizationIndexRoute
+  '/$slug/settings': typeof SlugDashboardSettingsIndexRoute
   '/$slug/tags': typeof SlugDashboardTagsIndexRoute
   '/$slug/transactions': typeof SlugDashboardTransactionsIndexRoute
 }
@@ -398,6 +459,7 @@ export interface FileRoutesById {
   '/$slug/_dashboard/plans': typeof SlugDashboardPlansRoute
   '/$slug/_dashboard/profile': typeof SlugDashboardProfileRoute
   '/$slug/_dashboard/reports': typeof SlugDashboardReportsRoute
+  '/$slug/_dashboard/settings': typeof SlugDashboardSettingsRouteWithChildren
   '/$slug/_dashboard/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
   '/$slug/_dashboard/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/_dashboard/bills/$billId': typeof SlugDashboardBillsBillIdRoute
@@ -410,6 +472,11 @@ export interface FileRoutesById {
   '/$slug/_dashboard/organization/invites': typeof SlugDashboardOrganizationInvitesRoute
   '/$slug/_dashboard/organization/members': typeof SlugDashboardOrganizationMembersRoute
   '/$slug/_dashboard/organization/teams': typeof SlugDashboardOrganizationTeamsRoute
+  '/$slug/_dashboard/settings/billing': typeof SlugDashboardSettingsBillingRoute
+  '/$slug/_dashboard/settings/notifications': typeof SlugDashboardSettingsNotificationsRoute
+  '/$slug/_dashboard/settings/preferences': typeof SlugDashboardSettingsPreferencesRoute
+  '/$slug/_dashboard/settings/profile': typeof SlugDashboardSettingsProfileRoute
+  '/$slug/_dashboard/settings/security': typeof SlugDashboardSettingsSecurityRoute
   '/$slug/_dashboard/tags/$tagId': typeof SlugDashboardTagsTagIdRoute
   '/$slug/_dashboard/transactions/$transactionId': typeof SlugDashboardTransactionsTransactionIdRoute
   '/$slug/_dashboard/automations/': typeof SlugDashboardAutomationsIndexRoute
@@ -422,6 +489,7 @@ export interface FileRoutesById {
   '/$slug/_dashboard/custom-reports/': typeof SlugDashboardCustomReportsIndexRoute
   '/$slug/_dashboard/interest-templates/': typeof SlugDashboardInterestTemplatesIndexRoute
   '/$slug/_dashboard/organization/': typeof SlugDashboardOrganizationIndexRoute
+  '/$slug/_dashboard/settings/': typeof SlugDashboardSettingsIndexRoute
   '/$slug/_dashboard/tags/': typeof SlugDashboardTagsIndexRoute
   '/$slug/_dashboard/transactions/': typeof SlugDashboardTransactionsIndexRoute
 }
@@ -444,6 +512,7 @@ export interface FileRouteTypes {
     | '/$slug/plans'
     | '/$slug/profile'
     | '/$slug/reports'
+    | '/$slug/settings'
     | '/$slug/automations/$automationId'
     | '/$slug/bank-accounts/$bankAccountId'
     | '/$slug/bills/$billId'
@@ -456,6 +525,11 @@ export interface FileRouteTypes {
     | '/$slug/organization/invites'
     | '/$slug/organization/members'
     | '/$slug/organization/teams'
+    | '/$slug/settings/billing'
+    | '/$slug/settings/notifications'
+    | '/$slug/settings/preferences'
+    | '/$slug/settings/profile'
+    | '/$slug/settings/security'
     | '/$slug/tags/$tagId'
     | '/$slug/transactions/$transactionId'
     | '/$slug/automations'
@@ -468,6 +542,7 @@ export interface FileRouteTypes {
     | '/$slug/custom-reports'
     | '/$slug/interest-templates'
     | '/$slug/organization'
+    | '/$slug/settings/'
     | '/$slug/tags'
     | '/$slug/transactions'
   fileRoutesByTo: FileRoutesByTo
@@ -500,6 +575,11 @@ export interface FileRouteTypes {
     | '/$slug/organization/invites'
     | '/$slug/organization/members'
     | '/$slug/organization/teams'
+    | '/$slug/settings/billing'
+    | '/$slug/settings/notifications'
+    | '/$slug/settings/preferences'
+    | '/$slug/settings/profile'
+    | '/$slug/settings/security'
     | '/$slug/tags/$tagId'
     | '/$slug/transactions/$transactionId'
     | '/$slug/automations'
@@ -512,6 +592,7 @@ export interface FileRouteTypes {
     | '/$slug/custom-reports'
     | '/$slug/interest-templates'
     | '/$slug/organization'
+    | '/$slug/settings'
     | '/$slug/tags'
     | '/$slug/transactions'
   id:
@@ -533,6 +614,7 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard/plans'
     | '/$slug/_dashboard/profile'
     | '/$slug/_dashboard/reports'
+    | '/$slug/_dashboard/settings'
     | '/$slug/_dashboard/automations/$automationId'
     | '/$slug/_dashboard/bank-accounts/$bankAccountId'
     | '/$slug/_dashboard/bills/$billId'
@@ -545,6 +627,11 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard/organization/invites'
     | '/$slug/_dashboard/organization/members'
     | '/$slug/_dashboard/organization/teams'
+    | '/$slug/_dashboard/settings/billing'
+    | '/$slug/_dashboard/settings/notifications'
+    | '/$slug/_dashboard/settings/preferences'
+    | '/$slug/_dashboard/settings/profile'
+    | '/$slug/_dashboard/settings/security'
     | '/$slug/_dashboard/tags/$tagId'
     | '/$slug/_dashboard/transactions/$transactionId'
     | '/$slug/_dashboard/automations/'
@@ -557,6 +644,7 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard/custom-reports/'
     | '/$slug/_dashboard/interest-templates/'
     | '/$slug/_dashboard/organization/'
+    | '/$slug/_dashboard/settings/'
     | '/$slug/_dashboard/tags/'
     | '/$slug/_dashboard/transactions/'
   fileRoutesById: FileRoutesById
@@ -655,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SlugDashboardRouteImport
       parentRoute: typeof SlugRoute
     }
+    '/$slug/_dashboard/settings': {
+      id: '/$slug/_dashboard/settings'
+      path: '/settings'
+      fullPath: '/$slug/settings'
+      preLoaderRoute: typeof SlugDashboardSettingsRouteImport
+      parentRoute: typeof SlugDashboardRoute
+    }
     '/$slug/_dashboard/reports': {
       id: '/$slug/_dashboard/reports'
       path: '/reports'
@@ -703,6 +798,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$slug/tags'
       preLoaderRoute: typeof SlugDashboardTagsIndexRouteImport
       parentRoute: typeof SlugDashboardRoute
+    }
+    '/$slug/_dashboard/settings/': {
+      id: '/$slug/_dashboard/settings/'
+      path: '/'
+      fullPath: '/$slug/settings/'
+      preLoaderRoute: typeof SlugDashboardSettingsIndexRouteImport
+      parentRoute: typeof SlugDashboardSettingsRoute
     }
     '/$slug/_dashboard/organization/': {
       id: '/$slug/_dashboard/organization/'
@@ -787,6 +889,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/$slug/tags/$tagId'
       preLoaderRoute: typeof SlugDashboardTagsTagIdRouteImport
       parentRoute: typeof SlugDashboardRoute
+    }
+    '/$slug/_dashboard/settings/security': {
+      id: '/$slug/_dashboard/settings/security'
+      path: '/security'
+      fullPath: '/$slug/settings/security'
+      preLoaderRoute: typeof SlugDashboardSettingsSecurityRouteImport
+      parentRoute: typeof SlugDashboardSettingsRoute
+    }
+    '/$slug/_dashboard/settings/profile': {
+      id: '/$slug/_dashboard/settings/profile'
+      path: '/profile'
+      fullPath: '/$slug/settings/profile'
+      preLoaderRoute: typeof SlugDashboardSettingsProfileRouteImport
+      parentRoute: typeof SlugDashboardSettingsRoute
+    }
+    '/$slug/_dashboard/settings/preferences': {
+      id: '/$slug/_dashboard/settings/preferences'
+      path: '/preferences'
+      fullPath: '/$slug/settings/preferences'
+      preLoaderRoute: typeof SlugDashboardSettingsPreferencesRouteImport
+      parentRoute: typeof SlugDashboardSettingsRoute
+    }
+    '/$slug/_dashboard/settings/notifications': {
+      id: '/$slug/_dashboard/settings/notifications'
+      path: '/notifications'
+      fullPath: '/$slug/settings/notifications'
+      preLoaderRoute: typeof SlugDashboardSettingsNotificationsRouteImport
+      parentRoute: typeof SlugDashboardSettingsRoute
+    }
+    '/$slug/_dashboard/settings/billing': {
+      id: '/$slug/_dashboard/settings/billing'
+      path: '/billing'
+      fullPath: '/$slug/settings/billing'
+      preLoaderRoute: typeof SlugDashboardSettingsBillingRouteImport
+      parentRoute: typeof SlugDashboardSettingsRoute
     }
     '/$slug/_dashboard/organization/teams': {
       id: '/$slug/_dashboard/organization/teams'
@@ -875,12 +1012,37 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SlugDashboardSettingsRouteChildren {
+  SlugDashboardSettingsBillingRoute: typeof SlugDashboardSettingsBillingRoute
+  SlugDashboardSettingsNotificationsRoute: typeof SlugDashboardSettingsNotificationsRoute
+  SlugDashboardSettingsPreferencesRoute: typeof SlugDashboardSettingsPreferencesRoute
+  SlugDashboardSettingsProfileRoute: typeof SlugDashboardSettingsProfileRoute
+  SlugDashboardSettingsSecurityRoute: typeof SlugDashboardSettingsSecurityRoute
+  SlugDashboardSettingsIndexRoute: typeof SlugDashboardSettingsIndexRoute
+}
+
+const SlugDashboardSettingsRouteChildren: SlugDashboardSettingsRouteChildren = {
+  SlugDashboardSettingsBillingRoute: SlugDashboardSettingsBillingRoute,
+  SlugDashboardSettingsNotificationsRoute:
+    SlugDashboardSettingsNotificationsRoute,
+  SlugDashboardSettingsPreferencesRoute: SlugDashboardSettingsPreferencesRoute,
+  SlugDashboardSettingsProfileRoute: SlugDashboardSettingsProfileRoute,
+  SlugDashboardSettingsSecurityRoute: SlugDashboardSettingsSecurityRoute,
+  SlugDashboardSettingsIndexRoute: SlugDashboardSettingsIndexRoute,
+}
+
+const SlugDashboardSettingsRouteWithChildren =
+  SlugDashboardSettingsRoute._addFileChildren(
+    SlugDashboardSettingsRouteChildren,
+  )
+
 interface SlugDashboardRouteChildren {
   SlugDashboardHomeRoute: typeof SlugDashboardHomeRoute
   SlugDashboardManagePlanRoute: typeof SlugDashboardManagePlanRoute
   SlugDashboardPlansRoute: typeof SlugDashboardPlansRoute
   SlugDashboardProfileRoute: typeof SlugDashboardProfileRoute
   SlugDashboardReportsRoute: typeof SlugDashboardReportsRoute
+  SlugDashboardSettingsRoute: typeof SlugDashboardSettingsRouteWithChildren
   SlugDashboardAutomationsAutomationIdRoute: typeof SlugDashboardAutomationsAutomationIdRoute
   SlugDashboardBankAccountsBankAccountIdRoute: typeof SlugDashboardBankAccountsBankAccountIdRoute
   SlugDashboardBillsBillIdRoute: typeof SlugDashboardBillsBillIdRoute
@@ -915,6 +1077,7 @@ const SlugDashboardRouteChildren: SlugDashboardRouteChildren = {
   SlugDashboardPlansRoute: SlugDashboardPlansRoute,
   SlugDashboardProfileRoute: SlugDashboardProfileRoute,
   SlugDashboardReportsRoute: SlugDashboardReportsRoute,
+  SlugDashboardSettingsRoute: SlugDashboardSettingsRouteWithChildren,
   SlugDashboardAutomationsAutomationIdRoute:
     SlugDashboardAutomationsAutomationIdRoute,
   SlugDashboardBankAccountsBankAccountIdRoute:

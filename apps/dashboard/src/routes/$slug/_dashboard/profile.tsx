@@ -1,14 +1,10 @@
-import { translate } from "@packages/localization";
-import { createFileRoute } from "@tanstack/react-router";
-import { ProfilePage } from "@/pages/profile/ui/profile-page";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/$slug/_dashboard/profile")({
-   component: RouteComponent,
-   staticData: {
-      breadcrumb: translate("dashboard.layout.breadcrumbs.profile"),
-   },
+   component: ProfileRedirect,
 });
 
-function RouteComponent() {
-   return <ProfilePage />;
+function ProfileRedirect() {
+   const { slug } = Route.useParams();
+   return <Navigate params={{ slug }} replace to="/$slug/settings/profile" />;
 }
