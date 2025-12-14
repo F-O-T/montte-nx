@@ -16,11 +16,15 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
+import { Route as AuthMagicLinkRouteImport } from './routes/auth/magic-link'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
+import { Route as AuthAnonymousRouteImport } from './routes/auth/anonymous'
 import { Route as SlugOnboardingRouteImport } from './routes/$slug/onboarding'
 import { Route as SlugImportOfxRouteImport } from './routes/$slug/import-ofx'
 import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
+import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
+import { Route as AuthSignInEmailRouteImport } from './routes/auth/sign-in/email'
 import { Route as SlugDashboardSettingsRouteImport } from './routes/$slug/_dashboard/settings'
 import { Route as SlugDashboardReportsRouteImport } from './routes/$slug/_dashboard/reports'
 import { Route as SlugDashboardProfileRouteImport } from './routes/$slug/_dashboard/profile'
@@ -95,6 +99,11 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthMagicLinkRoute = AuthMagicLinkRouteImport.update({
+  id: '/magic-link',
+  path: '/magic-link',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -103,6 +112,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
 const AuthEmailVerificationRoute = AuthEmailVerificationRouteImport.update({
   id: '/email-verification',
   path: '/email-verification',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthAnonymousRoute = AuthAnonymousRouteImport.update({
+  id: '/anonymous',
+  path: '/anonymous',
   getParentRoute: () => AuthRoute,
 } as any)
 const SlugOnboardingRoute = SlugOnboardingRouteImport.update({
@@ -118,6 +132,16 @@ const SlugImportOfxRoute = SlugImportOfxRouteImport.update({
 const SlugDashboardRoute = SlugDashboardRouteImport.update({
   id: '/_dashboard',
   getParentRoute: () => SlugRoute,
+} as any)
+const AuthSignInIndexRoute = AuthSignInIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthSignInRoute,
+} as any)
+const AuthSignInEmailRoute = AuthSignInEmailRouteImport.update({
+  id: '/email',
+  path: '/email',
+  getParentRoute: () => AuthSignInRoute,
 } as any)
 const SlugDashboardSettingsRoute = SlugDashboardSettingsRouteImport.update({
   id: '/settings',
@@ -347,9 +371,11 @@ export interface FileRoutesByFullPath {
   '/share-target': typeof ShareTargetRoute
   '/$slug/import-ofx': typeof SlugImportOfxRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
+  '/auth/anonymous': typeof AuthAnonymousRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/magic-link': typeof AuthMagicLinkRoute
+  '/auth/sign-in': typeof AuthSignInRouteWithChildren
   '/auth/sign-up': typeof AuthSignUpRoute
   '/$slug/home': typeof SlugDashboardHomeRoute
   '/$slug/manage-plan': typeof SlugDashboardManagePlanRoute
@@ -357,6 +383,8 @@ export interface FileRoutesByFullPath {
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
   '/$slug/settings': typeof SlugDashboardSettingsRouteWithChildren
+  '/auth/sign-in/email': typeof AuthSignInEmailRoute
+  '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/$slug/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/bills/$billId': typeof SlugDashboardBillsBillIdRoute
@@ -398,15 +426,18 @@ export interface FileRoutesByTo {
   '/share-target': typeof ShareTargetRoute
   '/$slug/import-ofx': typeof SlugImportOfxRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
+  '/auth/anonymous': typeof AuthAnonymousRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/magic-link': typeof AuthMagicLinkRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/$slug/home': typeof SlugDashboardHomeRoute
   '/$slug/manage-plan': typeof SlugDashboardManagePlanRoute
   '/$slug/plans': typeof SlugDashboardPlansRoute
   '/$slug/profile': typeof SlugDashboardProfileRoute
   '/$slug/reports': typeof SlugDashboardReportsRoute
+  '/auth/sign-in/email': typeof AuthSignInEmailRoute
+  '/auth/sign-in': typeof AuthSignInIndexRoute
   '/$slug/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
   '/$slug/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/bills/$billId': typeof SlugDashboardBillsBillIdRoute
@@ -450,9 +481,11 @@ export interface FileRoutesById {
   '/$slug/_dashboard': typeof SlugDashboardRouteWithChildren
   '/$slug/import-ofx': typeof SlugImportOfxRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
+  '/auth/anonymous': typeof AuthAnonymousRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/magic-link': typeof AuthMagicLinkRoute
+  '/auth/sign-in': typeof AuthSignInRouteWithChildren
   '/auth/sign-up': typeof AuthSignUpRoute
   '/$slug/_dashboard/home': typeof SlugDashboardHomeRoute
   '/$slug/_dashboard/manage-plan': typeof SlugDashboardManagePlanRoute
@@ -460,6 +493,8 @@ export interface FileRoutesById {
   '/$slug/_dashboard/profile': typeof SlugDashboardProfileRoute
   '/$slug/_dashboard/reports': typeof SlugDashboardReportsRoute
   '/$slug/_dashboard/settings': typeof SlugDashboardSettingsRouteWithChildren
+  '/auth/sign-in/email': typeof AuthSignInEmailRoute
+  '/auth/sign-in/': typeof AuthSignInIndexRoute
   '/$slug/_dashboard/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
   '/$slug/_dashboard/bank-accounts/$bankAccountId': typeof SlugDashboardBankAccountsBankAccountIdRoute
   '/$slug/_dashboard/bills/$billId': typeof SlugDashboardBillsBillIdRoute
@@ -503,8 +538,10 @@ export interface FileRouteTypes {
     | '/share-target'
     | '/$slug/import-ofx'
     | '/$slug/onboarding'
+    | '/auth/anonymous'
     | '/auth/email-verification'
     | '/auth/forgot-password'
+    | '/auth/magic-link'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/home'
@@ -513,6 +550,8 @@ export interface FileRouteTypes {
     | '/$slug/profile'
     | '/$slug/reports'
     | '/$slug/settings'
+    | '/auth/sign-in/email'
+    | '/auth/sign-in/'
     | '/$slug/automations/$automationId'
     | '/$slug/bank-accounts/$bankAccountId'
     | '/$slug/bills/$billId'
@@ -554,15 +593,18 @@ export interface FileRouteTypes {
     | '/share-target'
     | '/$slug/import-ofx'
     | '/$slug/onboarding'
+    | '/auth/anonymous'
     | '/auth/email-verification'
     | '/auth/forgot-password'
-    | '/auth/sign-in'
+    | '/auth/magic-link'
     | '/auth/sign-up'
     | '/$slug/home'
     | '/$slug/manage-plan'
     | '/$slug/plans'
     | '/$slug/profile'
     | '/$slug/reports'
+    | '/auth/sign-in/email'
+    | '/auth/sign-in'
     | '/$slug/automations/$automationId'
     | '/$slug/bank-accounts/$bankAccountId'
     | '/$slug/bills/$billId'
@@ -605,8 +647,10 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard'
     | '/$slug/import-ofx'
     | '/$slug/onboarding'
+    | '/auth/anonymous'
     | '/auth/email-verification'
     | '/auth/forgot-password'
+    | '/auth/magic-link'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/$slug/_dashboard/home'
@@ -615,6 +659,8 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard/profile'
     | '/$slug/_dashboard/reports'
     | '/$slug/_dashboard/settings'
+    | '/auth/sign-in/email'
+    | '/auth/sign-in/'
     | '/$slug/_dashboard/automations/$automationId'
     | '/$slug/_dashboard/bank-accounts/$bankAccountId'
     | '/$slug/_dashboard/bills/$billId'
@@ -708,6 +754,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/auth/magic-link': {
+      id: '/auth/magic-link'
+      path: '/magic-link'
+      fullPath: '/auth/magic-link'
+      preLoaderRoute: typeof AuthMagicLinkRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/forgot-password': {
       id: '/auth/forgot-password'
       path: '/forgot-password'
@@ -720,6 +773,13 @@ declare module '@tanstack/react-router' {
       path: '/email-verification'
       fullPath: '/auth/email-verification'
       preLoaderRoute: typeof AuthEmailVerificationRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/anonymous': {
+      id: '/auth/anonymous'
+      path: '/anonymous'
+      fullPath: '/auth/anonymous'
+      preLoaderRoute: typeof AuthAnonymousRouteImport
       parentRoute: typeof AuthRoute
     }
     '/$slug/onboarding': {
@@ -742,6 +802,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/$slug'
       preLoaderRoute: typeof SlugDashboardRouteImport
       parentRoute: typeof SlugRoute
+    }
+    '/auth/sign-in/': {
+      id: '/auth/sign-in/'
+      path: '/'
+      fullPath: '/auth/sign-in/'
+      preLoaderRoute: typeof AuthSignInIndexRouteImport
+      parentRoute: typeof AuthSignInRoute
+    }
+    '/auth/sign-in/email': {
+      id: '/auth/sign-in/email'
+      path: '/email'
+      fullPath: '/auth/sign-in/email'
+      preLoaderRoute: typeof AuthSignInEmailRouteImport
+      parentRoute: typeof AuthSignInRoute
     }
     '/$slug/_dashboard/settings': {
       id: '/$slug/_dashboard/settings'
@@ -1133,17 +1207,35 @@ const SlugRouteChildren: SlugRouteChildren = {
 
 const SlugRouteWithChildren = SlugRoute._addFileChildren(SlugRouteChildren)
 
+interface AuthSignInRouteChildren {
+  AuthSignInEmailRoute: typeof AuthSignInEmailRoute
+  AuthSignInIndexRoute: typeof AuthSignInIndexRoute
+}
+
+const AuthSignInRouteChildren: AuthSignInRouteChildren = {
+  AuthSignInEmailRoute: AuthSignInEmailRoute,
+  AuthSignInIndexRoute: AuthSignInIndexRoute,
+}
+
+const AuthSignInRouteWithChildren = AuthSignInRoute._addFileChildren(
+  AuthSignInRouteChildren,
+)
+
 interface AuthRouteChildren {
+  AuthAnonymousRoute: typeof AuthAnonymousRoute
   AuthEmailVerificationRoute: typeof AuthEmailVerificationRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
-  AuthSignInRoute: typeof AuthSignInRoute
+  AuthMagicLinkRoute: typeof AuthMagicLinkRoute
+  AuthSignInRoute: typeof AuthSignInRouteWithChildren
   AuthSignUpRoute: typeof AuthSignUpRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthAnonymousRoute: AuthAnonymousRoute,
   AuthEmailVerificationRoute: AuthEmailVerificationRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
-  AuthSignInRoute: AuthSignInRoute,
+  AuthMagicLinkRoute: AuthMagicLinkRoute,
+  AuthSignInRoute: AuthSignInRouteWithChildren,
   AuthSignUpRoute: AuthSignUpRoute,
 }
 

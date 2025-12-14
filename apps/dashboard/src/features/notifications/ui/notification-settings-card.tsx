@@ -12,6 +12,7 @@ import {
 } from "@packages/ui/components/collapsible";
 import {
    Item,
+   ItemActions,
    ItemContent,
    ItemDescription,
    ItemGroup,
@@ -259,19 +260,17 @@ export function NotificationPromptBanner({
    };
 
    return (
-      <div className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4">
-         <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-               <Bell className="size-5 text-primary" />
-            </div>
-            <div>
-               <p className="font-medium text-sm">Ative as notificações</p>
-               <p className="text-muted-foreground text-xs">
-                  Receba alertas sobre suas finanças em tempo real.
-               </p>
-            </div>
-         </div>
-         <div className="flex items-center gap-2">
+      <Item className="rounded-lg border bg-card p-4" variant="outline">
+         <ItemMedia className="bg-primary/10 text-primary" variant="icon">
+            <Bell className="size-5" />
+         </ItemMedia>
+         <ItemContent>
+            <ItemTitle>Ative as notificações</ItemTitle>
+            <ItemDescription>
+               Receba alertas sobre suas finanças em tempo real.
+            </ItemDescription>
+         </ItemContent>
+         <ItemActions>
             {onDismiss && (
                <Button onClick={onDismiss} size="sm" variant="ghost">
                   Agora não
@@ -284,7 +283,7 @@ export function NotificationPromptBanner({
                   "Ativar"
                )}
             </Button>
-         </div>
-      </div>
+         </ItemActions>
+      </Item>
    );
 }

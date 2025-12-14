@@ -1,22 +1,20 @@
 import { translate } from "@packages/localization";
+import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
-   CardAction,
    CardContent,
    CardDescription,
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
 import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuGroup,
-   DropdownMenuItem,
-   DropdownMenuLabel,
-   DropdownMenuSeparator,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
+   Empty,
+   EmptyDescription,
+   EmptyHeader,
+   EmptyMedia,
+   EmptyTitle,
+} from "@packages/ui/components/empty";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
    Item,
@@ -36,7 +34,16 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ChevronRight, Monitor, MoreVertical, Trash2 } from "lucide-react";
+import {
+   ChevronRight,
+   Globe,
+   Laptop,
+   Monitor,
+   Shield,
+   Smartphone,
+   Tablet,
+   Trash2,
+} from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useSheet } from "@/hooks/use-sheet";
@@ -47,9 +54,39 @@ import {
    useRevokeOtherSessions,
 } from "@/pages/profile/features/use-session-actions";
 
+function getDeviceIcon(userAgent: string | null | undefined) {
+   if (!userAgent) return Monitor;
+   const ua = userAgent.toLowerCase();
+   if (ua.includes("mobile") || ua.includes("iphone") || ua.includes("android"))
+      return Smartphone;
+   if (ua.includes("tablet") || ua.includes("ipad")) return Tablet;
+   if (ua.includes("mac") || ua.includes("windows") || ua.includes("linux"))
+      return Laptop;
+   return Monitor;
+}
+
+function formatLastActive(date: Date | string | null): string {
+   if (!date) return "Agora";
+   const d = new Date(date);
+   const now = new Date();
+   const diff = now.getTime() - d.getTime();
+   const minutes = Math.floor(diff / 60000);
+   const hours = Math.floor(diff / 3600000);
+   const days = Math.floor(diff / 86400000);
+
+   if (minutes < 1) return "Agora";
+   if (minutes < 60) return `${minutes} min atrás`;
+   if (hours < 24) return `${hours}h atrás`;
+   if (days < 7) return `${days}d atrás`;
+   return d.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+   });
+}
+
 function SecuritySectionErrorFallback(props: FallbackProps) {
    return (
-      <Card>
+      <Card className="h-full">
          <CardHeader>
             <CardTitle>
                {translate("dashboard.routes.settings.security.title")}
@@ -75,42 +112,236 @@ function SecuritySectionErrorFallback(props: FallbackProps) {
 
 function SecuritySectionSkeleton() {
    return (
-      <Card>
+      <div className="space-y-4 md:space-y-6">
+         <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Sessions Card Skeleton */}
+            <div className="md:col-span-2 lg:col-span-2">
+               <Card className="h-full">
+                  <CardHeader>
+                     <Skeleton className="h-6 w-1/3" />
+                     <Skeleton className="h-4 w-2/3" />
+                  </CardHeader>
+                  <CardContent>
+                     <div className="space-y-1">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                           <Skeleton className="h-16 w-full rounded-lg" key={index} />
+                        ))}
+                     </div>
+                  </CardContent>
+               </Card>
+            </div>
+
+            {/* Security Overview Skeleton */}
+            <Card className="h-full">
+               <CardHeader>
+                  <Skeleton className="h-6 w-2/3" />
+                  <Skeleton className="h-4 w-full" />
+               </CardHeader>
+               <CardContent className="space-y-4">
+                  <div className="rounded-lg bg-secondary/50 p-4 text-center">
+                     <Skeleton className="h-4 w-1/2 mx-auto mb-2" />
+                     <Skeleton className="h-10 w-16 mx-auto mb-2" />
+                     <Skeleton className="h-5 w-24 mx-auto" />
+                  </div>
+                  <div className="space-y-2">
+                     <Skeleton className="h-10 w-full rounded-lg" />
+                     <Skeleton className="h-10 w-full rounded-lg" />
+                  </div>
+               </CardContent>
+            </Card>
+         </div>
+      </div>
+   );
+}
+
+// ============================================
+// Sessions Card Component
+// ============================================
+
+type SessionType = Parameters<typeof SessionDetailsForm>[0]["session"];
+
+function SessionsCard({
+   sessions,
+   currentSessionId,
+   openSheet,
+}: {
+   sessions: SessionType[];
+   currentSessionId: string | undefined;
+   openSheet: (options: { children: React.ReactNode }) => void;
+}) {
+   return (
+      <Card className="h-full">
          <CardHeader>
             <CardTitle>
-               <Skeleton className="h-6 w-1/3" />
+               {translate("dashboard.routes.settings.security.title")}
             </CardTitle>
             <CardDescription>
-               <Skeleton className="h-4 w-2/3" />
+               Gerencie seus dispositivos conectados e proteja sua conta
             </CardDescription>
-            <CardAction>
-               <Skeleton className="size-8" />
-            </CardAction>
          </CardHeader>
          <CardContent>
-            <ItemGroup>
-               {Array.from({ length: 3 }).map((_, index) => (
-                  <Fragment key={`session-skeleton-${index + 1}`}>
-                     <Item>
-                        <ItemMedia variant="icon">
-                           <Skeleton className="size-4" />
-                        </ItemMedia>
-                        <ItemContent className="truncate">
-                           <Skeleton className="h-5 w-1/2" />
-                           <Skeleton className="h-4 w-3/4" />
-                        </ItemContent>
-                        <ItemActions>
-                           <Skeleton className="size-8" />
-                        </ItemActions>
-                     </Item>
-                     {index !== 2 && <ItemSeparator />}
-                  </Fragment>
-               ))}
-            </ItemGroup>
+            {sessions.length === 0 ? (
+               <Empty className="border-none py-4">
+                  <EmptyHeader>
+                     <EmptyMedia variant="icon">
+                        <Globe className="size-6" />
+                     </EmptyMedia>
+                     <EmptyTitle>Nenhuma sessão ativa</EmptyTitle>
+                     <EmptyDescription>
+                        Suas sessões aparecerão aqui quando você estiver
+                        conectado
+                     </EmptyDescription>
+                  </EmptyHeader>
+               </Empty>
+            ) : (
+               <ItemGroup>
+                  {sessions.map((session, index) => {
+                     const isCurrentSession = session.id === currentSessionId;
+                     const DeviceIcon = getDeviceIcon(session.userAgent ?? null);
+
+                     return (
+                        <Fragment key={session.id}>
+                           <Item variant="muted">
+                              <ItemMedia variant="icon">
+                                 <DeviceIcon className="size-4" />
+                              </ItemMedia>
+                              <ItemContent className="min-w-0">
+                                 <div className="flex items-center gap-2 flex-wrap">
+                                    <ItemTitle className="truncate">
+                                       {session.userAgent ||
+                                          translate(
+                                             "dashboard.routes.profile.sessions.item.unknown-device",
+                                          )}
+                                    </ItemTitle>
+                                    {isCurrentSession && (
+                                       <Badge
+                                          className="bg-green-500 hover:bg-green-500/90 shrink-0"
+                                          variant="default"
+                                       >
+                                          Este dispositivo
+                                       </Badge>
+                                    )}
+                                 </div>
+                                 <ItemDescription className="flex items-center gap-2 flex-wrap">
+                                    <span>
+                                       {session.ipAddress || "IP desconhecido"}
+                                    </span>
+                                    <span className="text-muted-foreground/50">
+                                       •
+                                    </span>
+                                    <span>
+                                       {formatLastActive(session.updatedAt)}
+                                    </span>
+                                 </ItemDescription>
+                              </ItemContent>
+                              <ItemActions>
+                                 <Tooltip>
+                                    <TooltipTrigger asChild>
+                                       <Button
+                                          onClick={() =>
+                                             openSheet({
+                                                children: (
+                                                   <SessionDetailsForm
+                                                      currentSessionId={
+                                                         currentSessionId || ""
+                                                      }
+                                                      session={session}
+                                                   />
+                                                ),
+                                             })
+                                          }
+                                          size="icon"
+                                          variant="ghost"
+                                       >
+                                          <ChevronRight className="size-4" />
+                                       </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Ver detalhes</TooltipContent>
+                                 </Tooltip>
+                              </ItemActions>
+                           </Item>
+                           {index !== sessions.length - 1 && <ItemSeparator />}
+                        </Fragment>
+                     );
+                  })}
+               </ItemGroup>
+            )}
          </CardContent>
       </Card>
    );
 }
+
+// ============================================
+// Security Overview Card Component
+// ============================================
+
+function SecurityOverviewCard({
+   sessionsCount,
+   otherSessionsCount,
+   isRevokingOthers,
+   isRevokingAll,
+   revokeOtherSessions,
+   revokeAllSessions,
+}: {
+   sessionsCount: number;
+   otherSessionsCount: number;
+   isRevokingOthers: boolean;
+   isRevokingAll: boolean;
+   revokeOtherSessions: () => void;
+   revokeAllSessions: () => void;
+}) {
+   return (
+      <Card className="h-full">
+         <CardHeader>
+            <CardTitle>Visão Geral</CardTitle>
+            <CardDescription>
+               Resumo de segurança da sua conta
+            </CardDescription>
+         </CardHeader>
+         <CardContent className="space-y-4">
+            <div className="rounded-lg bg-secondary/50 p-4 text-center">
+               <p className="text-xs md:text-sm text-muted-foreground mb-1">
+                  Sessões ativas
+               </p>
+               <p className="text-3xl md:text-4xl font-bold">{sessionsCount}</p>
+               <Badge className="mt-2" variant="secondary">
+                  <Shield className="size-3 mr-1" />
+                  {sessionsCount === 1 ? "dispositivo" : "dispositivos"}
+               </Badge>
+            </div>
+
+            <div className="space-y-2">
+               <Button
+                  className="w-full"
+                  disabled={isRevokingOthers || otherSessionsCount === 0}
+                  onClick={revokeOtherSessions}
+                  variant="outline"
+               >
+                  <Trash2 className="size-4 mr-2" />
+                  {translate(
+                     "dashboard.routes.profile.sessions.actions.revoke-others",
+                  )}
+               </Button>
+               <Button
+                  className="w-full"
+                  disabled={isRevokingAll}
+                  onClick={revokeAllSessions}
+                  variant="destructive"
+               >
+                  <Trash2 className="size-4 mr-2" />
+                  {translate(
+                     "dashboard.routes.profile.sessions.actions.revoke-all",
+                  )}
+               </Button>
+            </div>
+         </CardContent>
+      </Card>
+   );
+}
+
+// ============================================
+// Main Content Component
+// ============================================
 
 function SecuritySectionContent() {
    const trpc = useTRPC();
@@ -127,123 +358,32 @@ function SecuritySectionContent() {
    const { revokeAllSessions, isRevoking: isRevokingAll } =
       useRevokeAllSessions();
 
+   const currentSessionId = currentSession?.session?.id;
+   const otherSessionsCount = sessions.filter(
+      (s) => s.id !== currentSessionId,
+   ).length;
+
    return (
       <TooltipProvider>
-         <Card>
-            <CardHeader>
-               <CardTitle>
-                  {translate("dashboard.routes.settings.security.title")}
-               </CardTitle>
-               <CardDescription>
-                  {translate("dashboard.routes.settings.security.description")}
-               </CardDescription>
-               <CardAction>
-                  <DropdownMenu>
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <DropdownMenuTrigger asChild>
-                              <Button
-                                 aria-label={translate(
-                                    "dashboard.routes.profile.sessions.actions.title",
-                                 )}
-                                 size="icon"
-                                 variant="ghost"
-                              >
-                                 <MoreVertical className="w-5 h-5" />
-                              </Button>
-                           </DropdownMenuTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           {translate(
-                              "dashboard.routes.profile.sessions.actions.title",
-                           )}
-                        </TooltipContent>
-                     </Tooltip>
-                     <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>
-                           {translate(
-                              "dashboard.routes.profile.sessions.actions.title",
-                           )}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                           <DropdownMenuItem
-                              disabled={isRevokingOthers}
-                              onClick={revokeOtherSessions}
-                              variant="destructive"
-                           >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              {translate(
-                                 "dashboard.routes.profile.sessions.actions.revoke-others",
-                              )}
-                           </DropdownMenuItem>
-                           <DropdownMenuItem
-                              disabled={isRevokingAll}
-                              onClick={revokeAllSessions}
-                              variant="destructive"
-                           >
-                              <Trash2 className="w-4 h-4 mr-2 text-destructive" />
-                              {translate(
-                                 "dashboard.routes.profile.sessions.actions.revoke-all",
-                              )}
-                           </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                     </DropdownMenuContent>
-                  </DropdownMenu>
-               </CardAction>
-            </CardHeader>
-            <CardContent>
-               <ItemGroup>
-                  {sessions.map((session, index) => (
-                     <Fragment key={session.id}>
-                        <Item>
-                           <ItemMedia variant="icon">
-                              <Monitor className="size-4" />
-                           </ItemMedia>
-                           <ItemContent className="truncate">
-                              <ItemTitle>
-                                 {session.userAgent ||
-                                    translate(
-                                       "dashboard.routes.profile.sessions.item.unknown-device",
-                                    )}
-                              </ItemTitle>
-                              <ItemDescription>
-                                 <span>
-                                    {translate(
-                                       "dashboard.routes.profile.sessions.item.ip-address",
-                                    )}
-                                 </span>
-                                 <span>:</span>
-                                 <span> {session.ipAddress || "-"}</span>
-                              </ItemDescription>
-                           </ItemContent>
-                           <ItemActions>
-                              <Button
-                                 onClick={() =>
-                                    openSheet({
-                                       children: (
-                                          <SessionDetailsForm
-                                             currentSessionId={
-                                                currentSession?.session.id || ""
-                                             }
-                                             session={session}
-                                          />
-                                       ),
-                                    })
-                                 }
-                                 size="icon"
-                                 variant="ghost"
-                              >
-                                 <ChevronRight className="size-4" />
-                              </Button>
-                           </ItemActions>
-                        </Item>
-                        {index !== sessions.length - 1 && <ItemSeparator />}
-                     </Fragment>
-                  ))}
-               </ItemGroup>
-            </CardContent>
-         </Card>
+         <div className="space-y-4 md:space-y-6">
+            <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+               <div className="md:col-span-2 lg:col-span-2">
+                  <SessionsCard
+                     currentSessionId={currentSessionId}
+                     openSheet={openSheet}
+                     sessions={sessions}
+                  />
+               </div>
+               <SecurityOverviewCard
+                  isRevokingAll={isRevokingAll}
+                  isRevokingOthers={isRevokingOthers}
+                  otherSessionsCount={otherSessionsCount}
+                  revokeAllSessions={revokeAllSessions}
+                  revokeOtherSessions={revokeOtherSessions}
+                  sessionsCount={sessions.length}
+               />
+            </div>
+         </div>
       </TooltipProvider>
    );
 }

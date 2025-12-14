@@ -2,6 +2,7 @@ import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Field,
+   FieldDescription,
    FieldError,
    FieldGroup,
    FieldLabel,
@@ -248,10 +249,41 @@ export function SignUpPage() {
          </>
       );
    }
+   const TermsAndPrivacyText = () => {
+      const text = translate(
+         "dashboard.routes.sign-in.texts.terms-and-privacy",
+      ).split("{split}");
+
+      return (
+         <>
+            <span>{text[0]}</span>
+            <a
+               className="underline text-muted-foreground hover:text-primary"
+               href="https://montte.co/terms-of-service"
+               rel="noopener noreferrer"
+               target="_blank"
+            >
+               {translate("dashboard.routes.sign-in.texts.terms-of-service")}
+            </a>
+            <span>{text[1]}</span>
+            <a
+               className="underline text-muted-foreground hover:text-primary"
+               href="https://montte.co/privacy-policy"
+               rel="noopener noreferrer"
+               target="_blank"
+            >
+               {translate("dashboard.routes.sign-in.texts.privacy-policy")}
+            </a>
+            <span>{text[2]}</span>
+         </>
+      );
+   };
+
    return (
       <Stepper.Provider>
          {({ methods }) => (
             <section className="space-y-6 w-full">
+               {/* Header */}
                <div className="text-center space-y-2">
                   <h1 className="text-3xl font-semibold font-serif">
                      {translate("dashboard.routes.sign-up.title")}
@@ -261,6 +293,7 @@ export function SignUpPage() {
                   </p>
                </div>
 
+               {/* Form */}
                <div className="space-y-6">
                   <Stepper.Navigation>
                      {steps.map((step) => (
@@ -274,6 +307,7 @@ export function SignUpPage() {
                      })}
                      <Stepper.Controls className="flex w-full justify-between">
                         <Button
+                           className="h-11"
                            disabled={methods.isFirst}
                            onClick={methods.prev}
                            type="button"
@@ -285,7 +319,7 @@ export function SignUpPage() {
                            <form.Subscribe>
                               {(formState) => (
                                  <Button
-                                    className="flex gap-2 items-center justify-center"
+                                    className="h-11"
                                     disabled={
                                        !formState.canSubmit ||
                                        formState.isSubmitting
@@ -306,6 +340,7 @@ export function SignUpPage() {
                            >
                               {({ nameValid, emailValid }) => (
                                  <Button
+                                    className="h-11"
                                     disabled={!nameValid || !emailValid}
                                     onClick={methods.next}
                                     type="button"
@@ -319,7 +354,8 @@ export function SignUpPage() {
                   </form>
                </div>
 
-               <div className="text-sm text-center">
+               {/* Footer */}
+               <div className="text-sm text-center space-y-4">
                   <div className="flex gap-1 justify-center items-center">
                      <span>
                         {translate(
@@ -327,12 +363,15 @@ export function SignUpPage() {
                         )}
                      </span>
                      <Link
-                        className="text-primary hover:underline"
+                        className="text-primary font-medium hover:underline"
                         to="/auth/sign-in"
                      >
                         {translate("dashboard.routes.sign-up.actions.sign-in")}
                      </Link>
                   </div>
+                  <FieldDescription className="text-center">
+                     <TermsAndPrivacyText />
+                  </FieldDescription>
                </div>
             </section>
          )}

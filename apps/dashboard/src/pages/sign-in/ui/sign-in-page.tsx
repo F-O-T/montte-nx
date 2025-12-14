@@ -1,34 +1,17 @@
 import { translate } from "@packages/localization";
+import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
-import {
-   Field,
-   FieldDescription,
-   FieldError,
-   FieldGroup,
-   FieldLabel,
-} from "@packages/ui/components/field";
-import { Input } from "@packages/ui/components/input";
-import { PasswordInput } from "@packages/ui/components/password-input";
+import { FieldDescription } from "@packages/ui/components/field";
 import { Spinner } from "@packages/ui/components/spinner";
-import { useForm } from "@tanstack/react-form";
-import { Link, useRouter } from "@tanstack/react-router";
-import { type FormEvent, useCallback, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { KeyRound, Sparkles, User } from "lucide-react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
 import { betterAuthClient } from "@/integrations/clients";
 
 export function SignInPage() {
-   const schema = z.object({
-      email: z.email(translate("common.validation.email")),
-      password: z
-         .string()
-         .min(
-            8,
-            translate("common.validation.min-length").replace("{min}", "8"),
-         ),
-   });
-   const router = useRouter();
    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+   const lastMethod = betterAuthClient.getLastUsedLoginMethod();
 
    const handleGoogleSignIn = useCallback(async () => {
       await betterAuthClient.signIn.social(
@@ -52,56 +35,6 @@ export function SignInPage() {
          },
       );
    }, []);
-   const handleSignIn = useCallback(
-      async (email: string, password: string) => {
-         await betterAuthClient.signIn.email(
-            {
-               email,
-               password,
-            },
-            {
-               onError: ({ error }) => {
-                  toast.error(error.message);
-               },
-               onRequest: () => {
-                  toast.loading(
-                     translate("dashboard.routes.sign-in.messages.requesting"),
-                  );
-               },
-               onSuccess: () => {
-                  toast.success(
-                     translate("dashboard.routes.sign-in.messages.success"),
-                  );
-                  router.navigate({ params: { slug: "" }, to: "/$slug/home" });
-               },
-            },
-         );
-      },
-      [router.navigate],
-   );
-   const form = useForm({
-      defaultValues: {
-         email: "",
-         password: "",
-      },
-      onSubmit: async ({ value, formApi }) => {
-         const { email, password } = value;
-         await handleSignIn(email, password);
-         formApi.reset();
-      },
-      validators: {
-         onBlur: schema,
-      },
-   });
-
-   const handleSubmit = useCallback(
-      (e: FormEvent) => {
-         e.preventDefault();
-         e.stopPropagation();
-         form.handleSubmit();
-      },
-      [form],
-   );
 
    const TermsAndPrivacyText = () => {
       const text = translate(
@@ -134,7 +67,8 @@ export function SignInPage() {
    };
 
    return (
-      <section className="space-y-6 w-full ">
+      <section className="space-y-8 w-full">
+         {/* Header */}
          <div className="text-center space-y-2">
             <h1 className="text-3xl font-semibold font-serif">
                {translate("dashboard.routes.sign-in.title")}
@@ -144,115 +78,11 @@ export function SignInPage() {
             </p>
          </div>
 
-         <div className="space-y-6">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-               <FieldGroup>
-                  <form.Field name="email">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>
-                                 {translate("common.form.email.label")}
-                              </FieldLabel>
-                              <Input
-                                 aria-invalid={isInvalid}
-                                 id={field.name}
-                                 name={field.name}
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "common.form.email.placeholder",
-                                 )}
-                                 type="email"
-                                 value={field.state.value}
-                              />
-
-                              {isInvalid && (
-                                 <FieldError errors={field.state.meta.errors} />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-               <FieldGroup>
-                  <form.Field name="password">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field aria-required data-invalid={isInvalid}>
-                              <div className="flex justify-between items-center">
-                                 <FieldLabel htmlFor={field.name}>
-                                    {translate("common.form.password.label")}
-                                 </FieldLabel>
-                                 <Link
-                                    className="underline text-sm text-muted-foreground"
-                                    to="/auth/forgot-password"
-                                 >
-                                    {translate(
-                                       "dashboard.routes.sign-in.actions.forgot-password",
-                                    )}
-                                 </Link>
-                              </div>
-
-                              <PasswordInput
-                                 autoComplete="current-password"
-                                 id={field.name}
-                                 name={field.name}
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "common.form.password.placeholder",
-                                 )}
-                                 value={field.state.value}
-                              />
-                              {isInvalid && (
-                                 <FieldError errors={field.state.meta.errors} />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-               <form.Subscribe>
-                  {(formState) => (
-                     <Button
-                        className="w-full"
-                        disabled={
-                           !formState.canSubmit || formState.isSubmitting
-                        }
-                        type="submit"
-                     >
-                        {translate("dashboard.routes.sign-in.actions.sign-in")}
-                     </Button>
-                  )}
-               </form.Subscribe>
-            </form>
-
-            <div className="relative">
-               <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-               </div>
-               <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.sign-in.texts.or-continue-with",
-                     )}
-                  </span>
-               </div>
-            </div>
-
+         {/* Primary Actions */}
+         <div className="space-y-3">
+            {/* Google SSO - Primary */}
             <Button
-               className="w-full"
+               className="w-full h-12 text-base relative"
                disabled={isGoogleLoading}
                onClick={handleGoogleSignIn}
                variant="outline"
@@ -260,7 +90,11 @@ export function SignInPage() {
                {isGoogleLoading ? (
                   <Spinner />
                ) : (
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <svg
+                     className="size-5"
+                     viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg"
+                  >
                      <title>Google</title>
                      <path
                         d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
@@ -268,17 +102,101 @@ export function SignInPage() {
                      />
                   </svg>
                )}
-               <span>Google</span>
+               <span>
+                  {translate("dashboard.routes.sign-in.actions.google-sign-in")}
+               </span>
+               {lastMethod === "google" && (
+                  <Badge className="absolute -top-2 -right-2" variant="default">
+                     {translate("dashboard.routes.sign-in.last-used")}
+                  </Badge>
+               )}
+            </Button>
+
+            {/* Try without account - Prominent */}
+            <Button asChild className="w-full h-12 text-base relative" variant="secondary">
+               <Link to="/auth/anonymous">
+                  <User className="size-5" />
+                  <span>
+                     {translate("dashboard.routes.sign-in.actions.try-without-account")}
+                  </span>
+                  {lastMethod === "anonymous" && (
+                     <Badge className="absolute -top-2 -right-2" variant="default">
+                        {translate("dashboard.routes.sign-in.last-used")}
+                     </Badge>
+                  )}
+               </Link>
             </Button>
          </div>
 
-         <div className="text-sm text-center space-y-6">
+         {/* Divider */}
+         <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+               <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+               <span className="bg-background px-2 text-muted-foreground">
+                  {translate("dashboard.routes.sign-in.texts.or-continue-with")}
+               </span>
+            </div>
+         </div>
+
+         {/* Method Selector Cards */}
+         <div className="grid grid-cols-2 gap-3">
+            {/* Email & Password Card */}
+            <Link
+               className="group relative flex flex-col items-center gap-3 p-4 rounded-lg border border-border bg-background hover:border-primary hover:bg-accent/50 transition-all duration-200"
+               to="/auth/sign-in/email"
+            >
+               {lastMethod === "email" && (
+                  <Badge className="absolute -top-2 -right-2" variant="default">
+                     {translate("dashboard.routes.sign-in.last-used")}
+                  </Badge>
+               )}
+               <div className="flex items-center justify-center size-10 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
+                  <KeyRound className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
+               </div>
+               <div className="text-center">
+                  <p className="text-sm font-medium">
+                     {translate("dashboard.routes.sign-in.methods.email")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                     {translate("dashboard.routes.sign-in.methods.email-description")}
+                  </p>
+               </div>
+            </Link>
+
+            {/* Magic Link Card */}
+            <Link
+               className="group relative flex flex-col items-center gap-3 p-4 rounded-lg border border-border bg-background hover:border-primary hover:bg-accent/50 transition-all duration-200"
+               to="/auth/magic-link"
+            >
+               {lastMethod === "magicLink" && (
+                  <Badge className="absolute -top-2 -right-2" variant="default">
+                     {translate("dashboard.routes.sign-in.last-used")}
+                  </Badge>
+               )}
+               <div className="flex items-center justify-center size-10 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
+                  <Sparkles className="size-5 text-muted-foreground group-hover:text-primary transition-colors" />
+               </div>
+               <div className="text-center">
+                  <p className="text-sm font-medium">
+                     {translate("dashboard.routes.sign-in.methods.magic-link")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                     {translate("dashboard.routes.sign-in.methods.magic-link-description")}
+                  </p>
+               </div>
+            </Link>
+         </div>
+
+         {/* Footer */}
+         <div className="text-sm text-center space-y-4">
             <div className="flex gap-1 justify-center items-center">
                <span>
                   {translate("dashboard.routes.sign-in.texts.no-account")}
                </span>
                <Link
-                  className="text-primary hover:underline"
+                  className="text-primary font-medium hover:underline"
                   to="/auth/sign-up"
                >
                   {translate("dashboard.routes.sign-in.actions.sign-up")}

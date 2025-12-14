@@ -1,4 +1,5 @@
 import type { Resend } from "resend";
+import MagicLinkEmail from "./emails/magic-link";
 import OrganizationInvitationEmail from "./emails/organization-invitation";
 import OTPEmail from "./emails/otp";
 import WorkflowNotificationEmail from "./emails/workflow-notification";
@@ -80,5 +81,23 @@ export const sendWorkflowEmail = async (
       react: <WorkflowNotificationEmail body={body} />,
       subject,
       to,
+   });
+};
+
+export interface SendMagicLinkEmailOptions {
+   email: string;
+   magicLinkUrl: string;
+}
+
+export const sendMagicLinkEmail = async (
+   client: Resend,
+   { email, magicLinkUrl }: SendMagicLinkEmailOptions,
+) => {
+   const subject = "Acesse sua conta Montte";
+   await client.emails.send({
+      from: `${name} <suporte@montte.co>`,
+      react: <MagicLinkEmail magicLinkUrl={magicLinkUrl} />,
+      subject,
+      to: email,
    });
 };

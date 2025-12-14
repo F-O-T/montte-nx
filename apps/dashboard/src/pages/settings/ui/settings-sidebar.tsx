@@ -2,7 +2,6 @@ import { translate } from "@packages/localization";
 import {
    SidebarGroup,
    SidebarGroupContent,
-   SidebarGroupLabel,
    SidebarMenu,
    SidebarMenuButton,
    SidebarMenuItem,
@@ -63,9 +62,6 @@ export function SettingsSidebar() {
 
    return (
       <SidebarGroup>
-         <SidebarGroupLabel>
-            {translate("dashboard.routes.settings.title")}
-         </SidebarGroupLabel>
          <SidebarGroupContent>
             <SidebarMenu>
                {settingsNavItems.map((item) => (

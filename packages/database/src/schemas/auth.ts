@@ -27,32 +27,10 @@ export const user = pgTable("user", {
   banned: boolean("banned").default(false),
   banReason: text("ban_reason"),
   banExpires: timestamp("ban_expires"),
+  isAnonymous: boolean("is_anonymous").default(false),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
   telemetryConsent: boolean("telemetry_consent").default(true).notNull(),
 });
-
-export const session = pgTable(
-  "session",
-  {
-    id: uuid("id")
-      .default(sql`pg_catalog.gen_random_uuid()`)
-      .primaryKey(),
-    expiresAt: timestamp("expires_at").notNull(),
-    token: text("token").notNull().unique(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-    ipAddress: text("ip_address"),
-    userAgent: text("user_agent"),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    impersonatedBy: text("impersonated_by"),
-    activeOrganizationId: text("active_organization_id"),
-    activeTeamId: text("active_team_id"),
-  },
-  (table) => [index("session_userId_idx").on(table.userId)],
-);
 
 export const account = pgTable(
   "account",
@@ -214,55 +192,30 @@ export const invitation = pgTable(
   ],
 );
 
-export const apikey = pgTable(
-  "apikey",
+export const twoFactor = pgTable(
+  "two_factor",
   {
     id: uuid("id")
       .default(sql`pg_catalog.gen_random_uuid()`)
       .primaryKey(),
-    name: text("name"),
-    start: text("start"),
-    prefix: text("prefix"),
-    key: text("key").notNull(),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
     userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    refillInterval: integer("refill_interval"),
-    refillAmount: integer("refill_amount"),
-    lastRefillAt: timestamp("last_refill_at"),
-    enabled: boolean("enabled").default(true),
-    rateLimitEnabled: boolean("rate_limit_enabled").default(true),
-    rateLimitTimeWindow: integer("rate_limit_time_window").default(3600000),
-    rateLimitMax: integer("rate_limit_max").default(500),
-    requestCount: integer("request_count").default(0),
-    remaining: integer("remaining"),
-    lastRequest: timestamp("last_request"),
-    expiresAt: timestamp("expires_at"),
-    createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
-    permissions: text("permissions"),
-    metadata: text("metadata"),
   },
   (table) => [
-    index("apikey_key_idx").on(table.key),
-    index("apikey_userId_idx").on(table.userId),
+    index("twoFactor_secret_idx").on(table.secret),
+    index("twoFactor_userId_idx").on(table.userId),
   ],
 );
 
 export const userRelations = relations(user, ({ many }) => ({
-  sessions: many(session),
   accounts: many(account),
   teamMembers: many(teamMember),
   members: many(member),
   invitations: many(invitation),
-  apikeys: many(apikey),
-}));
-
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
+  twoFactors: many(twoFactor),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -319,9 +272,9 @@ export const invitationRelations = relations(invitation, ({ one }) => ({
   }),
 }));
 
-export const apikeyRelations = relations(apikey, ({ one }) => ({
+export const twoFactorRelations = relations(twoFactor, ({ one }) => ({
   user: one(user, {
-    fields: [apikey.userId],
+    fields: [twoFactor.userId],
     references: [user.id],
   }),
 }));
