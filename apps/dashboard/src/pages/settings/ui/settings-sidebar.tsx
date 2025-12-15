@@ -7,13 +7,7 @@ import {
    SidebarMenuItem,
 } from "@packages/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
-import {
-   Bell,
-   CreditCard,
-   Settings2,
-   Shield,
-   User,
-} from "lucide-react";
+import { Bell, CreditCard, Settings2, Shield, User } from "lucide-react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 
 const settingsNavItems = [

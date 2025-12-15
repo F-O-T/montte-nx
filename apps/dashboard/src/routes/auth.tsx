@@ -83,9 +83,24 @@ function AuthLayout() {
                         x="70"
                         y="70"
                      />
-                     <circle cx="85" cy="80" fill="rgba(255,255,255,0.3)" r="5" />
-                     <circle cx="100" cy="80" fill="rgba(255,255,255,0.2)" r="5" />
-                     <circle cx="115" cy="80" fill="rgba(255,255,255,0.15)" r="5" />
+                     <circle
+                        cx="85"
+                        cy="80"
+                        fill="rgba(255,255,255,0.3)"
+                        r="5"
+                     />
+                     <circle
+                        cx="100"
+                        cy="80"
+                        fill="rgba(255,255,255,0.2)"
+                        r="5"
+                     />
+                     <circle
+                        cx="115"
+                        cy="80"
+                        fill="rgba(255,255,255,0.15)"
+                        r="5"
+                     />
 
                      {/* Chart bars */}
                      <rect
@@ -184,7 +199,8 @@ function AuthLayout() {
 
             {/* Footer */}
             <div className="relative z-10 text-white/50 text-xs">
-               © {new Date().getFullYear()} Montte. {translate("common.actions.all-rights-reserved")}
+               © {new Date().getFullYear()} Montte.{" "}
+               {translate("common.actions.all-rights-reserved")}
             </div>
          </aside>
       </div>

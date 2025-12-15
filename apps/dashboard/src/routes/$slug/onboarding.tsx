@@ -228,17 +228,18 @@ function RouteComponent() {
       },
       onSuccess: () => {
          // After saving name, create default account and navigate
-         const isBusinessContext = onboardingStatus?.organizationContext === "business";
+         const isBusinessContext =
+            onboardingStatus?.organizationContext === "business";
          const accountType = isBusinessContext ? "business" : "personal";
          const defaultName = translate(
-            `dashboard.routes.onboarding.default-account.${accountType}.name`
+            `dashboard.routes.onboarding.default-account.${accountType}.name`,
          );
          const defaultBank = translate(
-            `dashboard.routes.onboarding.default-account.${accountType}.bank`
+            `dashboard.routes.onboarding.default-account.${accountType}.bank`,
          );
          createDefaultPersonalAccount.mutate({
             name: defaultName,
-            bank: defaultBank
+            bank: defaultBank,
          });
       },
    });
@@ -277,17 +278,18 @@ function RouteComponent() {
          });
       } else {
          // User already has a name, create default account directly
-         const isBusinessContext = onboardingStatus?.organizationContext === "business";
+         const isBusinessContext =
+            onboardingStatus?.organizationContext === "business";
          const accountType = isBusinessContext ? "business" : "personal";
          const defaultName = translate(
-            `dashboard.routes.onboarding.default-account.${accountType}.name`
+            `dashboard.routes.onboarding.default-account.${accountType}.name`,
          );
          const defaultBank = translate(
-            `dashboard.routes.onboarding.default-account.${accountType}.bank`
+            `dashboard.routes.onboarding.default-account.${accountType}.bank`,
          );
          createDefaultPersonalAccount.mutate({
             name: defaultName,
-            bank: defaultBank
+            bank: defaultBank,
          });
       }
    };

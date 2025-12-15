@@ -124,7 +124,10 @@ function SecuritySectionSkeleton() {
                   <CardContent>
                      <div className="space-y-1">
                         {Array.from({ length: 3 }).map((_, index) => (
-                           <Skeleton className="h-16 w-full rounded-lg" key={index} />
+                           <Skeleton
+                              className="h-16 w-full rounded-lg"
+                              key={index}
+                           />
                         ))}
                      </div>
                   </CardContent>
@@ -197,7 +200,9 @@ function SessionsCard({
                <ItemGroup>
                   {sessions.map((session, index) => {
                      const isCurrentSession = session.id === currentSessionId;
-                     const DeviceIcon = getDeviceIcon(session.userAgent ?? null);
+                     const DeviceIcon = getDeviceIcon(
+                        session.userAgent ?? null,
+                     );
 
                      return (
                         <Fragment key={session.id}>
@@ -256,7 +261,9 @@ function SessionsCard({
                                           <ChevronRight className="size-4" />
                                        </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Ver detalhes</TooltipContent>
+                                    <TooltipContent>
+                                       Ver detalhes
+                                    </TooltipContent>
                                  </Tooltip>
                               </ItemActions>
                            </Item>
@@ -294,9 +301,7 @@ function SecurityOverviewCard({
       <Card className="h-full">
          <CardHeader>
             <CardTitle>Visão Geral</CardTitle>
-            <CardDescription>
-               Resumo de segurança da sua conta
-            </CardDescription>
+            <CardDescription>Resumo de segurança da sua conta</CardDescription>
          </CardHeader>
          <CardContent className="space-y-4">
             <div className="rounded-lg bg-secondary/50 p-4 text-center">

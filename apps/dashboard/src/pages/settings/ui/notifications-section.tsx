@@ -101,7 +101,9 @@ function NotificationsSectionErrorFallback(props: FallbackProps) {
                {translate("dashboard.routes.settings.notifications.title")}
             </CardTitle>
             <CardDescription>
-               {translate("dashboard.routes.settings.notifications.description")}
+               {translate(
+                  "dashboard.routes.settings.notifications.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -136,7 +138,9 @@ function NotificationsEmptyState({
                <Card className="h-full">
                   <CardHeader>
                      <CardTitle>
-                        {translate("dashboard.routes.settings.notifications.title")}
+                        {translate(
+                           "dashboard.routes.settings.notifications.title",
+                        )}
                      </CardTitle>
                      <CardDescription>
                         Configure como você deseja receber alertas e lembretes
@@ -159,9 +163,7 @@ function NotificationsEmptyState({
             <Card className="h-full">
                <CardHeader>
                   <CardTitle>Status</CardTitle>
-                  <CardDescription>
-                     Situação das notificações
-                  </CardDescription>
+                  <CardDescription>Situação das notificações</CardDescription>
                </CardHeader>
                <CardContent className="space-y-4">
                   <div className="rounded-lg bg-secondary/50 p-4 text-center">
@@ -198,7 +200,10 @@ function NotificationTypesCard({
    preferences: NotificationPreferences;
    isLoadingPrefs: boolean;
    isUpdating: boolean;
-   updatePreference: (key: keyof NotificationPreferences, value: boolean) => void;
+   updatePreference: (
+      key: keyof NotificationPreferences,
+      value: boolean,
+   ) => void;
 }) {
    return (
       <Card className="h-full">
@@ -207,7 +212,8 @@ function NotificationTypesCard({
                {translate("dashboard.routes.settings.notifications.title")}
             </CardTitle>
             <CardDescription>
-               Configure como você deseja receber alertas e lembretes importantes
+               Configure como você deseja receber alertas e lembretes
+               importantes
             </CardDescription>
          </CardHeader>
          <CardContent>

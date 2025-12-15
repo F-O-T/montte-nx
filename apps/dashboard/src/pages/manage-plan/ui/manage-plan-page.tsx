@@ -220,9 +220,7 @@ function ManagePlanPageContent() {
                         </ItemMedia>
                         <ItemContent>
                            <ItemTitle>Valor</ItemTitle>
-                           <ItemDescription>
-                              {plan.price}/mês
-                           </ItemDescription>
+                           <ItemDescription>{plan.price}/mês</ItemDescription>
                         </ItemContent>
                      </Item>
                      <ItemSeparator />

@@ -76,7 +76,9 @@ export function SiteHeader() {
                   )}
                   {hasProSubscription && (
                      <Button
-                        className={showBackButton ? "size-9 p-0" : "-ml-1 size-9 p-0"}
+                        className={
+                           showBackButton ? "size-9 p-0" : "-ml-1 size-9 p-0"
+                        }
                         onClick={handleOrgSwitcherClick}
                         size="icon"
                         variant="ghost"

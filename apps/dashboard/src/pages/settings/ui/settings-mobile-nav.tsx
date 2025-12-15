@@ -1,13 +1,7 @@
 import { translate } from "@packages/localization";
 import { QuickAccessCard } from "@packages/ui/components/quick-access-card";
 import { useNavigate } from "@tanstack/react-router";
-import {
-   Bell,
-   CreditCard,
-   Settings2,
-   Shield,
-   User,
-} from "lucide-react";
+import { Bell, CreditCard, Settings2, Shield, User } from "lucide-react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 
 const settingsNavItems = [
@@ -64,20 +58,20 @@ export function SettingsMobileNav() {
 
    return (
       <div className="grid gap-4">
-            {settingsNavItems.map((item) => (
-               <QuickAccessCard
-                  description={item.description}
-                  icon={<item.icon className="size-4" />}
-                  key={item.id}
-                  onClick={() =>
-                     navigate({
-                        params: { slug: activeOrganization.slug },
-                        to: item.href,
-                     })
-                  }
-                  title={item.title}
-               />
-            ))}
+         {settingsNavItems.map((item) => (
+            <QuickAccessCard
+               description={item.description}
+               icon={<item.icon className="size-4" />}
+               key={item.id}
+               onClick={() =>
+                  navigate({
+                     params: { slug: activeOrganization.slug },
+                     to: item.href,
+                  })
+               }
+               title={item.title}
+            />
+         ))}
       </div>
    );
 }

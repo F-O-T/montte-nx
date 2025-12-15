@@ -262,7 +262,7 @@ function PlanCard({
             </div>
             {plan.hasFreeTrial && !subscription && (
                <div className="flex justify-center mb-4">
-                  <Badge variant="secondary" className="gap-1">
+                  <Badge className="gap-1" variant="secondary">
                      <Clock className="size-3" />
                      14 dias grátis
                   </Badge>
@@ -355,12 +355,12 @@ function PlansPageContent() {
          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto w-full">
             {plans.map((plan) => (
                <PlanCard
-                  subscription={activeSubscription as Subscription | null}
                   isAnnual={isAnnual}
                   isLoading={isLoading}
                   key={plan.name}
                   onSelect={handleSelectPlan}
                   plan={plan}
+                  subscription={activeSubscription as Subscription | null}
                />
             ))}
          </div>

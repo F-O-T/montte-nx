@@ -306,7 +306,9 @@ export function ForgotPasswordPage() {
                <Button asChild className="gap-2 px-0" variant="link">
                   <Link to="/auth/sign-in">
                      <ArrowLeft className="size-4" />
-                     {translate("dashboard.routes.forgot-password.actions.back-to-sign-in")}
+                     {translate(
+                        "dashboard.routes.forgot-password.actions.back-to-sign-in",
+                     )}
                   </Link>
                </Button>
 

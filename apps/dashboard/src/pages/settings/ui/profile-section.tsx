@@ -5,16 +5,6 @@ import {
    AlertTitle,
 } from "@packages/ui/components/alert";
 import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@packages/ui/components/alert-dialog";
-import {
    Avatar,
    AvatarFallback,
    AvatarImage,
@@ -107,6 +97,7 @@ import {
 } from "@/features/file-upload/lib/image-compression";
 import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
 import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useCredenza } from "@/hooks/use-credenza";
 import { useSheet } from "@/hooks/use-sheet";
 import { betterAuthClient, useTRPC } from "@/integrations/clients";
@@ -153,9 +144,7 @@ function ChangeNameSheetContent({
       <div className="flex flex-col h-full">
          <SheetHeader>
             <SheetTitle>Alterar Nome</SheetTitle>
-            <SheetDescription>
-               Atualize seu nome de exibição
-            </SheetDescription>
+            <SheetDescription>Atualize seu nome de exibição</SheetDescription>
          </SheetHeader>
 
          <div className="flex-1 p-4 space-y-4 overflow-y-auto">
@@ -163,7 +152,8 @@ function ChangeNameSheetContent({
                <Info className="size-4" />
                <AlertTitle>Nome de exibição</AlertTitle>
                <AlertDescription>
-                  Este é o nome que será exibido para outros usuários e em seu perfil.
+                  Este é o nome que será exibido para outros usuários e em seu
+                  perfil.
                </AlertDescription>
             </Alert>
 
@@ -208,7 +198,7 @@ function ChangeEmailSheetContent({
    onClose: () => void;
 }) {
    const [email, setEmail] = useState("");
-   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+   const { openAlertDialog } = useAlertDialog();
 
    const changeMutation = useMutation({
       mutationFn: async () => {
@@ -219,107 +209,88 @@ function ChangeEmailSheetContent({
       },
       onSuccess: () => {
          toast.success("Email de verificação enviado para o novo endereço!");
-         setShowConfirmDialog(false);
          onClose();
       },
       onError: (error) => {
-         setShowConfirmDialog(false);
-         const errorMessage = error instanceof Error ? error.message : "Erro ao alterar email";
+         const errorMessage =
+            error instanceof Error ? error.message : "Erro ao alterar email";
          toast.error(errorMessage);
       },
    });
 
    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-   const isValid = isValidEmail && email.toLowerCase() !== currentEmail.toLowerCase();
+   const isValid =
+      isValidEmail && email.toLowerCase() !== currentEmail.toLowerCase();
 
    const handleSubmit = () => {
-      setShowConfirmDialog(true);
-   };
-
-   const handleConfirm = () => {
-      changeMutation.mutate();
+      openAlertDialog({
+         title: "Confirmar alteração de email",
+         description: `Um email de verificação será enviado para ${email}. Você precisará clicar no link para confirmar a alteração.`,
+         onAction: async () => {
+            await changeMutation.mutateAsync();
+         },
+         actionLabel: "Confirmar",
+         cancelLabel: "Cancelar",
+         variant: "default",
+      });
    };
 
    return (
-      <>
-         <div className="flex flex-col h-full">
-            <SheetHeader>
-               <SheetTitle>Alterar Email</SheetTitle>
-               <SheetDescription>
-                  Atualize o endereço de email da sua conta
-               </SheetDescription>
-            </SheetHeader>
+      <div className="flex flex-col h-full">
+         <SheetHeader>
+            <SheetTitle>Alterar Email</SheetTitle>
+            <SheetDescription>
+               Atualize o endereço de email da sua conta
+            </SheetDescription>
+         </SheetHeader>
 
-            <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-               <Alert>
-                  <Info className="size-4" />
-                  <AlertTitle>Verificação necessária</AlertTitle>
-                  <AlertDescription>
-                     Um email de verificação será enviado para o novo endereço.
-                     Seu email só será alterado após você clicar no link de confirmação.
-                  </AlertDescription>
-               </Alert>
+         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+            <Alert>
+               <Info className="size-4" />
+               <AlertTitle>Verificação necessária</AlertTitle>
+               <AlertDescription>
+                  Um email de verificação será enviado para o novo endereço. Seu
+                  email só será alterado após você clicar no link de
+                  confirmação.
+               </AlertDescription>
+            </Alert>
 
-               <div className="p-4 bg-secondary/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                     Email atual: <span className="font-medium">{currentEmail}</span>
-                  </p>
-               </div>
-
-               <div className="space-y-2">
-                  <Label htmlFor="new-email">Novo email</Label>
-                  <Input
-                     id="new-email"
-                     onChange={(e) => setEmail(e.target.value)}
-                     placeholder="novo@email.com"
-                     type="email"
-                     value={email}
-                  />
-                  {email && !isValidEmail && (
-                     <p className="text-sm text-destructive">Digite um email válido</p>
-                  )}
-               </div>
+            <div className="p-4 bg-secondary/50 rounded-lg">
+               <p className="text-sm text-muted-foreground">
+                  Email atual:{" "}
+                  <span className="font-medium">{currentEmail}</span>
+               </p>
             </div>
 
-            <SheetFooter>
-               <SheetClose asChild>
-                  <Button variant="outline">Cancelar</Button>
-               </SheetClose>
-               <Button
-                  disabled={!isValid || changeMutation.isPending}
-                  onClick={handleSubmit}
-               >
-                  Enviar verificação
-               </Button>
-            </SheetFooter>
+            <div className="space-y-2">
+               <Label htmlFor="new-email">Novo email</Label>
+               <Input
+                  id="new-email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="novo@email.com"
+                  type="email"
+                  value={email}
+               />
+               {email && !isValidEmail && (
+                  <p className="text-sm text-destructive">
+                     Digite um email válido
+                  </p>
+               )}
+            </div>
          </div>
 
-         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmar alteração de email</AlertDialogTitle>
-                  <AlertDialogDescription>
-                     Um email de verificação será enviado para <span className="font-medium">{email}</span>.
-                     Você precisará clicar no link para confirmar a alteração.
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel disabled={changeMutation.isPending}>
-                     Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     disabled={changeMutation.isPending}
-                     onClick={handleConfirm}
-                  >
-                     {changeMutation.isPending && (
-                        <Loader2 className="size-4 mr-2 animate-spin" />
-                     )}
-                     Confirmar
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-      </>
+         <SheetFooter>
+            <SheetClose asChild>
+               <Button variant="outline">Cancelar</Button>
+            </SheetClose>
+            <Button
+               disabled={!isValid || changeMutation.isPending}
+               onClick={handleSubmit}
+            >
+               Enviar verificação
+            </Button>
+         </SheetFooter>
+      </div>
    );
 }
 
@@ -340,7 +311,8 @@ function ChangeAvatarCredenzaContent({
       acceptedTypes: ["image/jpeg", "image/png", "image/webp", "image/avif"],
       maxSize: 5 * 1024 * 1024,
    });
-   const { uploadToPresignedUrl, isUploading: isUploadingToS3 } = usePresignedUpload();
+   const { uploadToPresignedUrl, isUploading: isUploadingToS3 } =
+      usePresignedUpload();
 
    const requestUploadUrlMutation = useMutation(
       trpc.account.requestAvatarUploadUrl.mutationOptions(),
@@ -413,7 +385,11 @@ function ChangeAvatarCredenzaContent({
       }
    };
 
-   const isUploading = fileUpload.isUploading || isUploadingToS3 || requestUploadUrlMutation.isPending || confirmUploadMutation.isPending;
+   const isUploading =
+      fileUpload.isUploading ||
+      isUploadingToS3 ||
+      requestUploadUrlMutation.isPending ||
+      confirmUploadMutation.isPending;
 
    return (
       <>
@@ -440,10 +416,10 @@ function ChangeAvatarCredenzaContent({
 
             {/* File Input */}
             <input
-               ref={fileInputRef}
                accept="image/jpeg,image/png,image/webp,image/avif"
                className="hidden"
                onChange={handleFileSelect}
+               ref={fileInputRef}
                type="file"
             />
 
@@ -473,9 +449,7 @@ function ChangeAvatarCredenzaContent({
                disabled={!fileUpload.selectedFile || isUploading}
                onClick={handleUpload}
             >
-               {isUploading && (
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-               )}
+               {isUploading && <Loader2 className="size-4 mr-2 animate-spin" />}
                Salvar
             </Button>
          </CredenzaFooter>
@@ -492,13 +466,10 @@ const passwordSteps = [
    { id: "change", title: "change" },
 ] as const;
 
-const { Stepper: PasswordStepper, useStepper: usePasswordStepper } = defineStepper(...passwordSteps);
+const { Stepper: PasswordStepper, useStepper: usePasswordStepper } =
+   defineStepper(...passwordSteps);
 
-function ChangePasswordSheetContent({
-   onClose,
-}: {
-   onClose: () => void;
-}) {
+function ChangePasswordSheetContent({ onClose }: { onClose: () => void }) {
    return (
       <PasswordStepper.Provider>
          {({ methods }) => (
@@ -516,11 +487,11 @@ function ChangePasswordStepperContent({
    onClose: () => void;
 }) {
    const trpc = useTRPC();
+   const { openAlertDialog } = useAlertDialog();
    const [currentPassword, setCurrentPassword] = useState("");
    const [newPassword, setNewPassword] = useState("");
    const [confirmPassword, setConfirmPassword] = useState("");
    const [passwordError, setPasswordError] = useState(false);
-   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
    // Step 1: Verify current password
    const verifyMutation = useMutation(
@@ -550,12 +521,11 @@ function ChangePasswordStepperContent({
       },
       onSuccess: () => {
          toast.success("Senha alterada com sucesso!");
-         setShowConfirmDialog(false);
          onClose();
       },
       onError: (error) => {
-         setShowConfirmDialog(false);
-         const errorMessage = error instanceof Error ? error.message : "Erro ao alterar senha";
+         const errorMessage =
+            error instanceof Error ? error.message : "Erro ao alterar senha";
          toast.error(errorMessage);
       },
    });
@@ -566,11 +536,17 @@ function ChangePasswordStepperContent({
    };
 
    const handleSubmit = () => {
-      setShowConfirmDialog(true);
-   };
-
-   const handleConfirm = () => {
-      changeMutation.mutate();
+      openAlertDialog({
+         title: "Confirmar alteração de senha",
+         description:
+            "Tem certeza que deseja alterar sua senha? Todas as outras sessões ativas serão encerradas por segurança.",
+         onAction: async () => {
+            await changeMutation.mutateAsync();
+         },
+         actionLabel: "Confirmar",
+         cancelLabel: "Cancelar",
+         variant: "default",
+      });
    };
 
    const handleBack = () => {
@@ -580,172 +556,151 @@ function ChangePasswordStepperContent({
    };
 
    const isNewPasswordValid =
-      newPassword.length >= 8 &&
-      newPassword === confirmPassword;
+      newPassword.length >= 8 && newPassword === confirmPassword;
 
    const isVerifyStep = methods.current.id === "verify";
 
    return (
-      <>
-         <div className="flex flex-col h-full">
-            <SheetHeader>
-               <SheetTitle>Alterar Senha</SheetTitle>
-               <SheetDescription>
-                  {isVerifyStep
-                     ? "Primeiro, confirme sua senha atual"
-                     : "Agora, escolha sua nova senha"}
-               </SheetDescription>
-            </SheetHeader>
+      <div className="flex flex-col h-full">
+         <SheetHeader>
+            <SheetTitle>Alterar Senha</SheetTitle>
+            <SheetDescription>
+               {isVerifyStep
+                  ? "Primeiro, confirme sua senha atual"
+                  : "Agora, escolha sua nova senha"}
+            </SheetDescription>
+         </SheetHeader>
 
-            {/* Step Indicator using defineStepper */}
-            <div className="px-4 py-2">
-               <PasswordStepper.Navigation>
-                  {passwordSteps.map((step) => (
-                     <PasswordStepper.Step key={step.id} of={step.id} />
-                  ))}
-               </PasswordStepper.Navigation>
-            </div>
-
-            <div className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto">
-               {methods.switch({
-                  verify: () => (
-                     <>
-                        <Alert>
-                           <Info className="size-4" />
-                           <AlertTitle>Verificação de identidade</AlertTitle>
-                           <AlertDescription>
-                              Por segurança, confirme sua senha atual antes de alterá-la.
-                           </AlertDescription>
-                        </Alert>
-
-                        <div className="space-y-2">
-                           <Label htmlFor="current-password">Senha atual</Label>
-                           <Input
-                              id="current-password"
-                              onChange={(e) => {
-                                 setCurrentPassword(e.target.value);
-                                 setPasswordError(false);
-                              }}
-                              placeholder="Digite sua senha atual"
-                              type="password"
-                              value={currentPassword}
-                           />
-                        </div>
-
-                        {passwordError && (
-                           <Alert variant="destructive">
-                              <AlertTriangle className="size-4" />
-                              <AlertTitle>Senha incorreta</AlertTitle>
-                              <AlertDescription>
-                                 A senha informada não está correta. Por favor, tente novamente.
-                              </AlertDescription>
-                           </Alert>
-                        )}
-                     </>
-                  ),
-                  change: () => (
-                     <>
-                        <Alert>
-                           <Info className="size-4" />
-                           <AlertTitle>Segurança da conta</AlertTitle>
-                           <AlertDescription>
-                              Ao alterar sua senha, todas as outras sessões serão encerradas
-                              automaticamente por segurança.
-                           </AlertDescription>
-                        </Alert>
-
-                        <div className="space-y-2">
-                           <Label htmlFor="new-password">Nova senha</Label>
-                           <Input
-                              id="new-password"
-                              onChange={(e) => setNewPassword(e.target.value)}
-                              placeholder="Mínimo 8 caracteres"
-                              type="password"
-                              value={newPassword}
-                           />
-                           {newPassword && newPassword.length < 8 && (
-                              <p className="text-sm text-destructive">
-                                 A senha deve ter no mínimo 8 caracteres
-                              </p>
-                           )}
-                        </div>
-
-                        <div className="space-y-2">
-                           <Label htmlFor="confirm-new-password">Confirmar nova senha</Label>
-                           <Input
-                              id="confirm-new-password"
-                              onChange={(e) => setConfirmPassword(e.target.value)}
-                              placeholder="Digite novamente"
-                              type="password"
-                              value={confirmPassword}
-                           />
-                           {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                              <p className="text-sm text-destructive">As senhas não coincidem</p>
-                           )}
-                        </div>
-                     </>
-                  ),
-               })}
-            </div>
-
-            <SheetFooter>
-               {isVerifyStep ? (
-                  <>
-                     <SheetClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                     </SheetClose>
-                     <Button
-                        disabled={!currentPassword || verifyMutation.isPending}
-                        onClick={handleVerify}
-                     >
-                        {verifyMutation.isPending && (
-                           <Loader2 className="size-4 mr-2 animate-spin" />
-                        )}
-                        Verificar e continuar
-                     </Button>
-                  </>
-               ) : (
-                  <>
-                     <Button variant="outline" onClick={handleBack}>
-                        Voltar
-                     </Button>
-                     <Button
-                        disabled={!isNewPasswordValid || changeMutation.isPending}
-                        onClick={handleSubmit}
-                     >
-                        Alterar senha
-                     </Button>
-                  </>
-               )}
-            </SheetFooter>
+         {/* Step Indicator using defineStepper */}
+         <div className="px-4 py-2">
+            <PasswordStepper.Navigation>
+               {passwordSteps.map((step) => (
+                  <PasswordStepper.Step key={step.id} of={step.id} />
+               ))}
+            </PasswordStepper.Navigation>
          </div>
 
-         <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmar alteração de senha</AlertDialogTitle>
-                  <AlertDialogDescription>
-                     Tem certeza que deseja alterar sua senha? Todas as outras sessões
-                     ativas serão encerradas por segurança.
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel disabled={changeMutation.isPending}>
-                     Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                     disabled={changeMutation.isPending}
-                     onClick={handleConfirm}
+         <div className="flex-1 px-4 pb-4 space-y-4 overflow-y-auto">
+            {methods.switch({
+               verify: () => (
+                  <>
+                     <Alert>
+                        <Info className="size-4" />
+                        <AlertTitle>Verificação de identidade</AlertTitle>
+                        <AlertDescription>
+                           Por segurança, confirme sua senha atual antes de
+                           alterá-la.
+                        </AlertDescription>
+                     </Alert>
+
+                     <div className="space-y-2">
+                        <Label htmlFor="current-password">Senha atual</Label>
+                        <Input
+                           id="current-password"
+                           onChange={(e) => {
+                              setCurrentPassword(e.target.value);
+                              setPasswordError(false);
+                           }}
+                           placeholder="Digite sua senha atual"
+                           type="password"
+                           value={currentPassword}
+                        />
+                     </div>
+
+                     {passwordError && (
+                        <Alert variant="destructive">
+                           <AlertTriangle className="size-4" />
+                           <AlertTitle>Senha incorreta</AlertTitle>
+                           <AlertDescription>
+                              A senha informada não está correta. Por favor,
+                              tente novamente.
+                           </AlertDescription>
+                        </Alert>
+                     )}
+                  </>
+               ),
+               change: () => (
+                  <>
+                     <Alert>
+                        <Info className="size-4" />
+                        <AlertTitle>Segurança da conta</AlertTitle>
+                        <AlertDescription>
+                           Ao alterar sua senha, todas as outras sessões serão
+                           encerradas automaticamente por segurança.
+                        </AlertDescription>
+                     </Alert>
+
+                     <div className="space-y-2">
+                        <Label htmlFor="new-password">Nova senha</Label>
+                        <Input
+                           id="new-password"
+                           onChange={(e) => setNewPassword(e.target.value)}
+                           placeholder="Mínimo 8 caracteres"
+                           type="password"
+                           value={newPassword}
+                        />
+                        {newPassword && newPassword.length < 8 && (
+                           <p className="text-sm text-destructive">
+                              A senha deve ter no mínimo 8 caracteres
+                           </p>
+                        )}
+                     </div>
+
+                     <div className="space-y-2">
+                        <Label htmlFor="confirm-new-password">
+                           Confirmar nova senha
+                        </Label>
+                        <Input
+                           id="confirm-new-password"
+                           onChange={(e) => setConfirmPassword(e.target.value)}
+                           placeholder="Digite novamente"
+                           type="password"
+                           value={confirmPassword}
+                        />
+                        {newPassword &&
+                           confirmPassword &&
+                           newPassword !== confirmPassword && (
+                              <p className="text-sm text-destructive">
+                                 As senhas não coincidem
+                              </p>
+                           )}
+                     </div>
+                  </>
+               ),
+            })}
+         </div>
+
+         <SheetFooter>
+            {isVerifyStep ? (
+               <>
+                  <SheetClose asChild>
+                     <Button variant="outline">Cancelar</Button>
+                  </SheetClose>
+                  <Button
+                     disabled={!currentPassword || verifyMutation.isPending}
+                     onClick={handleVerify}
                   >
-                     {changeMutation.isPending && (
+                     {verifyMutation.isPending && (
                         <Loader2 className="size-4 mr-2 animate-spin" />
                      )}
-                     Confirmar
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
-      </>
+                     Verificar e continuar
+                  </Button>
+               </>
+            ) : (
+               <>
+                  <Button onClick={handleBack} variant="outline">
+                     Voltar
+                  </Button>
+                  <Button
+                     disabled={!isNewPasswordValid || changeMutation.isPending}
+                     onClick={handleSubmit}
+                  >
+                     Alterar senha
+                  </Button>
+               </>
+            )}
+         </SheetFooter>
+      </div>
    );
 }
 
@@ -1131,14 +1086,10 @@ function AccountSummaryCard({
 // Two Factor Setup Credenza Content
 // ============================================
 
-function TwoFactorSetupCredenzaContent({
-   onClose,
-}: {
-   onClose: () => void;
-}) {
-   const [step, setStep] = useState<"password" | "qrcode" | "verify" | "backup">(
-      "password",
-   );
+function TwoFactorSetupCredenzaContent({ onClose }: { onClose: () => void }) {
+   const [step, setStep] = useState<
+      "password" | "qrcode" | "verify" | "backup"
+   >("password");
    const [password, setPassword] = useState("");
    const [totpUri, setTotpUri] = useState("");
    const [verifyCode, setVerifyCode] = useState("");
@@ -1175,9 +1126,10 @@ function TwoFactorSetupCredenzaContent({
       },
       onSuccess: async () => {
          // Generate backup codes
-         const codesResult = await betterAuthClient.twoFactor.generateBackupCodes({
-            password,
-         });
+         const codesResult =
+            await betterAuthClient.twoFactor.generateBackupCodes({
+               password,
+            });
          if (codesResult.data?.backupCodes) {
             setBackupCodes(codesResult.data.backupCodes);
             setStep("backup");
@@ -1197,12 +1149,17 @@ function TwoFactorSetupCredenzaContent({
    return (
       <>
          <CredenzaHeader>
-            <CredenzaTitle>Configurar Autenticação em Duas Etapas</CredenzaTitle>
+            <CredenzaTitle>
+               Configurar Autenticação em Duas Etapas
+            </CredenzaTitle>
             <CredenzaDescription>
                {step === "password" && "Digite sua senha para continuar"}
-               {step === "qrcode" && "Escaneie o QR code com seu aplicativo autenticador"}
-               {step === "verify" && "Digite o código do seu aplicativo autenticador"}
-               {step === "backup" && "Guarde seus códigos de recuperação em um local seguro"}
+               {step === "qrcode" &&
+                  "Escaneie o QR code com seu aplicativo autenticador"}
+               {step === "verify" &&
+                  "Digite o código do seu aplicativo autenticador"}
+               {step === "backup" &&
+                  "Guarde seus códigos de recuperação em um local seguro"}
             </CredenzaDescription>
          </CredenzaHeader>
 
@@ -1239,10 +1196,7 @@ function TwoFactorSetupCredenzaContent({
                      </p>
                      <code className="text-xs break-all">{totpUri}</code>
                   </div>
-                  <Button
-                     className="w-full"
-                     onClick={() => setStep("verify")}
-                  >
+                  <Button className="w-full" onClick={() => setStep("verify")}>
                      Continuar
                   </Button>
                </div>
@@ -1292,7 +1246,8 @@ function TwoFactorSetupCredenzaContent({
                      Copiar códigos
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                     Guarde estes códigos em um local seguro. Cada código pode ser usado apenas uma vez.
+                     Guarde estes códigos em um local seguro. Cada código pode
+                     ser usado apenas uma vez.
                   </p>
                </div>
             )}
@@ -1322,7 +1277,9 @@ function TwoFactorSetupCredenzaContent({
                      Voltar
                   </Button>
                   <Button
-                     disabled={verifyCode.length !== 6 || verifyMutation.isPending}
+                     disabled={
+                        verifyCode.length !== 6 || verifyMutation.isPending
+                     }
                      onClick={() => verifyMutation.mutate()}
                   >
                      {verifyMutation.isPending && (
@@ -1347,11 +1304,7 @@ function TwoFactorSetupCredenzaContent({
 // Set Password Credenza Content (for OAuth users)
 // ============================================
 
-function SetPasswordCredenzaContent({
-   onSuccess,
-}: {
-   onSuccess: () => void;
-}) {
+function SetPasswordCredenzaContent({ onSuccess }: { onSuccess: () => void }) {
    const trpc = useTRPC();
    const [password, setPassword] = useState("");
    const [confirmPassword, setConfirmPassword] = useState("");
@@ -1368,16 +1321,15 @@ function SetPasswordCredenzaContent({
       }),
    );
 
-   const isValid =
-      password.length >= 8 && password === confirmPassword;
+   const isValid = password.length >= 8 && password === confirmPassword;
 
    return (
       <>
          <CredenzaHeader>
             <CredenzaTitle>Definir Senha</CredenzaTitle>
             <CredenzaDescription>
-               Para ativar a autenticação em duas etapas, você precisa definir uma
-               senha para sua conta.
+               Para ativar a autenticação em duas etapas, você precisa definir
+               uma senha para sua conta.
             </CredenzaDescription>
          </CredenzaHeader>
 
@@ -1412,7 +1364,9 @@ function SetPasswordCredenzaContent({
             </div>
 
             {password && confirmPassword && password !== confirmPassword && (
-               <p className="text-sm text-destructive">As senhas não coincidem</p>
+               <p className="text-sm text-destructive">
+                  As senhas não coincidem
+               </p>
             )}
          </CredenzaBody>
 
@@ -1422,7 +1376,9 @@ function SetPasswordCredenzaContent({
             </CredenzaClose>
             <Button
                disabled={!isValid || setPasswordMutation.isPending}
-               onClick={() => setPasswordMutation.mutate({ newPassword: password })}
+               onClick={() =>
+                  setPasswordMutation.mutate({ newPassword: password })
+               }
             >
                {setPasswordMutation.isPending && (
                   <Loader2 className="size-4 mr-2 animate-spin" />
@@ -1490,8 +1446,8 @@ function TwoFactorCard({
       openCredenza({
          children: (
             <DisableTwoFactorCredenzaContent
-               onConfirm={(password) => disableMutation.mutate(password)}
                isPending={disableMutation.isPending}
+               onConfirm={(password) => disableMutation.mutate(password)}
             />
          ),
       });
@@ -1530,7 +1486,9 @@ function TwoFactorCard({
                      </ItemDescription>
                   </ItemContent>
                   <ItemActions>
-                     <Badge variant={isTwoFactorEnabled ? "default" : "secondary"}>
+                     <Badge
+                        variant={isTwoFactorEnabled ? "default" : "secondary"}
+                     >
                         {isTwoFactorEnabled ? "Ativo" : "Inativo"}
                      </Badge>
                   </ItemActions>
@@ -1548,8 +1506,8 @@ function TwoFactorCard({
                               Você entrou com o Google
                            </p>
                            <p className="text-sm text-muted-foreground">
-                              Para ativar o 2FA, você precisa definir uma senha para
-                              sua conta primeiro.
+                              Para ativar o 2FA, você precisa definir uma senha
+                              para sua conta primeiro.
                            </p>
                            <Button
                               onClick={handleSetPassword}
@@ -1640,11 +1598,7 @@ function TwoFactorCard({
 // View Backup Codes Credenza Content
 // ============================================
 
-function ViewBackupCodesCredenzaContent({
-   onClose,
-}: {
-   onClose: () => void;
-}) {
+function ViewBackupCodesCredenzaContent({ onClose }: { onClose: () => void }) {
    const [password, setPassword] = useState("");
    const [codes, setCodes] = useState<string[]>([]);
    const [step, setStep] = useState<"password" | "codes">("password");
@@ -1823,7 +1777,9 @@ function DataAccountCard() {
    const { openCredenza, closeCredenza } = useCredenza();
    const trpc = useTRPC();
 
-   const exportMutation = useMutation(trpc.account.exportUserData.mutationOptions());
+   const exportMutation = useMutation(
+      trpc.account.exportUserData.mutationOptions(),
+   );
 
    const handleExportData = async () => {
       try {
@@ -1891,11 +1847,7 @@ function DataAccountCard() {
 // Delete Account Credenza Content
 // ============================================
 
-function DeleteAccountCredenzaContent({
-   onClose,
-}: {
-   onClose: () => void;
-}) {
+function DeleteAccountCredenzaContent({ onClose }: { onClose: () => void }) {
    const [step, setStep] = useState<"options" | "confirm">("options");
    const [deletionType, setDeletionType] = useState<"immediate" | "scheduled">(
       "scheduled",
@@ -1968,7 +1920,10 @@ function DeleteAccountCredenzaContent({
                      <div className="flex items-start space-x-3 p-4 border rounded-lg border-destructive/50">
                         <RadioGroupItem id="immediate" value="immediate" />
                         <div className="space-y-1">
-                           <Label className="text-destructive" htmlFor="immediate">
+                           <Label
+                              className="text-destructive"
+                              htmlFor="immediate"
+                           >
                               Excluir imediatamente
                            </Label>
                            <p className="text-sm text-muted-foreground">
@@ -2050,7 +2005,12 @@ function LinkedAccountsCard({
    hasPassword,
    onRefetch,
 }: {
-   accounts: { id: string; providerId: string; accountId: string; createdAt: Date }[];
+   accounts: {
+      id: string;
+      providerId: string;
+      accountId: string;
+      createdAt: Date;
+   }[];
    hasPassword: boolean;
    onRefetch: () => void;
 }) {
@@ -2121,7 +2081,11 @@ function LinkedAccountsCard({
                      {hasPassword ? (
                         <Badge variant="default">Ativo</Badge>
                      ) : (
-                        <Button onClick={handleSetPassword} size="sm" variant="outline">
+                        <Button
+                           onClick={handleSetPassword}
+                           size="sm"
+                           variant="outline"
+                        >
                            Definir
                         </Button>
                      )}
@@ -2150,7 +2114,9 @@ function LinkedAccountsCard({
                                  <TooltipTrigger asChild>
                                     <Button
                                        disabled={unlinkMutation.isPending}
-                                       onClick={() => unlinkMutation.mutate("google")}
+                                       onClick={() =>
+                                          unlinkMutation.mutate("google")
+                                       }
                                        size="icon"
                                        variant="ghost"
                                     >
@@ -2166,7 +2132,11 @@ function LinkedAccountsCard({
                            )}
                         </div>
                      ) : (
-                        <Button onClick={handleLinkGoogle} size="sm" variant="outline">
+                        <Button
+                           onClick={handleLinkGoogle}
+                           size="sm"
+                           variant="outline"
+                        >
                            <Link2 className="size-4 mr-2" />
                            Vincular
                         </Button>
@@ -2194,12 +2164,10 @@ function ProfileSectionContent() {
    const { data: session } = useSuspenseQuery(
       trpc.session.getSession.queryOptions(),
    );
-   const { data: hasPasswordData, refetch: refetchHasPassword } = useSuspenseQuery(
-      trpc.account.hasPassword.queryOptions(),
-   );
-   const { data: linkedAccounts, refetch: refetchLinkedAccounts } = useSuspenseQuery(
-      trpc.account.getLinkedAccounts.queryOptions(),
-   );
+   const { data: hasPasswordData, refetch: refetchHasPassword } =
+      useSuspenseQuery(trpc.account.hasPassword.queryOptions());
+   const { data: linkedAccounts, refetch: refetchLinkedAccounts } =
+      useSuspenseQuery(trpc.account.getLinkedAccounts.queryOptions());
 
    const handleRefetch = () => {
       refetchHasPassword();

@@ -113,14 +113,23 @@ export function SignInPage() {
             </Button>
 
             {/* Try without account - Prominent */}
-            <Button asChild className="w-full h-12 text-base relative" variant="secondary">
+            <Button
+               asChild
+               className="w-full h-12 text-base relative"
+               variant="secondary"
+            >
                <Link to="/auth/anonymous">
                   <User className="size-5" />
                   <span>
-                     {translate("dashboard.routes.sign-in.actions.try-without-account")}
+                     {translate(
+                        "dashboard.routes.sign-in.actions.try-without-account",
+                     )}
                   </span>
                   {lastMethod === "anonymous" && (
-                     <Badge className="absolute -top-2 -right-2" variant="default">
+                     <Badge
+                        className="absolute -top-2 -right-2"
+                        variant="default"
+                     >
                         {translate("dashboard.routes.sign-in.last-used")}
                      </Badge>
                   )}
@@ -160,7 +169,9 @@ export function SignInPage() {
                      {translate("dashboard.routes.sign-in.methods.email")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                     {translate("dashboard.routes.sign-in.methods.email-description")}
+                     {translate(
+                        "dashboard.routes.sign-in.methods.email-description",
+                     )}
                   </p>
                </div>
             </Link>
@@ -183,7 +194,9 @@ export function SignInPage() {
                      {translate("dashboard.routes.sign-in.methods.magic-link")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                     {translate("dashboard.routes.sign-in.methods.magic-link-description")}
+                     {translate(
+                        "dashboard.routes.sign-in.methods.magic-link-description",
+                     )}
                   </p>
                </div>
             </Link>

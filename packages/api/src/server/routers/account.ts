@@ -77,7 +77,10 @@ export const accountRouter = router({
 
       const credentialAccount = await resolvedCtx.db.query.account.findFirst({
          where: (account, { and, eq }) =>
-            and(eq(account.userId, userId), eq(account.providerId, "credential")),
+            and(
+               eq(account.userId, userId),
+               eq(account.providerId, "credential"),
+            ),
       });
 
       return { hasPassword: !!credentialAccount };
@@ -169,17 +172,20 @@ export const accountRouter = router({
 
          // Categories
          db.query.category.findMany({
-            where: (category, { eq }) => eq(category.organizationId, organizationId),
+            where: (category, { eq }) =>
+               eq(category.organizationId, organizationId),
          }),
 
          // Bank accounts
          db.query.bankAccount.findMany({
-            where: (account, { eq }) => eq(account.organizationId, organizationId),
+            where: (account, { eq }) =>
+               eq(account.organizationId, organizationId),
          }),
 
          // Transactions with related data
          db.query.transaction.findMany({
-            where: (transaction, { eq }) => eq(transaction.organizationId, organizationId),
+            where: (transaction, { eq }) =>
+               eq(transaction.organizationId, organizationId),
             with: {
                bankAccount: true,
                costCenter: true,
@@ -199,7 +205,8 @@ export const accountRouter = router({
 
          // Budgets with periods
          db.query.budget.findMany({
-            where: (budget, { eq }) => eq(budget.organizationId, organizationId),
+            where: (budget, { eq }) =>
+               eq(budget.organizationId, organizationId),
             with: {
                periods: true,
             },
@@ -212,12 +219,14 @@ export const accountRouter = router({
 
          // Cost centers
          db.query.costCenter.findMany({
-            where: (costCenter, { eq }) => eq(costCenter.organizationId, organizationId),
+            where: (costCenter, { eq }) =>
+               eq(costCenter.organizationId, organizationId),
          }),
 
          // Counterparties
          db.query.counterparty.findMany({
-            where: (counterparty, { eq }) => eq(counterparty.organizationId, organizationId),
+            where: (counterparty, { eq }) =>
+               eq(counterparty.organizationId, organizationId),
          }),
 
          // Automation rules
@@ -227,7 +236,8 @@ export const accountRouter = router({
 
          // Custom reports
          db.query.customReport.findMany({
-            where: (report, { eq }) => eq(report.organizationId, organizationId),
+            where: (report, { eq }) =>
+               eq(report.organizationId, organizationId),
          }),
 
          // Notification preferences
@@ -357,7 +367,11 @@ export const accountRouter = router({
          }
 
          // Delete old avatar if it exists and is a storage key (not external URL)
-         if (currentImage && !currentImage.startsWith("http") && currentImage !== storageKey) {
+         if (
+            currentImage &&
+            !currentImage.startsWith("http") &&
+            currentImage !== storageKey
+         ) {
             try {
                await deleteFile(currentImage, bucketName, minioClient);
             } catch (error) {

@@ -371,10 +371,14 @@ function BillingPlanCard({ subscription }: { subscription: Subscription }) {
          <CardHeader>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                <CardTitle>Plano Atual</CardTitle>
-               {getStatusBadge(subscription.status, subscription.cancelAtPeriodEnd)}
+               {getStatusBadge(
+                  subscription.status,
+                  subscription.cancelAtPeriodEnd,
+               )}
             </div>
             <CardDescription>
-               Gerencie os detalhes do seu plano de assinatura e recursos incluídos
+               Gerencie os detalhes do seu plano de assinatura e recursos
+               incluídos
             </CardDescription>
          </CardHeader>
          <CardContent className="space-y-4 md:space-y-6">
@@ -383,7 +387,9 @@ function BillingPlanCard({ subscription }: { subscription: Subscription }) {
                   <PlanIcon className="size-5 md:size-6 text-primary" />
                </div>
                <div className="min-w-0 flex-1">
-                  <h3 className="text-lg md:text-xl font-semibold truncate">{plan.displayName}</h3>
+                  <h3 className="text-lg md:text-xl font-semibold truncate">
+                     {plan.displayName}
+                  </h3>
                   <p className="text-sm text-muted-foreground line-clamp-2">
                      {plan.description}
                   </p>
@@ -403,7 +409,8 @@ function BillingPlanCard({ subscription }: { subscription: Subscription }) {
                <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3">
                   <AlertCircle className="size-4 text-destructive shrink-0" />
                   <span className="text-sm text-destructive">
-                     Assinatura será cancelada em {formatDate(subscription.periodEnd)}
+                     Assinatura será cancelada em{" "}
+                     {formatDate(subscription.periodEnd)}
                   </span>
                </div>
             )}
@@ -412,7 +419,10 @@ function BillingPlanCard({ subscription }: { subscription: Subscription }) {
                <h4 className="text-sm font-medium">Recursos incluídos:</h4>
                <ul className="grid gap-2 sm:grid-cols-2">
                   {plan.features.map((feature) => (
-                     <li className="flex items-center gap-2 text-sm" key={feature}>
+                     <li
+                        className="flex items-center gap-2 text-sm"
+                        key={feature}
+                     >
                         <Check className="size-4 text-green-500 shrink-0" />
                         <span className="truncate">{feature}</span>
                      </li>
@@ -467,15 +477,21 @@ function BillingSummary({ subscription }: { subscription: Subscription }) {
                      <ItemTitle>{plan.displayName}</ItemTitle>
                      <ItemDescription>Cobrança mensal</ItemDescription>
                   </ItemContent>
-                  <span className="font-medium text-sm md:text-base">{plan.price}</span>
+                  <span className="font-medium text-sm md:text-base">
+                     {plan.price}
+                  </span>
                </Item>
             </ItemGroup>
 
             <div className="border-t pt-4">
                <div className="flex items-center justify-between">
-                  <span className="text-base md:text-lg font-semibold">Total</span>
+                  <span className="text-base md:text-lg font-semibold">
+                     Total
+                  </span>
                   <div className="text-right">
-                     <span className="text-xl md:text-2xl font-bold">{plan.price}</span>
+                     <span className="text-xl md:text-2xl font-bold">
+                        {plan.price}
+                     </span>
                      <span className="text-muted-foreground text-sm">/mês</span>
                   </div>
                </div>
@@ -515,16 +531,20 @@ function BillingPaymentHistorySkeleton() {
    );
 }
 
-function InvoiceMobileCard({ invoice }: { invoice: {
-   id: string;
-   number: string | null;
-   amountPaid: number;
-   currency: string;
-   status: string | null;
-   created: number;
-   invoicePdf: string | null;
-   hostedInvoiceUrl: string | null;
-} }) {
+function InvoiceMobileCard({
+   invoice,
+}: {
+   invoice: {
+      id: string;
+      number: string | null;
+      amountPaid: number;
+      currency: string;
+      status: string | null;
+      created: number;
+      invoicePdf: string | null;
+      hostedInvoiceUrl: string | null;
+   };
+}) {
    return (
       <div className="rounded-lg border p-3 space-y-3">
          <div className="flex items-start justify-between gap-2">
@@ -629,7 +649,9 @@ function BillingPaymentHistoryContent() {
                      <TableCell>
                         {formatCurrency(invoice.amountPaid, invoice.currency)}
                      </TableCell>
-                     <TableCell>{getInvoiceStatusBadge(invoice.status)}</TableCell>
+                     <TableCell>
+                        {getInvoiceStatusBadge(invoice.status)}
+                     </TableCell>
                      <TableCell>{formatShortDate(invoice.created)}</TableCell>
                      <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -752,9 +774,14 @@ function BillingNextPaymentContent() {
          </ItemGroup>
 
          <div className="rounded-lg bg-secondary/50 p-4 text-center">
-            <p className="text-xs md:text-sm text-muted-foreground mb-1">Valor a ser cobrado</p>
+            <p className="text-xs md:text-sm text-muted-foreground mb-1">
+               Valor a ser cobrado
+            </p>
             <p className="text-2xl md:text-3xl font-bold">
-               {formatCurrency(upcomingInvoice.amountDue, upcomingInvoice.currency)}
+               {formatCurrency(
+                  upcomingInvoice.amountDue,
+                  upcomingInvoice.currency,
+               )}
             </p>
             {daysUntil !== null && daysUntil > 0 && (
                <Badge className="mt-2" variant="secondary">
@@ -765,20 +792,34 @@ function BillingNextPaymentContent() {
 
          {upcomingInvoice.lines.length > 0 && (
             <div className="space-y-2">
-               <p className="text-xs md:text-sm font-medium text-muted-foreground">Detalhes:</p>
+               <p className="text-xs md:text-sm font-medium text-muted-foreground">
+                  Detalhes:
+               </p>
                <ItemGroup>
-                  {upcomingInvoice.lines.map((line: { description: string | null; amount: number; quantity: number | null }, index: number) => (
-                     <Item key={index} variant="muted">
-                        <ItemContent>
-                           <ItemTitle className="text-sm">
-                              {line.description || "Item"}
-                           </ItemTitle>
-                        </ItemContent>
-                        <span className="text-sm font-medium">
-                           {formatCurrency(line.amount, upcomingInvoice.currency)}
-                        </span>
-                     </Item>
-                  ))}
+                  {upcomingInvoice.lines.map(
+                     (
+                        line: {
+                           description: string | null;
+                           amount: number;
+                           quantity: number | null;
+                        },
+                        index: number,
+                     ) => (
+                        <Item key={index} variant="muted">
+                           <ItemContent>
+                              <ItemTitle className="text-sm">
+                                 {line.description || "Item"}
+                              </ItemTitle>
+                           </ItemContent>
+                           <span className="text-sm font-medium">
+                              {formatCurrency(
+                                 line.amount,
+                                 upcomingInvoice.currency,
+                              )}
+                           </span>
+                        </Item>
+                     ),
+                  )}
                </ItemGroup>
             </div>
          )}

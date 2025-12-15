@@ -174,7 +174,10 @@ function ActiveSubscriptionContent({
                <ItemTitle className="text-lg">{plan.displayName}</ItemTitle>
                <ItemDescription>{plan.description}</ItemDescription>
             </ItemContent>
-            {getStatusBadge(subscription.status, subscription.cancelAtPeriodEnd)}
+            {getStatusBadge(
+               subscription.status,
+               subscription.cancelAtPeriodEnd,
+            )}
          </Item>
          <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-1">

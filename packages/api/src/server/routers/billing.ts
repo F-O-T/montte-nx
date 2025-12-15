@@ -56,7 +56,10 @@ export const billingRouter = router({
                periodEnd: invoice.period_end,
                invoicePdf: invoice.invoice_pdf ?? null,
                hostedInvoiceUrl: invoice.hosted_invoice_url ?? null,
-               paymentMethod: null as { brand: string | undefined; last4: string | undefined } | null,
+               paymentMethod: null as {
+                  brand: string | undefined;
+                  last4: string | undefined;
+               } | null,
             }));
          } catch (error) {
             console.error("Failed to fetch invoices:", error);
@@ -88,9 +91,11 @@ export const billingRouter = router({
       }
 
       try {
-         const upcoming = await resolvedCtx.stripeClient.invoices.createPreview({
-            customer: userRecord.stripeCustomerId,
-         });
+         const upcoming = await resolvedCtx.stripeClient.invoices.createPreview(
+            {
+               customer: userRecord.stripeCustomerId,
+            },
+         );
 
          return {
             amountDue: upcoming.amount_due,
