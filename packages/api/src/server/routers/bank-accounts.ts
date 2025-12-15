@@ -60,7 +60,7 @@ export const bankAccountRouter = router({
       }),
 
    createDefaultBusiness: protectedProcedure
-      .input(z.object({ name: z.string().optional() }))
+      .input(z.object({ name: z.string().optional(), bank: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
@@ -69,11 +69,12 @@ export const bankAccountRouter = router({
             resolvedCtx.db,
             organizationId,
             input.name,
+            input.bank,
          );
       }),
 
    createDefaultPersonal: protectedProcedure
-      .input(z.object({ name: z.string().optional() }))
+      .input(z.object({ name: z.string().optional(), bank: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
@@ -82,6 +83,7 @@ export const bankAccountRouter = router({
             resolvedCtx.db,
             organizationId,
             input.name,
+            input.bank,
          );
       }),
 

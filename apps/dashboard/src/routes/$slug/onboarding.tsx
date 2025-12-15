@@ -228,11 +228,18 @@ function RouteComponent() {
       },
       onSuccess: () => {
          // After saving name, create default account and navigate
-         const defaultName =
-            onboardingStatus?.organizationContext === "business"
-               ? translate("dashboard.routes.onboarding.default-account.business")
-               : translate("dashboard.routes.onboarding.default-account.personal");
-         createDefaultPersonalAccount.mutate({ name: defaultName });
+         const isBusinessContext = onboardingStatus?.organizationContext === "business";
+         const accountType = isBusinessContext ? "business" : "personal";
+         const defaultName = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.name`
+         );
+         const defaultBank = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.bank`
+         );
+         createDefaultPersonalAccount.mutate({
+            name: defaultName,
+            bank: defaultBank
+         });
       },
    });
 
@@ -270,11 +277,18 @@ function RouteComponent() {
          });
       } else {
          // User already has a name, create default account directly
-         const defaultName =
-            onboardingStatus?.organizationContext === "business"
-               ? translate("dashboard.routes.onboarding.default-account.business")
-               : translate("dashboard.routes.onboarding.default-account.personal");
-         createDefaultPersonalAccount.mutate({ name: defaultName });
+         const isBusinessContext = onboardingStatus?.organizationContext === "business";
+         const accountType = isBusinessContext ? "business" : "personal";
+         const defaultName = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.name`
+         );
+         const defaultBank = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.bank`
+         );
+         createDefaultPersonalAccount.mutate({
+            name: defaultName,
+            bank: defaultBank
+         });
       }
    };
 

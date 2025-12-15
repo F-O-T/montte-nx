@@ -74,8 +74,14 @@
       "title": "Escolha seu Contexto Financeiro"
    },
    "default-account": {
-      "business": "Caixa",
-      "personal": "Carteira"
+      "business": {
+         "name": "Caixa",
+         "bank": "Caixa"
+      },
+      "personal": {
+         "name": "Carteira",
+         "bank": "Padrão"
+      }
    },
    "default-account-created": {
       "add-additional-account": "Desejo criar uma conta adicional",
