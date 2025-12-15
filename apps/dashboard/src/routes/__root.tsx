@@ -18,6 +18,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { GlobalAlertDialog } from "@/hooks/use-alert-dialog";
 import { GlobalCredenza } from "@/hooks/use-credenza";
 import { GlobalSheet } from "@/hooks/use-sheet";
+import { CookieConsentBanner } from "@/features/cookie-consent/cookie-consent-banner";
 
 declare module "@tanstack/react-router" {
    interface StaticDataRouteOption {
@@ -91,6 +92,7 @@ function RootComponent() {
                   <GlobalCredenza />
                   <GlobalSheet />
                   <Toaster />
+                  <CookieConsentBanner />
                   <Outlet />
                   <TanStackRouterDevtools position="bottom-left" />
                </TelemetryAwarePostHogWrapper>
