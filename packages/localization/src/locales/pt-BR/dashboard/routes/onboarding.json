@@ -141,6 +141,21 @@
       "category-name-required": "Nome da categoria é obrigatório",
       "organization-name-required": "Nome da empresa é obrigatório"
    },
+   "profile": {
+      "title": "Como podemos te chamar?",
+      "description": "Nos diga seu nome para personalizar sua experiência.",
+      "form": {
+         "description": "Este nome será usado para identificá-lo na plataforma.",
+         "name": {
+            "label": "Seu nome",
+            "placeholder": "Digite seu nome",
+            "description": "Você pode alterar isso depois nas configurações."
+         }
+      },
+      "toast": {
+         "error": "Erro ao salvar o nome. Tente novamente."
+      }
+   },
    "welcome": {
       "description": "Gerencie suas finanças pessoais de forma simples e eficiente.",
       "features": {
