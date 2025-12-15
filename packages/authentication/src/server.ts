@@ -322,6 +322,18 @@ export const getAuthOptions = (
                required: true,
                type: "boolean",
             },
+            deletionScheduledAt: {
+               defaultValue: null,
+               input: true,
+               required: false,
+               type: "date",
+            },
+            deletionType: {
+               defaultValue: null,
+               input: true,
+               required: false,
+               type: "string",
+            },
          },
       },
    }) satisfies BetterAuthOptions;

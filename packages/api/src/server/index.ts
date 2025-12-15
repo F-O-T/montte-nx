@@ -4,6 +4,7 @@ import type { MinioClient } from "@packages/files/client";
 import type { StripeClient } from "@packages/stripe";
 import type { PostHog } from "posthog-node";
 import { accountRouter } from "./routers/account";
+import { accountDeletionRouter } from "./routers/account-deletion";
 import { automationRouter } from "./routers/automations";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billingRouter } from "./routers/billing";
@@ -31,6 +32,7 @@ export type { ReminderResult } from "@packages/notifications/bill-reminders";
 
 export const appRouter = router({
    account: accountRouter,
+   accountDeletion: accountDeletionRouter,
    automations: automationRouter,
    bankAccounts: bankAccountRouter,
    billing: billingRouter,

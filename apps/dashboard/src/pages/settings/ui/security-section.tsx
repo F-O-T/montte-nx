@@ -38,11 +38,14 @@ import {
    ChevronRight,
    Globe,
    Laptop,
+   Mail,
    Monitor,
    Shield,
    Smartphone,
    Tablet,
    Trash2,
+   User,
+   Link2,
 } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -82,6 +85,28 @@ function formatLastActive(date: Date | string | null): string {
       day: "2-digit",
       month: "2-digit",
    });
+}
+
+function getLoginMethodDisplay(method: string | null | undefined): {
+   label: string;
+   Icon: typeof Mail;
+} | null {
+   if (!method) return null;
+
+   switch (method) {
+      case "email":
+         return { label: "Email", Icon: Mail };
+      case "google":
+         return { label: "Google", Icon: Globe };
+      case "otp":
+         return { label: "Código 2FA", Icon: Shield };
+      case "magic-link":
+         return { label: "Link Mágico", Icon: Link2 };
+      case "anonymous":
+         return { label: "Anônimo", Icon: User };
+      default:
+         return { label: method, Icon: Shield };
+   }
 }
 
 function SecuritySectionErrorFallback(props: FallbackProps) {
@@ -205,6 +230,9 @@ function SessionsCard({
                      const DeviceIcon = getDeviceIcon(
                         session.userAgent ?? null,
                      );
+                     const loginMethod = getLoginMethodDisplay(
+                        (session as any).lastMethod ?? null,
+                     );
 
                      return (
                         <Fragment key={session.id}>
@@ -233,6 +261,17 @@ function SessionsCard({
                                     <span>
                                        {session.ipAddress || "IP desconhecido"}
                                     </span>
+                                    {loginMethod && (
+                                       <>
+                                          <span className="text-muted-foreground/50">
+                                             •
+                                          </span>
+                                          <span className="flex items-center gap-1">
+                                             <loginMethod.Icon className="size-3" />
+                                             {loginMethod.label}
+                                          </span>
+                                       </>
+                                    )}
                                     <span className="text-muted-foreground/50">
                                        •
                                     </span>

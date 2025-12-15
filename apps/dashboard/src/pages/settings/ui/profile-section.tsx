@@ -1849,31 +1849,29 @@ function DataAccountCard() {
 
 function DeleteAccountCredenzaContent({ onClose }: { onClose: () => void }) {
    const [step, setStep] = useState<"options" | "confirm">("options");
-   const [deletionType, setDeletionType] = useState<"immediate" | "scheduled">(
-      "scheduled",
+   const [deletionType, setDeletionType] = useState<"immediate" | "grace_period">(
+      "grace_period",
    );
    const [password, setPassword] = useState("");
+   const api = useTRPC();
 
-   const deleteMutation = useMutation({
-      mutationFn: async () => {
-         if (deletionType === "immediate") {
-            return betterAuthClient.deleteUser();
-         }
-         // For scheduled deletion, we would need a backend endpoint
-         // For now, just show a message
-         return { success: true };
-      },
-      onSuccess: () => {
-         if (deletionType === "immediate") {
+   const deleteMutation = api.accountDeletion.requestDeletion.useMutation({
+      onSuccess: (data) => {
+         if (data.type === "immediate") {
             toast.success("Conta excluída com sucesso");
             window.location.href = "/auth/sign-in";
          } else {
-            toast.success("Exclusão agendada para 30 dias");
+            const scheduledDate = new Date(data.scheduledDeletionAt!);
+            toast.success(`Exclusão agendada para ${scheduledDate.toLocaleDateString("pt-BR")}`);
             onClose();
          }
       },
-      onError: () => {
-         toast.error("Erro ao excluir conta");
+      onError: (error) => {
+         if (error.message === "Invalid password") {
+            toast.error("Senha incorreta");
+         } else {
+            toast.error("Erro ao excluir conta");
+         }
       },
    });
 
@@ -1901,14 +1899,14 @@ function DeleteAccountCredenzaContent({ onClose }: { onClose: () => void }) {
 
                   <RadioGroup
                      onValueChange={(v) =>
-                        setDeletionType(v as "immediate" | "scheduled")
+                        setDeletionType(v as "immediate" | "grace_period")
                      }
                      value={deletionType}
                   >
                      <div className="flex items-start space-x-3 p-4 border rounded-lg">
-                        <RadioGroupItem id="scheduled" value="scheduled" />
+                        <RadioGroupItem id="grace_period" value="grace_period" />
                         <div className="space-y-1">
-                           <Label htmlFor="scheduled">
+                           <Label htmlFor="grace_period">
                               Excluir em 30 dias (Recomendado)
                            </Label>
                            <p className="text-sm text-muted-foreground">
@@ -1979,7 +1977,7 @@ function DeleteAccountCredenzaContent({ onClose }: { onClose: () => void }) {
                   </Button>
                   <Button
                      disabled={!password || deleteMutation.isPending}
-                     onClick={() => deleteMutation.mutate()}
+                     onClick={() => deleteMutation.mutate({ type: deletionType, password })}
                      variant="destructive"
                   >
                      {deleteMutation.isPending && (
