@@ -1,7 +1,69 @@
+import {
+   deleteFile,
+   generatePresignedPutUrl,
+   streamFileForProxy,
+   verifyFileExists,
+} from "@packages/files/client";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
+const ALLOWED_AVATAR_TYPES = [
+   "image/jpeg",
+   "image/png",
+   "image/webp",
+   "image/avif",
+];
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB
+
+const RequestAvatarUploadUrlInput = z.object({
+   contentType: z.string().refine((val) => ALLOWED_AVATAR_TYPES.includes(val), {
+      message: "File type must be JPEG, PNG, WebP, or AVIF",
+   }),
+   fileName: z.string(),
+   fileSize: z.number().max(MAX_AVATAR_SIZE, "File size must be less than 5MB"),
+});
+
+const ConfirmAvatarUploadInput = z.object({
+   storageKey: z.string(),
+});
+
+const CancelAvatarUploadInput = z.object({
+   storageKey: z.string(),
+});
+
 export const accountRouter = router({
+   /**
+    * Verify user's current password
+    * Uses Better Auth's signInCredential internally to validate
+    */
+   verifyPassword: protectedProcedure
+      .input(z.object({ password: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const user = resolvedCtx.session?.user;
+
+         if (!user?.email) {
+            throw new Error("User not found");
+         }
+
+         try {
+            // Use Better Auth's signInEmail to verify credentials
+            // This validates the password against the stored hash
+            await resolvedCtx.auth.api.signInEmail({
+               body: {
+                  email: user.email,
+                  password: input.password,
+               },
+            });
+
+            // If we get here without throwing, password is valid
+            return { valid: true };
+         } catch {
+            // Password is incorrect
+            return { valid: false };
+         }
+      }),
+
    /**
     * Check if user has a credential account (has password set)
     */
@@ -193,4 +255,164 @@ export const accountRouter = router({
          },
       };
    }),
+
+   /**
+    * Get user avatar as base64
+    */
+   getAvatar: protectedProcedure.query(async ({ ctx }) => {
+      const resolvedCtx = await ctx;
+      const user = resolvedCtx.session?.user;
+
+      if (!user?.image) {
+         return null;
+      }
+
+      // If image is already a full URL (external), return it as-is
+      if (user.image.startsWith("http")) {
+         return { url: user.image };
+      }
+
+      // Otherwise, it's a storage key - fetch from MinIO
+      const bucketName = resolvedCtx.minioBucket;
+      const key = user.image;
+
+      try {
+         const { buffer, contentType } = await streamFileForProxy(
+            key,
+            bucketName,
+            resolvedCtx.minioClient,
+         );
+         const base64 = buffer.toString("base64");
+         return {
+            contentType,
+            data: `data:${contentType};base64,${base64}`,
+         };
+      } catch (error) {
+         console.error("Error fetching user avatar:", error);
+         return null;
+      }
+   }),
+
+   /**
+    * Request presigned URL for avatar upload
+    */
+   requestAvatarUploadUrl: protectedProcedure
+      .input(RequestAvatarUploadUrlInput)
+      .mutation(async ({ ctx, input }) => {
+         const { fileName, contentType, fileSize } = input;
+         const resolvedCtx = await ctx;
+         const userId = resolvedCtx.session?.user?.id;
+
+         if (!userId) {
+            throw new Error("User not found");
+         }
+
+         const timestamp = Date.now();
+         const storageKey = `users/${userId}/avatar/${timestamp}-${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300, // 5 minutes
+         );
+
+         return { presignedUrl, storageKey, contentType, fileSize };
+      }),
+
+   /**
+    * Confirm avatar upload and update user profile
+    */
+   confirmAvatarUpload: protectedProcedure
+      .input(ConfirmAvatarUploadInput)
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey } = input;
+         const resolvedCtx = await ctx;
+         const userId = resolvedCtx.session?.user?.id;
+         const currentImage = resolvedCtx.session?.user?.image;
+
+         if (!userId) {
+            throw new Error("User not found");
+         }
+
+         // Validate storage key belongs to this user
+         if (!storageKey.startsWith(`users/${userId}/avatar/`)) {
+            throw new Error("Invalid storage key for this user");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         // Verify file was uploaded
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw new Error("File was not uploaded successfully");
+         }
+
+         // Delete old avatar if it exists and is a storage key (not external URL)
+         if (currentImage && !currentImage.startsWith("http") && currentImage !== storageKey) {
+            try {
+               await deleteFile(currentImage, bucketName, minioClient);
+            } catch (error) {
+               console.error("Error deleting old avatar:", error);
+            }
+         }
+
+         // Update user profile with new avatar
+         try {
+            await resolvedCtx.auth.api.updateUser({
+               body: { image: storageKey },
+               headers: resolvedCtx.headers,
+            });
+         } catch (error) {
+            console.error("Error updating user avatar:", error);
+            // Cleanup the uploaded file
+            try {
+               await deleteFile(storageKey, bucketName, minioClient);
+            } catch (cleanupError) {
+               console.error("Error cleaning up uploaded file:", cleanupError);
+            }
+            throw new Error("Failed to update user avatar");
+         }
+
+         return { success: true };
+      }),
+
+   /**
+    * Cancel avatar upload and cleanup
+    */
+   cancelAvatarUpload: protectedProcedure
+      .input(CancelAvatarUploadInput)
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey } = input;
+         const resolvedCtx = await ctx;
+         const userId = resolvedCtx.session?.user?.id;
+
+         if (!userId) {
+            throw new Error("User not found");
+         }
+
+         // Validate storage key belongs to this user
+         if (!storageKey.startsWith(`users/${userId}/avatar/`)) {
+            throw new Error("Invalid storage key for this user");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         try {
+            await deleteFile(storageKey, bucketName, minioClient);
+         } catch (error) {
+            console.error("Error deleting cancelled upload:", error);
+         }
+
+         return { success: true };
+      }),
 });

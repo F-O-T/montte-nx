@@ -1,4 +1,7 @@
 import { stripe } from "@better-auth/stripe";
+import { localization, type BuiltInLocales } from "better-auth-localization";
+import { createBetterAuthStorage } from "@packages/cache/better-auth";
+import { createRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    createDefaultOrganization,
@@ -27,8 +30,9 @@ import {
    organization,
    twoFactor,
 } from "better-auth/plugins";
-import { type BuiltInLocales, localization } from "better-auth-localization";
 
+// Initialize Redis connection for session caching
+const redis = createRedisConnection(serverEnv.REDIS_URL);
 export const ORGANIZATION_LIMIT = 3;
 
 export interface AuthOptions {
@@ -64,6 +68,7 @@ export const getAuthOptions = (
          crossSubDomainCookies: getCrossSubDomainCookiesConfig(),
          database: { generateId: "uuid" },
       },
+      secondaryStorage: createBetterAuthStorage(redis),
       database: drizzleAdapter(db, {
          provider: "pg",
       }),
@@ -307,6 +312,9 @@ export const getAuthOptions = (
       },
       trustedOrigins: serverEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
       user: {
+         changeEmail: {
+            enabled: true,
+         },
          additionalFields: {
             telemetryConsent: {
                defaultValue: true,
