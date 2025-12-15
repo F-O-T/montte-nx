@@ -17,6 +17,7 @@ import { PasswordInput } from "@packages/ui/components/password-input";
 import { defineStepper } from "@packages/ui/components/stepper";
 import { useForm } from "@tanstack/react-form";
 import { Link, useRouter } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import z from "zod";
@@ -301,6 +302,17 @@ export function ForgotPasswordPage() {
       <Stepper.Provider>
          {({ methods }) => (
             <section className="space-y-6 w-full">
+               {/* Back Link */}
+               <Button asChild className="gap-2 px-0" variant="link">
+                  <Link to="/auth/sign-in">
+                     <ArrowLeft className="size-4" />
+                     {translate(
+                        "dashboard.routes.forgot-password.actions.back-to-sign-in",
+                     )}
+                  </Link>
+               </Button>
+
+               {/* Header */}
                <div className="text-center space-y-2">
                   <h1 className="text-3xl font-semibold font-serif">
                      {translate("dashboard.routes.forgot-password.title")}

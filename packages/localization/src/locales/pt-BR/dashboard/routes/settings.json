@@ -1,0 +1,74 @@
+{
+   "title": "Configurações",
+   "description": "Gerencie suas configurações e preferências.",
+   "nav": {
+      "back": "Voltar",
+      "back-to-settings": "Configurações",
+      "profile": "Perfil",
+      "profile.description": "Suas informações pessoais",
+      "security": "Segurança",
+      "security.description": "Sessões e configurações de segurança",
+      "preferences": "Preferências",
+      "preferences.description": "Tema, idioma e mais",
+      "notifications": "Notificações",
+      "notifications.description": "Configure notificações push",
+      "billing": "Assinatura",
+      "billing.description": "Plano e cobrança"
+   },
+   "profile": {
+      "title": "Perfil",
+      "description": "Suas informações pessoais.",
+      "items": {
+         "name": "Nome",
+         "email": "Email"
+      }
+   },
+   "security": {
+      "title": "Segurança",
+      "description": "Gerencie suas sessões e configurações de segurança."
+   },
+   "preferences": {
+      "title": "Preferências",
+      "description": "Personalize sua experiência no aplicativo."
+   },
+   "notifications": {
+      "title": "Notificações Push",
+      "description": "Receba notificações em tempo real sobre suas finanças.",
+      "not-supported": "Seu navegador não suporta notificações push.",
+      "not-configured": "Notificações push não estão configuradas no servidor.",
+      "blocked": "Você bloqueou as notificações. Para receber notificações, permita nas configurações do seu navegador.",
+      "items": {
+         "enable": {
+            "title": "Ativar notificações",
+            "enabled": "Você receberá alertas sobre transações, orçamentos e lembretes.",
+            "disabled": "Ative para receber alertas importantes no seu dispositivo."
+         },
+         "budget": {
+            "title": "Alertas de orçamento",
+            "description": "Quando você atingir limites do orçamento"
+         },
+         "bills": {
+            "title": "Lembretes de contas",
+            "description": "Antes do vencimento de contas recorrentes"
+         },
+         "overdue": {
+            "title": "Contas vencidas",
+            "description": "Quando houver contas em atraso"
+         },
+         "transactions": {
+            "title": "Novas transações",
+            "description": "Quando transações forem adicionadas"
+         }
+      }
+   },
+   "billing": {
+      "title": "Assinatura",
+      "description": "Gerencie sua assinatura e informações de cobrança.",
+      "items": {
+         "price": "Preço",
+         "per-month": "/mês"
+      },
+      "upgrade": "Fazer upgrade",
+      "manage-plan": "Gerenciar plano"
+   }
+}

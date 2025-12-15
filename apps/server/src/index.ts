@@ -5,7 +5,7 @@ import { createRedisConnection } from "@packages/queue/connection";
 import { initializeWorkflowQueue } from "@packages/workflows/queue/producer";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { Elysia } from "elysia";
-import { auth } from "./integrations/auth";
+import { auth, stripeClient } from "./integrations/auth";
 import { db } from "./integrations/database";
 import { minioClient } from "./integrations/minio";
 import { posthog, posthogPlugin } from "./integrations/posthog";
@@ -19,6 +19,7 @@ const trpcApi = createApi({
    minioBucket: env.MINIO_BUCKET,
    minioClient,
    posthog,
+   stripeClient,
 });
 const app = new Elysia({
    serve: {

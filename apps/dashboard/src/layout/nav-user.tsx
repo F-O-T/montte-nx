@@ -13,6 +13,15 @@ import {
    CredenzaTitle,
 } from "@packages/ui/components/credenza";
 import {
+   DropdownMenu,
+   DropdownMenuContent,
+   DropdownMenuGroup,
+   DropdownMenuItem,
+   DropdownMenuLabel,
+   DropdownMenuSeparator,
+   DropdownMenuTrigger,
+} from "@packages/ui/components/dropdown-menu";
+import {
    SidebarMenu,
    SidebarMenuButton,
    SidebarMenuItem,
@@ -21,7 +30,7 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useRouter } from "@tanstack/react-router";
-import { LogOutIcon, UserCircleIcon } from "lucide-react";
+import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from "lucide-react";
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
@@ -41,11 +50,13 @@ function NavUserCredenza({
    activeOrganization,
    onNavigate,
    onLogout,
+   hasActiveSubscription,
 }: {
    session: Session;
    activeOrganization: { slug: string };
    onNavigate: () => void;
    onLogout: () => void;
+   hasActiveSubscription: boolean;
 }) {
    return (
       <>
@@ -55,24 +66,73 @@ function NavUserCredenza({
                   name: session.user.name,
                })}
             </CredenzaTitle>
-            <CredenzaDescription>{session.user.email}</CredenzaDescription>
+            <CredenzaDescription className="truncate">
+               {session.user.email}
+            </CredenzaDescription>
          </CredenzaHeader>
 
          <CredenzaBody className="space-y-4">
-            <Button
-               asChild
-               className="w-full justify-start gap-2"
-               onClick={onNavigate}
-               variant="outline"
-            >
-               <Link
-                  params={{ slug: activeOrganization.slug }}
-                  to="/$slug/profile"
+            {!hasActiveSubscription && (
+               <Button
+                  asChild
+                  className="w-full justify-start gap-2"
+                  onClick={onNavigate}
+                  variant="outline"
                >
-                  <UserCircleIcon />
-                  {translate("dashboard.layout.nav-user.main.account")}
-               </Link>
-            </Button>
+                  <Link
+                     params={{ slug: activeOrganization.slug }}
+                     to="/$slug/settings/billing"
+                  >
+                     <Sparkles className="size-4" />
+                     {translate("dashboard.layout.nav-user.main.upgrade")}
+                  </Link>
+               </Button>
+            )}
+
+            <div className="space-y-2">
+               <Button
+                  asChild
+                  className="w-full justify-start gap-2"
+                  onClick={onNavigate}
+                  variant="outline"
+               >
+                  <Link
+                     params={{ slug: activeOrganization.slug }}
+                     to="/$slug/settings/profile"
+                  >
+                     <BadgeCheck className="size-4" />
+                     {translate("dashboard.layout.nav-user.main.account")}
+                  </Link>
+               </Button>
+               <Button
+                  asChild
+                  className="w-full justify-start gap-2"
+                  onClick={onNavigate}
+                  variant="outline"
+               >
+                  <Link
+                     params={{ slug: activeOrganization.slug }}
+                     to="/$slug/settings/billing"
+                  >
+                     <CreditCard className="size-4" />
+                     {translate("dashboard.layout.nav-user.main.billing")}
+                  </Link>
+               </Button>
+               <Button
+                  asChild
+                  className="w-full justify-start gap-2"
+                  onClick={onNavigate}
+                  variant="outline"
+               >
+                  <Link
+                     params={{ slug: activeOrganization.slug }}
+                     to="/$slug/settings/notifications"
+                  >
+                     <Bell className="size-4" />
+                     {translate("dashboard.layout.nav-user.main.notifications")}
+                  </Link>
+               </Button>
+            </div>
 
             <div className="space-y-3">
                <span className="text-sm font-medium text-muted-foreground">
@@ -101,7 +161,7 @@ function NavUserCredenza({
                onClick={onLogout}
                variant="destructive"
             >
-               <LogOutIcon />
+               <LogOut className="size-4" />
                {translate("dashboard.layout.nav-user.actions.logout")}
             </Button>
          </CredenzaFooter>
@@ -138,8 +198,11 @@ function NavUserSkeleton() {
 
 // Extracted content with Suspense logic
 function NavUserContent() {
-   const { activeOrganization } = useActiveOrganization();
-   const { setOpenMobile } = useSidebar();
+   const { activeOrganization, activeSubscription } = useActiveOrganization();
+   const hasActiveSubscription =
+      activeSubscription?.status === "active" ||
+      activeSubscription?.status === "trialing";
+   const { isMobile, setOpenMobile } = useSidebar();
    const router = useRouter();
    const trpc = useTRPC();
    const queryClient = useQueryClient();
@@ -208,6 +271,7 @@ function NavUserContent() {
          children: (
             <NavUserCredenza
                activeOrganization={activeOrganization}
+               hasActiveSubscription={hasActiveSubscription}
                onLogout={handleLogoutClick}
                onNavigate={handleNavigate}
                session={currentSession}
@@ -218,25 +282,164 @@ function NavUserContent() {
       openCredenza,
       session,
       activeOrganization,
+      hasActiveSubscription,
       handleNavigate,
       handleLogoutClick,
    ]);
 
+   // Mobile/PWA: Use Credenza
+   if (isMobile) {
+      return (
+         <SidebarMenu>
+            <SidebarMenuItem>
+               <Avatar
+                  className="border-border border-2 cursor-pointer"
+                  onClick={handleOpenCredenza}
+               >
+                  <AvatarImage
+                     alt={session?.user.name}
+                     src={session?.user.image ?? ""}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                     {session?.user.name?.charAt(0) || "?"}
+                  </AvatarFallback>
+               </Avatar>
+            </SidebarMenuItem>
+         </SidebarMenu>
+      );
+   }
+
+   // Desktop: Use DropdownMenu
    return (
       <SidebarMenu>
          <SidebarMenuItem>
-            <Avatar
-               className="border-border border-2 cursor-pointer"
-               onClick={handleOpenCredenza}
-            >
-               <AvatarImage
-                  alt={session?.user.name}
-                  src={session?.user.image ?? ""}
-               />
-               <AvatarFallback className="rounded-lg">
-                  {session?.user.name?.charAt(0) || "?"}
-               </AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+               <DropdownMenuTrigger asChild>
+                  <Avatar className="border-border border-2 cursor-pointer">
+                     <AvatarImage
+                        alt={session?.user.name}
+                        src={session?.user.image ?? ""}
+                     />
+                     <AvatarFallback className="rounded-lg">
+                        {session?.user.name?.charAt(0) || "?"}
+                     </AvatarFallback>
+                  </Avatar>
+               </DropdownMenuTrigger>
+               <DropdownMenuContent
+                  align="end"
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                  side="right"
+                  sideOffset={4}
+               >
+                  {/* Header */}
+                  <DropdownMenuLabel className="p-0 font-normal">
+                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                        <Avatar className="h-8 w-8 rounded-lg">
+                           <AvatarImage
+                              alt={session?.user.name}
+                              src={session?.user.image ?? ""}
+                           />
+                           <AvatarFallback className="rounded-lg">
+                              {session?.user.name?.charAt(0) || "?"}
+                           </AvatarFallback>
+                        </Avatar>
+                        <div className="grid  flex-1 text-left text-sm leading-tight">
+                           <span className="truncate font-medium">
+                              {session?.user.name}
+                           </span>
+                           <span className="max-w-52 truncate text-xs text-muted-foreground">
+                              {session?.user.email}
+                           </span>
+                        </div>
+                     </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {/* Upgrade - only show if no active subscription */}
+                  {!hasActiveSubscription && (
+                     <>
+                        <DropdownMenuGroup>
+                           <DropdownMenuItem asChild>
+                              <Link
+                                 params={{ slug: activeOrganization.slug }}
+                                 to="/$slug/settings/billing"
+                              >
+                                 <Sparkles />
+                                 {translate(
+                                    "dashboard.layout.nav-user.main.upgrade",
+                                 )}
+                              </Link>
+                           </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                     </>
+                  )}
+
+                  {/* Navigation */}
+                  <DropdownMenuGroup>
+                     <DropdownMenuItem asChild>
+                        <Link
+                           params={{ slug: activeOrganization.slug }}
+                           to="/$slug/settings/profile"
+                        >
+                           <BadgeCheck />
+                           {translate("dashboard.layout.nav-user.main.account")}
+                        </Link>
+                     </DropdownMenuItem>
+                     <DropdownMenuItem asChild>
+                        <Link
+                           params={{ slug: activeOrganization.slug }}
+                           to="/$slug/settings/billing"
+                        >
+                           <CreditCard />
+                           {translate("dashboard.layout.nav-user.main.billing")}
+                        </Link>
+                     </DropdownMenuItem>
+                     <DropdownMenuItem asChild>
+                        <Link
+                           params={{ slug: activeOrganization.slug }}
+                           to="/$slug/settings/notifications"
+                        >
+                           <Bell />
+                           {translate(
+                              "dashboard.layout.nav-user.main.notifications",
+                           )}
+                        </Link>
+                     </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+
+                  {/* Preferences */}
+                  <DropdownMenuLabel>
+                     {translate("dashboard.layout.nav-user.preferences.label")}
+                  </DropdownMenuLabel>
+                  <div className="px-2 py-1.5 space-y-2">
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm">
+                           {translate(
+                              "dashboard.layout.nav-user.preferences.theme",
+                           )}
+                        </span>
+                        <ThemeSwitcher />
+                     </div>
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm">
+                           {translate(
+                              "dashboard.layout.nav-user.preferences.language",
+                           )}
+                        </span>
+                        <LanguageCommand />
+                     </div>
+                  </div>
+                  <DropdownMenuSeparator />
+
+                  {/* Logout */}
+                  <DropdownMenuItem onClick={handleLogoutClick}>
+                     <LogOut />
+                     {translate("dashboard.layout.nav-user.actions.logout")}
+                  </DropdownMenuItem>
+               </DropdownMenuContent>
+            </DropdownMenu>
          </SidebarMenuItem>
       </SidebarMenu>
    );

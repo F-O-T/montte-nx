@@ -1,9 +1,12 @@
 import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
+import type { StripeClient } from "@packages/stripe";
 import type { PostHog } from "posthog-node";
+import { accountRouter } from "./routers/account";
 import { automationRouter } from "./routers/automations";
 import { bankAccountRouter } from "./routers/bank-accounts";
+import { billingRouter } from "./routers/billing";
 import { billRouter } from "./routers/bills";
 import { brasilApiRouter } from "./routers/brasil-api";
 import { budgetRouter } from "./routers/budgets";
@@ -27,8 +30,10 @@ import { createTRPCContext as createTRPCContextInternal, router } from "./trpc";
 export type { ReminderResult } from "@packages/notifications/bill-reminders";
 
 export const appRouter = router({
+   account: accountRouter,
    automations: automationRouter,
    bankAccounts: bankAccountRouter,
+   billing: billingRouter,
    bills: billRouter,
    brasilApi: brasilApiRouter,
    budgets: budgetRouter,
@@ -55,12 +60,14 @@ export const createApi = ({
    minioClient,
    minioBucket,
    posthog,
+   stripeClient,
 }: {
    minioBucket: string;
    auth: AuthInstance;
    db: DatabaseInstance;
    minioClient: MinioClient;
    posthog: PostHog;
+   stripeClient?: StripeClient;
 }) => {
    return {
       createTRPCContext: async ({
@@ -78,6 +85,7 @@ export const createApi = ({
             posthog,
             request,
             responseHeaders,
+            stripeClient,
          }),
       trpcRouter: appRouter,
    };

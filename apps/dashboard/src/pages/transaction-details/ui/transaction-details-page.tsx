@@ -242,7 +242,11 @@ function TransactionContent() {
                   "dashboard.routes.transactions.list-section.actions.refund",
                )}
             </Button>
-            <Button onClick={handleCreateRecurrence} size="sm" variant="outline">
+            <Button
+               onClick={handleCreateRecurrence}
+               size="sm"
+               variant="outline"
+            >
                <CalendarPlus className="size-4" />
                {translate(
                   "dashboard.routes.transactions.list-section.actions.create-bill",

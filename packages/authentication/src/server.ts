@@ -14,16 +14,20 @@ import {
    type ResendClient,
    type SendEmailOTPOptions,
    sendEmailOTP,
+   sendMagicLinkEmail,
    sendOrganizationInvitation,
 } from "@packages/transactional/client";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { type BetterAuthOptions, betterAuth } from "better-auth/minimal";
 import {
    admin,
-   apiKey,
+   anonymous,
    emailOTP,
+   lastLoginMethod,
+   magicLink,
    openAPI,
    organization,
+   twoFactor,
 } from "better-auth/plugins";
 import { type BuiltInLocales, localization } from "better-auth-localization";
 
@@ -54,14 +58,20 @@ export const getAuthOptions = (
    STRIPE_WEBHOOK_SECRET: AuthOptions["STRIPE_WEBHOOK_SECRET"],
 ) =>
    ({
+      account: {
+         accountLinking: {
+            enabled: true,
+            trustedProviders: ["google"],
+         },
+      },
       advanced: {
          crossSubDomainCookies: getCrossSubDomainCookiesConfig(),
          database: { generateId: "uuid" },
       },
+      secondaryStorage: createBetterAuthStorage(redis),
       database: drizzleAdapter(db, {
          provider: "pg",
       }),
-      secondaryStorage: createBetterAuthStorage(redis),
       databaseHooks: {
          session: {
             create: {
@@ -187,6 +197,23 @@ export const getAuthOptions = (
             },
          }),
          admin(),
+         anonymous({
+            emailDomainName: "anon.montte.co",
+            onLinkAccount: async ({ anonymousUser, newUser }) => {
+               console.log(
+                  `Anonymous user ${anonymousUser.user.id} linked to ${newUser.user.id}`,
+               );
+            },
+         }),
+         magicLink({
+            expiresIn: 60 * 15, // 15 minutes
+            async sendMagicLink({ email, url }) {
+               await sendMagicLinkEmail(resendClient, {
+                  email,
+                  magicLinkUrl: url,
+               });
+            },
+         }),
          emailOTP({
             expiresIn: 60 * 10,
             otpLength: 6,
@@ -200,6 +227,7 @@ export const getAuthOptions = (
             },
          }),
          openAPI(),
+         lastLoginMethod(),
          organization({
             organizationLimit: ORGANIZATION_LIMIT,
             schema: {
@@ -253,20 +281,23 @@ export const getAuthOptions = (
                maximumTeams: 10,
             },
          }),
-         apiKey({
-            apiKeyHeaders: "sdk-api-key",
-            enableMetadata: true,
-            enableSessionForAPIKeys: true,
-            rateLimit: {
-               enabled: true,
-               maxRequests: 500, // 500 requests per hour
-               timeWindow: 1000 * 60 * 60, // 1 hour
+         twoFactor({
+            issuer: "Montte",
+            skipVerificationOnEnable: false,
+            totpOptions: {
+               digits: 6,
+               period: 30,
+            },
+            backupCodeOptions: {
+               amount: 10,
+               length: 10,
             },
          }),
       ],
 
       secret: serverEnv.BETTER_AUTH_SECRET,
       session: {
+         storeSessionInDatabase: true,
          cookieCache: {
             enabled: true,
             maxAge: 5 * 60,
@@ -281,6 +312,9 @@ export const getAuthOptions = (
       },
       trustedOrigins: serverEnv.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
       user: {
+         changeEmail: {
+            enabled: true,
+         },
          additionalFields: {
             telemetryConsent: {
                defaultValue: true,

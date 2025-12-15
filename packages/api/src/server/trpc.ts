@@ -11,6 +11,7 @@ import { getOrganizationMembership } from "@packages/database/repositories/auth-
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { captureError, identifyUser, setGroup } from "@packages/posthog/server";
+import type { StripeClient } from "@packages/stripe";
 import { APIError } from "@packages/utils/errors";
 import { sanitizeData } from "@packages/utils/sanitization";
 import { initTRPC } from "@trpc/server";
@@ -41,6 +42,7 @@ export const createTRPCContext = async ({
    minioBucket,
    posthog,
    responseHeaders,
+   stripeClient,
 }: {
    auth: AuthInstance;
    db: DatabaseInstance;
@@ -49,6 +51,7 @@ export const createTRPCContext = async ({
    posthog: PostHog;
    request: Request;
    responseHeaders: Headers;
+   stripeClient?: StripeClient;
 }) => {
    const headers = request.headers;
 
@@ -82,6 +85,7 @@ export const createTRPCContext = async ({
       request,
       responseHeaders,
       session,
+      stripeClient,
    };
 };
 

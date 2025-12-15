@@ -38,7 +38,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                className={cn(
                   "p-4 h-full flex-1 overflow-y-auto",
                   showBottomNav &&
-                  "pb-[calc(5rem+env(safe-area-inset-bottom))]",
+                     "pb-[calc(5rem+env(safe-area-inset-bottom))]",
                )}
             >
                {children}

@@ -1,17 +1,17 @@
-import {
-   type ArrayOperator as LibArrayOperator,
-   type BooleanOperator as LibBooleanOperator,
-   type Condition as LibCondition,
-   type ConditionGroup as LibConditionGroup,
-   type ConditionGroupInput as LibConditionGroupInput,
-   type DateOperator as LibDateOperator,
-   type EvaluationContext as LibEvaluationContext,
-   type EvaluationResult as LibEvaluationResult,
-   type GroupEvaluationResult as LibGroupEvaluationResult,
-   type GroupEvaluationResultInput as LibGroupEvaluationResultInput,
-   type LogicalOperator as LibLogicalOperator,
-   type NumberOperator as LibNumberOperator,
-   type StringOperator as LibStringOperator,
+import type {
+   ArrayOperator as LibArrayOperator,
+   BooleanOperator as LibBooleanOperator,
+   Condition as LibCondition,
+   ConditionGroup as LibConditionGroup,
+   ConditionGroupInput as LibConditionGroupInput,
+   DateOperator as LibDateOperator,
+   EvaluationContext as LibEvaluationContext,
+   EvaluationResult as LibEvaluationResult,
+   GroupEvaluationResult as LibGroupEvaluationResult,
+   GroupEvaluationResultInput as LibGroupEvaluationResultInput,
+   LogicalOperator as LibLogicalOperator,
+   NumberOperator as LibNumberOperator,
+   StringOperator as LibStringOperator,
 } from "@f-o-t/condition-evaluator";
 import { relations, sql } from "drizzle-orm";
 import {
