@@ -65,6 +65,7 @@ function AuthLayout() {
                      viewBox="0 0 400 300"
                      xmlns="http://www.w3.org/2000/svg"
                   >
+                     <title>Dashboard mockup illustration</title>
                      {/* Dashboard mockup illustration */}
                      <rect
                         height="180"

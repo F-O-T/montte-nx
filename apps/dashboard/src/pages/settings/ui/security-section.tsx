@@ -123,12 +123,14 @@ function SecuritySectionSkeleton() {
                   </CardHeader>
                   <CardContent>
                      <div className="space-y-1">
-                        {Array.from({ length: 3 }).map((_, index) => (
-                           <Skeleton
-                              className="h-16 w-full rounded-lg"
-                              key={index}
-                           />
-                        ))}
+                        {Array.from({ length: 3 }, (_, i) => i + 1).map(
+                           (id) => (
+                              <Skeleton
+                                 className="h-16 w-full rounded-lg"
+                                 key={id}
+                              />
+                           ),
+                        )}
                      </div>
                   </CardContent>
                </Card>

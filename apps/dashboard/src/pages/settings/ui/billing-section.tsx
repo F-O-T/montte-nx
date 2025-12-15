@@ -797,15 +797,15 @@ function BillingNextPaymentContent() {
                </p>
                <ItemGroup>
                   {upcomingInvoice.lines.map(
-                     (
-                        line: {
-                           description: string | null;
-                           amount: number;
-                           quantity: number | null;
-                        },
-                        index: number,
-                     ) => (
-                        <Item key={index} variant="muted">
+                     (line: {
+                        description: string | null;
+                        amount: number;
+                        quantity: number | null;
+                     }) => (
+                        <Item
+                           key={`${line.description}-${line.amount}`}
+                           variant="muted"
+                        >
                            <ItemContent>
                               <ItemTitle className="text-sm">
                                  {line.description || "Item"}

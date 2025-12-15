@@ -1227,10 +1227,10 @@ function TwoFactorSetupCredenzaContent({ onClose }: { onClose: () => void }) {
                <div className="space-y-4">
                   <div className="p-4 bg-secondary rounded-lg">
                      <div className="grid grid-cols-2 gap-2">
-                        {backupCodes.map((code, index) => (
+                        {backupCodes.map((code) => (
                            <code
                               className="text-sm font-mono p-2 bg-background rounded"
-                              key={index}
+                              key={code}
                            >
                               {code}
                            </code>
@@ -1655,10 +1655,10 @@ function ViewBackupCodesCredenzaContent({ onClose }: { onClose: () => void }) {
                <>
                   <div className="p-4 bg-secondary rounded-lg">
                      <div className="grid grid-cols-2 gap-2">
-                        {codes.map((code, index) => (
+                        {codes.map((code) => (
                            <code
                               className="text-sm font-mono p-2 bg-background rounded"
-                              key={index}
+                              key={code}
                            >
                               {code}
                            </code>

@@ -11,5 +11,5 @@ export function useActiveOrganization() {
    const activeOrganization = activeOrganizationData.organization;
    const activeSubscription = activeOrganizationData.activeSubscription;
 
-   return { activeOrganization: activeOrganization!, activeSubscription };
+   return { activeOrganization, activeSubscription };
 }
