@@ -11,5 +11,9 @@ export function useActiveOrganization() {
    const activeOrganization = activeOrganizationData.organization;
    const activeSubscription = activeOrganizationData.activeSubscription;
 
+   if (!activeOrganization) {
+      throw new Error("No active organization found");
+   }
+
    return { activeOrganization, activeSubscription };
 }
