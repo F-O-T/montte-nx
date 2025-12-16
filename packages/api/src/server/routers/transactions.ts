@@ -401,7 +401,10 @@ export const transactionRouter = router({
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
-            categorySplits: input.categorySplits || null,
+            categorySplits:
+               input.categorySplits && input.categorySplits.length > 0
+                  ? input.categorySplits
+                  : null,
             costCenterId: input.costCenterId || undefined,
             date: new Date(input.date),
             id: crypto.randomUUID(),
