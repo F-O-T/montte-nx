@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
@@ -115,7 +116,7 @@ function validateCategorySplitsForTransaction(
    const result = validateSplits(categorySplits, categoryIds, amountInCents);
 
    if (!result.isValid) {
-      throw new Error(result.errors.join("; "));
+      throw APIError.validation(result.errors.join("; "));
    }
 }
 
@@ -170,7 +171,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachmentId = crypto.randomUUID();
@@ -226,7 +227,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (
@@ -234,7 +235,7 @@ export const transactionRouter = router({
                `transactions/${organizationId}/${transactionId}/attachments/`,
             )
          ) {
-            throw new Error("Invalid storage key for this transaction");
+            throw APIError.validation("Invalid storage key for this transaction");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -247,7 +248,7 @@ export const transactionRouter = router({
          );
 
          if (!fileInfo) {
-            throw new Error("File was not uploaded successfully");
+            throw APIError.validation("File was not uploaded successfully");
          }
 
          const attachment = await createTransactionAttachment(resolvedCtx.db, {
@@ -283,7 +284,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (
@@ -291,7 +292,7 @@ export const transactionRouter = router({
                `transactions/${organizationId}/${transactionId}/attachments/`,
             )
          ) {
-            throw new Error("Invalid storage key for this transaction");
+            throw APIError.validation("Invalid storage key for this transaction");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -327,11 +328,11 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (!existingTransaction.bankAccountId) {
-            throw new Error("Transaction must have a bank account");
+            throw APIError.validation("Transaction must have a bank account");
          }
 
          const existingLog = await findTransferLogByTransactionId(
@@ -340,7 +341,7 @@ export const transactionRouter = router({
          );
 
          if (existingLog) {
-            throw new Error("Transfer already has a linked transaction");
+            throw APIError.conflict("Transfer already has a linked transaction");
          }
 
          const amount = parseFloat(existingTransaction.amount);
@@ -474,7 +475,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          return deleteTransaction(resolvedCtx.db, input.id);
@@ -492,7 +493,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachment = await findTransactionAttachmentById(
@@ -501,7 +502,7 @@ export const transactionRouter = router({
          );
 
          if (!attachment || attachment.transactionId !== input.transactionId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          try {
@@ -537,7 +538,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          return deleteTransactions(resolvedCtx.db, validIds);
@@ -560,7 +561,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const amount = Number(transaction.amount);
@@ -633,7 +634,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (!transaction.attachmentKey) {
@@ -673,7 +674,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachment = await findTransactionAttachmentById(
@@ -682,7 +683,7 @@ export const transactionRouter = router({
          );
 
          if (!attachment || attachment.transactionId !== input.transactionId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -718,7 +719,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachments = await findTransactionAttachmentsByTransactionId(
@@ -741,7 +742,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          return transaction;
@@ -818,7 +819,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (transaction.type !== "transfer") {
@@ -854,18 +855,18 @@ export const transactionRouter = router({
             !fromTransaction ||
             fromTransaction.organizationId !== organizationId
          ) {
-            throw new Error("From transaction not found");
+            throw APIError.notFound("From transaction not found");
          }
 
          if (
             !toTransaction ||
             toTransaction.organizationId !== organizationId
          ) {
-            throw new Error("To transaction not found");
+            throw APIError.notFound("To transaction not found");
          }
 
          if (!fromTransaction.bankAccountId || !toTransaction.bankAccountId) {
-            throw new Error("Both transactions must have a bank account");
+            throw APIError.validation("Both transactions must have a bank account");
          }
 
          await Promise.all([
@@ -914,7 +915,7 @@ export const transactionRouter = router({
          );
 
          if (validTransactions.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          const results = await Promise.all(
@@ -996,7 +997,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (!transaction.attachmentKey) {
@@ -1065,7 +1066,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (input.data.categorySplits !== undefined) {
@@ -1190,7 +1191,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          return updateTransactionsCategory(
@@ -1225,7 +1226,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          const results = await Promise.all(
@@ -1264,7 +1265,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          await Promise.all(
@@ -1305,7 +1306,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const timestamp = Date.now();
@@ -1344,7 +1345,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (
@@ -1352,7 +1353,7 @@ export const transactionRouter = router({
                `transactions/${organizationId}/${transactionId}/attachment/`,
             )
          ) {
-            throw new Error("Invalid storage key for this transaction");
+            throw APIError.validation("Invalid storage key for this transaction");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -1365,7 +1366,7 @@ export const transactionRouter = router({
          );
 
          if (!fileInfo) {
-            throw new Error("File was not uploaded successfully");
+            throw APIError.validation("File was not uploaded successfully");
          }
 
          if (existingTransaction.attachmentKey) {

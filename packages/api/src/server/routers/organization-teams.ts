@@ -201,7 +201,7 @@ export const organizationTeamsRouter = router({
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
       if (!organizationId) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
       try {
          const teams = await resolvedCtx.auth.api.listOrganizationTeams({

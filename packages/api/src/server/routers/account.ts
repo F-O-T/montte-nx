@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    deleteFile,
    generatePresignedPutUrl,
@@ -43,7 +44,7 @@ export const accountRouter = router({
          const user = resolvedCtx.session?.user;
 
          if (!user?.email) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          try {
@@ -72,7 +73,7 @@ export const accountRouter = router({
       const userId = resolvedCtx.session?.user?.id;
 
       if (!userId) {
-         throw new Error("User not found");
+         throw APIError.notFound("User not found");
       }
 
       const credentialAccount = await resolvedCtx.db.query.account.findFirst({
@@ -110,7 +111,7 @@ export const accountRouter = router({
       const userId = resolvedCtx.session?.user?.id;
 
       if (!userId) {
-         throw new Error("User not found");
+         throw APIError.notFound("User not found");
       }
 
       const accounts = await resolvedCtx.db.query.account.findMany({
@@ -136,7 +137,7 @@ export const accountRouter = router({
       const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
 
       if (!userId || !organizationId) {
-         throw new Error("User or organization not found");
+         throw APIError.notFound("User or organization not found");
       }
 
       const db = resolvedCtx.db;
@@ -314,7 +315,7 @@ export const accountRouter = router({
          const userId = resolvedCtx.session?.user?.id;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          const timestamp = Date.now();
@@ -344,12 +345,12 @@ export const accountRouter = router({
          const currentImage = resolvedCtx.session?.user?.image;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          // Validate storage key belongs to this user
          if (!storageKey.startsWith(`users/${userId}/avatar/`)) {
-            throw new Error("Invalid storage key for this user");
+            throw APIError.validation("Invalid storage key for this user");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -363,7 +364,7 @@ export const accountRouter = router({
          );
 
          if (!fileInfo) {
-            throw new Error("File was not uploaded successfully");
+            throw APIError.validation("File was not uploaded successfully");
          }
 
          // Delete old avatar if it exists and is a storage key (not external URL)
@@ -393,7 +394,7 @@ export const accountRouter = router({
             } catch (cleanupError) {
                console.error("Error cleaning up uploaded file:", cleanupError);
             }
-            throw new Error("Failed to update user avatar");
+            throw APIError.internal("Failed to update user avatar");
          }
 
          return { success: true };
@@ -410,12 +411,12 @@ export const accountRouter = router({
          const userId = resolvedCtx.session?.user?.id;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          // Validate storage key belongs to this user
          if (!storageKey.startsWith(`users/${userId}/avatar/`)) {
-            throw new Error("Invalid storage key for this user");
+            throw APIError.validation("Invalid storage key for this user");
          }
 
          const bucketName = resolvedCtx.minioBucket;

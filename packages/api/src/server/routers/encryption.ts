@@ -5,6 +5,7 @@
  * Application-level encryption is automatic and doesn't need user interaction.
  */
 
+import { APIError } from "@packages/utils/errors";
 import { timingSafeEqual } from "node:crypto";
 import { user } from "@packages/database/schema";
 import { eq } from "drizzle-orm";
@@ -44,7 +45,7 @@ export const encryptionRouter = router({
       const userId = resolvedCtx.session?.user?.id;
 
       if (!userId) {
-         throw new Error("User not found");
+         throw APIError.notFound("User not found");
       }
 
       const userData = await resolvedCtx.db.query.user.findFirst({
@@ -72,7 +73,7 @@ export const encryptionRouter = router({
       const userId = resolvedCtx.session?.user?.id;
 
       if (!userId) {
-         throw new Error("User not found");
+         throw APIError.notFound("User not found");
       }
 
       const userData = await resolvedCtx.db.query.user.findFirst({
@@ -106,7 +107,7 @@ export const encryptionRouter = router({
          const userId = resolvedCtx.session?.user?.id;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          // Check if encryption is already enabled
@@ -118,7 +119,7 @@ export const encryptionRouter = router({
          });
 
          if (existingUser?.encryptionEnabled) {
-            throw new Error("Encryption is already enabled");
+            throw APIError.conflict("Encryption is already enabled");
          }
 
          // Enable encryption
@@ -149,7 +150,7 @@ export const encryptionRouter = router({
          const userId = resolvedCtx.session?.user?.id;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          const userData = await resolvedCtx.db.query.user.findFirst({
@@ -161,7 +162,7 @@ export const encryptionRouter = router({
          });
 
          if (!userData?.encryptionEnabled) {
-            throw new Error("Encryption is not enabled");
+            throw APIError.validation("Encryption is not enabled");
          }
 
          const isValid = constantTimeCompare(
@@ -189,7 +190,7 @@ export const encryptionRouter = router({
          const userId = resolvedCtx.session?.user?.id;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          // Verify the key hash first
@@ -202,15 +203,15 @@ export const encryptionRouter = router({
          });
 
          if (!userData?.encryptionEnabled) {
-            throw new Error("Encryption is not enabled");
+            throw APIError.validation("Encryption is not enabled");
          }
 
          if (!constantTimeCompare(userData.encryptionKeyHash, input.keyHash)) {
-            throw new Error("Invalid passphrase");
+            throw APIError.unauthorized("Invalid passphrase");
          }
 
          if (!input.confirmDataLoss) {
-            throw new Error("Must confirm data loss");
+            throw APIError.validation("Must confirm data loss");
          }
 
          // Disable encryption
@@ -243,7 +244,7 @@ export const encryptionRouter = router({
          const userId = resolvedCtx.session?.user?.id;
 
          if (!userId) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          // Verify the old key hash first
@@ -256,13 +257,13 @@ export const encryptionRouter = router({
          });
 
          if (!userData?.encryptionEnabled) {
-            throw new Error("Encryption is not enabled");
+            throw APIError.validation("Encryption is not enabled");
          }
 
          if (
             !constantTimeCompare(userData.encryptionKeyHash, input.oldKeyHash)
          ) {
-            throw new Error("Invalid current passphrase");
+            throw APIError.unauthorized("Invalid current passphrase");
          }
 
          // Update encryption settings

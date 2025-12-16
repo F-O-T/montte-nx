@@ -665,12 +665,92 @@ bun run test         # Run tests with parallelization
 
 ## Error Handling
 
-### API Errors
-Use `AppError` utility for consistent error types:
+### Error Classes
+
+The application uses two error classes from `@packages/utils/errors`:
+
+| Class | Layer | Purpose |
+|-------|-------|---------|
+| `AppError` | Repositories, services | Server-side errors with HTTP status codes |
+| `APIError` | tRPC routers | API responses (extends TRPCError) |
+
+### API Package (tRPC Routers)
+
+**Always use `APIError`** in tRPC router files (`packages/api/src/server/routers/*.ts`).
+
 ```typescript
-throw AppError.database("Failed to create transaction");
-throw AppError.notFound("Category not found");
-throw AppError.unauthorized("Invalid session");
+import { APIError } from "@packages/utils/errors";
+```
+
+#### Available Methods
+
+| Method | tRPC Code | Use Case |
+|--------|-----------|----------|
+| `APIError.notFound(msg)` | `NOT_FOUND` | Resource not found |
+| `APIError.unauthorized(msg)` | `UNAUTHORIZED` | Authentication failures |
+| `APIError.forbidden(msg)` | `FORBIDDEN` | Authorization failures |
+| `APIError.validation(msg)` | `BAD_REQUEST` | Input validation errors |
+| `APIError.conflict(msg)` | `CONFLICT` | Duplicate/conflict errors |
+| `APIError.internal(msg)` | `INTERNAL_SERVER_ERROR` | Generic internal errors |
+
+#### Usage Examples
+
+```typescript
+// Resource not found
+if (!category || category.organizationId !== organizationId) {
+   throw APIError.notFound("Category not found");
+}
+
+// Authentication check
+if (!userId) {
+   throw APIError.unauthorized("Unauthorized");
+}
+
+// Validation error
+if (!storageKey.startsWith(`users/${userId}/`)) {
+   throw APIError.validation("Invalid storage key for this user");
+}
+
+// Conflict/duplicate
+if (existingRecord) {
+   throw APIError.conflict("Record already exists");
+}
+
+// Internal error (catch blocks)
+try {
+   await someOperation();
+} catch (error) {
+   propagateError(error); // Re-throws if already APIError/AppError
+   throw APIError.internal("Operation failed");
+}
+```
+
+#### Do NOT Use
+
+```typescript
+// Bad - native Error
+throw new Error("Category not found");
+
+// Good - APIError
+throw APIError.notFound("Category not found");
+```
+
+### Repository Layer (Database)
+
+Use `AppError` in repository files (`packages/database/src/repositories/*.ts`):
+
+```typescript
+import { AppError, propagateError } from "@packages/utils/errors";
+
+export async function createTransaction(db: DatabaseInstance, data: NewTransaction) {
+   try {
+      const result = await db.insert(transaction).values(data).returning();
+      return result[0];
+   } catch (err) {
+      propagateError(err); // Re-throws if already AppError
+      throw AppError.database("Failed to create transaction");
+   }
+}
 ```
 
 ### Client-Side

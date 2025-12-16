@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    createInterestTemplate,
    deleteInterestTemplate,
@@ -78,7 +79,7 @@ export const interestTemplateRouter = router({
             !existingTemplate ||
             existingTemplate.organizationId !== organizationId
          ) {
-            throw new Error("Interest template not found");
+            throw APIError.notFound("Interest template not found");
          }
 
          return deleteInterestTemplate(resolvedCtx.db, input.id);
@@ -150,7 +151,7 @@ export const interestTemplateRouter = router({
          );
 
          if (!template || template.organizationId !== organizationId) {
-            throw new Error("Interest template not found");
+            throw APIError.notFound("Interest template not found");
          }
 
          return template;
@@ -213,7 +214,7 @@ export const interestTemplateRouter = router({
             !existingTemplate ||
             existingTemplate.organizationId !== organizationId
          ) {
-            throw new Error("Interest template not found");
+            throw APIError.notFound("Interest template not found");
          }
 
          return updateInterestTemplate(resolvedCtx.db, input.id, input.data);

@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import { deleteAllUserData } from "@packages/database/repositories/user-deletion-repository";
 import { accountDeletionRequest } from "@packages/database/schema";
 import { sendDeletionScheduledEmail } from "@packages/transactional/client";
@@ -20,7 +21,7 @@ export const accountDeletionRouter = router({
       const userId = resolvedCtx.session?.user?.id;
 
       if (!userId) {
-         throw new Error("User not found");
+         throw APIError.notFound("User not found");
       }
 
       const deletionRequest =
@@ -44,7 +45,7 @@ export const accountDeletionRouter = router({
          const userEmail = resolvedCtx.session?.user?.email;
 
          if (!userId || !userEmail) {
-            throw new Error("User not found");
+            throw APIError.notFound("User not found");
          }
 
          // Verify password first
@@ -56,7 +57,7 @@ export const accountDeletionRouter = router({
                },
             });
          } catch {
-            throw new Error("Invalid password");
+            throw APIError.unauthorized("Invalid password");
          }
 
          if (input.type === "immediate") {
@@ -170,7 +171,7 @@ export const accountDeletionRouter = router({
       const userId = resolvedCtx.session?.user?.id;
 
       if (!userId) {
-         throw new Error("User not found");
+         throw APIError.notFound("User not found");
       }
 
       const deletionRequest =
@@ -180,11 +181,11 @@ export const accountDeletionRouter = router({
          });
 
       if (!deletionRequest) {
-         throw new Error("No pending deletion request found");
+         throw APIError.notFound("No pending deletion request found");
       }
 
       if (deletionRequest.type === "immediate") {
-         throw new Error("Cannot cancel immediate deletion");
+         throw APIError.validation("Cannot cancel immediate deletion");
       }
 
       await resolvedCtx.db

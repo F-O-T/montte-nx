@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    createCategory,
    deleteCategory,
@@ -66,7 +67,7 @@ export const categoryRouter = router({
             !existingCategory ||
             existingCategory.organizationId !== organizationId
          ) {
-            throw new Error("Category not found");
+            throw APIError.notFound("Category not found");
          }
 
          return deleteCategory(resolvedCtx.db, input.id);
@@ -123,7 +124,7 @@ export const categoryRouter = router({
          const category = await findCategoryById(resolvedCtx.db, input.id);
 
          if (!category || category.organizationId !== organizationId) {
-            throw new Error("Category not found");
+            throw APIError.notFound("Category not found");
          }
 
          return category;
@@ -217,7 +218,7 @@ export const categoryRouter = router({
             !existingCategory ||
             existingCategory.organizationId !== organizationId
          ) {
-            throw new Error("Category not found");
+            throw APIError.notFound("Category not found");
          }
 
          return updateCategory(resolvedCtx.db, input.id, input.data);
