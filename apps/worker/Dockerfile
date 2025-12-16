@@ -19,6 +19,7 @@ COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/notifications/package.json ./packages/notifications/
 COPY packages/encryption/package.json ./packages/encryption/
 COPY packages/utils/package.json ./packages/utils/
+COPY packages/logging/package.json ./packages/logging/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
