@@ -11,10 +11,10 @@
 import nacl from "tweetnacl";
 import naclUtil from "tweetnacl-util";
 
-// PBKDF2-like key derivation using NaCl hash
-const KEY_LENGTH = nacl.secretbox.keyLength; // 32 bytes
-const SALT_LENGTH = 16; // 128 bits
-const NONCE_LENGTH = nacl.secretbox.nonceLength; // 24 bytes
+const KEY_LENGTH = nacl.secretbox.keyLength;
+const SALT_LENGTH = 16;
+const NONCE_LENGTH = nacl.secretbox.nonceLength;
+const PBKDF2_ITERATIONS = 310_000;
 
 export interface E2EEncryptedData {
    encrypted: string; // Base64 encoded encrypted data
@@ -30,33 +30,38 @@ export function generateSalt(): string {
    return naclUtil.encodeBase64(salt);
 }
 
-/**
- * Derives an encryption key from a passphrase and salt using PBKDF2-like derivation
- *
- * @param passphrase - The user's passphrase
- * @param salt - Base64 encoded salt (use generateSalt() to create)
- * @returns The derived key as Uint8Array
- */
-export function deriveKey(passphrase: string, salt: string): Uint8Array {
+export async function deriveKey(
+   passphrase: string,
+   salt: string,
+): Promise<Uint8Array> {
    if (!passphrase || passphrase.length < 8) {
       throw new Error("Passphrase must be at least 8 characters");
    }
 
    const saltBytes = naclUtil.decodeBase64(salt);
-   const passphraseBytes = naclUtil.decodeUTF8(passphrase);
+   const encoder = new TextEncoder();
+   const passphraseBytes = encoder.encode(passphrase);
 
-   // Combine passphrase and salt, then hash multiple times for key stretching
-   // This is a simplified PBKDF2-like derivation using NaCl hash
-   let keyMaterial = new Uint8Array([...passphraseBytes, ...saltBytes]);
+   const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      passphraseBytes,
+      "PBKDF2",
+      false,
+      ["deriveBits"],
+   );
 
-   // Apply multiple rounds of hashing for key stretching (similar to PBKDF2)
-   const iterations = 100000;
-   for (let i = 0; i < iterations; i++) {
-      keyMaterial = new Uint8Array(nacl.hash(keyMaterial));
-   }
+   const derivedBits = await crypto.subtle.deriveBits(
+      {
+         name: "PBKDF2",
+         salt: new Uint8Array(saltBytes).buffer as ArrayBuffer,
+         iterations: PBKDF2_ITERATIONS,
+         hash: "SHA-512",
+      },
+      keyMaterial,
+      KEY_LENGTH * 8,
+   );
 
-   // Return first KEY_LENGTH bytes as the derived key
-   return new Uint8Array(keyMaterial.slice(0, KEY_LENGTH));
+   return new Uint8Array(derivedBits);
 }
 
 /**

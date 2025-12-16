@@ -5,10 +5,35 @@
  * Application-level encryption is automatic and doesn't need user interaction.
  */
 
+import { timingSafeEqual } from "node:crypto";
 import { user } from "@packages/database/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
+
+/**
+ * Constant-time string comparison to prevent timing attacks.
+ * Returns true if strings are equal, false otherwise.
+ */
+function constantTimeCompare(a: string | null, b: string): boolean {
+   if (a === null) {
+      return false;
+   }
+
+   const bufferA = Buffer.from(a, "utf8");
+   const bufferB = Buffer.from(b, "utf8");
+
+   // If lengths differ, compare against a buffer of the same length as bufferB
+   // to avoid leaking length information via timing
+   if (bufferA.length !== bufferB.length) {
+      // Compare bufferB against itself to maintain constant time,
+      // then return false
+      timingSafeEqual(bufferB, bufferB);
+      return false;
+   }
+
+   return timingSafeEqual(bufferA, bufferB);
+}
 
 export const encryptionRouter = router({
    /**
@@ -139,7 +164,10 @@ export const encryptionRouter = router({
             throw new Error("Encryption is not enabled");
          }
 
-         const isValid = userData.encryptionKeyHash === input.keyHash;
+         const isValid = constantTimeCompare(
+            userData.encryptionKeyHash,
+            input.keyHash,
+         );
 
          return { valid: isValid };
       }),
@@ -177,7 +205,7 @@ export const encryptionRouter = router({
             throw new Error("Encryption is not enabled");
          }
 
-         if (userData.encryptionKeyHash !== input.keyHash) {
+         if (!constantTimeCompare(userData.encryptionKeyHash, input.keyHash)) {
             throw new Error("Invalid passphrase");
          }
 
@@ -231,7 +259,9 @@ export const encryptionRouter = router({
             throw new Error("Encryption is not enabled");
          }
 
-         if (userData.encryptionKeyHash !== input.oldKeyHash) {
+         if (
+            !constantTimeCompare(userData.encryptionKeyHash, input.oldKeyHash)
+         ) {
             throw new Error("Invalid current passphrase");
          }
 

@@ -1,24 +1,5 @@
-import type { DatabaseInstance } from "@packages/database/client";
-import {
-   accountDeletionRequest,
-   automationRule,
-   bankAccount,
-   bill,
-   budget,
-   category,
-   costCenter,
-   counterparty,
-   customReport,
-   interestTemplate,
-   member,
-   notification,
-   notificationPreference,
-   organization,
-   pushSubscription,
-   tag,
-   transaction,
-   transferLog,
-} from "@packages/database/schema";
+import { deleteAllUserData } from "@packages/database/repositories/user-deletion-repository";
+import { accountDeletionRequest } from "@packages/database/schema";
 import { sendDeletionScheduledEmail } from "@packages/transactional/client";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -29,75 +10,6 @@ const RequestDeletionInput = z.object({
    password: z.string(),
    reason: z.string().optional(),
 });
-
-/**
- * Delete all user data from the database
- * This includes: transactions, bills, budgets, categories, tags,
- * bank accounts, cost centers, counterparties, notifications,
- * custom reports, organizations (if owner), memberships, sessions,
- * API keys, accounts, and finally the user record
- */
-async function deleteAllUserData(
-   db: DatabaseInstance,
-   userId: string,
-   organizationId: string,
-) {
-   await db.transaction(async (tx) => {
-      // Delete organization-scoped data
-      await Promise.all([
-         tx
-            .delete(transaction)
-            .where(eq(transaction.organizationId, organizationId)),
-         tx.delete(bill).where(eq(bill.organizationId, organizationId)),
-         tx.delete(budget).where(eq(budget.organizationId, organizationId)),
-         tx.delete(category).where(eq(category.organizationId, organizationId)),
-         tx.delete(tag).where(eq(tag.organizationId, organizationId)),
-         tx
-            .delete(bankAccount)
-            .where(eq(bankAccount.organizationId, organizationId)),
-         tx
-            .delete(costCenter)
-            .where(eq(costCenter.organizationId, organizationId)),
-         tx
-            .delete(counterparty)
-            .where(eq(counterparty.organizationId, organizationId)),
-         tx
-            .delete(automationRule)
-            .where(eq(automationRule.organizationId, organizationId)),
-         tx
-            .delete(customReport)
-            .where(eq(customReport.organizationId, organizationId)),
-         tx
-            .delete(interestTemplate)
-            .where(eq(interestTemplate.organizationId, organizationId)),
-         tx
-            .delete(transferLog)
-            .where(eq(transferLog.organizationId, organizationId)),
-         // Delete user-scoped data
-         tx
-            .delete(notificationPreference)
-            .where(eq(notificationPreference.userId, userId)),
-         tx.delete(notification).where(eq(notification.userId, userId)),
-         tx.delete(pushSubscription).where(eq(pushSubscription.userId, userId)),
-      ]);
-
-      // Delete organization membership
-      await tx.delete(member).where(eq(member.userId, userId));
-
-      // Delete organization if user is the only member
-      const members = await tx.query.member.findMany({
-         where: (m, { eq }) => eq(m.organizationId, organizationId),
-      });
-
-      if (members.length === 0) {
-         await tx
-            .delete(organization)
-            .where(eq(organization.id, organizationId));
-      }
-   });
-
-   // User-specific auth data (sessions, accounts, etc) will cascade via onDelete: "cascade"
-}
 
 export const accountDeletionRouter = router({
    /**
@@ -130,11 +42,9 @@ export const accountDeletionRouter = router({
          const resolvedCtx = await ctx;
          const userId = resolvedCtx.session?.user?.id;
          const userEmail = resolvedCtx.session?.user?.email;
-         const organizationId =
-            resolvedCtx.session?.session?.activeOrganizationId;
 
-         if (!userId || !userEmail || !organizationId) {
-            throw new Error("User or organization not found");
+         if (!userId || !userEmail) {
+            throw new Error("User not found");
          }
 
          // Verify password first
@@ -182,23 +92,25 @@ export const accountDeletionRouter = router({
                }
             }
 
-            // Create deletion record BEFORE deleting user (to avoid FK constraint violation)
-            await resolvedCtx.db.insert(accountDeletionRequest).values({
-               userId,
-               type: "immediate",
-               reason: input.reason,
-               requestedAt: new Date(),
-               completedAt: new Date(),
-               status: "completed",
-            });
-
-            // Delete all user data immediately
-            await deleteAllUserData(resolvedCtx.db, userId, organizationId);
+            // Delete all user data immediately (across all organizations)
+            await deleteAllUserData(resolvedCtx.db, userId);
 
             // Delete user account via Better Auth (this will cascade delete sessions, accounts, etc.)
             await resolvedCtx.auth.api.deleteUser({
                headers: resolvedCtx.headers,
                body: {},
+            });
+
+            // Create deletion audit record AFTER user is deleted
+            // No FK constraint so this record survives and serves as audit trail
+            await resolvedCtx.db.insert(accountDeletionRequest).values({
+               userId,
+               userEmail,
+               type: "immediate",
+               reason: input.reason,
+               requestedAt: new Date(),
+               completedAt: new Date(),
+               status: "completed",
             });
 
             return { success: true, type: "immediate" };
@@ -209,6 +121,7 @@ export const accountDeletionRouter = router({
 
             await resolvedCtx.db.insert(accountDeletionRequest).values({
                userId,
+               userEmail,
                type: "grace_period",
                reason: input.reason,
                requestedAt: new Date(),

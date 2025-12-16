@@ -21,6 +21,7 @@ import {
 import {
    Field,
    FieldDescription,
+   FieldError,
    FieldGroup,
    FieldLabel,
 } from "@packages/ui/components/field";
@@ -35,6 +36,7 @@ import {
 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { useCredenza } from "@/hooks/use-credenza";
 
 type Step = "intro" | "passphrase" | "confirm" | "success";
@@ -50,30 +52,32 @@ export function EncryptionSetupCredenza({
    const [step, setStep] = useState<Step>("intro");
    const [isSubmitting, setIsSubmitting] = useState(false);
 
+   const schema = z
+      .object({
+         passphrase: z.string().min(
+            8,
+            translate(
+               "dashboard.routes.settings.encryption.errors.passphrase-too-short",
+            ),
+         ),
+         confirmPassphrase: z.string(),
+      })
+      .refine((data) => data.passphrase === data.confirmPassphrase, {
+         message: translate(
+            "dashboard.routes.settings.encryption.errors.passphrase-mismatch",
+         ),
+         path: ["confirmPassphrase"],
+      });
+
    const form = useForm({
       defaultValues: {
          passphrase: "",
          confirmPassphrase: "",
       },
+      validators: {
+         onBlur: schema,
+      },
       onSubmit: async ({ value }) => {
-         if (value.passphrase !== value.confirmPassphrase) {
-            toast.error(
-               translate(
-                  "dashboard.routes.settings.encryption.errors.passphrase-mismatch",
-               ),
-            );
-            return;
-         }
-
-         if (value.passphrase.length < 8) {
-            toast.error(
-               translate(
-                  "dashboard.routes.settings.encryption.errors.passphrase-too-short",
-               ),
-            );
-            return;
-         }
-
          setIsSubmitting(true);
          try {
             const success = await enableE2E(value.passphrase);
@@ -102,6 +106,13 @@ export function EncryptionSetupCredenza({
       e.preventDefault();
       e.stopPropagation();
       form.handleSubmit();
+   };
+
+   const handleContinueToConfirm = async () => {
+      await form.validate("change");
+      if (form.state.canSubmit) {
+         setStep("confirm");
+      }
    };
 
    if (step === "intro") {
@@ -198,64 +209,80 @@ export function EncryptionSetupCredenza({
             <CredenzaBody>
                <form className="space-y-4" onSubmit={handleSubmit}>
                   <form.Field name="passphrase">
-                     {(field) => (
-                        <FieldGroup>
-                           <Field>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.settings.encryption.passphrase",
+                     {(field) => {
+                        const isInvalid =
+                           field.state.meta.isTouched && !field.state.meta.isValid;
+                        return (
+                           <FieldGroup>
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel htmlFor={field.name}>
+                                    {translate(
+                                       "dashboard.routes.settings.encryption.passphrase",
+                                    )}
+                                 </FieldLabel>
+                                 <Input
+                                    aria-invalid={isInvalid}
+                                    autoComplete="new-password"
+                                    id={field.name}
+                                    name={field.name}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.settings.encryption.passphrase-placeholder",
+                                    )}
+                                    type="password"
+                                    value={field.state.value}
+                                 />
+                                 <FieldDescription>
+                                    {translate(
+                                       "dashboard.routes.settings.encryption.passphrase-hint",
+                                    )}
+                                 </FieldDescription>
+                                 {isInvalid && (
+                                    <FieldError errors={field.state.meta.errors} />
                                  )}
-                              </FieldLabel>
-                              <Input
-                                 autoComplete="new-password"
-                                 id={field.name}
-                                 name={field.name}
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.settings.encryption.passphrase-placeholder",
-                                 )}
-                                 type="password"
-                                 value={field.state.value}
-                              />
-                              <FieldDescription>
-                                 {translate(
-                                    "dashboard.routes.settings.encryption.passphrase-hint",
-                                 )}
-                              </FieldDescription>
-                           </Field>
-                        </FieldGroup>
-                     )}
+                              </Field>
+                           </FieldGroup>
+                        );
+                     }}
                   </form.Field>
 
                   <form.Field name="confirmPassphrase">
-                     {(field) => (
-                        <FieldGroup>
-                           <Field>
-                              <FieldLabel>
-                                 {translate(
-                                    "dashboard.routes.settings.encryption.confirm-passphrase",
+                     {(field) => {
+                        const isInvalid =
+                           field.state.meta.isTouched && !field.state.meta.isValid;
+                        return (
+                           <FieldGroup>
+                              <Field data-invalid={isInvalid}>
+                                 <FieldLabel htmlFor={field.name}>
+                                    {translate(
+                                       "dashboard.routes.settings.encryption.confirm-passphrase",
+                                    )}
+                                 </FieldLabel>
+                                 <Input
+                                    aria-invalid={isInvalid}
+                                    autoComplete="new-password"
+                                    id={field.name}
+                                    name={field.name}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) =>
+                                       field.handleChange(e.target.value)
+                                    }
+                                    placeholder={translate(
+                                       "dashboard.routes.settings.encryption.confirm-passphrase-placeholder",
+                                    )}
+                                    type="password"
+                                    value={field.state.value}
+                                 />
+                                 {isInvalid && (
+                                    <FieldError errors={field.state.meta.errors} />
                                  )}
-                              </FieldLabel>
-                              <Input
-                                 autoComplete="new-password"
-                                 id={field.name}
-                                 name={field.name}
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder={translate(
-                                    "dashboard.routes.settings.encryption.confirm-passphrase-placeholder",
-                                 )}
-                                 type="password"
-                                 value={field.state.value}
-                              />
-                           </Field>
-                        </FieldGroup>
-                     )}
+                              </Field>
+                           </FieldGroup>
+                        );
+                     }}
                   </form.Field>
                </form>
             </CredenzaBody>
@@ -267,12 +294,8 @@ export function EncryptionSetupCredenza({
                <form.Subscribe>
                   {(formState) => (
                      <Button
-                        disabled={
-                           isSubmitting ||
-                           !formState.values.passphrase ||
-                           !formState.values.confirmPassphrase
-                        }
-                        onClick={() => setStep("confirm")}
+                        disabled={formState.isSubmitting || formState.isValidating}
+                        onClick={handleContinueToConfirm}
                      >
                         {translate("common.actions.continue")}
                      </Button>

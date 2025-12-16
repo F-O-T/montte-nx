@@ -56,8 +56,18 @@ async function storeInIndexedDB(
          expiresAt,
       });
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onerror = () => {
+         db.close();
+         reject(request.error);
+      };
+      transaction.oncomplete = () => {
+         db.close();
+         resolve();
+      };
+      transaction.onerror = () => {
+         db.close();
+         reject(transaction.error);
+      };
    });
 }
 
@@ -71,10 +81,17 @@ async function getFromIndexedDB(): Promise<StoredKey | null> {
          const transaction = db.transaction(IDB_STORE_NAME, "readonly");
          const store = transaction.objectStore(IDB_STORE_NAME);
          const request = store.get(IDB_KEY_ID);
+         let result: StoredKey | undefined;
 
-         request.onerror = () => reject(request.error);
+         request.onerror = () => {
+            db.close();
+            reject(request.error);
+         };
          request.onsuccess = () => {
-            const result = request.result as StoredKey | undefined;
+            result = request.result as StoredKey | undefined;
+         };
+         transaction.oncomplete = () => {
+            db.close();
             if (result?.expiresAt && Date.now() > result.expiresAt) {
                // Key expired, remove it
                clearFromIndexedDB().catch(console.error);
@@ -82,6 +99,10 @@ async function getFromIndexedDB(): Promise<StoredKey | null> {
             } else {
                resolve(result || null);
             }
+         };
+         transaction.onerror = () => {
+            db.close();
+            reject(transaction.error);
          };
       });
    } catch {
@@ -100,8 +121,18 @@ async function clearFromIndexedDB(): Promise<void> {
          const store = transaction.objectStore(IDB_STORE_NAME);
          const request = store.delete(IDB_KEY_ID);
 
-         request.onerror = () => reject(request.error);
-         request.onsuccess = () => resolve();
+         request.onerror = () => {
+            db.close();
+            reject(request.error);
+         };
+         transaction.oncomplete = () => {
+            db.close();
+            resolve();
+         };
+         transaction.onerror = () => {
+            db.close();
+            reject(transaction.error);
+         };
       });
    } catch {
       // Ignore errors when clearing

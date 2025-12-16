@@ -110,7 +110,7 @@ export function useEncryption(): UseEncryptionReturn {
          salt: string,
          remember = false,
       ): Promise<{ key: Uint8Array; keyHash: string }> => {
-         const derivedKey = deriveKey(passphrase, salt);
+         const derivedKey = await deriveKey(passphrase, salt);
          const keyHash = hashKey(derivedKey);
          const keyString = keyToString(derivedKey);
 

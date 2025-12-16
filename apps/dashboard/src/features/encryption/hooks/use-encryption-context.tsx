@@ -103,6 +103,7 @@ export function EncryptionProvider({ children }: { children: ReactNode }) {
 
             return true;
          } catch {
+            await lockKey();
             return false;
          }
       },

@@ -50,7 +50,7 @@ import {
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useSheet } from "@/hooks/use-sheet";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 import { SessionDetailsForm } from "@/pages/profile/features/session-details-form";
 import {
    useRevokeAllSessions,
@@ -219,10 +219,12 @@ type SessionType = Parameters<typeof SessionDetailsForm>[0]["session"];
 function SessionsCard({
    sessions,
    currentSessionId,
+   currentSessionLoginMethod,
    openSheet,
 }: {
    sessions: SessionType[];
    currentSessionId: string | undefined;
+   currentSessionLoginMethod: string | null;
    openSheet: (options: { children: React.ReactNode }) => void;
 }) {
    return (
@@ -263,9 +265,10 @@ function SessionsCard({
                      const DeviceIcon = getDeviceIcon(
                         session.userAgent ?? null,
                      );
-                     const loginMethod = getLoginMethodDisplay(
-                        (session as any).lastMethod ?? null,
-                     );
+                     // Only show login method for the current session (cookie-based storage)
+                     const loginMethod = isCurrentSession
+                        ? getLoginMethodDisplay(currentSessionLoginMethod)
+                        : null;
 
                      return (
                         <Fragment key={session.id}>
@@ -459,6 +462,8 @@ function SecuritySectionContent() {
       useRevokeAllSessions();
 
    const currentSessionId = currentSession?.session?.id;
+   const currentSessionLoginMethod =
+      betterAuthClient.getLastUsedLoginMethod() ?? null;
    const otherSessionsCount = sessions.filter(
       (s) => s.id !== currentSessionId,
    ).length;
@@ -470,6 +475,7 @@ function SecuritySectionContent() {
                <div className="md:col-span-2 lg:col-span-2">
                   <SessionsCard
                      currentSessionId={currentSessionId}
+                     currentSessionLoginMethod={currentSessionLoginMethod}
                      openSheet={openSheet}
                      sessions={sessions}
                   />

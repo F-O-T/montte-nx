@@ -24,12 +24,23 @@ export interface EncryptedData {
  * Key should be a 32-byte (256-bit) hex string
  */
 function validateKey(key: string): Buffer {
+   // Explicitly validate hex format before Buffer conversion
+   // Buffer.from(key, "hex") silently ignores non-hex characters
+   if (!/^[0-9a-fA-F]{64}$/.test(key)) {
+      throw new Error(
+         "ENCRYPTION_KEY must be a 64-character hex string (32 bytes)",
+      );
+   }
+
    const keyBuffer = Buffer.from(key, "hex");
+
+   // Safety check: verify buffer length after conversion
    if (keyBuffer.length !== 32) {
       throw new Error(
          "ENCRYPTION_KEY must be a 64-character hex string (32 bytes)",
       );
    }
+
    return keyBuffer;
 }
 

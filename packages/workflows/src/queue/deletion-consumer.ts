@@ -1,33 +1,17 @@
 import type { DatabaseInstance } from "@packages/database/client";
-import {
-   accountDeletionRequest,
-   transaction,
-   bill,
-   budget,
-   category,
-   tag,
-   bankAccount,
-   costCenter,
-   counterparty,
-   automationRule,
-   customReport,
-   notificationPreference,
-   notification,
-   member,
-   organization,
-   interestTemplate,
-   transferLog,
-   pushSubscription,
-   user,
-} from "@packages/database/schema";
+import { deleteAllUserData } from "@packages/database/repositories/user-deletion-repository";
+import { accountDeletionRequest, user } from "@packages/database/schema";
 import type { ConnectionOptions, WorkerOptions } from "@packages/queue/bullmq";
 import { type Job, Worker } from "@packages/queue/bullmq";
 import {
    sendDeletionCompletedEmail,
    sendDeletionReminderEmail,
 } from "@packages/transactional/client";
-import { and, eq, lte, gte, isNotNull } from "drizzle-orm";
+import { arrayContains, eq, not, sql } from "drizzle-orm";
 import type { Resend } from "resend";
+
+const REMINDER_7_DAY = "7_day";
+const REMINDER_1_DAY = "1_day";
 import {
    DELETION_QUEUE_NAME,
    type DeletionJobData,
@@ -54,49 +38,6 @@ export type DeletionWorker = {
    worker: Worker<DeletionJobData, DeletionJobResult>;
    close: () => Promise<void>;
 };
-
-/**
- * Delete all user data from the database
- */
-async function deleteAllUserData(
-   db: DatabaseInstance,
-   userId: string,
-   organizationId: string,
-) {
-   await db.transaction(async (tx) => {
-      // Delete organization-scoped data
-      await Promise.all([
-         tx.delete(transaction).where(eq(transaction.organizationId, organizationId)),
-         tx.delete(bill).where(eq(bill.organizationId, organizationId)),
-         tx.delete(budget).where(eq(budget.organizationId, organizationId)),
-         tx.delete(category).where(eq(category.organizationId, organizationId)),
-         tx.delete(tag).where(eq(tag.organizationId, organizationId)),
-         tx.delete(bankAccount).where(eq(bankAccount.organizationId, organizationId)),
-         tx.delete(costCenter).where(eq(costCenter.organizationId, organizationId)),
-         tx.delete(counterparty).where(eq(counterparty.organizationId, organizationId)),
-         tx.delete(automationRule).where(eq(automationRule.organizationId, organizationId)),
-         tx.delete(customReport).where(eq(customReport.organizationId, organizationId)),
-         tx.delete(interestTemplate).where(eq(interestTemplate.organizationId, organizationId)),
-         tx.delete(transferLog).where(eq(transferLog.organizationId, organizationId)),
-         // Delete user-scoped data
-         tx.delete(notificationPreference).where(eq(notificationPreference.userId, userId)),
-         tx.delete(notification).where(eq(notification.userId, userId)),
-         tx.delete(pushSubscription).where(eq(pushSubscription.userId, userId)),
-      ]);
-
-      // Delete organization membership
-      await tx.delete(member).where(eq(member.userId, userId));
-
-      // Check if organization has no more members and delete it
-      const members = await tx.query.member.findMany({
-         where: (m, { eq: mEq }) => mEq(m.organizationId, organizationId),
-      });
-
-      if (members.length === 0) {
-         await tx.delete(organization).where(eq(organization.id, organizationId));
-      }
-   });
-}
 
 /**
  * Process users scheduled for deletion
@@ -136,15 +77,8 @@ async function processScheduledDeletions(
             continue;
          }
 
-         // Get user's organization
-         const membership = await db.query.member.findFirst({
-            where: (m, { eq: eqOp }) => eqOp(m.userId, deletion.userId),
-         });
-
-         if (membership) {
-            // Delete all user data
-            await deleteAllUserData(db, deletion.userId, membership.organizationId);
-         }
+         // Delete all user data (across all organizations)
+         await deleteAllUserData(db, deletion.userId);
 
          // Delete the user record (cascades to auth data via onDelete: "cascade")
          await db.delete(user).where(eq(user.id, deletion.userId));
@@ -207,7 +141,7 @@ async function sendDeletionReminders(
    const oneDayEnd = new Date(oneDayFromNow);
    oneDayEnd.setHours(23, 59, 59, 999);
 
-   // Find users scheduled for deletion in 7 days
+   // Find users scheduled for deletion in 7 days (excluding already reminded)
    const sevenDayReminders = await db.query.accountDeletionRequest.findMany({
       where: (req, { and: andOp, eq: eqOp, gte: gteOp, lte: lteOp }) =>
          andOp(
@@ -215,10 +149,11 @@ async function sendDeletionReminders(
             eqOp(req.type, "grace_period"),
             gteOp(req.scheduledDeletionAt!, sevenDaysStart),
             lteOp(req.scheduledDeletionAt!, sevenDaysEnd),
+            not(arrayContains(req.remindersSent, [REMINDER_7_DAY])),
          ),
    });
 
-   // Find users scheduled for deletion in 1 day
+   // Find users scheduled for deletion in 1 day (excluding already reminded)
    const oneDayReminders = await db.query.accountDeletionRequest.findMany({
       where: (req, { and: andOp, eq: eqOp, gte: gteOp, lte: lteOp }) =>
          andOp(
@@ -226,6 +161,7 @@ async function sendDeletionReminders(
             eqOp(req.type, "grace_period"),
             gteOp(req.scheduledDeletionAt!, oneDayStart),
             lteOp(req.scheduledDeletionAt!, oneDayEnd),
+            not(arrayContains(req.remindersSent, [REMINDER_1_DAY])),
          ),
    });
 
@@ -245,6 +181,15 @@ async function sendDeletionReminders(
                daysRemaining: 7,
                cancelUrl,
             });
+
+            // Track that 7-day reminder was sent
+            await db
+               .update(accountDeletionRequest)
+               .set({
+                  remindersSent: sql`array_append(${accountDeletionRequest.remindersSent}, ${REMINDER_7_DAY})`,
+               })
+               .where(eq(accountDeletionRequest.id, deletion.id));
+
             emailsSent++;
          } catch (error) {
             console.error("Failed to send 7-day reminder:", error);
@@ -266,6 +211,15 @@ async function sendDeletionReminders(
                daysRemaining: 1,
                cancelUrl,
             });
+
+            // Track that 1-day reminder was sent
+            await db
+               .update(accountDeletionRequest)
+               .set({
+                  remindersSent: sql`array_append(${accountDeletionRequest.remindersSent}, ${REMINDER_1_DAY})`,
+               })
+               .where(eq(accountDeletionRequest.id, deletion.id));
+
             emailsSent++;
          } catch (error) {
             console.error("Failed to send 1-day reminder:", error);

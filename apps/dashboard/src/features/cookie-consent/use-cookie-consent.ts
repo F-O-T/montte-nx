@@ -9,25 +9,42 @@ export function useCookieConsent() {
    const [isHydrated, setIsHydrated] = useState(false);
 
    useEffect(() => {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === "accepted" || stored === "declined") {
-         setConsent(stored as ConsentStatus);
+      try {
+         const stored = localStorage.getItem(STORAGE_KEY);
+         if (stored === "accepted" || stored === "declined") {
+            setConsent(stored as ConsentStatus);
+         }
+      } catch (error) {
+         console.error("Failed to read cookie consent from localStorage:", error);
+      } finally {
+         setIsHydrated(true);
       }
-      setIsHydrated(true);
    }, []);
 
    const accept = () => {
-      localStorage.setItem(STORAGE_KEY, "accepted");
+      try {
+         localStorage.setItem(STORAGE_KEY, "accepted");
+      } catch (error) {
+         console.error("Failed to save cookie consent to localStorage:", error);
+      }
       setConsent("accepted");
    };
 
    const decline = () => {
-      localStorage.setItem(STORAGE_KEY, "declined");
+      try {
+         localStorage.setItem(STORAGE_KEY, "declined");
+      } catch (error) {
+         console.error("Failed to save cookie consent to localStorage:", error);
+      }
       setConsent("declined");
    };
 
    const reset = () => {
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+         localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {
+         console.error("Failed to remove cookie consent from localStorage:", error);
+      }
       setConsent(null);
    };
 

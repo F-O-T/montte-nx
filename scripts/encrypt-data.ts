@@ -26,6 +26,9 @@ import { transaction } from "../packages/database/src/schemas/transactions";
 import { bill } from "../packages/database/src/schemas/bills";
 import { counterparty } from "../packages/database/src/schemas/counterparties";
 
+// Import shared encryption functions
+import { encryptField, isEncrypted } from "../packages/encryption/src/server";
+
 const program = new Command();
 
 const colors = {
@@ -49,36 +52,6 @@ function getEnvFilePath(env: string): string {
    }
 
    throw new Error(`No environment file found for ${env}`);
-}
-
-function encryptField(
-   value: string,
-   key: string,
-): { encrypted: string; iv: string; tag: string } {
-   // Dynamic import to avoid issues at parse time
-   const crypto = require("node:crypto");
-   const keyBuffer = Buffer.from(key, "hex");
-   const iv = crypto.randomBytes(12);
-   const cipher = crypto.createCipheriv("aes-256-gcm", keyBuffer, iv);
-
-   let encrypted = cipher.update(value, "utf8", "base64");
-   encrypted += cipher.final("base64");
-
-   return {
-      encrypted,
-      iv: iv.toString("base64"),
-      tag: cipher.getAuthTag().toString("base64"),
-   };
-}
-
-function isEncrypted(value: unknown): boolean {
-   return (
-      typeof value === "object" &&
-      value !== null &&
-      "encrypted" in value &&
-      "iv" in value &&
-      "tag" in value
-   );
 }
 
 function encryptValue(value: string | null, key: string): string | null {
@@ -108,6 +81,7 @@ async function encryptTransactions(
    let offset = 0;
    let totalEncrypted = 0;
    let totalSkipped = 0;
+   let batchNumber = 0;
 
    while (true) {
       const transactions = await db
@@ -121,21 +95,45 @@ async function encryptTransactions(
 
       if (transactions.length === 0) break;
 
+      batchNumber++;
+
+      // Collect updates for this batch
+      const updates: Array<{ id: string; description: string | null }> = [];
+
       for (const txn of transactions) {
          const encryptedDescription = encryptValue(txn.description, key);
 
          if (encryptedDescription !== txn.description) {
-            if (!dryRun) {
-               await db
-                  .update(transaction)
-                  .set({
-                     description: encryptedDescription,
-                  })
-                  .where(eq(transaction.id, txn.id));
-            }
-            totalEncrypted++;
+            updates.push({ id: txn.id, description: encryptedDescription });
          } else {
             totalSkipped++;
+         }
+      }
+
+      // Apply updates atomically within a transaction
+      if (updates.length > 0) {
+         if (dryRun) {
+            // In dry run mode, just count without persisting
+            totalEncrypted += updates.length;
+         } else {
+            try {
+               await db.transaction(async (tx) => {
+                  for (const update of updates) {
+                     await tx
+                        .update(transaction)
+                        .set({ description: update.description })
+                        .where(eq(transaction.id, update.id));
+                  }
+               });
+               totalEncrypted += updates.length;
+            } catch (error) {
+               console.error(
+                  colors.red(
+                     `\n   ❌ Batch ${batchNumber} failed, rolled back: ${error instanceof Error ? error.message : String(error)}`,
+                  ),
+               );
+               throw error;
+            }
          }
       }
 
@@ -163,6 +161,7 @@ async function encryptBills(
    let offset = 0;
    let totalEncrypted = 0;
    let totalSkipped = 0;
+   let batchNumber = 0;
 
    while (true) {
       const bills = await db
@@ -177,6 +176,15 @@ async function encryptBills(
 
       if (bills.length === 0) break;
 
+      batchNumber++;
+
+      // Collect updates for this batch
+      const updates: Array<{
+         id: string;
+         description: string | null;
+         notes: string | null;
+      }> = [];
+
       for (const b of bills) {
          const encryptedDescription = encryptValue(b.description, key);
          const encryptedNotes = encryptValue(b.notes, key);
@@ -185,18 +193,43 @@ async function encryptBills(
             encryptedDescription !== b.description ||
             encryptedNotes !== b.notes
          ) {
-            if (!dryRun) {
-               await db
-                  .update(bill)
-                  .set({
-                     description: encryptedDescription,
-                     notes: encryptedNotes,
-                  })
-                  .where(eq(bill.id, b.id));
-            }
-            totalEncrypted++;
+            updates.push({
+               id: b.id,
+               description: encryptedDescription,
+               notes: encryptedNotes,
+            });
          } else {
             totalSkipped++;
+         }
+      }
+
+      // Apply updates atomically within a transaction
+      if (updates.length > 0) {
+         if (dryRun) {
+            // In dry run mode, just count without persisting
+            totalEncrypted += updates.length;
+         } else {
+            try {
+               await db.transaction(async (tx) => {
+                  for (const update of updates) {
+                     await tx
+                        .update(bill)
+                        .set({
+                           description: update.description,
+                           notes: update.notes,
+                        })
+                        .where(eq(bill.id, update.id));
+                  }
+               });
+               totalEncrypted += updates.length;
+            } catch (error) {
+               console.error(
+                  colors.red(
+                     `\n   ❌ Batch ${batchNumber} failed, rolled back: ${error instanceof Error ? error.message : String(error)}`,
+                  ),
+               );
+               throw error;
+            }
          }
       }
 
@@ -224,6 +257,7 @@ async function encryptCounterparties(
    let offset = 0;
    let totalEncrypted = 0;
    let totalSkipped = 0;
+   let batchNumber = 0;
 
    while (true) {
       const counterparties = await db
@@ -237,19 +271,45 @@ async function encryptCounterparties(
 
       if (counterparties.length === 0) break;
 
+      batchNumber++;
+
+      // Collect updates for this batch
+      const updates: Array<{ id: string; notes: string | null }> = [];
+
       for (const cp of counterparties) {
          const encryptedNotes = encryptValue(cp.notes, key);
 
          if (encryptedNotes !== cp.notes) {
-            if (!dryRun) {
-               await db
-                  .update(counterparty)
-                  .set({ notes: encryptedNotes })
-                  .where(eq(counterparty.id, cp.id));
-            }
-            totalEncrypted++;
+            updates.push({ id: cp.id, notes: encryptedNotes });
          } else {
             totalSkipped++;
+         }
+      }
+
+      // Apply updates atomically within a transaction
+      if (updates.length > 0) {
+         if (dryRun) {
+            // In dry run mode, just count without persisting
+            totalEncrypted += updates.length;
+         } else {
+            try {
+               await db.transaction(async (tx) => {
+                  for (const update of updates) {
+                     await tx
+                        .update(counterparty)
+                        .set({ notes: update.notes })
+                        .where(eq(counterparty.id, update.id));
+                  }
+               });
+               totalEncrypted += updates.length;
+            } catch (error) {
+               console.error(
+                  colors.red(
+                     `\n   ❌ Batch ${batchNumber} failed, rolled back: ${error instanceof Error ? error.message : String(error)}`,
+                  ),
+               );
+               throw error;
+            }
          }
       }
 

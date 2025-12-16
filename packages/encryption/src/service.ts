@@ -38,6 +38,26 @@ export function isEncryptionEnabled(): boolean {
 }
 
 /**
+ * Decrypts a field value if it contains encrypted data
+ * Handles JSON parsing and encryption detection
+ */
+function decryptFieldValue(
+   field: string | null | undefined,
+   key: string,
+): string | null | undefined {
+   if (!field) return field;
+   try {
+      const parsed = JSON.parse(field);
+      if (isEncrypted(parsed)) {
+         return decryptIfNeeded(parsed, key);
+      }
+      return field;
+   } catch {
+      return field;
+   }
+}
+
+/**
  * Encrypts a value if encryption is enabled
  * Returns the original value if encryption is not configured
  */
@@ -93,25 +113,10 @@ export function decryptTransactionFields<
    const key = getEncryptionKey();
    if (!key) return transaction;
 
-   const decryptFieldValue = (
-      field: string | null | undefined,
-   ): string | null | undefined => {
-      if (!field) return field;
-      try {
-         const parsed = JSON.parse(field);
-         if (isEncrypted(parsed)) {
-            return decryptIfNeeded(parsed, key);
-         }
-         return field;
-      } catch {
-         return field;
-      }
-   };
-
    return {
       ...transaction,
-      description: decryptFieldValue(transaction.description),
-      notes: decryptFieldValue(transaction.notes),
+      description: decryptFieldValue(transaction.description, key),
+      notes: decryptFieldValue(transaction.notes, key),
    } as T;
 }
 
@@ -144,25 +149,10 @@ export function decryptBillFields<
    const key = getEncryptionKey();
    if (!key) return bill;
 
-   const decryptFieldValue = (
-      field: string | null | undefined,
-   ): string | null | undefined => {
-      if (!field) return field;
-      try {
-         const parsed = JSON.parse(field);
-         if (isEncrypted(parsed)) {
-            return decryptIfNeeded(parsed, key);
-         }
-         return field;
-      } catch {
-         return field;
-      }
-   };
-
    return {
       ...bill,
-      description: decryptFieldValue(bill.description),
-      notes: decryptFieldValue(bill.notes),
+      description: decryptFieldValue(bill.description, key),
+      notes: decryptFieldValue(bill.notes, key),
    } as T;
 }
 
@@ -195,25 +185,10 @@ export function decryptBankAccountFields<
    const key = getEncryptionKey();
    if (!key) return account;
 
-   const decryptFieldValue = (
-      field: string | null | undefined,
-   ): string | null | undefined => {
-      if (!field) return field;
-      try {
-         const parsed = JSON.parse(field);
-         if (isEncrypted(parsed)) {
-            return decryptIfNeeded(parsed, key);
-         }
-         return field;
-      } catch {
-         return field;
-      }
-   };
-
    return {
       ...account,
-      accountNumber: decryptFieldValue(account.accountNumber),
-      notes: decryptFieldValue(account.notes),
+      accountNumber: decryptFieldValue(account.accountNumber, key),
+      notes: decryptFieldValue(account.notes, key),
    } as T;
 }
 
@@ -243,24 +218,9 @@ export function decryptCounterpartyFields<T extends { notes?: string | null }>(
    const key = getEncryptionKey();
    if (!key) return counterparty;
 
-   const decryptFieldValue = (
-      field: string | null | undefined,
-   ): string | null | undefined => {
-      if (!field) return field;
-      try {
-         const parsed = JSON.parse(field);
-         if (isEncrypted(parsed)) {
-            return decryptIfNeeded(parsed, key);
-         }
-         return field;
-      } catch {
-         return field;
-      }
-   };
-
    return {
       ...counterparty,
-      notes: decryptFieldValue(counterparty.notes),
+      notes: decryptFieldValue(counterparty.notes, key),
    } as T;
 }
 
