@@ -46,6 +46,7 @@ COPY packages/workflows/package.json ./packages/workflows/
 COPY packages/queue/package.json ./packages/queue/
 COPY packages/stripe/package.json ./packages/stripe/
 COPY packages/arcjet/package.json ./packages/arcjet/
+COPY packages/logging/package.json ./packages/logging/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
@@ -68,6 +69,7 @@ RUN bun build \
     --minify-whitespace \
     --minify-syntax \
     --target bun \
+    --external react-dom \
     --outfile ./dist/index.js \
     ./apps/server/src/index.ts
 

@@ -8,8 +8,10 @@ import { createCacheClient, TTL } from "@packages/cache/client";
 import { getRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
+import { serverEnv } from "@packages/environment/server";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
+import { getServerLogger } from "@packages/logging/server";
 import { captureError, identifyUser, setGroup } from "@packages/posthog/server";
 import type { StripeClient } from "@packages/stripe";
 import type { ResendClient } from "@packages/transactional/client";
@@ -18,6 +20,8 @@ import { sanitizeData } from "@packages/utils/sanitization";
 import { initTRPC } from "@trpc/server";
 import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
+
+const logger = getServerLogger(serverEnv);
 
 // Initialize cache client lazily
 let cache: ReturnType<typeof createCacheClient> | null = null;
@@ -62,9 +66,9 @@ export const createTRPCContext = async ({
    try {
       session = await auth.api.getSession({ headers });
    } catch (error: unknown) {
-      console.error(
-         "[tRPC Context] getSession() failed, continuing without session",
-         error,
+      logger.error(
+         { err: error },
+         "getSession() failed, continuing without session",
       );
    }
 
@@ -115,9 +119,9 @@ const arcjetPublicMiddleware = t.middleware(async ({ ctx, next }) => {
    const decision = await aj
       .protect(resolvedCtx.request, { requested: 1 })
       .catch((error: unknown) => {
-         console.error(
-            "[Arcjet tRPC Public] protect() failed, allowing request (fail-open)",
-            error,
+         logger.error(
+            { err: error },
+            "Arcjet tRPC Public protect() failed, allowing request (fail-open)",
          );
          return null;
       });
@@ -126,8 +130,9 @@ const arcjetPublicMiddleware = t.middleware(async ({ ctx, next }) => {
       return next();
    }
 
-   console.log(
-      `[Arcjet tRPC Public] ${decision.conclusion} - ${decision.reason.type}`,
+   logger.debug(
+      { conclusion: decision.conclusion, reasonType: decision.reason.type },
+      "Arcjet tRPC Public decision",
    );
 
    if (decision.isDenied()) {
@@ -165,9 +170,9 @@ const arcjetProtectedMiddleware = t.middleware(async ({ ctx, next }) => {
    const decision = await aj
       .protect(resolvedCtx.request, { requested: 1 })
       .catch((error: unknown) => {
-         console.error(
-            "[Arcjet tRPC Protected] protect() failed, allowing request (fail-open)",
-            error,
+         logger.error(
+            { err: error },
+            "Arcjet tRPC Protected protect() failed, allowing request (fail-open)",
          );
          return null;
       });
@@ -176,8 +181,9 @@ const arcjetProtectedMiddleware = t.middleware(async ({ ctx, next }) => {
       return next();
    }
 
-   console.log(
-      `[Arcjet tRPC Protected] ${decision.conclusion} - ${decision.reason.type}`,
+   logger.debug(
+      { conclusion: decision.conclusion, reasonType: decision.reason.type },
+      "Arcjet tRPC Protected decision",
    );
 
    if (decision.isDenied()) {
@@ -202,11 +208,19 @@ const arcjetProtectedMiddleware = t.middleware(async ({ ctx, next }) => {
 });
 
 const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
-   console.log(`Request: ${type} ${path}`);
+   const requestId = crypto.randomUUID();
    const start = Date.now();
+
+   logger.info({ requestId, path, type }, "Request started");
+
    const result = await next();
    const durationMs = Date.now() - start;
-   console.log(`Response: ${type} ${path} - ${durationMs}ms`);
+
+   logger.info(
+      { requestId, path, type, durationMs, success: result.ok },
+      "Request completed",
+   );
+
    return result;
 });
 
@@ -252,9 +266,9 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
 const timingMiddleware = t.middleware(async ({ next, path }) => {
    const start = Date.now();
    const result = await next();
-   const end = Date.now();
+   const durationMs = Date.now() - start;
 
-   console.info(`[TRPC] ${path} took ${end - start}ms to execute`);
+   logger.debug({ path, durationMs }, "tRPC procedure timing");
 
    return result;
 });
@@ -330,7 +344,7 @@ const telemetryMiddleware = t.middleware(
             });
          }
       } catch (err) {
-         console.error(`Error on telemetry capture ${path}`, err);
+         logger.error({ err, path }, "Error on telemetry capture");
       }
 
       return result;
@@ -358,7 +372,7 @@ export function withCache<T>(
       // Check cache first
       const cached = await cacheClient.getJSON<T>(cacheKey);
       if (cached !== null) {
-         console.log(`[Cache] Hit for key: ${cacheKey}`);
+         logger.debug({ cacheKey }, "Cache hit");
          return cached;
       }
 
@@ -367,9 +381,9 @@ export function withCache<T>(
 
       // Store in cache (fire and forget)
       cacheClient.setJSON(cacheKey, result, ttl).catch((error) => {
-         console.error(`[Cache] Failed to cache key ${cacheKey}:`, error);
+         logger.error({ err: error, cacheKey }, "Cache write failed");
       });
-      console.log(`[Cache] Stored key: ${cacheKey} with TTL: ${ttl}s`);
+      logger.debug({ cacheKey, ttl }, "Cache stored");
 
       return result;
    };

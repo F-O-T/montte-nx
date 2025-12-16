@@ -4,9 +4,11 @@ import { serverEnv as env } from "@packages/environment/server";
 import { createRedisConnection } from "@packages/queue/connection";
 import { initializeWorkflowQueue } from "@packages/workflows/queue/producer";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { sql } from "drizzle-orm";
 import { Elysia } from "elysia";
 import { auth, resendClient, stripeClient } from "./integrations/auth";
 import { db } from "./integrations/database";
+import { logger } from "./integrations/logging";
 import { minioClient } from "./integrations/minio";
 import { posthog, posthogPlugin } from "./integrations/posthog";
 
@@ -87,7 +89,40 @@ const app = new Elysia({
          parse: "none",
       },
    )
+   .get("/health", () => ({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+   }))
+   .get("/ready", async () => {
+      const checks = { database: false, redis: false };
+
+      try {
+         await db.execute(sql`SELECT 1`);
+         checks.database = true;
+      } catch (error) {
+         logger.error({ err: error }, "Database health check failed");
+      }
+
+      try {
+         await redisConnection.ping();
+         checks.redis = true;
+      } catch (error) {
+         logger.error({ err: error }, "Redis health check failed");
+      }
+
+      const healthy = Object.values(checks).every(Boolean);
+
+      return {
+         status: healthy ? "ready" : "degraded",
+         checks,
+         timestamp: new Date().toISOString(),
+      };
+   })
    .listen(process.env.PORT ?? 9876);
 
-console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
+logger.info(
+   { host: app.server?.hostname, port: app.server?.port },
+   "Server started",
+);
 export type App = typeof app;

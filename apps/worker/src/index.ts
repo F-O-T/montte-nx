@@ -1,5 +1,6 @@
 import { createDb } from "@packages/database/client";
 import { workerEnv as env } from "@packages/environment/worker";
+import { getWorkerLogger, sendHeartbeat } from "@packages/logging/worker";
 import type { Job } from "@packages/queue/bullmq";
 import {
    closeRedisConnection,
@@ -23,8 +24,10 @@ import {
    type WorkflowJobResult,
 } from "@packages/workflows/queue/queues";
 
+const logger = getWorkerLogger(env);
+
 const MEMORY_THRESHOLD_MB = 512;
-const HEALTH_CHECK_INTERVAL_MS = 30000;
+const HEALTH_CHECK_INTERVAL_MS = 180000; // 3 minutes
 
 const db = createDb({ databaseUrl: env.DATABASE_URL });
 
@@ -43,7 +46,7 @@ const vapidConfig =
         }
       : undefined;
 
-console.log("Starting workflow worker...");
+logger.info("Starting workflow worker");
 
 let isShuttingDown = false;
 
@@ -60,7 +63,7 @@ await maintenanceQueue.add(
    },
 );
 
-console.log("Scheduled daily automation log cleanup job (7 day retention)");
+logger.info({ retentionDays: 7 }, "Scheduled daily automation log cleanup job");
 
 const { worker: maintenanceWorker, close: closeMaintenanceWorker } =
    createMaintenanceWorker({
@@ -71,19 +74,23 @@ const { worker: maintenanceWorker, close: closeMaintenanceWorker } =
          job: Job<MaintenanceJobData, MaintenanceJobResult>,
          result: MaintenanceJobResult,
       ) => {
-         console.log(
-            `[Maintenance Completed] ${job.name}: deleted ${result.deletedCount} logs`,
+         logger.info(
+            { jobName: job.name, deletedCount: result.deletedCount },
+            "Maintenance job completed",
          );
       },
       onFailed: async (
          job: Job<MaintenanceJobData, MaintenanceJobResult> | undefined,
          error: Error,
       ) => {
-         console.error(`[Maintenance Failed] ${job?.name}: ${error.message}`);
+         logger.error(
+            { jobName: job?.name, err: error },
+            "Maintenance job failed",
+         );
       },
    });
 
-console.log("Maintenance worker started");
+logger.info("Maintenance worker started");
 
 // Deletion queue and worker
 const deletionQueue = createDeletionQueue(redisConnection);
@@ -107,8 +114,9 @@ await deletionQueue.add(
    },
 );
 
-console.log(
-   "Scheduled daily account deletion jobs (2 AM process, 9 AM reminders)",
+logger.info(
+   { processTime: "2 AM", reminderTime: "9 AM" },
+   "Scheduled daily account deletion jobs",
 );
 
 const { worker: deletionWorker, close: closeDeletionWorker } =
@@ -122,19 +130,24 @@ const { worker: deletionWorker, close: closeDeletionWorker } =
          job: Job<DeletionJobData, DeletionJobResult>,
          result: DeletionJobResult,
       ) => {
-         console.log(
-            `[Deletion Completed] ${job.name}: processed ${result.processedCount}, sent ${result.emailsSent} emails`,
+         logger.info(
+            {
+               jobName: job.name,
+               processedCount: result.processedCount,
+               emailsSent: result.emailsSent,
+            },
+            "Deletion job completed",
          );
       },
       onFailed: async (
          job: Job<DeletionJobData, DeletionJobResult> | undefined,
          error: Error,
       ) => {
-         console.error(`[Deletion Failed] ${job?.name}: ${error.message}`);
+         logger.error({ jobName: job?.name, err: error }, "Deletion job failed");
       },
    });
 
-console.log("Deletion worker started");
+logger.info("Deletion worker started");
 
 const { worker, close } = createWorkflowWorker({
    concurrency: env.WORKER_CONCURRENCY || 5,
@@ -146,8 +159,13 @@ const { worker, close } = createWorkflowWorker({
       job: Job<WorkflowJobData, WorkflowJobResult>,
       result: WorkflowJobResult,
    ) => {
-      console.log(
-         `[Job Completed] ${job.id}: ${result.rulesMatched}/${result.rulesEvaluated} rules matched`,
+      logger.info(
+         {
+            jobId: job.id,
+            rulesMatched: result.rulesMatched,
+            rulesEvaluated: result.rulesEvaluated,
+         },
+         "Workflow job completed",
       );
 
       if (global.gc) {
@@ -158,66 +176,68 @@ const { worker, close } = createWorkflowWorker({
       job: Job<WorkflowJobData, WorkflowJobResult> | undefined,
       error: Error,
    ) => {
-      console.error(`[Job Failed] ${job?.id}: ${error.message}`);
+      logger.error({ jobId: job?.id, err: error }, "Workflow job failed");
    },
 });
 
-console.log(
-   `Workflow worker started with concurrency: ${env.WORKER_CONCURRENCY || 5}`,
+logger.info(
+   { concurrency: env.WORKER_CONCURRENCY || 5 },
+   "Workflow worker started",
 );
 
 worker.on("active", (job: Job<WorkflowJobData, WorkflowJobResult>) => {
-   console.log(
-      `[Job Active] ${job.id}: Processing ${job.data.event.type} event`,
+   logger.debug(
+      { jobId: job.id, eventType: job.data.event.type },
+      "Job active",
    );
 });
 
 worker.on("stalled", (jobId: string) => {
-   console.warn(`[Job Stalled] ${jobId}`);
+   logger.warn({ jobId }, "Job stalled");
 });
 
 worker.on("error", (error: Error) => {
-   console.error("[Worker Error]", error);
+   logger.error({ err: error }, "Worker error");
 });
 
 async function gracefulShutdown(signal: string) {
    if (isShuttingDown) {
-      console.log("Shutdown already in progress...");
+      logger.info("Shutdown already in progress");
       return;
    }
 
    isShuttingDown = true;
-   console.log(`Received ${signal}, shutting down gracefully...`);
+   logger.info({ signal }, "Received shutdown signal, shutting down gracefully");
 
    const shutdownTimeout = setTimeout(() => {
-      console.error("Shutdown timeout exceeded, forcing exit...");
+      logger.error("Shutdown timeout exceeded, forcing exit");
       process.exit(1);
    }, 30000);
 
    try {
-      console.log("Pausing workers to stop accepting new jobs...");
+      logger.info("Pausing workers to stop accepting new jobs");
       await worker.pause();
       await maintenanceWorker.pause();
       await deletionWorker.pause();
 
-      console.log("Waiting for active jobs to complete...");
+      logger.info("Waiting for active jobs to complete");
       await close();
       await closeMaintenanceWorker();
       await closeDeletionWorker();
 
-      console.log("Closing queues...");
+      logger.info("Closing queues");
       await closeMaintenanceQueue();
       await closeDeletionQueue();
 
-      console.log("Closing Redis connection...");
+      logger.info("Closing Redis connection");
       await closeRedisConnection();
 
       clearTimeout(shutdownTimeout);
-      console.log("Worker shut down complete");
+      logger.info("Worker shut down complete");
       process.exit(0);
    } catch (error) {
       clearTimeout(shutdownTimeout);
-      console.error("Error during shutdown:", error);
+      logger.error({ err: error }, "Error during shutdown");
       process.exit(1);
    }
 }
@@ -226,15 +246,15 @@ process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 process.on("uncaughtException", (error) => {
-   console.error("[Uncaught Exception]", error);
+   logger.error({ err: error }, "Uncaught exception");
    gracefulShutdown("UNCAUGHT_EXCEPTION");
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-   console.error("[Unhandled Rejection] at:", promise, "reason:", reason);
+   logger.error({ reason, promise }, "Unhandled rejection");
 });
 
-const healthCheckInterval = setInterval(() => {
+const healthCheckInterval = setInterval(async () => {
    if (isShuttingDown) {
       clearInterval(healthCheckInterval);
       return;
@@ -245,17 +265,19 @@ const healthCheckInterval = setInterval(() => {
    const heapTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
    const rssMB = Math.round(memUsage.rss / 1024 / 1024);
 
-   console.log(
-      `[Health] Heap: ${heapUsedMB}MB / ${heapTotalMB}MB | RSS: ${rssMB}MB`,
-   );
+   logger.info({ heapUsedMB, heapTotalMB, rssMB }, "Health check");
+
+   // Send heartbeat to Better Stack
+   await sendHeartbeat(env.BETTER_STACK_HEARTBEAT_URL);
 
    if (heapUsedMB > MEMORY_THRESHOLD_MB) {
-      console.warn(
-         `[Memory Warning] Heap usage (${heapUsedMB}MB) exceeds threshold (${MEMORY_THRESHOLD_MB}MB)`,
+      logger.warn(
+         { heapUsedMB, threshold: MEMORY_THRESHOLD_MB },
+         "Memory warning: heap usage exceeds threshold",
       );
 
       if (global.gc) {
-         console.log("[Memory] Triggering garbage collection...");
+         logger.info("Triggering garbage collection");
          global.gc();
       }
 
@@ -263,8 +285,9 @@ const healthCheckInterval = setInterval(() => {
       const afterHeapMB = Math.round(afterGC.heapUsed / 1024 / 1024);
 
       if (afterHeapMB > MEMORY_THRESHOLD_MB * 1.5) {
-         console.error(
-            `[Memory Critical] Heap still at ${afterHeapMB}MB after GC, initiating graceful restart...`,
+         logger.error(
+            { afterHeapMB, criticalThreshold: MEMORY_THRESHOLD_MB * 1.5 },
+            "Memory critical: initiating graceful restart",
          );
          gracefulShutdown("MEMORY_PRESSURE");
       }
