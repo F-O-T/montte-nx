@@ -12,6 +12,7 @@ import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
 import { captureError, identifyUser, setGroup } from "@packages/posthog/server";
 import type { StripeClient } from "@packages/stripe";
+import type { ResendClient } from "@packages/transactional/client";
 import { APIError } from "@packages/utils/errors";
 import { sanitizeData } from "@packages/utils/sanitization";
 import { initTRPC } from "@trpc/server";
@@ -41,6 +42,7 @@ export const createTRPCContext = async ({
    minioClient,
    minioBucket,
    posthog,
+   resendClient,
    responseHeaders,
    stripeClient,
 }: {
@@ -50,6 +52,7 @@ export const createTRPCContext = async ({
    minioBucket: string;
    posthog: PostHog;
    request: Request;
+   resendClient?: ResendClient;
    responseHeaders: Headers;
    stripeClient?: StripeClient;
 }) => {
@@ -83,6 +86,7 @@ export const createTRPCContext = async ({
       organizationId,
       posthog,
       request,
+      resendClient,
       responseHeaders,
       session,
       stripeClient,

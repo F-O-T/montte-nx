@@ -334,6 +334,25 @@ export const getAuthOptions = (
                required: false,
                type: "string",
             },
+            // E2E Encryption fields
+            encryptionEnabled: {
+               defaultValue: false,
+               input: true,
+               required: false,
+               type: "boolean",
+            },
+            encryptionSalt: {
+               defaultValue: null,
+               input: true,
+               required: false,
+               type: "string",
+            },
+            encryptionKeyHash: {
+               defaultValue: null,
+               input: true,
+               required: false,
+               type: "string",
+            },
          },
       },
    }) satisfies BetterAuthOptions;

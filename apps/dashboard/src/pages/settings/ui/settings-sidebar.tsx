@@ -7,7 +7,7 @@ import {
    SidebarMenuItem,
 } from "@packages/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Bell, CreditCard, Settings2, Shield, User } from "lucide-react";
+import { Bell, CreditCard, Lock, Settings2, Shield, User } from "lucide-react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 
 const settingsNavItems = [
@@ -28,6 +28,12 @@ const settingsNavItems = [
       icon: Settings2,
       id: "preferences",
       title: translate("dashboard.routes.settings.nav.preferences"),
+   },
+   {
+      href: "/$slug/settings/encryption",
+      icon: Lock,
+      id: "encryption",
+      title: translate("dashboard.routes.settings.nav.encryption"),
    },
    {
       href: "/$slug/settings/notifications",

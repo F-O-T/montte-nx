@@ -1,36 +1,43 @@
 import { Button } from "@packages/ui/components/button";
 import { Card } from "@packages/ui/components/card";
-import { Cookie } from "lucide-react";
+import { Cookie, Loader2 } from "lucide-react";
 import { useCookieConsent } from "./use-cookie-consent";
-import { useTRPC } from "@/integrations/clients";
+import { trpc } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function CookieConsentBanner() {
   const { consent, accept, decline, isHydrated } = useCookieConsent();
-  const trpc = useTRPC();
 
-  const updateTelemetry = useMutation({
-    mutationFn: (telemetryConsent: boolean) =>
-      trpc.session.updateTelemetryConsent.mutate({ consent: telemetryConsent }),
-    onError: () => {
-      toast.error(translate("common.errors.default"));
-    },
-  });
+  const updateTelemetry = useMutation(
+    trpc.session.updateTelemetryConsent.mutationOptions({
+      onError: () => {
+        toast.error(translate("common.errors.default"));
+      },
+    })
+  );
 
   if (!isHydrated || consent !== null) return null;
 
   const handleAccept = async () => {
-    accept();
-    await updateTelemetry.mutateAsync(true);
-    toast.success(translate("common.cookies.banner.accepted"));
+    try {
+      await updateTelemetry.mutateAsync({ consent: true });
+      accept();
+      toast.success(translate("common.cookies.banner.accepted"));
+    } catch {
+      // Error already handled by mutation onError
+    }
   };
 
   const handleDecline = async () => {
-    decline();
-    await updateTelemetry.mutateAsync(false);
-    toast.success(translate("common.cookies.banner.declined"));
+    try {
+      await updateTelemetry.mutateAsync({ consent: false });
+      decline();
+      toast.success(translate("common.cookies.banner.declined"));
+    } catch {
+      // Error already handled by mutation onError
+    }
   };
 
   return (
@@ -54,6 +61,9 @@ export function CookieConsentBanner() {
                 size="sm"
                 className="flex-1 min-w-fit"
               >
+                {updateTelemetry.isPending && (
+                  <Loader2 className="size-4 mr-2 animate-spin" />
+                )}
                 {translate("common.cookies.banner.accept")}
               </Button>
               <Button
@@ -63,11 +73,16 @@ export function CookieConsentBanner() {
                 variant="outline"
                 className="flex-1 min-w-fit"
               >
+                {updateTelemetry.isPending && (
+                  <Loader2 className="size-4 mr-2 animate-spin" />
+                )}
                 {translate("common.cookies.banner.decline")}
               </Button>
             </div>
             <a
-              href="/privacy"
+              href="https://montte.co/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-muted-foreground hover:underline inline-block"
             >
               {translate("common.cookies.banner.privacy-policy")}

@@ -1,3 +1,7 @@
+import {
+   decryptCounterpartyFields,
+   encryptCounterpartyFields,
+} from "@packages/encryption/service";
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, ilike, inArray } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
@@ -12,11 +16,15 @@ export async function createCounterparty(
    data: NewCounterparty,
 ) {
    try {
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptCounterpartyFields(data);
+
       const result = await dbClient
          .insert(counterparty)
-         .values(data)
+         .values(encryptedData)
          .returning();
-      return result[0];
+      // Decrypt sensitive fields before returning
+      return result[0] ? decryptCounterpartyFields(result[0]) : undefined;
    } catch (err: unknown) {
       const error = err as Error & { code?: string };
 
@@ -43,7 +51,8 @@ export async function findCounterpartyById(
       const result = await dbClient.query.counterparty.findFirst({
          where: (counterparty, { eq }) => eq(counterparty.id, counterpartyId),
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result ? decryptCounterpartyFields(result) : result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -77,7 +86,8 @@ export async function findCounterpartiesByOrganizationId(
          orderBy: (counterparty, { asc }) => asc(counterparty.name),
          where: and(...conditions),
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptCounterpartyFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -149,7 +159,8 @@ export async function findCounterpartiesByOrganizationIdPaginated(
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         counterparties,
+         // Decrypt sensitive fields before returning
+         counterparties: counterparties.map(decryptCounterpartyFields),
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
@@ -181,9 +192,12 @@ export async function updateCounterparty(
          throw AppError.notFound("Counterparty not found");
       }
 
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptCounterpartyFields(data);
+
       const result = await dbClient
          .update(counterparty)
-         .set(data)
+         .set(encryptedData)
          .where(eq(counterparty.id, counterpartyId))
          .returning();
 
@@ -191,7 +205,8 @@ export async function updateCounterparty(
          throw AppError.database("Counterparty not found");
       }
 
-      return result[0];
+      // Decrypt sensitive fields before returning
+      return decryptCounterpartyFields(result[0]!);
    } catch (err: unknown) {
       const error = err as Error & { code?: string };
 

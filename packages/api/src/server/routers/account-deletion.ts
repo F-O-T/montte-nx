@@ -1,6 +1,26 @@
 import type { DatabaseInstance } from "@packages/database/client";
-import { accountDeletionRequest } from "@packages/database/schema";
-import { eq, and } from "drizzle-orm";
+import {
+   accountDeletionRequest,
+   transaction,
+   bill,
+   budget,
+   category,
+   tag,
+   bankAccount,
+   costCenter,
+   counterparty,
+   automationRule,
+   customReport,
+   notificationPreference,
+   notification,
+   member,
+   organization,
+   interestTemplate,
+   transferLog,
+   pushSubscription,
+} from "@packages/database/schema";
+import { sendDeletionScheduledEmail } from "@packages/transactional/client";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -22,60 +42,41 @@ async function deleteAllUserData(
    userId: string,
    organizationId: string,
 ) {
-   // Delete organization-scoped data
-   const { transaction, bill, budget, category, tag, bankAccount, costCenter, counterparty, customReport, automationRule } = db.query;
+   await db.transaction(async (tx) => {
+      // Delete organization-scoped data
+      await Promise.all([
+         tx.delete(transaction).where(eq(transaction.organizationId, organizationId)),
+         tx.delete(bill).where(eq(bill.organizationId, organizationId)),
+         tx.delete(budget).where(eq(budget.organizationId, organizationId)),
+         tx.delete(category).where(eq(category.organizationId, organizationId)),
+         tx.delete(tag).where(eq(tag.organizationId, organizationId)),
+         tx.delete(bankAccount).where(eq(bankAccount.organizationId, organizationId)),
+         tx.delete(costCenter).where(eq(costCenter.organizationId, organizationId)),
+         tx.delete(counterparty).where(eq(counterparty.organizationId, organizationId)),
+         tx.delete(automationRule).where(eq(automationRule.organizationId, organizationId)),
+         tx.delete(customReport).where(eq(customReport.organizationId, organizationId)),
+         tx.delete(interestTemplate).where(eq(interestTemplate.organizationId, organizationId)),
+         tx.delete(transferLog).where(eq(transferLog.organizationId, organizationId)),
+         // Delete user-scoped data
+         tx.delete(notificationPreference).where(eq(notificationPreference.userId, userId)),
+         tx.delete(notification).where(eq(notification.userId, userId)),
+         tx.delete(pushSubscription).where(eq(pushSubscription.userId, userId)),
+      ]);
 
-   await Promise.all([
-      // Delete transactions
-      db.delete(db._.schema.transaction!).where(eq(db._.schema.transaction!.organizationId, organizationId)),
+      // Delete organization membership
+      await tx.delete(member).where(eq(member.userId, userId));
 
-      // Delete bills
-      db.delete(db._.schema.bill!).where(eq(db._.schema.bill!.organizationId, organizationId)),
+      // Delete organization if user is the only member
+      const members = await tx.query.member.findMany({
+         where: (m, { eq }) => eq(m.organizationId, organizationId),
+      });
 
-      // Delete budgets (budget periods will cascade)
-      db.delete(db._.schema.budget!).where(eq(db._.schema.budget!.organizationId, organizationId)),
-
-      // Delete categories
-      db.delete(db._.schema.category!).where(eq(db._.schema.category!.organizationId, organizationId)),
-
-      // Delete tags
-      db.delete(db._.schema.tag!).where(eq(db._.schema.tag!.organizationId, organizationId)),
-
-      // Delete bank accounts
-      db.delete(db._.schema.bankAccount!).where(eq(db._.schema.bankAccount!.organizationId, organizationId)),
-
-      // Delete cost centers
-      db.delete(db._.schema.costCenter!).where(eq(db._.schema.costCenter!.organizationId, organizationId)),
-
-      // Delete counterparties
-      db.delete(db._.schema.counterparty!).where(eq(db._.schema.counterparty!.organizationId, organizationId)),
-
-      // Delete automation rules
-      db.delete(db._.schema.automationRule!).where(eq(db._.schema.automationRule!.organizationId, organizationId)),
-
-      // Delete custom reports
-      db.delete(db._.schema.customReport!).where(eq(db._.schema.customReport!.organizationId, organizationId)),
-
-      // Delete notification preferences
-      db.delete(db._.schema.notificationPreference!).where(eq(db._.schema.notificationPreference!.userId, userId)),
-
-      // Delete notifications
-      db.delete(db._.schema.notification!).where(eq(db._.schema.notification!.userId, userId)),
-   ]);
-
-   // Delete organization membership
-   await db.delete(db._.schema.member!).where(eq(db._.schema.member!.userId, userId));
-
-   // Delete organization if user is the only member
-   const members = await db.query.member.findMany({
-      where: (member, { eq }) => eq(member.organizationId, organizationId),
+      if (members.length === 0) {
+         await tx.delete(organization).where(eq(organization.id, organizationId));
+      }
    });
 
-   if (members.length === 0) {
-      await db.delete(db._.schema.organization!).where(eq(db._.schema.organization!.id, organizationId));
-   }
-
-   // Delete user-specific data (sessions, accounts, etc will cascade via onDelete: "cascade")
+   // User-specific auth data (sessions, accounts, etc) will cascade via onDelete: "cascade"
 }
 
 export const accountDeletionRouter = router({
@@ -130,15 +131,32 @@ export const accountDeletionRouter = router({
          }
 
          if (input.type === "immediate") {
-            // Delete all user data immediately
-            await deleteAllUserData(resolvedCtx.db, userId, organizationId);
-
-            // Delete user account via Better Auth (this will cascade delete sessions, accounts, etc.)
-            await resolvedCtx.auth.api.deleteUser({
-               headers: resolvedCtx.headers,
+            // Get user's Stripe customer ID from database
+            const userRecord = await resolvedCtx.db.query.user.findFirst({
+               where: (users, { eq }) => eq(users.id, userId),
             });
 
-            // Create deletion record for audit purposes
+            // Cancel any active Stripe subscriptions before deleting
+            if (resolvedCtx.stripeClient && userRecord?.stripeCustomerId) {
+               try {
+                  const subscriptions = await resolvedCtx.stripeClient.subscriptions.list({
+                     customer: userRecord.stripeCustomerId,
+                     status: "active",
+                  });
+
+                  for (const subscription of subscriptions.data) {
+                     await resolvedCtx.stripeClient.subscriptions.cancel(subscription.id, {
+                        invoice_now: false,
+                        prorate: false,
+                     });
+                  }
+               } catch (error) {
+                  console.error("Failed to cancel Stripe subscriptions:", error);
+                  // Continue with deletion even if Stripe fails
+               }
+            }
+
+            // Create deletion record BEFORE deleting user (to avoid FK constraint violation)
             await resolvedCtx.db.insert(accountDeletionRequest).values({
                userId,
                type: "immediate",
@@ -146,6 +164,15 @@ export const accountDeletionRouter = router({
                requestedAt: new Date(),
                completedAt: new Date(),
                status: "completed",
+            });
+
+            // Delete all user data immediately
+            await deleteAllUserData(resolvedCtx.db, userId, organizationId);
+
+            // Delete user account via Better Auth (this will cascade delete sessions, accounts, etc.)
+            await resolvedCtx.auth.api.deleteUser({
+               headers: resolvedCtx.headers,
+               body: {},
             });
 
             return { success: true, type: "immediate" };
@@ -163,11 +190,27 @@ export const accountDeletionRouter = router({
                status: "pending",
             });
 
-            // TODO: Send confirmation email
-            // await sendDeletionScheduledEmail(resendClient, {
-            //    email: userEmail,
-            //    scheduledDate,
-            // });
+            // Send confirmation email
+            if (resolvedCtx.resendClient) {
+               const userName = resolvedCtx.session?.user?.name || "Usuário";
+               const formattedDate = scheduledDate.toLocaleDateString("pt-BR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+               });
+
+               try {
+                  await sendDeletionScheduledEmail(resolvedCtx.resendClient, {
+                     email: userEmail,
+                     userName,
+                     scheduledDate: formattedDate,
+                     cancelUrl: `${resolvedCtx.request.headers.get("origin") || "https://app.montte.co"}/settings/profile`,
+                  });
+               } catch (error) {
+                  console.error("Failed to send deletion scheduled email:", error);
+                  // Continue even if email fails - deletion is already scheduled
+               }
+            }
 
             return {
                success: true,

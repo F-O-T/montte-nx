@@ -69,7 +69,7 @@ function getDeviceIcon(userAgent: string | null | undefined) {
 }
 
 function formatLastActive(date: Date | string | null): string {
-   if (!date) return "Agora";
+   if (!date) return translate("common.time.now");
    const d = new Date(date);
    const now = new Date();
    const diff = now.getTime() - d.getTime();
@@ -77,10 +77,10 @@ function formatLastActive(date: Date | string | null): string {
    const hours = Math.floor(diff / 3600000);
    const days = Math.floor(diff / 86400000);
 
-   if (minutes < 1) return "Agora";
-   if (minutes < 60) return `${minutes} min atrás`;
-   if (hours < 24) return `${hours}h atrás`;
-   if (days < 7) return `${days}d atrás`;
+   if (minutes < 1) return translate("common.time.now");
+   if (minutes < 60) return translate("common.time.minutes-ago", { count: minutes });
+   if (hours < 24) return translate("common.time.hours-ago", { count: hours });
+   if (days < 7) return translate("common.time.days-ago", { count: days });
    return d.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
@@ -95,15 +95,15 @@ function getLoginMethodDisplay(method: string | null | undefined): {
 
    switch (method) {
       case "email":
-         return { label: "Email", Icon: Mail };
+         return { label: translate("dashboard.routes.settings.security.login-methods.email"), Icon: Mail };
       case "google":
-         return { label: "Google", Icon: Globe };
+         return { label: translate("dashboard.routes.settings.security.login-methods.google"), Icon: Globe };
       case "otp":
-         return { label: "Código 2FA", Icon: Shield };
+         return { label: translate("dashboard.routes.settings.security.login-methods.otp"), Icon: Shield };
       case "magic-link":
-         return { label: "Link Mágico", Icon: Link2 };
+         return { label: translate("dashboard.routes.settings.security.login-methods.magic-link"), Icon: Link2 };
       case "anonymous":
-         return { label: "Anônimo", Icon: User };
+         return { label: translate("dashboard.routes.settings.security.login-methods.anonymous"), Icon: User };
       default:
          return { label: method, Icon: Shield };
    }
@@ -206,7 +206,7 @@ function SessionsCard({
                {translate("dashboard.routes.settings.security.title")}
             </CardTitle>
             <CardDescription>
-               Gerencie seus dispositivos conectados e proteja sua conta
+               {translate("dashboard.routes.settings.security.sessions-description")}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -216,10 +216,9 @@ function SessionsCard({
                      <EmptyMedia variant="icon">
                         <Globe className="size-6" />
                      </EmptyMedia>
-                     <EmptyTitle>Nenhuma sessão ativa</EmptyTitle>
+                     <EmptyTitle>{translate("dashboard.routes.settings.security.sessions.empty-title")}</EmptyTitle>
                      <EmptyDescription>
-                        Suas sessões aparecerão aqui quando você estiver
-                        conectado
+                        {translate("dashboard.routes.settings.security.sessions.empty-description")}
                      </EmptyDescription>
                   </EmptyHeader>
                </Empty>
@@ -253,13 +252,13 @@ function SessionsCard({
                                           className="bg-green-500 hover:bg-green-500/90 shrink-0"
                                           variant="default"
                                        >
-                                          Este dispositivo
+                                          {translate("dashboard.routes.settings.security.sessions.current-device")}
                                        </Badge>
                                     )}
                                  </div>
                                  <ItemDescription className="flex items-center gap-2 flex-wrap">
                                     <span>
-                                       {session.ipAddress || "IP desconhecido"}
+                                       {session.ipAddress || translate("dashboard.routes.settings.security.sessions.unknown-ip")}
                                     </span>
                                     {loginMethod && (
                                        <>
@@ -303,7 +302,7 @@ function SessionsCard({
                                        </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                       Ver detalhes
+                                       {translate("dashboard.routes.settings.security.sessions.view-details")}
                                     </TooltipContent>
                                  </Tooltip>
                               </ItemActions>
@@ -341,18 +340,20 @@ function SecurityOverviewCard({
    return (
       <Card className="h-full">
          <CardHeader>
-            <CardTitle>Visão Geral</CardTitle>
-            <CardDescription>Resumo de segurança da sua conta</CardDescription>
+            <CardTitle>{translate("dashboard.routes.settings.security.overview.title")}</CardTitle>
+            <CardDescription>{translate("dashboard.routes.settings.security.overview.description")}</CardDescription>
          </CardHeader>
          <CardContent className="space-y-4">
             <div className="rounded-lg bg-secondary/50 p-4 text-center">
                <p className="text-xs md:text-sm text-muted-foreground mb-1">
-                  Sessões ativas
+                  {translate("dashboard.routes.settings.security.overview.active-sessions")}
                </p>
                <p className="text-3xl md:text-4xl font-bold">{sessionsCount}</p>
                <Badge className="mt-2" variant="secondary">
                   <Shield className="size-3 mr-1" />
-                  {sessionsCount === 1 ? "dispositivo" : "dispositivos"}
+                  {sessionsCount === 1
+                     ? translate("dashboard.routes.settings.security.overview.device")
+                     : translate("dashboard.routes.settings.security.overview.devices")}
                </Badge>
             </div>
 

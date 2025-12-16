@@ -1,3 +1,7 @@
+import {
+   decryptBillFields,
+   encryptBillFields,
+} from "@packages/encryption/service";
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
@@ -23,7 +27,10 @@ export type BillWithRelations = Bill & {
 
 export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
    try {
-      const result = await dbClient.insert(bill).values(data).returning();
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptBillFields(data);
+
+      const result = await dbClient.insert(bill).values(encryptedData).returning();
 
       const createdBillId = result[0]?.id;
       if (!createdBillId) {
@@ -44,7 +51,8 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
          throw AppError.database("Failed to fetch created bill");
       }
 
-      return createdBill;
+      // Decrypt sensitive fields before returning
+      return decryptBillFields(createdBill);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -64,7 +72,8 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result ? decryptBillFields(result) : result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -88,7 +97,8 @@ export async function findBillsByOrganizationId(
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -149,7 +159,8 @@ export async function findBillsByOrganizationIdFiltered(
          },
       });
 
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -246,7 +257,8 @@ export async function findBillsByOrganizationIdPaginated(
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         bills,
+         // Decrypt sensitive fields before returning
+         bills: bills.map(decryptBillFields),
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
@@ -281,7 +293,8 @@ export async function findBillsByOrganizationIdAndType(
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -313,7 +326,8 @@ export async function findPendingBillsByOrganizationId(
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -345,7 +359,8 @@ export async function findOverdueBillsByOrganizationId(
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -373,7 +388,8 @@ export async function findCompletedBillsByOrganizationId(
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -388,9 +404,12 @@ export async function updateBill(
    data: Partial<NewBill>,
 ) {
    try {
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptBillFields(data);
+
       const result = await dbClient
          .update(bill)
-         .set(data)
+         .set(encryptedData)
          .where(eq(bill.id, billId))
          .returning();
 
@@ -412,7 +431,8 @@ export async function updateBill(
          throw AppError.database("Failed to fetch updated bill");
       }
 
-      return updatedBill;
+      // Decrypt sensitive fields before returning
+      return decryptBillFields(updatedBill);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -710,7 +730,8 @@ export async function findBillsByInstallmentGroupId(
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(

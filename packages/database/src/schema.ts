@@ -1,6 +1,7 @@
 export * from "./schemas/account-deletion";
 export * from "./schemas/auth";
 export * from "./schemas/automations";
+export * from "./schemas/encryption";
 export * from "./schemas/bank-accounts";
 export * from "./schemas/bills";
 export * from "./schemas/budgets";

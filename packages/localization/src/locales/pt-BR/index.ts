@@ -7,8 +7,10 @@ import commonErrorsPtBr from "./common/errors.json";
 import commonFormPtBr from "./common/form.json";
 import commonHeadersPtBr from "./common/headers.json";
 import commonLanguagesPtBr from "./common/languages.json";
+import commonStatusPtBr from "./common/status.json";
 import commonStripePtBr from "./common/stripe.json";
 import commonThemesPtBr from "./common/themes.json";
+import commonTimePtBr from "./common/time.json";
 import commonValidationPtBr from "./common/validation.json";
 import layoutPtBr from "./dashboard/layout.json";
 import anonymousPtBr from "./dashboard/routes/anonymous.json";
@@ -48,8 +50,10 @@ const resources = {
          form: commonFormPtBr,
          headers: commonHeadersPtBr,
          languages: commonLanguagesPtBr,
+         status: commonStatusPtBr,
          stripe: commonStripePtBr,
          themes: commonThemesPtBr,
+         time: commonTimePtBr,
          validation: commonValidationPtBr,
       },
       dashboard: {

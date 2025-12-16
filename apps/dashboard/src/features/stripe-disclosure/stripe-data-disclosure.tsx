@@ -13,6 +13,9 @@ export function StripeDataDisclosure() {
         </p>
         <div className="text-xs text-muted-foreground space-y-1">
           <p>
+            • {translate("common.stripe.disclosure.pci-dss")}
+          </p>
+          <p>
             • {translate("common.stripe.disclosure.no-card-storage")}
           </p>
           <p>
