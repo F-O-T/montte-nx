@@ -86,6 +86,118 @@ finance-tracker/
 
 ---
 
+## Buildable Package Exports
+
+Packages in `packages/` are buildable TypeScript packages. They use explicit exports in `package.json` to expose specific entry points.
+
+### Export Pattern Types
+
+#### 1. Named Entry Points
+Single file exports for specific functionality:
+```json
+{
+   "exports": {
+      ".": {
+         "default": "./src/index.ts",
+         "types": "./dist/src/index.d.ts"
+      },
+      "./client": {
+         "default": "./src/client.ts",
+         "types": "./dist/src/client.d.ts"
+      },
+      "./server": {
+         "default": "./src/server.ts",
+         "types": "./dist/src/server.d.ts"
+      }
+   }
+}
+```
+
+**Usage:**
+```typescript
+import { createClient } from "@packages/encryption/client";
+import { encryptionService } from "@packages/encryption/server";
+```
+
+#### 2. Wildcard Entry Points
+Pattern-based exports for directories with multiple files:
+```json
+{
+   "exports": {
+      "./components/*": {
+         "default": "./src/components/*.{ts,tsx}",
+         "types": "./dist/src/components/*.d.ts"
+      },
+      "./repositories/*": {
+         "default": "./src/repositories/*.ts",
+         "types": "./dist/src/repositories/*.d.ts"
+      }
+   }
+}
+```
+
+**Usage:**
+```typescript
+import { Button } from "@packages/ui/components/button";
+import { Spinner } from "@packages/ui/components/spinner";
+import { createTransaction } from "@packages/database/repositories/transaction-repository";
+```
+
+### Standard Package Structure
+
+```json
+{
+   "name": "@packages/example",
+   "type": "module",
+   "private": true,
+   "exports": {
+      ".": {
+         "default": "./src/index.ts",
+         "types": "./dist/src/index.d.ts"
+      }
+   },
+   "files": ["dist"],
+   "scripts": {
+      "build": "tsc --build",
+      "typecheck": "tsc"
+   }
+}
+```
+
+### Common Export Patterns by Package Type
+
+| Package Type | Exports | Example |
+|--------------|---------|---------|
+| UI Components | `./components/*`, `./hooks/*`, `./lib/*` | `@packages/ui` |
+| Database | `.`, `./client`, `./schema`, `./schemas/*`, `./repositories/*` | `@packages/database` |
+| API | `./client`, `./server`, `./schemas/*` | `@packages/api` |
+| Utils/Services | `.`, `./client`, `./server` | `@packages/encryption` |
+| Environment | `./server`, `./worker`, `./client` | `@packages/environment` |
+
+### Import Rules
+
+1. **Always use the export path, never relative paths:**
+   ```typescript
+   // Good
+   import { Button } from "@packages/ui/components/button";
+
+   // Bad (don't bypass exports)
+   import { Button } from "@packages/ui/src/components/button";
+   ```
+
+2. **Match the export exactly:**
+   ```typescript
+   // Good - matches "./repositories/*"
+   import { createBill } from "@packages/database/repositories/bill-repository";
+
+   // Bad - doesn't match any export
+   import { createBill } from "@packages/database/bill-repository";
+   ```
+
+3. **Types are resolved automatically** from the `types` field in exports.
+
+---
+
 ## Code Style Rules
 
 ### No Barrel Files
@@ -363,19 +475,101 @@ const form = useForm({
 </form.Field>
 ```
 
-### State Management (TanStack Store)
-```typescript
-// Global UI state
-const sheetStore = new Store({
-   children: null as React.ReactNode | null,
-   isOpen: false,
-});
+### Global UI Hooks (TanStack Store)
 
-export const useSheet = () => ({
-   closeSheet: () => sheetStore.setState(s => ({ ...s, isOpen: false })),
-   openSheet: ({ children }) => sheetStore.setState(s => ({ ...s, children, isOpen: true })),
-});
+The dashboard uses global state hooks for managing overlay UI (sheets, modals, dialogs). These hooks use TanStack Store for state management and require a corresponding `Global*` component mounted at the app root.
+
+#### Available Hooks
+
+| Hook | Purpose | Component |
+|------|---------|-----------|
+| `useSheet` | Forms and data entry | `GlobalSheet` |
+| `useCredenza` | Important immediate actions (non-destructive) | `GlobalCredenza` |
+| `useAlertDialog` | Destructive confirmations | `GlobalAlertDialog` |
+
+#### useSheet - Forms
+Use for forms and data entry that slides in from the side.
+```typescript
+import { useSheet } from "@/hooks/use-sheet";
+
+function MyComponent() {
+   const { openSheet, closeSheet } = useSheet();
+
+   // Open a sheet with a form
+   const handleOpen = () => {
+      openSheet({
+         children: <CreateTransactionForm onSuccess={closeSheet} />
+      });
+   };
+
+   return <Button onClick={handleOpen}>Add Transaction</Button>;
+}
+
+// Inside the sheet content, close when done
+function CreateTransactionForm({ onSuccess }: { onSuccess: () => void }) {
+   const { closeSheet } = useSheet();
+
+   const handleSubmit = async () => {
+      await saveData();
+      closeSheet();
+   };
+}
 ```
+
+#### useCredenza - Important Immediate Actions
+Use for important actions that require immediate user attention but are not destructive (modal on desktop, drawer on mobile).
+```typescript
+import { useCredenza } from "@/hooks/use-credenza";
+
+function MyComponent() {
+   const { openCredenza, closeCredenza } = useCredenza();
+
+   // Example: Filter selection, category picker, important info
+   const handleOpen = () => {
+      openCredenza({
+         children: <CategoryFilterPicker onApply={closeCredenza} />
+      });
+   };
+}
+
+// Functions are also exported standalone for use outside React components
+import { openCredenza, closeCredenza } from "@/hooks/use-credenza";
+```
+
+#### useAlertDialog - Destructive Confirmations
+Use for confirming destructive or irreversible actions.
+```typescript
+import { useAlertDialog } from "@/hooks/use-alert-dialog";
+
+function DeleteButton({ itemId }: { itemId: string }) {
+   const { openAlertDialog } = useAlertDialog();
+   const deleteMutation = useDeleteItem();
+
+   const handleDelete = () => {
+      openAlertDialog({
+         title: "Delete Item",
+         description: "Are you sure? This action cannot be undone.",
+         actionLabel: "Delete",        // Optional, defaults to "Confirm"
+         cancelLabel: "Cancel",        // Optional, defaults to "Cancel"
+         variant: "destructive",       // "default" | "destructive"
+         onAction: async () => {
+            await deleteMutation.mutateAsync(itemId);
+         },
+      });
+   };
+}
+```
+
+#### When to Use Each
+
+| Scenario | Use |
+|----------|-----|
+| Creating/editing a transaction, category, bill | `useSheet` |
+| Inviting a member, creating a team | `useSheet` |
+| Applying filters that need immediate action | `useCredenza` |
+| Selecting from important options | `useCredenza` |
+| Deleting a record | `useAlertDialog` |
+| Revoking access, removing a member | `useAlertDialog` |
 
 ---
 

@@ -2,7 +2,7 @@ import { Button } from "@packages/ui/components/button";
 import { Card } from "@packages/ui/components/card";
 import { Cookie, Loader2 } from "lucide-react";
 import { useCookieConsent } from "./use-cookie-consent";
-import { trpc } from "@/integrations/clients";
+import { betterAuthClient } from "@/integrations/clients";
 import { translate } from "@packages/localization";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,19 +10,20 @@ import { toast } from "sonner";
 export function CookieConsentBanner() {
   const { consent, accept, decline, isHydrated } = useCookieConsent();
 
-  const updateTelemetry = useMutation(
-    trpc.session.updateTelemetryConsent.mutationOptions({
-      onError: () => {
-        toast.error(translate("common.errors.default"));
-      },
-    })
-  );
+  const updateTelemetry = useMutation({
+    mutationFn: async (telemetryConsent: boolean) => {
+      return betterAuthClient.updateUser({ telemetryConsent });
+    },
+    onError: () => {
+      toast.error(translate("common.errors.default"));
+    },
+  });
 
   if (!isHydrated || consent !== null) return null;
 
   const handleAccept = async () => {
     try {
-      await updateTelemetry.mutateAsync({ consent: true });
+      await updateTelemetry.mutateAsync(true);
       accept();
       toast.success(translate("common.cookies.banner.accepted"));
     } catch {
@@ -32,7 +33,7 @@ export function CookieConsentBanner() {
 
   const handleDecline = async () => {
     try {
-      await updateTelemetry.mutateAsync({ consent: false });
+      await updateTelemetry.mutateAsync(false);
       decline();
       toast.success(translate("common.cookies.banner.declined"));
     } catch {
