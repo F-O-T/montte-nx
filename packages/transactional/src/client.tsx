@@ -116,7 +116,12 @@ export interface SendDeletionScheduledEmailOptions {
 
 export const sendDeletionScheduledEmail = async (
    client: Resend,
-   { email, userName, scheduledDate, cancelUrl }: SendDeletionScheduledEmailOptions,
+   {
+      email,
+      userName,
+      scheduledDate,
+      cancelUrl,
+   }: SendDeletionScheduledEmailOptions,
 ) => {
    const subject = "Sua conta foi agendada para exclusão";
    await client.emails.send({
@@ -142,7 +147,12 @@ export interface SendDeletionReminderEmailOptions {
 
 export const sendDeletionReminderEmail = async (
    client: Resend,
-   { email, userName, daysRemaining, cancelUrl }: SendDeletionReminderEmailOptions,
+   {
+      email,
+      userName,
+      daysRemaining,
+      cancelUrl,
+   }: SendDeletionReminderEmailOptions,
 ) => {
    const subject =
       daysRemaining === 1

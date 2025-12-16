@@ -66,8 +66,12 @@ function EncryptionSectionErrorFallback(props: FallbackProps) {
          </CardHeader>
          <CardContent>
             {createErrorFallback({
-               errorDescription: translate("dashboard.routes.settings.encryption.state.error.description"),
-               errorTitle: translate("dashboard.routes.settings.encryption.state.error.title"),
+               errorDescription: translate(
+                  "dashboard.routes.settings.encryption.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.settings.encryption.state.error.title",
+               ),
                retryText: translate("common.actions.retry"),
             })(props)}
          </CardContent>
@@ -107,44 +111,61 @@ function EncryptionSectionContent() {
                   {translate("dashboard.routes.settings.encryption.title")}
                </CardTitle>
                <CardDescription>
-                  {translate("dashboard.routes.settings.encryption.description")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.description",
+                  )}
                </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                {/* Encryption Status Summary */}
                <div className="rounded-lg bg-secondary/50 p-4 text-center">
                   <p className="text-xs md:text-sm text-muted-foreground mb-1">
-                     {translate("dashboard.routes.settings.encryption.status-label")}
+                     {translate(
+                        "dashboard.routes.settings.encryption.status-label",
+                     )}
                   </p>
                   <div className="flex items-center justify-center gap-2">
                      {e2eEnabled ? (
                         <>
                            <ShieldCheck className="size-5 text-green-500" />
                            <span className="text-lg font-semibold text-green-500">
-                              {translate("dashboard.routes.settings.encryption.status.e2e-enabled")}
+                              {translate(
+                                 "dashboard.routes.settings.encryption.status.e2e-enabled",
+                              )}
                            </span>
                         </>
                      ) : serverEncryptionEnabled ? (
                         <>
                            <Server className="size-5 text-blue-500" />
                            <span className="text-lg font-semibold text-blue-500">
-                              {translate("dashboard.routes.settings.encryption.status.server-only")}
+                              {translate(
+                                 "dashboard.routes.settings.encryption.status.server-only",
+                              )}
                            </span>
                         </>
                      ) : (
                         <>
                            <Shield className="size-5 text-muted-foreground" />
                            <span className="text-lg font-semibold text-muted-foreground">
-                              {translate("dashboard.routes.settings.encryption.status.disabled")}
+                              {translate(
+                                 "dashboard.routes.settings.encryption.status.disabled",
+                              )}
                            </span>
                         </>
                      )}
                   </div>
                   {e2eEnabled && (
-                     <Badge className="mt-2" variant={isUnlocked ? "default" : "secondary"}>
+                     <Badge
+                        className="mt-2"
+                        variant={isUnlocked ? "default" : "secondary"}
+                     >
                         {isUnlocked
-                           ? translate("dashboard.routes.settings.encryption.unlocked")
-                           : translate("dashboard.routes.settings.encryption.locked")}
+                           ? translate(
+                                "dashboard.routes.settings.encryption.unlocked",
+                             )
+                           : translate(
+                                "dashboard.routes.settings.encryption.locked",
+                             )}
                      </Badge>
                   )}
                </div>
@@ -157,14 +178,22 @@ function EncryptionSectionContent() {
                      </ItemMedia>
                      <ItemContent className="min-w-0">
                         <ItemTitle>
-                           {translate("dashboard.routes.settings.encryption.server-encryption.title")}
+                           {translate(
+                              "dashboard.routes.settings.encryption.server-encryption.title",
+                           )}
                         </ItemTitle>
                         <ItemDescription className="line-clamp-2">
-                           {translate("dashboard.routes.settings.encryption.server-encryption.description")}
+                           {translate(
+                              "dashboard.routes.settings.encryption.server-encryption.description",
+                           )}
                         </ItemDescription>
                      </ItemContent>
                      <ItemActions>
-                        <Badge variant={serverEncryptionEnabled ? "default" : "secondary"}>
+                        <Badge
+                           variant={
+                              serverEncryptionEnabled ? "default" : "secondary"
+                           }
+                        >
                            {serverEncryptionEnabled
                               ? translate("common.status.enabled")
                               : translate("common.status.disabled")}
@@ -181,10 +210,14 @@ function EncryptionSectionContent() {
                      </ItemMedia>
                      <ItemContent className="min-w-0">
                         <ItemTitle>
-                           {translate("dashboard.routes.settings.encryption.e2e-encryption.title")}
+                           {translate(
+                              "dashboard.routes.settings.encryption.e2e-encryption.title",
+                           )}
                         </ItemTitle>
                         <ItemDescription className="line-clamp-2">
-                           {translate("dashboard.routes.settings.encryption.e2e-encryption.description")}
+                           {translate(
+                              "dashboard.routes.settings.encryption.e2e-encryption.description",
+                           )}
                         </ItemDescription>
                      </ItemContent>
                      <ItemActions>
@@ -192,30 +225,33 @@ function EncryptionSectionContent() {
                            <div className="flex gap-2">
                               {needsUnlock ? (
                                  <Button
+                                    onClick={() => setUnlockDialogOpen(true)}
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => setUnlockDialogOpen(true)}
                                  >
                                     <Unlock className="size-4 mr-2" />
-                                    {translate("dashboard.routes.settings.encryption.unlock.button")}
+                                    {translate(
+                                       "dashboard.routes.settings.encryption.unlock.button",
+                                    )}
                                  </Button>
                               ) : (
                                  <Button
+                                    onClick={() => lock()}
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => lock()}
                                  >
                                     <Lock className="size-4 mr-2" />
-                                    {translate("dashboard.routes.settings.encryption.lock.button")}
+                                    {translate(
+                                       "dashboard.routes.settings.encryption.lock.button",
+                                    )}
                                  </Button>
                               )}
                            </div>
                         ) : (
-                           <Button
-                              size="sm"
-                              onClick={handleSetupE2E}
-                           >
-                              {translate("dashboard.routes.settings.encryption.setup.button")}
+                           <Button onClick={handleSetupE2E} size="sm">
+                              {translate(
+                                 "dashboard.routes.settings.encryption.setup.button",
+                              )}
                            </Button>
                         )}
                      </ItemActions>
@@ -226,12 +262,26 @@ function EncryptionSectionContent() {
                {e2eEnabled && (
                   <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
                      <p className="font-medium mb-1">
-                        {translate("dashboard.routes.settings.encryption.limitations.title")}
+                        {translate(
+                           "dashboard.routes.settings.encryption.limitations.title",
+                        )}
                      </p>
                      <ul className="list-disc pl-4 space-y-0.5">
-                        <li>{translate("dashboard.routes.settings.encryption.limitations.item-1")}</li>
-                        <li>{translate("dashboard.routes.settings.encryption.limitations.item-2")}</li>
-                        <li>{translate("dashboard.routes.settings.encryption.limitations.item-3")}</li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.limitations.item-1",
+                           )}
+                        </li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.limitations.item-2",
+                           )}
+                        </li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.limitations.item-3",
+                           )}
+                        </li>
                      </ul>
                   </div>
                )}
@@ -239,8 +289,8 @@ function EncryptionSectionContent() {
          </Card>
 
          <EncryptionUnlockDialog
-            open={unlockDialogOpen}
             onOpenChange={setUnlockDialogOpen}
+            open={unlockDialogOpen}
          />
       </>
    );

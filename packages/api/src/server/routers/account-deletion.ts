@@ -1,23 +1,23 @@
 import type { DatabaseInstance } from "@packages/database/client";
 import {
    accountDeletionRequest,
-   transaction,
+   automationRule,
+   bankAccount,
    bill,
    budget,
    category,
-   tag,
-   bankAccount,
    costCenter,
    counterparty,
-   automationRule,
    customReport,
-   notificationPreference,
-   notification,
-   member,
-   organization,
    interestTemplate,
-   transferLog,
+   member,
+   notification,
+   notificationPreference,
+   organization,
    pushSubscription,
+   tag,
+   transaction,
+   transferLog,
 } from "@packages/database/schema";
 import { sendDeletionScheduledEmail } from "@packages/transactional/client";
 import { eq } from "drizzle-orm";
@@ -45,20 +45,38 @@ async function deleteAllUserData(
    await db.transaction(async (tx) => {
       // Delete organization-scoped data
       await Promise.all([
-         tx.delete(transaction).where(eq(transaction.organizationId, organizationId)),
+         tx
+            .delete(transaction)
+            .where(eq(transaction.organizationId, organizationId)),
          tx.delete(bill).where(eq(bill.organizationId, organizationId)),
          tx.delete(budget).where(eq(budget.organizationId, organizationId)),
          tx.delete(category).where(eq(category.organizationId, organizationId)),
          tx.delete(tag).where(eq(tag.organizationId, organizationId)),
-         tx.delete(bankAccount).where(eq(bankAccount.organizationId, organizationId)),
-         tx.delete(costCenter).where(eq(costCenter.organizationId, organizationId)),
-         tx.delete(counterparty).where(eq(counterparty.organizationId, organizationId)),
-         tx.delete(automationRule).where(eq(automationRule.organizationId, organizationId)),
-         tx.delete(customReport).where(eq(customReport.organizationId, organizationId)),
-         tx.delete(interestTemplate).where(eq(interestTemplate.organizationId, organizationId)),
-         tx.delete(transferLog).where(eq(transferLog.organizationId, organizationId)),
+         tx
+            .delete(bankAccount)
+            .where(eq(bankAccount.organizationId, organizationId)),
+         tx
+            .delete(costCenter)
+            .where(eq(costCenter.organizationId, organizationId)),
+         tx
+            .delete(counterparty)
+            .where(eq(counterparty.organizationId, organizationId)),
+         tx
+            .delete(automationRule)
+            .where(eq(automationRule.organizationId, organizationId)),
+         tx
+            .delete(customReport)
+            .where(eq(customReport.organizationId, organizationId)),
+         tx
+            .delete(interestTemplate)
+            .where(eq(interestTemplate.organizationId, organizationId)),
+         tx
+            .delete(transferLog)
+            .where(eq(transferLog.organizationId, organizationId)),
          // Delete user-scoped data
-         tx.delete(notificationPreference).where(eq(notificationPreference.userId, userId)),
+         tx
+            .delete(notificationPreference)
+            .where(eq(notificationPreference.userId, userId)),
          tx.delete(notification).where(eq(notification.userId, userId)),
          tx.delete(pushSubscription).where(eq(pushSubscription.userId, userId)),
       ]);
@@ -72,7 +90,9 @@ async function deleteAllUserData(
       });
 
       if (members.length === 0) {
-         await tx.delete(organization).where(eq(organization.id, organizationId));
+         await tx
+            .delete(organization)
+            .where(eq(organization.id, organizationId));
       }
    });
 
@@ -91,13 +111,11 @@ export const accountDeletionRouter = router({
          throw new Error("User not found");
       }
 
-      const deletionRequest = await resolvedCtx.db.query.accountDeletionRequest.findFirst({
-         where: (req, { and, eq }) =>
-            and(
-               eq(req.userId, userId),
-               eq(req.status, "pending"),
-            ),
-      });
+      const deletionRequest =
+         await resolvedCtx.db.query.accountDeletionRequest.findFirst({
+            where: (req, { and, eq }) =>
+               and(eq(req.userId, userId), eq(req.status, "pending")),
+         });
 
       return deletionRequest;
    }),
@@ -112,7 +130,8 @@ export const accountDeletionRouter = router({
          const resolvedCtx = await ctx;
          const userId = resolvedCtx.session?.user?.id;
          const userEmail = resolvedCtx.session?.user?.email;
-         const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
+         const organizationId =
+            resolvedCtx.session?.session?.activeOrganizationId;
 
          if (!userId || !userEmail || !organizationId) {
             throw new Error("User or organization not found");
@@ -139,19 +158,26 @@ export const accountDeletionRouter = router({
             // Cancel any active Stripe subscriptions before deleting
             if (resolvedCtx.stripeClient && userRecord?.stripeCustomerId) {
                try {
-                  const subscriptions = await resolvedCtx.stripeClient.subscriptions.list({
-                     customer: userRecord.stripeCustomerId,
-                     status: "active",
-                  });
+                  const subscriptions =
+                     await resolvedCtx.stripeClient.subscriptions.list({
+                        customer: userRecord.stripeCustomerId,
+                        status: "active",
+                     });
 
                   for (const subscription of subscriptions.data) {
-                     await resolvedCtx.stripeClient.subscriptions.cancel(subscription.id, {
-                        invoice_now: false,
-                        prorate: false,
-                     });
+                     await resolvedCtx.stripeClient.subscriptions.cancel(
+                        subscription.id,
+                        {
+                           invoice_now: false,
+                           prorate: false,
+                        },
+                     );
                   }
                } catch (error) {
-                  console.error("Failed to cancel Stripe subscriptions:", error);
+                  console.error(
+                     "Failed to cancel Stripe subscriptions:",
+                     error,
+                  );
                   // Continue with deletion even if Stripe fails
                }
             }
@@ -207,7 +233,10 @@ export const accountDeletionRouter = router({
                      cancelUrl: `${resolvedCtx.request.headers.get("origin") || "https://app.montte.co"}/settings/profile`,
                   });
                } catch (error) {
-                  console.error("Failed to send deletion scheduled email:", error);
+                  console.error(
+                     "Failed to send deletion scheduled email:",
+                     error,
+                  );
                   // Continue even if email fails - deletion is already scheduled
                }
             }
@@ -231,13 +260,11 @@ export const accountDeletionRouter = router({
          throw new Error("User not found");
       }
 
-      const deletionRequest = await resolvedCtx.db.query.accountDeletionRequest.findFirst({
-         where: (req, { and, eq }) =>
-            and(
-               eq(req.userId, userId),
-               eq(req.status, "pending"),
-            ),
-      });
+      const deletionRequest =
+         await resolvedCtx.db.query.accountDeletionRequest.findFirst({
+            where: (req, { and, eq }) =>
+               and(eq(req.userId, userId), eq(req.status, "pending")),
+         });
 
       if (!deletionRequest) {
          throw new Error("No pending deletion request found");

@@ -42,7 +42,10 @@ function openDatabase(): Promise<IDBDatabase> {
 /**
  * Stores key in IndexedDB
  */
-async function storeInIndexedDB(key: string, expiresAt?: number): Promise<void> {
+async function storeInIndexedDB(
+   key: string,
+   expiresAt?: number,
+): Promise<void> {
    const db = await openDatabase();
    return new Promise((resolve, reject) => {
       const transaction = db.transaction(IDB_STORE_NAME, "readwrite");
@@ -72,7 +75,7 @@ async function getFromIndexedDB(): Promise<StoredKey | null> {
          request.onerror = () => reject(request.error);
          request.onsuccess = () => {
             const result = request.result as StoredKey | undefined;
-            if (result && result.expiresAt && Date.now() > result.expiresAt) {
+            if (result?.expiresAt && Date.now() > result.expiresAt) {
                // Key expired, remove it
                clearFromIndexedDB().catch(console.error);
                resolve(null);
@@ -111,7 +114,11 @@ export interface UseEncryptionKeyStorageReturn {
    /** Whether the storage has been initialized */
    isInitialized: boolean;
    /** Store a key (base64 encoded) */
-   storeKey: (key: string, remember?: boolean, expirationDays?: number) => Promise<void>;
+   storeKey: (
+      key: string,
+      remember?: boolean,
+      expirationDays?: number,
+   ) => Promise<void>;
    /** Clear the stored key */
    clearKey: () => Promise<void>;
    /** Check if a key is stored */
@@ -152,7 +159,11 @@ export function useEncryptionKeyStorage(): UseEncryptionKeyStorageReturn {
    }, []);
 
    const storeKey = useCallback(
-      async (key: string, remember = false, expirationDays = 30): Promise<void> => {
+      async (
+         key: string,
+         remember = false,
+         expirationDays = 30,
+      ): Promise<void> => {
          // Always store in sessionStorage for current session
          sessionStorage.setItem(SESSION_STORAGE_KEY, key);
          setStoredKey(key);

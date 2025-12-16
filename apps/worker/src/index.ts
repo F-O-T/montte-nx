@@ -107,7 +107,9 @@ await deletionQueue.add(
    },
 );
 
-console.log("Scheduled daily account deletion jobs (2 AM process, 9 AM reminders)");
+console.log(
+   "Scheduled daily account deletion jobs (2 AM process, 9 AM reminders)",
+);
 
 const { worker: deletionWorker, close: closeDeletionWorker } =
    createDeletionWorker({

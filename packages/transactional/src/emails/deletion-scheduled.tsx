@@ -78,8 +78,8 @@ export default function DeletionScheduledEmail({
                   margin: "0 0 24px 0",
                }}
             >
-               Após esta data, todos os seus dados serão permanentemente excluídos
-               e não poderão ser recuperados.
+               Após esta data, todos os seus dados serão permanentemente
+               excluídos e não poderão ser recuperados.
             </Text>
             <Button
                href={cancelUrl}

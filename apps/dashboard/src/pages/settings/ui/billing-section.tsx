@@ -63,9 +63,9 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { StripeDataDisclosure } from "@/features/stripe-disclosure/stripe-data-disclosure";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
-import { StripeDataDisclosure } from "@/features/stripe-disclosure/stripe-data-disclosure";
 
 interface Subscription {
    id: string;

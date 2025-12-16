@@ -30,7 +30,10 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
       // Encrypt sensitive fields before storing
       const encryptedData = encryptBillFields(data);
 
-      const result = await dbClient.insert(bill).values(encryptedData).returning();
+      const result = await dbClient
+         .insert(bill)
+         .values(encryptedData)
+         .returning();
 
       const createdBillId = result[0]?.id;
       if (!createdBillId) {

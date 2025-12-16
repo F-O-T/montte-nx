@@ -17,9 +17,7 @@ import { user } from "./auth";
 export const encryptionMetadata = pgTable(
    "encryption_metadata",
    {
-      id: uuid("id")
-         .default(sql`pg_catalog.gen_random_uuid()`)
-         .primaryKey(),
+      id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
       userId: uuid("user_id")
          .notNull()
          .references(() => user.id, { onDelete: "cascade" }),

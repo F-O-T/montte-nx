@@ -18,10 +18,21 @@ import {
    CredenzaHeader,
    CredenzaTitle,
 } from "@packages/ui/components/credenza";
-import { Field, FieldGroup, FieldLabel, FieldDescription } from "@packages/ui/components/field";
+import {
+   Field,
+   FieldDescription,
+   FieldGroup,
+   FieldLabel,
+} from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
 import { useForm } from "@tanstack/react-form";
-import { AlertTriangle, CheckCircle2, Loader2, Lock, Shield } from "lucide-react";
+import {
+   AlertTriangle,
+   CheckCircle2,
+   Loader2,
+   Lock,
+   Shield,
+} from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { useCredenza } from "@/hooks/use-credenza";
@@ -32,7 +43,9 @@ interface EncryptionSetupCredenzaProps {
    enableE2E: (passphrase: string) => Promise<boolean>;
 }
 
-export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaProps) {
+export function EncryptionSetupCredenza({
+   enableE2E,
+}: EncryptionSetupCredenzaProps) {
    const { closeCredenza } = useCredenza();
    const [step, setStep] = useState<Step>("intro");
    const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,12 +57,20 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
       },
       onSubmit: async ({ value }) => {
          if (value.passphrase !== value.confirmPassphrase) {
-            toast.error(translate("dashboard.routes.settings.encryption.errors.passphrase-mismatch"));
+            toast.error(
+               translate(
+                  "dashboard.routes.settings.encryption.errors.passphrase-mismatch",
+               ),
+            );
             return;
          }
 
          if (value.passphrase.length < 8) {
-            toast.error(translate("dashboard.routes.settings.encryption.errors.passphrase-too-short"));
+            toast.error(
+               translate(
+                  "dashboard.routes.settings.encryption.errors.passphrase-too-short",
+               ),
+            );
             return;
          }
 
@@ -59,10 +80,18 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
             if (success) {
                setStep("success");
             } else {
-               toast.error(translate("dashboard.routes.settings.encryption.errors.setup-failed"));
+               toast.error(
+                  translate(
+                     "dashboard.routes.settings.encryption.errors.setup-failed",
+                  ),
+               );
             }
-         } catch (error) {
-            toast.error(translate("dashboard.routes.settings.encryption.errors.setup-failed"));
+         } catch (_error) {
+            toast.error(
+               translate(
+                  "dashboard.routes.settings.encryption.errors.setup-failed",
+               ),
+            );
          } finally {
             setIsSubmitting(false);
          }
@@ -81,10 +110,14 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
             <CredenzaHeader>
                <CredenzaTitle className="flex items-center gap-2">
                   <Shield className="size-5" />
-                  {translate("dashboard.routes.settings.encryption.setup.title")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.title",
+                  )}
                </CredenzaTitle>
                <CredenzaDescription>
-                  {translate("dashboard.routes.settings.encryption.setup.description")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.description",
+                  )}
                </CredenzaDescription>
             </CredenzaHeader>
 
@@ -92,23 +125,43 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
                <Alert>
                   <Lock className="size-4" />
                   <AlertTitle>
-                     {translate("dashboard.routes.settings.encryption.setup.how-it-works")}
+                     {translate(
+                        "dashboard.routes.settings.encryption.setup.how-it-works",
+                     )}
                   </AlertTitle>
                   <AlertDescription className="space-y-2">
-                     <p>{translate("dashboard.routes.settings.encryption.setup.how-it-works-description")}</p>
+                     <p>
+                        {translate(
+                           "dashboard.routes.settings.encryption.setup.how-it-works-description",
+                        )}
+                     </p>
                   </AlertDescription>
                </Alert>
 
                <Alert>
                   <AlertTriangle className="size-4" />
                   <AlertTitle>
-                     {translate("dashboard.routes.settings.encryption.setup.warning-title")}
+                     {translate(
+                        "dashboard.routes.settings.encryption.setup.warning-title",
+                     )}
                   </AlertTitle>
                   <AlertDescription>
                      <ul className="list-disc pl-4 space-y-1 mt-2">
-                        <li>{translate("dashboard.routes.settings.encryption.setup.warning-1")}</li>
-                        <li>{translate("dashboard.routes.settings.encryption.setup.warning-2")}</li>
-                        <li>{translate("dashboard.routes.settings.encryption.setup.warning-3")}</li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.setup.warning-1",
+                           )}
+                        </li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.setup.warning-2",
+                           )}
+                        </li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.setup.warning-3",
+                           )}
+                        </li>
                      </ul>
                   </AlertDescription>
                </Alert>
@@ -131,10 +184,14 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
          <>
             <CredenzaHeader>
                <CredenzaTitle>
-                  {translate("dashboard.routes.settings.encryption.setup.create-passphrase")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.create-passphrase",
+                  )}
                </CredenzaTitle>
                <CredenzaDescription>
-                  {translate("dashboard.routes.settings.encryption.setup.create-passphrase-description")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.create-passphrase-description",
+                  )}
                </CredenzaDescription>
             </CredenzaHeader>
 
@@ -145,20 +202,28 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
                         <FieldGroup>
                            <Field>
                               <FieldLabel>
-                                 {translate("dashboard.routes.settings.encryption.passphrase")}
+                                 {translate(
+                                    "dashboard.routes.settings.encryption.passphrase",
+                                 )}
                               </FieldLabel>
                               <Input
+                                 autoComplete="new-password"
                                  id={field.name}
                                  name={field.name}
-                                 type="password"
-                                 autoComplete="new-password"
                                  onBlur={field.handleBlur}
-                                 onChange={(e) => field.handleChange(e.target.value)}
+                                 onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                 }
+                                 placeholder={translate(
+                                    "dashboard.routes.settings.encryption.passphrase-placeholder",
+                                 )}
+                                 type="password"
                                  value={field.state.value}
-                                 placeholder={translate("dashboard.routes.settings.encryption.passphrase-placeholder")}
                               />
                               <FieldDescription>
-                                 {translate("dashboard.routes.settings.encryption.passphrase-hint")}
+                                 {translate(
+                                    "dashboard.routes.settings.encryption.passphrase-hint",
+                                 )}
                               </FieldDescription>
                            </Field>
                         </FieldGroup>
@@ -170,17 +235,23 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
                         <FieldGroup>
                            <Field>
                               <FieldLabel>
-                                 {translate("dashboard.routes.settings.encryption.confirm-passphrase")}
+                                 {translate(
+                                    "dashboard.routes.settings.encryption.confirm-passphrase",
+                                 )}
                               </FieldLabel>
                               <Input
+                                 autoComplete="new-password"
                                  id={field.name}
                                  name={field.name}
-                                 type="password"
-                                 autoComplete="new-password"
                                  onBlur={field.handleBlur}
-                                 onChange={(e) => field.handleChange(e.target.value)}
+                                 onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                 }
+                                 placeholder={translate(
+                                    "dashboard.routes.settings.encryption.confirm-passphrase-placeholder",
+                                 )}
+                                 type="password"
                                  value={field.state.value}
-                                 placeholder={translate("dashboard.routes.settings.encryption.confirm-passphrase-placeholder")}
                               />
                            </Field>
                         </FieldGroup>
@@ -217,10 +288,14 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
          <>
             <CredenzaHeader>
                <CredenzaTitle>
-                  {translate("dashboard.routes.settings.encryption.setup.confirm-title")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.confirm-title",
+                  )}
                </CredenzaTitle>
                <CredenzaDescription>
-                  {translate("dashboard.routes.settings.encryption.setup.confirm-description")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.confirm-description",
+                  )}
                </CredenzaDescription>
             </CredenzaHeader>
 
@@ -228,10 +303,14 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
                <Alert variant="destructive">
                   <AlertTriangle className="size-4" />
                   <AlertTitle>
-                     {translate("dashboard.routes.settings.encryption.setup.final-warning-title")}
+                     {translate(
+                        "dashboard.routes.settings.encryption.setup.final-warning-title",
+                     )}
                   </AlertTitle>
                   <AlertDescription>
-                     {translate("dashboard.routes.settings.encryption.setup.final-warning-description")}
+                     {translate(
+                        "dashboard.routes.settings.encryption.setup.final-warning-description",
+                     )}
                   </AlertDescription>
                </Alert>
             </CredenzaBody>
@@ -244,8 +323,12 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
                   disabled={isSubmitting}
                   onClick={() => form.handleSubmit()}
                >
-                  {isSubmitting && <Loader2 className="size-4 mr-2 animate-spin" />}
-                  {translate("dashboard.routes.settings.encryption.setup.enable-button")}
+                  {isSubmitting && (
+                     <Loader2 className="size-4 mr-2 animate-spin" />
+                  )}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.enable-button",
+                  )}
                </Button>
             </CredenzaFooter>
          </>
@@ -258,10 +341,14 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
             <CredenzaHeader>
                <CredenzaTitle className="flex items-center gap-2">
                   <CheckCircle2 className="size-5 text-green-500" />
-                  {translate("dashboard.routes.settings.encryption.setup.success-title")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.success-title",
+                  )}
                </CredenzaTitle>
                <CredenzaDescription>
-                  {translate("dashboard.routes.settings.encryption.setup.success-description")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.setup.success-description",
+                  )}
                </CredenzaDescription>
             </CredenzaHeader>
 
@@ -269,12 +356,22 @@ export function EncryptionSetupCredenza({ enableE2E }: EncryptionSetupCredenzaPr
                <Alert>
                   <Shield className="size-4" />
                   <AlertTitle>
-                     {translate("dashboard.routes.settings.encryption.setup.next-steps-title")}
+                     {translate(
+                        "dashboard.routes.settings.encryption.setup.next-steps-title",
+                     )}
                   </AlertTitle>
                   <AlertDescription>
                      <ul className="list-disc pl-4 space-y-1 mt-2">
-                        <li>{translate("dashboard.routes.settings.encryption.setup.next-step-1")}</li>
-                        <li>{translate("dashboard.routes.settings.encryption.setup.next-step-2")}</li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.setup.next-step-1",
+                           )}
+                        </li>
+                        <li>
+                           {translate(
+                              "dashboard.routes.settings.encryption.setup.next-step-2",
+                           )}
+                        </li>
                      </ul>
                   </AlertDescription>
                </Alert>

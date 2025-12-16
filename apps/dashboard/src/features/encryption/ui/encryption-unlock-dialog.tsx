@@ -16,7 +16,12 @@ import {
    DialogHeader,
    DialogTitle,
 } from "@packages/ui/components/dialog";
-import { Field, FieldGroup, FieldLabel, FieldDescription } from "@packages/ui/components/field";
+import {
+   Field,
+   FieldDescription,
+   FieldGroup,
+   FieldLabel,
+} from "@packages/ui/components/field";
 import { Input } from "@packages/ui/components/input";
 import { useForm } from "@tanstack/react-form";
 import { Loader2, Lock } from "lucide-react";
@@ -47,15 +52,28 @@ export function EncryptionUnlockDialog({
          setError(null);
 
          try {
-            const success = await unlock(value.passphrase, value.rememberDevice);
+            const success = await unlock(
+               value.passphrase,
+               value.rememberDevice,
+            );
             if (success) {
                onOpenChange(false);
-               toast.success(translate("dashboard.routes.settings.encryption.unlock.success"));
+               toast.success(
+                  translate(
+                     "dashboard.routes.settings.encryption.unlock.success",
+                  ),
+               );
             } else {
-               setError(translate("dashboard.routes.settings.encryption.unlock.invalid-passphrase"));
+               setError(
+                  translate(
+                     "dashboard.routes.settings.encryption.unlock.invalid-passphrase",
+                  ),
+               );
             }
-         } catch (err) {
-            setError(translate("dashboard.routes.settings.encryption.unlock.error"));
+         } catch (_err) {
+            setError(
+               translate("dashboard.routes.settings.encryption.unlock.error"),
+            );
          } finally {
             setIsSubmitting(false);
          }
@@ -69,15 +87,19 @@ export function EncryptionUnlockDialog({
    };
 
    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog onOpenChange={onOpenChange} open={open}>
          <DialogContent className="sm:max-w-md">
             <DialogHeader>
                <DialogTitle className="flex items-center gap-2">
                   <Lock className="size-5" />
-                  {translate("dashboard.routes.settings.encryption.unlock.title")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.unlock.title",
+                  )}
                </DialogTitle>
                <DialogDescription>
-                  {translate("dashboard.routes.settings.encryption.unlock.description")}
+                  {translate(
+                     "dashboard.routes.settings.encryption.unlock.description",
+                  )}
                </DialogDescription>
             </DialogHeader>
 
@@ -87,21 +109,25 @@ export function EncryptionUnlockDialog({
                      <FieldGroup>
                         <Field>
                            <FieldLabel>
-                              {translate("dashboard.routes.settings.encryption.passphrase")}
+                              {translate(
+                                 "dashboard.routes.settings.encryption.passphrase",
+                              )}
                            </FieldLabel>
                            <Input
-                              id={field.name}
-                              name={field.name}
-                              type="password"
                               autoComplete="current-password"
                               autoFocus
+                              id={field.name}
+                              name={field.name}
                               onBlur={field.handleBlur}
                               onChange={(e) => {
                                  field.handleChange(e.target.value);
                                  setError(null);
                               }}
+                              placeholder={translate(
+                                 "dashboard.routes.settings.encryption.passphrase-placeholder",
+                              )}
+                              type="password"
                               value={field.state.value}
-                              placeholder={translate("dashboard.routes.settings.encryption.passphrase-placeholder")}
                            />
                            {error && (
                               <FieldDescription className="text-destructive">
@@ -117,17 +143,19 @@ export function EncryptionUnlockDialog({
                   {(field) => (
                      <div className="flex items-center space-x-2">
                         <Checkbox
-                           id={field.name}
                            checked={field.state.value}
+                           id={field.name}
                            onCheckedChange={(checked) =>
                               field.handleChange(checked === true)
                            }
                         />
                         <label
-                           htmlFor={field.name}
                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                           htmlFor={field.name}
                         >
-                           {translate("dashboard.routes.settings.encryption.unlock.remember-device")}
+                           {translate(
+                              "dashboard.routes.settings.encryption.unlock.remember-device",
+                           )}
                         </label>
                      </div>
                   )}
@@ -135,10 +163,7 @@ export function EncryptionUnlockDialog({
             </form>
 
             <DialogFooter>
-               <Button
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-               >
+               <Button onClick={() => onOpenChange(false)} variant="outline">
                   {translate("common.actions.cancel")}
                </Button>
                <form.Subscribe>
@@ -150,7 +175,9 @@ export function EncryptionUnlockDialog({
                         {isSubmitting && (
                            <Loader2 className="size-4 mr-2 animate-spin" />
                         )}
-                        {translate("dashboard.routes.settings.encryption.unlock.button")}
+                        {translate(
+                           "dashboard.routes.settings.encryption.unlock.button",
+                        )}
                      </Button>
                   )}
                </form.Subscribe>
@@ -174,12 +201,12 @@ export function EncryptionUnlockPrompt() {
 
    return (
       <EncryptionUnlockDialog
-         open={true}
          onOpenChange={(open) => {
             if (!open) {
                setDismissed(true);
             }
          }}
+         open={true}
       />
    );
 }

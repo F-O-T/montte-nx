@@ -38,6 +38,7 @@ import {
    ChevronRight,
    Globe,
    Laptop,
+   Link2,
    Mail,
    Monitor,
    Shield,
@@ -45,7 +46,6 @@ import {
    Tablet,
    Trash2,
    User,
-   Link2,
 } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -78,7 +78,8 @@ function formatLastActive(date: Date | string | null): string {
    const days = Math.floor(diff / 86400000);
 
    if (minutes < 1) return translate("common.time.now");
-   if (minutes < 60) return translate("common.time.minutes-ago", { count: minutes });
+   if (minutes < 60)
+      return translate("common.time.minutes-ago", { count: minutes });
    if (hours < 24) return translate("common.time.hours-ago", { count: hours });
    if (days < 7) return translate("common.time.days-ago", { count: days });
    return d.toLocaleDateString("pt-BR", {
@@ -95,15 +96,40 @@ function getLoginMethodDisplay(method: string | null | undefined): {
 
    switch (method) {
       case "email":
-         return { label: translate("dashboard.routes.settings.security.login-methods.email"), Icon: Mail };
+         return {
+            label: translate(
+               "dashboard.routes.settings.security.login-methods.email",
+            ),
+            Icon: Mail,
+         };
       case "google":
-         return { label: translate("dashboard.routes.settings.security.login-methods.google"), Icon: Globe };
+         return {
+            label: translate(
+               "dashboard.routes.settings.security.login-methods.google",
+            ),
+            Icon: Globe,
+         };
       case "otp":
-         return { label: translate("dashboard.routes.settings.security.login-methods.otp"), Icon: Shield };
+         return {
+            label: translate(
+               "dashboard.routes.settings.security.login-methods.otp",
+            ),
+            Icon: Shield,
+         };
       case "magic-link":
-         return { label: translate("dashboard.routes.settings.security.login-methods.magic-link"), Icon: Link2 };
+         return {
+            label: translate(
+               "dashboard.routes.settings.security.login-methods.magic-link",
+            ),
+            Icon: Link2,
+         };
       case "anonymous":
-         return { label: translate("dashboard.routes.settings.security.login-methods.anonymous"), Icon: User };
+         return {
+            label: translate(
+               "dashboard.routes.settings.security.login-methods.anonymous",
+            ),
+            Icon: User,
+         };
       default:
          return { label: method, Icon: Shield };
    }
@@ -206,7 +232,9 @@ function SessionsCard({
                {translate("dashboard.routes.settings.security.title")}
             </CardTitle>
             <CardDescription>
-               {translate("dashboard.routes.settings.security.sessions-description")}
+               {translate(
+                  "dashboard.routes.settings.security.sessions-description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -216,9 +244,15 @@ function SessionsCard({
                      <EmptyMedia variant="icon">
                         <Globe className="size-6" />
                      </EmptyMedia>
-                     <EmptyTitle>{translate("dashboard.routes.settings.security.sessions.empty-title")}</EmptyTitle>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.settings.security.sessions.empty-title",
+                        )}
+                     </EmptyTitle>
                      <EmptyDescription>
-                        {translate("dashboard.routes.settings.security.sessions.empty-description")}
+                        {translate(
+                           "dashboard.routes.settings.security.sessions.empty-description",
+                        )}
                      </EmptyDescription>
                   </EmptyHeader>
                </Empty>
@@ -252,13 +286,18 @@ function SessionsCard({
                                           className="bg-green-500 hover:bg-green-500/90 shrink-0"
                                           variant="default"
                                        >
-                                          {translate("dashboard.routes.settings.security.sessions.current-device")}
+                                          {translate(
+                                             "dashboard.routes.settings.security.sessions.current-device",
+                                          )}
                                        </Badge>
                                     )}
                                  </div>
                                  <ItemDescription className="flex items-center gap-2 flex-wrap">
                                     <span>
-                                       {session.ipAddress || translate("dashboard.routes.settings.security.sessions.unknown-ip")}
+                                       {session.ipAddress ||
+                                          translate(
+                                             "dashboard.routes.settings.security.sessions.unknown-ip",
+                                          )}
                                     </span>
                                     {loginMethod && (
                                        <>
@@ -302,7 +341,9 @@ function SessionsCard({
                                        </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                       {translate("dashboard.routes.settings.security.sessions.view-details")}
+                                       {translate(
+                                          "dashboard.routes.settings.security.sessions.view-details",
+                                       )}
                                     </TooltipContent>
                                  </Tooltip>
                               </ItemActions>
@@ -340,20 +381,32 @@ function SecurityOverviewCard({
    return (
       <Card className="h-full">
          <CardHeader>
-            <CardTitle>{translate("dashboard.routes.settings.security.overview.title")}</CardTitle>
-            <CardDescription>{translate("dashboard.routes.settings.security.overview.description")}</CardDescription>
+            <CardTitle>
+               {translate("dashboard.routes.settings.security.overview.title")}
+            </CardTitle>
+            <CardDescription>
+               {translate(
+                  "dashboard.routes.settings.security.overview.description",
+               )}
+            </CardDescription>
          </CardHeader>
          <CardContent className="space-y-4">
             <div className="rounded-lg bg-secondary/50 p-4 text-center">
                <p className="text-xs md:text-sm text-muted-foreground mb-1">
-                  {translate("dashboard.routes.settings.security.overview.active-sessions")}
+                  {translate(
+                     "dashboard.routes.settings.security.overview.active-sessions",
+                  )}
                </p>
                <p className="text-3xl md:text-4xl font-bold">{sessionsCount}</p>
                <Badge className="mt-2" variant="secondary">
                   <Shield className="size-3 mr-1" />
                   {sessionsCount === 1
-                     ? translate("dashboard.routes.settings.security.overview.device")
-                     : translate("dashboard.routes.settings.security.overview.devices")}
+                     ? translate(
+                          "dashboard.routes.settings.security.overview.device",
+                       )
+                     : translate(
+                          "dashboard.routes.settings.security.overview.devices",
+                       )}
                </Badge>
             </div>
 

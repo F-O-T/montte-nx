@@ -6,14 +6,9 @@
  */
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-   createContext,
-   useCallback,
-   useContext,
-   type ReactNode,
-} from "react";
+import { createContext, type ReactNode, useCallback, useContext } from "react";
 import { trpc } from "@/integrations/clients";
-import { useEncryption, type E2EEncryptedData } from "./use-encryption";
+import { type E2EEncryptedData, useEncryption } from "./use-encryption";
 
 interface EncryptionContextValue {
    /** Whether server-side encryption is enabled */
@@ -37,7 +32,10 @@ interface EncryptionContextValue {
    /** Enable E2E encryption with a new passphrase */
    enableE2E: (passphrase: string) => Promise<boolean>;
    /** Disable E2E encryption */
-   disableE2E: (passphrase: string, confirmDataLoss: boolean) => Promise<boolean>;
+   disableE2E: (
+      passphrase: string,
+      confirmDataLoss: boolean,
+   ) => Promise<boolean>;
    /** Refetch encryption status */
    refetch: () => void;
 }
@@ -70,13 +68,18 @@ export function EncryptionProvider({ children }: { children: ReactNode }) {
 
    // Mutations
    const enableMutation = useMutation(trpc.encryption.enable.mutationOptions());
-   const disableMutation = useMutation(trpc.encryption.disable.mutationOptions());
-   const verifyMutation = useMutation(trpc.encryption.verifyKeyHash.mutationOptions());
+   const disableMutation = useMutation(
+      trpc.encryption.disable.mutationOptions(),
+   );
+   const verifyMutation = useMutation(
+      trpc.encryption.verifyKeyHash.mutationOptions(),
+   );
 
    const isLoading = isStatusLoading || !isInitialized;
 
    const e2eEnabled = encryptionStatus?.e2eEnabled ?? false;
-   const serverEncryptionEnabled = encryptionStatus?.serverEncryptionEnabled ?? false;
+   const serverEncryptionEnabled =
+      encryptionStatus?.serverEncryptionEnabled ?? false;
 
    // Need unlock if E2E is enabled but key is not available
    const needsUnlock = e2eEnabled && !isUnlocked;
@@ -132,7 +135,10 @@ export function EncryptionProvider({ children }: { children: ReactNode }) {
    );
 
    const disableE2E = useCallback(
-      async (passphrase: string, confirmDataLoss: boolean): Promise<boolean> => {
+      async (
+         passphrase: string,
+         confirmDataLoss: boolean,
+      ): Promise<boolean> => {
          if (!salt) return false;
 
          try {

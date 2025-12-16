@@ -6,15 +6,15 @@
  */
 
 import {
-   deriveKey,
-   encryptE2E,
    decryptE2E,
+   deriveKey,
+   type E2EEncryptedData,
+   encryptE2E,
    generateSalt,
    hashKey,
    isE2EEncrypted,
    keyToString,
    stringToKey,
-   type E2EEncryptedData,
 } from "@packages/encryption/client";
 import { useCallback, useMemo } from "react";
 import { useEncryptionKeyStorage } from "./use-encryption-key-storage";
@@ -29,7 +29,11 @@ export interface UseEncryptionReturn {
    /** Decrypt a value (accepts JSON string of E2EEncryptedData or raw E2EEncryptedData) */
    decrypt: (encrypted: string | E2EEncryptedData) => string;
    /** Derive key from passphrase and store it */
-   unlock: (passphrase: string, salt: string, remember?: boolean) => Promise<{ key: Uint8Array; keyHash: string }>;
+   unlock: (
+      passphrase: string,
+      salt: string,
+      remember?: boolean,
+   ) => Promise<{ key: Uint8Array; keyHash: string }>;
    /** Clear the stored key */
    lock: () => Promise<void>;
    /** Generate a new salt for encryption setup */
@@ -58,7 +62,9 @@ export function useEncryption(): UseEncryptionReturn {
    const encrypt = useCallback(
       (value: string): string => {
          if (!key) {
-            throw new Error("Encryption key not available. Please unlock first.");
+            throw new Error(
+               "Encryption key not available. Please unlock first.",
+            );
          }
          const encrypted = encryptE2E(value, key);
          return JSON.stringify(encrypted);
@@ -69,7 +75,9 @@ export function useEncryption(): UseEncryptionReturn {
    const decrypt = useCallback(
       (encrypted: string | E2EEncryptedData): string => {
          if (!key) {
-            throw new Error("Encryption key not available. Please unlock first.");
+            throw new Error(
+               "Encryption key not available. Please unlock first.",
+            );
          }
 
          let data: E2EEncryptedData;
@@ -86,7 +94,9 @@ export function useEncryption(): UseEncryptionReturn {
 
          if (!isE2EEncrypted(data)) {
             // Not encrypted data, return as-is
-            return typeof encrypted === "string" ? encrypted : JSON.stringify(encrypted);
+            return typeof encrypted === "string"
+               ? encrypted
+               : JSON.stringify(encrypted);
          }
 
          return decryptE2E(data, key);
