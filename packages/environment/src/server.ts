@@ -5,6 +5,12 @@ const EnvSchema = z.object({
    ARCJET_ENV: z.enum(["development", "production"]),
    ARCJET_KEY: z.string(),
    APP_URL: z.string().optional(),
+   LOG_LEVEL: z
+      .enum(["trace", "debug", "info", "warn", "error", "fatal"])
+      .optional()
+      .default("info"),
+   LOGTAIL_ENDPOINT: z.string().url().optional(),
+   LOGTAIL_SOURCE_TOKEN: z.string().optional(),
    BETTER_AUTH_GOOGLE_CLIENT_ID: z.string(),
    BETTER_AUTH_GOOGLE_CLIENT_SECRET: z.string(),
    BETTER_AUTH_SECRET: z.string(),
