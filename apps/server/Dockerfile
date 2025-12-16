@@ -25,6 +25,8 @@ COPY bun.lock ./
 COPY package.json ./
 COPY apps/server/package.json ./apps/server/
 COPY tooling/typescript/package.json ./tooling/typescript/
+COPY packages/encryption/package.json ./packages/encryption/
+
 COPY packages/api/package.json ./packages/api/
 COPY libraries/ofx/package.json ./libraries/ofx/
 COPY packages/authentication/package.json ./packages/authentication/
