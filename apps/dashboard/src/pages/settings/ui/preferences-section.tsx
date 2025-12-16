@@ -80,9 +80,12 @@ function PreferencesSectionErrorFallback(props: FallbackProps) {
          </CardHeader>
          <CardContent>
             {createErrorFallback({
-               errorDescription:
-                  "Não foi possível carregar suas preferências. Tente novamente.",
-               errorTitle: "Erro ao carregar preferências",
+               errorDescription: translate(
+                  "dashboard.routes.settings.preferences.state.error.description",
+               ),
+               errorTitle: translate(
+                  "dashboard.routes.settings.preferences.state.error.title",
+               ),
                retryText: translate("common.actions.retry"),
             })(props)}
          </CardContent>
@@ -102,7 +105,9 @@ function AppearanceCard() {
                {translate("dashboard.routes.settings.preferences.title")}
             </CardTitle>
             <CardDescription>
-               Personalize sua experiência ajustando tema e idioma
+               {translate(
+                  "dashboard.routes.settings.preferences.appearance.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -172,35 +177,53 @@ function PrivacyCard({
    return (
       <Card className="h-full">
          <CardHeader>
-            <CardTitle>Privacidade</CardTitle>
+            <CardTitle>
+               {translate(
+                  "dashboard.routes.settings.preferences.privacy.title",
+               )}
+            </CardTitle>
             <CardDescription>
-               Controle como seus dados são utilizados
+               {translate(
+                  "dashboard.routes.settings.preferences.privacy.description",
+               )}
             </CardDescription>
          </CardHeader>
          <CardContent className="space-y-4">
             <div className="rounded-lg bg-secondary/50 p-4 text-center">
                <p className="text-xs md:text-sm text-muted-foreground mb-1">
-                  Status de telemetria
+                  {translate(
+                     "dashboard.routes.settings.preferences.privacy.telemetry-status",
+                  )}
                </p>
                <div className="flex items-center justify-center gap-2">
                   {hasConsent ? (
                      <>
                         <Shield className="size-5 text-green-500" />
                         <span className="text-lg font-semibold text-green-500">
-                           Ativada
+                           {translate(
+                              "dashboard.routes.settings.preferences.privacy.enabled",
+                           )}
                         </span>
                      </>
                   ) : (
                      <>
                         <Shield className="size-5 text-muted-foreground" />
                         <span className="text-lg font-semibold text-muted-foreground">
-                           Desativada
+                           {translate(
+                              "dashboard.routes.settings.preferences.privacy.disabled",
+                           )}
                         </span>
                      </>
                   )}
                </div>
                <Badge className="mt-2" variant="secondary">
-                  {hasConsent ? "Compartilhando dados" : "Dados privados"}
+                  {hasConsent
+                     ? translate(
+                          "dashboard.routes.settings.preferences.privacy.sharing-data",
+                       )
+                     : translate(
+                          "dashboard.routes.settings.preferences.privacy.private-data",
+                       )}
                </Badge>
             </div>
 

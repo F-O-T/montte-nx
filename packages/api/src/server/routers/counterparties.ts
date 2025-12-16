@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    createCounterparty,
    deleteCounterparty,
@@ -73,7 +74,7 @@ export const counterpartyRouter = router({
             !existingCounterparty ||
             existingCounterparty.organizationId !== organizationId
          ) {
-            throw new Error("Counterparty not found");
+            throw APIError.notFound("Counterparty not found");
          }
 
          return deleteCounterparty(resolvedCtx.db, input.id);
@@ -148,7 +149,7 @@ export const counterpartyRouter = router({
          );
 
          if (!counterparty || counterparty.organizationId !== organizationId) {
-            throw new Error("Counterparty not found");
+            throw APIError.notFound("Counterparty not found");
          }
 
          return counterparty;
@@ -214,7 +215,7 @@ export const counterpartyRouter = router({
             !existingCounterparty ||
             existingCounterparty.organizationId !== organizationId
          ) {
-            throw new Error("Counterparty not found");
+            throw APIError.notFound("Counterparty not found");
          }
 
          return updateCounterparty(resolvedCtx.db, input.id, input.data);

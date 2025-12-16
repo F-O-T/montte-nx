@@ -2,8 +2,10 @@ import type { AuthInstance } from "@packages/authentication/server";
 import type { DatabaseInstance } from "@packages/database/client";
 import type { MinioClient } from "@packages/files/client";
 import type { StripeClient } from "@packages/stripe";
+import type { ResendClient } from "@packages/transactional/client";
 import type { PostHog } from "posthog-node";
 import { accountRouter } from "./routers/account";
+import { accountDeletionRouter } from "./routers/account-deletion";
 import { automationRouter } from "./routers/automations";
 import { bankAccountRouter } from "./routers/bank-accounts";
 import { billingRouter } from "./routers/billing";
@@ -14,6 +16,7 @@ import { categoryRouter } from "./routers/categories";
 import { costCenterRouter } from "./routers/cost-centers";
 import { counterpartyRouter } from "./routers/counterparties";
 import { customReportRouter } from "./routers/custom-reports";
+import { encryptionRouter } from "./routers/encryption";
 import { interestTemplateRouter } from "./routers/interest-templates";
 import { notificationRouter } from "./routers/notifications";
 import { onboardingRouter } from "./routers/onboarding";
@@ -31,6 +34,7 @@ export type { ReminderResult } from "@packages/notifications/bill-reminders";
 
 export const appRouter = router({
    account: accountRouter,
+   accountDeletion: accountDeletionRouter,
    automations: automationRouter,
    bankAccounts: bankAccountRouter,
    billing: billingRouter,
@@ -41,6 +45,7 @@ export const appRouter = router({
    costCenters: costCenterRouter,
    counterparties: counterpartyRouter,
    customReports: customReportRouter,
+   encryption: encryptionRouter,
    interestTemplates: interestTemplateRouter,
    notifications: notificationRouter,
    onboarding: onboardingRouter,
@@ -60,6 +65,7 @@ export const createApi = ({
    minioClient,
    minioBucket,
    posthog,
+   resendClient,
    stripeClient,
 }: {
    minioBucket: string;
@@ -67,6 +73,7 @@ export const createApi = ({
    db: DatabaseInstance;
    minioClient: MinioClient;
    posthog: PostHog;
+   resendClient?: ResendClient;
    stripeClient?: StripeClient;
 }) => {
    return {
@@ -84,6 +91,7 @@ export const createApi = ({
             minioClient,
             posthog,
             request,
+            resendClient,
             responseHeaders,
             stripeClient,
          }),

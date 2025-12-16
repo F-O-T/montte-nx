@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    createBillAttachment,
    deleteBillAttachment,
@@ -134,7 +135,7 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, billId);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachmentId = crypto.randomUUID();
@@ -184,7 +185,7 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, billId);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (
@@ -192,7 +193,7 @@ export const billRouter = router({
                `bills/${organizationId}/${billId}/attachments/`,
             )
          ) {
-            throw new Error("Invalid storage key for this bill");
+            throw APIError.validation("Invalid storage key for this bill");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -205,7 +206,7 @@ export const billRouter = router({
          );
 
          if (!fileInfo) {
-            throw new Error("File was not uploaded successfully");
+            throw APIError.validation("File was not uploaded successfully");
          }
 
          const attachment = await createBillAttachment(resolvedCtx.db, {
@@ -235,7 +236,7 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, billId);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (
@@ -243,7 +244,7 @@ export const billRouter = router({
                `bills/${organizationId}/${billId}/attachments/`,
             )
          ) {
-            throw new Error("Invalid storage key for this bill");
+            throw APIError.validation("Invalid storage key for this bill");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -272,11 +273,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (existingBill.completionDate) {
-            throw new Error("Bill already completed");
+            throw APIError.conflict("Bill already completed");
          }
 
          const transaction = await createTransaction(resolvedCtx.db, {
@@ -436,11 +437,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (existingBill.completionDate && existingBill.transactionId) {
-            throw new Error(
+            throw APIError.conflict(
                "Cannot delete completed bill. Delete the associated transaction first.",
             );
          }
@@ -457,7 +458,7 @@ export const billRouter = router({
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
          if (!bill || bill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachment = await findBillAttachmentById(
@@ -466,7 +467,7 @@ export const billRouter = router({
          );
 
          if (!attachment || attachment.billId !== input.billId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          try {
@@ -506,11 +507,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (!existingBill.isRecurring || !existingBill.recurrencePattern) {
-            throw new Error("Bill is not recurring");
+            throw APIError.validation("Bill is not recurring");
          }
 
          const nextDueDate = getNextDueDate(
@@ -590,7 +591,7 @@ export const billRouter = router({
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
          if (!bill || bill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachment = await findBillAttachmentById(
@@ -599,7 +600,7 @@ export const billRouter = router({
          );
 
          if (!attachment || attachment.billId !== input.billId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -632,7 +633,7 @@ export const billRouter = router({
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
          if (!bill || bill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachments = await findBillAttachmentsByBillId(
@@ -652,7 +653,7 @@ export const billRouter = router({
          const billData = await findBillById(resolvedCtx.db, input.id);
 
          if (!billData || billData.userId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          return billData;
@@ -674,7 +675,7 @@ export const billRouter = router({
          );
 
          if (filteredBills.length === 0) {
-            throw new Error("Installment group not found");
+            throw APIError.notFound("Installment group not found");
          }
 
          return filteredBills;
@@ -770,11 +771,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (existingBill.completionDate) {
-            throw new Error("Cannot edit completed bill");
+            throw APIError.conflict("Cannot edit completed bill");
          }
 
          const updateData: Partial<NewBill> = {};

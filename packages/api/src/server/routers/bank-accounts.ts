@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    createBankAccount,
    createDefaultBusinessBankAccount,
@@ -106,7 +107,7 @@ export const bankAccountRouter = router({
             !existingBankAccount ||
             existingBankAccount.organizationId !== organizationId
          ) {
-            throw new Error("Bank account not found");
+            throw APIError.notFound("Bank account not found");
          }
 
          return deleteBankAccount(resolvedCtx.db, input.id);
@@ -140,7 +141,7 @@ export const bankAccountRouter = router({
          );
 
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
-            throw new Error("Bank account not found");
+            throw APIError.notFound("Bank account not found");
          }
 
          const startDate = input.startDate
@@ -239,7 +240,7 @@ export const bankAccountRouter = router({
          );
 
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
-            throw new Error("Bank account not found");
+            throw APIError.notFound("Bank account not found");
          }
 
          return bankAccount;
@@ -275,7 +276,7 @@ export const bankAccountRouter = router({
          );
 
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
-            throw new Error("Bank account not found");
+            throw APIError.notFound("Bank account not found");
          }
 
          return findTransactionsByBankAccountIdPaginated(
@@ -359,7 +360,7 @@ export const bankAccountRouter = router({
             !existingBankAccount ||
             existingBankAccount.organizationId !== organizationId
          ) {
-            throw new Error("Bank account not found");
+            throw APIError.notFound("Bank account not found");
          }
 
          const updateData: {

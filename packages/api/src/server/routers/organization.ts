@@ -91,7 +91,7 @@ export const organizationRouter = router({
       });
 
       if (!organization?.id) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
 
       const organizationId = organization.id;
@@ -239,7 +239,7 @@ export const organizationRouter = router({
       const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
 
       if (!organizationId) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
 
       try {
@@ -263,7 +263,7 @@ export const organizationRouter = router({
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
       if (!organizationId) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
       try {
          const teams = await resolvedCtx.auth.api.listOrganizationTeams({
@@ -337,7 +337,7 @@ export const organizationRouter = router({
          });
 
          if (!organization?.id) {
-            throw new Error("No active organization found");
+            throw APIError.notFound("No active organization found");
          }
 
          const organizationId = organization.id;
@@ -367,7 +367,7 @@ export const organizationRouter = router({
          });
 
          if (!organization?.id) {
-            throw new Error("No active organization found");
+            throw APIError.notFound("No active organization found");
          }
 
          const organizationId = organization.id;
@@ -376,7 +376,7 @@ export const organizationRouter = router({
          const db = resolvedCtx.db;
 
          if (!storageKey.startsWith(`organizations/${organizationId}/logo/`)) {
-            throw new Error("Invalid storage key for this organization");
+            throw APIError.validation("Invalid storage key for this organization");
          }
 
          const fileInfo = await verifyFileExists(
@@ -386,7 +386,7 @@ export const organizationRouter = router({
          );
 
          if (!fileInfo) {
-            throw new Error("File was not uploaded successfully");
+            throw APIError.validation("File was not uploaded successfully");
          }
 
          const currentOrganization = await findOrganizationById(
@@ -418,7 +418,7 @@ export const organizationRouter = router({
             } catch (cleanupError) {
                console.error("Error cleaning up uploaded file:", cleanupError);
             }
-            throw new Error("Failed to update organization logo");
+            throw APIError.internal("Failed to update organization logo");
          }
 
          return { success: true };
@@ -435,13 +435,13 @@ export const organizationRouter = router({
          });
 
          if (!organization?.id) {
-            throw new Error("No active organization found");
+            throw APIError.notFound("No active organization found");
          }
 
          const organizationId = organization.id;
 
          if (!storageKey.startsWith(`organizations/${organizationId}/logo/`)) {
-            throw new Error("Invalid storage key for this organization");
+            throw APIError.validation("Invalid storage key for this organization");
          }
 
          const bucketName = resolvedCtx.minioBucket;

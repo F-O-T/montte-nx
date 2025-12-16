@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    getOrCreateNotificationPreferences,
    updateNotificationPreferences,
@@ -40,7 +41,7 @@ export const pushNotificationRouter = router({
             resolvedCtx.session?.session.activeOrganizationId;
 
          if (!userId || !organizationId) {
-            throw new Error("Unauthorized");
+            throw APIError.unauthorized("Unauthorized");
          }
 
          const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
@@ -69,7 +70,7 @@ export const pushNotificationRouter = router({
       const userId = resolvedCtx.session?.user.id;
 
       if (!userId) {
-         throw new Error("Unauthorized");
+         throw APIError.unauthorized("Unauthorized");
       }
 
       const preferences = await getOrCreateNotificationPreferences(
@@ -97,7 +98,7 @@ export const pushNotificationRouter = router({
       const userId = resolvedCtx.session?.user.id;
 
       if (!userId) {
-         throw new Error("Unauthorized");
+         throw APIError.unauthorized("Unauthorized");
       }
 
       const subscriptions = await findPushSubscriptionsByUserId(
@@ -120,7 +121,7 @@ export const pushNotificationRouter = router({
          const userId = resolvedCtx.session?.user.id;
 
          if (!userId) {
-            throw new Error("Unauthorized");
+            throw APIError.unauthorized("Unauthorized");
          }
 
          const subscription = await createPushSubscription(resolvedCtx.db, {
@@ -139,7 +140,7 @@ export const pushNotificationRouter = router({
       const userId = resolvedCtx.session?.user.id;
 
       if (!userId) {
-         throw new Error("Unauthorized");
+         throw APIError.unauthorized("Unauthorized");
       }
 
       const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
@@ -148,7 +149,7 @@ export const pushNotificationRouter = router({
          process.env.VAPID_SUBJECT || "mailto:admin@montte.co";
 
       if (!vapidPublicKey || !vapidPrivateKey) {
-         throw new Error("Push notifications not configured");
+         throw APIError.internal("Push notifications not configured");
       }
 
       const payload = createNotificationPayload("transaction", {
@@ -167,7 +168,7 @@ export const pushNotificationRouter = router({
       });
 
       if (!result.success && result.sent === 0) {
-         throw new Error(
+         throw APIError.validation(
             result.errors[0] ||
                "Nenhum dispositivo cadastrado para notificações",
          );
@@ -187,7 +188,7 @@ export const pushNotificationRouter = router({
          const userId = resolvedCtx.session?.user.id;
 
          if (!userId) {
-            throw new Error("Unauthorized");
+            throw APIError.unauthorized("Unauthorized");
          }
 
          await deletePushSubscriptionByUserAndEndpoint(
@@ -213,7 +214,7 @@ export const pushNotificationRouter = router({
          const userId = resolvedCtx.session?.user.id;
 
          if (!userId) {
-            throw new Error("Unauthorized");
+            throw APIError.unauthorized("Unauthorized");
          }
 
          const preferences = await updateNotificationPreferences(

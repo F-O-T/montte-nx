@@ -1,6 +1,7 @@
 {
    "extends": "@tooling/typescript/base.json",
    "compilerOptions": {
+      "jsx": "react-jsx",
       "baseUrl": ".",
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true,

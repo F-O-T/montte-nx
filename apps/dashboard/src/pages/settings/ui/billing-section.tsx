@@ -63,6 +63,7 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { StripeDataDisclosure } from "@/features/stripe-disclosure/stripe-data-disclosure";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { trpc } from "@/integrations/clients";
 
@@ -923,6 +924,7 @@ function BillingSectionContent() {
    if (!activeSubscription) {
       return (
          <div className="space-y-4 md:space-y-6">
+            <StripeDataDisclosure />
             <UpgradeBanner subscription={null} />
             <NoSubscriptionContent />
          </div>
@@ -933,6 +935,7 @@ function BillingSectionContent() {
 
    return (
       <div className="space-y-4 md:space-y-6">
+         <StripeDataDisclosure />
          <UpgradeBanner subscription={subscription} />
 
          {/* Top Row: Plan Card + Summary */}

@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    createCustomReport,
    deleteCustomReport,
@@ -54,7 +55,7 @@ export const customReportRouter = router({
          const userId = resolvedCtx.session?.user.id;
 
          if (!userId) {
-            throw new Error("User ID is required");
+            throw APIError.unauthorized("User ID is required");
          }
 
          const startDate = new Date(input.startDate);
@@ -106,7 +107,7 @@ export const customReportRouter = router({
             !existingReport ||
             existingReport.organizationId !== organizationId
          ) {
-            throw new Error("Relatório não encontrado");
+            throw APIError.notFound("Report not found");
          }
 
          return deleteCustomReport(resolvedCtx.db, input.id);
@@ -134,7 +135,7 @@ export const customReportRouter = router({
          const report = await findCustomReportById(resolvedCtx.db, input.id);
 
          if (!report || report.organizationId !== organizationId) {
-            throw new Error("Relatório não encontrado");
+            throw APIError.notFound("Report not found");
          }
 
          const { renderDREReport } = await import("@packages/pdf");
@@ -200,7 +201,7 @@ export const customReportRouter = router({
          const report = await findCustomReportById(resolvedCtx.db, input.id);
 
          if (!report || report.organizationId !== organizationId) {
-            throw new Error("Relatório não encontrado");
+            throw APIError.notFound("Report not found");
          }
 
          return report;
@@ -221,7 +222,7 @@ export const customReportRouter = router({
             !existingReport ||
             existingReport.organizationId !== organizationId
          ) {
-            throw new Error("Relatório não encontrado");
+            throw APIError.notFound("Report not found");
          }
 
          return updateCustomReport(resolvedCtx.db, input.id, {

@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import { ConditionGroup as ConditionGroupSchema } from "@f-o-t/condition-evaluator";
 import {
    findAutomationLogsByOrganizationIdPaginated,
@@ -208,7 +209,7 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return deleteAutomationRule(resolvedCtx.db, input.id);
@@ -244,7 +245,7 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return duplicateAutomationRule(
@@ -294,7 +295,7 @@ export const automationRouter = router({
          const rule = await findAutomationRuleById(resolvedCtx.db, input.id);
 
          if (!rule || rule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return rule;
@@ -365,7 +366,7 @@ export const automationRouter = router({
             );
 
             if (!rule || rule.organizationId !== organizationId) {
-               throw new Error("Automation rule not found");
+               throw APIError.notFound("Automation rule not found");
             }
 
             return findAutomationLogsByRuleId(resolvedCtx.db, input.ruleId, {
@@ -427,7 +428,7 @@ export const automationRouter = router({
             );
 
             if (!rule || rule.organizationId !== organizationId) {
-               throw new Error("Automation rule not found");
+               throw APIError.notFound("Automation rule not found");
             }
 
             const offset = (input.page - 1) * input.limit;
@@ -456,7 +457,7 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return toggleAutomationRule(resolvedCtx.db, input.id, input.isActive);
@@ -497,18 +498,18 @@ export const automationRouter = router({
          );
 
          if (!rule || rule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          if (!rule.isActive) {
-            throw new Error("Cannot trigger inactive automation rule");
+            throw APIError.validation("Cannot trigger inactive automation rule");
          }
 
          if (
             rule.triggerType !== "transaction.created" &&
             rule.triggerType !== "transaction.updated"
          ) {
-            throw new Error(
+            throw APIError.validation(
                "Manual trigger is only supported for transaction-based automations",
             );
          }
@@ -567,7 +568,7 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          const oldSnapshot = createSnapshotFromRule(existingRule);

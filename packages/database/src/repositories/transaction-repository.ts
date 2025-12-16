@@ -1,3 +1,7 @@
+import {
+   decryptTransactionFields,
+   encryptTransactionFields,
+} from "@packages/encryption/service";
 import { AppError, propagateError } from "@packages/utils/errors";
 import type { SQL } from "drizzle-orm";
 import { and, eq, exists, gte, ilike, inArray, lte, sql } from "drizzle-orm";
@@ -27,9 +31,12 @@ export async function createTransaction(
    data: NewTransaction,
 ) {
    try {
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptTransactionFields(data);
+
       const result = await dbClient
          .insert(transaction)
-         .values(data)
+         .values(encryptedData)
          .returning();
 
       if (!result[0]) {
@@ -60,7 +67,8 @@ export async function createTransaction(
          throw AppError.database("Failed to fetch created transaction");
       }
 
-      return createdTransaction;
+      // Decrypt sensitive fields before returning
+      return decryptTransactionFields(createdTransaction);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -91,7 +99,8 @@ export async function findTransactionById(
             },
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result ? decryptTransactionFields(result) : result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -124,7 +133,8 @@ export async function findTransactionsByOrganizationId(
             },
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptTransactionFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -294,7 +304,8 @@ export async function findTransactionsByOrganizationIdPaginated(
             totalCount,
             totalPages,
          },
-         transactions,
+         // Decrypt sensitive fields before returning
+         transactions: transactions.map(decryptTransactionFields),
       };
    } catch (err) {
       propagateError(err);
@@ -328,7 +339,8 @@ export async function findTransactionsByBankAccountId(
             },
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptTransactionFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -370,7 +382,8 @@ export async function findTransactionsForExport(
          where: whereClause,
       });
 
-      return transactions;
+      // Decrypt sensitive fields before returning
+      return transactions.map(decryptTransactionFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -479,7 +492,8 @@ export async function findTransactionsByBankAccountIdPaginated(
             totalCount,
             totalPages,
          },
-         transactions,
+         // Decrypt sensitive fields before returning
+         transactions: transactions.map(decryptTransactionFields),
       };
    } catch (err) {
       propagateError(err);
@@ -495,9 +509,12 @@ export async function updateTransaction(
    data: Partial<NewTransaction>,
 ) {
    try {
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptTransactionFields(data);
+
       const result = await dbClient
          .update(transaction)
-         .set(data)
+         .set(encryptedData)
          .where(eq(transaction.id, transactionId))
          .returning();
 
@@ -527,7 +544,8 @@ export async function updateTransaction(
          throw AppError.database("Failed to fetch updated transaction");
       }
 
-      return updatedTransaction;
+      // Decrypt sensitive fields before returning
+      return decryptTransactionFields(updatedTransaction);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -802,7 +820,8 @@ export async function updateTransactionsCategory(
          },
       });
 
-      return updatedTransactions;
+      // Decrypt sensitive fields before returning
+      return updatedTransactions.map(decryptTransactionFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -850,7 +869,8 @@ export async function findMatchingTransferTransaction(
             },
          },
       });
-      return result || null;
+      // Decrypt sensitive fields before returning
+      return result ? decryptTransactionFields(result) : null;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -906,7 +926,10 @@ export async function findTransferCandidates(
          },
       });
 
-      return candidates
+      // Decrypt candidates before processing
+      const decryptedCandidates = candidates.map(decryptTransactionFields);
+
+      return decryptedCandidates
          .map((candidate) => {
             let score = 0;
             const reasons: string[] = [];

@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    calculatePeriodDates,
    checkBudgetImpact,
@@ -209,7 +210,7 @@ export const budgetRouter = router({
             !existingBudget ||
             existingBudget.organizationId !== organizationId
          ) {
-            throw new Error("Budget not found");
+            throw APIError.notFound("Budget not found");
          }
 
          return deleteBudget(resolvedCtx.db, input.id);
@@ -293,7 +294,7 @@ export const budgetRouter = router({
          const budget = await getBudgetWithProgress(resolvedCtx.db, input.id);
 
          if (!budget || budget.organizationId !== organizationId) {
-            throw new Error("Budget not found");
+            throw APIError.notFound("Budget not found");
          }
 
          return budget;
@@ -313,7 +314,7 @@ export const budgetRouter = router({
          const budget = await findBudgetById(resolvedCtx.db, input.budgetId);
 
          if (!budget || budget.organizationId !== organizationId) {
-            throw new Error("Budget not found");
+            throw APIError.notFound("Budget not found");
          }
 
          return findBudgetPeriods(resolvedCtx.db, input.budgetId, {
@@ -346,7 +347,7 @@ export const budgetRouter = router({
          const budget = await findBudgetById(resolvedCtx.db, input.budgetId);
 
          if (!budget || budget.organizationId !== organizationId) {
-            throw new Error("Budget not found");
+            throw APIError.notFound("Budget not found");
          }
 
          const { periodStart, periodEnd } =
@@ -372,7 +373,7 @@ export const budgetRouter = router({
          const budget = await findBudgetById(resolvedCtx.db, input.id);
 
          if (!budget || budget.organizationId !== organizationId) {
-            throw new Error("Budget not found");
+            throw APIError.notFound("Budget not found");
          }
 
          return processRollover(resolvedCtx.db, input.id);
@@ -395,7 +396,7 @@ export const budgetRouter = router({
             !existingBudget ||
             existingBudget.organizationId !== organizationId
          ) {
-            throw new Error("Budget not found");
+            throw APIError.notFound("Budget not found");
          }
 
          return updateBudget(resolvedCtx.db, input.id, input.data);

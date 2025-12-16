@@ -2,7 +2,7 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { createSlug, generateRandomSuffix } from "@packages/utils/text";
 import { eq } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { member, organization, user } from "../schemas/auth";
+import { member, organization } from "../schemas/auth";
 
 export async function findMemberByUserId(
    dbClient: DatabaseInstance,
@@ -150,31 +150,6 @@ export async function updateOrganization(
       propagateError(err);
       throw AppError.database(
          `Failed to update organization: ${(err as Error).message}`,
-      );
-   }
-}
-
-export async function enableTelemetryConsent(
-   dbClient: DatabaseInstance,
-   userId: string,
-   consent: boolean,
-) {
-   try {
-      const result = await dbClient
-         .update(user)
-         .set({ telemetryConsent: consent })
-         .where(eq(user.id, userId))
-         .returning();
-
-      if (!result.length) {
-         throw AppError.database("User not found");
-      }
-
-      return result[0];
-   } catch (err) {
-      propagateError(err);
-      throw AppError.database(
-         `Failed to update telemetry consent: ${(err as Error).message}`,
       );
    }
 }

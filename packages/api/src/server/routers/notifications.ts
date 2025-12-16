@@ -1,3 +1,4 @@
+import { APIError } from "@packages/utils/errors";
 import {
    findNotificationsByUserId,
    findUnreadNotificationsByUserId,
@@ -20,7 +21,7 @@ export const notificationRouter = router({
          const userId = resolvedCtx.session?.user.id;
 
          if (!userId) {
-            throw new Error("Unauthorized");
+            throw APIError.unauthorized("Unauthorized");
          }
 
          if (input?.onlyUnread !== false) {

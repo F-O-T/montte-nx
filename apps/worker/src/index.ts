@@ -7,11 +7,16 @@ import {
 } from "@packages/queue/connection";
 import { getResendClient } from "@packages/transactional/utils";
 import { createWorkflowWorker } from "@packages/workflows/queue/consumer";
+import { createDeletionWorker } from "@packages/workflows/queue/deletion-consumer";
 import { createMaintenanceWorker } from "@packages/workflows/queue/maintenance-consumer";
 import { initializeWorkflowQueue } from "@packages/workflows/queue/producer";
 import {
+   closeDeletionQueue,
    closeMaintenanceQueue,
+   createDeletionQueue,
    createMaintenanceQueue,
+   type DeletionJobData,
+   type DeletionJobResult,
    type MaintenanceJobData,
    type MaintenanceJobResult,
    type WorkflowJobData,
@@ -80,6 +85,57 @@ const { worker: maintenanceWorker, close: closeMaintenanceWorker } =
 
 console.log("Maintenance worker started");
 
+// Deletion queue and worker
+const deletionQueue = createDeletionQueue(redisConnection);
+
+// Schedule deletion processing jobs
+await deletionQueue.add(
+   "process-deletions",
+   { type: "process-deletions" },
+   {
+      jobId: "process-deletions-daily",
+      repeat: { pattern: "0 2 * * *" }, // 2 AM daily
+   },
+);
+
+await deletionQueue.add(
+   "send-reminders",
+   { type: "send-reminders" },
+   {
+      jobId: "send-reminders-daily",
+      repeat: { pattern: "0 9 * * *" }, // 9 AM daily
+   },
+);
+
+console.log(
+   "Scheduled daily account deletion jobs (2 AM process, 9 AM reminders)",
+);
+
+const { worker: deletionWorker, close: closeDeletionWorker } =
+   createDeletionWorker({
+      concurrency: 1,
+      connection: redisConnection,
+      db,
+      resendClient,
+      appUrl: env.APP_URL,
+      onCompleted: async (
+         job: Job<DeletionJobData, DeletionJobResult>,
+         result: DeletionJobResult,
+      ) => {
+         console.log(
+            `[Deletion Completed] ${job.name}: processed ${result.processedCount}, sent ${result.emailsSent} emails`,
+         );
+      },
+      onFailed: async (
+         job: Job<DeletionJobData, DeletionJobResult> | undefined,
+         error: Error,
+      ) => {
+         console.error(`[Deletion Failed] ${job?.name}: ${error.message}`);
+      },
+   });
+
+console.log("Deletion worker started");
+
 const { worker, close } = createWorkflowWorker({
    concurrency: env.WORKER_CONCURRENCY || 5,
    connection: redisConnection,
@@ -142,13 +198,16 @@ async function gracefulShutdown(signal: string) {
       console.log("Pausing workers to stop accepting new jobs...");
       await worker.pause();
       await maintenanceWorker.pause();
+      await deletionWorker.pause();
 
       console.log("Waiting for active jobs to complete...");
       await close();
       await closeMaintenanceWorker();
+      await closeDeletionWorker();
 
       console.log("Closing queues...");
       await closeMaintenanceQueue();
+      await closeDeletionQueue();
 
       console.log("Closing Redis connection...");
       await closeRedisConnection();
