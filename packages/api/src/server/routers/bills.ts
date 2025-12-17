@@ -11,6 +11,7 @@ import {
    deleteBill,
    deleteManyBills,
    findBillById,
+   findBillByTransactionId,
    findBillsByInstallmentGroupId,
    findBillsByOrganizationId,
    findBillsByOrganizationIdAndType,
@@ -654,6 +655,24 @@ export const billRouter = router({
 
          if (!billData || billData.userId !== organizationId) {
             throw APIError.notFound("Bill not found");
+         }
+
+         return billData;
+      }),
+
+   getByTransactionId: protectedProcedure
+      .input(z.object({ transactionId: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const billData = await findBillByTransactionId(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!billData || billData.organizationId !== organizationId) {
+            return null;
          }
 
          return billData;

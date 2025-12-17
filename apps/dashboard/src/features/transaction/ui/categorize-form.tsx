@@ -17,8 +17,12 @@ import {
    SheetTitle,
 } from "@packages/ui/components/sheet";
 import { getRandomColor } from "@packages/utils/colors";
+import {
+   type CategorySplit,
+   recalculateSplitsForNewCategories,
+} from "@packages/utils/split";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tag, X } from "lucide-react";
 import type { FormEvent } from "react";
 import { useCallback } from "react";
@@ -40,22 +44,29 @@ export function CategorizeForm({
    onSuccess,
 }: CategorizeFormProps) {
    const trpc = useTRPC();
+   const queryClient = useQueryClient();
    const { closeSheet } = useSheet();
 
    // For single transaction, pre-populate with existing values
-   const existingCategoryIds =
-      transactions.length === 1 && transactions[0]
-         ? transactions[0].transactionCategories?.map((tc) => tc.category.id) ||
-           []
-         : [];
-   const existingCostCenterId =
-      transactions.length === 1 && transactions[0]
-         ? transactions[0].costCenterId || ""
-         : "";
-   const existingTagIds =
-      transactions.length === 1 && transactions[0]
-         ? transactions[0].transactionTags?.map((tt) => tt.tag.id) || []
-         : [];
+   const singleTransaction = transactions.length === 1 ? transactions[0] : null;
+   const existingCategoryIds = singleTransaction
+      ? singleTransaction.transactionCategories?.map((tc) => tc.category.id) ||
+        []
+      : [];
+   const existingCostCenterId = singleTransaction
+      ? singleTransaction.costCenterId || ""
+      : "";
+   const existingTagIds = singleTransaction
+      ? singleTransaction.transactionTags?.map((tt) => tt.tag.id) || []
+      : [];
+
+   // Get existing splits for single transaction
+   const existingSplits = singleTransaction?.categorySplits as
+      | CategorySplit[]
+      | null;
+   const totalAmountInCents = singleTransaction
+      ? Math.abs(Number.parseFloat(singleTransaction.amount)) * 100
+      : 0;
 
    const categorizeSchema = z.object({
       categoryIds: z.array(z.string()),
@@ -97,41 +108,110 @@ export function CategorizeForm({
       }),
    );
 
+   // Use transactions.update for single transactions to preserve splits
+   const updateTransactionMutation = useMutation(
+      trpc.transactions.update.mutationOptions({
+         onError: (error) => {
+            toast.error(error.message || "Falha ao atualizar transação");
+         },
+         onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getById.queryKey({
+                  id: singleTransaction?.id ?? "",
+               }),
+            });
+            queryClient.invalidateQueries({
+               queryKey: trpc.transactions.getAllPaginated.queryKey(),
+            });
+         },
+      }),
+   );
+
    const handleCategorize = useCallback(
       async (value: z.infer<typeof categorizeSchema>) => {
          const transactionIds = transactions.map((t) => t.id);
 
-         // Run all mutations in parallel
-         const promises = [];
-
-         if (value.categoryIds && value.categoryIds.length > 0) {
-            promises.push(
-               updateCategoryMutation.mutateAsync({
-                  categoryId: value.categoryIds[0] as string,
-                  ids: transactionIds,
-               }),
-            );
-         }
-
-         if (value.costCenterId || value.costCenterId === "") {
-            promises.push(
-               updateCostCenterMutation.mutateAsync({
-                  costCenterId: value.costCenterId || null,
-                  ids: transactionIds,
-               }),
-            );
-         }
-
-         if (value.tagIds.length > 0) {
-            promises.push(
-               updateTagsMutation.mutateAsync({
-                  ids: transactionIds,
-                  tagIds: value.tagIds,
-               }),
-            );
-         }
-
          try {
+            // For single transaction, use transactions.update to preserve splits
+            if (singleTransaction && value.categoryIds.length > 0) {
+               // Calculate new splits based on selected categories
+               const newSplits = recalculateSplitsForNewCategories(
+                  existingSplits,
+                  value.categoryIds,
+                  totalAmountInCents,
+               );
+
+               // Build the update data
+               const updateData: Record<string, unknown> = {
+                  categoryIds: value.categoryIds,
+                  categorySplits: newSplits,
+               };
+
+               // Include cost center if changed
+               if (value.costCenterId !== existingCostCenterId) {
+                  updateData.costCenterId = value.costCenterId || null;
+               }
+
+               // Include tags if changed
+               if (
+                  JSON.stringify(value.tagIds.sort()) !==
+                  JSON.stringify(existingTagIds.sort())
+               ) {
+                  updateData.tagIds = value.tagIds;
+               }
+
+               await updateTransactionMutation.mutateAsync({
+                  data: updateData,
+                  id: singleTransaction.id,
+               });
+
+               const updatedFields = ["categoria"];
+               if (value.costCenterId !== existingCostCenterId)
+                  updatedFields.push("centro de custo");
+               if (
+                  JSON.stringify(value.tagIds.sort()) !==
+                  JSON.stringify(existingTagIds.sort())
+               )
+                  updatedFields.push("tags");
+
+               toast.success(
+                  `${updatedFields.join(", ")} atualizado${updatedFields.length > 1 ? "s" : ""} com sucesso`,
+               );
+               onSuccess?.();
+               closeSheet();
+               return;
+            }
+
+            // For bulk transactions, use individual mutations (can't preserve splits in bulk)
+            const promises = [];
+
+            if (value.categoryIds && value.categoryIds.length > 0) {
+               promises.push(
+                  updateCategoryMutation.mutateAsync({
+                     categoryId: value.categoryIds[0] as string,
+                     ids: transactionIds,
+                  }),
+               );
+            }
+
+            if (value.costCenterId || value.costCenterId === "") {
+               promises.push(
+                  updateCostCenterMutation.mutateAsync({
+                     costCenterId: value.costCenterId || null,
+                     ids: transactionIds,
+                  }),
+               );
+            }
+
+            if (value.tagIds.length > 0) {
+               promises.push(
+                  updateTagsMutation.mutateAsync({
+                     ids: transactionIds,
+                     tagIds: value.tagIds,
+                  }),
+               );
+            }
+
             await Promise.all(promises);
             const updatedFields = [];
             if (value.categoryIds.length > 0) updatedFields.push("categoria");
@@ -140,7 +220,7 @@ export function CategorizeForm({
             if (value.tagIds.length > 0) updatedFields.push("tags");
 
             toast.success(
-               `${updatedFields.join(", ")} atualizado${updatedFields.length > 1 ? "s" : ""} para ${transactions.length} ${transactions.length === 1 ? "transação" : "transações"}`,
+               `${updatedFields.join(", ")} atualizado${updatedFields.length > 1 ? "s" : ""} para ${transactions.length} transações`,
             );
             onSuccess?.();
             closeSheet();
@@ -151,6 +231,12 @@ export function CategorizeForm({
       },
       [
          transactions,
+         singleTransaction,
+         existingSplits,
+         totalAmountInCents,
+         existingCostCenterId,
+         existingTagIds,
+         updateTransactionMutation,
          updateCategoryMutation,
          updateCostCenterMutation,
          updateTagsMutation,
@@ -221,7 +307,8 @@ export function CategorizeForm({
    const isLoading =
       updateCategoryMutation.isPending ||
       updateCostCenterMutation.isPending ||
-      updateTagsMutation.isPending;
+      updateTagsMutation.isPending ||
+      updateTransactionMutation.isPending;
 
    const isCreating =
       createCategoryMutation.isPending ||

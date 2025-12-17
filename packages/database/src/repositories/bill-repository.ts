@@ -85,6 +85,30 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
    }
 }
 
+export async function findBillByTransactionId(
+   dbClient: DatabaseInstance,
+   transactionId: string,
+) {
+   try {
+      const result = await dbClient.query.bill.findFirst({
+         where: (bill, { eq }) => eq(bill.transactionId, transactionId),
+         with: {
+            bankAccount: true,
+            counterparty: true,
+            interestTemplate: true,
+            transaction: true,
+         },
+      });
+      // Decrypt sensitive fields before returning
+      return result ? decryptBillFields(result) : result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bill by transaction id: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findBillsByOrganizationId(
    dbClient: DatabaseInstance,
    organizationId: string,

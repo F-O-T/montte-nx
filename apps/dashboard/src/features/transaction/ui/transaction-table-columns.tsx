@@ -19,8 +19,12 @@ import {
    ArrowDownLeft,
    ArrowLeftRight,
    ArrowUpRight,
+   Check,
+   CheckCheck,
    Eye,
+   Minus,
    Split,
+   X,
 } from "lucide-react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
@@ -104,6 +108,157 @@ function TransactionActionsCell({
          </Tooltip>
       </div>
    );
+}
+
+export type TransactionWithScore = Transaction & { score?: number };
+
+function getSimilarityConfig(score: number) {
+   if (score >= 80) {
+      return {
+         color: "#10b981",
+         icon: CheckCheck,
+         label: "Muito similar",
+      };
+   }
+   if (score >= 60) {
+      return {
+         color: "#3b82f6",
+         icon: Check,
+         label: "Similar",
+      };
+   }
+   if (score >= 40) {
+      return {
+         color: "#eab308",
+         icon: Minus,
+         label: "Pouco similar",
+      };
+   }
+   return {
+      color: "#6b7280",
+      icon: X,
+      label: "Não similar",
+   };
+}
+
+export function createSimilarTransactionColumns(
+   categories: Category[],
+   slug: string,
+): ColumnDef<TransactionWithScore>[] {
+   return [
+      {
+         accessorKey: "score",
+         cell: ({ row }) => {
+            const score = row.original.score ?? 0;
+            const config = getSimilarityConfig(score);
+            const Icon = config.icon;
+
+            return (
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${config.color}20`,
+                        color: config.color,
+                     }}
+                  >
+                     <Icon className="size-3.5" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle>
+                     {score}% - {config.label}
+                  </AnnouncementTitle>
+               </Announcement>
+            );
+         },
+         enableSorting: false,
+         header: "Similaridade",
+         size: 180,
+      },
+      {
+         accessorKey: "description",
+         cell: ({ row }) => {
+            const transaction = row.original;
+            return (
+               <span className="font-medium block max-w-[180px] truncate">
+                  {transaction.description}
+               </span>
+            );
+         },
+         enableSorting: false,
+         header: translate(
+            "dashboard.routes.transactions.table.columns.description",
+         ),
+         maxSize: 180,
+      },
+      {
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const category = getCategoryDetails(transaction, categories);
+
+            return (
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${category.color}20`,
+                        color: category.color,
+                     }}
+                  >
+                     <IconDisplay
+                        iconName={category.icon as IconName}
+                        size={14}
+                     />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="max-w-[100px] truncate">
+                     {category.name}
+                  </AnnouncementTitle>
+               </Announcement>
+            );
+         },
+         enableSorting: false,
+         header: translate(
+            "dashboard.routes.transactions.table.columns.category",
+         ),
+         id: "category",
+      },
+      {
+         accessorKey: "date",
+         cell: ({ row }) => {
+            return formatDate(new Date(row.getValue("date")), "DD MMM YYYY");
+         },
+         enableSorting: false,
+         header: translate("dashboard.routes.transactions.table.columns.date"),
+      },
+      {
+         accessorKey: "amount",
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const amount = Number.parseFloat(transaction.amount);
+            const isPositive =
+               transaction.type === "income" ||
+               (transaction.type === "transfer" && amount > 0);
+            const formattedAmount = formatDecimalCurrency(Math.abs(amount));
+
+            return (
+               <Badge variant={isPositive ? "default" : "destructive"}>
+                  {isPositive ? "+" : "-"}
+                  {formattedAmount}
+               </Badge>
+            );
+         },
+         enableSorting: false,
+         header: () => (
+            <div className="text-right">
+               {translate("dashboard.routes.transactions.table.columns.amount")}
+            </div>
+         ),
+      },
+      {
+         cell: ({ row }) => (
+            <TransactionActionsCell slug={slug} transaction={row.original} />
+         ),
+         header: "",
+         id: "actions",
+      },
+   ];
 }
 
 export function createTransactionColumns(

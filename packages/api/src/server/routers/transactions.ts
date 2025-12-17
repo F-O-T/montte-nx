@@ -1,3 +1,8 @@
+import {
+   evaluateConditionGroup,
+   type ConditionGroup,
+   type EvaluationContext,
+} from "@f-o-t/condition-evaluator";
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
@@ -1399,5 +1404,142 @@ export const transactionRouter = router({
          });
 
          return { key: storageKey };
+      }),
+
+   getSimilarTransactions: protectedProcedure
+      .input(
+         z.object({
+            limit: z.number().min(1).max(100).default(5),
+            transactionId: z.string(),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const sourceTransaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (
+            !sourceTransaction ||
+            sourceTransaction.organizationId !== organizationId
+         ) {
+            throw APIError.notFound("Transaction not found");
+         }
+
+         const sourceAmount = Math.abs(Number(sourceTransaction.amount));
+         const sourceCategoryId =
+            sourceTransaction.transactionCategories?.[0]?.category.id || null;
+
+         const descriptionWords = sourceTransaction.description
+            .toLowerCase()
+            .split(/\s+/)
+            .filter((word) => word.length > 2);
+         const mainKeyword = descriptionWords[0] || "";
+
+         let transferCounterpartId: string | null = null;
+         if (sourceTransaction.type === "transfer") {
+            const transferLog = await findTransferLogByTransactionId(
+               resolvedCtx.db,
+               input.transactionId,
+            );
+            if (transferLog) {
+               transferCounterpartId =
+                  transferLog.fromTransactionId === input.transactionId
+                     ? transferLog.toTransactionId
+                     : transferLog.fromTransactionId;
+            }
+         }
+
+         const candidates = await findTransactionsByOrganizationIdPaginated(
+            resolvedCtx.db,
+            organizationId,
+            { limit: 100, page: 1 },
+         );
+
+         const excludeIds = new Set([input.transactionId]);
+         if (transferCounterpartId) {
+            excludeIds.add(transferCounterpartId);
+         }
+
+         const conditions: ConditionGroup["conditions"] = [];
+
+         if (sourceCategoryId) {
+            conditions.push({
+               field: "categoryId",
+               id: "category-match",
+               operator: "eq",
+               options: { weight: 30 },
+               type: "string",
+               value: sourceCategoryId,
+            });
+         }
+
+         if (sourceAmount > 0) {
+            conditions.push({
+               field: "amount",
+               id: "amount-proximity",
+               operator: "between",
+               options: { weight: 30 },
+               type: "number",
+               value: [sourceAmount * 0.8, sourceAmount * 1.2],
+            });
+         }
+
+         if (mainKeyword) {
+            conditions.push({
+               field: "description",
+               id: "description-contains",
+               operator: "contains",
+               options: { caseSensitive: false, weight: 40 },
+               type: "string",
+               value: mainKeyword,
+            });
+         }
+
+         if (conditions.length === 0) {
+            return [];
+         }
+
+         const similarityRule: ConditionGroup = {
+            conditions,
+            id: "similarity-check",
+            operator: "OR",
+            scoringMode: "weighted",
+            threshold: 30,
+         };
+
+         const scoredCandidates = candidates.transactions
+            .filter((t) => !excludeIds.has(t.id))
+            .map((candidate) => {
+               const candidateCategoryId =
+                  candidate.transactionCategories?.[0]?.category.id || "";
+               const candidateAmount = Math.abs(Number(candidate.amount));
+
+               const context: EvaluationContext = {
+                  data: {
+                     amount: candidateAmount,
+                     categoryId: candidateCategoryId,
+                     description: candidate.description.toLowerCase(),
+                  },
+               };
+
+               const result = evaluateConditionGroup(similarityRule, context);
+
+               return {
+                  score: result.totalScore ?? 0,
+                  transaction: candidate,
+               };
+            })
+            .filter((item) => item.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, input.limit);
+
+         return scoredCandidates.map((item) => ({
+            score: item.score,
+            transaction: item.transaction,
+         }));
       }),
 });

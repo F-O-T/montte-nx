@@ -71,6 +71,7 @@ interface DataTableProps<TData, TValue> {
       isSelected?: boolean;
       toggleSelected?: () => void;
       enableRowSelection?: boolean;
+      canExpand?: boolean;
    }) => React.ReactNode;
    enableRowSelection?: boolean;
    rowSelection?: RowSelectionState;
@@ -309,6 +310,7 @@ export function DataTable<TData, TValue>({
                      open={row.getIsExpanded()}
                   >
                      {renderMobileCard({
+                        canExpand: !!renderSubComponent,
                         enableRowSelection,
                         isExpanded: row.getIsExpanded(),
                         isSelected: row.getIsSelected(),
