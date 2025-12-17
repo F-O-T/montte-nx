@@ -192,7 +192,7 @@ const checkRuleIntegrity = <
 
    if (options.allowedTags) {
       const invalidTags = rule.tags.filter(
-         (t) => !options.allowedTags!.includes(t),
+         (t) => !options.allowedTags?.includes(t),
       );
       if (invalidTags.length > 0) {
          issues.push(

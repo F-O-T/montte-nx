@@ -8,7 +8,7 @@ import {
    createSkippedResult,
 } from "../types";
 
-const EMAIL_FROM = "Finance tracker <support@app.contentagen.com>";
+const EMAIL_FROM = "Montte <suporte@mail.montte.co>";
 
 export const sendEmailHandler: ActionHandler = {
    type: "send_email",

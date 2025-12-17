@@ -1,6 +1,5 @@
 ---
 import type { SupportedLng } from "@packages/localization";
-import { FeatureCarousel } from "@/components/feature-carousel";
 
 interface Props {
    lang?: SupportedLng;
@@ -8,7 +7,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const transactionFeatures = [
+const _transactionFeatures = [
    {
       description:
          "Registre receitas, despesas e transferências em segundos. Funciona no desktop e mobile.",

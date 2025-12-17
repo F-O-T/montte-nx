@@ -18,55 +18,67 @@ import {
    SelectValue,
 } from "@packages/ui/components/select";
 import {
+   getDateRangeForPeriod,
+   TIME_PERIODS,
+   type TimePeriod,
+   type TimePeriodDateRange,
+} from "@packages/ui/components/time-period-chips";
+import {
    ToggleGroup,
    ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
+import { cn } from "@packages/ui/lib/utils";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, X } from "lucide-react";
 import { useCredenza } from "@/hooks/use-credenza";
 
 type TransactionFilterCredenzaProps = {
-   categoryFilter: string;
+   timePeriod: TimePeriod | null;
+   onTimePeriodChange: (
+      period: TimePeriod | null,
+      range: TimePeriodDateRange,
+   ) => void;
+   customStartDate?: Date | null;
+   customEndDate?: Date | null;
+   onCustomStartDateChange: (date: Date | undefined) => void;
+   onCustomEndDateChange: (date: Date | undefined) => void;
    typeFilter: string;
-   bankAccountFilter?: string;
-   pageSize?: number;
-   startDate?: Date;
-   endDate?: Date;
-   onCategoryFilterChange: (value: string) => void;
    onTypeFilterChange: (value: string) => void;
-   onBankAccountFilterChange?: (value: string) => void;
-   onPageSizeChange?: (value: number) => void;
-   onStartDateChange?: (date: Date | undefined) => void;
-   onEndDateChange?: (date: Date | undefined) => void;
-   onClearFilters?: () => void;
+   categoryFilter: string;
+   onCategoryFilterChange: (value: string) => void;
    categories: Array<{
       id: string;
       name: string;
       color: string;
       icon: string | null;
    }>;
+   bankAccountFilter?: string;
+   onBankAccountFilterChange?: (value: string) => void;
    bankAccounts?: Array<{
       id: string;
       name: string | null;
       bank: string;
    }>;
+   onClearFilters: () => void;
+   hasActiveFilters: boolean;
 };
 
 export function TransactionFilterCredenza({
-   categoryFilter,
+   timePeriod,
+   onTimePeriodChange,
+   customStartDate,
+   customEndDate,
+   onCustomStartDateChange,
+   onCustomEndDateChange,
    typeFilter,
-   bankAccountFilter = "all",
-   pageSize = 10,
-   startDate,
-   endDate,
-   onCategoryFilterChange,
    onTypeFilterChange,
-   onBankAccountFilterChange,
-   onPageSizeChange,
-   onStartDateChange,
-   onEndDateChange,
-   onClearFilters,
+   categoryFilter,
+   onCategoryFilterChange,
    categories,
+   bankAccountFilter = "all",
+   onBankAccountFilterChange,
    bankAccounts = [],
+   onClearFilters,
+   hasActiveFilters,
 }: TransactionFilterCredenzaProps) {
    const { closeCredenza } = useCredenza();
 
@@ -83,66 +95,112 @@ export function TransactionFilterCredenza({
       })),
    ];
 
-   const bankAccountOptions = [
-      {
-         label: translate(
-            "dashboard.routes.transactions.features.filter.items.all-accounts",
-         ),
-         value: "all",
-      },
-      ...bankAccounts.map((account) => ({
-         label: `${account.name ?? "Unnamed Account"} - ${account.bank}`,
-         value: account.id,
-      })),
-   ];
-
-   const hasActiveFilters =
-      categoryFilter !== "all" ||
-      typeFilter !== "" ||
-      bankAccountFilter !== "all" ||
-      startDate !== undefined ||
-      endDate !== undefined;
-
-   const handleClearFilters = () => {
-      if (onClearFilters) {
-         onClearFilters();
-      } else {
-         onCategoryFilterChange("all");
-         onTypeFilterChange("");
-         onBankAccountFilterChange?.("all");
-         onStartDateChange?.(undefined);
-         onEndDateChange?.(undefined);
-      }
+   const handlePeriodClick = (period: TimePeriod) => {
+      const range = getDateRangeForPeriod(period);
+      onTimePeriodChange(period, range);
    };
+
+   const isCustomMode = timePeriod === "custom";
 
    return (
       <>
          <CredenzaHeader>
             <CredenzaTitle>
-               {translate(
-                  "dashboard.routes.transactions.features.filter.title",
-               )}
+               {translate("common.form.filter.title")}
             </CredenzaTitle>
             <CredenzaDescription>
-               {translate(
-                  "dashboard.routes.transactions.features.filter.description",
-               )}
+               {translate("common.form.filter.description")}
             </CredenzaDescription>
          </CredenzaHeader>
 
          <CredenzaBody>
             <div className="grid gap-4">
                {hasActiveFilters && (
-                  <div className="flex justify-end">
-                     <Button
-                        className="w-full flex items-center justify-center gap-2"
-                        onClick={handleClearFilters}
-                        variant="outline"
-                     >
-                        <X className="size-4" />
-                        {translate("common.actions.clear-filters")}
-                     </Button>
-                  </div>
+                  <Button
+                     className="w-full flex items-center justify-center gap-2"
+                     onClick={onClearFilters}
+                     variant="outline"
+                  >
+                     <X className="size-4" />
+                     {translate("common.form.filter.clear-all")}
+                  </Button>
+               )}
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate("common.form.period.label")}
+                     </FieldLabel>
+                     <div className="grid grid-cols-2 gap-2">
+                        {TIME_PERIODS.map((period) => {
+                           const Icon = period.icon;
+                           const isSelected = timePeriod === period.value;
+                           return (
+                              <Button
+                                 className={cn(
+                                    "justify-start gap-2",
+                                    isSelected &&
+                                       "bg-primary/10 border-primary text-primary",
+                                 )}
+                                 key={period.value}
+                                 onClick={() => handlePeriodClick(period.value)}
+                                 size="sm"
+                                 variant="outline"
+                              >
+                                 <Icon className="size-3.5" />
+                                 {period.label}
+                              </Button>
+                           );
+                        })}
+                        <Button
+                           className={cn(
+                              "justify-start gap-2 col-span-2",
+                              isCustomMode &&
+                                 "bg-primary/10 border-primary text-primary",
+                           )}
+                           onClick={() =>
+                              onTimePeriodChange("custom", {
+                                 endDate: customEndDate || null,
+                                 selectedMonth: new Date(),
+                                 startDate: customStartDate || null,
+                              })
+                           }
+                           size="sm"
+                           variant="outline"
+                        >
+                           {translate("common.form.date-range.custom")}
+                        </Button>
+                     </div>
+                  </Field>
+               </FieldGroup>
+
+               {isCustomMode && (
+                  <FieldGroup>
+                     <Field>
+                        <FieldLabel>
+                           {translate("common.form.date-range.start")}
+                        </FieldLabel>
+                        <DatePicker
+                           date={customStartDate || undefined}
+                           onSelect={onCustomStartDateChange}
+                           placeholder={translate(
+                              "common.form.date.placeholder",
+                           )}
+                        />
+                     </Field>
+                     <Field>
+                        <FieldLabel>
+                           {translate("common.form.date-range.end")}
+                        </FieldLabel>
+                        <DatePicker
+                           date={customEndDate || undefined}
+                           onSelect={onCustomEndDateChange}
+                           placeholder={translate(
+                              "common.form.date.placeholder",
+                           )}
+                        />
+                     </Field>
+                  </FieldGroup>
                )}
 
                <FieldGroup>
@@ -216,7 +274,7 @@ export function TransactionFilterCredenza({
                   <FieldGroup>
                      <Field>
                         <FieldLabel>
-                           {translate("common.form.bank.label")}
+                           {translate("common.form.bank-account.label")}
                         </FieldLabel>
                         <Select
                            onValueChange={onBankAccountFilterChange}
@@ -225,84 +283,22 @@ export function TransactionFilterCredenza({
                            <SelectTrigger>
                               <SelectValue
                                  placeholder={translate(
-                                    "common.form.bank.placeholder",
+                                    "common.form.bank-account.placeholder",
                                  )}
                               />
                            </SelectTrigger>
                            <SelectContent>
-                              {bankAccountOptions.map((option) => (
+                              <SelectItem value="all">
+                                 {translate(
+                                    "dashboard.routes.transactions.features.filter.items.all-accounts",
+                                 )}
+                              </SelectItem>
+                              {bankAccounts.map((account) => (
                                  <SelectItem
-                                    key={option.value}
-                                    value={option.value}
+                                    key={account.id}
+                                    value={account.id}
                                  >
-                                    {option.label}
-                                 </SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                     </Field>
-                  </FieldGroup>
-               )}
-
-               {onStartDateChange && (
-                  <FieldGroup>
-                     <Field>
-                        <FieldLabel>
-                           {translate(
-                              "dashboard.routes.transactions.features.filter.start-date.label",
-                           )}
-                        </FieldLabel>
-                        <DatePicker
-                           date={startDate}
-                           onSelect={onStartDateChange}
-                           placeholder={translate(
-                              "dashboard.routes.transactions.features.filter.start-date.placeholder",
-                           )}
-                        />
-                     </Field>
-                  </FieldGroup>
-               )}
-
-               {onEndDateChange && (
-                  <FieldGroup>
-                     <Field>
-                        <FieldLabel>
-                           {translate(
-                              "dashboard.routes.transactions.features.filter.end-date.label",
-                           )}
-                        </FieldLabel>
-                        <DatePicker
-                           date={endDate}
-                           onSelect={onEndDateChange}
-                           placeholder={translate(
-                              "dashboard.routes.transactions.features.filter.end-date.placeholder",
-                           )}
-                        />
-                     </Field>
-                  </FieldGroup>
-               )}
-
-               {onPageSizeChange && (
-                  <FieldGroup>
-                     <Field>
-                        <FieldLabel>
-                           {translate(
-                              "dashboard.routes.transactions.features.filter.page-size.label",
-                           )}
-                        </FieldLabel>
-                        <Select
-                           onValueChange={(value) =>
-                              onPageSizeChange(Number(value))
-                           }
-                           value={pageSize.toString()}
-                        >
-                           <SelectTrigger>
-                              <SelectValue />
-                           </SelectTrigger>
-                           <SelectContent>
-                              {[5, 10, 20, 30, 50].map((size) => (
-                                 <SelectItem key={size} value={size.toString()}>
-                                    {size}
+                                    {account.name || account.bank}
                                  </SelectItem>
                               ))}
                            </SelectContent>

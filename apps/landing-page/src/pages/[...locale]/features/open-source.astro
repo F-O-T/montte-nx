@@ -1,35 +1,8 @@
 ---
 export const prerender = true;
 
-import {
-   ArrowRight,
-   Check,
-   ChevronDown,
-   ChevronRight,
-   Code2,
-   CpuIcon,
-   Download,
-   ExternalLink,
-   FileJson,
-   GitBranch,
-   Github,
-   Globe,
-   Heart,
-   Link as LinkIcon,
-   Lock,
-   MessageCircle,
-   Rocket,
-   Server,
-   Shield,
-   ShieldCheck,
-   Users,
-} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
-import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -38,9 +11,9 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const lang = (locale || "pt-BR") as SupportedLng;
+const _lang = (locale || "pt-BR") as SupportedLng;
 
-const scaleFeatures = [
+const _scaleFeatures = [
    {
       title: "Transparência radical no código",
       description:
@@ -57,7 +30,7 @@ const scaleFeatures = [
    },
 ];
 
-const selfHostOptions = [
+const _selfHostOptions = [
    { name: "Docker Compose", time: "5 min" },
    { name: "Vercel", time: "2 min" },
    { name: "Railway", time: "1-click" },
@@ -65,7 +38,7 @@ const selfHostOptions = [
    { name: "Raspberry Pi", time: "15 min" },
 ];
 
-const troubleshootFeatures = [
+const _troubleshootFeatures = [
    {
       title: "Exporte seus dados a qualquer momento",
       description:
@@ -78,7 +51,7 @@ const troubleshootFeatures = [
    },
 ];
 
-const resolveFeatures = [
+const _resolveFeatures = [
    {
       title: "Licença Apache 2.0",
       description:
@@ -93,7 +66,7 @@ const resolveFeatures = [
    },
 ];
 
-const enterpriseFeatures = [
+const _enterpriseFeatures = [
    {
       icon: "CpuIcon",
       title: "Escalável de forma confiável",
@@ -114,7 +87,7 @@ const enterpriseFeatures = [
    },
 ];
 
-const faqs = [
+const _faqs = [
    {
       question: "O Montte é realmente gratuito e open source?",
       answer:

@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createCostCenter,
    deleteCostCenter,
@@ -10,6 +9,7 @@ import {
    getTotalCostCentersByOrganizationId,
    updateCostCenter,
 } from "@packages/database/repositories/cost-center-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

@@ -1,5 +1,10 @@
 import type { BankAccount } from "@packages/database/repositories/bank-account-repository";
 import { translate } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -11,13 +16,11 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
-import { Separator } from "@packages/ui/components/separator";
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
@@ -25,15 +28,30 @@ import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
    ArrowDownLeft,
    ArrowUpRight,
-   Calendar,
    ChevronDown,
-   CreditCard,
+   Download,
    Edit,
    Eye,
+   Landmark,
+   PiggyBank,
    Power,
    Trash2,
+   TrendingUp,
+   Upload,
    Wallet,
 } from "lucide-react";
+
+function getAccountTypeIcon(type: string | null | undefined) {
+   switch (type) {
+      case "savings":
+         return PiggyBank;
+      case "investment":
+         return TrendingUp;
+      default:
+         return Landmark;
+   }
+}
+
 import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
@@ -42,8 +60,6 @@ import { useToggleBankAccountStatus } from "@/pages/bank-accounts/features/use-t
 
 function BankAccountActionsCell({ account }: { account: BankAccount }) {
    const { activeOrganization } = useActiveOrganization();
-   const { openSheet } = useSheet();
-   const { deleteBankAccount } = useDeleteBankAccount({ bankAccount: account });
 
    return (
       <div className="flex justify-end gap-1">
@@ -64,45 +80,6 @@ function BankAccountActionsCell({ account }: { account: BankAccount }) {
             <TooltipContent>
                {translate(
                   "dashboard.routes.bank-accounts.list-section.actions.view-details",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  onClick={() =>
-                     openSheet({
-                        children: (
-                           <ManageBankAccountForm bankAccount={account} />
-                        ),
-                     })
-                  }
-                  size="icon"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.bank-accounts.list-section.actions.edit",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  className="text-destructive hover:text-destructive"
-                  onClick={deleteBankAccount}
-                  size="icon"
-                  variant="outline"
-               >
-                  <Trash2 className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.bank-accounts.list-section.actions.delete",
                )}
             </TooltipContent>
          </Tooltip>
@@ -136,13 +113,18 @@ export function createBankAccountColumns(): ColumnDef<BankAccount>[] {
       {
          accessorKey: "type",
          cell: ({ row }) => {
-            const type = row.getValue("type") as string;
-            const typeMap = {
-               checking: "Conta corrente",
-               investment: "Conta de investimento",
-               savings: "Conta poupança",
-            };
-            return <span>{typeMap[type as keyof typeof typeMap] || type}</span>;
+            const account = row.original;
+            const AccountTypeIcon = getAccountTypeIcon(account.type);
+            return (
+               <Announcement>
+                  <AnnouncementTag className="flex items-center gap-1.5">
+                     <AccountTypeIcon className="size-3.5" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle>
+                     {typeMap[account.type] || account.type}
+                  </AnnouncementTitle>
+               </Announcement>
+            );
          },
          enableSorting: true,
          header: "Tipo",
@@ -200,29 +182,11 @@ export function BankAccountExpandedContent({
 }: BankAccountExpandedContentProps) {
    const account = row.original;
    const { activeOrganization } = useActiveOrganization();
-   const isMobile = useIsMobile();
    const { openSheet } = useSheet();
    const { deleteBankAccount } = useDeleteBankAccount({ bankAccount: account });
    const { toggleStatus, isUpdating } = useToggleBankAccountStatus({
       bankAccount: account,
    });
-
-   const statusToggleButton = (
-      <Button
-         disabled={isUpdating}
-         onClick={(e) => {
-            e.stopPropagation();
-            toggleStatus();
-         }}
-         size="sm"
-         variant="outline"
-      >
-         <Power className="size-4" />
-         {account.status === "active"
-            ? translate("dashboard.routes.bank-accounts.status.active")
-            : translate("dashboard.routes.bank-accounts.status.inactive")}
-      </Button>
-   );
 
    const handleEdit = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -236,205 +200,123 @@ export function BankAccountExpandedContent({
       deleteBankAccount();
    };
 
-   if (isMobile) {
-      return (
-         <div className="p-4 space-y-4">
-            <div className="space-y-3">
-               <div className="flex items-center gap-2">
-                  <Wallet className="size-4 text-muted-foreground" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.stats-section.total-balance.title",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium">
-                        {formatDecimalCurrency(balance)}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <ArrowDownLeft className="size-4 text-emerald-500" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.stats-section.total-income.title",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium text-emerald-500">
-                        +{formatDecimalCurrency(income)}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <ArrowUpRight className="size-4 text-destructive" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium text-destructive">
-                        -{formatDecimalCurrency(expenses)}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <CreditCard className="size-4 text-muted-foreground" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate("dashboard.routes.bank-accounts.table.type")}
-                     </p>
-                     <p className="text-sm font-medium">
-                        {typeMap[account.type] || account.type}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <Calendar className="size-4 text-muted-foreground" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.table.created-at",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium">
-                        {formatDate(new Date(account.createdAt), "DD MMM YYYY")}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               {statusToggleButton}
-            </div>
+   // Common stats row for both mobile and desktop
+   const statsRow = (
+      <div className="flex flex-wrap items-center gap-2">
+         <Announcement>
+            <AnnouncementTag className="flex items-center gap-1.5">
+               <Wallet className="size-3.5" />
+               {translate(
+                  "dashboard.routes.bank-accounts.stats-section.current-balance.title",
+               )}
+            </AnnouncementTag>
+            <AnnouncementTitle>
+               {formatDecimalCurrency(balance)}
+            </AnnouncementTitle>
+         </Announcement>
 
-            <Separator />
+         <div className="h-4 w-px bg-border" />
 
-            <div className="space-y-2">
-               <Button
-                  asChild
-                  className="w-full justify-start"
-                  size="sm"
-                  variant="outline"
-               >
-                  <Link
-                     params={{
-                        bankAccountId: account.id,
-                        slug: activeOrganization.slug,
-                     }}
-                     to="/$slug/bank-accounts/$bankAccountId"
-                  >
-                     <Eye className="size-4" />
-                     {translate(
-                        "dashboard.routes.bank-accounts.list-section.actions.view-details",
-                     )}
-                  </Link>
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  onClick={handleEdit}
-                  size="sm"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.actions.edit",
-                  )}
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  onClick={handleDelete}
-                  size="sm"
-                  variant="destructive"
-               >
-                  <Trash2 className="size-4" />
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.actions.delete",
-                  )}
-               </Button>
-            </div>
-         </div>
-      );
-   }
+         <Announcement>
+            <AnnouncementTag className="flex items-center gap-1.5">
+               <ArrowDownLeft className="size-3.5 text-emerald-500" />
+               {translate(
+                  "dashboard.routes.bank-accounts.stats-section.total-income.title",
+               )}
+            </AnnouncementTag>
+            <AnnouncementTitle className="text-emerald-500">
+               +{formatDecimalCurrency(income)}
+            </AnnouncementTitle>
+         </Announcement>
+
+         <div className="h-4 w-px bg-border" />
+
+         <Announcement>
+            <AnnouncementTag className="flex items-center gap-1.5">
+               <ArrowUpRight className="size-3.5 text-destructive" />
+               {translate(
+                  "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+               )}
+            </AnnouncementTag>
+            <AnnouncementTitle className="text-destructive">
+               -{formatDecimalCurrency(expenses)}
+            </AnnouncementTitle>
+         </Announcement>
+      </div>
+   );
+
+   // Common actions row for both mobile and desktop
+   const actionsRow = (
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+         <Button
+            disabled={isUpdating}
+            onClick={(e) => {
+               e.stopPropagation();
+               toggleStatus();
+            }}
+            size="sm"
+            variant="outline"
+         >
+            <Power className="size-4" />
+            {account.status === "active" ? "Desativar" : "Ativar"}
+         </Button>
+         <Button asChild size="sm" variant="outline">
+            <Link
+               params={{
+                  bankAccountId: account.id,
+                  slug: activeOrganization.slug,
+               }}
+               to="/$slug/bank-accounts/$bankAccountId"
+            >
+               <Eye className="size-4" />
+               {translate(
+                  "dashboard.routes.bank-accounts.list-section.actions.view-details",
+               )}
+            </Link>
+         </Button>
+         <Button asChild size="sm" variant="outline">
+            <Link
+               params={{
+                  slug: activeOrganization.slug,
+               }}
+               search={{ bankAccountId: account.id }}
+               to="/$slug/import"
+            >
+               <Upload className="size-4" />
+               Importar Extrato
+            </Link>
+         </Button>
+         <Button asChild size="sm" variant="outline">
+            <Link
+               params={{
+                  slug: activeOrganization.slug,
+               }}
+               search={{ bankAccountId: account.id }}
+               to="/$slug/export"
+            >
+               <Download className="size-4" />
+               Exportar Extrato
+            </Link>
+         </Button>
+         <Button onClick={handleEdit} size="sm" variant="outline">
+            <Edit className="size-4" />
+            {translate(
+               "dashboard.routes.bank-accounts.list-section.actions.edit",
+            )}
+         </Button>
+         <Button onClick={handleDelete} size="sm" variant="destructive">
+            <Trash2 className="size-4" />
+            {translate(
+               "dashboard.routes.bank-accounts.list-section.actions.delete",
+            )}
+         </Button>
+      </div>
+   );
 
    return (
-      <div className="p-4 flex items-center justify-between gap-6">
-         <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-               <Wallet className="size-4 text-muted-foreground" />
-               <div>
-                  <p className="text-xs text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.bank-accounts.stats-section.total-balance.title",
-                     )}
-                  </p>
-                  <p className="text-sm font-medium">
-                     {formatDecimalCurrency(balance)}
-                  </p>
-               </div>
-            </div>
-            <Separator className="h-8" orientation="vertical" />
-            <div className="flex items-center gap-2">
-               <ArrowDownLeft className="size-4 text-emerald-500" />
-               <div>
-                  <p className="text-xs text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.bank-accounts.stats-section.total-income.title",
-                     )}
-                  </p>
-                  <p className="text-sm font-medium text-emerald-500">
-                     +{formatDecimalCurrency(income)}
-                  </p>
-               </div>
-            </div>
-            <Separator className="h-8" orientation="vertical" />
-            <div className="flex items-center gap-2">
-               <ArrowUpRight className="size-4 text-destructive" />
-               <div>
-                  <p className="text-xs text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
-                     )}
-                  </p>
-                  <p className="text-sm font-medium text-destructive">
-                     -{formatDecimalCurrency(expenses)}
-                  </p>
-               </div>
-            </div>
-         </div>
-
-         <div className="flex items-center gap-2">
-            {statusToggleButton}
-            <Button asChild size="sm" variant="outline">
-               <Link
-                  params={{
-                     bankAccountId: account.id,
-                     slug: activeOrganization.slug,
-                  }}
-                  to="/$slug/bank-accounts/$bankAccountId"
-               >
-                  <Eye className="size-4" />
-                  {translate(
-                     "dashboard.routes.bank-accounts.list-section.actions.view-details",
-                  )}
-               </Link>
-            </Button>
-            <Button onClick={handleEdit} size="sm" variant="outline">
-               <Edit className="size-4" />
-               {translate(
-                  "dashboard.routes.bank-accounts.list-section.actions.edit",
-               )}
-            </Button>
-            <Button onClick={handleDelete} size="sm" variant="destructive">
-               <Trash2 className="size-4" />
-               {translate(
-                  "dashboard.routes.bank-accounts.list-section.actions.delete",
-               )}
-            </Button>
-         </div>
+      <div className="p-4 space-y-4">
+         {statsRow}
+         {actionsRow}
       </div>
    );
 }

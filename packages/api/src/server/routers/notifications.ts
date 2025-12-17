@@ -1,9 +1,9 @@
-import { APIError } from "@packages/utils/errors";
 import {
    findNotificationsByUserId,
    findUnreadNotificationsByUserId,
    markNotificationAsRead,
 } from "@packages/database/repositories/notification-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

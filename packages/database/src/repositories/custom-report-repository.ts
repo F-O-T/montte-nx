@@ -449,14 +449,14 @@ export async function generateDREGerencialData(
          filterConfig?.tagIds && filterConfig.tagIds.length > 0;
 
       let transactionIdsFromCategoryFilter: string[] | null = null;
-      if (hasCategoryFilter) {
+      if (hasCategoryFilter && filterConfig.categoryIds) {
          const categoryTransactions = await dbClient
             .select({ transactionId: transactionCategory.transactionId })
             .from(transactionCategory)
             .where(
                inArray(
                   transactionCategory.categoryId,
-                  filterConfig.categoryIds!,
+                  filterConfig.categoryIds,
                ),
             );
          transactionIdsFromCategoryFilter = categoryTransactions.map(
@@ -465,11 +465,11 @@ export async function generateDREGerencialData(
       }
 
       let transactionIdsFromTagFilter: string[] | null = null;
-      if (hasTagFilter) {
+      if (hasTagFilter && filterConfig.tagIds) {
          const tagTransactions = await dbClient
             .select({ transactionId: transactionTag.transactionId })
             .from(transactionTag)
-            .where(inArray(transactionTag.tagId, filterConfig.tagIds!));
+            .where(inArray(transactionTag.tagId, filterConfig.tagIds));
          transactionIdsFromTagFilter = tagTransactions.map(
             (t) => t.transactionId,
          );
@@ -481,15 +481,15 @@ export async function generateDREGerencialData(
          lte(transaction.date, endDate),
       ];
 
-      if (hasBankAccountFilter) {
+      if (hasBankAccountFilter && filterConfig.bankAccountIds) {
          baseConditions.push(
-            inArray(transaction.bankAccountId, filterConfig.bankAccountIds!),
+            inArray(transaction.bankAccountId, filterConfig.bankAccountIds),
          );
       }
 
-      if (hasCostCenterFilter) {
+      if (hasCostCenterFilter && filterConfig.costCenterIds) {
          baseConditions.push(
-            inArray(transaction.costCenterId, filterConfig.costCenterIds!),
+            inArray(transaction.costCenterId, filterConfig.costCenterIds),
          );
       }
 
@@ -742,14 +742,14 @@ export async function generateDREFiscalData(
          filterConfig?.tagIds && filterConfig.tagIds.length > 0;
 
       let transactionIdsFromCategoryFilter: string[] | null = null;
-      if (hasCategoryFilter) {
+      if (hasCategoryFilter && filterConfig.categoryIds) {
          const categoryTransactions = await dbClient
             .select({ transactionId: transactionCategory.transactionId })
             .from(transactionCategory)
             .where(
                inArray(
                   transactionCategory.categoryId,
-                  filterConfig.categoryIds!,
+                  filterConfig.categoryIds,
                ),
             );
          transactionIdsFromCategoryFilter = categoryTransactions.map(
@@ -758,11 +758,11 @@ export async function generateDREFiscalData(
       }
 
       let transactionIdsFromTagFilter: string[] | null = null;
-      if (hasTagFilter) {
+      if (hasTagFilter && filterConfig.tagIds) {
          const tagTransactions = await dbClient
             .select({ transactionId: transactionTag.transactionId })
             .from(transactionTag)
-            .where(inArray(transactionTag.tagId, filterConfig.tagIds!));
+            .where(inArray(transactionTag.tagId, filterConfig.tagIds));
          transactionIdsFromTagFilter = tagTransactions.map(
             (t) => t.transactionId,
          );
@@ -774,15 +774,15 @@ export async function generateDREFiscalData(
          lte(transaction.date, endDate),
       ];
 
-      if (hasBankAccountFilter) {
+      if (hasBankAccountFilter && filterConfig.bankAccountIds) {
          baseConditions.push(
-            inArray(transaction.bankAccountId, filterConfig.bankAccountIds!),
+            inArray(transaction.bankAccountId, filterConfig.bankAccountIds),
          );
       }
 
-      if (hasCostCenterFilter) {
+      if (hasCostCenterFilter && filterConfig.costCenterIds) {
          baseConditions.push(
-            inArray(transaction.costCenterId, filterConfig.costCenterIds!),
+            inArray(transaction.costCenterId, filterConfig.costCenterIds),
          );
       }
 

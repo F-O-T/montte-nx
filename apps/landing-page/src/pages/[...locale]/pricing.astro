@@ -1,24 +1,6 @@
 ---
 export const prerender = true;
 
-import {
-   ChartPie,
-   Check,
-   CreditCard,
-   FileText,
-   FolderSync,
-   LayoutDashboard,
-   Lock,
-   Server,
-   Settings,
-   Users,
-   Wallet,
-   Zap,
-} from "@lucide/astro";
-import StickyNavbar from "@/components/StickyNavbar.astro";
-import Landing from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
-
 export function getStaticPaths() {
    return [
       { params: { locale: undefined } },

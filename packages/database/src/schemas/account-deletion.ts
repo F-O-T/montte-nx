@@ -1,22 +1,22 @@
 import { sql } from "drizzle-orm";
 import {
-	index,
-	pgEnum,
-	pgTable,
-	text,
-	timestamp,
-	uuid,
+   index,
+   pgEnum,
+   pgTable,
+   text,
+   timestamp,
+   uuid,
 } from "drizzle-orm/pg-core";
 
 export const deletionTypeEnum = pgEnum("deletion_type", [
-	"immediate",
-	"grace_period",
+   "immediate",
+   "grace_period",
 ]);
 
 export const deletionStatusEnum = pgEnum("deletion_status", [
-	"pending",
-	"cancelled",
-	"completed",
+   "pending",
+   "cancelled",
+   "completed",
 ]);
 
 export const accountDeletionRequest = pgTable(

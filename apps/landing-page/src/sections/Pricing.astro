@@ -1,12 +1,5 @@
 ---
-import {
-   Building2,
-   Check,
-   Github,
-   Rocket,
-   Server,
-   Sparkles,
-} from "@lucide/astro";
+import { Building2, Server, Sparkles } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
 
 interface Props {
@@ -15,7 +8,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const plans = [
+const _plans = [
    {
       name: "Free",
       icon: Server,

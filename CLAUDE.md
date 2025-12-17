@@ -225,6 +225,92 @@ import { EncryptionSetupCredenza } from "@/features/encryption/ui/encryption-set
 
 **Exception:** Package entry points (packages/*/src/index.ts) are allowed for external consumers.
 
+### Biome Lint Suppressions
+
+When you need to suppress a Biome lint rule, use `// biome-ignore` comments. The comment must be placed **directly above the line** that triggers the error.
+
+#### Syntax
+```typescript
+// biome-ignore lint/[category]/[rule]: [reason]
+```
+
+#### Placement Rules
+
+**For JSX props**, place the comment directly above the prop that triggers the error:
+```typescript
+// Good - comment directly above the key prop
+<TableCell
+   className="whitespace-nowrap"
+   // biome-ignore lint/suspicious/noArrayIndexKey: Static data with no unique identifiers
+   key={index}
+>
+
+// Bad - comment above the element (won't work for props on separate lines)
+// biome-ignore lint/suspicious/noArrayIndexKey: reason
+<TableCell
+   className="whitespace-nowrap"
+   key={index}
+>
+```
+
+**For single-line elements**, place the comment above the element:
+```typescript
+// biome-ignore lint/suspicious/noArrayIndexKey: Static skeleton array
+<Skeleton className="h-8 w-20" key={i} />
+```
+
+**For TypeScript code**, place the comment directly above the line:
+```typescript
+// biome-ignore lint/suspicious/noExplicitAny: Testing invalid input type
+expect(evaluateNumber("between", 5, [1] as any)).toBe(false);
+```
+
+#### Array Index Keys
+
+**Prefer using descriptive string keys** instead of suppressing the `noArrayIndexKey` rule. Use a template string with a descriptive name and 1-based index:
+
+```typescript
+// Good - descriptive string key
+{steps.map((_, index) => (
+   <div key={`step-${index + 1}`} />
+))}
+
+// Good - nested arrays with descriptive keys
+{rows.map((row, rowIndex) => (
+   <TableRow key={`row-${rowIndex + 1}`}>
+      {row.map((cell, cellIndex) => (
+         <TableCell key={`cell-${rowIndex + 1}-${cellIndex + 1}`} />
+      ))}
+   </TableRow>
+))}
+
+// Good - skeleton loaders
+{Array.from({ length: 5 }).map((_, i) => (
+   <Skeleton key={`skeleton-${i + 1}`} />
+))}
+```
+
+**Why this pattern:**
+- Avoids lint suppressions entirely
+- Creates human-readable keys for debugging
+- 1-based indexing is more intuitive when inspecting the DOM
+
+#### Common Suppressions
+
+| Rule | Use Case |
+|------|----------|
+| `lint/suspicious/noExplicitAny` | Test files testing invalid input types |
+| `lint/correctness/noUnusedVariables` | Variables used in templates (Astro) or intentionally unused |
+
+#### When to Suppress
+
+Only suppress lint rules when:
+1. The rule is a false positive (e.g., Astro template variables)
+2. The code is intentionally violating the rule for a valid reason (e.g., testing edge cases)
+3. There's no reasonable alternative that satisfies the rule
+
+Always include a brief reason explaining why the suppression is necessary.
+
 ### File Naming
 
 Use **kebab-case** for all files:

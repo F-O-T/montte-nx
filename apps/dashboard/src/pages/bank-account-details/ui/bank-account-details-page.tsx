@@ -1,32 +1,22 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
-   DropdownMenu,
-   DropdownMenuContent,
-   DropdownMenuItem,
-   DropdownMenuTrigger,
-} from "@packages/ui/components/dropdown-menu";
-import {
    Empty,
    EmptyContent,
    EmptyDescription,
    EmptyMedia,
    EmptyTitle,
 } from "@packages/ui/components/empty";
-import { MonthSelector } from "@packages/ui/components/month-selector";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    getDateRangeForPeriod,
    type TimePeriod,
-   TimePeriodChips,
    type TimePeriodDateRange,
 } from "@packages/ui/components/time-period-chips";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "@tanstack/react-router";
-import { endOfMonth, startOfMonth } from "date-fns";
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import {
    Building,
-   ChevronDown,
    Download,
    Edit,
    Home,
@@ -34,20 +24,18 @@ import {
    Trash2,
    Upload,
 } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { usePendingOfxImport } from "@/hooks/use-pending-ofx-import";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ExportOfxForm } from "../features/export-ofx-form";
-import { ImportOfxForm } from "../features/import-ofx-form";
 import { useDeleteBankAccount } from "../features/use-delete-bank-account";
 import { BankAccountCharts } from "./bank-account-charts";
+import { BankAccountFilterBar } from "./bank-account-filter-bar";
 import { RecentTransactions } from "./bank-account-recent-transactions-section";
 import { BankAccountStats } from "./bank-account-stats";
 
@@ -59,56 +47,65 @@ function BankAccountContent() {
    const { openSheet } = useSheet();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-   const { getPending, clearPending } = usePendingOfxImport();
 
    const [timePeriod, setTimePeriod] = useState<TimePeriod | null>(
       "this-month",
    );
-   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
-   const [dateRange, setDateRange] = useState<{
+   const [customDateRange, setCustomDateRange] = useState<{
       startDate: Date | null;
       endDate: Date | null;
-   }>(() => {
-      const range = getDateRangeForPeriod("this-month");
-      return { endDate: range.endDate, startDate: range.startDate };
-   });
+   }>({ startDate: null, endDate: null });
+   const [typeFilter, setTypeFilter] = useState<string>("");
+   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+
+   const effectiveDateRange = useMemo(() => {
+      if (timePeriod === "custom") {
+         return customDateRange;
+      }
+      if (timePeriod) {
+         const range = getDateRangeForPeriod(timePeriod);
+         return { endDate: range.endDate, startDate: range.startDate };
+      }
+      return { startDate: null, endDate: null };
+   }, [timePeriod, customDateRange]);
 
    const handleTimePeriodChange = (
       period: TimePeriod | null,
       range: TimePeriodDateRange,
    ) => {
       setTimePeriod(period);
-      setDateRange({ endDate: range.endDate, startDate: range.startDate });
-      if (range.selectedMonth) {
-         setSelectedMonth(range.selectedMonth);
+      if (period === "custom") {
+         setCustomDateRange({
+            endDate: range.endDate,
+            startDate: range.startDate,
+         });
       }
    };
 
-   const handleMonthChange = (month: Date) => {
-      setSelectedMonth(month);
-      setTimePeriod(null);
-      setDateRange({
-         endDate: endOfMonth(month),
-         startDate: startOfMonth(month),
-      });
+   const handleClearFilters = () => {
+      setTimePeriod("this-month");
+      setCustomDateRange({ startDate: null, endDate: null });
+      setTypeFilter("");
+      setCategoryFilter("all");
    };
 
+   const hasActiveFilters =
+      (timePeriod !== "this-month" && timePeriod !== null) ||
+      typeFilter !== "" ||
+      categoryFilter !== "all";
+
    const chartGranularity =
-      timePeriod === "all-time" ? ("monthly" as const) : ("daily" as const);
+      timePeriod === "all-time" || timePeriod === "this-year"
+         ? ("monthly" as const)
+         : ("daily" as const);
 
    const { data: bankAccount } = useSuspenseQuery(
       trpc.bankAccounts.getById.queryOptions({ id: bankAccountId }),
    );
 
-   useEffect(() => {
-      const pending = getPending();
-      if (pending && bankAccountId) {
-         clearPending();
-         openSheet({
-            children: <ImportOfxForm bankAccountId={bankAccountId} />,
-         });
-      }
-   }, [bankAccountId, getPending, clearPending, openSheet]);
+   const { data: categories = [] } = useSuspenseQuery(
+      trpc.categories.getAll.queryOptions(),
+   );
 
    const handleDeleteSuccess = () => {
       router.navigate({
@@ -156,56 +153,26 @@ function BankAccountContent() {
          />
 
          <div className="flex flex-wrap items-center gap-2">
-            <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline">
-                     <Upload className="size-4" />
-                     Importar Extrato
-                     <ChevronDown className="size-4" />
-                  </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent align="start">
-                  <DropdownMenuItem
-                     onClick={() =>
-                        openSheet({
-                           children: (
-                              <ImportOfxForm bankAccountId={bankAccountId} />
-                           ),
-                        })
-                     }
-                  >
-                     <Upload className="size-4" />
-                     Importar OFX
-                  </DropdownMenuItem>
-               </DropdownMenuContent>
-            </DropdownMenu>
-            <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline">
-                     <Download className="size-4" />
-                     Exportar Extrato
-                     <ChevronDown className="size-4" />
-                  </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent align="start">
-                  <DropdownMenuItem
-                     onClick={() =>
-                        openSheet({
-                           children: (
-                              <ExportOfxForm
-                                 bankAccountId={bankAccountId}
-                                 endDate={dateRange.endDate}
-                                 startDate={dateRange.startDate}
-                              />
-                           ),
-                        })
-                     }
-                  >
-                     <Download className="size-4" />
-                     Exportar OFX
-                  </DropdownMenuItem>
-               </DropdownMenuContent>
-            </DropdownMenu>
+            <Button asChild size="sm" variant="outline">
+               <Link
+                  params={{ slug: activeOrganization.slug }}
+                  search={{ bankAccountId }}
+                  to="/$slug/import"
+               >
+                  <Upload className="size-4" />
+                  Importar Extrato
+               </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+               <Link
+                  params={{ slug: activeOrganization.slug }}
+                  search={{ bankAccountId }}
+                  to="/$slug/export"
+               >
+                  <Download className="size-4" />
+                  Exportar Extrato
+               </Link>
+            </Button>
             <Button
                onClick={() =>
                   openSheet({
@@ -231,35 +198,37 @@ function BankAccountContent() {
             </Button>
          </div>
 
-         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <TimePeriodChips
-               onValueChange={handleTimePeriodChange}
-               size="sm"
-               value={timePeriod}
-            />
-            <div className="hidden sm:block h-4 w-px bg-border" />
-            <MonthSelector
-               date={selectedMonth}
-               disabled={timePeriod !== null && timePeriod !== "all-time"}
-               onSelect={handleMonthChange}
-            />
-         </div>
+         <BankAccountFilterBar
+            categories={categories}
+            categoryFilter={categoryFilter}
+            customDateRange={customDateRange}
+            hasActiveFilters={hasActiveFilters}
+            onCategoryFilterChange={setCategoryFilter}
+            onClearFilters={handleClearFilters}
+            onCustomDateRangeChange={setCustomDateRange}
+            onTimePeriodChange={handleTimePeriodChange}
+            onTypeFilterChange={setTypeFilter}
+            timePeriod={timePeriod}
+            typeFilter={typeFilter}
+         />
 
          <BankAccountStats
             bankAccountId={bankAccountId}
-            endDate={dateRange.endDate}
-            startDate={dateRange.startDate}
+            endDate={effectiveDateRange.endDate}
+            startDate={effectiveDateRange.startDate}
          />
          <BankAccountCharts
             bankAccountId={bankAccountId}
-            endDate={dateRange.endDate}
+            endDate={effectiveDateRange.endDate}
             granularity={chartGranularity}
-            startDate={dateRange.startDate}
+            startDate={effectiveDateRange.startDate}
          />
          <RecentTransactions
             bankAccountId={bankAccountId}
-            endDate={dateRange.endDate}
-            startDate={dateRange.startDate}
+            categoryFilter={categoryFilter}
+            endDate={effectiveDateRange.endDate}
+            startDate={effectiveDateRange.startDate}
+            typeFilter={typeFilter}
          />
       </main>
    );

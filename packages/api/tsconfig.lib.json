@@ -46,6 +46,9 @@
       "path": "../cache/tsconfig.lib.json"
     },
     {
+      "path": "../csv/tsconfig.lib.json"
+    },
+    {
       "path": "../brasil-api/tsconfig.lib.json"
     },
     {

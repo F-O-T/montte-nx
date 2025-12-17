@@ -54,12 +54,14 @@ export function EncryptionSetupCredenza({
 
    const schema = z
       .object({
-         passphrase: z.string().min(
-            8,
-            translate(
-               "dashboard.routes.settings.encryption.errors.passphrase-too-short",
+         passphrase: z
+            .string()
+            .min(
+               8,
+               translate(
+                  "dashboard.routes.settings.encryption.errors.passphrase-too-short",
+               ),
             ),
-         ),
          confirmPassphrase: z.string(),
       })
       .refine((data) => data.passphrase === data.confirmPassphrase, {
@@ -211,7 +213,8 @@ export function EncryptionSetupCredenza({
                   <form.Field name="passphrase">
                      {(field) => {
                         const isInvalid =
-                           field.state.meta.isTouched && !field.state.meta.isValid;
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
                         return (
                            <FieldGroup>
                               <Field data-invalid={isInvalid}>
@@ -241,7 +244,9 @@ export function EncryptionSetupCredenza({
                                     )}
                                  </FieldDescription>
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            </FieldGroup>
@@ -252,7 +257,8 @@ export function EncryptionSetupCredenza({
                   <form.Field name="confirmPassphrase">
                      {(field) => {
                         const isInvalid =
-                           field.state.meta.isTouched && !field.state.meta.isValid;
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
                         return (
                            <FieldGroup>
                               <Field data-invalid={isInvalid}>
@@ -277,7 +283,9 @@ export function EncryptionSetupCredenza({
                                     value={field.state.value}
                                  />
                                  {isInvalid && (
-                                    <FieldError errors={field.state.meta.errors} />
+                                    <FieldError
+                                       errors={field.state.meta.errors}
+                                    />
                                  )}
                               </Field>
                            </FieldGroup>
@@ -294,7 +302,9 @@ export function EncryptionSetupCredenza({
                <form.Subscribe>
                   {(formState) => (
                      <Button
-                        disabled={formState.isSubmitting || formState.isValidating}
+                        disabled={
+                           formState.isSubmitting || formState.isValidating
+                        }
                         onClick={handleContinueToConfirm}
                      >
                         {translate("common.actions.continue")}

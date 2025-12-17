@@ -15,7 +15,10 @@ export function useCookieConsent() {
             setConsent(stored as ConsentStatus);
          }
       } catch (error) {
-         console.error("Failed to read cookie consent from localStorage:", error);
+         console.error(
+            "Failed to read cookie consent from localStorage:",
+            error,
+         );
       } finally {
          setIsHydrated(true);
       }
@@ -43,7 +46,10 @@ export function useCookieConsent() {
       try {
          localStorage.removeItem(STORAGE_KEY);
       } catch (error) {
-         console.error("Failed to remove cookie consent from localStorage:", error);
+         console.error(
+            "Failed to remove cookie consent from localStorage:",
+            error,
+         );
       }
       setConsent(null);
    };

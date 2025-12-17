@@ -53,10 +53,25 @@ function BankAccountsStatsSkeleton() {
    );
 }
 
-function BankAccountsStatsContent() {
+type BankAccountsStatsContentProps = {
+   statusFilter: string;
+   typeFilter: string;
+};
+
+function BankAccountsStatsContent({
+   statusFilter,
+   typeFilter,
+}: BankAccountsStatsContentProps) {
    const trpc = useTRPC();
    const { data: stats } = useSuspenseQuery(
-      trpc.bankAccounts.getStats.queryOptions(),
+      trpc.bankAccounts.getStats.queryOptions({
+         status: statusFilter
+            ? (statusFilter as "active" | "inactive")
+            : undefined,
+         type: typeFilter
+            ? (typeFilter as "checking" | "savings" | "investment")
+            : undefined,
+      }),
    );
 
    return (
@@ -101,11 +116,22 @@ function BankAccountsStatsContent() {
    );
 }
 
-export function BankAccountsStats() {
+type BankAccountsStatsProps = {
+   statusFilter: string;
+   typeFilter: string;
+};
+
+export function BankAccountsStats({
+   statusFilter,
+   typeFilter,
+}: BankAccountsStatsProps) {
    return (
       <ErrorBoundary FallbackComponent={BankAccountsStatsErrorFallback}>
          <Suspense fallback={<BankAccountsStatsSkeleton />}>
-            <BankAccountsStatsContent />
+            <BankAccountsStatsContent
+               statusFilter={statusFilter}
+               typeFilter={typeFilter}
+            />
          </Suspense>
       </ErrorBoundary>
    );

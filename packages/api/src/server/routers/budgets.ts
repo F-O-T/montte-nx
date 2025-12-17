@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    calculatePeriodDates,
    checkBudgetImpact,
@@ -18,6 +17,7 @@ import {
    updateBudget,
    updateBudgets,
 } from "@packages/database/repositories/budget-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

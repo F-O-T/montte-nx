@@ -203,6 +203,7 @@
         "@packages/authentication": "workspace:*",
         "@packages/brasil-api": "workspace:*",
         "@packages/cache": "workspace:*",
+        "@packages/csv": "workspace:*",
         "@packages/database": "workspace:*",
         "@packages/files": "workspace:*",
         "@packages/localization": "workspace:*",
@@ -268,6 +269,17 @@
       "dependencies": {
         "@packages/environment": "workspace:*",
         "ioredis": "catalog:workers",
+      },
+      "devDependencies": {
+        "@tooling/typescript": "workspace:*",
+        "typescript": "catalog:development",
+      },
+    },
+    "packages/csv": {
+      "name": "@packages/csv",
+      "version": "0.1.0",
+      "dependencies": {
+        "@packages/utils": "workspace:*",
       },
       "devDependencies": {
         "@tooling/typescript": "workspace:*",
@@ -1347,6 +1359,8 @@
     "@packages/brasil-api": ["@packages/brasil-api@workspace:packages/brasil-api"],
 
     "@packages/cache": ["@packages/cache@workspace:packages/cache"],
+
+    "@packages/csv": ["@packages/csv@workspace:packages/csv"],
 
     "@packages/database": ["@packages/database@workspace:packages/database"],
 

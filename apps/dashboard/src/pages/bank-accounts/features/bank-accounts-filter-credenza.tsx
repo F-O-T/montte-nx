@@ -7,13 +7,19 @@ import {
    CredenzaHeader,
    CredenzaTitle,
 } from "@packages/ui/components/credenza";
+import { Field, FieldGroup, FieldLabel } from "@packages/ui/components/field";
 import {
-   Select,
-   SelectContent,
-   SelectItem,
-   SelectTrigger,
-   SelectValue,
-} from "@packages/ui/components/select";
+   ToggleGroup,
+   ToggleGroupItem,
+} from "@packages/ui/components/toggle-group";
+import {
+   CheckCircle,
+   CircleDashed,
+   CreditCard,
+   PiggyBank,
+   TrendingUp,
+   X,
+} from "lucide-react";
 import { useCredenza } from "@/hooks/use-credenza";
 
 interface BankAccountsFilterCredenzaProps {
@@ -21,9 +27,8 @@ interface BankAccountsFilterCredenzaProps {
    onStatusFilterChange: (value: string) => void;
    typeFilter: string;
    onTypeFilterChange: (value: string) => void;
-   sortBy: string;
-   onSortByChange: (value: string) => void;
    onClearFilters: () => void;
+   hasActiveFilters: boolean;
 }
 
 export function BankAccountsFilterCredenza({
@@ -31,112 +36,119 @@ export function BankAccountsFilterCredenza({
    onStatusFilterChange,
    typeFilter,
    onTypeFilterChange,
-   sortBy,
-   onSortByChange,
    onClearFilters,
+   hasActiveFilters,
 }: BankAccountsFilterCredenzaProps) {
    const { closeCredenza } = useCredenza();
-
-   const handleApply = () => {
-      closeCredenza();
-   };
-
-   const handleClear = () => {
-      onClearFilters();
-      closeCredenza();
-   };
 
    return (
       <>
          <CredenzaHeader>
-            <CredenzaTitle>Filtrar Contas</CredenzaTitle>
+            <CredenzaTitle>
+               {translate("common.form.filter.title")}
+            </CredenzaTitle>
             <CredenzaDescription>
-               Personalize sua visualização aplicando filtros
+               {translate("common.form.filter.description")}
             </CredenzaDescription>
          </CredenzaHeader>
 
          <CredenzaBody>
-            <div className="space-y-6">
-               <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
-                  <Select
-                     onValueChange={onStatusFilterChange}
-                     value={statusFilter || "all"}
+            <div className="grid gap-4">
+               {hasActiveFilters && (
+                  <Button
+                     className="w-full flex items-center justify-center gap-2"
+                     onClick={onClearFilters}
+                     variant="outline"
                   >
-                     <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o status" />
-                     </SelectTrigger>
-                     <SelectContent>
-                        <SelectItem value="all">Todos os status</SelectItem>
-                        <SelectItem value="active">
+                     <X className="size-4" />
+                     {translate("common.form.filter.clear-all")}
+                  </Button>
+               )}
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>Status</FieldLabel>
+                     <ToggleGroup
+                        className="justify-start"
+                        onValueChange={onStatusFilterChange}
+                        size="sm"
+                        spacing={2}
+                        type="single"
+                        value={statusFilter}
+                        variant="outline"
+                     >
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                           value="active"
+                        >
+                           <CheckCircle className="size-3.5" />
                            {translate(
                               "dashboard.routes.bank-accounts.status.active",
                            )}
-                        </SelectItem>
-                        <SelectItem value="inactive">
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-muted-foreground data-[state=on]:text-muted-foreground"
+                           value="inactive"
+                        >
+                           <CircleDashed className="size-3.5" />
                            {translate(
                               "dashboard.routes.bank-accounts.status.inactive",
                            )}
-                        </SelectItem>
-                     </SelectContent>
-                  </Select>
-               </div>
+                        </ToggleGroupItem>
+                     </ToggleGroup>
+                  </Field>
+               </FieldGroup>
 
-               <div className="space-y-2">
-                  <label className="text-sm font-medium">Tipo</label>
-                  <Select
-                     onValueChange={onTypeFilterChange}
-                     value={typeFilter || "all"}
-                  >
-                     <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o tipo" />
-                     </SelectTrigger>
-                     <SelectContent>
-                        <SelectItem value="all">Todos os tipos</SelectItem>
-                        <SelectItem value="checking">
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate("common.form.type.label")}
+                     </FieldLabel>
+                     <ToggleGroup
+                        className="justify-start"
+                        onValueChange={onTypeFilterChange}
+                        size="sm"
+                        spacing={2}
+                        type="single"
+                        value={typeFilter}
+                        variant="outline"
+                     >
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                           value="checking"
+                        >
+                           <CreditCard className="size-3.5" />
                            {translate(
                               "dashboard.routes.bank-accounts.types.checking",
                            )}
-                        </SelectItem>
-                        <SelectItem value="savings">
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                           value="savings"
+                        >
+                           <PiggyBank className="size-3.5" />
                            {translate(
                               "dashboard.routes.bank-accounts.types.savings",
                            )}
-                        </SelectItem>
-                        <SelectItem value="investment">
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
+                           value="investment"
+                        >
+                           <TrendingUp className="size-3.5" />
                            {translate(
                               "dashboard.routes.bank-accounts.types.investment",
                            )}
-                        </SelectItem>
-                     </SelectContent>
-                  </Select>
-               </div>
-
-               <div className="space-y-2">
-                  <label className="text-sm font-medium">Ordenar por</label>
-                  <Select onValueChange={onSortByChange} value={sortBy}>
-                     <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione a ordenação" />
-                     </SelectTrigger>
-                     <SelectContent>
-                        <SelectItem value="name">Nome</SelectItem>
-                        <SelectItem value="balance">Saldo</SelectItem>
-                        <SelectItem value="createdAt">
-                           Data de criação
-                        </SelectItem>
-                        <SelectItem value="bank">Banco</SelectItem>
-                     </SelectContent>
-                  </Select>
-               </div>
+                        </ToggleGroupItem>
+                     </ToggleGroup>
+                  </Field>
+               </FieldGroup>
             </div>
          </CredenzaBody>
 
-         <CredenzaFooter className="flex-row gap-2">
-            <Button className="flex-1" onClick={handleClear} variant="outline">
-               Limpar Filtros
-            </Button>
-            <Button className="flex-1" onClick={handleApply}>
-               Aplicar Filtros
+         <CredenzaFooter>
+            <Button onClick={() => closeCredenza()} variant="outline">
+               {translate("common.actions.close")}
             </Button>
          </CredenzaFooter>
       </>

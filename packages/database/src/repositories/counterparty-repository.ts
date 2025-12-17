@@ -205,8 +205,13 @@ export async function updateCounterparty(
          throw AppError.database("Counterparty not found");
       }
 
+      const counterpartyResult = result[0];
+      if (!counterpartyResult) {
+         throw AppError.database("Counterparty not found");
+      }
+
       // Decrypt sensitive fields before returning
-      return decryptCounterpartyFields(result[0]!);
+      return decryptCounterpartyFields(counterpartyResult);
    } catch (err: unknown) {
       const error = err as Error & { code?: string };
 

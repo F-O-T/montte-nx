@@ -5,6 +5,7 @@
       "@packages/authentication": "workspace:*",
       "@packages/brasil-api": "workspace:*",
       "@packages/cache": "workspace:*",
+      "@packages/csv": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",

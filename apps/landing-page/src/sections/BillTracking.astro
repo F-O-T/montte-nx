@@ -1,6 +1,5 @@
 ---
 import type { SupportedLng } from "@packages/localization";
-import { FeatureCarousel } from "@/components/feature-carousel";
 
 interface Props {
    lang?: SupportedLng;
@@ -8,7 +7,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const billFeatures = [
+const _billFeatures = [
    {
       description:
          "Crie contas únicas ou recorrentes para qualquer valor. Rastreie vencimentos, status de pagamento e histórico.",

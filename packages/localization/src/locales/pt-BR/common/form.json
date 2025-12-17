@@ -1,4 +1,14 @@
 {
+   "_time-period": {
+      "all-time": "Todo Período",
+      "custom": "Personalizado",
+      "last-month": "Mês Passado",
+      "this-month": "Este Mês",
+      "this-week": "Esta Semana",
+      "this-year": "Este Ano",
+      "today": "Hoje",
+      "yesterday": "Ontem"
+   },
    "account-type": {
       "label": "Tipo de Conta",
       "placeholder": "Selecione o tipo de conta"
@@ -16,6 +26,15 @@
    "bank": {
       "label": "Banco",
       "placeholder": "Selecione seu banco"
+   },
+   "bank-account": {
+      "label": "Conta Bancária",
+      "placeholder": "Selecione uma conta"
+   },
+   "bank-account-nickname": {
+      "description": "Opcional. Use para identificar facilmente esta conta, como 'Conta Salário' ou 'Banco Principal'",
+      "label": "Apelido da Conta",
+      "placeholder": "Ex: Conta Salário, Banco Principal"
    },
    "category": {
       "create": "Criar categoria",
@@ -45,6 +64,13 @@
       "label": "Data",
       "placeholder": "Selecione uma data"
    },
+   "date-range": {
+      "apply": "Aplicar",
+      "clear": "Limpar",
+      "custom": "Personalizado",
+      "end": "Data Final",
+      "start": "Data Inicial"
+   },
    "description": {
       "label": "Descrição",
       "placeholder": "Digite a descrição"
@@ -52,6 +78,13 @@
    "email": {
       "label": "Email",
       "placeholder": "Digite seu email"
+   },
+   "filter": {
+      "active-count": "{{count}} filtro(s) ativo(s)",
+      "clear-all": "Limpar Filtros",
+      "description": "Refine os resultados com filtros",
+      "more": "Mais Filtros",
+      "title": "Filtros"
    },
    "from-account": {
       "label": "Conta de Origem",
@@ -65,6 +98,7 @@
       "label": "Itens por página"
    },
    "name": {
+      "description": "Este campo é opcional",
       "label": "Nome",
       "placeholder": "Digite seu nome completo"
    },
@@ -83,6 +117,9 @@
    "password": {
       "label": "Senha",
       "placeholder": "Digite sua senha"
+   },
+   "period": {
+      "label": "Período"
    },
    "search": {
       "label": "Pesquisar",

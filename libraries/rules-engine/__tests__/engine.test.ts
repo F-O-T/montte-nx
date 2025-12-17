@@ -239,8 +239,8 @@ describe("createEngine", () => {
 
          expect(enabled).toHaveLength(1);
          expect(disabled).toHaveLength(1);
-         expect(enabled[0]!.name).toBe("enabled-rule");
-         expect(disabled[0]!.name).toBe("disabled-rule");
+         expect(enabled[0]?.name).toBe("enabled-rule");
+         expect(disabled[0]?.name).toBe("disabled-rule");
       });
 
       it("should filter rules by tags", () => {
@@ -269,7 +269,7 @@ describe("createEngine", () => {
 
          const vipRules = engine.getRules({ tags: ["vip"] });
          expect(vipRules).toHaveLength(1);
-         expect(vipRules[0]!.name).toBe("tagged-rule");
+         expect(vipRules[0]?.name).toBe("tagged-rule");
       });
 
       it("should filter rules by category", () => {
@@ -298,7 +298,7 @@ describe("createEngine", () => {
 
          const pricingRules = engine.getRules({ category: "pricing" });
          expect(pricingRules).toHaveLength(1);
-         expect(pricingRules[0]!.name).toBe("pricing-rule");
+         expect(pricingRules[0]?.name).toBe("pricing-rule");
       });
 
       it("should clear all rules", () => {
@@ -394,8 +394,8 @@ describe("createEngine", () => {
 
          expect(result.totalRulesMatched).toBe(1);
          expect(result.consequences).toHaveLength(1);
-         expect(result.consequences[0]!.type).toBe("applyDiscount");
-         expect(result.consequences[0]!.payload).toEqual({
+         expect(result.consequences[0]?.type).toBe("applyDiscount");
+         expect(result.consequences[0]?.payload).toEqual({
             percentage: 10,
             reason: "Adult discount",
          });
@@ -455,8 +455,8 @@ describe("createEngine", () => {
             score: 100,
          });
 
-         expect(result.matchedRules[0]!.name).toBe("high-priority");
-         expect(result.matchedRules[1]!.name).toBe("low-priority");
+         expect(result.matchedRules[0]?.name).toBe("high-priority");
+         expect(result.matchedRules[1]?.name).toBe("low-priority");
       });
 
       it("should skip disabled rules", async () => {
@@ -491,7 +491,7 @@ describe("createEngine", () => {
          });
 
          expect(result.totalRulesEvaluated).toBe(1);
-         expect(result.matchedRules[0]!.name).toBe("enabled-rule");
+         expect(result.matchedRules[0]?.name).toBe("enabled-rule");
       });
 
       it("should stop on match when stopOnMatch is true", async () => {
@@ -527,7 +527,7 @@ describe("createEngine", () => {
          });
 
          expect(result.stoppedEarly).toBe(true);
-         expect(result.stoppedByRuleId).toBe(result.matchedRules[0]!.id);
+         expect(result.stoppedByRuleId).toBe(result.matchedRules[0]?.id);
          expect(result.totalRulesMatched).toBe(1);
       });
 
@@ -569,7 +569,7 @@ describe("createEngine", () => {
 
          expect(result.stoppedEarly).toBe(true);
          expect(result.totalRulesMatched).toBe(1);
-         expect(result.matchedRules[0]!.name).toBe("first");
+         expect(result.matchedRules[0]?.name).toBe("first");
       });
 
       it("should filter by tags during evaluation", async () => {
@@ -607,7 +607,7 @@ describe("createEngine", () => {
          );
 
          expect(result.totalRulesEvaluated).toBe(1);
-         expect(result.matchedRules[0]!.name).toBe("vip-rule");
+         expect(result.matchedRules[0]?.name).toBe("vip-rule");
       });
 
       it("should limit max rules evaluated", async () => {
@@ -698,7 +698,7 @@ describe("createEngine", () => {
          );
 
          expect(result.totalRulesEvaluated).toBe(1);
-         expect(result.matchedRules[0]!.name).toBe("in-set");
+         expect(result.matchedRules[0]?.name).toBe("in-set");
       });
    });
 

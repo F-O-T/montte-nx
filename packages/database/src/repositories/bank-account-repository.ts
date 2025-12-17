@@ -305,12 +305,27 @@ export async function createDefaultBusinessBankAccount(
 export async function getBankAccountStats(
    dbClient: DatabaseInstance,
    organizationId: string,
+   filters?: {
+      status?: "active" | "inactive";
+      type?: "checking" | "savings" | "investment";
+   },
 ) {
    try {
+      const conditions = [eq(bankAccount.organizationId, organizationId)];
+
+      if (filters?.status) {
+         conditions.push(eq(bankAccount.status, filters.status));
+      }
+      if (filters?.type) {
+         conditions.push(eq(bankAccount.type, filters.type));
+      }
+
+      const whereClause = and(...conditions);
+
       const totalAccountsResult = await dbClient
          .select({ count: sql<number>`count(*)` })
          .from(bankAccount)
-         .where(eq(bankAccount.organizationId, organizationId));
+         .where(whereClause);
 
       const totalAccounts = totalAccountsResult[0]?.count || 0;
 
@@ -345,7 +360,7 @@ export async function getBankAccountStats(
          })
          .from(bankAccount)
          .leftJoin(transaction, eq(transaction.bankAccountId, bankAccount.id))
-         .where(eq(bankAccount.organizationId, organizationId));
+         .where(whereClause);
 
       return {
          totalAccounts,

@@ -201,8 +201,8 @@ export const whatIf = <
          const [ruleId, consequenceType] = key.split(":");
          consequenceChanges.push({
             type: "added",
-            consequenceType: consequenceType!,
-            ruleId: ruleId!,
+            consequenceType: consequenceType ?? "",
+            ruleId: ruleId ?? "",
          });
       }
    }
@@ -212,8 +212,8 @@ export const whatIf = <
          const [ruleId, consequenceType] = key.split(":");
          consequenceChanges.push({
             type: "removed",
-            consequenceType: consequenceType!,
-            ruleId: ruleId!,
+            consequenceType: consequenceType ?? "",
+            ruleId: ruleId ?? "",
          });
       }
    }

@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    getOrCreateNotificationPreferences,
    updateNotificationPreferences,
@@ -13,6 +12,7 @@ import {
    createNotificationPayload,
    sendPushNotificationToUser,
 } from "@packages/notifications/push";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 

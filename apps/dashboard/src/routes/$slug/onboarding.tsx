@@ -559,7 +559,7 @@ function RouteComponent() {
                            <Field>
                               <FieldLabel htmlFor={field.name}>
                                  {translate(
-                                    "dashboard.routes.onboarding.optional-bank-account.form.name.label",
+                                    "common.form.bank-account-nickname.label",
                                  )}
                               </FieldLabel>
                               <Input
@@ -570,13 +570,13 @@ function RouteComponent() {
                                     field.handleChange(e.target.value)
                                  }
                                  placeholder={translate(
-                                    "dashboard.routes.onboarding.optional-bank-account.form.name.placeholder",
+                                    "common.form.bank-account-nickname.placeholder",
                                  )}
                                  value={field.state.value}
                               />
                               <FieldDescription>
                                  {translate(
-                                    "dashboard.routes.onboarding.optional-bank-account.form.name.description",
+                                    "common.form.bank-account-nickname.description",
                                  )}
                               </FieldDescription>
                            </Field>

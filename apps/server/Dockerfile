@@ -47,6 +47,7 @@ COPY packages/queue/package.json ./packages/queue/
 COPY packages/stripe/package.json ./packages/stripe/
 COPY packages/arcjet/package.json ./packages/arcjet/
 COPY packages/logging/package.json ./packages/logging/
+COPY packages/csv/package.json ./packages/csv/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 

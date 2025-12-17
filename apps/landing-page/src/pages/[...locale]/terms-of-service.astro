@@ -2,10 +2,7 @@
 export const prerender = true;
 
 import type { SupportedLng } from "@packages/localization";
-import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -14,7 +11,7 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const lang = (locale || "pt-BR") as SupportedLng;
+const _lang = (locale || "pt-BR") as SupportedLng;
 ---
 
 <Layout lang={lang}>
