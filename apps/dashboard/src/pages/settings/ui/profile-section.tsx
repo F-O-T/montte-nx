@@ -2196,8 +2196,8 @@ function DeleteAccountCredenzaContent({ onClose }: { onClose: () => void }) {
                   ),
                );
                window.location.href = "/auth/sign-in";
-            } else {
-               const scheduledDate = new Date(data.scheduledDeletionAt!);
+            } else if (data.scheduledDeletionAt) {
+               const scheduledDate = new Date(data.scheduledDeletionAt);
                toast.success(
                   translate(
                      "dashboard.routes.settings.profile.delete-account.success-scheduled",

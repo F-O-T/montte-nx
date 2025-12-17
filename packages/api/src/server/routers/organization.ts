@@ -376,7 +376,9 @@ export const organizationRouter = router({
          const db = resolvedCtx.db;
 
          if (!storageKey.startsWith(`organizations/${organizationId}/logo/`)) {
-            throw APIError.validation("Invalid storage key for this organization");
+            throw APIError.validation(
+               "Invalid storage key for this organization",
+            );
          }
 
          const fileInfo = await verifyFileExists(
@@ -441,7 +443,9 @@ export const organizationRouter = router({
          const organizationId = organization.id;
 
          if (!storageKey.startsWith(`organizations/${organizationId}/logo/`)) {
-            throw APIError.validation("Invalid storage key for this organization");
+            throw APIError.validation(
+               "Invalid storage key for this organization",
+            );
          }
 
          const bucketName = resolvedCtx.minioBucket;

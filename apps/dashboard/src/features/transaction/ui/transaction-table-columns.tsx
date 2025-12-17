@@ -30,12 +30,16 @@ const TRANSACTION_TYPE_CONFIG = {
    expense: {
       color: "#ef4444",
       icon: ArrowUpRight,
-      label: translate("dashboard.routes.transactions.list-section.types.expense"),
+      label: translate(
+         "dashboard.routes.transactions.list-section.types.expense",
+      ),
    },
    income: {
       color: "#10b981",
       icon: ArrowDownLeft,
-      label: translate("dashboard.routes.transactions.list-section.types.income"),
+      label: translate(
+         "dashboard.routes.transactions.list-section.types.income",
+      ),
    },
    transfer: {
       color: "#3b82f6",
@@ -179,7 +183,10 @@ export function createTransactionColumns(
                         color: category.color,
                      }}
                   >
-                     <IconDisplay iconName={category.icon as IconName} size={14} />
+                     <IconDisplay
+                        iconName={category.icon as IconName}
+                        size={14}
+                     />
                   </AnnouncementTag>
                   <AnnouncementTitle className="max-w-[120px] truncate">
                      {category.name}
@@ -205,7 +212,9 @@ export function createTransactionColumns(
       {
          accessorKey: "type",
          cell: ({ row }) => {
-            const type = row.getValue("type") as keyof typeof TRANSACTION_TYPE_CONFIG;
+            const type = row.getValue(
+               "type",
+            ) as keyof typeof TRANSACTION_TYPE_CONFIG;
             const config = TRANSACTION_TYPE_CONFIG[type];
             const Icon = config.icon;
 

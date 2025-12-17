@@ -1,24 +1,6 @@
 ---
 export const prerender = true;
 
-import {
-   ChartPie,
-   Check,
-   CreditCard,
-   FileText,
-   FolderSync,
-   LayoutDashboard,
-   Lock,
-   Server,
-   Settings,
-   Users,
-   Wallet,
-   Zap,
-} from "@lucide/astro";
-import StickyNavbar from "@/components/StickyNavbar.astro";
-import Landing from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
-
 export function getStaticPaths() {
    return [
       { params: { locale: undefined } },
@@ -28,7 +10,7 @@ export function getStaticPaths() {
    ];
 }
 
-const navCategories = [
+const _navCategories = [
    { id: "core", label: "Recursos Principais", icon: "Wallet" },
    { id: "planning", label: "Planejamento", icon: "LayoutDashboard" },
    { id: "automation", label: "Automacoes", icon: "Zap" },
@@ -37,7 +19,7 @@ const navCategories = [
    { id: "enterprise", label: "Enterprise", icon: "Lock" },
 ];
 
-const freeFeatures = [
+const _freeFeatures = [
    "Transacoes ilimitadas",
    "Importacao/exportacao OFX",
    "Categorias e tags personalizadas",
@@ -47,7 +29,7 @@ const freeFeatures = [
    "1 workspace",
 ];
 
-const coreFeatures = {
+const _coreFeatures = {
    title: "Gerenciamento Financeiro",
    description:
       "Controle completo de transacoes, contas bancarias e documentos financeiros.",
@@ -69,7 +51,7 @@ const coreFeatures = {
    ],
 };
 
-const planningFeatures = {
+const _planningFeatures = {
    title: "Planejamento e Controle",
    description:
       "Crie orcamentos, gerencie contas a pagar/receber e planeje seu futuro financeiro.",
@@ -97,7 +79,7 @@ const planningFeatures = {
    ],
 };
 
-const automationFeatures = {
+const _automationFeatures = {
    title: "Automacoes e Inteligencia",
    description:
       "Crie regras inteligentes para automatizar tarefas repetitivas e economizar tempo.",
@@ -125,7 +107,7 @@ const automationFeatures = {
    ],
 };
 
-const analyticsFeatures = {
+const _analyticsFeatures = {
    title: "Analises e Relatorios",
    description:
       "Dashboards interativos e relatorios detalhados para tomada de decisao inteligente.",
@@ -154,7 +136,7 @@ const analyticsFeatures = {
    ],
 };
 
-const enterpriseFeatures = {
+const _enterpriseFeatures = {
    title: "Enterprise",
    description:
       "Seguranca avancada, conformidade e suporte dedicado para grandes organizacoes.",
@@ -197,7 +179,7 @@ const enterpriseFeatures = {
    },
 };
 
-const plans = [
+const _plans = [
    {
       name: "Free",
       priceMonthly: 0,
@@ -294,7 +276,7 @@ const plans = [
    },
 ];
 
-const faqs = [
+const _faqs = [
    {
       question: "O que esta incluido no plano Free?",
       answer:

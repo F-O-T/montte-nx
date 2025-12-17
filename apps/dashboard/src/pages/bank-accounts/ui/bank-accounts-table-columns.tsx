@@ -51,6 +51,7 @@ function getAccountTypeIcon(type: string | null | undefined) {
          return Landmark;
    }
 }
+
 import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";

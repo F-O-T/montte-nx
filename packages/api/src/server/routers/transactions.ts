@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
@@ -36,6 +35,7 @@ import {
    verifyFileExists,
 } from "@packages/files/client";
 import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
+import { APIError } from "@packages/utils/errors";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
 import { enqueueWorkflowEvent } from "@packages/workflows/queue/producer";
 import {
@@ -235,7 +235,9 @@ export const transactionRouter = router({
                `transactions/${organizationId}/${transactionId}/attachments/`,
             )
          ) {
-            throw APIError.validation("Invalid storage key for this transaction");
+            throw APIError.validation(
+               "Invalid storage key for this transaction",
+            );
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -292,7 +294,9 @@ export const transactionRouter = router({
                `transactions/${organizationId}/${transactionId}/attachments/`,
             )
          ) {
-            throw APIError.validation("Invalid storage key for this transaction");
+            throw APIError.validation(
+               "Invalid storage key for this transaction",
+            );
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -341,7 +345,9 @@ export const transactionRouter = router({
          );
 
          if (existingLog) {
-            throw APIError.conflict("Transfer already has a linked transaction");
+            throw APIError.conflict(
+               "Transfer already has a linked transaction",
+            );
          }
 
          const amount = parseFloat(existingTransaction.amount);
@@ -869,7 +875,9 @@ export const transactionRouter = router({
          }
 
          if (!fromTransaction.bankAccountId || !toTransaction.bankAccountId) {
-            throw APIError.validation("Both transactions must have a bank account");
+            throw APIError.validation(
+               "Both transactions must have a bank account",
+            );
          }
 
          await Promise.all([
@@ -1356,7 +1364,9 @@ export const transactionRouter = router({
                `transactions/${organizationId}/${transactionId}/attachment/`,
             )
          ) {
-            throw APIError.validation("Invalid storage key for this transaction");
+            throw APIError.validation(
+               "Invalid storage key for this transaction",
+            );
          }
 
          const bucketName = resolvedCtx.minioBucket;

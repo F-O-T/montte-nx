@@ -164,7 +164,9 @@ export function BankAccountFilterCredenza({
                         <DatePicker
                            date={customStartDate || undefined}
                            onSelect={onCustomStartDateChange}
-                           placeholder={translate("common.form.date.placeholder")}
+                           placeholder={translate(
+                              "common.form.date.placeholder",
+                           )}
                         />
                      </Field>
                      <Field>
@@ -174,7 +176,9 @@ export function BankAccountFilterCredenza({
                         <DatePicker
                            date={customEndDate || undefined}
                            onSelect={onCustomEndDateChange}
-                           placeholder={translate("common.form.date.placeholder")}
+                           placeholder={translate(
+                              "common.form.date.placeholder",
+                           )}
                         />
                      </Field>
                   </FieldGroup>
@@ -182,7 +186,9 @@ export function BankAccountFilterCredenza({
 
                <FieldGroup>
                   <Field>
-                     <FieldLabel>{translate("common.form.type.label")}</FieldLabel>
+                     <FieldLabel>
+                        {translate("common.form.type.label")}
+                     </FieldLabel>
                      <ToggleGroup
                         className="justify-start"
                         onValueChange={onTypeFilterChange}
@@ -229,11 +235,17 @@ export function BankAccountFilterCredenza({
                         {translate("common.form.category.label")}
                      </FieldLabel>
                      <Combobox
-                        emptyMessage={translate("common.form.search.no-results")}
+                        emptyMessage={translate(
+                           "common.form.search.no-results",
+                        )}
                         onValueChange={onCategoryFilterChange}
                         options={categoryOptions}
-                        placeholder={translate("common.form.category.placeholder")}
-                        searchPlaceholder={translate("common.form.search.label")}
+                        placeholder={translate(
+                           "common.form.category.placeholder",
+                        )}
+                        searchPlaceholder={translate(
+                           "common.form.search.label",
+                        )}
                         value={categoryFilter}
                      />
                   </Field>

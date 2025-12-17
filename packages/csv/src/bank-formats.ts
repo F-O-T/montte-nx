@@ -8,10 +8,7 @@ function normalizeHeader(header: string): string {
       .trim();
 }
 
-function headersMatch(
-   headers: string[],
-   patterns: string[],
-): boolean {
+function headersMatch(headers: string[], patterns: string[]): boolean {
    const normalized = headers.map(normalizeHeader);
    return patterns.every((pattern) =>
       normalized.some((h) => h.includes(pattern)),
@@ -139,9 +136,11 @@ export function detectBankFormat(headers: string[]): BankFormat | null {
    return null;
 }
 
-export function suggestColumnMapping(
-   headers: string[],
-): { date: number | null; amount: number | null; description: number | null } {
+export function suggestColumnMapping(headers: string[]): {
+   date: number | null;
+   amount: number | null;
+   description: number | null;
+} {
    const normalized = headers.map(normalizeHeader);
 
    let dateCol: number | null = null;

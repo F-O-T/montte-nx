@@ -16,7 +16,10 @@ import type { DateRange } from "react-day-picker";
 export interface DateRangePickerPopoverProps {
    startDate?: Date | null;
    endDate?: Date | null;
-   onRangeChange: (range: { startDate: Date | null; endDate: Date | null }) => void;
+   onRangeChange: (range: {
+      startDate: Date | null;
+      endDate: Date | null;
+   }) => void;
    placeholder?: string;
    className?: string;
    disabled?: boolean;

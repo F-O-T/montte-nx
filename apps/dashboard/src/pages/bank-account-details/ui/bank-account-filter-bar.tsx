@@ -5,8 +5,8 @@ import { DateRangePickerPopover } from "@packages/ui/components/date-range-picke
 import { Separator } from "@packages/ui/components/separator";
 import {
    type TimePeriod,
-   type TimePeriodDateRange,
    TimePeriodChips,
+   type TimePeriodDateRange,
 } from "@packages/ui/components/time-period-chips";
 import {
    ToggleGroup,
@@ -131,7 +131,10 @@ export function BankAccountFilterBar({
                <Filter className="size-4" />
                {translate("common.form.filter.title")}
                {activeFilterCount > 0 && (
-                  <Badge className="size-5 p-0 justify-center" variant="secondary">
+                  <Badge
+                     className="size-5 p-0 justify-center"
+                     variant="secondary"
+                  >
                      {activeFilterCount}
                   </Badge>
                )}

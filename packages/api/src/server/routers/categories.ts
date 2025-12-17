@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createCategory,
    deleteCategory,
@@ -15,6 +14,7 @@ import {
    getTotalCategoriesByOrganizationId,
    updateCategory,
 } from "@packages/database/repositories/category-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

@@ -1,18 +1,17 @@
 export {
-   parseCsvContent,
+   BANK_FORMATS,
+   detectBankFormat,
+   detectDelimiter,
+   getAvailableFormats,
+   getFormatById,
+   suggestColumnMapping,
+} from "./bank-formats";
+export {
    parseAmount,
+   parseCsvContent,
    parseDate,
    previewCsv,
 } from "./parser";
-
-export {
-   detectBankFormat,
-   detectDelimiter,
-   suggestColumnMapping,
-   getAvailableFormats,
-   getFormatById,
-   BANK_FORMATS,
-} from "./bank-formats";
 
 export type {
    BankFormat,

@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createInterestTemplate,
    deleteInterestTemplate,
@@ -11,6 +10,7 @@ import {
    searchInterestTemplates,
    updateInterestTemplate,
 } from "@packages/database/repositories/interest-template-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

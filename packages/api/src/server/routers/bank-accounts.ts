@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createBankAccount,
    createDefaultBusinessBankAccount,
@@ -20,6 +19,7 @@ import {
 } from "@packages/database/repositories/transaction-repository";
 import { generateOfxContent } from "@packages/ofx";
 import { renderBankStatement } from "@packages/pdf";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -236,14 +236,16 @@ export const bankAccountRouter = router({
          const rows = transactions.map((trn) => {
             const date = trn.date.toLocaleDateString("pt-BR");
             const description = `"${(trn.description ?? "").replace(/"/g, '""')}"`;
-            const amount = trn.type === "expense"
-               ? `-${trn.amount}`
-               : trn.amount.toString();
-            const type = trn.type === "income"
-               ? "Receita"
-               : trn.type === "expense"
-                  ? "Despesa"
-                  : "Transferência";
+            const amount =
+               trn.type === "expense"
+                  ? `-${trn.amount}`
+                  : trn.amount.toString();
+            const type =
+               trn.type === "income"
+                  ? "Receita"
+                  : trn.type === "expense"
+                    ? "Despesa"
+                    : "Transferência";
             return [date, description, amount, type].join(",");
          });
 

@@ -73,14 +73,17 @@ export function parseDate(value: string, format: string): Date | null {
    }
 
    // Strip time suffix (e.g., "às 17:16:03" from Nubank format)
-   let trimmed = value.trim().replace(/\s+às\s+\d{1,2}:\d{2}(:\d{2})?/i, "").trim();
+   let trimmed = value
+      .trim()
+      .replace(/\s+às\s+\d{1,2}:\d{2}(:\d{2})?/i, "")
+      .trim();
    // Also strip generic time patterns
    trimmed = trimmed.replace(/\s+\d{1,2}:\d{2}(:\d{2})?$/, "").trim();
 
    if (format === "DD/MM/YYYY" || format === "dd/mm/yyyy") {
       // Try 4-digit year first
       const match4 = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (match4 && match4[1] && match4[2] && match4[3]) {
+      if (match4?.[1] && match4[2] && match4[3]) {
          const day = Number.parseInt(match4[1], 10);
          const month = Number.parseInt(match4[2], 10) - 1;
          const year = Number.parseInt(match4[3], 10);
@@ -92,7 +95,7 @@ export function parseDate(value: string, format: string): Date | null {
 
       // Try 2-digit year (DD/MM/YY) - assume 2000s
       const match2 = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
-      if (match2 && match2[1] && match2[2] && match2[3]) {
+      if (match2?.[1] && match2[2] && match2[3]) {
          const day = Number.parseInt(match2[1], 10);
          const month = Number.parseInt(match2[2], 10) - 1;
          let year = Number.parseInt(match2[3], 10);
@@ -107,7 +110,7 @@ export function parseDate(value: string, format: string): Date | null {
 
    if (format === "YYYY-MM-DD" || format === "yyyy-mm-dd") {
       const match = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-      if (match && match[1] && match[2] && match[3]) {
+      if (match?.[1] && match[2] && match[3]) {
          const year = Number.parseInt(match[1], 10);
          const month = Number.parseInt(match[2], 10) - 1;
          const day = Number.parseInt(match[3], 10);
@@ -120,7 +123,7 @@ export function parseDate(value: string, format: string): Date | null {
 
    if (format === "MM/DD/YYYY" || format === "mm/dd/yyyy") {
       const match = trimmed.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (match && match[1] && match[2] && match[3]) {
+      if (match?.[1] && match[2] && match[3]) {
          const month = Number.parseInt(match[1], 10) - 1;
          const day = Number.parseInt(match[2], 10);
          const year = Number.parseInt(match[3], 10);
@@ -143,9 +146,7 @@ export function parseCsvContent(
    content: string,
    options?: CsvParseOptions,
 ): CsvParseResult {
-   const lines = content
-      .split(/\r?\n/)
-      .filter((line) => line.trim() !== "");
+   const lines = content.split(/\r?\n/).filter((line) => line.trim() !== "");
 
    if (lines.length === 0) {
       throw AppError.validation("CSV file is empty");
@@ -240,22 +241,22 @@ export function parseCsvContent(
          if (
             typeValue?.includes("credit") ||
             typeValue?.includes("credito") ||
+            typeValue?.includes("crédito") ||
             typeValue?.includes("entrada")
          ) {
             type = "income";
          } else if (
             typeValue?.includes("debit") ||
             typeValue?.includes("debito") ||
-            typeValue?.includes("saida")
+            typeValue?.includes("débito") ||
+            typeValue?.includes("saida") ||
+            typeValue?.includes("saída")
          ) {
             type = "expense";
          }
       }
 
-      if (
-         options?.selectedRows &&
-         !options.selectedRows.includes(lineIndex)
-      ) {
+      if (options?.selectedRows && !options.selectedRows.includes(lineIndex)) {
          continue;
       }
 
@@ -285,13 +286,15 @@ export function previewCsv(
    headers: string[];
    sampleRows: string[][];
    detectedFormat: { id: string; name: string } | null;
-   suggestedMapping: { date: number | null; amount: number | null; description: number | null };
+   suggestedMapping: {
+      date: number | null;
+      amount: number | null;
+      description: number | null;
+   };
    totalRows: number;
    delimiter: string;
 } {
-   const lines = content
-      .split(/\r?\n/)
-      .filter((line) => line.trim() !== "");
+   const lines = content.split(/\r?\n/).filter((line) => line.trim() !== "");
 
    if (lines.length === 0) {
       throw AppError.validation("CSV file is empty");
@@ -308,7 +311,7 @@ export function previewCsv(
 
    for (let i = 1; i < lines.length && sampleRows.length < maxRows; i++) {
       const currentLine = lines[i];
-      if (currentLine && currentLine.trim()) {
+      if (currentLine?.trim()) {
          sampleRows.push(parseCsvLine(currentLine, delimiter));
       }
    }

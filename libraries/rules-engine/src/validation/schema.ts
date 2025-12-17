@@ -161,7 +161,8 @@ const validateConsequenceStructure = <
    const errors: ValidationError[] = [];
 
    for (let i = 0; i < consequences.length; i++) {
-      const consequence = consequences[i]!;
+      const consequence = consequences[i];
+      if (!consequence) continue;
       const path = `consequences[${i}]`;
 
       if (!consequence.type || typeof consequence.type !== "string") {

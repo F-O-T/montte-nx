@@ -101,7 +101,9 @@ function ShareTargetComponent() {
          if (cacheData) {
             sessionStorage.setItem(
                "montte:pending-import",
-               JSON.stringify(createPendingImport(cacheData.content, cacheData.filename)),
+               JSON.stringify(
+                  createPendingImport(cacheData.content, cacheData.filename),
+               ),
             );
          } else {
             const pendingShare = sessionStorage.getItem(
@@ -118,7 +120,9 @@ function ShareTargetComponent() {
                   sessionStorage.removeItem("montte:pending-share-target");
                   sessionStorage.setItem(
                      "montte:pending-import",
-                     JSON.stringify(createPendingImport(data.content, data.filename)),
+                     JSON.stringify(
+                        createPendingImport(data.content, data.filename),
+                     ),
                   );
                } catch {
                   // Invalid data, ignore

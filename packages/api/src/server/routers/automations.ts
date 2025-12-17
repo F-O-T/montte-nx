@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import { ConditionGroup as ConditionGroupSchema } from "@f-o-t/condition-evaluator";
 import {
    findAutomationLogsByOrganizationIdPaginated,
@@ -34,6 +33,7 @@ import type {
    TriggerType,
 } from "@packages/database/schema";
 import type { AutomationRuleVersionSnapshot } from "@packages/database/schemas/automations";
+import { APIError } from "@packages/utils/errors";
 import { enqueueManualWorkflowRun } from "@packages/workflows/queue/producer";
 import {
    createTransactionCreatedEvent,
@@ -502,7 +502,9 @@ export const automationRouter = router({
          }
 
          if (!rule.isActive) {
-            throw APIError.validation("Cannot trigger inactive automation rule");
+            throw APIError.validation(
+               "Cannot trigger inactive automation rule",
+            );
          }
 
          if (

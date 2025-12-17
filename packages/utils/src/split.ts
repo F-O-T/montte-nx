@@ -66,9 +66,11 @@ export function calculateEqualSplits(
 ): CategorySplit[] {
    if (categoryIds.length === 0) return [];
    if (categoryIds.length === 1) {
+      const categoryId = categoryIds[0];
+      if (!categoryId) return [];
       return [
          {
-            categoryId: categoryIds[0]!,
+            categoryId,
             splitType: "amount",
             value: totalAmountInCents,
          },
@@ -103,7 +105,8 @@ export function calculateSplitsFromPercentage(
    const result: CategorySplit[] = [];
 
    for (let i = 0; i < normalizedSplits.length; i++) {
-      const split = normalizedSplits[i]!;
+      const split = normalizedSplits[i];
+      if (!split) continue;
       const isLast = i === normalizedSplits.length - 1;
 
       let value: number;
@@ -153,7 +156,8 @@ export function adjustFixedSplitsProportionally(
    const result: CategorySplit[] = [];
 
    for (let i = 0; i < splits.length; i++) {
-      const split = splits[i]!;
+      const split = splits[i];
+      if (!split) continue;
       const isLast = i === splits.length - 1;
 
       let value: number;

@@ -1,18 +1,13 @@
 ---
-import { Image } from "astro:assets";
-import { Separator } from "@packages/ui/components/separator";
-import { cn } from "@packages/ui/lib/utils";
-import { motion } from "motion/react";
 import csLogo from "../assets/logo-cloud/costa-e-sa-adv.png";
 import somaLogo from "../assets/logo-cloud/somahub.webp";
-import { AstroTooltip } from "./astro-tooltip";
 
 export interface Props {
    variant?: "compact";
 }
 
 const { variant } = Astro.props;
-const isCompact = variant === "compact";
+const _isCompact = variant === "compact";
 
 const baseLogos = [
    {
@@ -28,7 +23,7 @@ const baseLogos = [
 ];
 
 // Duplicate logos enough times to create seamless infinite scroll
-const logos = Array(12)
+const _logos = Array(12)
    .fill(null)
    .flatMap(() => baseLogos);
 ---

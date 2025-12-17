@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createCustomReport,
    deleteCustomReport,
@@ -9,6 +8,7 @@ import {
    generateDREGerencialData,
    updateCustomReport,
 } from "@packages/database/repositories/custom-report-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

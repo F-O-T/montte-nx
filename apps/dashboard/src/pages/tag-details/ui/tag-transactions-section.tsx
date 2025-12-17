@@ -3,40 +3,40 @@ import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyMedia,
-	EmptyTitle,
+   Empty,
+   EmptyContent,
+   EmptyDescription,
+   EmptyMedia,
+   EmptyTitle,
 } from "@packages/ui/components/empty";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupInput,
+   InputGroup,
+   InputGroupAddon,
+   InputGroupInput,
 } from "@packages/ui/components/input-group";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-	SelectionActionBar,
-	SelectionActionButton,
+   SelectionActionBar,
+   SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
-	ToggleGroup,
-	ToggleGroupItem,
+   ToggleGroup,
+   ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
-	ArrowDownLeft,
-	ArrowLeftRight,
-	ArrowUpRight,
-	FolderOpen,
-	Search,
-	Tag,
-	Trash2,
-	X,
+   ArrowDownLeft,
+   ArrowLeftRight,
+   ArrowUpRight,
+   FolderOpen,
+   Search,
+   Tag,
+   Trash2,
+   X,
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -112,17 +112,17 @@ function TagTransactionsContent({
    startDate: Date | null;
    endDate: Date | null;
 }) {
-	const trpc = useTRPC();
-	const { activeOrganization } = useActiveOrganization();
-	const { openAlertDialog } = useAlertDialog();
-	const { openSheet } = useSheet();
-	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 10;
-	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+   const trpc = useTRPC();
+   const { activeOrganization } = useActiveOrganization();
+   const { openAlertDialog } = useAlertDialog();
+   const { openSheet } = useSheet();
+   const [currentPage, setCurrentPage] = useState(1);
+   const pageSize = 10;
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-	const [searchTerm, setSearchTerm] = useState("");
-	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-	const [typeFilter, setTypeFilter] = useState<string>("");
+   const [searchTerm, setSearchTerm] = useState("");
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [typeFilter, setTypeFilter] = useState<string>("");
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -261,62 +261,62 @@ function TagTransactionsContent({
                </div>
 
                <div className="flex flex-wrap items-center gap-3">
-                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                           Tipo:
-                        </span>
-                        <ToggleGroup
-                           onValueChange={setTypeFilter}
+                  <div className="flex items-center gap-2">
+                     <span className="text-sm text-muted-foreground">
+                        Tipo:
+                     </span>
+                     <ToggleGroup
+                        onValueChange={setTypeFilter}
+                        size="sm"
+                        spacing={2}
+                        type="single"
+                        value={typeFilter}
+                        variant="outline"
+                     >
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
+                           value="income"
+                        >
+                           <ArrowDownLeft className="size-3.5" />
+                           {translate(
+                              "dashboard.routes.transactions.list-section.types.income",
+                           )}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-red-500 data-[state=on]:text-red-600"
+                           value="expense"
+                        >
+                           <ArrowUpRight className="size-3.5" />
+                           {translate(
+                              "dashboard.routes.transactions.list-section.types.expense",
+                           )}
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                           className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-blue-500 data-[state=on]:text-blue-600"
+                           value="transfer"
+                        >
+                           <ArrowLeftRight className="size-3.5" />
+                           {translate(
+                              "dashboard.routes.transactions.list-section.types.transfer",
+                           )}
+                        </ToggleGroupItem>
+                     </ToggleGroup>
+                  </div>
+
+                  {hasActiveFilters && (
+                     <>
+                        <div className="h-4 w-px bg-border" />
+                        <Button
+                           className="h-8 text-xs"
+                           onClick={handleClearFilters}
                            size="sm"
-                           spacing={2}
-                           type="single"
-                           value={typeFilter}
                            variant="outline"
                         >
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
-                              value="income"
-                           >
-                              <ArrowDownLeft className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.income",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-red-500 data-[state=on]:text-red-600"
-                              value="expense"
-                           >
-                              <ArrowUpRight className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.expense",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-blue-500 data-[state=on]:text-blue-600"
-                              value="transfer"
-                           >
-                              <ArrowLeftRight className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.transfer",
-                              )}
-                           </ToggleGroupItem>
-                        </ToggleGroup>
-                     </div>
-
-                     {hasActiveFilters && (
-                        <>
-                           <div className="h-4 w-px bg-border" />
-                           <Button
-                              className="h-8 text-xs"
-                              onClick={handleClearFilters}
-                              size="sm"
-                              variant="outline"
-                           >
-                              <X className="size-3" />
-                              {translate("common.actions.clear-filters")}
-                           </Button>
-                        </>
-                     )}
+                           <X className="size-3" />
+                           {translate("common.actions.clear-filters")}
+                        </Button>
+                     </>
+                  )}
                </div>
 
                {transactions.length === 0 ? (

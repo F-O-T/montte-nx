@@ -156,7 +156,9 @@ export function ManageBankAccountForm({
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate("common.form.bank-account-nickname.label")}
+                              {translate(
+                                 "common.form.bank-account-nickname.label",
+                              )}
                            </FieldLabel>
                            <Input
                               aria-invalid={isInvalid}
@@ -172,7 +174,9 @@ export function ManageBankAccountForm({
                               value={field.state.value}
                            />
                            <FieldDescription>
-                              {translate("common.form.bank-account-nickname.description")}
+                              {translate(
+                                 "common.form.bank-account-nickname.description",
+                              )}
                            </FieldDescription>
                            {isInvalid && (
                               <FieldError errors={field.state.meta.errors} />

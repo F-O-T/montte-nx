@@ -200,7 +200,8 @@ export const importRules = <
 
    for (let i = 0; i < data.rules.length; i++) {
       try {
-         const serialized = data.rules[i]!;
+         const serialized = data.rules[i];
+         if (!serialized) continue;
          const rule = deserializeRule<TContext, TConsequences>(
             serialized,
             options,
@@ -219,7 +220,8 @@ export const importRules = <
    if (data.ruleSets) {
       for (let i = 0; i < data.ruleSets.length; i++) {
          try {
-            const serialized = data.ruleSets[i]!;
+            const serialized = data.ruleSets[i];
+            if (!serialized) continue;
             const ruleSet = deserializeRuleSet(serialized, idMapping, options);
             ruleSets.push(ruleSet);
          } catch (error) {

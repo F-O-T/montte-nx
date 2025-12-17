@@ -2,11 +2,7 @@ import { type Cache, createCache } from "../cache/cache.ts";
 import { createNoopCache } from "../cache/noop.ts";
 import { evaluateRule } from "../core/evaluate.ts";
 import { sortRules } from "../core/sort.ts";
-import type {
-   CacheConfig,
-   EngineConfig,
-   ResolvedEngineConfig,
-} from "../types/config.ts";
+import type { EngineConfig, ResolvedEngineConfig } from "../types/config.ts";
 import {
    DEFAULT_CACHE_CONFIG,
    DEFAULT_ENGINE_CONFIG,
@@ -395,7 +391,7 @@ export const createEngine = <
          const enabledRules = Array.from(state.rules.values()).filter(
             (r) => r.enabled,
          ).length;
-         const cacheStats = cache.getStats();
+         const _cacheStats = cache.getStats();
          return {
             totalRules: state.rules.size,
             enabledRules,

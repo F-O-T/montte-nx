@@ -6,8 +6,8 @@ import { Plus } from "lucide-react";
 import { Suspense } from "react";
 import { DefaultHeader } from "@/default/default-header";
 import {
-	TransactionListProvider,
-	useTransactionList,
+   TransactionListProvider,
+   useTransactionList,
 } from "@/features/transaction/lib/transaction-list-context";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useSheet } from "@/hooks/use-sheet";
@@ -17,110 +17,110 @@ import { TransactionsListSection } from "./transactions-list-section";
 import { TransactionsStats } from "./transactions-stats";
 
 function TransactionFilterBarSkeleton() {
-	return (
-		<div className="flex flex-wrap items-center gap-3">
-			<div className="flex gap-1">
-				{Array.from({ length: 5 }).map((_, i) => (
-					<Skeleton className="h-8 w-20" key={`period-${i}`} />
-				))}
-			</div>
-			<Skeleton className="h-8 w-32" />
-			<div className="h-4 w-px bg-border" />
-			<div className="flex gap-1">
-				<Skeleton className="h-8 w-20" />
-				<Skeleton className="h-8 w-20" />
-				<Skeleton className="h-8 w-24" />
-			</div>
-		</div>
-	);
+   return (
+      <div className="flex flex-wrap items-center gap-3">
+         <div className="flex gap-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+               <Skeleton className="h-8 w-20" key={`skeleton-${i + 1}`} />
+            ))}
+         </div>
+         <Skeleton className="h-8 w-32" />
+         <div className="h-4 w-px bg-border" />
+         <div className="flex gap-1">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-24" />
+         </div>
+      </div>
+   );
 }
 
 function TransactionFilterBarWrapper() {
-	const trpc = useTRPC();
-	const {
-		timePeriod,
-		handleTimePeriodChange,
-		customDateRange,
-		setCustomDateRange,
-		typeFilter,
-		setTypeFilter,
-		categoryFilter,
-		setCategoryFilter,
-		bankAccountFilter,
-		setBankAccountFilter,
-		clearFilters,
-		hasActiveFilters,
-	} = useTransactionList();
+   const trpc = useTRPC();
+   const {
+      timePeriod,
+      handleTimePeriodChange,
+      customDateRange,
+      setCustomDateRange,
+      typeFilter,
+      setTypeFilter,
+      categoryFilter,
+      setCategoryFilter,
+      bankAccountFilter,
+      setBankAccountFilter,
+      clearFilters,
+      hasActiveFilters,
+   } = useTransactionList();
 
-	const [categoriesQuery, bankAccountsQuery] = useSuspenseQueries({
-		queries: [
-			trpc.categories.getAll.queryOptions(),
-			trpc.bankAccounts.getAll.queryOptions(),
-		],
-	});
+   const [categoriesQuery, bankAccountsQuery] = useSuspenseQueries({
+      queries: [
+         trpc.categories.getAll.queryOptions(),
+         trpc.bankAccounts.getAll.queryOptions(),
+      ],
+   });
 
-	return (
-		<TransactionFilterBar
-			bankAccountFilter={bankAccountFilter}
-			bankAccounts={bankAccountsQuery.data ?? []}
-			categories={categoriesQuery.data ?? []}
-			categoryFilter={categoryFilter}
-			customDateRange={customDateRange}
-			hasActiveFilters={hasActiveFilters}
-			onBankAccountFilterChange={setBankAccountFilter}
-			onCategoryFilterChange={setCategoryFilter}
-			onClearFilters={clearFilters}
-			onCustomDateRangeChange={setCustomDateRange}
-			onTimePeriodChange={handleTimePeriodChange}
-			onTypeFilterChange={setTypeFilter}
-			timePeriod={timePeriod}
-			typeFilter={typeFilter}
-		/>
-	);
+   return (
+      <TransactionFilterBar
+         bankAccountFilter={bankAccountFilter}
+         bankAccounts={bankAccountsQuery.data ?? []}
+         categories={categoriesQuery.data ?? []}
+         categoryFilter={categoryFilter}
+         customDateRange={customDateRange}
+         hasActiveFilters={hasActiveFilters}
+         onBankAccountFilterChange={setBankAccountFilter}
+         onCategoryFilterChange={setCategoryFilter}
+         onClearFilters={clearFilters}
+         onCustomDateRangeChange={setCustomDateRange}
+         onTimePeriodChange={handleTimePeriodChange}
+         onTypeFilterChange={setTypeFilter}
+         timePeriod={timePeriod}
+         typeFilter={typeFilter}
+      />
+   );
 }
 
 function TransactionsPageContent() {
-	const { openSheet } = useSheet();
+   const { openSheet } = useSheet();
 
-	return (
-		<main className="space-y-4">
-			<DefaultHeader
-				actions={
-					<Button
-						onClick={() =>
-							openSheet({
-								children: <ManageTransactionForm />,
-							})
-						}
-					>
-						<Plus className="size-4" />
-						{translate(
-							"dashboard.routes.transactions.features.add-new.title",
-						)}
-					</Button>
-				}
-				description={translate(
-					"dashboard.routes.transactions.list-section.description",
-				)}
-				title={translate(
-					"dashboard.routes.transactions.list-section.title",
-				)}
-			/>
+   return (
+      <main className="space-y-4">
+         <DefaultHeader
+            actions={
+               <Button
+                  onClick={() =>
+                     openSheet({
+                        children: <ManageTransactionForm />,
+                     })
+                  }
+               >
+                  <Plus className="size-4" />
+                  {translate(
+                     "dashboard.routes.transactions.features.add-new.title",
+                  )}
+               </Button>
+            }
+            description={translate(
+               "dashboard.routes.transactions.list-section.description",
+            )}
+            title={translate(
+               "dashboard.routes.transactions.list-section.title",
+            )}
+         />
 
-			<Suspense fallback={<TransactionFilterBarSkeleton />}>
-				<TransactionFilterBarWrapper />
-			</Suspense>
+         <Suspense fallback={<TransactionFilterBarSkeleton />}>
+            <TransactionFilterBarWrapper />
+         </Suspense>
 
-			<TransactionsStats />
-			<TransactionsListSection />
-		</main>
-	);
+         <TransactionsStats />
+         <TransactionsListSection />
+      </main>
+   );
 }
 
 export function TransactionsPage() {
-	return (
-		<TransactionListProvider>
-			<TransactionsPageContent />
-		</TransactionListProvider>
-	);
+   return (
+      <TransactionListProvider>
+         <TransactionsPageContent />
+      </TransactionListProvider>
+   );
 }

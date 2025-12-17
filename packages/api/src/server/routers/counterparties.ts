@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createCounterparty,
    deleteCounterparty,
@@ -11,6 +10,7 @@ import {
    searchCounterparties,
    updateCounterparty,
 } from "@packages/database/repositories/counterparty-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

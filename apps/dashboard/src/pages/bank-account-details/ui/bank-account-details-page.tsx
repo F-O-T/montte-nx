@@ -122,7 +122,7 @@ function BankAccountContent() {
       return (
          <BankAccountPageError
             error={new Error("Invalid bank account ID")}
-            resetErrorBoundary={() => { }}
+            resetErrorBoundary={() => {}}
          />
       );
    }

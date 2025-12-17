@@ -217,8 +217,9 @@ const findOverlappingConditions = <
 
    for (let i = 0; i < rules.length; i++) {
       for (let j = i + 1; j < rules.length; j++) {
-         const rule1 = rules[i]!;
-         const rule2 = rules[j]!;
+         const rule1 = rules[i];
+         const rule2 = rules[j];
+         if (!rule1 || !rule2) continue;
          const key = [rule1.id, rule2.id].sort().join(":");
 
          if (checked.has(key)) continue;
@@ -264,8 +265,9 @@ const findPriorityCollisions = <
 
          for (let i = 0; i < rulesWithPriority.length; i++) {
             for (let j = i + 1; j < rulesWithPriority.length; j++) {
-               const r1 = rulesWithPriority[i]!;
-               const r2 = rulesWithPriority[j]!;
+               const r1 = rulesWithPriority[i];
+               const r2 = rulesWithPriority[j];
+               if (!r1 || !r2) continue;
                if (areConditionsOverlapping(r1.conditions, r2.conditions)) {
                   overlappingPairs.add(r1.id);
                   overlappingPairs.add(r2.id);
@@ -302,12 +304,14 @@ const findUnreachableRules = <
    const sortedRules = [...rules].sort((a, b) => b.priority - a.priority);
 
    for (let i = 0; i < sortedRules.length; i++) {
-      const rule = sortedRules[i]!;
+      const rule = sortedRules[i];
+      if (!rule) continue;
 
       if (!rule.enabled) continue;
 
       for (let j = 0; j < i; j++) {
-         const higherPriorityRule = sortedRules[j]!;
+         const higherPriorityRule = sortedRules[j];
+         if (!higherPriorityRule) continue;
 
          if (!higherPriorityRule.enabled || !higherPriorityRule.stopOnMatch) {
             continue;

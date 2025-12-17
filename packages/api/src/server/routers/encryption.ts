@@ -5,9 +5,9 @@
  * Application-level encryption is automatic and doesn't need user interaction.
  */
 
-import { APIError } from "@packages/utils/errors";
 import { timingSafeEqual } from "node:crypto";
 import { user } from "@packages/database/schema";
+import { APIError } from "@packages/utils/errors";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";

@@ -91,7 +91,8 @@ export function CsvColumnMapper({
 
    const getColumnHighlight = (index: number) => {
       if (mapping.date === index) return "bg-blue-500/10 border-blue-500/30";
-      if (mapping.amount === index) return "bg-green-500/10 border-green-500/30";
+      if (mapping.amount === index)
+         return "bg-green-500/10 border-green-500/30";
       if (mapping.description === index)
          return "bg-purple-500/10 border-purple-500/30";
       return "";
@@ -125,6 +126,7 @@ export function CsvColumnMapper({
                   <SelectContent>
                      <SelectItem value="none">Não selecionado</SelectItem>
                      {headers.map((header, index) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Headers may have duplicates, index is the unique identifier
                         <SelectItem key={index} value={index.toString()}>
                            {header || `Coluna ${index + 1}`}
                         </SelectItem>
@@ -148,6 +150,7 @@ export function CsvColumnMapper({
                   <SelectContent>
                      <SelectItem value="none">Não selecionado</SelectItem>
                      {headers.map((header, index) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Headers may have duplicates, index is the unique identifier
                         <SelectItem key={index} value={index.toString()}>
                            {header || `Coluna ${index + 1}`}
                         </SelectItem>
@@ -171,6 +174,7 @@ export function CsvColumnMapper({
                   <SelectContent>
                      <SelectItem value="none">Não selecionado</SelectItem>
                      {headers.map((header, index) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Headers may have duplicates, index is the unique identifier
                         <SelectItem key={index} value={index.toString()}>
                            {header || `Coluna ${index + 1}`}
                         </SelectItem>
@@ -194,7 +198,7 @@ export function CsvColumnMapper({
                         {headers.map((header, index) => (
                            <TableHead
                               className={`whitespace-nowrap ${getColumnHighlight(index)}`}
-                              key={index}
+                              key={`header-${index + 1}`}
                            >
                               <div className="flex items-center gap-2">
                                  {header || `Coluna ${index + 1}`}
@@ -220,11 +224,11 @@ export function CsvColumnMapper({
                   </TableHeader>
                   <TableBody>
                      {sampleRows.map((row, rowIndex) => (
-                        <TableRow key={rowIndex}>
+                        <TableRow key={`row-${rowIndex + 1}`}>
                            {row.map((cell, cellIndex) => (
                               <TableCell
                                  className={`whitespace-nowrap ${getColumnHighlight(cellIndex)}`}
-                                 key={cellIndex}
+                                 key={`cell-${rowIndex + 1}-${cellIndex + 1}`}
                               >
                                  {cell || "-"}
                               </TableCell>

@@ -2,22 +2,22 @@ import { translate } from "@packages/localization";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyMedia,
-	EmptyTitle,
+   Empty,
+   EmptyContent,
+   EmptyDescription,
+   EmptyMedia,
+   EmptyTitle,
 } from "@packages/ui/components/empty";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupInput,
+   InputGroup,
+   InputGroupAddon,
+   InputGroupInput,
 } from "@packages/ui/components/input-group";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-	SelectionActionBar,
-	SelectionActionButton,
+   SelectionActionBar,
+   SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { formatDecimalCurrency } from "@packages/utils/money";
@@ -30,9 +30,9 @@ import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useTRPC } from "@/integrations/clients";
 import { useBankAccountBulkActions } from "../features/use-bank-account-bulk-actions";
 import {
-	BankAccountExpandedContent,
-	BankAccountMobileCard,
-	createBankAccountColumns,
+   BankAccountExpandedContent,
+   BankAccountMobileCard,
+   createBankAccountColumns,
 } from "./bank-accounts-table-columns";
 
 function BankAccountsListErrorFallback(props: FallbackProps) {
@@ -51,64 +51,64 @@ function BankAccountsListErrorFallback(props: FallbackProps) {
 }
 
 function BankAccountsListSkeleton() {
-	return (
-		<Card>
-			<CardContent className="pt-6 grid gap-4">
-				<Skeleton className="h-9 w-full sm:max-w-md" />
-				<ItemGroup>
-					{Array.from({ length: 5 }).map((_, index) => (
-						<Fragment key={`bank-account-skeleton-${index + 1}`}>
-							<div className="flex items-center p-4 gap-4">
-								<Skeleton className="size-10 rounded-full" />
-								<div className="space-y-2 flex-1">
-									<Skeleton className="h-4 w-32" />
-									<Skeleton className="h-3 w-24" />
-								</div>
-								<Skeleton className="h-4 w-20" />
-							</div>
-							{index !== 4 && <ItemSeparator />}
-						</Fragment>
-					))}
-				</ItemGroup>
-				<div className="flex items-center justify-end gap-2 pt-4">
-					<Skeleton className="h-10 w-24" />
-					<Skeleton className="h-10 w-10" />
-					<Skeleton className="h-10 w-24" />
-				</div>
-			</CardContent>
-		</Card>
-	);
+   return (
+      <Card>
+         <CardContent className="pt-6 grid gap-4">
+            <Skeleton className="h-9 w-full sm:max-w-md" />
+            <ItemGroup>
+               {Array.from({ length: 5 }).map((_, index) => (
+                  <Fragment key={`bank-account-skeleton-${index + 1}`}>
+                     <div className="flex items-center p-4 gap-4">
+                        <Skeleton className="size-10 rounded-full" />
+                        <div className="space-y-2 flex-1">
+                           <Skeleton className="h-4 w-32" />
+                           <Skeleton className="h-3 w-24" />
+                        </div>
+                        <Skeleton className="h-4 w-20" />
+                     </div>
+                     {index !== 4 && <ItemSeparator />}
+                  </Fragment>
+               ))}
+            </ItemGroup>
+            <div className="flex items-center justify-end gap-2 pt-4">
+               <Skeleton className="h-10 w-24" />
+               <Skeleton className="h-10 w-10" />
+               <Skeleton className="h-10 w-24" />
+            </div>
+         </CardContent>
+      </Card>
+   );
 }
 
 type BankAccountsListContentProps = {
-	statusFilter: string;
-	typeFilter: string;
+   statusFilter: string;
+   typeFilter: string;
 };
 
 function BankAccountsListContent({
-	statusFilter,
-	typeFilter,
+   statusFilter,
+   typeFilter,
 }: BankAccountsListContentProps) {
-	const trpc = useTRPC();
-	const { openAlertDialog } = useAlertDialog();
-	const [currentPage, setCurrentPage] = useState(1);
-	const [searchTerm, setSearchTerm] = useState("");
-	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-	const [pageSize, setPageSize] = useState(10);
+   const trpc = useTRPC();
+   const { openAlertDialog } = useAlertDialog();
+   const [currentPage, setCurrentPage] = useState(1);
+   const [searchTerm, setSearchTerm] = useState("");
+   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+   const [pageSize, setPageSize] = useState(10);
 
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setDebouncedSearchTerm(searchTerm);
-			setCurrentPage(1);
-		}, 300);
-		return () => clearTimeout(timer);
-	}, [searchTerm]);
-	//TODO: achar uma forma melhor de fazer isso
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
-	useEffect(() => {
-		setCurrentPage(1);
-	}, [statusFilter, typeFilter, pageSize]);
+   useEffect(() => {
+      const timer = setTimeout(() => {
+         setDebouncedSearchTerm(searchTerm);
+         setCurrentPage(1);
+      }, 300);
+      return () => clearTimeout(timer);
+   }, [searchTerm]);
+   //TODO: achar uma forma melhor de fazer isso
+   // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filters change
+   useEffect(() => {
+      setCurrentPage(1);
+   }, [statusFilter, typeFilter, pageSize]);
 
    const { data: paginatedData } = useSuspenseQuery(
       trpc.bankAccounts.getAllPaginated.queryOptions(
@@ -170,23 +170,23 @@ function BankAccountsListContent({
       });
 
    const handleClearSelection = () => {
-		setRowSelection({});
-	};
+      setRowSelection({});
+   };
 
-	return (
-		<>
-			<Card>
-				<CardContent className="pt-6 grid gap-4">
-					<InputGroup className="sm:max-w-md">
-						<InputGroupInput
-							onChange={(e) => setSearchTerm(e.target.value)}
-							placeholder={translate("common.form.search.placeholder")}
-							value={searchTerm}
-						/>
-						<InputGroupAddon>
-							<Search />
-						</InputGroupAddon>
-					</InputGroup>
+   return (
+      <>
+         <Card>
+            <CardContent className="pt-6 grid gap-4">
+               <InputGroup className="sm:max-w-md">
+                  <InputGroupInput
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     placeholder={translate("common.form.search.placeholder")}
+                     value={searchTerm}
+                  />
+                  <InputGroupAddon>
+                     <Search />
+                  </InputGroupAddon>
+               </InputGroup>
 
                {bankAccounts.length === 0 ? (
                   <Empty>
@@ -353,22 +353,22 @@ function BankAccountsListContent({
 }
 
 type BankAccountsListSectionProps = {
-	statusFilter: string;
-	typeFilter: string;
+   statusFilter: string;
+   typeFilter: string;
 };
 
 export function BankAccountsListSection({
-	statusFilter,
-	typeFilter,
+   statusFilter,
+   typeFilter,
 }: BankAccountsListSectionProps) {
-	return (
-		<ErrorBoundary FallbackComponent={BankAccountsListErrorFallback}>
-			<Suspense fallback={<BankAccountsListSkeleton />}>
-				<BankAccountsListContent
-					statusFilter={statusFilter}
-					typeFilter={typeFilter}
-				/>
-			</Suspense>
-		</ErrorBoundary>
-	);
+   return (
+      <ErrorBoundary FallbackComponent={BankAccountsListErrorFallback}>
+         <Suspense fallback={<BankAccountsListSkeleton />}>
+            <BankAccountsListContent
+               statusFilter={statusFilter}
+               typeFilter={typeFilter}
+            />
+         </Suspense>
+      </ErrorBoundary>
+   );
 }

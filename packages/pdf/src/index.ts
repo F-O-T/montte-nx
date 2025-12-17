@@ -1,8 +1,8 @@
 import type { DRESnapshotData } from "@packages/database/schemas/custom-reports";
 import { renderToBuffer } from "@react-pdf/renderer";
 import {
-   BankStatementTemplate,
    type BankStatementProps,
+   BankStatementTemplate,
 } from "./templates/bank-statement";
 import { DREFiscalTemplate } from "./templates/dre-fiscal";
 import { DREGerencialTemplate } from "./templates/dre-gerencial";
@@ -39,7 +39,10 @@ export async function renderBankStatement(
    return Buffer.from(buffer);
 }
 
+export type {
+   BankStatementProps,
+   BankStatementTransaction,
+} from "./templates/bank-statement";
+export { BankStatementTemplate } from "./templates/bank-statement";
 export { DREFiscalTemplate } from "./templates/dre-fiscal";
 export { DREGerencialTemplate } from "./templates/dre-gerencial";
-export { BankStatementTemplate } from "./templates/bank-statement";
-export type { BankStatementProps, BankStatementTransaction } from "./templates/bank-statement";

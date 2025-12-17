@@ -1,13 +1,7 @@
 ---
-import { Clock, Headphones, MessageSquare, Users } from "@lucide/astro";
-import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardTitle,
-} from "@packages/ui/components/card";
+import { MessageSquare, Users } from "@lucide/astro";
 
-const features = [
+const _features = [
    {
       icon: "MessageSquare",
       title: "Resposta em até 1 dia útil",
@@ -22,7 +16,7 @@ const features = [
    },
 ] as const;
 
-const iconComponents = {
+const _iconComponents = {
    MessageSquare,
    Users,
 };

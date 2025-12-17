@@ -143,7 +143,10 @@ const { worker: deletionWorker, close: closeDeletionWorker } =
          job: Job<DeletionJobData, DeletionJobResult> | undefined,
          error: Error,
       ) => {
-         logger.error({ jobName: job?.name, err: error }, "Deletion job failed");
+         logger.error(
+            { jobName: job?.name, err: error },
+            "Deletion job failed",
+         );
       },
    });
 
@@ -207,7 +210,10 @@ async function gracefulShutdown(signal: string) {
    }
 
    isShuttingDown = true;
-   logger.info({ signal }, "Received shutdown signal, shutting down gracefully");
+   logger.info(
+      { signal },
+      "Received shutdown signal, shutting down gracefully",
+   );
 
    const shutdownTimeout = setTimeout(() => {
       logger.error("Shutdown timeout exceeded, forcing exit");

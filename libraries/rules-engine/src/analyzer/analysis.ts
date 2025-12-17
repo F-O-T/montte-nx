@@ -21,10 +21,7 @@ export type RuleComplexity = {
    readonly complexityScore: number;
 };
 
-export type RuleSetAnalysis<
-   TContext = unknown,
-   TConsequences extends ConsequenceDefinitions = DefaultConsequences,
-> = {
+export type RuleSetAnalysis = {
    readonly ruleCount: number;
    readonly enabledCount: number;
    readonly disabledCount: number;
@@ -193,7 +190,7 @@ export const analyzeRuleSet = <
    TConsequences extends ConsequenceDefinitions = DefaultConsequences,
 >(
    rules: ReadonlyArray<Rule<TContext, TConsequences>>,
-): RuleSetAnalysis<TContext, TConsequences> => {
+): RuleSetAnalysis => {
    const complexities = rules.map(analyzeRuleComplexity);
 
    const allFields = new Set<string>();
@@ -352,12 +349,15 @@ export const analyzeOperatorUsage = <
    }
 
    return [...operatorMap.entries()]
-      .map(([key, data]) => ({
-         operator: key.split(":")[1]!,
-         type: data.type,
-         count: data.rules.length,
-         rules: data.rules,
-      }))
+      .map(([key, data]) => {
+         const parts = key.split(":");
+         return {
+            operator: parts[1] ?? "",
+            type: data.type,
+            count: data.rules.length,
+            rules: data.rules,
+         };
+      })
       .sort((a, b) => b.count - a.count);
 };
 
@@ -417,12 +417,7 @@ export const findLeastUsedFields = <
       .slice(0, limit);
 };
 
-export const formatRuleSetAnalysis = <
-   TContext = unknown,
-   TConsequences extends ConsequenceDefinitions = DefaultConsequences,
->(
-   analysis: RuleSetAnalysis<TContext, TConsequences>,
-): string => {
+export const formatRuleSetAnalysis = (analysis: RuleSetAnalysis): string => {
    const lines: string[] = [
       "=== Rule Set Analysis ===",
       "",

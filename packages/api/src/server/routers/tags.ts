@@ -1,4 +1,3 @@
-import { APIError } from "@packages/utils/errors";
 import {
    createTag,
    deleteManyTags,
@@ -11,6 +10,7 @@ import {
    getTotalTagsByOrganizationId,
    updateTag,
 } from "@packages/database/repositories/tag-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
