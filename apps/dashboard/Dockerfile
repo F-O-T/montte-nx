@@ -46,6 +46,10 @@ RUN bun install
 COPY . .
 
 # Build the condition-evaluator library
+WORKDIR /app/libraries/ofx
+RUN bun run build
+WORKDIR /app
+
 WORKDIR /app/libraries/condition-evaluator
 RUN bun run build
 WORKDIR /app
