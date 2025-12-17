@@ -11,7 +11,7 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const _lang = (locale || "pt-BR") as SupportedLng;
+const lang = (locale || "pt-BR") as SupportedLng;
 ---
 
 <Layout lang={lang}>

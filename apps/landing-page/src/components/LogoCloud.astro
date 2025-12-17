@@ -7,7 +7,7 @@ export interface Props {
 }
 
 const { variant } = Astro.props;
-const _isCompact = variant === "compact";
+const isCompact = variant === "compact";
 
 const baseLogos = [
    {
@@ -23,7 +23,7 @@ const baseLogos = [
 ];
 
 // Duplicate logos enough times to create seamless infinite scroll
-const _logos = Array(12)
+const logos = Array(12)
    .fill(null)
    .flatMap(() => baseLogos);
 ---

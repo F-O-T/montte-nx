@@ -10,10 +10,10 @@ interface Props {
 }
 
 const { lang = "pt-BR" } = Astro.props;
-const _brandName = translate("common.brand.name", { lng: lang });
-const _brandDescription = translate("common.brand.description", { lng: lang });
+const brandName = translate("common.brand.name", { lng: lang });
+const brandDescription = translate("common.brand.description", { lng: lang });
 
-const _posthogEnv = {
+const posthogEnv = {
    VITE_POSTHOG_HOST,
    VITE_POSTHOG_KEY,
 };
