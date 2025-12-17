@@ -3,47 +3,40 @@ import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
-   Empty,
-   EmptyContent,
-   EmptyDescription,
-   EmptyMedia,
-   EmptyTitle,
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyMedia,
+	EmptyTitle,
 } from "@packages/ui/components/empty";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import {
-   InputGroup,
-   InputGroupAddon,
-   InputGroupInput,
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
 } from "@packages/ui/components/input-group";
 import { ItemGroup, ItemSeparator } from "@packages/ui/components/item";
 import {
-   SelectionActionBar,
-   SelectionActionButton,
+	SelectionActionBar,
+	SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
-   ToggleGroup,
-   ToggleGroupItem,
+	ToggleGroup,
+	ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
-   ArrowDownLeft,
-   ArrowLeftRight,
-   ArrowUpRight,
-   Filter,
-   FolderOpen,
-   Landmark,
-   Search,
-   Trash2,
-   X,
+	ArrowDownLeft,
+	ArrowLeftRight,
+	ArrowUpRight,
+	FolderOpen,
+	Landmark,
+	Search,
+	Trash2,
+	X,
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -51,12 +44,10 @@ import { useTransactionBulkActions } from "@/features/transaction/lib/use-transa
 import { CategorizeForm } from "@/features/transaction/ui/categorize-form";
 import { MarkAsTransferForm } from "@/features/transaction/ui/mark-as-transfer-form";
 import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
-import { TransactionFilterCredenza } from "@/features/transaction/ui/transaction-filter-credenza";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
-import { useCredenza } from "@/hooks/use-credenza";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -121,20 +112,17 @@ function CostCenterTransactionsContent({
    startDate: Date | null;
    endDate: Date | null;
 }) {
-   const trpc = useTRPC();
-   const isMobile = useIsMobile();
-   const { activeOrganization } = useActiveOrganization();
-   const { openCredenza } = useCredenza();
-   const { openAlertDialog } = useAlertDialog();
-   const { openSheet } = useSheet();
-   const [currentPage, setCurrentPage] = useState(1);
-   const pageSize = 10;
-   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+	const trpc = useTRPC();
+	const { activeOrganization } = useActiveOrganization();
+	const { openAlertDialog } = useAlertDialog();
+	const { openSheet } = useSheet();
+	const [currentPage, setCurrentPage] = useState(1);
+	const pageSize = 10;
+	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-   const [searchTerm, setSearchTerm] = useState("");
-   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [categoryFilter, setCategoryFilter] = useState("all");
-   const [typeFilter, setTypeFilter] = useState<string>("");
+	const [searchTerm, setSearchTerm] = useState("");
+	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+	const [typeFilter, setTypeFilter] = useState<string>("");
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -151,7 +139,6 @@ function CostCenterTransactionsContent({
    const { data } = useSuspenseQuery(
       trpc.transactions.getAllPaginated.queryOptions(
          {
-            categoryId: categoryFilter === "all" ? undefined : categoryFilter,
             costCenterId,
             endDate: endDate?.toISOString(),
             limit: pageSize,
@@ -182,8 +169,7 @@ function CostCenterTransactionsContent({
       },
    });
 
-   const hasActiveFilters =
-      debouncedSearchTerm || typeFilter !== "" || categoryFilter !== "all";
+   const hasActiveFilters = debouncedSearchTerm || typeFilter !== "";
 
    const selectedIds = Object.keys(rowSelection).filter(
       (id) => rowSelection[id],
@@ -204,7 +190,6 @@ function CostCenterTransactionsContent({
 
    const handleClearFilters = () => {
       setTypeFilter("");
-      setCategoryFilter("all");
       setSearchTerm("");
    };
 
@@ -273,42 +258,9 @@ function CostCenterTransactionsContent({
                         <Search />
                      </InputGroupAddon>
                   </InputGroup>
-
-                  {isMobile && (
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Button
-                              onClick={() =>
-                                 openCredenza({
-                                    children: (
-                                       <TransactionFilterCredenza
-                                          categories={categories}
-                                          categoryFilter={categoryFilter}
-                                          onCategoryFilterChange={
-                                             setCategoryFilter
-                                          }
-                                          onClearFilters={handleClearFilters}
-                                          onTypeFilterChange={setTypeFilter}
-                                          typeFilter={typeFilter}
-                                       />
-                                    ),
-                                 })
-                              }
-                              size="icon"
-                              variant={hasActiveFilters ? "default" : "outline"}
-                           >
-                              <Filter className="size-4" />
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>Filtrar transações</p>
-                        </TooltipContent>
-                     </Tooltip>
-                  )}
                </div>
 
-               {!isMobile && (
-                  <div className="flex flex-wrap items-center gap-3">
+               <div className="flex flex-wrap items-center gap-3">
                      <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
                            Tipo:
@@ -365,8 +317,7 @@ function CostCenterTransactionsContent({
                            </Button>
                         </>
                      )}
-                  </div>
-               )}
+               </div>
 
                {transactions.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground">

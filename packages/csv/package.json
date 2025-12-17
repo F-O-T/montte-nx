@@ -1,0 +1,29 @@
+{
+   "dependencies": {
+      "@packages/utils": "workspace:*"
+   },
+   "devDependencies": {
+      "@tooling/typescript": "workspace:*",
+      "typescript": "catalog:development"
+   },
+   "exports": {
+      ".": {
+         "default": "./src/index.ts",
+         "types": "./dist/src/index.d.ts"
+      }
+   },
+   "files": [
+      "dist"
+   ],
+   "license": "Apache-2.0",
+   "name": "@packages/csv",
+   "private": true,
+   "scripts": {
+      "build": "tsc --build",
+      "check": "biome check --write ./src",
+      "test": "bun test",
+      "typecheck": "tsc "
+   },
+   "type": "module",
+   "version": "0.1.0"
+}

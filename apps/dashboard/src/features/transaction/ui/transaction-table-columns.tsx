@@ -1,4 +1,9 @@
 import { translate } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -10,10 +15,36 @@ import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, Split } from "lucide-react";
+import {
+   ArrowDownLeft,
+   ArrowLeftRight,
+   ArrowUpRight,
+   Eye,
+   Split,
+} from "lucide-react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import type { Category, Transaction } from "./transaction-list";
+
+const TRANSACTION_TYPE_CONFIG = {
+   expense: {
+      color: "#ef4444",
+      icon: ArrowUpRight,
+      label: translate("dashboard.routes.transactions.list-section.types.expense"),
+   },
+   income: {
+      color: "#10b981",
+      icon: ArrowDownLeft,
+      label: translate("dashboard.routes.transactions.list-section.types.income"),
+   },
+   transfer: {
+      color: "#3b82f6",
+      icon: ArrowLeftRight,
+      label: translate(
+         "dashboard.routes.transactions.list-section.types.transfer",
+      ),
+   },
+} as const;
 
 type CategorySplit = {
    categoryId: string;
@@ -141,21 +172,22 @@ export function createTransactionColumns(
             const category = getCategoryDetails(transaction, categories);
 
             return (
-               <Badge
-                  className="font-normal truncate max-w-[150px] gap-1.5"
-                  style={{
-                     backgroundColor: `${category.color}20`,
-                     color: category.color,
-                  }}
-                  variant="secondary"
-               >
-                  <IconDisplay iconName={category.icon as IconName} size={14} />
-                  {category.name}
-               </Badge>
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${category.color}20`,
+                        color: category.color,
+                     }}
+                  >
+                     <IconDisplay iconName={category.icon as IconName} size={14} />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="max-w-[120px] truncate">
+                     {category.name}
+                  </AnnouncementTitle>
+               </Announcement>
             );
          },
          enableSorting: false,
-
          header: translate(
             "dashboard.routes.transactions.table.columns.category",
          ),
@@ -173,16 +205,25 @@ export function createTransactionColumns(
       {
          accessorKey: "type",
          cell: ({ row }) => {
-            const type = row.getValue("type") as string;
-            const typeMap = {
-               expense: "Despesa",
-               income: "Receita",
-               transfer: "Transferência",
-            };
-            return <span>{typeMap[type as keyof typeof typeMap]}</span>;
+            const type = row.getValue("type") as keyof typeof TRANSACTION_TYPE_CONFIG;
+            const config = TRANSACTION_TYPE_CONFIG[type];
+            const Icon = config.icon;
+
+            return (
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${config.color}20`,
+                        color: config.color,
+                     }}
+                  >
+                     <Icon className="size-3.5" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle>{config.label}</AnnouncementTitle>
+               </Announcement>
+            );
          },
          enableSorting: false,
-
          header: translate("dashboard.routes.transactions.table.columns.type"),
       },
       {

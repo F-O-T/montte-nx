@@ -3,6 +3,7 @@ import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Field,
+   FieldDescription,
    FieldError,
    FieldGroup,
    FieldLabel,
@@ -23,7 +24,8 @@ import {
 } from "@packages/ui/components/sheet";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { type FormEvent, useCallback, useMemo } from "react";
+import { z } from "zod";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
@@ -77,6 +79,14 @@ export function ManageBankAccountForm({
       }),
    );
 
+   const schema = z.object({
+      bank: z.string().min(1, translate("common.validation.required")),
+      name: z.string(),
+      type: z
+         .enum(["", "checking", "savings", "investment"])
+         .refine((val) => val !== "", translate("common.validation.required")),
+   });
+
    const form = useForm({
       defaultValues: {
          bank: bankAccount?.bank || "",
@@ -87,8 +97,8 @@ export function ManageBankAccountForm({
             | "savings"
             | "",
       },
-      onSubmit: async ({ value }) => {
-         if (!value.name || !value.type || !value.bank) {
+      onSubmit: async ({ value, formApi }) => {
+         if (!value.type || !value.bank) {
             return;
          }
          try {
@@ -96,7 +106,7 @@ export function ManageBankAccountForm({
                await updateBankAccountMutation.mutateAsync({
                   data: {
                      bank: value.bank,
-                     name: value.name,
+                     name: value.name || undefined,
                      type: value.type as "checking" | "investment" | "savings",
                   },
                   id: bankAccount.id,
@@ -104,10 +114,11 @@ export function ManageBankAccountForm({
             } else {
                await createBankAccountMutation.mutateAsync({
                   bank: value.bank,
-                  name: value.name,
+                  name: value.name || undefined,
                   type: value.type as "checking" | "investment" | "savings",
                });
             }
+            formApi.reset();
          } catch (error) {
             console.error(
                `Failed to ${isEditMode ? "update" : "create"} bank account:`,
@@ -115,17 +126,22 @@ export function ManageBankAccountForm({
             );
          }
       },
+      validators: {
+         onBlur: schema,
+      },
    });
 
+   const handleSubmit = useCallback(
+      (e: FormEvent) => {
+         e.preventDefault();
+         e.stopPropagation();
+         form.handleSubmit();
+      },
+      [form],
+   );
+
    return (
-      <form
-         className="h-full flex flex-col"
-         onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-         }}
-      >
+      <form className="h-full flex flex-col" onSubmit={handleSubmit}>
          <SheetHeader>
             <SheetTitle>{modeTexts.title}</SheetTitle>
             <SheetDescription>{modeTexts.description}</SheetDescription>
@@ -139,19 +155,25 @@ export function ManageBankAccountForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
-                              {translate("common.form.name.label")}
+                           <FieldLabel htmlFor={field.name}>
+                              {translate("common.form.bank-account-nickname.label")}
                            </FieldLabel>
                            <Input
+                              aria-invalid={isInvalid}
+                              id={field.name}
+                              name={field.name}
                               onBlur={field.handleBlur}
                               onChange={(e) =>
                                  field.handleChange(e.target.value)
                               }
                               placeholder={translate(
-                                 "common.form.name.placeholder",
+                                 "common.form.bank-account-nickname.placeholder",
                               )}
                               value={field.state.value}
                            />
+                           <FieldDescription>
+                              {translate("common.form.bank-account-nickname.description")}
+                           </FieldDescription>
                            {isInvalid && (
                               <FieldError errors={field.state.meta.errors} />
                            )}
@@ -168,7 +190,7 @@ export function ManageBankAccountForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel htmlFor={field.name}>
                               {translate("common.form.bank.label")}
                            </FieldLabel>
                            <BankAccountCombobox
@@ -192,7 +214,7 @@ export function ManageBankAccountForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel htmlFor={field.name}>
                               {translate("common.form.account-type.label")}
                            </FieldLabel>
                            <Select

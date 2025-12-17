@@ -80,14 +80,28 @@ function ShareTargetComponent() {
 
          const cacheData = await getShareDataFromCache();
 
+         const createPendingImport = (content: string, filename: string) => {
+            const ext = filename.split(".").pop()?.toLowerCase();
+            const fileType = ext === "csv" ? "csv" : "ofx";
+            return {
+               fileType,
+               content,
+               filename,
+               timestamp: Date.now(),
+               bankAccountId: null,
+               parsedTransactions: [],
+               selectedRowIndices: [],
+               duplicates: [],
+               duplicatesChecked: false,
+               csvPreviewData: null,
+               columnMapping: null,
+            };
+         };
+
          if (cacheData) {
             sessionStorage.setItem(
-               "montte:pending-ofx-import",
-               JSON.stringify({
-                  content: cacheData.content,
-                  filename: cacheData.filename,
-                  timestamp: Date.now(),
-               }),
+               "montte:pending-import",
+               JSON.stringify(createPendingImport(cacheData.content, cacheData.filename)),
             );
          } else {
             const pendingShare = sessionStorage.getItem(
@@ -103,12 +117,8 @@ function ShareTargetComponent() {
 
                   sessionStorage.removeItem("montte:pending-share-target");
                   sessionStorage.setItem(
-                     "montte:pending-ofx-import",
-                     JSON.stringify({
-                        content: data.content,
-                        filename: data.filename,
-                        timestamp: Date.now(),
-                     }),
+                     "montte:pending-import",
+                     JSON.stringify(createPendingImport(data.content, data.filename)),
                   );
                } catch {
                   // Invalid data, ignore
@@ -118,7 +128,7 @@ function ShareTargetComponent() {
 
          navigate({
             params: { slug: orgSlug },
-            to: "/$slug/import-ofx",
+            to: "/$slug/import",
          });
       }
 

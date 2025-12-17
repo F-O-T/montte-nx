@@ -18,7 +18,8 @@ import {
    findTransactionsByBankAccountIdPaginated,
    findTransactionsForExport,
 } from "@packages/database/repositories/transaction-repository";
-import { generateOfxContent, parseOfxBuffer } from "@packages/ofx";
+import { generateOfxContent } from "@packages/ofx";
+import { renderBankStatement } from "@packages/pdf";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -193,6 +194,147 @@ export const bankAccountRouter = router({
          };
       }),
 
+   exportCsv: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            endDate: z.string().optional(),
+            startDate: z.string().optional(),
+            type: z.enum(["income", "expense", "transfer"]).optional(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
+
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw APIError.notFound("Bank account not found");
+         }
+
+         const startDate = input.startDate
+            ? new Date(input.startDate)
+            : undefined;
+         const endDate = input.endDate ? new Date(input.endDate) : undefined;
+
+         const transactions = await findTransactionsForExport(
+            resolvedCtx.db,
+            input.bankAccountId,
+            {
+               endDate,
+               startDate,
+               type: input.type,
+            },
+         );
+
+         // Generate CSV content
+         const headers = ["Data", "Descrição", "Valor", "Tipo"];
+         const rows = transactions.map((trn) => {
+            const date = trn.date.toLocaleDateString("pt-BR");
+            const description = `"${(trn.description ?? "").replace(/"/g, '""')}"`;
+            const amount = trn.type === "expense"
+               ? `-${trn.amount}`
+               : trn.amount.toString();
+            const type = trn.type === "income"
+               ? "Receita"
+               : trn.type === "expense"
+                  ? "Despesa"
+                  : "Transferência";
+            return [date, description, amount, type].join(",");
+         });
+
+         const content = [headers.join(","), ...rows].join("\n");
+
+         const formatDate = (d: Date) =>
+            d.toISOString().split("T")[0]?.replace(/-/g, "") ?? "";
+         const accountName =
+            bankAccount.name?.replace(/[^a-zA-Z0-9]/g, "_") ?? "conta";
+         const filename = `${accountName}_${formatDate(startDate ?? new Date())}_${formatDate(endDate ?? new Date())}.csv`;
+
+         return {
+            content,
+            filename,
+            transactionCount: transactions.length,
+         };
+      }),
+
+   exportPdf: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            endDate: z.string().optional(),
+            startDate: z.string().optional(),
+            type: z.enum(["income", "expense", "transfer"]).optional(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
+
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw APIError.notFound("Bank account not found");
+         }
+
+         const startDate = input.startDate
+            ? new Date(input.startDate)
+            : undefined;
+         const endDate = input.endDate ? new Date(input.endDate) : undefined;
+
+         const transactions = await findTransactionsForExport(
+            resolvedCtx.db,
+            input.bankAccountId,
+            {
+               endDate,
+               startDate,
+               type: input.type,
+            },
+         );
+
+         const formatDateForFilename = (d: Date) =>
+            d.toISOString().split("T")[0]?.replace(/-/g, "") ?? "";
+         const accountName =
+            bankAccount.name?.replace(/[^a-zA-Z0-9]/g, "_") ?? "conta";
+         const filename = `${accountName}_${formatDateForFilename(startDate ?? new Date())}_${formatDateForFilename(endDate ?? new Date())}.pdf`;
+
+         // Render PDF server-side using @react-pdf/renderer
+         const pdfBuffer = await renderBankStatement({
+            bankAccount: {
+               name: bankAccount.name,
+               bank: bankAccount.bank,
+               type: bankAccount.type,
+            },
+            transactions: transactions.map((trn) => ({
+               date: trn.date.toISOString(),
+               description: trn.description,
+               amount: trn.amount,
+               type: trn.type as string,
+            })),
+            period: {
+               startDate: startDate?.toISOString(),
+               endDate: endDate?.toISOString(),
+            },
+            generatedAt: new Date().toISOString(),
+         });
+
+         // Convert Buffer to base64 for transmission
+         const content = pdfBuffer.toString("base64");
+
+         return {
+            content,
+            filename,
+            transactionCount: transactions.length,
+         };
+      }),
+
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
@@ -246,12 +388,24 @@ export const bankAccountRouter = router({
          return bankAccount;
       }),
 
-   getStats: protectedProcedure.query(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-      const organizationId = resolvedCtx.organizationId;
+   getStats: protectedProcedure
+      .input(
+         z
+            .object({
+               status: z.enum(["active", "inactive"]).optional(),
+               type: z.enum(["checking", "savings", "investment"]).optional(),
+            })
+            .optional(),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
 
-      return getBankAccountStats(resolvedCtx.db, organizationId);
-   }),
+         return getBankAccountStats(resolvedCtx.db, organizationId, {
+            status: input?.status,
+            type: input?.type,
+         });
+      }),
 
    getTransactions: protectedProcedure
       .input(
@@ -296,48 +450,136 @@ export const bankAccountRouter = router({
          );
       }),
 
-   parseOfx: protectedProcedure
-      .input(z.object({ bankAccountId: z.string(), content: z.string() }))
+   importTransactions: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            transactions: z.array(
+               z.object({
+                  date: z.string(),
+                  amount: z.number(),
+                  description: z.string(),
+                  type: z.enum(["income", "expense"]),
+                  externalId: z.string().optional(),
+               }),
+            ),
+         }),
+      )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
-         const binaryString = atob(input.content);
-         const bytes = new Uint8Array(binaryString.length);
-         for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-         }
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
 
-         const transactions = await parseOfxBuffer(bytes);
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw APIError.notFound("Bank account not found");
+         }
 
          const createdTransactions = [];
 
-         for (const trn of transactions) {
+         for (const trn of input.transactions) {
+            // Skip duplicates if externalId is provided (OFX imports)
+            const externalId = trn.externalId;
+            if (externalId) {
+               const existingTransaction =
+                  await resolvedCtx.db.query.transaction.findFirst({
+                     where: (transaction, { eq, and }) =>
+                        and(
+                           eq(transaction.bankAccountId, input.bankAccountId),
+                           eq(transaction.externalId, externalId),
+                        ),
+                  });
+               if (existingTransaction) continue;
+            }
+
+            const newTransaction = await createTransaction(resolvedCtx.db, {
+               amount: trn.amount.toString(),
+               bankAccountId: input.bankAccountId,
+               date: new Date(trn.date),
+               description: trn.description,
+               externalId: trn.externalId,
+               id: crypto.randomUUID(),
+               organizationId,
+               type: trn.type,
+            });
+            createdTransactions.push(newTransaction);
+         }
+
+         return {
+            imported: createdTransactions.length,
+            total: input.transactions.length,
+         };
+      }),
+
+   checkCsvDuplicates: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            transactions: z.array(
+               z.object({
+                  rowIndex: z.number(),
+                  date: z.string(),
+                  amount: z.number(),
+                  description: z.string(),
+               }),
+            ),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
+
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw APIError.notFound("Bank account not found");
+         }
+
+         const duplicates: Array<{
+            rowIndex: number;
+            existingTransactionId: string;
+            existingTransactionDate: string;
+            existingTransactionDescription: string;
+         }> = [];
+
+         for (const trn of input.transactions) {
+            const trnDate = new Date(trn.date);
+            const startOfDay = new Date(trnDate);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(trnDate);
+            endOfDay.setHours(23, 59, 59, 999);
+
             const existingTransaction =
                await resolvedCtx.db.query.transaction.findFirst({
-                  where: (transaction, { eq, and }) =>
+                  where: (transaction, { eq, and, gte, lte }) =>
                      and(
                         eq(transaction.bankAccountId, input.bankAccountId),
-                        eq(transaction.externalId, trn.fitid),
+                        eq(transaction.amount, trn.amount.toString()),
+                        eq(transaction.description, trn.description),
+                        gte(transaction.date, startOfDay),
+                        lte(transaction.date, endOfDay),
                      ),
                });
 
-            if (!existingTransaction) {
-               const newTransaction = await createTransaction(resolvedCtx.db, {
-                  amount: trn.amount.toString(),
-                  bankAccountId: input.bankAccountId,
-                  date: trn.date,
-                  description: trn.description,
-                  externalId: trn.fitid,
-                  id: crypto.randomUUID(),
-                  organizationId,
-                  type: trn.type,
+            if (existingTransaction) {
+               duplicates.push({
+                  rowIndex: trn.rowIndex,
+                  existingTransactionId: existingTransaction.id,
+                  existingTransactionDate:
+                     existingTransaction.date.toISOString(),
+                  existingTransactionDescription:
+                     existingTransaction.description ?? "",
                });
-               createdTransactions.push(newTransaction);
             }
          }
 
-         return createdTransactions;
+         return { duplicates };
       }),
 
    update: protectedProcedure

@@ -21,7 +21,8 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-pas
 import { Route as AuthEmailVerificationRouteImport } from './routes/auth/email-verification'
 import { Route as AuthAnonymousRouteImport } from './routes/auth/anonymous'
 import { Route as SlugOnboardingRouteImport } from './routes/$slug/onboarding'
-import { Route as SlugImportOfxRouteImport } from './routes/$slug/import-ofx'
+import { Route as SlugImportRouteImport } from './routes/$slug/import'
+import { Route as SlugExportRouteImport } from './routes/$slug/export'
 import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
 import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
 import { Route as AuthSignInEmailRouteImport } from './routes/auth/sign-in/email'
@@ -125,9 +126,14 @@ const SlugOnboardingRoute = SlugOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => SlugRoute,
 } as any)
-const SlugImportOfxRoute = SlugImportOfxRouteImport.update({
-  id: '/import-ofx',
-  path: '/import-ofx',
+const SlugImportRoute = SlugImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => SlugRoute,
+} as any)
+const SlugExportRoute = SlugExportRouteImport.update({
+  id: '/export',
+  path: '/export',
   getParentRoute: () => SlugRoute,
 } as any)
 const SlugDashboardRoute = SlugDashboardRouteImport.update({
@@ -376,7 +382,8 @@ export interface FileRoutesByFullPath {
   '/file-handler': typeof FileHandlerRoute
   '/pwa-redirect': typeof PwaRedirectRoute
   '/share-target': typeof ShareTargetRoute
-  '/$slug/import-ofx': typeof SlugImportOfxRoute
+  '/$slug/export': typeof SlugExportRoute
+  '/$slug/import': typeof SlugImportRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/anonymous': typeof AuthAnonymousRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
@@ -432,7 +439,8 @@ export interface FileRoutesByTo {
   '/file-handler': typeof FileHandlerRoute
   '/pwa-redirect': typeof PwaRedirectRoute
   '/share-target': typeof ShareTargetRoute
-  '/$slug/import-ofx': typeof SlugImportOfxRoute
+  '/$slug/export': typeof SlugExportRoute
+  '/$slug/import': typeof SlugImportRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/anonymous': typeof AuthAnonymousRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
@@ -488,7 +496,8 @@ export interface FileRoutesById {
   '/pwa-redirect': typeof PwaRedirectRoute
   '/share-target': typeof ShareTargetRoute
   '/$slug/_dashboard': typeof SlugDashboardRouteWithChildren
-  '/$slug/import-ofx': typeof SlugImportOfxRoute
+  '/$slug/export': typeof SlugExportRoute
+  '/$slug/import': typeof SlugImportRoute
   '/$slug/onboarding': typeof SlugOnboardingRoute
   '/auth/anonymous': typeof AuthAnonymousRoute
   '/auth/email-verification': typeof AuthEmailVerificationRoute
@@ -546,7 +555,8 @@ export interface FileRouteTypes {
     | '/file-handler'
     | '/pwa-redirect'
     | '/share-target'
-    | '/$slug/import-ofx'
+    | '/$slug/export'
+    | '/$slug/import'
     | '/$slug/onboarding'
     | '/auth/anonymous'
     | '/auth/email-verification'
@@ -602,7 +612,8 @@ export interface FileRouteTypes {
     | '/file-handler'
     | '/pwa-redirect'
     | '/share-target'
-    | '/$slug/import-ofx'
+    | '/$slug/export'
+    | '/$slug/import'
     | '/$slug/onboarding'
     | '/auth/anonymous'
     | '/auth/email-verification'
@@ -657,7 +668,8 @@ export interface FileRouteTypes {
     | '/pwa-redirect'
     | '/share-target'
     | '/$slug/_dashboard'
-    | '/$slug/import-ofx'
+    | '/$slug/export'
+    | '/$slug/import'
     | '/$slug/onboarding'
     | '/auth/anonymous'
     | '/auth/email-verification'
@@ -802,11 +814,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SlugOnboardingRouteImport
       parentRoute: typeof SlugRoute
     }
-    '/$slug/import-ofx': {
-      id: '/$slug/import-ofx'
-      path: '/import-ofx'
-      fullPath: '/$slug/import-ofx'
-      preLoaderRoute: typeof SlugImportOfxRouteImport
+    '/$slug/import': {
+      id: '/$slug/import'
+      path: '/import'
+      fullPath: '/$slug/import'
+      preLoaderRoute: typeof SlugImportRouteImport
+      parentRoute: typeof SlugRoute
+    }
+    '/$slug/export': {
+      id: '/$slug/export'
+      path: '/export'
+      fullPath: '/$slug/export'
+      preLoaderRoute: typeof SlugExportRouteImport
       parentRoute: typeof SlugRoute
     }
     '/$slug/_dashboard': {
@@ -1217,13 +1236,15 @@ const SlugDashboardRouteWithChildren = SlugDashboardRoute._addFileChildren(
 
 interface SlugRouteChildren {
   SlugDashboardRoute: typeof SlugDashboardRouteWithChildren
-  SlugImportOfxRoute: typeof SlugImportOfxRoute
+  SlugExportRoute: typeof SlugExportRoute
+  SlugImportRoute: typeof SlugImportRoute
   SlugOnboardingRoute: typeof SlugOnboardingRoute
 }
 
 const SlugRouteChildren: SlugRouteChildren = {
   SlugDashboardRoute: SlugDashboardRouteWithChildren,
-  SlugImportOfxRoute: SlugImportOfxRoute,
+  SlugExportRoute: SlugExportRoute,
+  SlugImportRoute: SlugImportRoute,
   SlugOnboardingRoute: SlugOnboardingRoute,
 }
 
