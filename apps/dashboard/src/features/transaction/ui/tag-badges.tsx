@@ -1,5 +1,10 @@
-import { Badge } from "@packages/ui/components/badge";
+import {
+	Announcement,
+	AnnouncementTag,
+	AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Link } from "@tanstack/react-router";
+import { Tag } from "lucide-react";
 
 type TagBadgesProps = {
 	tags: Array<{
@@ -15,18 +20,24 @@ export function TagBadges({ tags, asLinks = false, slug }: TagBadgesProps) {
 	return (
 		<>
 			{tags.map((tag) => {
-				const badge = (
-					<Badge
+				const announcement = (
+					<Announcement
 						className={
 							asLinks
 								? "cursor-pointer hover:opacity-80 transition-opacity"
 								: undefined
 						}
-						style={{ backgroundColor: tag.color }}
-						variant="secondary"
 					>
-						{tag.name}
-					</Badge>
+						<AnnouncementTag
+							style={{
+								backgroundColor: `${tag.color}20`,
+								color: tag.color,
+							}}
+						>
+							<Tag className="size-3.5" />
+						</AnnouncementTag>
+						<AnnouncementTitle>{tag.name}</AnnouncementTitle>
+					</Announcement>
 				);
 
 				if (asLinks && slug) {
@@ -36,12 +47,12 @@ export function TagBadges({ tags, asLinks = false, slug }: TagBadgesProps) {
 							params={{ slug, tagId: tag.id }}
 							to="/$slug/tags/$tagId"
 						>
-							{badge}
+							{announcement}
 						</Link>
 					);
 				}
 
-				return <span key={tag.id}>{badge}</span>;
+				return <span key={tag.id}>{announcement}</span>;
 			})}
 		</>
 	);
