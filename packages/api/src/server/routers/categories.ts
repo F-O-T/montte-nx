@@ -4,6 +4,7 @@ import {
    deleteManyCategories,
    findCategoriesByOrganizationId,
    findCategoriesByOrganizationIdPaginated,
+   findCategoriesByTransactionType,
    findCategoryById,
    getCategoryBreakdown,
    getCategoryMonthlyTrend,
@@ -18,16 +19,24 @@ import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
+const transactionTypeSchema = z.enum(["income", "expense", "transfer"]);
+
 const createCategorySchema = z.object({
    color: z.string(),
    icon: z.string().optional(),
    name: z.string(),
+   transactionTypes: z
+      .array(transactionTypeSchema)
+      .min(1)
+      .optional()
+      .default(["income", "expense", "transfer"]),
 });
 
 const updateCategorySchema = z.object({
    color: z.string().optional(),
    icon: z.string().optional(),
    name: z.string().optional(),
+   transactionTypes: z.array(transactionTypeSchema).min(1).optional(),
 });
 
 const paginationSchema = z.object({
@@ -88,6 +97,19 @@ export const categoryRouter = router({
 
       return findCategoriesByOrganizationId(resolvedCtx.db, organizationId);
    }),
+
+   getByTransactionType: protectedProcedure
+      .input(z.object({ type: transactionTypeSchema }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         return findCategoriesByTransactionType(
+            resolvedCtx.db,
+            organizationId,
+            input.type,
+         );
+      }),
 
    getAllPaginated: protectedProcedure
       .input(paginationSchema)

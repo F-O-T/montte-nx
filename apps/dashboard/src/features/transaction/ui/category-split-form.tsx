@@ -16,8 +16,10 @@ import {
    isSplitSumValid,
 } from "@packages/utils/split";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+type TransactionType = "income" | "expense" | "transfer";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useSheet } from "@/hooks/use-sheet";
@@ -38,9 +40,22 @@ export function CategorySplitForm({
    const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
    const [splits, setSplits] = useState<CategorySplit[]>([]);
 
-   const { data: categories = [] } = useQuery(
+   const transactionType = (transaction?.type || "expense") as TransactionType;
+
+   const { data: allCategories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
    );
+
+   // Filter categories to show only those matching the transaction type
+   const categories = useMemo(() => {
+      return allCategories.filter((cat) => {
+         // If category has no transactionTypes set, show it for all types (backward compatibility)
+         if (!cat.transactionTypes || cat.transactionTypes.length === 0) {
+            return true;
+         }
+         return cat.transactionTypes.includes(transactionType);
+      });
+   }, [allCategories, transactionType]);
 
    const updateTransactionMutation = useMutation(
       trpc.transactions.update.mutationOptions({

@@ -9,6 +9,8 @@ import {
 import { organization } from "./auth";
 import { transaction } from "./transactions";
 
+export type TransactionTypeValue = "income" | "expense" | "transfer";
+
 export const category = pgTable("category", {
    color: text("color").notNull(),
    createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -18,6 +20,11 @@ export const category = pgTable("category", {
    organizationId: uuid("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
+   transactionTypes: text("transaction_types")
+      .array()
+      .$type<TransactionTypeValue[]>()
+      .notNull()
+      .default(["income", "expense", "transfer"]),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date())
