@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -12,13 +11,11 @@ import {
 } from "@packages/ui/components/card";
 import { Checkbox } from "@packages/ui/components/checkbox";
 import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
-import { ItemMedia } from "@packages/ui/components/item";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import type { Row } from "@tanstack/react-table";
 import { ChevronDown, Split } from "lucide-react";
-import type { IconName } from "@/features/icon-selector/lib/available-icons";
-import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
+import { AmountAnnouncement } from "./amount-announcement";
+import { CategoryAnnouncement } from "./category-announcement";
 import type { Category, Transaction } from "./transaction-list";
 import { getCategoryDetails } from "./transaction-table-columns";
 
@@ -43,20 +40,12 @@ export function TransactionMobileCard({
    const isPositive =
       transaction.type === "income" ||
       (transaction.type === "transfer" && amount > 0);
-   const formattedAmount = formatDecimalCurrency(Math.abs(amount));
    const categorySplits = transaction.categorySplits;
    const hasSplit = categorySplits && categorySplits.length > 0;
 
    return (
       <Card className={isExpanded ? "rounded-b-none py-4" : "py-4"}>
          <CardHeader className="flex items-center gap-2">
-            <ItemMedia
-               className="shrink-0"
-               style={{ backgroundColor: category.color }}
-               variant="icon"
-            >
-               <IconDisplay iconName={category.icon as IconName} size={16} />
-            </ItemMedia>
             <div className="min-w-0 flex-1">
                <CardTitle className="flex items-center gap-1.5 text-sm">
                   <span className="truncate">{transaction.description}</span>
@@ -75,11 +64,9 @@ export function TransactionMobileCard({
                />
             </CardAction>
          </CardHeader>
-         <CardContent>
-            <Badge variant={isPositive ? "default" : "destructive"}>
-               {isPositive ? "+" : "-"}
-               {formattedAmount}
-            </Badge>
+         <CardContent className="flex flex-wrap items-center gap-2">
+            <CategoryAnnouncement category={category} />
+            <AmountAnnouncement amount={amount} isPositive={isPositive} />
          </CardContent>
          {canExpand && (
             <CardFooter>
@@ -88,9 +75,7 @@ export function TransactionMobileCard({
                      <ChevronDown
                         className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                      />
-                     {translate(
-                        "dashboard.routes.transactions.list-section.actions.view-details",
-                     )}
+                     {translate("common.actions.more")}
                   </Button>
                </CollapsibleTrigger>
             </CardFooter>

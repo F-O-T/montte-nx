@@ -35,6 +35,7 @@ import {
    Landmark,
    PiggyBank,
    Power,
+   PowerOff,
    Trash2,
    TrendingUp,
    Upload,
@@ -133,10 +134,26 @@ export function createBankAccountColumns(): ColumnDef<BankAccount>[] {
          accessorKey: "status",
          cell: ({ row }) => {
             const status = row.getValue("status") as string;
+            const isActive = status === "active";
+            const StatusIcon = isActive ? Power : PowerOff;
+            const color = isActive ? "#10b981" : "#6b7280";
+
             return (
-               <Badge variant={status === "active" ? "default" : "secondary"}>
-                  {status === "active" ? "Ativa" : "Inativa"}
-               </Badge>
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${color}20`,
+                        color,
+                     }}
+                  >
+                     <StatusIcon className="size-3.5" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle style={{ color }}>
+                     {isActive
+                        ? translate("dashboard.routes.bank-accounts.status.active")
+                        : translate("dashboard.routes.bank-accounts.status.inactive")}
+                  </AnnouncementTitle>
+               </Announcement>
             );
          },
          enableSorting: true,
@@ -337,6 +354,10 @@ export function BankAccountMobileCard({
    balance,
 }: BankAccountMobileCardProps) {
    const account = row.original;
+   const isActive = account.status === "active";
+   const StatusIcon = isActive ? Power : PowerOff;
+   const statusColor = isActive ? "#10b981" : "#6b7280";
+   const AccountTypeIcon = getAccountTypeIcon(account.type);
 
    return (
       <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
@@ -347,17 +368,30 @@ export function BankAccountMobileCard({
                <Badge variant="outline">{formatDecimalCurrency(balance)}</Badge>
             </CardDescription>
          </CardHeader>
-         <CardContent>
-            <Badge
-               variant={account.status === "active" ? "default" : "secondary"}
-            >
-               {account.status === "active"
-                  ? translate("dashboard.routes.bank-accounts.status.active")
-                  : translate("dashboard.routes.bank-accounts.status.inactive")}
-            </Badge>
-            <Badge variant="secondary">
-               {typeMap[account.type] || account.type}
-            </Badge>
+         <CardContent className="flex flex-wrap items-center gap-2">
+            <Announcement>
+               <AnnouncementTag
+                  style={{
+                     backgroundColor: `${statusColor}20`,
+                     color: statusColor,
+                  }}
+               >
+                  <StatusIcon className="size-3.5" />
+               </AnnouncementTag>
+               <AnnouncementTitle style={{ color: statusColor }}>
+                  {isActive
+                     ? translate("dashboard.routes.bank-accounts.status.active")
+                     : translate("dashboard.routes.bank-accounts.status.inactive")}
+               </AnnouncementTitle>
+            </Announcement>
+            <Announcement>
+               <AnnouncementTag className="flex items-center gap-1.5">
+                  <AccountTypeIcon className="size-3.5" />
+               </AnnouncementTag>
+               <AnnouncementTitle>
+                  {typeMap[account.type] || account.type}
+               </AnnouncementTitle>
+            </Announcement>
          </CardContent>
          <CardFooter>
             <CollapsibleTrigger asChild>
