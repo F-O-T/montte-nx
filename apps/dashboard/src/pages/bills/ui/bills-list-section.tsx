@@ -53,7 +53,7 @@ import {
    BillExpandedContent,
    BillMobileCard,
    createBillColumns,
-} from "./bills-table-columns";
+} from "@/features/bill/ui/bill-table-columns";
 
 type BillsListSectionProps = {
    type?: "payable" | "receivable";

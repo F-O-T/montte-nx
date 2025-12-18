@@ -10,38 +10,19 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
-import {
-   ArrowLeftRight,
-   CalendarPlus,
-   Copy,
-   FolderOpen,
-   Home,
-   Paperclip,
-   Pencil,
-   Receipt,
-   RotateCcw,
-   Split,
-   Trash2,
-} from "lucide-react";
+import { Home, Receipt } from "lucide-react";
 import { Suspense } from "react";
-// useState removed as unused
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
-import { CategorizeForm } from "@/features/transaction/ui/categorize-form";
-import { CategorySplitForm } from "@/features/transaction/ui/category-split-form";
-import { DuplicateTransactionSheet } from "@/features/transaction/ui/duplicate-transaction-sheet";
-import { LinkFileForm } from "@/features/transaction/ui/link-file-form";
-import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
-import { MarkAsTransferForm } from "@/features/transaction/ui/mark-as-transfer-form";
-import { RecurrenceTransactionSheet } from "@/features/transaction/ui/recurrence-transaction-sheet";
-import { RefundTransactionSheet } from "@/features/transaction/ui/refund-transaction-sheet";
-import { useDeleteTransaction } from "@/features/transaction/ui/use-delete-transaction";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
+import { TransactionActionButtons } from "./transaction-action-buttons";
+import { TransactionAttachmentsGallery } from "./transaction-attachments-gallery";
 import { TransactionCategorizationSection } from "./transaction-categories-section";
-import { TransactionDetailsSection } from "./transaction-details-section";
-import { TransactionStats } from "./transaction-stats";
+import { TransactionLinkedBillsCard } from "./transaction-linked-bills-card";
+import { TransactionMetadataCard } from "./transaction-metadata-card";
+import { TransactionRelatedCard } from "./transaction-related-card";
+import { TransactionTransferCard } from "./transaction-transfer-card";
 
 function TransactionContent() {
    const params = useParams({ strict: false });
@@ -50,7 +31,6 @@ function TransactionContent() {
    const trpc = useTRPC();
    const router = useRouter();
    const { activeOrganization } = useActiveOrganization();
-   const { openSheet } = useSheet();
 
    const { data: transaction } = useSuspenseQuery(
       trpc.transactions.getById.queryOptions({ id: transactionId }),
@@ -60,78 +40,6 @@ function TransactionContent() {
       router.navigate({
          params: { slug: activeOrganization.slug },
          to: "/$slug/transactions",
-      });
-   };
-
-   const { deleteTransaction } = useDeleteTransaction({
-      onSuccess: handleDeleteSuccess,
-      transaction: transaction ?? { description: "", id: "" },
-   });
-
-   const handleDuplicate = () => {
-      if (!transaction) return;
-      openSheet({
-         children: (
-            <DuplicateTransactionSheet
-               transaction={{
-                  amount: transaction.amount,
-                  bankAccountId: transaction.bankAccountId,
-                  categoryIds:
-                     transaction.transactionCategories?.map(
-                        (tc) => tc.category.id,
-                     ) || [],
-                  costCenterId: transaction.costCenterId,
-                  date: new Date(transaction.date),
-                  description: transaction.description,
-                  tagIds:
-                     transaction.transactionTags?.map((tt) => tt.tag.id) || [],
-                  type: transaction.type as "expense" | "income" | "transfer",
-               }}
-            />
-         ),
-      });
-   };
-
-   const handleRefund = () => {
-      if (!transaction) return;
-      openSheet({
-         children: (
-            <RefundTransactionSheet
-               transaction={{
-                  amount: transaction.amount,
-                  bankAccountId: transaction.bankAccountId,
-                  categoryIds:
-                     transaction.transactionCategories?.map(
-                        (tc) => tc.category.id,
-                     ) || [],
-                  costCenterId: transaction.costCenterId,
-                  date: new Date(transaction.date),
-                  description: transaction.description,
-                  tagIds:
-                     transaction.transactionTags?.map((tt) => tt.tag.id) || [],
-                  type: transaction.type as "expense" | "income" | "transfer",
-               }}
-            />
-         ),
-      });
-   };
-
-   const handleCreateRecurrence = () => {
-      if (!transaction) return;
-      const primaryCategoryId =
-         transaction.transactionCategories?.[0]?.category.id;
-      openSheet({
-         children: (
-            <RecurrenceTransactionSheet
-               transaction={{
-                  amount: transaction.amount,
-                  bankAccountId: transaction.bankAccountId,
-                  categoryId: primaryCategoryId,
-                  description: transaction.description,
-                  type: transaction.type as "expense" | "income" | "transfer",
-               }}
-            />
-         ),
       });
    };
 
@@ -148,150 +56,66 @@ function TransactionContent() {
       return null;
    }
 
-   const isNotTransfer = transaction.type !== "transfer";
-
    return (
-      <main className="space-y-4">
+      <main className="space-y-6">
          <DefaultHeader
             description="Detalhes da sua transação"
             title={transaction.description}
          />
 
-         <div className="flex flex-wrap items-center gap-2">
-            {isNotTransfer && (
-               <>
-                  <Button
-                     onClick={() =>
-                        openSheet({
-                           children: (
-                              <MarkAsTransferForm
-                                 transactions={[transaction]}
-                              />
-                           ),
-                        })
-                     }
-                     size="sm"
-                     variant="outline"
-                  >
-                     <ArrowLeftRight className="size-4" />
-                     Marcar Transferência
-                  </Button>
-                  <Button
-                     onClick={() =>
-                        openSheet({
-                           children: (
-                              <CategorySplitForm transaction={transaction} />
-                           ),
-                        })
-                     }
-                     size="sm"
-                     variant="outline"
-                  >
-                     <Split className="size-4" />
-                     Dividir Categorias
-                  </Button>
-               </>
-            )}
-            <Button
-               onClick={() =>
-                  openSheet({
-                     children: <CategorizeForm transactions={[transaction]} />,
-                  })
-               }
-               size="sm"
-               variant="outline"
-            >
-               <FolderOpen className="size-4" />
-               Categorizar
-            </Button>
-            <Button
-               onClick={() =>
-                  openSheet({
-                     children: <LinkFileForm transaction={transaction} />,
-                  })
-               }
-               size="sm"
-               variant="outline"
-            >
-               <Paperclip className="size-4" />
-               {translate("dashboard.routes.transactions.link-file.button")}
-            </Button>
-            <Button
-               onClick={() =>
-                  openSheet({
-                     children: (
-                        <ManageTransactionForm transaction={transaction} />
-                     ),
-                  })
-               }
-               size="sm"
-               variant="outline"
-            >
-               <Pencil className="size-4" />
-               {translate("dashboard.routes.transactions.features.edit.title")}
-            </Button>
-            <Button onClick={handleDuplicate} size="sm" variant="outline">
-               <Copy className="size-4" />
-               {translate(
-                  "dashboard.routes.transactions.list-section.actions.duplicate",
-               )}
-            </Button>
-            <Button onClick={handleRefund} size="sm" variant="outline">
-               <RotateCcw className="size-4" />
-               {translate(
-                  "dashboard.routes.transactions.list-section.actions.refund",
-               )}
-            </Button>
-            <Button
-               onClick={handleCreateRecurrence}
-               size="sm"
-               variant="outline"
-            >
-               <CalendarPlus className="size-4" />
-               {translate(
-                  "dashboard.routes.transactions.list-section.actions.create-bill",
-               )}
-            </Button>
-            <Button
-               className="text-destructive hover:text-destructive"
-               onClick={deleteTransaction}
-               size="sm"
-               variant="outline"
-            >
-               <Trash2 className="size-4" />
-               Excluir
-            </Button>
-         </div>
+         <TransactionActionButtons
+            onDeleteSuccess={handleDeleteSuccess}
+            transactionId={transactionId}
+         />
 
-         <TransactionStats transactionId={transactionId} />
-         <TransactionCategorizationSection transactionId={transactionId} />
-         <TransactionDetailsSection transactionId={transactionId} />
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-6">
+               <TransactionMetadataCard transactionId={transactionId} />
+               <TransactionAttachmentsGallery transactionId={transactionId} />
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+               {transaction.type === "transfer" ? (
+                  <TransactionTransferCard transactionId={transactionId} />
+               ) : (
+                  <TransactionCategorizationSection
+                     transactionId={transactionId}
+                  />
+               )}
+               <TransactionLinkedBillsCard transactionId={transactionId} />
+            </div>
+            <div className="lg:col-span-full">
+               <TransactionRelatedCard transactionId={transactionId} />
+            </div>
+         </div>
       </main>
    );
 }
 
 function TransactionPageSkeleton() {
    return (
-      <main className="space-y-4">
+      <main className="space-y-6">
          <div className="flex flex-col gap-2">
             <Skeleton className="h-10 w-64" />
             <Skeleton className="h-6 w-48" />
          </div>
+
          <div className="flex flex-wrap gap-2">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-8 w-36" />
             <Skeleton className="h-8 w-28" />
             <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="h-8 w-24" />
          </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
+
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-6">
+               <Skeleton className="h-48 w-full" />
+               <Skeleton className="h-40 w-full" />
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+               <Skeleton className="h-48 w-full" />
+               <Skeleton className="h-48 w-full" />
+            </div>
          </div>
-         <Skeleton className="h-48 w-full" />
       </main>
    );
 }

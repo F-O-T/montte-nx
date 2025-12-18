@@ -27,6 +27,7 @@ type TransactionMobileCardProps = {
    isExpanded: boolean;
    toggleExpanded: () => void;
    categories: Category[];
+   canExpand?: boolean;
 };
 
 export function TransactionMobileCard({
@@ -34,6 +35,7 @@ export function TransactionMobileCard({
    isExpanded,
    toggleExpanded,
    categories,
+   canExpand = true,
 }: TransactionMobileCardProps) {
    const transaction = row.original;
    const category = getCategoryDetails(transaction, categories);
@@ -79,18 +81,20 @@ export function TransactionMobileCard({
                {formattedAmount}
             </Badge>
          </CardContent>
-         <CardFooter>
-            <CollapsibleTrigger asChild onClick={toggleExpanded}>
-               <Button className="w-full" variant="outline">
-                  <ChevronDown
-                     className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                  />
-                  {translate(
-                     "dashboard.routes.transactions.list-section.actions.view-details",
-                  )}
-               </Button>
-            </CollapsibleTrigger>
-         </CardFooter>
+         {canExpand && (
+            <CardFooter>
+               <CollapsibleTrigger asChild onClick={toggleExpanded}>
+                  <Button className="w-full" variant="outline">
+                     <ChevronDown
+                        className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                     />
+                     {translate(
+                        "dashboard.routes.transactions.list-section.actions.view-details",
+                     )}
+                  </Button>
+               </CollapsibleTrigger>
+            </CardFooter>
+         )}
       </Card>
    );
 }

@@ -260,3 +260,74 @@ export function createCategoryMap(
    }
    return map;
 }
+
+/**
+ * Recalculates splits when categories change.
+ * - Keeps existing splits for categories that remain
+ * - Distributes remaining amount equally to new categories
+ * - Returns null if only 1 category (no split needed)
+ */
+export function recalculateSplitsForNewCategories(
+   existingSplits: CategorySplit[] | null | undefined,
+   newCategoryIds: string[],
+   totalAmountInCents: number,
+): CategorySplit[] | null {
+   // No splits needed for single category
+   if (newCategoryIds.length <= 1) return null;
+
+   // If no existing splits, distribute equally
+   if (!existingSplits || existingSplits.length === 0) {
+      return calculateEqualSplits(newCategoryIds, totalAmountInCents);
+   }
+
+   // Keep existing splits for categories that remain
+   const keptSplits = existingSplits.filter((s) =>
+      newCategoryIds.includes(s.categoryId),
+   );
+
+   // Find new categories that don't have splits
+   const newCategoriesWithoutSplits = newCategoryIds.filter(
+      (id) => !existingSplits.some((s) => s.categoryId === id),
+   );
+
+   // If all categories are new, distribute equally
+   if (keptSplits.length === 0) {
+      return calculateEqualSplits(newCategoryIds, totalAmountInCents);
+   }
+
+   // If no new categories, just keep existing (but may need adjustment)
+   if (newCategoriesWithoutSplits.length === 0) {
+      // Adjust proportionally to match total
+      return adjustFixedSplitsProportionally(
+         keptSplits.map((s) => ({ categoryId: s.categoryId, value: s.value })),
+         totalAmountInCents,
+      );
+   }
+
+   // Calculate remaining amount for new categories
+   const keptTotal = keptSplits.reduce((sum, s) => sum + s.value, 0);
+   const remaining = totalAmountInCents - keptTotal;
+
+   // If remaining is negative or zero, redistribute everything proportionally
+   if (remaining <= 0) {
+      const allCategorySplits = [
+         ...keptSplits.map((s) => ({ categoryId: s.categoryId, value: s.value })),
+         ...newCategoriesWithoutSplits.map((id) => ({ categoryId: id, value: 0 })),
+      ];
+      return adjustFixedSplitsProportionally(allCategorySplits, totalAmountInCents);
+   }
+
+   // Distribute remaining equally among new categories
+   const baseValue = Math.floor(remaining / newCategoriesWithoutSplits.length);
+   const remainder = remaining % newCategoriesWithoutSplits.length;
+
+   const newSplits: CategorySplit[] = newCategoriesWithoutSplits.map(
+      (categoryId, index) => ({
+         categoryId,
+         splitType: "amount" as const,
+         value: baseValue + (index < remainder ? 1 : 0),
+      }),
+   );
+
+   return [...keptSplits, ...newSplits];
+}
