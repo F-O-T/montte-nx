@@ -208,7 +208,20 @@ function GalleryContent({ transactionId }: { transactionId: string }) {
    };
 
    if (attachments.length === 0) {
-      return null;
+      return (
+         <Card>
+            <CardHeader>
+               <CardTitle>Anexos</CardTitle>
+               <CardDescription>Nenhum arquivo anexado</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-8 text-center">
+               <FileText className="size-12 text-muted-foreground/50 mb-3" />
+               <p className="text-sm text-muted-foreground">
+                  Nenhum anexo vinculado a esta transação.
+               </p>
+            </CardContent>
+         </Card>
+      );
    }
 
    return (

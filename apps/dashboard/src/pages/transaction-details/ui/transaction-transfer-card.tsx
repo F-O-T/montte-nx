@@ -1,10 +1,5 @@
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
-   Announcement,
-   AnnouncementTag,
-   AnnouncementTitle,
-} from "@packages/ui/components/announcement";
-import {
    Card,
    CardContent,
    CardDescription,
@@ -14,24 +9,14 @@ import {
 import { DataTable } from "@packages/ui/components/data-table";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Landmark, PiggyBank, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { BankAccountAnnouncement } from "@/features/transaction/ui/bank-account-announcement";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
-
-function getAccountTypeIcon(type: string | null | undefined) {
-   switch (type) {
-      case "savings":
-         return PiggyBank;
-      case "investment":
-         return TrendingUp;
-      default:
-         return Landmark;
-   }
-}
 
 function TransferCardErrorFallback() {
    return (
@@ -114,9 +99,6 @@ function TransferCardContent({ transactionId }: { transactionId: string }) {
       ? transferLog.toBankAccount
       : transferLog.fromBankAccount;
 
-   const SourceIcon = getAccountTypeIcon(sourceAccount?.type);
-   const DestinationIcon = getAccountTypeIcon(destinationAccount?.type);
-
    const formattedCategories = categories.map((cat) => ({
       color: cat.color,
       icon: cat.icon,
@@ -135,31 +117,19 @@ function TransferCardContent({ transactionId }: { transactionId: string }) {
          <CardContent className="space-y-4">
             <div className="flex items-center gap-3 flex-wrap">
                {sourceAccount && (
-                  <Announcement>
-                     <AnnouncementTag className="flex items-center gap-1.5">
-                        <SourceIcon className="size-3.5" />
-                        {sourceAccount.name}
-                     </AnnouncementTag>
-                     {sourceAccount.bank && (
-                        <AnnouncementTitle>{sourceAccount.bank}</AnnouncementTitle>
-                     )}
-                  </Announcement>
+                  <BankAccountAnnouncement
+                     bankAccount={sourceAccount}
+                     showLabel={false}
+                  />
                )}
 
                <ArrowRight className="size-4 text-muted-foreground shrink-0" />
 
                {destinationAccount && (
-                  <Announcement>
-                     <AnnouncementTag className="flex items-center gap-1.5">
-                        <DestinationIcon className="size-3.5" />
-                        {destinationAccount.name}
-                     </AnnouncementTag>
-                     {destinationAccount.bank && (
-                        <AnnouncementTitle>
-                           {destinationAccount.bank}
-                        </AnnouncementTitle>
-                     )}
-                  </Announcement>
+                  <BankAccountAnnouncement
+                     bankAccount={destinationAccount}
+                     showLabel={false}
+                  />
                )}
             </div>
 

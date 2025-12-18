@@ -1,4 +1,3 @@
-import { translate } from "@packages/localization";
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Announcement,
@@ -16,52 +15,11 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-   ArrowDownLeft,
-   ArrowLeftRight,
-   ArrowUpRight,
-   Landmark,
-   PiggyBank,
-   TrendingUp,
-} from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { TRANSACTION_TYPE_CONFIG } from "@/features/transaction/lib/transaction-type-config";
+import { BankAccountAnnouncement } from "@/features/transaction/ui/bank-account-announcement";
 import { useTRPC } from "@/integrations/clients";
-
-const TRANSACTION_TYPE_CONFIG = {
-   expense: {
-      color: "#ef4444",
-      icon: ArrowUpRight,
-      label: translate(
-         "dashboard.routes.transactions.list-section.types.expense",
-      ),
-   },
-   income: {
-      color: "#10b981",
-      icon: ArrowDownLeft,
-      label: translate(
-         "dashboard.routes.transactions.list-section.types.income",
-      ),
-   },
-   transfer: {
-      color: "#3b82f6",
-      icon: ArrowLeftRight,
-      label: translate(
-         "dashboard.routes.transactions.list-section.types.transfer",
-      ),
-   },
-} as const;
-
-function getAccountTypeIcon(type: string | null | undefined) {
-   switch (type) {
-      case "savings":
-         return PiggyBank;
-      case "investment":
-         return TrendingUp;
-      default:
-         return Landmark;
-   }
-}
 
 function MetadataCardErrorFallback() {
    return (
@@ -107,8 +65,6 @@ function MetadataCardContent({ transactionId }: { transactionId: string }) {
       ] || TRANSACTION_TYPE_CONFIG.expense;
    const TypeIcon = typeConfig.icon;
 
-   const AccountIcon = getAccountTypeIcon(transaction.bankAccount?.type);
-
    return (
       <Card className="h-fit">
          <CardHeader>
@@ -141,17 +97,10 @@ function MetadataCardContent({ transactionId }: { transactionId: string }) {
                </Announcement>
 
                {transaction.bankAccount && (
-                  <Announcement>
-                     <AnnouncementTag className="flex items-center gap-1.5">
-                        <AccountIcon className="size-3.5" />
-                        {transaction.bankAccount.name}
-                     </AnnouncementTag>
-                     {transaction.bankAccount.bank && (
-                        <AnnouncementTitle>
-                           {transaction.bankAccount.bank}
-                        </AnnouncementTitle>
-                     )}
-                  </Announcement>
+                  <BankAccountAnnouncement
+                     bankAccount={transaction.bankAccount}
+                     showLabel={false}
+                  />
                )}
 
                <Announcement>
