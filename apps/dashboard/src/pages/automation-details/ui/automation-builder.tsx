@@ -1,7 +1,7 @@
 import type {
-   ConsequenceExecutionLogResult,
    ActionType,
    ConditionEvaluationLogResult,
+   ConsequenceExecutionLogResult,
    TriggeredBy,
    TriggerType,
 } from "@packages/database/schema";
@@ -633,7 +633,9 @@ function ExecutionLogItem({
    const consequencesExecuted = execution.consequencesExecuted ?? [];
    const conditionsEvaluated = execution.conditionsEvaluated ?? [];
 
-   const successConsequences = consequencesExecuted.filter((a) => a.success).length;
+   const successConsequences = consequencesExecuted.filter(
+      (a) => a.success,
+   ).length;
    const passedConditions = conditionsEvaluated.filter((c) => c.passed).length;
    const totalConditions = conditionsEvaluated.length;
 
@@ -701,7 +703,8 @@ function ExecutionLogItem({
                   {consequencesExecuted.length > 0 && (
                      <span className="flex items-center gap-1">
                         <Play className="size-3" />
-                        {successConsequences}/{consequencesExecuted.length} ações
+                        {successConsequences}/{consequencesExecuted.length}{" "}
+                        ações
                      </span>
                   )}
                   {totalConditions > 0 && (

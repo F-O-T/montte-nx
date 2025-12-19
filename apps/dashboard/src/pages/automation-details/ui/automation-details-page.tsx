@@ -1,6 +1,6 @@
 import type {
-   Consequence,
    ConditionGroup,
+   Consequence,
    TriggerType,
 } from "@packages/database/schema";
 import { Button } from "@packages/ui/components/button";

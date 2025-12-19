@@ -26,8 +26,8 @@ import {
    getVersionHistory,
 } from "@packages/database/repositories/automation-version-repository";
 import type {
-   Consequence,
    ConditionGroup,
+   Consequence,
    FlowData,
    TriggerConfig,
    TriggerType,
@@ -118,7 +118,9 @@ const flowDataSchema = z
    .nullable();
 
 const createAutomationRuleSchema = z.object({
-   consequences: z.array(consequenceSchema).min(1, "At least one consequence is required"),
+   consequences: z
+      .array(consequenceSchema)
+      .min(1, "At least one consequence is required"),
    conditions: ConditionGroupSchema.optional(),
    description: z.string().optional(),
    flowData: flowDataSchema,
@@ -583,10 +585,10 @@ export const automationRouter = router({
             input.id,
             {
                ...input.data,
-               consequences: input.data.consequences as Consequence[] | undefined,
-               conditions: input.data.conditions as
-                  | ConditionGroup
+               consequences: input.data.consequences as
+                  | Consequence[]
                   | undefined,
+               conditions: input.data.conditions as ConditionGroup | undefined,
                flowData: input.data.flowData as FlowData | undefined | null,
                triggerConfig: input.data.triggerConfig as
                   | TriggerConfig

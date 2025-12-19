@@ -311,10 +311,19 @@ export function recalculateSplitsForNewCategories(
    // If remaining is negative or zero, redistribute everything proportionally
    if (remaining <= 0) {
       const allCategorySplits = [
-         ...keptSplits.map((s) => ({ categoryId: s.categoryId, value: s.value })),
-         ...newCategoriesWithoutSplits.map((id) => ({ categoryId: id, value: 0 })),
+         ...keptSplits.map((s) => ({
+            categoryId: s.categoryId,
+            value: s.value,
+         })),
+         ...newCategoriesWithoutSplits.map((id) => ({
+            categoryId: id,
+            value: 0,
+         })),
       ];
-      return adjustFixedSplitsProportionally(allCategorySplits, totalAmountInCents);
+      return adjustFixedSplitsProportionally(
+         allCategorySplits,
+         totalAmountInCents,
+      );
    }
 
    // Distribute remaining equally among new categories

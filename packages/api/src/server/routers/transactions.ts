@@ -1,7 +1,7 @@
 import {
-   evaluateConditionGroup,
    type ConditionGroup,
    type EvaluationContext,
+   evaluateConditionGroup,
 } from "@f-o-t/condition-evaluator";
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";

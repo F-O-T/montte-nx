@@ -97,11 +97,12 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
          color: category?.color || "#000000",
          icon: category?.icon as IconName | undefined,
          name: category?.name || "",
-         transactionTypes: (category?.transactionTypes as TransactionType[]) || [
-            "income",
-            "expense",
-            "transfer",
-         ],
+         transactionTypes:
+            (category?.transactionTypes as TransactionType[]) || [
+               "income",
+               "expense",
+               "transfer",
+            ],
       },
       onSubmit: async ({ value }) => {
          if (!value.name || !value.color) {

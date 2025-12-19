@@ -218,7 +218,8 @@ export function createAutomationColumns(): ColumnDef<Automation>[] {
             const consequencesCount = automation.consequences?.length || 0;
             return (
                <span className="text-sm text-muted-foreground">
-                  {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
+                  {consequencesCount}{" "}
+                  {consequencesCount === 1 ? "ação" : "ações"}
                </span>
             );
          },
@@ -338,7 +339,8 @@ export function AutomationExpandedContent({
                   <div>
                      <p className="text-xs text-muted-foreground">Ações</p>
                      <p className="text-sm font-medium">
-                        {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
+                        {consequencesCount}{" "}
+                        {consequencesCount === 1 ? "ação" : "ações"}
                      </p>
                   </div>
                </div>
@@ -431,7 +433,8 @@ export function AutomationExpandedContent({
                   <p className="text-sm font-medium">
                      {conditionsCount}{" "}
                      {conditionsCount === 1 ? "condição" : "condições"},{" "}
-                     {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
+                     {consequencesCount}{" "}
+                     {consequencesCount === 1 ? "ação" : "ações"}
                   </p>
                </div>
             </div>
@@ -524,7 +527,8 @@ export function AutomationMobileCard({
          <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
                <span className="text-sm text-muted-foreground">
-                  {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
+                  {consequencesCount}{" "}
+                  {consequencesCount === 1 ? "ação" : "ações"}
                </span>
                <AutomationStatusToggle automation={automation} />
             </div>

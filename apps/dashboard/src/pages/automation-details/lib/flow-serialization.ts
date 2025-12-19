@@ -75,14 +75,15 @@ export function extractRuleDataFromNodes(
    const triggerData = triggerNode.data as TriggerNodeData;
 
    // Build a single ConditionGroup with nested conditions
-   const conditionGroupConditions: (Condition | ConditionGroup)[] = conditionNodes.map((node) => {
-      const data = node.data as ConditionNodeData;
-      return {
-         conditions: data.conditions as Condition[],
-         id: node.id,
-         operator: data.operator,
-      };
-   });
+   const conditionGroupConditions: (Condition | ConditionGroup)[] =
+      conditionNodes.map((node) => {
+         const data = node.data as ConditionNodeData;
+         return {
+            conditions: data.conditions as Condition[],
+            id: node.id,
+            operator: data.operator,
+         };
+      });
 
    const conditions: ConditionGroup = {
       id: crypto.randomUUID(),
@@ -187,7 +188,9 @@ export function ruleDataToNodes(
    // Handle both single ConditionGroup and array of ConditionGroups
    const conditionGroups = Array.isArray(conditions)
       ? conditions
-      : conditions.conditions.filter((c): c is ConditionGroup => isConditionGroup(c));
+      : conditions.conditions.filter((c): c is ConditionGroup =>
+           isConditionGroup(c),
+        );
 
    for (const condition of conditionGroups) {
       const conditionId = condition.id || `condition-${crypto.randomUUID()}`;

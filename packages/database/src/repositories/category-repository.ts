@@ -2,8 +2,8 @@ import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import {
-   type TransactionTypeValue,
    category,
+   type TransactionTypeValue,
    transactionCategory,
 } from "../schemas/categories";
 import { transaction } from "../schemas/transactions";

@@ -201,11 +201,14 @@ export function ManageTransactionForm({
       if (transaction?.type === "transfer") return "expense";
       if (transaction?.type) return transaction.type as "expense" | "income";
       if (duplicateFrom?.type) return duplicateFrom.type;
-      if (refundFrom?.type) return refundFrom.type === "expense" ? "income" : "expense";
+      if (refundFrom?.type)
+         return refundFrom.type === "expense" ? "income" : "expense";
       return "expense";
    }, [transaction?.type, duplicateFrom?.type, refundFrom?.type]);
 
-   const [currentTransactionType, setCurrentTransactionType] = useState<"expense" | "income">(initialTransactionType);
+   const [currentTransactionType, setCurrentTransactionType] = useState<
+      "expense" | "income"
+   >(initialTransactionType);
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getByTransactionType.queryOptions({
@@ -645,7 +648,9 @@ export function ManageTransactionForm({
                            </FieldLabel>
                            <Select
                               onValueChange={(value) => {
-                                 const typedValue = value as "expense" | "income";
+                                 const typedValue = value as
+                                    | "expense"
+                                    | "income";
                                  field.handleChange(typedValue);
                                  setCurrentTransactionType(typedValue);
                               }}

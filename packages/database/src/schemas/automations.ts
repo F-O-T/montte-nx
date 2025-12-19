@@ -199,8 +199,9 @@ export type ConsequenceExecutionLogResult = {
 export const automationLog = pgTable(
    "automation_log",
    {
-      consequencesExecuted:
-         jsonb("consequences_executed").$type<ConsequenceExecutionLogResult[]>(),
+      consequencesExecuted: jsonb("consequences_executed").$type<
+         ConsequenceExecutionLogResult[]
+      >(),
       completedAt: timestamp("completed_at"),
       conditionsEvaluated: jsonb("conditions_evaluated").$type<
          ConditionEvaluationLogResult[]
