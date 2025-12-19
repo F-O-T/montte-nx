@@ -15,7 +15,6 @@ import {
    useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { CookieConsentBanner } from "@/features/cookie-consent/cookie-consent-banner";
 import { GlobalAlertDialog } from "@/hooks/use-alert-dialog";
 import { GlobalCredenza } from "@/hooks/use-credenza";
 import { GlobalSheet } from "@/hooks/use-sheet";
@@ -92,7 +91,6 @@ function RootComponent() {
                   <GlobalCredenza />
                   <GlobalSheet />
                   <Toaster />
-                  <CookieConsentBanner />
                   <Outlet />
                   <TanStackRouterDevtools position="bottom-left" />
                </TelemetryAwarePostHogWrapper>

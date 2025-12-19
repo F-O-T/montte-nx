@@ -60,7 +60,7 @@ export function NavMain() {
       {
          icon: BarChart3,
          id: "reports",
-         title: "Relatórios DRE",
+         title: translate("dashboard.layout.nav-main.finance.reports"),
          url: "/$slug/custom-reports",
       },
       {

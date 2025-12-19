@@ -1,24 +1,49 @@
-import { Card, CardContent } from "@packages/ui/components/card";
+import {
+   Card,
+   CardContent,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useTRPC } from "@/integrations/clients";
+
+function CustomReportsStatsErrorFallback(props: FallbackProps) {
+   return (
+      <div className="grid gap-4 h-min">
+         {createErrorFallback({
+            errorDescription:
+               "Falha ao carregar estatísticas. Tente novamente mais tarde.",
+            errorTitle: "Erro ao carregar estatísticas",
+            retryText: "Tentar novamente",
+         })(props)}
+      </div>
+   );
+}
 
 function CustomReportsStatsSkeleton() {
    return (
-      <div className="grid gap-4 sm:grid-cols-3">
-         {Array.from({ length: 3 }).map((_, index) => (
-            <Card key={`stat-skeleton-${index + 1}`}>
-               <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                     <Skeleton className="size-10 rounded-full" />
-                     <div className="space-y-2">
-                        <Skeleton className="h-3 w-24" />
-                        <Skeleton className="h-6 w-16" />
-                     </div>
-                  </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
+         {[1, 2, 3, 4].map((index) => (
+            <Card
+               className="col-span-1 h-full w-full"
+               key={`stats-skeleton-card-${index}`}
+            >
+               <CardHeader>
+                  <CardTitle>
+                     <Skeleton className="h-6 w-24" />
+                  </CardTitle>
+                  <CardDescription>
+                     <Skeleton className="h-4 w-32" />
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <Skeleton className="h-10 w-16" />
                </CardContent>
             </Card>
          ))}
@@ -33,27 +58,41 @@ function CustomReportsStatsContent() {
    );
 
    const totalReports = reports.length;
-   const gerencialCount = reports.filter(
-      (r) => r.type === "dre_gerencial",
+
+   const dreCount = reports.filter(
+      (r) => r.type === "dre_gerencial" || r.type === "dre_fiscal",
    ).length;
-   const fiscalCount = reports.filter((r) => r.type === "dre_fiscal").length;
+
+   const analysisCount = reports.filter(
+      (r) => r.type === "budget_vs_actual" || r.type === "spending_trends",
+   ).length;
+
+   const forecastCount = reports.filter(
+      (r) =>
+         r.type === "cash_flow_forecast" || r.type === "counterparty_analysis",
+   ).length;
 
    return (
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-min">
          <StatsCard
-            description="Todos os relatórios DRE criados"
-            title="Total de Relatórios"
+            description="Total de relatórios criados"
+            title="Relatórios"
             value={totalReports}
          />
          <StatsCard
-            description="Relatórios com dados reais"
-            title="DRE Gerencial"
-            value={gerencialCount}
+            description="DRE Gerencial e Fiscal"
+            title="Demonstrativos"
+            value={dreCount}
          />
          <StatsCard
-            description="Relatórios com planejado vs real"
-            title="DRE Fiscal"
-            value={fiscalCount}
+            description="Budget e Tendências"
+            title="Análises"
+            value={analysisCount}
+         />
+         <StatsCard
+            description="Fluxo de Caixa e Parceiros"
+            title="Projeções"
+            value={forecastCount}
          />
       </div>
    );
@@ -61,7 +100,7 @@ function CustomReportsStatsContent() {
 
 export function CustomReportsStats() {
    return (
-      <ErrorBoundary fallback={<CustomReportsStatsSkeleton />}>
+      <ErrorBoundary FallbackComponent={CustomReportsStatsErrorFallback}>
          <Suspense fallback={<CustomReportsStatsSkeleton />}>
             <CustomReportsStatsContent />
          </Suspense>

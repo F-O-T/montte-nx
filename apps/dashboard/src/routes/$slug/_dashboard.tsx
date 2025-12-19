@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { CookieConsentBanner } from "@/features/cookie-consent/cookie-consent-banner";
 import { getQueryClient, trpc } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
 
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/$slug/_dashboard")({
 function RouteComponent() {
    return (
       <DashboardLayout>
+         <CookieConsentBanner />
          <div className="h-full w-full [view-transition-name:main-content]">
             <Outlet />
          </div>

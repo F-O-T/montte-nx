@@ -35,7 +35,7 @@ export function HomeQuickActions() {
          onClick: () =>
             router.navigate({
                params: { slug: activeOrganization.slug },
-               to: "/$slug/reports",
+               to: "/$slug/custom-reports",
             }),
          title: translate("dashboard.routes.home.quick-actions.reports.title"),
       },

@@ -27,7 +27,6 @@ import { Route as SlugDashboardRouteImport } from './routes/$slug/_dashboard'
 import { Route as AuthSignInIndexRouteImport } from './routes/auth/sign-in/index'
 import { Route as AuthSignInEmailRouteImport } from './routes/auth/sign-in/email'
 import { Route as SlugDashboardSettingsRouteImport } from './routes/$slug/_dashboard/settings'
-import { Route as SlugDashboardReportsRouteImport } from './routes/$slug/_dashboard/reports'
 import { Route as SlugDashboardProfileRouteImport } from './routes/$slug/_dashboard/profile'
 import { Route as SlugDashboardPlansRouteImport } from './routes/$slug/_dashboard/plans'
 import { Route as SlugDashboardManagePlanRouteImport } from './routes/$slug/_dashboard/manage-plan'
@@ -153,11 +152,6 @@ const AuthSignInEmailRoute = AuthSignInEmailRouteImport.update({
 const SlugDashboardSettingsRoute = SlugDashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => SlugDashboardRoute,
-} as any)
-const SlugDashboardReportsRoute = SlugDashboardReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
   getParentRoute: () => SlugDashboardRoute,
 } as any)
 const SlugDashboardProfileRoute = SlugDashboardProfileRouteImport.update({
@@ -395,7 +389,6 @@ export interface FileRoutesByFullPath {
   '/$slug/manage-plan': typeof SlugDashboardManagePlanRoute
   '/$slug/plans': typeof SlugDashboardPlansRoute
   '/$slug/profile': typeof SlugDashboardProfileRoute
-  '/$slug/reports': typeof SlugDashboardReportsRoute
   '/$slug/settings': typeof SlugDashboardSettingsRouteWithChildren
   '/auth/sign-in/email': typeof AuthSignInEmailRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -451,7 +444,6 @@ export interface FileRoutesByTo {
   '/$slug/manage-plan': typeof SlugDashboardManagePlanRoute
   '/$slug/plans': typeof SlugDashboardPlansRoute
   '/$slug/profile': typeof SlugDashboardProfileRoute
-  '/$slug/reports': typeof SlugDashboardReportsRoute
   '/auth/sign-in/email': typeof AuthSignInEmailRoute
   '/auth/sign-in': typeof AuthSignInIndexRoute
   '/$slug/automations/$automationId': typeof SlugDashboardAutomationsAutomationIdRoute
@@ -509,7 +501,6 @@ export interface FileRoutesById {
   '/$slug/_dashboard/manage-plan': typeof SlugDashboardManagePlanRoute
   '/$slug/_dashboard/plans': typeof SlugDashboardPlansRoute
   '/$slug/_dashboard/profile': typeof SlugDashboardProfileRoute
-  '/$slug/_dashboard/reports': typeof SlugDashboardReportsRoute
   '/$slug/_dashboard/settings': typeof SlugDashboardSettingsRouteWithChildren
   '/auth/sign-in/email': typeof AuthSignInEmailRoute
   '/auth/sign-in/': typeof AuthSignInIndexRoute
@@ -568,7 +559,6 @@ export interface FileRouteTypes {
     | '/$slug/manage-plan'
     | '/$slug/plans'
     | '/$slug/profile'
-    | '/$slug/reports'
     | '/$slug/settings'
     | '/auth/sign-in/email'
     | '/auth/sign-in/'
@@ -624,7 +614,6 @@ export interface FileRouteTypes {
     | '/$slug/manage-plan'
     | '/$slug/plans'
     | '/$slug/profile'
-    | '/$slug/reports'
     | '/auth/sign-in/email'
     | '/auth/sign-in'
     | '/$slug/automations/$automationId'
@@ -681,7 +670,6 @@ export interface FileRouteTypes {
     | '/$slug/_dashboard/manage-plan'
     | '/$slug/_dashboard/plans'
     | '/$slug/_dashboard/profile'
-    | '/$slug/_dashboard/reports'
     | '/$slug/_dashboard/settings'
     | '/auth/sign-in/email'
     | '/auth/sign-in/'
@@ -854,13 +842,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/$slug/settings'
       preLoaderRoute: typeof SlugDashboardSettingsRouteImport
-      parentRoute: typeof SlugDashboardRoute
-    }
-    '/$slug/_dashboard/reports': {
-      id: '/$slug/_dashboard/reports'
-      path: '/reports'
-      fullPath: '/$slug/reports'
-      preLoaderRoute: typeof SlugDashboardReportsRouteImport
       parentRoute: typeof SlugDashboardRoute
     }
     '/$slug/_dashboard/profile': {
@@ -1156,7 +1137,6 @@ interface SlugDashboardRouteChildren {
   SlugDashboardManagePlanRoute: typeof SlugDashboardManagePlanRoute
   SlugDashboardPlansRoute: typeof SlugDashboardPlansRoute
   SlugDashboardProfileRoute: typeof SlugDashboardProfileRoute
-  SlugDashboardReportsRoute: typeof SlugDashboardReportsRoute
   SlugDashboardSettingsRoute: typeof SlugDashboardSettingsRouteWithChildren
   SlugDashboardAutomationsAutomationIdRoute: typeof SlugDashboardAutomationsAutomationIdRoute
   SlugDashboardBankAccountsBankAccountIdRoute: typeof SlugDashboardBankAccountsBankAccountIdRoute
@@ -1191,7 +1171,6 @@ const SlugDashboardRouteChildren: SlugDashboardRouteChildren = {
   SlugDashboardManagePlanRoute: SlugDashboardManagePlanRoute,
   SlugDashboardPlansRoute: SlugDashboardPlansRoute,
   SlugDashboardProfileRoute: SlugDashboardProfileRoute,
-  SlugDashboardReportsRoute: SlugDashboardReportsRoute,
   SlugDashboardSettingsRoute: SlugDashboardSettingsRouteWithChildren,
   SlugDashboardAutomationsAutomationIdRoute:
     SlugDashboardAutomationsAutomationIdRoute,
