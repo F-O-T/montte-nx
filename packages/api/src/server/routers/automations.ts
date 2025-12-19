@@ -26,7 +26,7 @@ import {
    getVersionHistory,
 } from "@packages/database/repositories/automation-version-repository";
 import type {
-   Action,
+   Consequence,
    ConditionGroup,
    FlowData,
    TriggerConfig,
@@ -97,10 +97,8 @@ const actionConfigSchema = z.object({
    value: z.string().optional(),
 });
 
-const actionSchema = z.object({
-   config: actionConfigSchema,
-   continueOnError: z.boolean().optional(),
-   id: z.string(),
+const consequenceSchema = z.object({
+   payload: actionConfigSchema,
    type: actionTypeSchema,
 });
 
@@ -120,33 +118,33 @@ const flowDataSchema = z
    .nullable();
 
 const createAutomationRuleSchema = z.object({
-   actions: z.array(actionSchema).min(1, "At least one action is required"),
-   conditions: z.array(ConditionGroupSchema).default([]),
+   consequences: z.array(consequenceSchema).min(1, "At least one consequence is required"),
+   conditions: ConditionGroupSchema.optional(),
    description: z.string().optional(),
    flowData: flowDataSchema,
-   isActive: z.boolean().default(false),
+   enabled: z.boolean().default(false),
    name: z.string().min(1, "Name is required"),
    priority: z.number().int().default(0),
-   stopOnFirstMatch: z.boolean().default(false),
+   stopOnMatch: z.boolean().default(false),
    triggerConfig: triggerConfigSchema,
    triggerType: triggerTypeSchema,
 });
 
 const updateAutomationRuleSchema = z.object({
-   actions: z.array(actionSchema).optional(),
-   conditions: z.array(ConditionGroupSchema).optional(),
+   consequences: z.array(consequenceSchema).optional(),
+   conditions: ConditionGroupSchema.optional(),
    description: z.string().optional().nullable(),
    flowData: flowDataSchema,
-   isActive: z.boolean().optional(),
+   enabled: z.boolean().optional(),
    name: z.string().min(1).optional(),
    priority: z.number().int().optional(),
-   stopOnFirstMatch: z.boolean().optional(),
+   stopOnMatch: z.boolean().optional(),
    triggerConfig: triggerConfigSchema.optional(),
    triggerType: triggerTypeSchema.optional(),
 });
 
 const paginationSchema = z.object({
-   isActive: z.boolean().optional(),
+   enabled: z.boolean().optional(),
    limit: z.coerce.number().min(1).max(100).default(10),
    orderBy: z
       .enum(["name", "createdAt", "updatedAt", "priority"])
@@ -174,10 +172,15 @@ export const automationRouter = router({
          const organizationId = resolvedCtx.organizationId;
          const userId = resolvedCtx.session?.user?.id;
 
+         // Default empty condition group if none provided
+         const conditions: ConditionGroup = input.conditions
+            ? (input.conditions as ConditionGroup)
+            : { id: crypto.randomUUID(), operator: "AND", conditions: [] };
+
          const createdRule = await createAutomationRule(resolvedCtx.db, {
             ...input,
-            actions: input.actions as Action[],
-            conditions: input.conditions as ConditionGroup[],
+            consequences: input.consequences as Consequence[],
+            conditions,
             createdBy: userId,
             flowData: input.flowData as FlowData | undefined,
             organizationId,
@@ -275,7 +278,7 @@ export const automationRouter = router({
             resolvedCtx.db,
             organizationId,
             {
-               isActive: input.isActive,
+               enabled: input.enabled,
                limit: input.limit,
                orderBy: input.orderBy,
                orderDirection: input.orderDirection,
@@ -444,7 +447,7 @@ export const automationRouter = router({
       .input(
          z.object({
             id: z.string(),
-            isActive: z.boolean(),
+            enabled: z.boolean(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -460,7 +463,7 @@ export const automationRouter = router({
             throw APIError.notFound("Automation rule not found");
          }
 
-         return toggleAutomationRule(resolvedCtx.db, input.id, input.isActive);
+         return toggleAutomationRule(resolvedCtx.db, input.id, input.enabled);
       }),
 
    triggerManually: protectedProcedure
@@ -501,7 +504,7 @@ export const automationRouter = router({
             throw APIError.notFound("Automation rule not found");
          }
 
-         if (!rule.isActive) {
+         if (!rule.enabled) {
             throw APIError.validation(
                "Cannot trigger inactive automation rule",
             );
@@ -580,9 +583,9 @@ export const automationRouter = router({
             input.id,
             {
                ...input.data,
-               actions: input.data.actions as Action[] | undefined,
+               consequences: input.data.consequences as Consequence[] | undefined,
                conditions: input.data.conditions as
-                  | ConditionGroup[]
+                  | ConditionGroup
                   | undefined,
                flowData: input.data.flowData as FlowData | undefined | null,
                triggerConfig: input.data.triggerConfig as

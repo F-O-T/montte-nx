@@ -4,7 +4,7 @@ import {
    updateTransaction,
 } from "@packages/database/repositories/transaction-repository";
 import { createTransferLog } from "@packages/database/repositories/transfer-log-repository";
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import {
    type ActionHandler,
    type ActionHandlerContext,
@@ -15,12 +15,12 @@ import {
 export const markAsTransferHandler: ActionHandler = {
    type: "mark_as_transfer",
 
-   async execute(action: Action, context: ActionHandlerContext) {
-      const { toBankAccountId } = action.config;
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
+      const { toBankAccountId } = consequence.payload;
 
       if (!toBankAccountId) {
          return createSkippedResult(
-            action,
+            consequence,
             "Destination bank account ID is required",
          );
       }
@@ -34,27 +34,27 @@ export const markAsTransferHandler: ActionHandler = {
          | undefined;
 
       if (!transactionId) {
-         return createSkippedResult(action, "Transaction ID is required");
+         return createSkippedResult(consequence, "Transaction ID is required");
       }
 
       if (amount === undefined || amount === null) {
-         return createSkippedResult(action, "Transaction amount is required");
+         return createSkippedResult(consequence, "Transaction amount is required");
       }
 
       if (!date) {
-         return createSkippedResult(action, "Transaction date is required");
+         return createSkippedResult(consequence, "Transaction date is required");
       }
 
       if (!fromBankAccountId) {
          return createSkippedResult(
-            action,
+            consequence,
             "Transaction bank account ID is required",
          );
       }
 
       if (fromBankAccountId === toBankAccountId) {
          return createSkippedResult(
-            action,
+            consequence,
             "Source and destination bank accounts cannot be the same",
          );
       }
@@ -64,7 +64,7 @@ export const markAsTransferHandler: ActionHandler = {
       const transactionDate = new Date(date);
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             counterpartAmount: -numericAmount,
             description,
             dryRun: true,
@@ -118,7 +118,7 @@ export const markAsTransferHandler: ActionHandler = {
             toTransactionId: isOutgoing ? counterpartId : transactionId,
          });
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             counterpartCreated: !exactMatch,
             counterpartId,
             counterpartMatched: !!exactMatch,
@@ -127,7 +127,7 @@ export const markAsTransferHandler: ActionHandler = {
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

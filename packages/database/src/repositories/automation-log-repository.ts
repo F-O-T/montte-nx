@@ -158,7 +158,7 @@ export async function findAutomationLogsByOrganizationIdPaginated(
                rule: {
                   columns: {
                      id: true,
-                     isActive: true,
+                     enabled: true,
                      name: true,
                   },
                },

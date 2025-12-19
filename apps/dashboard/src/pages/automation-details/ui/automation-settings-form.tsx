@@ -31,9 +31,9 @@ type AutomationSettings = {
    name: string;
    description: string;
    triggerType: TriggerType;
-   isActive: boolean;
+   enabled: boolean;
    priority: number;
-   stopOnFirstMatch: boolean;
+   stopOnMatch: boolean;
 };
 
 type AutomationSettingsFormProps = {
@@ -44,10 +44,10 @@ type AutomationSettingsFormProps = {
 
 const automationSettingsSchema = z.object({
    description: z.string(),
-   isActive: z.boolean(),
+   enabled: z.boolean(),
    name: z.string().min(1, "Nome é obrigatório"),
    priority: z.number().min(0, "Prioridade deve ser maior ou igual a 0"),
-   stopOnFirstMatch: z.boolean(),
+   stopOnMatch: z.boolean(),
    triggerType: z.enum(["transaction.created", "transaction.updated"]),
 });
 
@@ -59,10 +59,10 @@ export function AutomationSettingsForm({
    const form = useForm({
       defaultValues: {
          description: settings.description,
-         isActive: settings.isActive,
+         enabled: settings.enabled,
          name: settings.name,
          priority: settings.priority,
-         stopOnFirstMatch: settings.stopOnFirstMatch,
+         stopOnMatch: settings.stopOnMatch,
          triggerType: settings.triggerType,
       },
       validators: {
@@ -75,10 +75,10 @@ export function AutomationSettingsForm({
          const values = form.store.state.values;
          onSettingsChange({
             description: values.description,
-            isActive: values.isActive,
+            enabled: values.enabled,
             name: values.name,
             priority: values.priority,
-            stopOnFirstMatch: values.stopOnFirstMatch,
+            stopOnMatch: values.stopOnMatch,
             triggerType: values.triggerType as TriggerType,
          });
       });
@@ -223,7 +223,7 @@ export function AutomationSettingsForm({
                </FieldGroup>
 
                <div className="flex items-center justify-between rounded-md border p-3">
-                  <form.Field name="isActive">
+                  <form.Field name="enabled">
                      {(field) => (
                         <>
                            <div>
@@ -247,7 +247,7 @@ export function AutomationSettingsForm({
                </div>
 
                <div className="flex items-center justify-between rounded-md border p-3">
-                  <form.Field name="stopOnFirstMatch">
+                  <form.Field name="stopOnMatch">
                      {(field) => (
                         <>
                            <div>

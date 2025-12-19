@@ -73,14 +73,17 @@ function AutomationsPageContent() {
 
    const handleCreateAutomation = () => {
       createMutation.mutate({
-         actions: [
+         consequences: [
             {
-               config: {},
-               id: `action-${crypto.randomUUID()}`,
+               payload: {},
                type: "set_category",
             },
          ],
-         conditions: [],
+         conditions: {
+            id: crypto.randomUUID(),
+            operator: "AND",
+            conditions: [],
+         },
          flowData: {
             edges: [
                {
@@ -112,10 +115,10 @@ function AutomationsPageContent() {
                },
             ],
          },
-         isActive: true,
+         enabled: true,
          name: generateRandomName(),
          priority: 0,
-         stopOnFirstMatch: false,
+         stopOnMatch: false,
          triggerType: "transaction.created",
       });
    };

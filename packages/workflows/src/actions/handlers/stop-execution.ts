@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import type { ActionExecutionResult } from "../../types/actions";
 import type { ActionHandler, ActionHandlerContext } from "../types";
 
@@ -10,19 +10,18 @@ export const stopExecutionHandler: ActionHandler = {
    type: "stop_execution",
 
    async execute(
-      action: Action,
+      consequence: Consequence,
       _context: ActionHandlerContext,
    ): Promise<StopExecutionResult> {
-      const { reason } = action.config;
+      const { reason } = consequence.payload;
 
       return {
-         actionId: action.id,
          result: {
             reason: reason ?? "Stop execution action triggered",
          },
          stopProcessing: true,
          success: true,
-         type: action.type,
+         type: consequence.type,
       };
    },
 

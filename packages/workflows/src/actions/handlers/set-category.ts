@@ -1,5 +1,5 @@
 import { findCategoriesByOrganizationId } from "@packages/database/repositories/category-repository";
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { transaction, transactionCategory } from "@packages/database/schema";
 import {
    adjustFixedSplitsProportionally,
@@ -20,14 +20,14 @@ import {
 export const setCategoryHandler: ActionHandler = {
    type: "set_category",
 
-   async execute(action: Action, context: ActionHandlerContext) {
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
       const {
          categoryId,
          categoryIds,
          categorySplitMode,
          categorySplits,
          dynamicSplitPattern,
-      } = action.config;
+      } = consequence.payload;
 
       const transactionId = context.eventData.id as string;
       const transactionAmount = Math.round(
@@ -37,7 +37,7 @@ export const setCategoryHandler: ActionHandler = {
 
       if (!transactionId) {
          return createActionResult(
-            action,
+            consequence,
             false,
             undefined,
             "No transaction ID in event data",
@@ -101,11 +101,11 @@ export const setCategoryHandler: ActionHandler = {
          }
 
          if (finalCategoryIds.length === 0) {
-            return createSkippedResult(action, "No categories to set");
+            return createSkippedResult(consequence, "No categories to set");
          }
 
          if (context.dryRun) {
-            return createActionResult(action, true, {
+            return createActionResult(consequence, true, {
                categoryIds: finalCategoryIds,
                dryRun: true,
                splits: finalSplits,
@@ -129,7 +129,7 @@ export const setCategoryHandler: ActionHandler = {
             .set({ categorySplits: finalSplits })
             .where(eq(transaction.id, transactionId));
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             categoryIds: finalCategoryIds,
             splits: finalSplits,
             transactionId,
@@ -137,7 +137,7 @@ export const setCategoryHandler: ActionHandler = {
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

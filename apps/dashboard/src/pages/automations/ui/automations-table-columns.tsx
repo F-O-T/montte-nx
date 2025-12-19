@@ -175,12 +175,12 @@ function AutomationStatusToggle({ automation }: { automation: Automation }) {
 
    return (
       <Switch
-         checked={automation.isActive}
+         checked={automation.enabled}
          disabled={toggleMutation.isPending}
          onCheckedChange={(checked) => {
             toggleMutation.mutate({
                id: automation.id,
-               isActive: checked,
+               enabled: checked,
             });
          }}
       />
@@ -212,13 +212,13 @@ export function createAutomationColumns(): ColumnDef<Automation>[] {
          header: "Nome",
       },
       {
-         accessorKey: "actions",
+         accessorKey: "consequences",
          cell: ({ row }) => {
             const automation = row.original;
-            const actionsCount = automation.actions?.length || 0;
+            const consequencesCount = automation.consequences?.length || 0;
             return (
                <span className="text-sm text-muted-foreground">
-                  {actionsCount} {actionsCount === 1 ? "ação" : "ações"}
+                  {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
                </span>
             );
          },
@@ -238,7 +238,7 @@ export function createAutomationColumns(): ColumnDef<Automation>[] {
          header: "Prioridade",
       },
       {
-         accessorKey: "isActive",
+         accessorKey: "enabled",
          cell: ({ row }) => (
             <AutomationStatusToggle automation={row.original} />
          ),
@@ -308,7 +308,7 @@ export function AutomationExpandedContent({
 
    const handleTrigger = (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (!automation.isActive) {
+      if (!automation.enabled) {
          toast.error("Não é possível executar uma automação inativa");
          return;
       }
@@ -316,8 +316,8 @@ export function AutomationExpandedContent({
    };
 
    const TriggerIcon = triggerTypeIcons[automation.triggerType] || Zap;
-   const actionsCount = automation.actions?.length || 0;
-   const conditionsCount = automation.conditions?.length || 0;
+   const consequencesCount = automation.consequences?.length || 0;
+   const conditionsCount = automation.conditions?.conditions?.length || 0;
 
    if (isMobile) {
       return (
@@ -338,7 +338,7 @@ export function AutomationExpandedContent({
                   <div>
                      <p className="text-xs text-muted-foreground">Ações</p>
                      <p className="text-sm font-medium">
-                        {actionsCount} {actionsCount === 1 ? "ação" : "ações"}
+                        {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
                      </p>
                   </div>
                </div>
@@ -368,7 +368,7 @@ export function AutomationExpandedContent({
             <Separator />
 
             <div className="space-y-2">
-               {automation.isActive && (
+               {automation.enabled && (
                   <Button
                      className="w-full justify-start"
                      disabled={triggerMutation.isPending}
@@ -431,7 +431,7 @@ export function AutomationExpandedContent({
                   <p className="text-sm font-medium">
                      {conditionsCount}{" "}
                      {conditionsCount === 1 ? "condição" : "condições"},{" "}
-                     {actionsCount} {actionsCount === 1 ? "ação" : "ações"}
+                     {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
                   </p>
                </div>
             </div>
@@ -459,7 +459,7 @@ export function AutomationExpandedContent({
          </div>
 
          <div className="flex items-center gap-2">
-            {automation.isActive && (
+            {automation.enabled && (
                <Button
                   disabled={triggerMutation.isPending}
                   onClick={handleTrigger}
@@ -504,7 +504,7 @@ export function AutomationMobileCard({
 }: AutomationMobileCardProps) {
    const automation = row.original;
    const TriggerIcon = triggerTypeIcons[automation.triggerType] || Zap;
-   const actionsCount = automation.actions?.length || 0;
+   const consequencesCount = automation.consequences?.length || 0;
 
    return (
       <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
@@ -524,13 +524,13 @@ export function AutomationMobileCard({
          <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
                <span className="text-sm text-muted-foreground">
-                  {actionsCount} {actionsCount === 1 ? "ação" : "ações"}
+                  {consequencesCount} {consequencesCount === 1 ? "ação" : "ações"}
                </span>
                <AutomationStatusToggle automation={automation} />
             </div>
             <div className="flex gap-2">
-               <Badge variant={automation.isActive ? "default" : "secondary"}>
-                  {automation.isActive ? "Ativa" : "Inativa"}
+               <Badge variant={automation.enabled ? "default" : "secondary"}>
+                  {automation.enabled ? "Ativa" : "Inativa"}
                </Badge>
                <Badge className="font-mono" variant="outline">
                   Prioridade: {automation.priority}

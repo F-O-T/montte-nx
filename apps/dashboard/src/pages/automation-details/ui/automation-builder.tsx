@@ -1,5 +1,5 @@
 import type {
-   ActionExecutionLogResult,
+   ConsequenceExecutionLogResult,
    ActionType,
    ConditionEvaluationLogResult,
    TriggeredBy,
@@ -510,7 +510,7 @@ type ExecutionLog = {
    triggeredBy: string | null;
    triggerEvent: unknown;
    conditionsEvaluated: ConditionEvaluationLogResult[] | null;
-   actionsExecuted: ActionExecutionLogResult[] | null;
+   consequencesExecuted: ConsequenceExecutionLogResult[] | null;
    errorMessage: string | null;
    durationMs: number | null;
    createdAt: Date | string;
@@ -630,10 +630,10 @@ function ExecutionLogItem({
    const transactionAmount = triggerEvent?.amount;
    const transactionType = triggerEvent?.type;
 
-   const actionsExecuted = execution.actionsExecuted ?? [];
+   const consequencesExecuted = execution.consequencesExecuted ?? [];
    const conditionsEvaluated = execution.conditionsEvaluated ?? [];
 
-   const successActions = actionsExecuted.filter((a) => a.success).length;
+   const successConsequences = consequencesExecuted.filter((a) => a.success).length;
    const passedConditions = conditionsEvaluated.filter((c) => c.passed).length;
    const totalConditions = conditionsEvaluated.length;
 
@@ -698,10 +698,10 @@ function ExecutionLogItem({
                         locale: ptBR,
                      })}
                   </span>
-                  {actionsExecuted.length > 0 && (
+                  {consequencesExecuted.length > 0 && (
                      <span className="flex items-center gap-1">
                         <Play className="size-3" />
-                        {successActions}/{actionsExecuted.length} ações
+                        {successConsequences}/{consequencesExecuted.length} ações
                      </span>
                   )}
                   {totalConditions > 0 && (
@@ -768,29 +768,29 @@ function ExecutionLogItem({
                   </div>
                )}
 
-               {actionsExecuted.length > 0 && (
+               {consequencesExecuted.length > 0 && (
                   <div>
                      <p className="text-xs font-medium text-muted-foreground mb-1.5">
                         Ações executadas
                      </p>
                      <div className="space-y-1">
-                        {actionsExecuted.map((action, idx) => (
+                        {consequencesExecuted.map((consequence, idx) => (
                            <div
                               className="flex items-center gap-2 text-xs"
-                              key={action.actionId || idx}
+                              key={consequence.consequenceIndex ?? idx}
                            >
-                              {action.success ? (
+                              {consequence.success ? (
                                  <CheckCircle2 className="size-3 text-green-500" />
                               ) : (
                                  <XCircle className="size-3 text-red-500" />
                               )}
                               <span>
-                                 {ACTION_TYPE_LABELS[action.type] ??
-                                    action.type}
+                                 {ACTION_TYPE_LABELS[consequence.type] ??
+                                    consequence.type}
                               </span>
-                              {action.error && (
+                              {consequence.error && (
                                  <span className="text-red-500 truncate">
-                                    - {action.error}
+                                    - {consequence.error}
                                  </span>
                               )}
                            </div>

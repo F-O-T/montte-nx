@@ -1,146 +1,168 @@
+import type { AggregatedConsequence } from "@f-o-t/rules-engine";
 import type { DatabaseInstance } from "@packages/database/client";
-import type { Action } from "@packages/database/schema";
+import type { ActionConfig, Consequence } from "@packages/database/schema";
 import type { Resend } from "resend";
-import type { ActionExecutionResult } from "../types/actions";
+import type { WorkflowConsequences } from "../engine/consequence-definitions";
+import type { ConsequenceExecutionResult } from "../types/actions";
 import { isStopExecutionResult } from "./handlers/stop-execution";
 import { getActionHandler } from "./registry";
 import type { ActionHandlerContext, VapidConfig } from "./types";
 
-export type ActionsExecutionContext = {
-   db: DatabaseInstance;
-   organizationId: string;
-   eventData: Record<string, unknown>;
-   ruleId: string;
-   dryRun?: boolean;
-   resendClient?: Resend;
-   vapidConfig?: VapidConfig;
+export type ConsequencesExecutionContext = {
+	db: DatabaseInstance;
+	organizationId: string;
+	eventData: Record<string, unknown>;
+	ruleId: string;
+	dryRun?: boolean;
+	resendClient?: Resend;
+	vapidConfig?: VapidConfig;
 };
 
-export type ActionsExecutionResult = {
-   results: ActionExecutionResult[];
-   success: boolean;
-   stoppedEarly: boolean;
-   totalActions: number;
-   executedActions: number;
-   failedActions: number;
-   skippedActions: number;
+export type ConsequencesExecutionResult = {
+	results: ConsequenceExecutionResult[];
+	success: boolean;
+	stoppedEarly: boolean;
+	totalConsequences: number;
+	executedConsequences: number;
+	failedConsequences: number;
+	skippedConsequences: number;
 };
 
-export async function executeActions(
-   actions: Action[],
-   context: ActionsExecutionContext,
-): Promise<ActionsExecutionResult> {
-   const results: ActionExecutionResult[] = [];
-   let stoppedEarly = false;
-   let failedActions = 0;
-   let skippedActions = 0;
+/**
+ * Executes consequences from the rules-engine evaluation result.
+ * Consequences are the aggregated results that contain action type and payload.
+ */
+export async function executeConsequences(
+	consequences: AggregatedConsequence<WorkflowConsequences>[],
+	context: ConsequencesExecutionContext,
+): Promise<ConsequencesExecutionResult> {
+	const results: ConsequenceExecutionResult[] = [];
+	let stoppedEarly = false;
+	let failedConsequences = 0;
+	let skippedConsequences = 0;
 
-   const handlerContext: ActionHandlerContext = {
-      db: context.db,
-      dryRun: context.dryRun,
-      eventData: context.eventData,
-      organizationId: context.organizationId,
-      resendClient: context.resendClient,
-      ruleId: context.ruleId,
-      vapidConfig: context.vapidConfig,
-   };
+	const handlerContext: ActionHandlerContext = {
+		db: context.db,
+		dryRun: context.dryRun,
+		eventData: context.eventData,
+		organizationId: context.organizationId,
+		resendClient: context.resendClient,
+		ruleId: context.ruleId,
+		vapidConfig: context.vapidConfig,
+	};
 
-   for (const action of actions) {
-      const handler = getActionHandler(action.type);
+	for (let i = 0; i < consequences.length; i++) {
+		const consequence = consequences[i];
+		if (!consequence) continue;
+		const actionType = consequence.type as Consequence["type"];
+		const payload = consequence.payload as ActionConfig;
 
-      if (!handler) {
-         const result: ActionExecutionResult = {
-            actionId: action.id,
-            error: `No handler registered for action type: ${action.type}`,
-            success: false,
-            type: action.type,
-         };
-         results.push(result);
-         failedActions++;
+		const handler = getActionHandler(actionType);
 
-         if (!action.continueOnError) {
-            break;
-         }
-         continue;
-      }
+		if (!handler) {
+			const result: ConsequenceExecutionResult = {
+				consequenceIndex: i,
+				error: `No handler registered for action type: ${actionType}`,
+				success: false,
+				type: actionType,
+			};
+			results.push(result);
+			failedConsequences++;
+			continue;
+		}
 
-      try {
-         const result = await handler.execute(action, handlerContext);
-         results.push(result);
+		try {
+			// Create a compatible action-like structure for the handler
+			const actionLike: Consequence = {
+				payload,
+				type: actionType as Consequence["type"],
+			};
 
-         if (result.skipped) {
-            skippedActions++;
-            continue;
-         }
+			const result = await handler.execute(actionLike, handlerContext);
 
-         if (!result.success) {
-            failedActions++;
-            if (!action.continueOnError) {
-               break;
-            }
-            continue;
-         }
+			const consequenceResult: ConsequenceExecutionResult = {
+				consequenceIndex: i,
+				error: result.error,
+				result: result.result,
+				skipReason: result.skipReason,
+				skipped: result.skipped,
+				success: result.success,
+				type: actionType,
+			};
 
-         if (isStopExecutionResult(result)) {
-            stoppedEarly = true;
-            break;
-         }
-      } catch (error) {
-         const errorMessage =
-            error instanceof Error ? error.message : "Unknown error";
-         const result: ActionExecutionResult = {
-            actionId: action.id,
-            error: errorMessage,
-            success: false,
-            type: action.type,
-         };
-         results.push(result);
-         failedActions++;
+			results.push(consequenceResult);
 
-         if (!action.continueOnError) {
-            break;
-         }
-      }
-   }
+			if (result.skipped) {
+				skippedConsequences++;
+				continue;
+			}
 
-   const executedActions = results.filter((r) => !r.skipped).length;
+			if (!result.success) {
+				failedConsequences++;
+				continue;
+			}
 
-   return {
-      executedActions,
-      failedActions,
-      results,
-      skippedActions,
-      stoppedEarly,
-      success: failedActions === 0,
-      totalActions: actions.length,
-   };
+			if (isStopExecutionResult(result)) {
+				stoppedEarly = true;
+				break;
+			}
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error";
+			const result: ConsequenceExecutionResult = {
+				consequenceIndex: i,
+				error: errorMessage,
+				success: false,
+				type: actionType,
+			};
+			results.push(result);
+			failedConsequences++;
+		}
+	}
+
+	const executedConsequences = results.filter((r) => !r.skipped).length;
+
+	return {
+		executedConsequences,
+		failedConsequences,
+		results,
+		skippedConsequences,
+		stoppedEarly,
+		success: failedConsequences === 0,
+		totalConsequences: consequences.length,
+	};
 }
 
-export async function validateActions(
-   actions: Action[],
-): Promise<{ valid: boolean; errors: Map<string, string[]> }> {
-   const errors = new Map<string, string[]>();
+/**
+ * Validates consequences before execution.
+ */
+export async function validateConsequences(
+	consequences: Consequence[],
+): Promise<{ valid: boolean; errors: Map<number, string[]> }> {
+	const errors = new Map<number, string[]>();
 
-   for (const action of actions) {
-      const handler = getActionHandler(action.type);
+	for (let i = 0; i < consequences.length; i++) {
+		const consequence = consequences[i];
+		if (!consequence) continue;
+		const handler = getActionHandler(consequence.type);
 
-      if (!handler) {
-         errors.set(action.id, [
-            `No handler registered for action type: ${action.type}`,
-         ]);
-         continue;
-      }
+		if (!handler) {
+			errors.set(i, [
+				`No handler registered for action type: ${consequence.type}`,
+			]);
+			continue;
+		}
 
-      if (handler.validate) {
-         const validationResult = handler.validate(action.config);
-         if (!validationResult.valid) {
-            errors.set(action.id, validationResult.errors);
-         }
-      }
-   }
+		if (handler.validate) {
+			const validationResult = handler.validate(consequence.payload);
+			if (!validationResult.valid) {
+				errors.set(i, validationResult.errors);
+			}
+		}
+	}
 
-   return {
-      errors,
-      valid: errors.size === 0,
-   };
+	return {
+		errors,
+		valid: errors.size === 0,
+	};
 }

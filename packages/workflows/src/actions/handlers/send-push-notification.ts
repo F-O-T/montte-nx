@@ -1,5 +1,5 @@
 import { getOrganizationMembers } from "@packages/database/repositories/auth-repository";
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { sendPushNotificationToUser } from "@packages/notifications/push";
 import { createTemplateContext, renderTemplate } from "../../utils/template";
 import {
@@ -12,11 +12,11 @@ import {
 export const sendPushNotificationHandler: ActionHandler = {
    type: "send_push_notification",
 
-   async execute(action: Action, context: ActionHandlerContext) {
-      const { title, body, url } = action.config;
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
+      const { title, body, url } = consequence.payload;
 
       if (!title || !body) {
-         return createSkippedResult(action, "Title and body are required");
+         return createSkippedResult(consequence, "Title and body are required");
       }
 
       const templateContext = createTemplateContext(context.eventData);
@@ -27,7 +27,7 @@ export const sendPushNotificationHandler: ActionHandler = {
          : undefined;
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             body: processedBody,
             dryRun: true,
             title: processedTitle,
@@ -37,7 +37,7 @@ export const sendPushNotificationHandler: ActionHandler = {
 
       if (!context.vapidConfig) {
          return createActionResult(
-            action,
+            consequence,
             false,
             undefined,
             "Push notification not configured",
@@ -53,7 +53,7 @@ export const sendPushNotificationHandler: ActionHandler = {
 
          if (!owner) {
             return createActionResult(
-               action,
+               consequence,
                false,
                undefined,
                "Organization owner not found",
@@ -73,7 +73,7 @@ export const sendPushNotificationHandler: ActionHandler = {
             vapidSubject: context.vapidConfig.subject,
          });
 
-         return createActionResult(action, result.success, {
+         return createActionResult(consequence, result.success, {
             body: processedBody,
             errors: result.errors,
             failed: result.failed,
@@ -84,7 +84,7 @@ export const sendPushNotificationHandler: ActionHandler = {
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 
