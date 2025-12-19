@@ -1,8 +1,8 @@
 import {
    createCustomReport,
+   type DRESnapshotData,
    deleteCustomReport,
    deleteManyCustomReports,
-   type DRESnapshotData,
    findCustomReportById,
    findCustomReportsByOrganizationIdPaginated,
    generateBudgetVsActualData,
@@ -11,6 +11,7 @@ import {
    generateDREFiscalData,
    generateDREGerencialData,
    generateSpendingTrendsData,
+   type ReportSnapshotData,
    updateCustomReport,
 } from "@packages/database/repositories/custom-report-repository";
 import { APIError } from "@packages/utils/errors";
@@ -75,7 +76,7 @@ export const customReportRouter = router({
          const endDate = new Date(input.endDate);
          const filterConfig = input.filterConfig || undefined;
 
-         let snapshotData;
+         let snapshotData: ReportSnapshotData;
 
          switch (input.type) {
             case "dre_gerencial":
@@ -195,10 +196,7 @@ export const customReportRouter = router({
          }
 
          // Only DRE reports can be exported as PDF
-         if (
-            report.type !== "dre_gerencial" &&
-            report.type !== "dre_fiscal"
-         ) {
+         if (report.type !== "dre_gerencial" && report.type !== "dre_fiscal") {
             throw APIError.validation(
                "Only DRE reports can be exported as PDF",
             );

@@ -38,16 +38,16 @@ import {
    FolderTree,
    Tag,
 } from "lucide-react";
-import { Cell, Pie, PieChart } from "recharts";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { Cell, Pie, PieChart } from "recharts";
 import { DefaultHeader } from "@/default/default-header";
 import { ManageCustomReportForm } from "@/features/custom-report/ui/manage-custom-report-form";
+import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
 import type {
    Category,
    Transaction,
 } from "@/features/transaction/ui/transaction-list";
-import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -302,28 +302,24 @@ function CategoryBreakdownSection({
          value: cat.income,
       }));
 
-   const expenseChartConfig = expenseChartData.reduce(
-      (acc, item) => {
-         acc[item.category] = { color: item.color, label: item.category };
-         return acc;
-      },
-      {} as ChartConfig,
-   );
+   const expenseChartConfig = expenseChartData.reduce((acc, item) => {
+      acc[item.category] = { color: item.color, label: item.category };
+      return acc;
+   }, {} as ChartConfig);
 
-   const incomeChartConfig = incomeChartData.reduce(
-      (acc, item) => {
-         acc[item.category] = { color: item.color, label: item.category };
-         return acc;
-      },
-      {} as ChartConfig,
-   );
+   const incomeChartConfig = incomeChartData.reduce((acc, item) => {
+      acc[item.category] = { color: item.color, label: item.category };
+      return acc;
+   }, {} as ChartConfig);
 
    return (
       <div className="grid gap-4 md:grid-cols-2">
          {incomeChartData.length > 0 && (
             <Card>
                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Receitas por Categoria</CardTitle>
+                  <CardTitle className="text-base">
+                     Receitas por Categoria
+                  </CardTitle>
                   <CardDescription>
                      Distribuição das receitas do período
                   </CardDescription>
@@ -385,7 +381,9 @@ function CategoryBreakdownSection({
          {expenseChartData.length > 0 && (
             <Card>
                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">Despesas por Categoria</CardTitle>
+                  <CardTitle className="text-base">
+                     Despesas por Categoria
+                  </CardTitle>
                   <CardDescription>
                      Distribuição das despesas do período
                   </CardDescription>
@@ -564,7 +562,9 @@ function CustomReportDetailsContent() {
                   </Button>
                </>
             }
-            description={report.description || "Relatório financeiro personalizado"}
+            description={
+               report.description || "Relatório financeiro personalizado"
+            }
             title={report.name}
          />
 
@@ -612,15 +612,18 @@ function CustomReportDetailsContent() {
                         </CardDescription>
                      </CardHeader>
                      <CardContent>
-                        <DRETable snapshotData={snapshotData} type={report.type} />
+                        <DRETable
+                           snapshotData={snapshotData}
+                           type={report.type}
+                        />
                      </CardContent>
                   </Card>
                   <Card>
                      <CardHeader>
-                        <CardTitle className="text-base">Resumo do Período</CardTitle>
-                        <CardDescription>
-                           {periodLabel}
-                        </CardDescription>
+                        <CardTitle className="text-base">
+                           Resumo do Período
+                        </CardTitle>
+                        <CardDescription>{periodLabel}</CardDescription>
                      </CardHeader>
                      <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -628,7 +631,10 @@ function CustomReportDetailsContent() {
                               Receita Bruta
                            </p>
                            <p className="text-2xl font-bold text-emerald-600">
-                              +{formatDecimalCurrency(snapshotData.summary.totalIncome)}
+                              +
+                              {formatDecimalCurrency(
+                                 snapshotData.summary.totalIncome,
+                              )}
                            </p>
                         </div>
                         <div className="space-y-2">
@@ -636,7 +642,10 @@ function CustomReportDetailsContent() {
                               Despesas Totais
                            </p>
                            <p className="text-2xl font-bold text-destructive">
-                              -{formatDecimalCurrency(snapshotData.summary.totalExpenses)}
+                              -
+                              {formatDecimalCurrency(
+                                 snapshotData.summary.totalExpenses,
+                              )}
                            </p>
                         </div>
                         <div className="border-t pt-4 space-y-2">
@@ -651,7 +660,9 @@ function CustomReportDetailsContent() {
                               }`}
                            >
                               {snapshotData.summary.netResult >= 0 ? "+" : ""}
-                              {formatDecimalCurrency(snapshotData.summary.netResult)}
+                              {formatDecimalCurrency(
+                                 snapshotData.summary.netResult,
+                              )}
                            </p>
                            <Badge
                               variant={
@@ -672,7 +683,9 @@ function CustomReportDetailsContent() {
                               </p>
                               <div className="grid grid-cols-2 gap-2 text-sm">
                                  <div>
-                                    <p className="text-muted-foreground">Previsto</p>
+                                    <p className="text-muted-foreground">
+                                       Previsto
+                                    </p>
                                     <p className="font-medium">
                                        {formatDecimalCurrency(
                                           snapshotData.dreLines.find(
@@ -682,12 +695,16 @@ function CustomReportDetailsContent() {
                                     </p>
                                  </div>
                                  <div>
-                                    <p className="text-muted-foreground">Variação</p>
+                                    <p className="text-muted-foreground">
+                                       Variação
+                                    </p>
                                     <p
                                        className={`font-medium ${
-                                          (snapshotData.dreLines.find(
-                                             (l) => l.code === "9",
-                                          )?.variance || 0) >= 0
+                                          (
+                                             snapshotData.dreLines.find(
+                                                (l) => l.code === "9",
+                                             )?.variance || 0
+                                          ) >= 0
                                              ? "text-emerald-600"
                                              : "text-destructive"
                                        }`}

@@ -175,7 +175,10 @@ export function createCustomReportColumns(
       {
          accessorKey: "createdAt",
          cell: ({ row }) => {
-            return formatDate(new Date(row.getValue("createdAt")), "DD MMM YYYY");
+            return formatDate(
+               new Date(row.getValue("createdAt")),
+               "DD MMM YYYY",
+            );
          },
          enableSorting: false,
          header: "Criado em",

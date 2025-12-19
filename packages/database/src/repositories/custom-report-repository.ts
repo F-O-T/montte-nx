@@ -5,8 +5,8 @@ import type { DatabaseInstance } from "../client";
 import { bankAccount } from "../schemas/bank-accounts";
 import { bill } from "../schemas/bills";
 import { category, transactionCategory } from "../schemas/categories";
-import { counterparty } from "../schemas/counterparties";
 import { costCenter } from "../schemas/cost-centers";
+import { counterparty } from "../schemas/counterparties";
 import {
    type BudgetVsActualSnapshotData,
    type CashFlowForecastSnapshotData,
@@ -32,6 +32,7 @@ export type {
    CustomReport,
    DRESnapshotData,
    ReportFilterConfig,
+   ReportSnapshotData,
    ReportType,
    SpendingTrendsSnapshotData,
 };
@@ -1249,7 +1250,10 @@ export async function generateBudgetVsActualData(
       // Get budgets for the organization
       const budgets = await dbClient.query.budget.findMany({
          where: (b, { eq: eqOp, and: andOp }) =>
-            andOp(eqOp(b.organizationId, organizationId), eqOp(b.isActive, true)),
+            andOp(
+               eqOp(b.organizationId, organizationId),
+               eqOp(b.isActive, true),
+            ),
          with: {
             periods: {
                where: (p, { and: andOp, gte: gteOp, lte: lteOp }) =>
@@ -1386,7 +1390,8 @@ export async function generateBudgetVsActualData(
       }
 
       // Monthly breakdown
-      const monthlyBreakdown: BudgetVsActualSnapshotData["monthlyBreakdown"] = [];
+      const monthlyBreakdown: BudgetVsActualSnapshotData["monthlyBreakdown"] =
+         [];
       const monthlyActual = await dbClient
          .select({
             amount: sql<number>`COALESCE(SUM(CAST(${transaction.amount} AS REAL)), 0)`,
@@ -1511,8 +1516,7 @@ export async function generateSpendingTrendsData(
          year: monthlyDataFormatted[0]?.year ?? new Date().getFullYear(),
       };
       let lowestExpenseMonth = {
-         amount:
-            monthlyDataFormatted[0]?.expenses ?? Number.POSITIVE_INFINITY,
+         amount: monthlyDataFormatted[0]?.expenses ?? Number.POSITIVE_INFINITY,
          month: monthlyDataFormatted[0]?.month ?? "01",
          year: monthlyDataFormatted[0]?.year ?? new Date().getFullYear(),
       };
@@ -1553,7 +1557,8 @@ export async function generateSpendingTrendsData(
 
       if (firstHalfExpenses > 0) {
          trendPercent =
-            ((secondHalfExpenses - firstHalfExpenses) / firstHalfExpenses) * 100;
+            ((secondHalfExpenses - firstHalfExpenses) / firstHalfExpenses) *
+            100;
          if (trendPercent > 5) trend = "increasing";
          else if (trendPercent < -5) trend = "decreasing";
       }
@@ -1589,7 +1594,11 @@ export async function generateSpendingTrendsData(
          {
             categoryColor: string;
             categoryName: string;
-            monthlyAmounts: Array<{ month: string; year: number; amount: number }>;
+            monthlyAmounts: Array<{
+               month: string;
+               year: number;
+               amount: number;
+            }>;
             totalAmount: number;
          }
       >();
@@ -1947,7 +1956,9 @@ export async function generateCounterpartyAnalysisData(
             stats.counterpartyType === "both"
          ) {
             entry.percentOfTotal =
-               totalReceived > 0 ? (stats.totalAmount / totalReceived) * 100 : 0;
+               totalReceived > 0
+                  ? (stats.totalAmount / totalReceived) * 100
+                  : 0;
             customers.push(entry);
          }
          if (

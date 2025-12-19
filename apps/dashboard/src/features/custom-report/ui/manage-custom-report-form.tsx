@@ -1,4 +1,8 @@
-import { Alert, AlertDescription, AlertTitle } from "@packages/ui/components/alert";
+import {
+   Alert,
+   AlertDescription,
+   AlertTitle,
+} from "@packages/ui/components/alert";
 import { Button } from "@packages/ui/components/button";
 import {
    Choicebox,
@@ -61,7 +65,8 @@ const reportTypeConfig = {
       label: "Budget vs Atual",
    },
    cash_flow_forecast: {
-      description: "Projeção de fluxo de caixa baseado em contas a pagar/receber",
+      description:
+         "Projeção de fluxo de caixa baseado em contas a pagar/receber",
       icon: Wallet,
       label: "Fluxo de Caixa",
    },
@@ -607,7 +612,11 @@ function CreateReportForm() {
                         ).map(([value, config]) => {
                            const Icon = config.icon;
                            return (
-                              <ChoiceboxItem id={value} key={value} value={value}>
+                              <ChoiceboxItem
+                                 id={value}
+                                 key={value}
+                                 value={value}
+                              >
                                  <div className="flex items-center gap-3 p-1">
                                     <Icon className="size-5 text-muted-foreground shrink-0" />
                                     <ChoiceboxItemHeader className="flex-1 min-w-0">
