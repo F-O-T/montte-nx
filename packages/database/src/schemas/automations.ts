@@ -106,11 +106,13 @@ export type ActionConfig = {
    reason?: string;
 };
 
-export type Action = {
-   id: string;
+/**
+ * Consequence type aligned with @f-o-t/rules-engine
+ * Replaces the old Action type
+ */
+export type Consequence = {
    type: ActionType;
-   config: ActionConfig;
-   continueOnError?: boolean;
+   payload: ActionConfig;
 };
 
 export type FlowData = {
@@ -126,18 +128,21 @@ export type FlowData = {
 export const automationRule = pgTable(
    "automation_rule",
    {
-      actions: jsonb("actions").$type<Action[]>().notNull().default([]),
       category: text("category"),
-      conditions: jsonb("conditions")
-         .$type<ConditionGroup[]>()
+      // Changed from ConditionGroup[] to single ConditionGroup (aligned with rules-engine)
+      conditions: jsonb("conditions").$type<ConditionGroup>().notNull(),
+      // Renamed from actions to consequences (aligned with rules-engine)
+      consequences: jsonb("consequences")
+         .$type<Consequence[]>()
          .notNull()
          .default([]),
       createdAt: timestamp("created_at").defaultNow().notNull(),
       createdBy: uuid("created_by").references(() => user.id),
       description: text("description"),
+      // Renamed from isActive to enabled (aligned with rules-engine)
+      enabled: boolean("enabled").notNull().default(true),
       flowData: jsonb("flow_data").$type<FlowData>(),
       id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
-      isActive: boolean("is_active").notNull().default(true),
       metadata: jsonb("metadata")
          .$type<Record<string, unknown>>()
          .notNull()
@@ -147,7 +152,8 @@ export const automationRule = pgTable(
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),
       priority: integer("priority").notNull().default(0),
-      stopOnFirstMatch: boolean("stop_on_first_match").default(false),
+      // Renamed from stopOnFirstMatch to stopOnMatch (aligned with rules-engine)
+      stopOnMatch: boolean("stop_on_match").default(false),
       tags: text("tags").array().notNull().default([]),
       triggerConfig: jsonb("trigger_config").$type<TriggerConfig>().default({}),
       triggerType: text("trigger_type").$type<TriggerType>().notNull(),
@@ -161,14 +167,11 @@ export const automationRule = pgTable(
          table.organizationId,
          table.name,
       ),
-      index("idx_automation_rule_org_active").on(
+      index("idx_automation_rule_org_enabled").on(
          table.organizationId,
-         table.isActive,
+         table.enabled,
       ),
-      index("idx_automation_rule_trigger").on(
-         table.triggerType,
-         table.isActive,
-      ),
+      index("idx_automation_rule_trigger").on(table.triggerType, table.enabled),
       index("idx_automation_rule_category").on(table.category),
    ],
 );
@@ -185,8 +188,8 @@ export type ConditionEvaluationLogResult = {
    expectedValue?: unknown;
 };
 
-export type ActionExecutionLogResult = {
-   actionId: string;
+export type ConsequenceExecutionLogResult = {
+   consequenceIndex: number;
    type: ActionType;
    success: boolean;
    result?: unknown;
@@ -196,8 +199,9 @@ export type ActionExecutionLogResult = {
 export const automationLog = pgTable(
    "automation_log",
    {
-      actionsExecuted:
-         jsonb("actions_executed").$type<ActionExecutionLogResult[]>(),
+      consequencesExecuted: jsonb("consequences_executed").$type<
+         ConsequenceExecutionLogResult[]
+      >(),
       completedAt: timestamp("completed_at"),
       conditionsEvaluated: jsonb("conditions_evaluated").$type<
          ConditionEvaluationLogResult[]
@@ -270,12 +274,12 @@ export type AutomationRuleVersionSnapshot = {
    description?: string | null;
    triggerType: TriggerType;
    triggerConfig: TriggerConfig;
-   conditions: ConditionGroup[];
-   actions: Action[];
+   conditions: ConditionGroup;
+   consequences: Consequence[];
    flowData?: FlowData | null;
-   isActive: boolean;
+   enabled: boolean;
    priority: number;
-   stopOnFirstMatch?: boolean | null;
+   stopOnMatch?: boolean | null;
    tags: string[];
    category?: string | null;
    metadata: Record<string, unknown>;

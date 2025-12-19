@@ -150,8 +150,12 @@ export function createBankAccountColumns(): ColumnDef<BankAccount>[] {
                   </AnnouncementTag>
                   <AnnouncementTitle style={{ color }}>
                      {isActive
-                        ? translate("dashboard.routes.bank-accounts.status.active")
-                        : translate("dashboard.routes.bank-accounts.status.inactive")}
+                        ? translate(
+                             "dashboard.routes.bank-accounts.status.active",
+                          )
+                        : translate(
+                             "dashboard.routes.bank-accounts.status.inactive",
+                          )}
                   </AnnouncementTitle>
                </Announcement>
             );
@@ -381,7 +385,9 @@ export function BankAccountMobileCard({
                <AnnouncementTitle style={{ color: statusColor }}>
                   {isActive
                      ? translate("dashboard.routes.bank-accounts.status.active")
-                     : translate("dashboard.routes.bank-accounts.status.inactive")}
+                     : translate(
+                          "dashboard.routes.bank-accounts.status.inactive",
+                       )}
                </AnnouncementTitle>
             </Announcement>
             <Announcement>

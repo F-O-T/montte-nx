@@ -21,7 +21,16 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, Tooltip, XAxis, YAxis } from "recharts";
+import {
+   Bar,
+   BarChart,
+   CartesianGrid,
+   Cell,
+   LabelList,
+   Tooltip,
+   XAxis,
+   YAxis,
+} from "recharts";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -94,7 +103,9 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
       if (!hasSplit || !categories.length) return [];
 
       return categories.map(({ category }) => {
-         const split = categorySplits?.find((s) => s.categoryId === category.id);
+         const split = categorySplits?.find(
+            (s) => s.categoryId === category.id,
+         );
          const splitValue = split?.value || 0;
          const percentage = Math.round((splitValue / totalAmount) * 100);
 
@@ -147,7 +158,9 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
       <Card>
          <CardHeader>
             <CardTitle>Categorização</CardTitle>
-            <CardDescription>Categorias, tags e centro de custo</CardDescription>
+            <CardDescription>
+               Categorias, tags e centro de custo
+            </CardDescription>
          </CardHeader>
          <CardContent className="space-y-4">
             {hasCategories && hasSplit && (
@@ -173,7 +186,9 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
                                  />
                                  {entry.name}
                               </AnnouncementTag>
-                              <AnnouncementTitle>{entry.percentage}%</AnnouncementTitle>
+                              <AnnouncementTitle>
+                                 {entry.percentage}%
+                              </AnnouncementTitle>
                            </Announcement>
                         </Link>
                      ))}
@@ -193,10 +208,9 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
                            margin={{ right: 50 }}
                         >
                            <CartesianGrid horizontal={false} />
-                           <YAxis dataKey="name" type="category" hide />
-                           <XAxis dataKey="value" type="number" hide />
+                           <YAxis dataKey="name" hide type="category" />
+                           <XAxis dataKey="value" hide type="number" />
                            <Tooltip
-                              cursor={false}
                               content={({ active, payload }) => {
                                  if (!active || !payload?.length) return null;
                                  const firstPayload = payload[0];
@@ -218,30 +232,34 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
                                           {data.name}
                                        </AnnouncementTag>
                                        <AnnouncementTitle>
-                                          {data.percentage}% • {formatDecimalCurrency(data.value)}
+                                          {data.percentage}% •{" "}
+                                          {formatDecimalCurrency(data.value)}
                                        </AnnouncementTitle>
                                     </Announcement>
                                  );
                               }}
+                              cursor={false}
                            />
                            <Bar dataKey="value" layout="vertical" radius={4}>
                               {chartData.map((entry) => (
                                  <Cell fill={entry.color} key={entry.id} />
                               ))}
                               <LabelList
-                                 dataKey="name"
-                                 position="insideLeft"
-                                 offset={8}
                                  className="fill-(--color-label)"
+                                 dataKey="name"
                                  fontSize={12}
+                                 offset={8}
+                                 position="insideLeft"
                               />
                               <LabelList
-                                 dataKey="value"
-                                 position="right"
-                                 offset={8}
                                  className="fill-foreground"
+                                 dataKey="value"
                                  fontSize={12}
-                                 formatter={(value: number) => formatDecimalCurrency(value)}
+                                 formatter={(value: number) =>
+                                    formatDecimalCurrency(value)
+                                 }
+                                 offset={8}
+                                 position="right"
                               />
                            </Bar>
                         </BarChart>
@@ -285,7 +303,9 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                   {hasTags && (
                      <div className="flex flex-col gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">Tags</span>
+                        <span className="text-xs font-medium text-muted-foreground">
+                           Tags
+                        </span>
                         <div className="flex flex-wrap gap-1.5">
                            {tags.map((transactionTag) => (
                               <Link
@@ -295,7 +315,10 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
                               >
                                  <Badge
                                     className="cursor-pointer hover:opacity-80 transition-opacity"
-                                    style={{ backgroundColor: transactionTag.tag.color }}
+                                    style={{
+                                       backgroundColor:
+                                          transactionTag.tag.color,
+                                    }}
                                  >
                                     {transactionTag.tag.name}
                                  </Badge>
@@ -311,14 +334,20 @@ function CategorizationContent({ transactionId }: { transactionId: string }) {
 
                   {hasCostCenter && (
                      <div className="flex flex-col gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">Centro de Custo</span>
+                        <span className="text-xs font-medium text-muted-foreground">
+                           Centro de Custo
+                        </span>
                         <Link
                            params={{ slug, costCenterId: costCenter.id }}
                            to="/$slug/cost-centers/$costCenterId"
                         >
                            <Announcement className="cursor-pointer hover:opacity-80 transition-opacity">
-                              <AnnouncementTag>{costCenter.code || "—"}</AnnouncementTag>
-                              <AnnouncementTitle>{costCenter.name}</AnnouncementTitle>
+                              <AnnouncementTag>
+                                 {costCenter.code || "—"}
+                              </AnnouncementTag>
+                              <AnnouncementTitle>
+                                 {costCenter.name}
+                              </AnnouncementTitle>
                            </Announcement>
                         </Link>
                      </div>

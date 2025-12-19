@@ -84,8 +84,8 @@ function TransferCardContent({ transactionId }: { transactionId: string }) {
             </CardHeader>
             <CardContent>
                <p className="text-muted-foreground text-sm">
-                  Esta transação é uma transferência, mas os detalhes do
-                  vínculo não foram encontrados.
+                  Esta transação é uma transferência, mas os detalhes do vínculo
+                  não foram encontrados.
                </p>
             </CardContent>
          </Card>

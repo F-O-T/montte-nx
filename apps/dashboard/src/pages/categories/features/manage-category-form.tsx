@@ -12,6 +12,7 @@ import {
 } from "@packages/ui/components/color-picker";
 import {
    Field,
+   FieldDescription,
    FieldError,
    FieldGroup,
    FieldLabel,
@@ -32,10 +33,13 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import Color from "color";
 import { useMemo } from "react";
+import { TransactionTypesSelector } from "@/features/category/ui/transaction-types-selector";
 import { IconSelector } from "@/features/icon-selector/icon-selector";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
+
+type TransactionType = "income" | "expense" | "transfer";
 
 type ManageCategoryFormProps = {
    category?: Category;
@@ -93,6 +97,12 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
          color: category?.color || "#000000",
          icon: category?.icon as IconName | undefined,
          name: category?.name || "",
+         transactionTypes:
+            (category?.transactionTypes as TransactionType[]) || [
+               "income",
+               "expense",
+               "transfer",
+            ],
       },
       onSubmit: async ({ value }) => {
          if (!value.name || !value.color) {
@@ -106,6 +116,7 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
                      color: value.color,
                      icon: value.icon,
                      name: value.name,
+                     transactionTypes: value.transactionTypes,
                   },
                   id: category.id,
                });
@@ -114,6 +125,7 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
                   color: value.color,
                   icon: value.icon,
                   name: value.name,
+                  transactionTypes: value.transactionTypes,
                });
             }
          } catch (error) {
@@ -258,6 +270,34 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
                               onValueChange={field.handleChange}
                               value={field.state.value}
                            />
+                           {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                           )}
+                        </Field>
+                     );
+                  }}
+               </form.Field>
+            </FieldGroup>
+
+            <FieldGroup>
+               <form.Field name="transactionTypes">
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                     return (
+                        <Field data-invalid={isInvalid}>
+                           <FieldLabel>
+                              {translate("common.form.transaction-types.label")}
+                           </FieldLabel>
+                           <TransactionTypesSelector
+                              onChange={field.handleChange}
+                              value={field.state.value || []}
+                           />
+                           <FieldDescription>
+                              {translate(
+                                 "common.form.transaction-types.description",
+                              )}
+                           </FieldDescription>
                            {isInvalid && (
                               <FieldError errors={field.state.meta.errors} />
                            )}

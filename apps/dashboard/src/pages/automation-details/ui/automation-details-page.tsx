@@ -1,6 +1,6 @@
 import type {
-   Action,
    ConditionGroup,
+   Consequence,
    TriggerType,
 } from "@packages/database/schema";
 import { Button } from "@packages/ui/components/button";
@@ -36,10 +36,10 @@ function formatTimestamp(date: Date): string {
 
 type AutomationSettings = {
    description: string;
-   isActive: boolean;
+   enabled: boolean;
    name: string;
    priority: number;
-   stopOnFirstMatch: boolean;
+   stopOnMatch: boolean;
    triggerType: TriggerType;
 };
 
@@ -115,17 +115,17 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
 
    const [settings, setSettings] = useState<AutomationSettings>({
       description: automation.description || "",
-      isActive: automation.isActive,
+      enabled: automation.enabled,
       name: automation.name,
       priority: automation.priority,
-      stopOnFirstMatch: automation.stopOnFirstMatch ?? false,
+      stopOnMatch: automation.stopOnMatch ?? false,
       triggerType: automation.triggerType as TriggerType,
    });
 
    const initialFlowData = schemaToFlowData(
       automation.triggerType as TriggerType,
-      automation.conditions as ConditionGroup[],
-      automation.actions as Action[],
+      automation.conditions as ConditionGroup,
+      automation.consequences as Consequence[],
       automation.flowData as { nodes: unknown[]; edges: unknown[] } | null,
    );
 
@@ -179,17 +179,17 @@ function AutomationDetailsContent({ automationId }: { automationId: string }) {
 
       updateMutation.mutate({
          data: {
-            actions: schemaData.actions as Action[],
-            conditions: schemaData.conditions as ConditionGroup[],
+            consequences: schemaData.consequences as Consequence[],
+            conditions: schemaData.conditions as ConditionGroup,
             description: currentSettings.description || null,
             flowData: {
                edges: currentEdges as unknown[],
                nodes: currentNodes as unknown[],
             },
-            isActive: currentSettings.isActive,
+            enabled: currentSettings.enabled,
             name: currentSettings.name || "Automação sem nome",
             priority: currentSettings.priority,
-            stopOnFirstMatch: currentSettings.stopOnFirstMatch,
+            stopOnMatch: currentSettings.stopOnMatch,
             triggerType: currentSettings.triggerType,
          },
          id: automationId,

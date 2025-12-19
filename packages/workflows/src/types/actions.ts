@@ -1,10 +1,10 @@
 import type {
-   Action,
-   ActionConfig,
-   ActionType,
+	ActionConfig,
+	ActionType,
+	Consequence,
 } from "@packages/database/schema";
 
-export type { Action, ActionConfig, ActionType };
+export type { ActionConfig, ActionType, Consequence };
 
 export type ActionCategory =
    | "categorization"
@@ -337,26 +337,33 @@ export type ActionExecutionContext = {
 };
 
 export type ActionExecutionResult = {
-   actionId: string;
-   type: ActionType;
-   success: boolean;
-   result?: unknown;
-   error?: string;
-   skipped?: boolean;
-   skipReason?: string;
+	consequenceIndex?: number;
+	type: string;
+	success: boolean;
+	result?: unknown;
+	error?: string;
+	skipped?: boolean;
+	skipReason?: string;
 };
 
-export function createAction(
-   type: ActionType,
-   config: ActionConfig,
-   continueOnError?: boolean,
-): Action {
-   return {
-      config,
-      continueOnError,
-      id: crypto.randomUUID(),
-      type,
-   };
+export type ConsequenceExecutionResult = {
+	consequenceIndex: number;
+	type: string;
+	success: boolean;
+	result?: unknown;
+	error?: string;
+	skipped?: boolean;
+	skipReason?: string;
+};
+
+export function createConsequence(
+	type: ActionType,
+	payload: ActionConfig,
+): Consequence {
+	return {
+		payload,
+		type,
+	};
 }
 
 export function getActionDefinition(

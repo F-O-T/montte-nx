@@ -1,13 +1,18 @@
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { category, transactionCategory } from "../schemas/categories";
+import {
+   category,
+   type TransactionTypeValue,
+   transactionCategory,
+} from "../schemas/categories";
 import { transaction } from "../schemas/transactions";
 
 export type Category = typeof category.$inferSelect;
 export type NewCategory = typeof category.$inferInsert;
 export type TransactionCategory = typeof transactionCategory.$inferSelect;
 export type NewTransactionCategory = typeof transactionCategory.$inferInsert;
+export type { TransactionTypeValue } from "../schemas/categories";
 
 export async function createCategory(
    dbClient: DatabaseInstance,
@@ -65,6 +70,31 @@ export async function findCategoriesByOrganizationId(
       propagateError(err);
       throw AppError.database(
          `Failed to find categories by organization id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findCategoriesByTransactionType(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+   transactionType: TransactionTypeValue,
+) {
+   try {
+      const result = await dbClient
+         .select()
+         .from(category)
+         .where(
+            and(
+               eq(category.organizationId, organizationId),
+               sql`${category.transactionTypes} @> ARRAY[${transactionType}]::text[]`,
+            ),
+         )
+         .orderBy(category.name);
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find categories by transaction type: ${(err as Error).message}`,
       );
    }
 }
@@ -413,6 +443,7 @@ export async function findCategoriesByTransactionId(
             id: category.id,
             name: category.name,
             organizationId: category.organizationId,
+            transactionTypes: category.transactionTypes,
             updatedAt: category.updatedAt,
          })
          .from(transactionCategory)

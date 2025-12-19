@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import type {
    TransactionEventData,
    WorkflowEvent,
@@ -9,7 +9,7 @@ type AutomationRule = {
    organizationId: string;
    name: string;
    description: string | null;
-   isActive: boolean;
+   enabled: boolean;
    trigger: unknown;
    conditions: unknown;
    priority: number;
@@ -48,17 +48,12 @@ export function createTestEvent(
    };
 }
 
-export function createTestAction(overrides: Partial<Action> = {}): Action {
+export function createTestConsequence(overrides: Partial<Consequence> = {}): Consequence {
    return {
-      id: `action-${Date.now()}`,
-      automationRuleId: "rule-123",
       type: "set_category",
-      config: { categoryId: "cat-123" },
-      order: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      payload: { categoryId: "cat-123" },
       ...overrides,
-   } as Action;
+   } as Consequence;
 }
 
 export function createTestRule(
@@ -69,7 +64,7 @@ export function createTestRule(
       organizationId: "org-123",
       name: "Test Rule",
       description: "A test automation rule",
-      isActive: true,
+      enabled: true,
       trigger: {
          type: "transaction.created",
          config: {},
@@ -90,49 +85,49 @@ export function createTestRule(
    } as AutomationRule;
 }
 
-export function createSetCategoryAction(categoryId = "cat-123"): Action {
-   return createTestAction({
+export function createSetCategoryConsequence(categoryId = "cat-123"): Consequence {
+   return createTestConsequence({
       type: "set_category",
-      config: { categoryId },
+      payload: { categoryId },
    });
 }
 
-export function createAddTagAction(tagId = "tag-123"): Action {
-   return createTestAction({
+export function createAddTagConsequence(tagId = "tag-123"): Consequence {
+   return createTestConsequence({
       type: "add_tag",
-      config: { tagIds: [tagId] },
+      payload: { tagIds: [tagId] },
    });
 }
 
-export function createRemoveTagAction(tagId = "tag-123"): Action {
-   return createTestAction({
+export function createRemoveTagConsequence(tagId = "tag-123"): Consequence {
+   return createTestConsequence({
       type: "remove_tag",
-      config: { tagIds: [tagId] },
+      payload: { tagIds: [tagId] },
    });
 }
 
-export function createSetCostCenterAction(costCenterId = "cost-123"): Action {
-   return createTestAction({
+export function createSetCostCenterConsequence(costCenterId = "cost-123"): Consequence {
+   return createTestConsequence({
       type: "set_cost_center",
-      config: { costCenterId },
+      payload: { costCenterId },
    });
 }
 
-export function createUpdateDescriptionAction(
+export function createUpdateDescriptionConsequence(
    value = "Updated: {{description}}",
-): Action {
-   return createTestAction({
+): Consequence {
+   return createTestConsequence({
       type: "update_description",
-      config: { value, template: true },
+      payload: { value, template: true },
    });
 }
 
-export function createCreateTransactionAction(
+export function createCreateTransactionConsequence(
    config: Record<string, unknown> = {},
-): Action {
-   return createTestAction({
+): Consequence {
+   return createTestConsequence({
       type: "create_transaction",
-      config: {
+      payload: {
          type: "expense",
          amountFixed: 100,
          description: "Created by workflow",
@@ -141,12 +136,12 @@ export function createCreateTransactionAction(
    });
 }
 
-export function createSendEmailAction(
+export function createSendEmailConsequence(
    config: Record<string, unknown> = {},
-): Action {
-   return createTestAction({
+): Consequence {
+   return createTestConsequence({
       type: "send_email",
-      config: {
+      payload: {
          to: "owner",
          subject: "Test Subject",
          body: "<p>Test body</p>",
@@ -155,12 +150,12 @@ export function createSendEmailAction(
    });
 }
 
-export function createSendPushNotificationAction(
+export function createSendPushNotificationConsequence(
    config: Record<string, unknown> = {},
-): Action {
-   return createTestAction({
+): Consequence {
+   return createTestConsequence({
       type: "send_push_notification",
-      config: {
+      payload: {
          title: "Test Title",
          body: "Test notification body",
          ...config,
@@ -168,10 +163,10 @@ export function createSendPushNotificationAction(
    });
 }
 
-export function createStopExecutionAction(reason = "Stop reason"): Action {
-   return createTestAction({
+export function createStopExecutionConsequence(reason = "Stop reason"): Consequence {
+   return createTestConsequence({
       type: "stop_execution",
-      config: { reason },
+      payload: { reason },
    });
 }
 

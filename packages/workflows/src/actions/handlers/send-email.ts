@@ -1,5 +1,5 @@
 import { getOrganizationMembers } from "@packages/database/repositories/auth-repository";
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { createTemplateContext, renderTemplate } from "../../utils/template";
 import {
    type ActionHandler,
@@ -13,11 +13,11 @@ const EMAIL_FROM = "Montte <suporte@mail.montte.co>";
 export const sendEmailHandler: ActionHandler = {
    type: "send_email",
 
-   async execute(action: Action, context: ActionHandlerContext) {
-      const { to, customEmail, subject, body } = action.config;
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
+      const { to, customEmail, subject, body } = consequence.payload;
 
       if (!subject || !body) {
-         return createSkippedResult(action, "Subject and body are required");
+         return createSkippedResult(consequence, "Subject and body are required");
       }
 
       const templateContext = createTemplateContext(context.eventData);
@@ -37,7 +37,7 @@ export const sendEmailHandler: ActionHandler = {
 
          if (!owner?.user?.email) {
             return createActionResult(
-               action,
+               consequence,
                false,
                undefined,
                "Organization owner email not found",
@@ -47,7 +47,7 @@ export const sendEmailHandler: ActionHandler = {
       }
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             body: processedBody,
             dryRun: true,
             subject: processedSubject,
@@ -57,7 +57,7 @@ export const sendEmailHandler: ActionHandler = {
 
       if (!context.resendClient) {
          return createActionResult(
-            action,
+            consequence,
             false,
             undefined,
             "Email client not configured",
@@ -72,7 +72,7 @@ export const sendEmailHandler: ActionHandler = {
             to: recipientEmail,
          });
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             body: processedBody,
             subject: processedSubject,
             to: recipientEmail,
@@ -80,7 +80,7 @@ export const sendEmailHandler: ActionHandler = {
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

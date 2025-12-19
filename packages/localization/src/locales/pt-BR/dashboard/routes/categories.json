@@ -125,6 +125,14 @@
       "total-categories": {
          "description": "Número total de categorias que você criou.",
          "title": "Total de categorias"
+      },
+      "total-expenses": {
+         "description": "Total de despesas em todas as categorias.",
+         "title": "Total de Despesas"
+      },
+      "total-income": {
+         "description": "Total de receitas em todas as categorias.",
+         "title": "Total de Receitas"
       }
    },
    "table": {

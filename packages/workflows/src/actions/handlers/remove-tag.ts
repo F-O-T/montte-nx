@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { transactionTag } from "@packages/database/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import {
@@ -11,17 +11,17 @@ import {
 export const removeTagHandler: ActionHandler = {
    type: "remove_tag",
 
-   async execute(action: Action, context: ActionHandlerContext) {
-      const { tagIds } = action.config;
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
+      const { tagIds } = consequence.payload;
       const transactionId = context.eventData.id as string;
 
       if (!tagIds || tagIds.length === 0) {
-         return createSkippedResult(action, "No tag IDs provided");
+         return createSkippedResult(consequence, "No tag IDs provided");
       }
 
       if (!transactionId) {
          return createActionResult(
-            action,
+            consequence,
             false,
             undefined,
             "No transaction ID in event data",
@@ -29,7 +29,7 @@ export const removeTagHandler: ActionHandler = {
       }
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             dryRun: true,
             tagIds,
             transactionId,
@@ -47,7 +47,7 @@ export const removeTagHandler: ActionHandler = {
             )
             .returning();
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             removedCount: result.length,
             tagIds,
             transactionId,
@@ -55,7 +55,7 @@ export const removeTagHandler: ActionHandler = {
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

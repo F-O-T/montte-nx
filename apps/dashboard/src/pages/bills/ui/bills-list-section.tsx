@@ -43,17 +43,17 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import {
+   BillExpandedContent,
+   BillMobileCard,
+   createBillColumns,
+} from "@/features/bill/ui/bill-table-columns";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
 import { BillFilterCredenza } from "../features/bill-filter-credenza";
 import { useBillList } from "../features/bill-list-context";
 import { useBillBulkActions } from "../features/use-bill-bulk-actions";
-import {
-   BillExpandedContent,
-   BillMobileCard,
-   createBillColumns,
-} from "@/features/bill/ui/bill-table-columns";
 
 type BillsListSectionProps = {
    type?: "payable" | "receivable";

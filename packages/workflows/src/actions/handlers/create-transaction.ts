@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { transaction } from "@packages/database/schema";
 import {
    createTemplateContext,
@@ -15,7 +15,7 @@ import {
 export const createTransactionHandler: ActionHandler = {
    type: "create_transaction",
 
-   async execute(action: Action, context: ActionHandlerContext) {
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
       const {
          type,
          description,
@@ -23,21 +23,21 @@ export const createTransactionHandler: ActionHandler = {
          amountField,
          amountFixed,
          dateField,
-      } = action.config;
+      } = consequence.payload;
 
       if (type !== "income" && type !== "expense") {
          return createSkippedResult(
-            action,
+            consequence,
             "Transaction type must be 'income' or 'expense'",
          );
       }
 
       if (!description) {
-         return createSkippedResult(action, "Description is required");
+         return createSkippedResult(consequence, "Description is required");
       }
 
       if (!bankAccountId) {
-         return createSkippedResult(action, "Bank account ID is required");
+         return createSkippedResult(consequence, "Bank account ID is required");
       }
 
       let amount: number;
@@ -47,7 +47,7 @@ export const createTransactionHandler: ActionHandler = {
          const amountValue = getNestedValue(context.eventData, amountField);
          if (typeof amountValue !== "number") {
             return createActionResult(
-               action,
+               consequence,
                false,
                undefined,
                `Amount field "${amountField}" is not a number`,
@@ -55,7 +55,7 @@ export const createTransactionHandler: ActionHandler = {
          }
          amount = amountValue;
       } else {
-         return createSkippedResult(action, "No amount source provided");
+         return createSkippedResult(consequence, "No amount source provided");
       }
 
       const templateContext = createTemplateContext(context.eventData);
@@ -70,7 +70,7 @@ export const createTransactionHandler: ActionHandler = {
       }
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             amount,
             bankAccountId,
             date: transactionDate.toISOString(),
@@ -93,13 +93,13 @@ export const createTransactionHandler: ActionHandler = {
             })
             .returning();
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             createdTransaction: result[0],
          });
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

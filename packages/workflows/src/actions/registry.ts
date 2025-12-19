@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { addTagHandler } from "./handlers/add-tag";
 import { createTransactionHandler } from "./handlers/create-transaction";
 import { markAsTransferHandler } from "./handlers/mark-as-transfer";
@@ -11,7 +11,7 @@ import { stopExecutionHandler } from "./handlers/stop-execution";
 import { updateDescriptionHandler } from "./handlers/update-description";
 import type { ActionHandler } from "./types";
 
-type ActionType = Action["type"];
+type ActionType = Consequence["type"];
 
 const handlers = new Map<ActionType, ActionHandler>();
 

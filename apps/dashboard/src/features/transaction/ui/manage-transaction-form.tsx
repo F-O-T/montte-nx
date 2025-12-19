@@ -196,8 +196,24 @@ export function ManageTransactionForm({
       return createTexts;
    }, [isEditMode, isDuplicateMode, isRefundMode]);
 
+   // Determine the initial transaction type for category filtering
+   const initialTransactionType = useMemo(() => {
+      if (transaction?.type === "transfer") return "expense";
+      if (transaction?.type) return transaction.type as "expense" | "income";
+      if (duplicateFrom?.type) return duplicateFrom.type;
+      if (refundFrom?.type)
+         return refundFrom.type === "expense" ? "income" : "expense";
+      return "expense";
+   }, [transaction?.type, duplicateFrom?.type, refundFrom?.type]);
+
+   const [currentTransactionType, setCurrentTransactionType] = useState<
+      "expense" | "income"
+   >(initialTransactionType);
+
    const { data: categories = [] } = useQuery(
-      trpc.categories.getAll.queryOptions(),
+      trpc.categories.getByTransactionType.queryOptions({
+         type: currentTransactionType,
+      }),
    );
 
    const { data: bankAccounts = [] } = useQuery(
@@ -390,9 +406,11 @@ export function ManageTransactionForm({
    const handleCreateCategory = useCallback(
       async (name: string) => {
          try {
+            const transactionType = form.getFieldValue("type");
             const data = await createCategoryMutation.mutateAsync({
                color: getRandomColor(),
                name,
+               transactionTypes: [transactionType],
             });
 
             if (!data) return;
@@ -629,11 +647,13 @@ export function ManageTransactionForm({
                               {translate("common.form.type.label")}
                            </FieldLabel>
                            <Select
-                              onValueChange={(value) =>
-                                 field.handleChange(
-                                    value as "expense" | "income",
-                                 )
-                              }
+                              onValueChange={(value) => {
+                                 const typedValue = value as
+                                    | "expense"
+                                    | "income";
+                                 field.handleChange(typedValue);
+                                 setCurrentTransactionType(typedValue);
+                              }}
                               value={field.state.value}
                            >
                               <SelectTrigger id={field.name}>

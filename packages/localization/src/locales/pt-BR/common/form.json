@@ -97,6 +97,10 @@
    "items-per-page": {
       "label": "Itens por página"
    },
+   "metadata": {
+      "description": "Informações da categoria",
+      "title": "Metadados"
+   },
    "name": {
       "description": "Este campo é opcional",
       "label": "Nome",
@@ -149,6 +153,11 @@
    "to-account": {
       "label": "Conta de Destino",
       "placeholder": "Selecione a conta de destino"
+   },
+   "transaction-types": {
+      "description": "Selecione quais tipos de transação esta categoria se aplica",
+      "label": "Tipos de Transação",
+      "placeholder": "Selecione os tipos de transação"
    },
    "type": {
       "label": "Tipo",

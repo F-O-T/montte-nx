@@ -21,9 +21,9 @@ import { AmountAnnouncement } from "./amount-announcement";
 import type { Category, Transaction } from "./transaction-list";
 
 type CategorySplit = {
-	categoryId: string;
-	value: number;
-	splitType: "amount";
+   categoryId: string;
+   value: number;
+   splitType: "amount";
 };
 
 export function getCategoryDetails(
@@ -207,7 +207,9 @@ export function createSimilarTransactionColumns(
             );
          },
          enableSorting: false,
-         header: translate("dashboard.routes.transactions.table.columns.amount"),
+         header: translate(
+            "dashboard.routes.transactions.table.columns.amount",
+         ),
       },
       {
          cell: ({ row }) => (
@@ -336,7 +338,9 @@ export function createTransactionColumns(
             );
          },
          enableSorting: true,
-         header: translate("dashboard.routes.transactions.table.columns.amount"),
+         header: translate(
+            "dashboard.routes.transactions.table.columns.amount",
+         ),
       },
       {
          cell: ({ row }) => (

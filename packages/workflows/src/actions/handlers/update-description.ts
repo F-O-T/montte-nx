@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { transaction } from "@packages/database/schema";
 import { eq } from "drizzle-orm";
 import { createTemplateContext, renderTemplate } from "../../utils/template";
@@ -12,17 +12,17 @@ import {
 export const updateDescriptionHandler: ActionHandler = {
    type: "update_description",
 
-   async execute(action: Action, context: ActionHandlerContext) {
-      const { value, mode = "replace", template = true } = action.config;
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
+      const { value, mode = "replace", template = true } = consequence.payload;
       const transactionId = context.eventData.id as string;
 
       if (!value) {
-         return createSkippedResult(action, "No value provided");
+         return createSkippedResult(consequence, "No value provided");
       }
 
       if (!transactionId) {
          return createActionResult(
-            action,
+            consequence,
             false,
             undefined,
             "No transaction ID in event data",
@@ -50,7 +50,7 @@ export const updateDescriptionHandler: ActionHandler = {
       }
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             dryRun: true,
             newDescription,
             originalDescription: currentDescription,
@@ -67,14 +67,14 @@ export const updateDescriptionHandler: ActionHandler = {
 
          if (result.length === 0) {
             return createActionResult(
-               action,
+               consequence,
                false,
                undefined,
-               "Transaction not found",
+               "Transconsequence not found",
             );
          }
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             newDescription,
             originalDescription: currentDescription,
             transactionId,
@@ -82,7 +82,7 @@ export const updateDescriptionHandler: ActionHandler = {
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

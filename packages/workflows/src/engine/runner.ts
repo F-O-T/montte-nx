@@ -1,283 +1,457 @@
-import { evaluate } from "@f-o-t/condition-evaluator";
+import type {
+	AggregatedConsequence,
+	RuleInput,
+} from "@f-o-t/rules-engine";
 import type { DatabaseInstance } from "@packages/database/client";
 import { createAutomationLog } from "@packages/database/repositories/automation-log-repository";
 import { findActiveAutomationRulesByTrigger } from "@packages/database/repositories/automation-repository";
 import type {
-   ActionExecutionLogResult,
-   AutomationLogStatus,
-   ConditionEvaluationLogResult,
-   TriggerType,
+	ActionType,
+	AutomationLogStatus,
+	ConditionEvaluationLogResult,
+	ConsequenceExecutionLogResult,
+	TriggerType,
 } from "@packages/database/schema";
 import type { Resend } from "resend";
-import { executeActions } from "../actions/executor";
+import { executeConsequences } from "../actions/executor";
 import type { VapidConfig } from "../actions/types";
 import type { TransactionEventData, WorkflowEvent } from "../types/events";
 import type {
-   ExecutedAction,
-   RuleExecutionResult,
-   WorkflowExecutionResult,
-   WorkflowRule,
+	ExecutedConsequence,
+	RuleExecutionResult,
+	WorkflowExecutionResult,
+	WorkflowRule,
 } from "../types/rules";
 import { toWorkflowRule } from "../types/rules";
+import { adaptEventDataToContext } from "./adapter";
+import type { WorkflowConsequences } from "./consequence-definitions";
 import {
-   adaptConditionGroupsToEvaluator,
-   adaptEventDataToContext,
-} from "./adapter";
+	createWorkflowEngine,
+	type TransactionContext,
+	type WorkflowEngine,
+} from "./factory";
 
 export type WorkflowRunnerConfig = {
-   db: DatabaseInstance;
-   dryRun?: boolean;
-   resendClient?: Resend;
-   vapidConfig?: VapidConfig;
+	db: DatabaseInstance;
+	dryRun?: boolean;
+	resendClient?: Resend;
+	vapidConfig?: VapidConfig;
+	cacheEnabled?: boolean;
 };
 
 export type WorkflowRunner = {
-   processEvent: (event: WorkflowEvent) => Promise<WorkflowExecutionResult>;
-   processEventForRule: (
-      event: WorkflowEvent,
-      rule: WorkflowRule,
-   ) => Promise<RuleExecutionResult>;
+	processEvent: (event: WorkflowEvent) => Promise<WorkflowExecutionResult>;
+	processEventForRule: (
+		event: WorkflowEvent,
+		rule: WorkflowRule,
+	) => Promise<RuleExecutionResult>;
+	getEngine: () => WorkflowEngine;
 };
 
+/**
+ * Converts a WorkflowRule to the rules-engine RuleInput format.
+ */
+function toEngineRule(
+	rule: WorkflowRule,
+): RuleInput<TransactionContext, WorkflowConsequences> {
+	return {
+		category: rule.category ?? undefined,
+		conditions: rule.conditions,
+		consequences: rule.consequences.map((c) => ({
+			payload: c.payload,
+			type: c.type as keyof WorkflowConsequences,
+		})),
+		description: rule.description ?? undefined,
+		enabled: rule.enabled,
+		id: rule.id,
+		metadata: {
+			...rule.metadata,
+			organizationId: rule.organizationId,
+			triggerConfig: rule.triggerConfig,
+			triggerType: rule.triggerType,
+		},
+		name: rule.name,
+		priority: rule.priority,
+		stopOnMatch: rule.stopOnMatch ?? false,
+		tags: rule.tags,
+	};
+}
+
 export function createWorkflowRunner(
-   config: WorkflowRunnerConfig,
+	config: WorkflowRunnerConfig,
 ): WorkflowRunner {
-   const { db, dryRun = false, resendClient, vapidConfig } = config;
+	const { db, dryRun = false, resendClient, vapidConfig, cacheEnabled } = config;
 
-   async function processEvent(
-      event: WorkflowEvent,
-   ): Promise<WorkflowExecutionResult> {
-      const startTime = performance.now();
-      const results: RuleExecutionResult[] = [];
-      let stoppedEarly = false;
-      let stoppedByRuleId: string | undefined;
+	// Create the rules engine instance
+	const engine = createWorkflowEngine({
+		cacheEnabled: cacheEnabled ?? !dryRun, // Disable cache in dry-run mode
+		db,
+	});
 
-      const dbRules = await findActiveAutomationRulesByTrigger(
-         db,
-         event.organizationId,
-         event.type,
-      );
+	async function processEvent(
+		event: WorkflowEvent,
+	): Promise<WorkflowExecutionResult> {
+		const startTime = performance.now();
+		const results: RuleExecutionResult[] = [];
+		let stoppedEarly = false;
+		let stoppedByRuleId: string | undefined;
 
-      // Rules are already ordered by priority (descending) from the repository query
-      const rules = dbRules.map(toWorkflowRule);
+		// Load rules from database
+		const dbRules = await findActiveAutomationRulesByTrigger(
+			db,
+			event.organizationId,
+			event.type,
+		);
 
-      for (const rule of rules) {
-         const result = await processEventForRule(event, rule);
-         results.push(result);
+		// Convert to workflow rules
+		const workflowRules = dbRules.map(toWorkflowRule);
 
-         if (result.stopProcessing) {
-            stoppedEarly = true;
-            stoppedByRuleId = rule.id;
-            break;
-         }
-      }
+		// Clear and populate engine with rules
+		engine.clearRules();
+		for (const rule of workflowRules) {
+			engine.addRule(toEngineRule(rule));
+		}
 
-      const totalDurationMs = performance.now() - startTime;
+		// Adapt event data to evaluation context
+		const context = adaptEventDataToContext(
+			event.data as TransactionEventData,
+		);
 
-      return {
-         eventId: event.id,
-         eventType: event.type,
-         organizationId: event.organizationId,
-         results,
-         rulesEvaluated: results.length,
-         rulesMatched: results.filter((r) => r.matched).length,
-         stoppedByRuleId,
-         stoppedEarly,
-         totalDurationMs,
-      };
-   }
+		// Evaluate all rules using the rules-engine
+		const engineResult = await engine.evaluate(context);
 
-   async function processEventForRule(
-      event: WorkflowEvent,
-      rule: WorkflowRule,
-   ): Promise<RuleExecutionResult> {
-      const startedAt = new Date();
-      const startTime = performance.now();
-      const actionsExecuted: ExecutedAction[] = [];
-      let conditionsPassed = false;
-      let error: string | undefined;
-      let stopProcessing = false;
-      let conditionsEvaluated: ConditionEvaluationLogResult[] = [];
+		// Process consequences for matched rules
+		for (const matchedRule of engineResult.matchedRules) {
+			const workflowRule = workflowRules.find((r) => r.id === matchedRule.id);
+			if (!workflowRule) continue;
 
-      try {
-         const conditionGroup = adaptConditionGroupsToEvaluator(
-            rule.conditions,
-         );
-         const context = adaptEventDataToContext(
-            event.data as TransactionEventData,
-         );
+			const ruleResult = engineResult.results.find(
+				(r) => r.ruleId === matchedRule.id,
+			);
 
-         const evaluationResult = evaluate(conditionGroup, { data: context });
-         conditionsPassed = evaluationResult.passed;
+			const ruleConsequences = engineResult.consequences.filter(
+				(c) => c.ruleId === matchedRule.id,
+			);
 
-         if ("results" in evaluationResult && evaluationResult.results) {
-            conditionsEvaluated = flattenEvaluationResults(
-               evaluationResult.results,
-            );
-         }
+			const result = await processRuleConsequences(
+				event,
+				workflowRule,
+				ruleConsequences,
+				ruleResult?.conditionResult,
+				context,
+			);
 
-         if (conditionsPassed) {
-            const executionResult = await executeActions(rule.actions, {
-               db,
-               dryRun,
-               eventData: context,
-               organizationId: event.organizationId,
-               resendClient,
-               ruleId: rule.id,
-               vapidConfig,
-            });
+			results.push(result);
 
-            for (const actionResult of executionResult.results) {
-               const executed: ExecutedAction = {
-                  actionId: actionResult.actionId,
-                  error: actionResult.error,
-                  result: actionResult.result,
-                  skippedReason: actionResult.skipReason,
-                  status: actionResult.skipped
-                     ? "skipped"
-                     : actionResult.success
-                       ? "success"
-                       : "failed",
-                  type: actionResult.type,
-               };
-               actionsExecuted.push(executed);
-            }
+			if (result.stopProcessing) {
+				stoppedEarly = true;
+				stoppedByRuleId = matchedRule.id;
+				break;
+			}
+		}
 
-            stopProcessing =
-               executionResult.stoppedEarly || (rule.stopOnFirstMatch ?? false);
-         }
-      } catch (e) {
-         error = e instanceof Error ? e.message : "Unknown error";
-      }
+		// Add non-matched rules to results (for logging purposes)
+		for (const ruleResult of engineResult.results) {
+			if (!ruleResult.matched) {
+				const workflowRule = workflowRules.find(
+					(r) => r.id === ruleResult.ruleId,
+				);
+				if (workflowRule) {
+					await logRuleExecution(event, workflowRule, {
+						conditionsPassed: false,
+						consequencesExecuted: [],
+						durationMs: ruleResult.evaluationTimeMs,
+						error: ruleResult.error?.message,
+						matched: false,
+						ruleId: ruleResult.ruleId,
+						ruleName: ruleResult.ruleName,
+						stopProcessing: false,
+					});
 
-      const durationMs = Math.round(performance.now() - startTime);
-      const completedAt = new Date();
+					results.push({
+						conditionsPassed: false,
+						consequencesExecuted: [],
+						durationMs: ruleResult.evaluationTimeMs,
+						error: ruleResult.error?.message,
+						matched: false,
+						ruleId: ruleResult.ruleId,
+						ruleName: ruleResult.ruleName,
+						stopProcessing: false,
+					});
+				}
+			}
+		}
 
-      const actionsLogResults: ActionExecutionLogResult[] = actionsExecuted.map(
-         (action) => ({
-            actionId: action.actionId,
-            error: action.error,
-            result: action.result,
-            success: action.status === "success",
-            type: action.type,
-         }),
-      );
+		const totalDurationMs = performance.now() - startTime;
 
-      let status: AutomationLogStatus;
-      if (error) {
-         status = "failed";
-      } else if (!conditionsPassed) {
-         status = "skipped";
-      } else {
-         const allSuccess = actionsExecuted.every(
-            (a) => a.status === "success" || a.status === "skipped",
-         );
-         const anySuccess = actionsExecuted.some((a) => a.status === "success");
-         if (allSuccess) {
-            status = "success";
-         } else if (anySuccess) {
-            status = "partial";
-         } else {
-            status = "failed";
-         }
-      }
+		return {
+			eventId: event.id,
+			eventType: event.type,
+			organizationId: event.organizationId,
+			results,
+			rulesEvaluated: engineResult.totalRulesEvaluated,
+			rulesMatched: engineResult.totalRulesMatched,
+			stoppedByRuleId,
+			stoppedEarly,
+			totalDurationMs,
+		};
+	}
 
-      const eventData = event.data as TransactionEventData;
+	async function processRuleConsequences(
+		event: WorkflowEvent,
+		rule: WorkflowRule,
+		consequences: AggregatedConsequence<WorkflowConsequences>[],
+		conditionResult: unknown,
+		context: TransactionContext,
+	): Promise<RuleExecutionResult> {
+		const startedAt = new Date();
+		const startTime = performance.now();
+		const consequencesExecuted: ExecutedConsequence[] = [];
+		let error: string | undefined;
+		let stopProcessing = false;
 
-      if (!dryRun) {
-         try {
-            await createAutomationLog(db, {
-               actionsExecuted: actionsLogResults,
-               completedAt,
-               conditionsEvaluated,
-               durationMs,
-               errorMessage: error ?? null,
-               organizationId: event.organizationId,
-               relatedEntityId: eventData.id ?? null,
-               relatedEntityType: eventData.id ? "transaction" : null,
-               ruleId: rule.id,
-               ruleName: rule.name,
-               startedAt,
-               status,
-               triggerEvent: event.data,
-               triggeredBy: "event",
-               triggerType: rule.triggerType as TriggerType,
-            });
-         } catch (logError) {
-            console.error("Failed to create automation log:", logError);
-         }
-      }
+		try {
+			// Execute consequences using the action handlers
+			const executionResult = await executeConsequences(consequences, {
+				db,
+				dryRun,
+				eventData: context,
+				organizationId: event.organizationId,
+				resendClient,
+				ruleId: rule.id,
+				vapidConfig,
+			});
 
-      return {
-         actionsExecuted,
-         conditionsPassed,
-         durationMs,
-         error,
-         matched: conditionsPassed,
-         ruleId: rule.id,
-         ruleName: rule.name,
-         stopProcessing,
-      };
-   }
+			for (let i = 0; i < executionResult.results.length; i++) {
+				const consequenceResult = executionResult.results[i];
+				if (!consequenceResult) continue;
+				const executed: ExecutedConsequence = {
+					consequenceIndex: i,
+					error: consequenceResult.error,
+					result: consequenceResult.result,
+					skippedReason: consequenceResult.skipReason,
+					status: consequenceResult.skipped
+						? "skipped"
+						: consequenceResult.success
+							? "success"
+							: "failed",
+					type: consequenceResult.type as ActionType,
+				};
+				consequencesExecuted.push(executed);
+			}
 
-   function flattenEvaluationResults(
-      results: unknown[],
-   ): ConditionEvaluationLogResult[] {
-      const flattened: ConditionEvaluationLogResult[] = [];
+			stopProcessing =
+				executionResult.stoppedEarly || (rule.stopOnMatch ?? false);
+		} catch (e) {
+			error = e instanceof Error ? e.message : "Unknown error";
+		}
 
-      for (const result of results) {
-         if (
-            result &&
-            typeof result === "object" &&
-            "conditionId" in result &&
-            "passed" in result
-         ) {
-            const evalResult = result as {
-               conditionId: string;
-               passed: boolean;
-               actualValue?: unknown;
-               expectedValue?: unknown;
-            };
-            flattened.push({
-               actualValue: evalResult.actualValue,
-               conditionId: evalResult.conditionId,
-               expectedValue: evalResult.expectedValue,
-               passed: evalResult.passed,
-            });
-         } else if (
-            result &&
-            typeof result === "object" &&
-            "results" in result
-         ) {
-            const groupResult = result as { results: unknown[] };
-            flattened.push(...flattenEvaluationResults(groupResult.results));
-         }
-      }
+		const durationMs = Math.round(performance.now() - startTime);
+		const completedAt = new Date();
 
-      return flattened;
-   }
+		// Extract condition evaluation results for logging
+		const conditionsEvaluated = flattenConditionResults(conditionResult);
 
-   return {
-      processEvent,
-      processEventForRule,
-   };
+		const result: RuleExecutionResult = {
+			conditionsPassed: true,
+			consequencesExecuted,
+			durationMs,
+			error,
+			matched: true,
+			ruleId: rule.id,
+			ruleName: rule.name,
+			stopProcessing,
+		};
+
+		// Log the execution
+		await logRuleExecution(event, rule, result, {
+			completedAt,
+			conditionsEvaluated,
+			startedAt,
+		});
+
+		return result;
+	}
+
+	async function processEventForRule(
+		event: WorkflowEvent,
+		rule: WorkflowRule,
+	): Promise<RuleExecutionResult> {
+		// Clear and add only this rule to the engine
+		engine.clearRules();
+		engine.addRule(toEngineRule(rule));
+
+		const context = adaptEventDataToContext(
+			event.data as TransactionEventData,
+		);
+
+		const engineResult = await engine.evaluate(context);
+
+		if (engineResult.matchedRules.length === 0) {
+			const ruleResult = engineResult.results[0];
+			return {
+				conditionsPassed: false,
+				consequencesExecuted: [],
+				durationMs: ruleResult?.evaluationTimeMs ?? 0,
+				error: ruleResult?.error?.message,
+				matched: false,
+				ruleId: rule.id,
+				ruleName: rule.name,
+				stopProcessing: false,
+			};
+		}
+
+		const ruleConsequences = engineResult.consequences.filter(
+			(c) => c.ruleId === rule.id,
+		);
+
+		return processRuleConsequences(
+			event,
+			rule,
+			ruleConsequences,
+			engineResult.results[0]?.conditionResult,
+			context,
+		);
+	}
+
+	async function logRuleExecution(
+		event: WorkflowEvent,
+		rule: WorkflowRule,
+		result: RuleExecutionResult,
+		options?: {
+			startedAt?: Date;
+			completedAt?: Date;
+			conditionsEvaluated?: ConditionEvaluationLogResult[];
+		},
+	) {
+		if (dryRun) return;
+
+		const startedAt = options?.startedAt ?? new Date();
+		const completedAt = options?.completedAt ?? new Date();
+
+		const consequencesLogResults: ConsequenceExecutionLogResult[] =
+			result.consequencesExecuted.map((c) => ({
+				consequenceIndex: c.consequenceIndex,
+				error: c.error,
+				result: c.result,
+				success: c.status === "success",
+				type: c.type,
+			}));
+
+		let status: AutomationLogStatus;
+		if (result.error) {
+			status = "failed";
+		} else if (!result.conditionsPassed) {
+			status = "skipped";
+		} else {
+			const allSuccess = result.consequencesExecuted.every(
+				(c) => c.status === "success" || c.status === "skipped",
+			);
+			const anySuccess = result.consequencesExecuted.some(
+				(c) => c.status === "success",
+			);
+			if (allSuccess) {
+				status = "success";
+			} else if (anySuccess) {
+				status = "partial";
+			} else {
+				status = "failed";
+			}
+		}
+
+		const eventData = event.data as TransactionEventData;
+
+		try {
+			await createAutomationLog(db, {
+				completedAt,
+				conditionsEvaluated: options?.conditionsEvaluated ?? [],
+				consequencesExecuted: consequencesLogResults,
+				durationMs: result.durationMs,
+				errorMessage: result.error ?? null,
+				organizationId: event.organizationId,
+				relatedEntityId: eventData.id ?? null,
+				relatedEntityType: eventData.id ? "transaction" : null,
+				ruleId: rule.id,
+				ruleName: rule.name,
+				startedAt,
+				status,
+				triggeredBy: "event",
+				triggerEvent: event.data,
+				triggerType: rule.triggerType as TriggerType,
+			});
+		} catch (logError) {
+			console.error("Failed to create automation log:", logError);
+		}
+	}
+
+	function flattenConditionResults(
+		conditionResult: unknown,
+	): ConditionEvaluationLogResult[] {
+		if (!conditionResult || typeof conditionResult !== "object") {
+			return [];
+		}
+
+		const flattened: ConditionEvaluationLogResult[] = [];
+
+		const processResult = (result: unknown) => {
+			if (
+				result &&
+				typeof result === "object" &&
+				"conditionId" in result &&
+				"passed" in result
+			) {
+				const evalResult = result as {
+					conditionId: string;
+					passed: boolean;
+					actualValue?: unknown;
+					expectedValue?: unknown;
+				};
+				flattened.push({
+					actualValue: evalResult.actualValue,
+					conditionId: evalResult.conditionId,
+					expectedValue: evalResult.expectedValue,
+					passed: evalResult.passed,
+				});
+			} else if (result && typeof result === "object" && "results" in result) {
+				const groupResult = result as { results: unknown[] };
+				for (const r of groupResult.results) {
+					processResult(r);
+				}
+			}
+		};
+
+		if ("results" in conditionResult) {
+			const grouped = conditionResult as { results: unknown[] };
+			for (const r of grouped.results) {
+				processResult(r);
+			}
+		}
+
+		return flattened;
+	}
+
+	return {
+		getEngine: () => engine,
+		processEvent,
+		processEventForRule,
+	};
 }
 
 export async function runWorkflowForEvent(
-   db: DatabaseInstance,
-   event: WorkflowEvent,
-   options?: {
-      dryRun?: boolean;
-      resendClient?: Resend;
-      vapidConfig?: VapidConfig;
-   },
+	db: DatabaseInstance,
+	event: WorkflowEvent,
+	options?: {
+		dryRun?: boolean;
+		resendClient?: Resend;
+		vapidConfig?: VapidConfig;
+	},
 ): Promise<WorkflowExecutionResult> {
-   const runner = createWorkflowRunner({
-      db,
-      dryRun: options?.dryRun,
-      resendClient: options?.resendClient,
-      vapidConfig: options?.vapidConfig,
-   });
+	const runner = createWorkflowRunner({
+		db,
+		dryRun: options?.dryRun,
+		resendClient: options?.resendClient,
+		vapidConfig: options?.vapidConfig,
+	});
 
-   return runner.processEvent(event);
+	return runner.processEvent(event);
 }

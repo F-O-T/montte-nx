@@ -1,4 +1,4 @@
-import type { Action } from "@packages/database/schema";
+import type { Consequence } from "@packages/database/schema";
 import { transaction } from "@packages/database/schema";
 import { eq } from "drizzle-orm";
 import {
@@ -11,17 +11,17 @@ import {
 export const setCostCenterHandler: ActionHandler = {
    type: "set_cost_center",
 
-   async execute(action: Action, context: ActionHandlerContext) {
-      const { costCenterId } = action.config;
+   async execute(consequence: Consequence, context: ActionHandlerContext) {
+      const { costCenterId } = consequence.payload;
       const transactionId = context.eventData.id as string;
 
       if (!costCenterId) {
-         return createSkippedResult(action, "No cost center ID provided");
+         return createSkippedResult(consequence, "No cost center ID provided");
       }
 
       if (!transactionId) {
          return createActionResult(
-            action,
+            consequence,
             false,
             undefined,
             "No transaction ID in event data",
@@ -29,7 +29,7 @@ export const setCostCenterHandler: ActionHandler = {
       }
 
       if (context.dryRun) {
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             costCenterId,
             dryRun: true,
             transactionId,
@@ -45,21 +45,21 @@ export const setCostCenterHandler: ActionHandler = {
 
          if (result.length === 0) {
             return createActionResult(
-               action,
+               consequence,
                false,
                undefined,
-               "Transaction not found",
+               "Transconsequence not found",
             );
          }
 
-         return createActionResult(action, true, {
+         return createActionResult(consequence, true, {
             costCenterId,
             transactionId,
          });
       } catch (error) {
          const message =
             error instanceof Error ? error.message : "Unknown error";
-         return createActionResult(action, false, undefined, message);
+         return createActionResult(consequence, false, undefined, message);
       }
    },
 

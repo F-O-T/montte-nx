@@ -25,9 +25,12 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tag, X } from "lucide-react";
 import type { FormEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+
+type TransactionType = "income" | "expense" | "transfer";
+
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useSheet } from "@/hooks/use-sheet";
@@ -68,15 +71,38 @@ export function CategorizeForm({
       ? Math.abs(Number.parseFloat(singleTransaction.amount)) * 100
       : 0;
 
+   // Get unique transaction types from selected transactions
+   const selectedTransactionTypes = useMemo(() => {
+      const types = new Set<TransactionType>();
+      for (const t of transactions) {
+         types.add(t.type as TransactionType);
+      }
+      return Array.from(types);
+   }, [transactions]);
+
    const categorizeSchema = z.object({
       categoryIds: z.array(z.string()),
       costCenterId: z.string(),
       tagIds: z.array(z.string()),
    });
 
-   const { data: categories = [] } = useQuery(
+   const { data: allCategories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
    );
+
+   // Filter categories to show only those matching ANY of the selected transaction types
+   const categories = useMemo(() => {
+      return allCategories.filter((cat) => {
+         // If category has no transactionTypes set, show it for all types (backward compatibility)
+         if (!cat.transactionTypes || cat.transactionTypes.length === 0) {
+            return true;
+         }
+         // Show category if it matches ANY of the selected transaction types
+         return selectedTransactionTypes.some((type) =>
+            cat.transactionTypes?.includes(type),
+         );
+      });
+   }, [allCategories, selectedTransactionTypes]);
 
    const { data: costCenters = [] } = useQuery(
       trpc.costCenters.getAll.queryOptions(),
@@ -320,9 +346,10 @@ export function CategorizeForm({
          createCategoryMutation.mutate({
             color: getRandomColor(),
             name,
+            transactionTypes: selectedTransactionTypes,
          });
       },
-      [createCategoryMutation.mutate],
+      [createCategoryMutation.mutate, selectedTransactionTypes],
    );
 
    const handleCreateCostCenter = useCallback(
