@@ -17,7 +17,8 @@ import {
    X,
 } from "lucide-react";
 import { useCredenza } from "@/hooks/use-credenza";
-import type { ReportType } from "../features/custom-report-list-context";
+import type { ReportType } from "@packages/database/schemas/custom-reports";
+import { CustomReportFilterCredenza } from "@/pages/custom-reports/features/custom-report-filter-credenza";
 
 type CustomReportFilterBarProps = {
    typeFilter: ReportType | undefined;
@@ -42,7 +43,14 @@ export function CustomReportFilterBar({
                className="gap-2"
                onClick={() =>
                   openCredenza({
-                     children: <div>Filtros</div>,
+                     children: (
+                        <CustomReportFilterCredenza
+                           hasActiveFilters={hasActiveFilters}
+                           onClearFilters={onClearFilters}
+                           onTypeFilterChange={onTypeFilterChange}
+                           typeFilter={typeFilter}
+                        />
+                     ),
                   })
                }
                size="sm"

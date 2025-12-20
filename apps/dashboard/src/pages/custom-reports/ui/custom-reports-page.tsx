@@ -4,9 +4,9 @@ import { Plus } from "lucide-react";
 import { DefaultHeader } from "@/default/default-header";
 import { ManageCustomReportForm } from "@/features/custom-report/ui/manage-custom-report-form";
 import { useSheet } from "@/hooks/use-sheet";
+import type { ReportType } from "@packages/database/schemas/custom-reports";
 import {
    CustomReportListProvider,
-   type ReportType,
    useCustomReportList,
 } from "../features/custom-report-list-context";
 import { CustomReportFilterBar } from "./custom-report-filter-bar";
@@ -41,12 +41,14 @@ function CustomReportsPageContent({ filterType }: CustomReportsPageProps) {
             description="Gerencie seus relatórios financeiros personalizados"
             title="Relatórios"
          />
-         <CustomReportFilterBar
-            hasActiveFilters={hasActiveFilters}
-            onClearFilters={clearFilters}
-            onTypeFilterChange={setTypeFilter}
-            typeFilter={typeFilter}
-         />
+         {!filterType && (
+            <CustomReportFilterBar
+               hasActiveFilters={hasActiveFilters}
+               onClearFilters={clearFilters}
+               onTypeFilterChange={setTypeFilter}
+               typeFilter={typeFilter}
+            />
+         )}
          <CustomReportsStats />
          <CustomReportsListSection filterType={filterType} />
       </main>

@@ -1,13 +1,6 @@
+import type { ReportType } from "@packages/database/schemas/custom-reports";
 import type React from "react";
 import { createContext, useCallback, useContext, useState } from "react";
-
-export type ReportType =
-   | "dre_gerencial"
-   | "dre_fiscal"
-   | "budget_vs_actual"
-   | "spending_trends"
-   | "cash_flow_forecast"
-   | "counterparty_analysis";
 
 interface CustomReportListContextType {
    selectedItems: Set<string>;

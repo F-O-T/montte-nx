@@ -1,59 +1,58 @@
 import {
-	generateBankStatement,
-	parseStream,
-	type OFXAccountType,
-	type OFXHeader,
-	type OFXTransaction,
-	type OFXTransactionType,
+   generateBankStatement,
+   parseStream,
+   type OFXAccountType,
+   type OFXHeader,
+   type OFXTransaction,
+   type OFXTransactionType,
 } from "@f-o-t/ofx";
-import { AppError } from "@packages/utils/errors";
 import { normalizeText } from "@packages/utils/text";
 
 // Re-export library types for consumers
 export type {
-	OFXAccountType,
-	OFXBalance,
-	OFXBankAccount,
-	OFXCreditCardAccount,
-	OFXDate,
-	OFXDocument,
-	OFXHeader,
-	OFXTransaction,
-	OFXTransactionType,
+   OFXAccountType,
+   OFXBalance,
+   OFXBankAccount,
+   OFXCreditCardAccount,
+   OFXDate,
+   OFXDocument,
+   OFXHeader,
+   OFXTransaction,
+   OFXTransactionType,
 } from "@f-o-t/ofx";
 
 // Progress callback types
 export type OfxProgressEvent =
-	| { type: "header"; header: OFXHeader }
-	| { type: "progress"; parsed: number }
-	| { type: "complete"; totalParsed: number };
+   | { type: "header"; header: OFXHeader }
+   | { type: "progress"; parsed: number }
+   | { type: "complete"; totalParsed: number };
 
 export type OfxProgressCallback = (event: OfxProgressEvent) => void;
 
 export interface ParseOfxOptions {
-	onProgress?: OfxProgressCallback;
+   onProgress?: OfxProgressCallback;
 }
 
 // Domain-specific parsed transaction
 export interface ParsedTransaction {
-	amount: number;
-	date: Date;
-	description: string;
-	fitid: string;
-	type: "expense" | "income";
+   amount: number;
+   date: Date;
+   description: string;
+   fitid: string;
+   type: "expense" | "income";
 }
 
 function mapTransaction(trn: OFXTransaction): ParsedTransaction {
-	const amount = trn.TRNAMT;
-	const date = trn.DTPOSTED.toDate();
-	const rawDescription = trn.MEMO || trn.NAME || "No description";
-	return {
-		amount: Math.abs(amount),
-		date,
-		description: normalizeText(rawDescription),
-		fitid: trn.FITID ?? "",
-		type: amount < 0 ? "expense" : "income",
-	};
+   const amount = trn.TRNAMT;
+   const date = trn.DTPOSTED.toDate();
+   const rawDescription = trn.MEMO || trn.NAME || "No description";
+   return {
+      amount: Math.abs(amount),
+      date,
+      description: normalizeText(rawDescription),
+      fitid: trn.FITID ?? "",
+      type: amount < 0 ? "expense" : "income",
+   };
 }
 
 /**
@@ -61,14 +60,14 @@ function mapTransaction(trn: OFXTransaction): ParsedTransaction {
  * Yields to the main thread between chunks for UI responsiveness.
  */
 async function* createChunkIterable(
-	content: string,
-	chunkSize = 65536,
+   content: string,
+   chunkSize = 65536,
 ): AsyncGenerator<string> {
-	for (let i = 0; i < content.length; i += chunkSize) {
-		yield content.slice(i, i + chunkSize);
-		// Yield to main thread between chunks for UI responsiveness
-		await new Promise((resolve) => setTimeout(resolve, 0));
-	}
+   for (let i = 0; i < content.length; i += chunkSize) {
+      yield content.slice(i, i + chunkSize);
+      // Yield to main thread between chunks for UI responsiveness
+      await new Promise((resolve) => setTimeout(resolve, 0));
+   }
 }
 
 /**
@@ -76,29 +75,29 @@ async function* createChunkIterable(
  * Detects encoding from OFX header and decodes appropriately.
  */
 async function* createBufferIterable(
-	buffer: Uint8Array,
-	chunkSize = 65536,
+   buffer: Uint8Array,
+   chunkSize = 65536,
 ): AsyncGenerator<string> {
-	// First, detect encoding from the header section (iso-8859-1 is safe for reading raw bytes)
-	const headerSection = new TextDecoder("iso-8859-1" as "utf-8").decode(
-		buffer.slice(0, Math.min(buffer.length, 1000)),
-	);
+   // First, detect encoding from the header section (iso-8859-1 is safe for reading raw bytes)
+   const headerSection = new TextDecoder("iso-8859-1" as "utf-8").decode(
+      buffer.slice(0, Math.min(buffer.length, 1000)),
+   );
 
-	let encoding = "utf-8";
-	const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
-	if (charsetMatch?.[1]) {
-		const charset = charsetMatch[1].toUpperCase();
-		if (charset === "1252" || charset === "WINDOWS-1252") {
-			encoding = "windows-1252";
-		} else if (charset === "ISO-8859-1" || charset === "LATIN1") {
-			encoding = "iso-8859-1";
-		}
-	}
+   let encoding = "utf-8";
+   const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
+   if (charsetMatch?.[1]) {
+      const charset = charsetMatch[1].toUpperCase();
+      if (charset === "1252" || charset === "WINDOWS-1252") {
+         encoding = "windows-1252";
+      } else if (charset === "ISO-8859-1" || charset === "LATIN1") {
+         encoding = "iso-8859-1";
+      }
+   }
 
-	const decoder = new TextDecoder(encoding as "utf-8");
-	const content = decoder.decode(buffer);
+   const decoder = new TextDecoder(encoding as "utf-8");
+   const content = decoder.decode(buffer);
 
-	yield* createChunkIterable(content, chunkSize);
+   yield* createChunkIterable(content, chunkSize);
 }
 
 /**
@@ -106,38 +105,41 @@ async function* createBufferIterable(
  * Supports progress callbacks for UI updates.
  */
 export async function parseOfxContent(
-	content: string,
-	options?: ParseOfxOptions,
+   content: string,
+   options?: ParseOfxOptions,
 ): Promise<ParsedTransaction[]> {
-	const transactions: ParsedTransaction[] = [];
-	const onProgress = options?.onProgress;
-	let count = 0;
+   const transactions: ParsedTransaction[] = [];
+   const onProgress = options?.onProgress;
+   let count = 0;
 
-	const chunkIterable = createChunkIterable(content);
+   const chunkIterable = createChunkIterable(content);
 
-	for await (const event of parseStream(chunkIterable)) {
-		switch (event.type) {
-			case "header":
-				onProgress?.({ type: "header", header: event.data });
-				break;
+   for await (const event of parseStream(chunkIterable)) {
+      switch (event.type) {
+         case "header":
+            onProgress?.({ type: "header", header: event.data });
+            break;
 
-			case "transaction":
-				count++;
-				transactions.push(mapTransaction(event.data));
+         case "transaction":
+            count++;
+            transactions.push(mapTransaction(event.data));
 
-				// Report progress every 50 transactions
-				if (count % 50 === 0) {
-					onProgress?.({ type: "progress", parsed: count });
-				}
-				break;
+            // Report progress every 50 transactions
+            if (count % 50 === 0) {
+               onProgress?.({ type: "progress", parsed: count });
+            }
+            break;
 
-			case "complete":
-				onProgress?.({ type: "complete", totalParsed: transactions.length });
-				break;
-		}
-	}
+         case "complete":
+            onProgress?.({
+               type: "complete",
+               totalParsed: transactions.length,
+            });
+            break;
+      }
+   }
 
-	return transactions;
+   return transactions;
 }
 
 /**
@@ -146,112 +148,115 @@ export async function parseOfxContent(
  * Supports progress callbacks for UI updates.
  */
 export async function parseOfxBuffer(
-	buffer: Uint8Array,
-	options?: ParseOfxOptions,
+   buffer: Uint8Array,
+   options?: ParseOfxOptions,
 ): Promise<ParsedTransaction[]> {
-	const transactions: ParsedTransaction[] = [];
-	const onProgress = options?.onProgress;
-	let count = 0;
+   const transactions: ParsedTransaction[] = [];
+   const onProgress = options?.onProgress;
+   let count = 0;
 
-	const chunkIterable = createBufferIterable(buffer);
+   const chunkIterable = createBufferIterable(buffer);
 
-	for await (const event of parseStream(chunkIterable)) {
-		switch (event.type) {
-			case "header":
-				onProgress?.({ type: "header", header: event.data });
-				break;
+   for await (const event of parseStream(chunkIterable)) {
+      switch (event.type) {
+         case "header":
+            onProgress?.({ type: "header", header: event.data });
+            break;
 
-			case "transaction":
-				count++;
-				transactions.push(mapTransaction(event.data));
+         case "transaction":
+            count++;
+            transactions.push(mapTransaction(event.data));
 
-				// Report progress every 50 transactions
-				if (count % 50 === 0) {
-					onProgress?.({ type: "progress", parsed: count });
-				}
-				break;
+            // Report progress every 50 transactions
+            if (count % 50 === 0) {
+               onProgress?.({ type: "progress", parsed: count });
+            }
+            break;
 
-			case "complete":
-				onProgress?.({ type: "complete", totalParsed: transactions.length });
-				break;
-		}
-	}
+         case "complete":
+            onProgress?.({
+               type: "complete",
+               totalParsed: transactions.length,
+            });
+            break;
+      }
+   }
 
-	return transactions;
+   return transactions;
 }
 
 // Export types
 export interface ExportTransaction {
-	id: string;
-	amount: string;
-	date: Date;
-	description: string;
-	type: "income" | "expense" | "transfer";
-	externalId?: string | null;
+   id: string;
+   amount: string;
+   date: Date;
+   description: string;
+   type: "income" | "expense" | "transfer";
+   externalId?: string | null;
 }
 
 export interface ExportOfxOptions {
-	accountId: string;
-	bankId: string;
-	accountType: "checking" | "savings" | "investment";
-	currency?: string;
-	startDate: Date;
-	endDate: Date;
-	organizationName?: string;
+   accountId: string;
+   bankId: string;
+   accountType: "checking" | "savings" | "investment";
+   currency?: string;
+   startDate: Date;
+   endDate: Date;
+   organizationName?: string;
 }
 
 function mapAccountType(type: ExportOfxOptions["accountType"]): OFXAccountType {
-	const mapping: Record<ExportOfxOptions["accountType"], OFXAccountType> = {
-		checking: "CHECKING",
-		investment: "MONEYMRKT",
-		savings: "SAVINGS",
-	};
-	return mapping[type];
+   const mapping: Record<ExportOfxOptions["accountType"], OFXAccountType> = {
+      checking: "CHECKING",
+      investment: "MONEYMRKT",
+      savings: "SAVINGS",
+   };
+   return mapping[type];
 }
 
 function mapTransactionType(
-	type: ExportTransaction["type"],
-	amount: number,
+   type: ExportTransaction["type"],
+   amount: number,
 ): OFXTransactionType {
-	if (type === "transfer") {
-		return "XFER";
-	}
-	if (type === "income") {
-		return amount >= 0 ? "CREDIT" : "DEBIT";
-	}
-	return "DEBIT";
+   if (type === "transfer") {
+      return "XFER";
+   }
+   if (type === "income") {
+      return amount >= 0 ? "CREDIT" : "DEBIT";
+   }
+   return "DEBIT";
 }
 
 export function generateOfxContent(
-	transactions: ExportTransaction[],
-	options: ExportOfxOptions,
+   transactions: ExportTransaction[],
+   options: ExportOfxOptions,
 ): string {
-	const currency = options.currency ?? "BRL";
+   const currency = options.currency ?? "BRL";
 
-	const ofxTransactions = transactions.map((trn) => {
-		const amount = Number.parseFloat(trn.amount);
-		const signedAmount =
-			trn.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
+   const ofxTransactions = transactions.map((trn) => {
+      const amount = Number.parseFloat(trn.amount);
+      const signedAmount =
+         trn.type === "expense" ? -Math.abs(amount) : Math.abs(amount);
 
-		return {
-			amount: signedAmount,
-			datePosted: trn.date,
-			fitId: trn.externalId ?? trn.id,
-			memo: trn.description,
-			type: mapTransactionType(trn.type, signedAmount),
-		};
-	});
+      return {
+         amount: signedAmount,
+         datePosted: trn.date,
+         fitId: trn.externalId ?? trn.id,
+         memo: trn.description,
+         type: mapTransactionType(trn.type, signedAmount),
+      };
+   });
 
-	return generateBankStatement({
-		accountId: options.accountId,
-		accountType: mapAccountType(options.accountType),
-		bankId: options.bankId,
-		currency,
-		endDate: options.endDate,
-		financialInstitution: options.organizationName
-			? { org: options.organizationName }
-			: undefined,
-		startDate: options.startDate,
-		transactions: ofxTransactions,
-	});
+   return generateBankStatement({
+      accountId: options.accountId,
+      accountType: mapAccountType(options.accountType),
+      bankId: options.bankId,
+      currency,
+      endDate: options.endDate,
+      financialInstitution: options.organizationName
+         ? { org: options.organizationName }
+         : undefined,
+      startDate: options.startDate,
+      transactions: ofxTransactions,
+   });
 }

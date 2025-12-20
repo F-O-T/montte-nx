@@ -27,10 +27,8 @@ import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useTRPC } from "@/integrations/clients";
-import {
-   type ReportType,
-   useCustomReportList,
-} from "../features/custom-report-list-context";
+import type { ReportType } from "@packages/database/schemas/custom-reports";
+import { useCustomReportList } from "../features/custom-report-list-context";
 import { useDeleteManyCustomReports } from "../features/use-delete-many-custom-reports";
 import {
    CustomReportExpandedContent,

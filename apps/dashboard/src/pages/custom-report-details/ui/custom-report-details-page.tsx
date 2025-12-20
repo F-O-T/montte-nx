@@ -1,4 +1,7 @@
-import type { DRESnapshotData } from "@packages/database/schemas/custom-reports";
+import type {
+	DRESnapshotData,
+	TransactionSnapshot,
+} from "@packages/database/schemas/custom-reports";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -56,6 +59,73 @@ import { useTRPC } from "@/integrations/clients";
 import { useExportPdf } from "@/pages/custom-reports/features/use-export-pdf";
 
 const routeApi = getRouteApi("/$slug/_dashboard/custom-reports/$reportId");
+
+/**
+ * Maps TransactionSnapshot to the structure expected by table components.
+ * TransactionSnapshot has all display-relevant fields. This function fills
+ * in additional metadata fields required by the Transaction type with
+ * placeholder values since they're not used by the display components.
+ */
+function mapSnapshotToTableTransaction(
+	snapshot: TransactionSnapshot,
+): Transaction {
+	const snapshotDate = new Date(snapshot.date);
+
+	return {
+		amount: snapshot.amount,
+		attachmentKey: null,
+		externalId: null,
+		bankAccount: snapshot.bankAccount
+			? {
+					...snapshot.bankAccount,
+					createdAt: snapshotDate,
+					organizationId: "",
+					status: "active" as const,
+					type: "checking" as const,
+					updatedAt: snapshotDate,
+				}
+			: null,
+		bankAccountId: snapshot.bankAccount?.id ?? null,
+		categorySplits: snapshot.categorySplits,
+		costCenter: snapshot.costCenter
+			? {
+					...snapshot.costCenter,
+					createdAt: snapshotDate,
+					organizationId: "",
+					updatedAt: snapshotDate,
+				}
+			: null,
+		costCenterId: snapshot.costCenter?.id ?? null,
+		createdAt: snapshotDate,
+		date: snapshotDate,
+		description: snapshot.description,
+		id: snapshot.id,
+		organizationId: "",
+		transactionCategories: snapshot.transactionCategories.map((tc) => ({
+			category: {
+				...tc.category,
+				createdAt: snapshotDate,
+				organizationId: "",
+				transactionTypes: [],
+				updatedAt: snapshotDate,
+			},
+			categoryId: tc.category.id,
+			transactionId: snapshot.id,
+		})),
+		transactionTags: snapshot.transactionTags.map((tt) => ({
+			tag: {
+				...tt.tag,
+				createdAt: snapshotDate,
+				organizationId: "",
+				updatedAt: snapshotDate,
+			},
+			tagId: tt.tag.id,
+			transactionId: snapshot.id,
+		})),
+		type: snapshot.type,
+		updatedAt: snapshotDate,
+	};
+}
 
 function CustomReportDetailsErrorFallback(props: FallbackProps) {
    return (
@@ -471,12 +541,15 @@ function TransactionsSection({
 
    const paginatedData = useMemo(() => {
       const startIndex = (currentPage - 1) * pageSize;
-      // Cast to Transaction[] since snapshot has all fields needed by the table
-      return transactions.slice(
-         startIndex,
-         startIndex + pageSize,
-      ) as unknown as Transaction[];
+      return transactions
+         .slice(startIndex, startIndex + pageSize)
+         .map(mapSnapshotToTableTransaction);
    }, [transactions, currentPage, pageSize]);
+
+   const columns = useMemo(
+      () => createTransactionColumns(categories, slug),
+      [categories, slug],
+   );
 
    const totalPages = Math.ceil(transactions.length / pageSize);
 
@@ -494,7 +567,7 @@ function TransactionsSection({
          </CardHeader>
          <CardContent>
             <DataTable
-               columns={createTransactionColumns(categories, slug)}
+               columns={columns}
                data={paginatedData}
                getRowId={(row) => row.id}
                pagination={{
@@ -676,54 +749,47 @@ function CustomReportDetailsContent() {
                                  : "Prejuízo"}
                            </Badge>
                         </div>
-                        {report.type === "dre_fiscal" && (
-                           <div className="border-t pt-4 space-y-2">
-                              <p className="text-sm text-muted-foreground">
-                                 Análise de Variação
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
-                                 <div>
-                                    <p className="text-muted-foreground">
-                                       Previsto
+                        {report.type === "dre_fiscal" &&
+                           (() => {
+                              const dreLine9 = snapshotData.dreLines.find(
+                                 (l) => l.code === "9",
+                              );
+                              const variance = dreLine9?.variance || 0;
+                              return (
+                                 <div className="border-t pt-4 space-y-2">
+                                    <p className="text-sm text-muted-foreground">
+                                       Análise de Variação
                                     </p>
-                                    <p className="font-medium">
-                                       {formatDecimalCurrency(
-                                          snapshotData.dreLines.find(
-                                             (l) => l.code === "9",
-                                          )?.plannedValue || 0,
-                                       )}
-                                    </p>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                       <div>
+                                          <p className="text-muted-foreground">
+                                             Previsto
+                                          </p>
+                                          <p className="font-medium">
+                                             {formatDecimalCurrency(
+                                                dreLine9?.plannedValue || 0,
+                                             )}
+                                          </p>
+                                       </div>
+                                       <div>
+                                          <p className="text-muted-foreground">
+                                             Variação
+                                          </p>
+                                          <p
+                                             className={`font-medium ${
+                                                variance >= 0
+                                                   ? "text-emerald-600"
+                                                   : "text-destructive"
+                                             }`}
+                                          >
+                                             {variance >= 0 ? "+" : ""}
+                                             {formatDecimalCurrency(variance)}
+                                          </p>
+                                       </div>
+                                    </div>
                                  </div>
-                                 <div>
-                                    <p className="text-muted-foreground">
-                                       Variação
-                                    </p>
-                                    <p
-                                       className={`font-medium ${
-                                          (
-                                             snapshotData.dreLines.find(
-                                                (l) => l.code === "9",
-                                             )?.variance || 0
-                                          ) >= 0
-                                             ? "text-emerald-600"
-                                             : "text-destructive"
-                                       }`}
-                                    >
-                                       {(snapshotData.dreLines.find(
-                                          (l) => l.code === "9",
-                                       )?.variance || 0) >= 0
-                                          ? "+"
-                                          : ""}
-                                       {formatDecimalCurrency(
-                                          snapshotData.dreLines.find(
-                                             (l) => l.code === "9",
-                                          )?.variance || 0,
-                                       )}
-                                    </p>
-                                 </div>
-                              </div>
-                           </div>
-                        )}
+                              );
+                           })()}
                      </CardContent>
                   </Card>
                </div>

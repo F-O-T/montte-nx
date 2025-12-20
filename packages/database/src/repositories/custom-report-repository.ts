@@ -18,6 +18,7 @@ import {
    type FilterMetadata,
    type NewCustomReport,
    type ReportFilterConfig,
+   type ReportSnapshotData,
    type ReportType,
    type SpendingTrendsSnapshotData,
    type TransactionSnapshot,
@@ -855,7 +856,7 @@ export async function generateDREFiscalData(
          .from(bill)
          .where(
             and(
-               eq(bill.userId, organizationId),
+               eq(bill.organizationId, organizationId),
                gte(bill.dueDate, startDate),
                lte(bill.dueDate, endDate),
             ),
@@ -1389,9 +1390,126 @@ export async function generateBudgetVsActualData(
          }
       }
 
-      // Monthly breakdown
+      // Monthly breakdown with prorated budget calculation
       const monthlyBreakdown: BudgetVsActualSnapshotData["monthlyBreakdown"] =
          [];
+
+      // Helper function to calculate overlap days between a period and a month
+      // Returns the number of days the budget period intersects the month (inclusive)
+      const getOverlapDays = (
+         periodStart: Date,
+         periodEnd: Date,
+         monthStart: Date,
+         monthEnd: Date,
+      ): number => {
+         const overlapStart = new Date(
+            Math.max(periodStart.getTime(), monthStart.getTime()),
+         );
+         const overlapEnd = new Date(
+            Math.min(periodEnd.getTime(), monthEnd.getTime()),
+         );
+
+         if (overlapStart > overlapEnd) {
+            return 0;
+         }
+
+         // Calculate days difference (+1 because both start and end are inclusive)
+         const diffMs = overlapEnd.getTime() - overlapStart.getTime();
+         return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+      };
+
+      // Helper function to get total days in a budget period
+      const getTotalDaysInPeriod = (
+         periodStart: Date,
+         periodEnd: Date,
+      ): number => {
+         const diffMs = periodEnd.getTime() - periodStart.getTime();
+         return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+      };
+
+      // Build a map of prorated budgets per month
+      // Key format: "YYYY-MM" for consistent lookup
+      const proratedBudgetByMonth = new Map<string, number>();
+
+      // Collect all budget periods for prorated calculation
+      const allBudgetPeriods: Array<{
+         periodStart: Date;
+         periodEnd: Date;
+         totalAmount: number;
+      }> = [];
+
+      for (const b of budgets) {
+         for (const period of b.periods) {
+            allBudgetPeriods.push({
+               periodEnd: new Date(period.periodEnd),
+               periodStart: new Date(period.periodStart),
+               totalAmount: Number(period.totalAmount),
+            });
+         }
+      }
+
+      // Build list of all months in the report range
+      const reportMonths: Array<{
+         monthKey: string;
+         monthStart: Date;
+         monthEnd: Date;
+      }> = [];
+
+      const currentMonth = new Date(
+         Date.UTC(startDate.getFullYear(), startDate.getMonth(), 1),
+      );
+      const endDateNormalized = new Date(
+         Date.UTC(endDate.getFullYear(), endDate.getMonth() + 1, 0, 23, 59, 59),
+      );
+
+      while (currentMonth <= endDateNormalized) {
+         const year = currentMonth.getUTCFullYear();
+         const month = currentMonth.getUTCMonth();
+
+         // Month start: first day of the month at 00:00:00 UTC
+         const monthStart = new Date(Date.UTC(year, month, 1));
+         // Month end: last day of the month at 23:59:59 UTC
+         const monthEnd = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59));
+
+         const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+         reportMonths.push({ monthEnd, monthKey, monthStart });
+
+         // Move to next month
+         currentMonth.setUTCMonth(currentMonth.getUTCMonth() + 1);
+      }
+
+      // Calculate prorated budget for each month
+      for (const { monthEnd, monthKey, monthStart } of reportMonths) {
+         let monthBudgeted = 0;
+
+         for (const period of allBudgetPeriods) {
+            const totalDaysInPeriod = getTotalDaysInPeriod(
+               period.periodStart,
+               period.periodEnd,
+            );
+
+            // Handle edge case of zero-length periods
+            if (totalDaysInPeriod <= 0) {
+               continue;
+            }
+
+            const overlapDays = getOverlapDays(
+               period.periodStart,
+               period.periodEnd,
+               monthStart,
+               monthEnd,
+            );
+
+            if (overlapDays > 0) {
+               // Prorate: (budgetPeriod.amount * overlapDays) / totalDaysInBudgetPeriod
+               monthBudgeted +=
+                  (period.totalAmount * overlapDays) / totalDaysInPeriod;
+            }
+         }
+
+         proratedBudgetByMonth.set(monthKey, monthBudgeted);
+      }
+
       const monthlyActual = await dbClient
          .select({
             amount: sql<number>`COALESCE(SUM(CAST(${transaction.amount} AS REAL)), 0)`,
@@ -1410,7 +1528,8 @@ export async function generateBudgetVsActualData(
          );
 
       for (const m of monthlyActual) {
-         const monthBudgeted = totalBudgeted / 12; // Simple monthly distribution
+         const monthKey = `${m.year}-${m.month}`;
+         const monthBudgeted = proratedBudgetByMonth.get(monthKey) ?? 0;
          monthlyBreakdown.push({
             actual: m.amount,
             budgeted: monthBudgeted,
