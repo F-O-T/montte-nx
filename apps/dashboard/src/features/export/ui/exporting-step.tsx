@@ -12,7 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "@/integrations/clients";
-import type { ExportFormat, ExportOptions } from "../types";
+import type { ExportFormat, ExportOptions } from "../lib/use-export-wizard";
 
 interface ExportingStepProps {
    bankAccountId: string;

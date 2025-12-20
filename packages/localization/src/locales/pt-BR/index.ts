@@ -30,7 +30,6 @@ import magicLinkPtBr from "./dashboard/routes/magic-link.json";
 import onboardingPtBr from "./dashboard/routes/onboarding.json";
 import organizationPtBr from "./dashboard/routes/organization.json";
 import profilePtBr from "./dashboard/routes/profile.json";
-import reportsPtBr from "./dashboard/routes/reports.json";
 import settingsPtBr from "./dashboard/routes/settings.json";
 import signInPtBr from "./dashboard/routes/sign-in.json";
 import signUpPtBr from "./dashboard/routes/sign-up.json";
@@ -76,7 +75,6 @@ const resources = {
             onboarding: onboardingPtBr,
             organization: organizationPtBr,
             profile: profilePtBr,
-            reports: reportsPtBr,
             settings: settingsPtBr,
             "sign-in": signInPtBr,
             "sign-up": signUpPtBr,

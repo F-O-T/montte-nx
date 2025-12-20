@@ -1,18 +1,31 @@
 import {
    createCustomReport,
+   type DRESnapshotData,
    deleteCustomReport,
    deleteManyCustomReports,
    findCustomReportById,
    findCustomReportsByOrganizationIdPaginated,
+   generateBudgetVsActualData,
+   generateCashFlowForecastData,
+   generateCounterpartyAnalysisData,
    generateDREFiscalData,
    generateDREGerencialData,
+   generateSpendingTrendsData,
+   type ReportSnapshotData,
    updateCustomReport,
 } from "@packages/database/repositories/custom-report-repository";
 import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
-const reportTypeSchema = z.enum(["dre_gerencial", "dre_fiscal"]);
+const reportTypeSchema = z.enum([
+   "dre_gerencial",
+   "dre_fiscal",
+   "budget_vs_actual",
+   "spending_trends",
+   "cash_flow_forecast",
+   "counterparty_analysis",
+]);
 
 const filterConfigSchema = z
    .object({
@@ -28,6 +41,7 @@ const createReportSchema = z.object({
    description: z.string().optional(),
    endDate: z.string(),
    filterConfig: filterConfigSchema,
+   forecastDays: z.number().min(7).max(365).optional(), // For cash_flow_forecast
    name: z.string().min(1, "Nome é obrigatório"),
    startDate: z.string(),
    type: reportTypeSchema,
@@ -60,29 +74,72 @@ export const customReportRouter = router({
 
          const startDate = new Date(input.startDate);
          const endDate = new Date(input.endDate);
+         const filterConfig = input.filterConfig || undefined;
 
-         const snapshotData =
-            input.type === "dre_gerencial"
-               ? await generateDREGerencialData(
-                    resolvedCtx.db,
-                    organizationId,
-                    startDate,
-                    endDate,
-                    input.filterConfig || undefined,
-                 )
-               : await generateDREFiscalData(
-                    resolvedCtx.db,
-                    organizationId,
-                    startDate,
-                    endDate,
-                    input.filterConfig || undefined,
-                 );
+         let snapshotData: ReportSnapshotData;
+
+         switch (input.type) {
+            case "dre_gerencial":
+               snapshotData = await generateDREGerencialData(
+                  resolvedCtx.db,
+                  organizationId,
+                  startDate,
+                  endDate,
+                  filterConfig,
+               );
+               break;
+            case "dre_fiscal":
+               snapshotData = await generateDREFiscalData(
+                  resolvedCtx.db,
+                  organizationId,
+                  startDate,
+                  endDate,
+                  filterConfig,
+               );
+               break;
+            case "budget_vs_actual":
+               snapshotData = await generateBudgetVsActualData(
+                  resolvedCtx.db,
+                  organizationId,
+                  startDate,
+                  endDate,
+                  filterConfig,
+               );
+               break;
+            case "spending_trends":
+               snapshotData = await generateSpendingTrendsData(
+                  resolvedCtx.db,
+                  organizationId,
+                  startDate,
+                  endDate,
+                  filterConfig,
+               );
+               break;
+            case "cash_flow_forecast":
+               snapshotData = await generateCashFlowForecastData(
+                  resolvedCtx.db,
+                  organizationId,
+                  startDate,
+                  input.forecastDays || 30,
+                  filterConfig,
+               );
+               break;
+            case "counterparty_analysis":
+               snapshotData = await generateCounterpartyAnalysisData(
+                  resolvedCtx.db,
+                  organizationId,
+                  startDate,
+                  endDate,
+                  filterConfig,
+               );
+               break;
+         }
 
          return createCustomReport(resolvedCtx.db, {
             createdBy: userId,
             description: input.description,
             endDate,
-            filterConfig: input.filterConfig || undefined,
+            filterConfig,
             id: crypto.randomUUID(),
             name: input.name,
             organizationId,
@@ -138,13 +195,20 @@ export const customReportRouter = router({
             throw APIError.notFound("Report not found");
          }
 
+         // Only DRE reports can be exported as PDF
+         if (report.type !== "dre_gerencial" && report.type !== "dre_fiscal") {
+            throw APIError.validation(
+               "Only DRE reports can be exported as PDF",
+            );
+         }
+
          const { renderDREReport } = await import("@packages/pdf");
          const pdfBuffer = await renderDREReport({
             endDate: report.endDate.toISOString(),
             name: report.name,
-            snapshotData: report.snapshotData,
+            snapshotData: report.snapshotData as DRESnapshotData,
             startDate: report.startDate.toISOString(),
-            type: report.type as "dre_gerencial" | "dre_fiscal",
+            type: report.type,
          });
 
          return {

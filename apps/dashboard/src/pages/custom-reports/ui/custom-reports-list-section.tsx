@@ -1,4 +1,3 @@
-import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
@@ -20,29 +19,15 @@ import {
    SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   ToggleGroup,
-   ToggleGroupItem,
-} from "@packages/ui/components/toggle-group";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
-import {
-   BarChart3,
-   Calculator,
-   FileText,
-   Filter,
-   Inbox,
-   Search,
-   Trash2,
-   X,
-} from "lucide-react";
+import { Inbox, Search, Trash2 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
-import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
+import type { ReportType } from "@packages/database/schemas/custom-reports";
 import { useCustomReportList } from "../features/custom-report-list-context";
 import { useDeleteManyCustomReports } from "../features/use-delete-many-custom-reports";
 import {
@@ -105,7 +90,7 @@ function CustomReportsListSkeleton() {
 }
 
 type CustomReportsListContentProps = {
-   filterType?: "dre_gerencial" | "dre_fiscal";
+   filterType?: ReportType;
 };
 
 function CustomReportsListContent({
@@ -113,8 +98,9 @@ function CustomReportsListContent({
 }: CustomReportsListContentProps) {
    const trpc = useTRPC();
    const {
+      searchTerm,
+      setSearchTerm,
       typeFilter,
-      setTypeFilter,
       currentPage,
       setCurrentPage,
       pageSize,
@@ -122,10 +108,7 @@ function CustomReportsListContent({
    } = useCustomReportList();
 
    const { activeOrganization } = useActiveOrganization();
-   const isMobile = useIsMobile();
-   const { openCredenza } = useCredenza();
    const { openAlertDialog } = useAlertDialog();
-   const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -159,13 +142,6 @@ function CustomReportsListContent({
 
    const { data: reports, totalPages, totalCount } = paginatedData;
 
-   const handleFilterChange = () => {
-      setCurrentPage(1);
-   };
-
-   const hasActiveFilters =
-      debouncedSearchTerm || effectiveTypeFilter !== undefined;
-
    const selectedIds = Object.keys(rowSelection).filter(
       (id) => rowSelection[id],
    );
@@ -174,107 +150,20 @@ function CustomReportsListContent({
       setRowSelection({});
    };
 
-   const handleClearFilters = () => {
-      setSearchTerm("");
-      setTypeFilter(undefined);
-   };
-
    return (
       <>
          <Card>
             <CardContent className="pt-6 grid gap-4">
-               <div className="flex gap-6">
-                  <InputGroup className="flex-1 sm:max-w-md">
-                     <InputGroupInput
-                        onChange={(e) => {
-                           setSearchTerm(e.target.value);
-                        }}
-                        placeholder="Buscar relatórios..."
-                        value={searchTerm}
-                     />
-                     <InputGroupAddon>
-                        <Search />
-                     </InputGroupAddon>
-                  </InputGroup>
-
-                  {isMobile && (
-                     <Button
-                        onClick={() =>
-                           openCredenza({
-                              children: <div>Filtros</div>,
-                           })
-                        }
-                        size="icon"
-                        variant="outline"
-                     >
-                        <Filter className="size-4" />
-                     </Button>
-                  )}
-               </div>
-
-               {!isMobile && (
-                  <div className="flex flex-wrap items-center gap-3">
-                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                           Tipo:
-                        </span>
-                        <ToggleGroup
-                           onValueChange={(value) => {
-                              if (value === "all") {
-                                 setTypeFilter(undefined);
-                              } else if (value) {
-                                 setTypeFilter(
-                                    value as "dre_gerencial" | "dre_fiscal",
-                                 );
-                              }
-                              handleFilterChange();
-                           }}
-                           size="sm"
-                           spacing={2}
-                           type="single"
-                           value={effectiveTypeFilter || "all"}
-                           variant="outline"
-                        >
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
-                              value="all"
-                           >
-                              <FileText className="size-3.5" />
-                              Todos
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
-                              value="dre_gerencial"
-                           >
-                              <BarChart3 className="size-3.5" />
-                              Gerencial
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
-                              value="dre_fiscal"
-                           >
-                              <Calculator className="size-3.5" />
-                              Fiscal
-                           </ToggleGroupItem>
-                        </ToggleGroup>
-                     </div>
-
-                     {hasActiveFilters && (
-                        <>
-                           <div className="h-4 w-px bg-border" />
-                           <Button
-                              className="h-8 text-xs"
-                              onClick={handleClearFilters}
-                              size="sm"
-                              variant="outline"
-                           >
-                              <X className="size-3" />
-                              Limpar Filtros
-                           </Button>
-                        </>
-                     )}
-                  </div>
-               )}
+               <InputGroup className="max-w-md">
+                  <InputGroupInput
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     placeholder="Buscar relatórios..."
+                     value={searchTerm}
+                  />
+                  <InputGroupAddon>
+                     <Search />
+                  </InputGroupAddon>
+               </InputGroup>
 
                {reports.length === 0 && totalCount === 0 ? (
                   <Empty>
@@ -347,7 +236,7 @@ function CustomReportsListContent({
 }
 
 type CustomReportsListSectionProps = {
-   filterType?: "dre_gerencial" | "dre_fiscal";
+   filterType?: ReportType;
 };
 
 export function CustomReportsListSection({

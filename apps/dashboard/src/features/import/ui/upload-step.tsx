@@ -18,8 +18,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import type { FileType } from "../types";
-import { detectFileType } from "../types";
+import { detectFileType, type FileType } from "../lib/use-import-wizard";
 
 interface UploadStepProps {
    onFileUploaded: (

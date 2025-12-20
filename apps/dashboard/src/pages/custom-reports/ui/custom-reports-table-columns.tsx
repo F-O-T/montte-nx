@@ -1,13 +1,19 @@
-import { Badge } from "@packages/ui/components/badge";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
+   CardAction,
    CardContent,
    CardDescription,
    CardFooter,
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import { Checkbox } from "@packages/ui/components/checkbox";
 import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
 import { Separator } from "@packages/ui/components/separator";
 import {
@@ -15,7 +21,6 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
@@ -27,7 +32,11 @@ import {
    Download,
    Edit,
    Eye,
+   Target,
    Trash2,
+   TrendingUp,
+   Users,
+   Wallet,
 } from "lucide-react";
 import { ManageCustomReportForm } from "@/features/custom-report/ui/manage-custom-report-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -36,21 +45,83 @@ import { useDeleteCustomReport } from "../features/use-delete-custom-report";
 import { useExportPdf } from "../features/use-export-pdf";
 import type { CustomReport } from "./custom-reports-page";
 
-function CustomReportActionsCell({ report }: { report: CustomReport }) {
-   const { activeOrganization } = useActiveOrganization();
-   const { openSheet } = useSheet();
-   const { deleteReport } = useDeleteCustomReport({ report });
-   const { exportPdf, isExporting } = useExportPdf();
+const reportTypeConfig = {
+   budget_vs_actual: {
+      color: "#8b5cf6",
+      icon: Target,
+      label: "Budget vs Atual",
+   },
+   cash_flow_forecast: {
+      color: "#06b6d4",
+      icon: Wallet,
+      label: "Fluxo de Caixa",
+   },
+   counterparty_analysis: {
+      color: "#f59e0b",
+      icon: Users,
+      label: "Parceiros",
+   },
+   dre_fiscal: {
+      color: "#ec4899",
+      icon: Calculator,
+      label: "DRE Fiscal",
+   },
+   dre_gerencial: {
+      color: "#10b981",
+      icon: BarChart3,
+      label: "DRE Gerencial",
+   },
+   spending_trends: {
+      color: "#3b82f6",
+      icon: TrendingUp,
+      label: "Tendências",
+   },
+};
 
+function ReportTypeAnnouncement({ type }: { type: string }) {
+   const config = reportTypeConfig[type as keyof typeof reportTypeConfig];
+   if (!config) {
+      return (
+         <Announcement>
+            <AnnouncementTag>{type}</AnnouncementTag>
+         </Announcement>
+      );
+   }
+
+   const Icon = config.icon;
    return (
-      <div className="flex justify-end gap-1">
+      <Announcement>
+         <AnnouncementTag
+            style={{
+               backgroundColor: `${config.color}20`,
+               color: config.color,
+            }}
+         >
+            <Icon className="size-3.5" />
+         </AnnouncementTag>
+         <AnnouncementTitle className="max-w-[120px] truncate">
+            {config.label}
+         </AnnouncementTitle>
+      </Announcement>
+   );
+}
+
+function CustomReportActionsCell({
+   report,
+   slug,
+}: {
+   report: CustomReport;
+   slug: string;
+}) {
+   return (
+      <div className="flex justify-end">
          <Tooltip>
             <TooltipTrigger asChild>
                <Button asChild size="icon" variant="outline">
                   <Link
                      params={{
                         reportId: report.id,
-                        slug: activeOrganization.slug,
+                        slug,
                      }}
                      to="/$slug/custom-reports/$reportId"
                   >
@@ -60,71 +131,12 @@ function CustomReportActionsCell({ report }: { report: CustomReport }) {
             </TooltipTrigger>
             <TooltipContent>Ver Detalhes</TooltipContent>
          </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  disabled={isExporting}
-                  onClick={() => exportPdf(report.id)}
-                  size="icon"
-                  variant="outline"
-               >
-                  <Download className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Exportar PDF</TooltipContent>
-         </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  onClick={() =>
-                     openSheet({
-                        children: <ManageCustomReportForm report={report} />,
-                     })
-                  }
-                  size="icon"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Editar</TooltipContent>
-         </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  className="text-destructive hover:text-destructive"
-                  onClick={deleteReport}
-                  size="icon"
-                  variant="outline"
-               >
-                  <Trash2 className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Excluir</TooltipContent>
-         </Tooltip>
       </div>
    );
 }
 
-function ReportTypeBadge({ type }: { type: string }) {
-   if (type === "dre_gerencial") {
-      return (
-         <Badge className="gap-1" variant="outline">
-            <BarChart3 className="size-3" />
-            DRE Gerencial
-         </Badge>
-      );
-   }
-   return (
-      <Badge className="gap-1" variant="secondary">
-         <Calculator className="size-3" />
-         DRE Fiscal
-      </Badge>
-   );
-}
-
 export function createCustomReportColumns(
-   _slug: string,
+   slug: string,
 ): ColumnDef<CustomReport>[] {
    return [
       {
@@ -132,22 +144,18 @@ export function createCustomReportColumns(
          cell: ({ row }) => {
             const report = row.original;
             return (
-               <div className="flex flex-col gap-1">
-                  <span className="font-medium">{report.name}</span>
-                  {report.description && (
-                     <span className="text-sm text-muted-foreground line-clamp-1">
-                        {report.description}
-                     </span>
-                  )}
-               </div>
+               <span className="font-medium block max-w-[200px] truncate">
+                  {report.name}
+               </span>
             );
          },
-         enableSorting: true,
+         enableSorting: false,
          header: "Nome",
       },
       {
          accessorKey: "type",
-         cell: ({ row }) => <ReportTypeBadge type={row.original.type} />,
+         cell: ({ row }) => <ReportTypeAnnouncement type={row.original.type} />,
+         enableSorting: false,
          header: "Tipo",
       },
       {
@@ -156,27 +164,29 @@ export function createCustomReportColumns(
             const report = row.original;
             return (
                <span className="text-muted-foreground">
-                  {formatDate(new Date(report.startDate), "DD/MM/YYYY")} -{" "}
-                  {formatDate(new Date(report.endDate), "DD/MM/YYYY")}
+                  {formatDate(new Date(report.startDate), "DD MMM YYYY")} -{" "}
+                  {formatDate(new Date(report.endDate), "DD MMM YYYY")}
                </span>
             );
          },
+         enableSorting: false,
          header: "Período",
       },
       {
          accessorKey: "createdAt",
          cell: ({ row }) => {
-            const report = row.original;
-            return (
-               <span className="text-muted-foreground">
-                  {formatDate(new Date(report.createdAt), "DD/MM/YYYY")}
-               </span>
+            return formatDate(
+               new Date(row.getValue("createdAt")),
+               "DD MMM YYYY",
             );
          },
+         enableSorting: false,
          header: "Criado em",
       },
       {
-         cell: ({ row }) => <CustomReportActionsCell report={row.original} />,
+         cell: ({ row }) => (
+            <CustomReportActionsCell report={row.original} slug={slug} />
+         ),
          header: "",
          id: "actions",
       },
@@ -193,106 +203,14 @@ export function CustomReportExpandedContent({
    const report = row.original;
    const { activeOrganization } = useActiveOrganization();
    const { openSheet } = useSheet();
-   const isMobile = useIsMobile();
    const { deleteReport } = useDeleteCustomReport({ report });
    const { exportPdf, isExporting } = useExportPdf();
 
-   if (isMobile) {
-      return (
-         <div className="p-4 space-y-4">
-            <div className="space-y-3">
-               <div className="flex items-center gap-2">
-                  <ReportTypeBadge type={report.type} />
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <Calendar className="size-4 text-muted-foreground" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">Período</p>
-                     <p className="text-sm font-medium">
-                        {formatDate(new Date(report.startDate), "DD MMM YYYY")}{" "}
-                        - {formatDate(new Date(report.endDate), "DD MMM YYYY")}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <Calendar className="size-4 text-muted-foreground" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">Criado em</p>
-                     <p className="text-sm font-medium">
-                        {formatDate(new Date(report.createdAt), "DD MMM YYYY")}
-                     </p>
-                  </div>
-               </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-               <Button
-                  asChild
-                  className="w-full justify-start"
-                  size="sm"
-                  variant="outline"
-               >
-                  <Link
-                     params={{
-                        reportId: report.id,
-                        slug: activeOrganization.slug,
-                     }}
-                     to="/$slug/custom-reports/$reportId"
-                  >
-                     <Eye className="size-4" />
-                     Ver Detalhes
-                  </Link>
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  disabled={isExporting}
-                  onClick={() => exportPdf(report.id)}
-                  size="sm"
-                  variant="outline"
-               >
-                  <Download className="size-4" />
-                  Exportar PDF
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     openSheet({
-                        children: <ManageCustomReportForm report={report} />,
-                     });
-                  }}
-                  size="sm"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-                  Editar
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     deleteReport();
-                  }}
-                  size="sm"
-                  variant="destructive"
-               >
-                  <Trash2 className="size-4" />
-                  Excluir
-               </Button>
-            </div>
-         </div>
-      );
-   }
-
    return (
-      <div className="p-4 flex items-center justify-between gap-6">
-         <div className="flex items-center gap-6">
-            <ReportTypeBadge type={report.type} />
-            <Separator className="h-8" orientation="vertical" />
+      <div className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+         <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <ReportTypeAnnouncement type={report.type} />
+            <Separator className="hidden md:block h-8" orientation="vertical" />
             <div className="flex items-center gap-2">
                <Calendar className="size-4 text-muted-foreground" />
                <div>
@@ -303,19 +221,20 @@ export function CustomReportExpandedContent({
                   </p>
                </div>
             </div>
-            <Separator className="h-8" orientation="vertical" />
-            <div className="flex items-center gap-2">
-               <Calendar className="size-4 text-muted-foreground" />
-               <div>
-                  <p className="text-xs text-muted-foreground">Criado em</p>
-                  <p className="text-sm font-medium">
-                     {formatDate(new Date(report.createdAt), "DD MMM YYYY")}
+            {report.description && (
+               <>
+                  <Separator
+                     className="hidden md:block h-8"
+                     orientation="vertical"
+                  />
+                  <p className="text-sm text-muted-foreground max-w-[300px] truncate">
+                     {report.description}
                   </p>
-               </div>
-            </div>
+               </>
+            )}
          </div>
 
-         <div className="flex items-center gap-2">
+         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
             <Button asChild size="sm" variant="outline">
                <Link
                   params={{
@@ -380,24 +299,23 @@ export function CustomReportMobileCard({
    const report = row.original;
 
    return (
-      <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
-         <CardHeader>
-            <div className="flex items-center justify-between">
-               <div>
-                  <CardTitle className="text-base">{report.name}</CardTitle>
-                  <CardDescription>
-                     {formatDate(new Date(report.createdAt), "DD MMM YYYY")}
-                  </CardDescription>
-               </div>
-               <ReportTypeBadge type={report.type} />
+      <Card className={isExpanded ? "rounded-b-none py-4" : "py-4"}>
+         <CardHeader className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+               <CardTitle className="text-sm truncate">{report.name}</CardTitle>
+               <CardDescription>
+                  {formatDate(new Date(report.createdAt), "DD MMM YYYY")}
+               </CardDescription>
             </div>
+            <CardAction>
+               <Checkbox
+                  checked={row.getIsSelected()}
+                  onCheckedChange={(value) => row.toggleSelected(!!value)}
+               />
+            </CardAction>
          </CardHeader>
-         <CardContent>
-            {report.description && (
-               <p className="text-sm text-muted-foreground line-clamp-2">
-                  {report.description}
-               </p>
-            )}
+         <CardContent className="flex flex-wrap items-center gap-2">
+            <ReportTypeAnnouncement type={report.type} />
          </CardContent>
          <CardFooter>
             <CollapsibleTrigger asChild>
@@ -409,10 +327,10 @@ export function CustomReportMobileCard({
                   }}
                   variant="outline"
                >
-                  {isExpanded ? "Menos Informações" : "Mais Informações"}
                   <ChevronDown
                      className={`size-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
                   />
+                  Mais
                </Button>
             </CollapsibleTrigger>
          </CardFooter>

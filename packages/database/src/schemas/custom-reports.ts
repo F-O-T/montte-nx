@@ -43,34 +43,38 @@ export type TransactionSnapshot = {
    id: string;
    date: string;
    description: string;
-   amount: number;
+   amount: string;
    type: "income" | "expense" | "transfer";
-   bankAccount?: {
+   bankAccount: {
+      id: string;
+      name: string | null;
+      bank: string;
+   } | null;
+   costCenter: {
       id: string;
       name: string;
-   };
-   costCenter?: {
-      id: string;
-      name: string;
-      code?: string;
-   };
-   categories: Array<{
-      id: string;
-      name: string;
-      color: string;
-      icon?: string;
+      code: string | null;
+   } | null;
+   transactionCategories: Array<{
+      category: {
+         id: string;
+         name: string;
+         color: string;
+         icon: string | null;
+      };
    }>;
-   tags: Array<{
-      id: string;
-      name: string;
-      color: string;
+   transactionTags: Array<{
+      tag: {
+         id: string;
+         name: string;
+         color: string;
+      };
    }>;
-   categorySplits?: Array<{
+   categorySplits: Array<{
       categoryId: string;
-      categoryName: string;
-      categoryColor: string;
       value: number;
-   }>;
+      splitType: "amount";
+   }> | null;
 };
 
 export type ReportFilterConfig = {
@@ -80,6 +84,164 @@ export type ReportFilterConfig = {
    tagIds?: string[];
    includeTransfers?: boolean;
 };
+
+// Report type definitions
+export type ReportType =
+   | "dre_gerencial"
+   | "dre_fiscal"
+   | "budget_vs_actual"
+   | "spending_trends"
+   | "cash_flow_forecast"
+   | "counterparty_analysis";
+
+// Budget vs Actual snapshot data
+export type BudgetVsActualSnapshotData = {
+   type: "budget_vs_actual";
+   summary: {
+      totalBudgeted: number;
+      totalActual: number;
+      variance: number;
+      variancePercent: number;
+   };
+   categoryComparisons: Array<{
+      categoryId: string;
+      categoryName: string;
+      categoryColor: string;
+      budgeted: number;
+      actual: number;
+      variance: number;
+      variancePercent: number;
+   }>;
+   monthlyBreakdown: Array<{
+      month: string;
+      year: number;
+      budgeted: number;
+      actual: number;
+      variance: number;
+   }>;
+   generatedAt: string;
+   filterMetadata?: FilterMetadata;
+};
+
+// Spending Trends snapshot data
+export type SpendingTrendsSnapshotData = {
+   type: "spending_trends";
+   summary: {
+      avgMonthlySpending: number;
+      avgMonthlyIncome: number;
+      highestExpenseMonth: { month: string; year: number; amount: number };
+      lowestExpenseMonth: { month: string; year: number; amount: number };
+      trend: "increasing" | "decreasing" | "stable";
+      trendPercent: number;
+   };
+   monthlyData: Array<{
+      month: string;
+      year: number;
+      income: number;
+      expenses: number;
+      net: number;
+   }>;
+   categoryTrends: Array<{
+      categoryId: string;
+      categoryName: string;
+      categoryColor: string;
+      totalAmount: number;
+      monthlyAmounts: Array<{ month: string; year: number; amount: number }>;
+   }>;
+   yoyComparison?: {
+      currentYearTotal: number;
+      previousYearTotal: number;
+      change: number;
+      changePercent: number;
+   };
+   generatedAt: string;
+   filterMetadata?: FilterMetadata;
+};
+
+// Cash Flow Forecast snapshot data
+export type CashFlowForecastSnapshotData = {
+   type: "cash_flow_forecast";
+   summary: {
+      currentBalance: number;
+      projectedBalance: number;
+      projectionDays: number;
+      totalProjectedIncome: number;
+      totalProjectedExpenses: number;
+   };
+   dailyProjections: Array<{
+      date: string;
+      projectedIncome: number;
+      projectedExpenses: number;
+      balance: number;
+   }>;
+   upcomingBills: Array<{
+      billId: string;
+      description: string;
+      amount: number;
+      dueDate: string;
+      type: "income" | "expense";
+      counterpartyName?: string;
+   }>;
+   recurringPatterns: Array<{
+      description: string;
+      amount: number;
+      frequency: string;
+      type: "income" | "expense";
+   }>;
+   generatedAt: string;
+   filterMetadata?: FilterMetadata;
+};
+
+// Counterparty Analysis snapshot data
+export type CounterpartyAnalysisSnapshotData = {
+   type: "counterparty_analysis";
+   summary: {
+      totalCounterparties: number;
+      totalCustomers: number;
+      totalSuppliers: number;
+      totalReceived: number;
+      totalPaid: number;
+      netBalance: number;
+   };
+   topCustomer?: {
+      id: string;
+      name: string;
+      totalAmount: number;
+      transactionCount: number;
+   };
+   topSupplier?: {
+      id: string;
+      name: string;
+      totalAmount: number;
+      transactionCount: number;
+   };
+   customers: Array<{
+      counterpartyId: string;
+      counterpartyName: string;
+      totalAmount: number;
+      transactionCount: number;
+      lastTransactionDate: string;
+      percentOfTotal: number;
+   }>;
+   suppliers: Array<{
+      counterpartyId: string;
+      counterpartyName: string;
+      totalAmount: number;
+      transactionCount: number;
+      lastTransactionDate: string;
+      percentOfTotal: number;
+   }>;
+   generatedAt: string;
+   filterMetadata?: FilterMetadata;
+};
+
+// Union type for all snapshot data with discriminator
+export type ReportSnapshotData =
+   | (DRESnapshotData & { type?: "dre_gerencial" | "dre_fiscal" })
+   | BudgetVsActualSnapshotData
+   | SpendingTrendsSnapshotData
+   | CashFlowForecastSnapshotData
+   | CounterpartyAnalysisSnapshotData;
 
 export const customReport = pgTable("custom_report", {
    createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -94,9 +256,9 @@ export const customReport = pgTable("custom_report", {
    organizationId: uuid("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
-   snapshotData: jsonb("snapshot_data").$type<DRESnapshotData>().notNull(),
+   snapshotData: jsonb("snapshot_data").$type<ReportSnapshotData>().notNull(),
    startDate: timestamp("start_date").notNull(),
-   type: text("type").notNull(),
+   type: text("type").$type<ReportType>().notNull(),
    updatedAt: timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => new Date())

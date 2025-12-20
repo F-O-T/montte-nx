@@ -3,15 +3,15 @@ import { useNavigate } from "@tanstack/react-router";
 import { FileUp, XIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePendingImport } from "@/hooks/use-pending-import";
-import type {
-   ColumnMapping,
-   CsvPreviewData,
-   DuplicateInfo,
-   FileType,
-   ImportStep,
-   ParsedTransaction,
-} from "../types";
-import { getStepsForFileType } from "../types";
+import {
+   getStepsForFileType,
+   type ColumnMapping,
+   type CsvPreviewData,
+   type DuplicateInfo,
+   type FileType,
+   type ImportStep,
+   type ParsedTransaction,
+} from "../lib/use-import-wizard";
 import { AccountStep } from "./account-step";
 import { ImportingStep } from "./importing-step";
 import { MappingStep } from "./mapping-step";

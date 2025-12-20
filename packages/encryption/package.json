@@ -26,7 +26,8 @@
    ],
    "scripts": {
       "build": "tsc --build",
-      "typecheck": "tsc"
+      "typecheck": "tsc",
+      "test": "bun test"
    },
    "dependencies": {
       "tweetnacl": "^1.0.3",

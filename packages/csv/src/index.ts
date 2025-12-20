@@ -7,10 +7,18 @@ export {
    suggestColumnMapping,
 } from "./bank-formats";
 export {
+   // Re-exported library types
+   type CSVDocument,
+   type CsvParseOptionsWithProgress,
+   type CsvProgressCallback,
+   type CsvProgressEvent,
+   type ParsedRow,
    parseAmount,
    parseCsvContent,
    parseDate,
    previewCsv,
+   type StreamEvent,
+   type StreamOptions,
 } from "./parser";
 
 export type {

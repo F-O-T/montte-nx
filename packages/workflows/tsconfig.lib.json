@@ -8,6 +8,9 @@
    "exclude": ["**/*.test.ts", "**/__tests__/**"],
    "references": [
     {
+      "path": "../transactional/tsconfig.lib.json"
+    },
+    {
       "path": "../utils/tsconfig.lib.json"
     },
     {

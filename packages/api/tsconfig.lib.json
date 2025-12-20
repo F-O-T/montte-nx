@@ -13,6 +13,15 @@
   ],
   "references": [
     {
+      "path": "../logging"
+    },
+    {
+      "path": "../environment/tsconfig.lib.json"
+    },
+    {
+      "path": "../transactional/tsconfig.lib.json"
+    },
+    {
       "path": "../stripe/tsconfig.lib.json"
     },
     {
@@ -43,10 +52,10 @@
       "path": "../database/tsconfig.lib.json"
     },
     {
-      "path": "../cache/tsconfig.lib.json"
+      "path": "../csv/tsconfig.lib.json"
     },
     {
-      "path": "../csv/tsconfig.lib.json"
+      "path": "../cache/tsconfig.lib.json"
     },
     {
       "path": "../brasil-api/tsconfig.lib.json"

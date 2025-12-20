@@ -1,3 +1,11 @@
+import {
+   type CSVDocument,
+   type ParsedRow,
+   parseOrThrow,
+   parseStream,
+   type StreamEvent,
+   type StreamOptions,
+} from "@f-o-t/csv";
 import { AppError } from "@packages/utils/errors";
 import { normalizeText } from "@packages/utils/text";
 import {
@@ -6,38 +14,26 @@ import {
    suggestColumnMapping,
 } from "./bank-formats";
 import type {
+   CsvColumnMapping,
    CsvParseError,
    CsvParseOptions,
    CsvParseResult,
    ParsedCsvRow,
 } from "./types";
 
-function parseCsvLine(line: string, delimiter: string): string[] {
-   const result: string[] = [];
-   let current = "";
-   let inQuotes = false;
+// Re-export library types for consumers
+export type { CSVDocument, ParsedRow, StreamEvent, StreamOptions };
 
-   for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      const nextChar = line[i + 1];
+// Progress callback types
+export type CsvProgressEvent =
+   | { type: "headers"; headers: string[] }
+   | { type: "progress"; parsed: number; total?: number }
+   | { type: "complete"; totalParsed: number; errors: CsvParseError[] };
 
-      if (char === '"') {
-         if (inQuotes && nextChar === '"') {
-            current += '"';
-            i++;
-         } else {
-            inQuotes = !inQuotes;
-         }
-      } else if (char === delimiter && !inQuotes) {
-         result.push(current.trim());
-         current = "";
-      } else {
-         current += char;
-      }
-   }
+export type CsvProgressCallback = (event: CsvProgressEvent) => void;
 
-   result.push(current.trim());
-   return result;
+export interface CsvParseOptionsWithProgress extends CsvParseOptions {
+   onProgress?: CsvProgressCallback;
 }
 
 export function parseAmount(
@@ -142,132 +138,213 @@ export function parseDate(value: string, format: string): Date | null {
    return null;
 }
 
-export function parseCsvContent(
+/**
+ * Creates an async iterable that yields chunks of the content string.
+ * Yields to the main thread between chunks for UI responsiveness.
+ */
+async function* createChunkIterable(
    content: string,
-   options?: CsvParseOptions,
-): CsvParseResult {
-   const lines = content.split(/\r?\n/).filter((line) => line.trim() !== "");
+   chunkSize = 65536,
+): AsyncGenerator<string> {
+   for (let i = 0; i < content.length; i += chunkSize) {
+      yield content.slice(i, i + chunkSize);
+      // Yield to main thread between chunks for UI responsiveness
+      await new Promise((resolve) => setTimeout(resolve, 0));
+   }
+}
 
-   if (lines.length === 0) {
-      throw AppError.validation("CSV file is empty");
+/**
+ * Processes a single row from the CSV stream.
+ */
+function processRow(
+   rowIndex: number,
+   values: string[],
+   mapping: CsvColumnMapping,
+   dateFormat: string,
+   amountFormat: "decimal-comma" | "decimal-dot",
+   errors: CsvParseError[],
+): ParsedCsvRow | null {
+   const dateValue = values[mapping.date] ?? "";
+   const amountValue = values[mapping.amount] ?? "";
+   const descriptionValue = values[mapping.description] ?? "";
+
+   const date = parseDate(dateValue, dateFormat);
+   if (!date) {
+      errors.push({
+         row: rowIndex,
+         column: mapping.date,
+         message: `Invalid date: "${dateValue}"`,
+      });
+      return null;
    }
 
+   const amount = parseAmount(amountValue, amountFormat);
+   if (amount === 0 && amountValue?.trim() !== "0") {
+      errors.push({
+         row: rowIndex,
+         column: mapping.amount,
+         message: `Invalid amount: "${amountValue}"`,
+      });
+      return null;
+   }
+
+   const description = normalizeText(descriptionValue || "Sem descrição");
+
+   let type: "income" | "expense" = amount >= 0 ? "income" : "expense";
+
+   if (mapping.type !== undefined) {
+      const typeValue = values[mapping.type]?.toLowerCase();
+      if (
+         typeValue?.includes("credit") ||
+         typeValue?.includes("credito") ||
+         typeValue?.includes("crédito") ||
+         typeValue?.includes("entrada")
+      ) {
+         type = "income";
+      } else if (
+         typeValue?.includes("debit") ||
+         typeValue?.includes("debito") ||
+         typeValue?.includes("débito") ||
+         typeValue?.includes("saida") ||
+         typeValue?.includes("saída")
+      ) {
+         type = "expense";
+      }
+   }
+
+   return {
+      rowIndex,
+      date,
+      amount: Math.abs(amount),
+      description,
+      type,
+      raw: values,
+   };
+}
+
+/**
+ * Parses CSV content using streaming for better performance.
+ * Supports progress callbacks for UI updates.
+ */
+export async function parseCsvContent(
+   content: string,
+   options?: CsvParseOptionsWithProgress,
+): Promise<CsvParseResult> {
    const delimiter = options?.delimiter ?? detectDelimiter(content);
    const skipRows = options?.skipRows ?? 1;
+   const onProgress = options?.onProgress;
 
-   const firstLine = lines[0] ?? "";
-   const headers = parseCsvLine(firstLine, delimiter);
-
-   const detectedFormat = detectBankFormat(headers);
-
+   let headers: string[] = [];
+   let detectedFormat: ReturnType<typeof detectBankFormat> = null;
    let columnMapping = options?.columnMapping;
-   if (!columnMapping) {
-      if (detectedFormat) {
-         columnMapping = detectedFormat.columnMapping;
-      } else {
-         const suggested = suggestColumnMapping(headers);
-         if (
-            suggested.date !== null &&
-            suggested.amount !== null &&
-            suggested.description !== null
-         ) {
-            columnMapping = {
-               date: suggested.date,
-               amount: suggested.amount,
-               description: suggested.description,
-            };
+   const rows: ParsedCsvRow[] = [];
+   const errors: CsvParseError[] = [];
+   let rowCount = 0;
+   let processedRowCount = 0;
+
+   // Number of data rows to skip after header (skipRows=1 means just header, skipRows=2 means header + 1 data row)
+   const dataRowsToSkip = skipRows > 1 ? skipRows - 1 : 0;
+
+   // Create async iterable from content
+   const chunkIterable = createChunkIterable(content);
+
+   // Stream parse the CSV
+   for await (const event of parseStream(chunkIterable, {
+      delimiter,
+      hasHeaders: true,
+      trimFields: true,
+   })) {
+      switch (event.type) {
+         case "headers":
+            headers = event.data;
+            detectedFormat = detectBankFormat(headers);
+
+            if (!columnMapping && detectedFormat) {
+               columnMapping = detectedFormat.columnMapping;
+            } else if (!columnMapping) {
+               const suggested = suggestColumnMapping(headers);
+               if (
+                  suggested.date !== null &&
+                  suggested.amount !== null &&
+                  suggested.description !== null
+               ) {
+                  columnMapping = {
+                     date: suggested.date,
+                     amount: suggested.amount,
+                     description: suggested.description,
+                  };
+               }
+            }
+
+            onProgress?.({ type: "headers", headers });
+            break;
+
+         case "row": {
+            rowCount++;
+
+            // Skip data rows if needed (manual handling since library may not support skipRows in streaming)
+            if (rowCount <= dataRowsToSkip) {
+               continue;
+            }
+
+            // Calculate 1-indexed row number for the API (matches pre-streaming behavior)
+            const displayRowIndex = rowCount;
+
+            if (!columnMapping) {
+               errors.push({
+                  row: displayRowIndex,
+                  message: "Column mapping not defined",
+               });
+               continue;
+            }
+
+            const dateFormat =
+               options?.dateFormat ??
+               detectedFormat?.dateFormat ??
+               "DD/MM/YYYY";
+            const amountFormat =
+               options?.amountFormat ??
+               detectedFormat?.amountFormat ??
+               "decimal-comma";
+
+            const parsedRow = processRow(
+               displayRowIndex,
+               event.data.fields,
+               columnMapping,
+               dateFormat,
+               amountFormat,
+               errors,
+            );
+
+            if (parsedRow) {
+               if (
+                  !options?.selectedRows ||
+                  options.selectedRows.includes(displayRowIndex)
+               ) {
+                  rows.push(parsedRow);
+               }
+            }
+
+            processedRowCount++;
+            // Report progress every 100 rows
+            if (processedRowCount % 100 === 0) {
+               onProgress?.({ type: "progress", parsed: processedRowCount });
+            }
+            break;
          }
+
+         case "complete":
+            onProgress?.({
+               type: "complete",
+               totalParsed: rows.length,
+               errors,
+            });
+            break;
       }
    }
 
-   const dateFormat =
-      options?.dateFormat ?? detectedFormat?.dateFormat ?? "DD/MM/YYYY";
-   const amountFormat =
-      options?.amountFormat ?? detectedFormat?.amountFormat ?? "decimal-comma";
-
-   const rows: ParsedCsvRow[] = [];
-   const errors: CsvParseError[] = [];
-
-   const dataLines = lines.slice(skipRows);
-
-   for (let i = 0; i < dataLines.length; i++) {
-      const lineIndex = i + skipRows;
-      const line = dataLines[i] ?? "";
-
-      if (!line.trim()) {
-         continue;
-      }
-
-      const values = parseCsvLine(line, delimiter);
-
-      if (!columnMapping) {
-         errors.push({
-            row: lineIndex,
-            message: "Column mapping not defined",
-         });
-         continue;
-      }
-
-      const dateValue = values[columnMapping.date] ?? "";
-      const amountValue = values[columnMapping.amount] ?? "";
-      const descriptionValue = values[columnMapping.description] ?? "";
-
-      const date = parseDate(dateValue, dateFormat);
-      if (!date) {
-         errors.push({
-            row: lineIndex,
-            column: columnMapping.date,
-            message: `Invalid date: "${dateValue}"`,
-         });
-         continue;
-      }
-
-      const amount = parseAmount(amountValue, amountFormat);
-      if (amount === 0 && amountValue?.trim() !== "0") {
-         errors.push({
-            row: lineIndex,
-            column: columnMapping.amount,
-            message: `Invalid amount: "${amountValue}"`,
-         });
-         continue;
-      }
-
-      const description = normalizeText(descriptionValue || "Sem descrição");
-
-      let type: "income" | "expense" = amount >= 0 ? "income" : "expense";
-
-      if (columnMapping.type !== undefined) {
-         const typeValue = values[columnMapping.type]?.toLowerCase();
-         if (
-            typeValue?.includes("credit") ||
-            typeValue?.includes("credito") ||
-            typeValue?.includes("crédito") ||
-            typeValue?.includes("entrada")
-         ) {
-            type = "income";
-         } else if (
-            typeValue?.includes("debit") ||
-            typeValue?.includes("debito") ||
-            typeValue?.includes("débito") ||
-            typeValue?.includes("saida") ||
-            typeValue?.includes("saída")
-         ) {
-            type = "expense";
-         }
-      }
-
-      if (options?.selectedRows && !options.selectedRows.includes(lineIndex)) {
-         continue;
-      }
-
-      rows.push({
-         rowIndex: lineIndex,
-         date,
-         amount: Math.abs(amount),
-         description,
-         type,
-         raw: values,
-      });
+   if (rowCount === 0 && headers.length === 0) {
+      throw AppError.validation("CSV file is empty");
    }
 
    return {
@@ -275,7 +352,7 @@ export function parseCsvContent(
       rows,
       detectedFormat,
       errors,
-      totalRows: dataLines.length,
+      totalRows: rowCount,
    };
 }
 
@@ -294,27 +371,26 @@ export function previewCsv(
    totalRows: number;
    delimiter: string;
 } {
-   const lines = content.split(/\r?\n/).filter((line) => line.trim() !== "");
+   const delimiter = options?.delimiter ?? detectDelimiter(content);
 
-   if (lines.length === 0) {
+   const csvDoc = parseOrThrow(content, {
+      delimiter,
+      hasHeaders: true,
+      trimFields: true,
+   });
+
+   if (csvDoc.totalRows === 0 && !csvDoc.headers?.length) {
       throw AppError.validation("CSV file is empty");
    }
 
-   const delimiter = options?.delimiter ?? detectDelimiter(content);
-   const previewFirstLine = lines[0] ?? "";
-   const headers = parseCsvLine(previewFirstLine, delimiter);
+   const headers = csvDoc.headers ?? [];
    const detectedFormat = detectBankFormat(headers);
    const suggestedMapping = suggestColumnMapping(headers);
 
    const maxRows = options?.maxRows ?? 5;
-   const sampleRows: string[][] = [];
-
-   for (let i = 1; i < lines.length && sampleRows.length < maxRows; i++) {
-      const currentLine = lines[i];
-      if (currentLine?.trim()) {
-         sampleRows.push(parseCsvLine(currentLine, delimiter));
-      }
-   }
+   const sampleRows: string[][] = csvDoc.rows
+      .slice(0, maxRows)
+      .map((row) => row.fields);
 
    return {
       headers,
@@ -323,7 +399,7 @@ export function previewCsv(
          ? { id: detectedFormat.id, name: detectedFormat.name }
          : null,
       suggestedMapping,
-      totalRows: lines.length - 1,
+      totalRows: csvDoc.totalRows,
       delimiter,
    };
 }

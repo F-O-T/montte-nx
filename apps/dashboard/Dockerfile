@@ -34,7 +34,7 @@ COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY packages/stripe/package.json ./packages/stripe/
 COPY packages/arcjet/package.json ./packages/arcjet/
 COPY packages/csv/package.json ./packages/csv/
-
+COPY libraries/csv/package.json ./libraries/csv/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
 
@@ -51,6 +51,14 @@ RUN bun run build
 WORKDIR /app
 
 WORKDIR /app/libraries/condition-evaluator
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/csv
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/rules-engine
 RUN bun run build
 WORKDIR /app
 

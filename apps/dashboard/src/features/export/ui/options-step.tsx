@@ -31,7 +31,7 @@ import {
    type ExportFormat,
    type ExportOptions,
    type TransactionTypeFilter,
-} from "../types";
+} from "../lib/use-export-wizard";
 
 interface OptionsStepProps {
    initialOptions: ExportOptions;

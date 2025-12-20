@@ -1,3 +1,4 @@
+import type { TransactionType } from "@packages/ofx";
 import { useCallback } from "react";
 
 const STORAGE_KEY = "montte:pending-import";
@@ -30,7 +31,7 @@ export type SerializedTransaction = {
    date: string; // ISO string
    amount: number;
    description: string;
-   type: "income" | "expense";
+   type: TransactionType;
    externalId?: string; // FITID for OFX
 };
 

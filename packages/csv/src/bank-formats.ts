@@ -1,4 +1,8 @@
+import { detectDelimiter } from "@f-o-t/csv";
 import type { BankFormat } from "./types";
+
+// Re-export from the library for backwards compatibility
+export { detectDelimiter };
 
 function normalizeHeader(header: string): string {
    return header
@@ -16,6 +20,19 @@ function headersMatch(headers: string[], patterns: string[]): boolean {
 }
 
 export const BANK_FORMATS: BankFormat[] = [
+   // C6 must be before Nubank since it has a more specific pattern (requires "c6" keyword)
+   {
+      id: "c6",
+      name: "C6 Bank",
+      delimiter: ";",
+      dateFormat: "DD/MM/YYYY",
+      amountFormat: "decimal-comma",
+      hasHeader: true,
+      columnMapping: { date: 0, description: 1, amount: 2 },
+      detectPattern: (headers) =>
+         headersMatch(headers, ["data", "descricao", "valor"]) &&
+         headers.some((h) => normalizeHeader(h).includes("c6")),
+   },
    {
       id: "nubank",
       name: "Nubank",
@@ -87,18 +104,6 @@ export const BANK_FORMATS: BankFormat[] = [
          headersMatch(headers, ["data", "historico", "documento", "valor"]),
    },
    {
-      id: "c6",
-      name: "C6 Bank",
-      delimiter: ";",
-      dateFormat: "DD/MM/YYYY",
-      amountFormat: "decimal-comma",
-      hasHeader: true,
-      columnMapping: { date: 0, description: 1, amount: 2 },
-      detectPattern: (headers) =>
-         headersMatch(headers, ["data", "descricao", "valor"]) &&
-         headers.some((h) => normalizeHeader(h).includes("c6")),
-   },
-   {
       id: "generic-comma",
       name: "CSV Genérico (vírgula)",
       delimiter: ",",
@@ -119,13 +124,6 @@ export const BANK_FORMATS: BankFormat[] = [
       detectPattern: () => false,
    },
 ];
-
-export function detectDelimiter(content: string): string {
-   const firstLine = content.split("\n")[0] || "";
-   const semicolonCount = (firstLine.match(/;/g) || []).length;
-   const commaCount = (firstLine.match(/,/g) || []).length;
-   return semicolonCount > commaCount ? ";" : ",";
-}
 
 export function detectBankFormat(headers: string[]): BankFormat | null {
    for (const format of BANK_FORMATS) {
