@@ -54,6 +54,14 @@ WORKDIR /app/libraries/condition-evaluator
 RUN bun run build
 WORKDIR /app
 
+WORKDIR /app/libraries/csv
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/rules-engine
+RUN bun run build
+WORKDIR /app
+
 # Build the dashboard application
 ENV NODE_ENV=production
 ARG VITE_SERVER_URL
