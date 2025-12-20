@@ -101,20 +101,18 @@ async function* createBufferIterable(
 }
 
 /**
- * Parses OFX content from a string using streaming.
- * Supports progress callbacks for UI updates.
+ * Shared helper that parses OFX from an async iterable.
+ * Handles progress callbacks, transaction mapping, and event processing.
  */
-export async function parseOfxContent(
-   content: string,
+async function parseFromIterable(
+   iterable: AsyncIterable<string>,
    options?: ParseOfxOptions,
 ): Promise<ParsedTransaction[]> {
    const transactions: ParsedTransaction[] = [];
    const onProgress = options?.onProgress;
    let count = 0;
 
-   const chunkIterable = createChunkIterable(content);
-
-   for await (const event of parseStream(chunkIterable)) {
+   for await (const event of parseStream(iterable)) {
       switch (event.type) {
          case "header":
             onProgress?.({ type: "header", header: event.data });
@@ -143,6 +141,17 @@ export async function parseOfxContent(
 }
 
 /**
+ * Parses OFX content from a string using streaming.
+ * Supports progress callbacks for UI updates.
+ */
+export async function parseOfxContent(
+   content: string,
+   options?: ParseOfxOptions,
+): Promise<ParsedTransaction[]> {
+   return parseFromIterable(createChunkIterable(content), options);
+}
+
+/**
  * Parses OFX content from a buffer using streaming.
  * Handles encoding detection automatically.
  * Supports progress callbacks for UI updates.
@@ -151,38 +160,7 @@ export async function parseOfxBuffer(
    buffer: Uint8Array,
    options?: ParseOfxOptions,
 ): Promise<ParsedTransaction[]> {
-   const transactions: ParsedTransaction[] = [];
-   const onProgress = options?.onProgress;
-   let count = 0;
-
-   const chunkIterable = createBufferIterable(buffer);
-
-   for await (const event of parseStream(chunkIterable)) {
-      switch (event.type) {
-         case "header":
-            onProgress?.({ type: "header", header: event.data });
-            break;
-
-         case "transaction":
-            count++;
-            transactions.push(mapTransaction(event.data));
-
-            // Report progress every 50 transactions
-            if (count % 50 === 0) {
-               onProgress?.({ type: "progress", parsed: count });
-            }
-            break;
-
-         case "complete":
-            onProgress?.({
-               type: "complete",
-               totalParsed: transactions.length,
-            });
-            break;
-      }
-   }
-
-   return transactions;
+   return parseFromIterable(createBufferIterable(buffer), options);
 }
 
 // Export types

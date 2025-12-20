@@ -98,4 +98,4 @@ export interface StreamOptions extends ParseOptions {
 export type StreamEvent =
 	| { type: "headers"; data: string[] }
 	| { type: "row"; data: ParsedRow }
-	| { type: "complete"; rowCount: number };
+	| { type: "complete"; rowCount: number; delimiter: string };

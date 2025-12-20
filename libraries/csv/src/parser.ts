@@ -3,9 +3,13 @@ import type {
 	ParseOptions,
 	ParseResult,
 	ParsedRow,
-	ParserState,
 } from "./types.ts";
-import { decodeBuffer, detectDelimiter } from "./utils.ts";
+import {
+	createStateMachineContext,
+	flush,
+	processChar,
+} from "./csv-state-machine.ts";
+import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
 
 /**
  * Parses raw CSV content into a 2D array of strings using a state machine.
@@ -21,167 +25,26 @@ import { decodeBuffer, detectDelimiter } from "./utils.ts";
  */
 function parseRawCSV(input: string, delimiter: string): string[][] {
 	const rows: string[][] = [];
-	let currentRow: string[] = [];
-	let currentField = "";
-	let state: ParserState = "FIELD_START";
+	const ctx = createStateMachineContext(delimiter);
+
+	const onRowComplete = (row: string[]) => {
+		// Only add non-empty rows (rows with content or more than one empty field)
+		if (row.length > 0 || (row.length === 1 && row[0] !== "")) {
+			rows.push([...row]);
+		}
+	};
 
 	for (let i = 0; i < input.length; i++) {
 		const char = input[i] as string;
 		const nextChar = input[i + 1];
-
-		switch (state) {
-			case "FIELD_START":
-				if (char === '"') {
-					state = "QUOTED_FIELD";
-				} else if (char === delimiter) {
-					currentRow.push(currentField);
-					currentField = "";
-					// Stay in FIELD_START for next field
-				} else if (char === "\r" && nextChar === "\n") {
-					currentRow.push(currentField);
-					if (currentRow.length > 0 || currentField !== "") {
-						rows.push(currentRow);
-					}
-					currentRow = [];
-					currentField = "";
-					i++; // Skip \n
-				} else if (char === "\n") {
-					currentRow.push(currentField);
-					if (currentRow.length > 0 || currentField !== "") {
-						rows.push(currentRow);
-					}
-					currentRow = [];
-					currentField = "";
-				} else {
-					currentField += char;
-					state = "UNQUOTED_FIELD";
-				}
-				break;
-
-			case "UNQUOTED_FIELD":
-				if (char === delimiter) {
-					currentRow.push(currentField);
-					currentField = "";
-					state = "FIELD_START";
-				} else if (char === "\r" && nextChar === "\n") {
-					currentRow.push(currentField);
-					rows.push(currentRow);
-					currentRow = [];
-					currentField = "";
-					state = "FIELD_START";
-					i++; // Skip \n
-				} else if (char === "\n") {
-					currentRow.push(currentField);
-					rows.push(currentRow);
-					currentRow = [];
-					currentField = "";
-					state = "FIELD_START";
-				} else {
-					currentField += char;
-				}
-				break;
-
-			case "QUOTED_FIELD":
-				if (char === '"') {
-					state = "QUOTE_IN_QUOTED";
-				} else {
-					// Newlines inside quotes are kept as-is (including \r\n)
-					currentField += char;
-				}
-				break;
-
-			case "QUOTE_IN_QUOTED":
-				if (char === '"') {
-					// Escaped quote ("" -> ")
-					currentField += '"';
-					state = "QUOTED_FIELD";
-				} else if (char === delimiter) {
-					// End of quoted field, followed by delimiter
-					currentRow.push(currentField);
-					currentField = "";
-					state = "FIELD_START";
-				} else if (char === "\r" && nextChar === "\n") {
-					// End of quoted field, followed by CRLF
-					currentRow.push(currentField);
-					rows.push(currentRow);
-					currentRow = [];
-					currentField = "";
-					state = "FIELD_START";
-					i++; // Skip \n
-				} else if (char === "\n") {
-					// End of quoted field, followed by LF
-					currentRow.push(currentField);
-					rows.push(currentRow);
-					currentRow = [];
-					currentField = "";
-					state = "FIELD_START";
-				} else {
-					// Characters after closing quote but before delimiter (non-strict)
-					// Some parsers ignore these, we'll keep them for compatibility
-					state = "FIELD_END";
-				}
-				break;
-
-			case "FIELD_END":
-				if (char === delimiter) {
-					currentRow.push(currentField);
-					currentField = "";
-					state = "FIELD_START";
-				} else if (char === "\r" && nextChar === "\n") {
-					currentRow.push(currentField);
-					rows.push(currentRow);
-					currentRow = [];
-					currentField = "";
-					state = "FIELD_START";
-					i++; // Skip \n
-				} else if (char === "\n") {
-					currentRow.push(currentField);
-					rows.push(currentRow);
-					currentRow = [];
-					currentField = "";
-					state = "FIELD_START";
-				}
-				// Ignore other characters after closing quote
-				break;
-		}
+		const skip = processChar(ctx, char, nextChar, onRowComplete);
+		i += skip;
 	}
 
 	// Handle final field/row
-	if (currentField !== "" || currentRow.length > 0) {
-		currentRow.push(currentField);
-		rows.push(currentRow);
-	}
+	flush(ctx, onRowComplete);
 
 	return rows;
-}
-
-/**
- * Creates a ParsedRow from raw field values.
- */
-function createParsedRow(
-	fields: string[],
-	rowIndex: number,
-	headers: string[] | undefined,
-	trimFields: boolean,
-): ParsedRow {
-	const processedFields = trimFields ? fields.map((f) => f.trim()) : fields;
-
-	const row: ParsedRow = {
-		rowIndex,
-		fields: processedFields,
-	};
-
-	if (headers) {
-		row.record = {};
-		for (let i = 0; i < headers.length; i++) {
-			const header = headers[i];
-			if (header !== undefined) {
-				row.record[header] = processedFields[i] ?? "";
-			}
-		}
-	}
-
-	return row;
 }
 
 /**

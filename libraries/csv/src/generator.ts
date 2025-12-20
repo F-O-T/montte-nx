@@ -138,10 +138,18 @@ export function createGenerator(options?: GenerateOptions): {
 			const fields: string[] = [];
 			for (const header of headers) {
 				const value = obj[header];
+				// Convert value to string - same logic as generateFromObjects
 				if (value === null || value === undefined) {
 					fields.push("");
 				} else if (typeof value === "string") {
 					fields.push(value);
+				} else if (typeof value === "number" || typeof value === "boolean") {
+					fields.push(String(value));
+				} else if (value instanceof Date) {
+					fields.push(value.toISOString());
+				} else if (Array.isArray(value) || typeof value === "object") {
+					// For objects/arrays, use JSON
+					fields.push(JSON.stringify(value));
 				} else {
 					fields.push(String(value));
 				}
@@ -154,11 +162,21 @@ export function createGenerator(options?: GenerateOptions): {
 		},
 
 		toStream() {
-			const content = rows.join(opts.lineEnding);
+			const rowsSnapshot = [...rows];
+			let index = 0;
+
 			return new ReadableStream<string>({
-				start(controller) {
-					controller.enqueue(content);
-					controller.close();
+				pull(controller) {
+					if (index >= rowsSnapshot.length) {
+						controller.close();
+						return;
+					}
+
+					const row = rowsSnapshot[index];
+					const isLastRow = index === rowsSnapshot.length - 1;
+
+					controller.enqueue(isLastRow ? row : row + opts.lineEnding);
+					index++;
 				},
 			});
 		},

@@ -1,21 +1,18 @@
-import type {
-	CSVDocument,
-	ParsedRow,
-	ParserState,
-	StreamEvent,
-	StreamOptions,
-} from "./types.ts";
-import { decodeBuffer, detectDelimiter } from "./utils.ts";
+import type { CSVDocument, ParsedRow, StreamEvent, StreamOptions } from "./types.ts";
+import {
+	type StateMachineContext,
+	createStateMachineContext,
+	hasPendingData,
+	processChar,
+} from "./csv-state-machine.ts";
+import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
 
 /**
  * Internal streaming parser state.
  */
 interface StreamingParserState {
-	state: ParserState;
-	currentField: string;
-	currentRow: string[];
+	ctx: StateMachineContext;
 	buffer: string;
-	delimiter: string;
 	delimiterDetected: boolean;
 	headers: string[] | undefined;
 	headersEmitted: boolean;
@@ -24,35 +21,6 @@ interface StreamingParserState {
 	trimFields: boolean;
 	skipRows: number;
 	skippedRows: number;
-}
-
-/**
- * Creates a ParsedRow from raw field values.
- */
-function createParsedRow(
-	fields: string[],
-	rowIndex: number,
-	headers: string[] | undefined,
-	trimFields: boolean,
-): ParsedRow {
-	const processedFields = trimFields ? fields.map((f) => f.trim()) : fields;
-
-	const row: ParsedRow = {
-		rowIndex,
-		fields: processedFields,
-	};
-
-	if (headers) {
-		row.record = {};
-		for (let i = 0; i < headers.length; i++) {
-			const header = headers[i];
-			if (header !== undefined) {
-				row.record[header] = processedFields[i] ?? "";
-			}
-		}
-	}
-
-	return row;
 }
 
 /**
@@ -67,177 +35,96 @@ function* processChunk(
 
 	// Detect delimiter from first chunk if not already done
 	if (!parserState.delimiterDetected && parserState.buffer.length > 0) {
-		parserState.delimiter = detectDelimiter(parserState.buffer);
+		parserState.ctx.delimiter = detectDelimiter(parserState.buffer);
 		parserState.delimiterDetected = true;
 	}
 
 	const input = parserState.buffer;
 	let processedUpTo = 0;
 
+	// Collect events to yield after processing
+	const events: StreamEvent[] = [];
+
+	const onRowComplete = (row: string[]) => {
+		// Copy the row since the state machine reuses the array
+		const completedRow = [...row];
+		const rowEvents = emitRowSync(parserState, completedRow);
+		events.push(...rowEvents);
+	};
+
 	for (let i = 0; i < input.length; i++) {
 		const char = input[i] as string;
 		const nextChar = input[i + 1];
 
-		switch (parserState.state) {
-			case "FIELD_START":
-				if (char === '"') {
-					parserState.state = "QUOTED_FIELD";
-				} else if (char === parserState.delimiter) {
-					parserState.currentRow.push(parserState.currentField);
-					parserState.currentField = "";
-				} else if (char === "\r" && nextChar === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					processedUpTo = i + 2;
-					i++; // Skip \n
-				} else if (char === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					processedUpTo = i + 1;
-				} else {
-					parserState.currentField += char;
-					parserState.state = "UNQUOTED_FIELD";
-				}
-				break;
+		const skip = processChar(parserState.ctx, char, nextChar, onRowComplete);
 
-			case "UNQUOTED_FIELD":
-				if (char === parserState.delimiter) {
-					parserState.currentRow.push(parserState.currentField);
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-				} else if (char === "\r" && nextChar === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-					processedUpTo = i + 2;
-					i++; // Skip \n
-				} else if (char === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-					processedUpTo = i + 1;
-				} else {
-					parserState.currentField += char;
-				}
-				break;
-
-			case "QUOTED_FIELD":
-				if (char === '"') {
-					parserState.state = "QUOTE_IN_QUOTED";
-				} else {
-					parserState.currentField += char;
-				}
-				break;
-
-			case "QUOTE_IN_QUOTED":
-				if (char === '"') {
-					parserState.currentField += '"';
-					parserState.state = "QUOTED_FIELD";
-				} else if (char === parserState.delimiter) {
-					parserState.currentRow.push(parserState.currentField);
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-				} else if (char === "\r" && nextChar === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-					processedUpTo = i + 2;
-					i++; // Skip \n
-				} else if (char === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-					processedUpTo = i + 1;
-				} else {
-					parserState.state = "FIELD_END";
-				}
-				break;
-
-			case "FIELD_END":
-				if (char === parserState.delimiter) {
-					parserState.currentRow.push(parserState.currentField);
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-				} else if (char === "\r" && nextChar === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-					processedUpTo = i + 2;
-					i++; // Skip \n
-				} else if (char === "\n") {
-					parserState.currentRow.push(parserState.currentField);
-					yield* emitRow(parserState);
-					parserState.currentRow = [];
-					parserState.currentField = "";
-					parserState.state = "FIELD_START";
-					processedUpTo = i + 1;
-				}
-				break;
+		// Track processed position when a row is completed
+		// A row was completed if we transitioned back to FIELD_START from a newline
+		if (
+			parserState.ctx.state === "FIELD_START" &&
+			(char === "\n" || (char === "\r" && nextChar === "\n"))
+		) {
+			if (char === "\r" && nextChar === "\n") {
+				processedUpTo = i + 2;
+			} else {
+				processedUpTo = i + 1;
+			}
 		}
+
+		i += skip;
+	}
+
+	// Yield collected events
+	for (const event of events) {
+		yield event;
 	}
 
 	// Keep unprocessed data in buffer for next chunk
-	// Only keep data that's part of an incomplete row
-	if (parserState.state === "QUOTED_FIELD") {
-		// We're in a quoted field, need to keep everything from start of current field
-		// For simplicity, keep entire buffer minus processed complete rows
-		parserState.buffer = input.slice(processedUpTo);
-	} else {
-		parserState.buffer = input.slice(processedUpTo);
-	}
+	parserState.buffer = input.slice(processedUpTo);
 }
 
 /**
- * Emits a row event, handling headers and skip logic.
+ * Emits a row event synchronously, handling headers and skip logic.
+ * Returns an array of events to be yielded.
  */
-function* emitRow(parserState: StreamingParserState): Generator<StreamEvent> {
+function emitRowSync(
+	parserState: StreamingParserState,
+	completedRow: string[],
+): StreamEvent[] {
+	const events: StreamEvent[] = [];
+
 	// Skip initial rows if requested
 	if (parserState.skippedRows < parserState.skipRows) {
 		parserState.skippedRows++;
-		return;
+		return events;
 	}
 
 	// Handle headers
 	if (parserState.hasHeaders && !parserState.headersEmitted) {
 		parserState.headers = parserState.trimFields
-			? parserState.currentRow.map((h) => h.trim())
-			: [...parserState.currentRow];
+			? completedRow.map((h) => h.trim())
+			: completedRow;
 		parserState.headersEmitted = true;
-		yield { type: "headers", data: parserState.headers };
-		return;
+		events.push({ type: "headers", data: parserState.headers });
+		return events;
 	}
 
 	// Skip empty rows
-	if (
-		parserState.currentRow.length === 1 &&
-		parserState.currentRow[0] === ""
-	) {
-		return;
+	if (completedRow.length === 1 && completedRow[0] === "") {
+		return events;
 	}
 
 	// Emit data row
 	const row = createParsedRow(
-		parserState.currentRow,
+		completedRow,
 		parserState.rowIndex,
 		parserState.headers,
 		parserState.trimFields,
 	);
 	parserState.rowIndex++;
-	yield { type: "row", data: row };
+	events.push({ type: "row", data: row });
+
+	return events;
 }
 
 /**
@@ -251,12 +138,10 @@ export async function* parseStream(
 	input: ReadableStream<Uint8Array> | AsyncIterable<string>,
 	options?: StreamOptions,
 ): AsyncGenerator<StreamEvent> {
+	const delimiter = options?.delimiter ?? ",";
 	const parserState: StreamingParserState = {
-		state: "FIELD_START",
-		currentField: "",
-		currentRow: [],
+		ctx: createStateMachineContext(delimiter),
 		buffer: "",
-		delimiter: options?.delimiter ?? ",",
 		delimiterDetected: !!options?.delimiter,
 		headers: undefined,
 		headersEmitted: false,
@@ -296,20 +181,23 @@ export async function* parseStream(
 	}
 
 	// Process any remaining data in buffer
-	if (
-		parserState.buffer.length > 0 ||
-		parserState.currentField !== "" ||
-		parserState.currentRow.length > 0
-	) {
-		// Add final field to current row
-		if (parserState.currentField !== "" || parserState.currentRow.length > 0) {
-			parserState.currentRow.push(parserState.currentField);
-			yield* emitRow(parserState);
+	if (parserState.buffer.length > 0 || hasPendingData(parserState.ctx)) {
+		// Add final field to current row and emit
+		if (hasPendingData(parserState.ctx)) {
+			parserState.ctx.currentRow.push(parserState.ctx.currentField);
+			const events = emitRowSync(parserState, [...parserState.ctx.currentRow]);
+			for (const event of events) {
+				yield event;
+			}
 		}
 	}
 
-	// Emit completion event
-	yield { type: "complete", rowCount: parserState.rowIndex };
+	// Emit completion event with the detected delimiter
+	yield {
+		type: "complete",
+		rowCount: parserState.rowIndex,
+		delimiter: parserState.ctx.delimiter,
+	};
 }
 
 /**
@@ -336,7 +224,8 @@ export async function parseStreamToArray(
 				rows.push(event.data);
 				break;
 			case "complete":
-				// Done
+				// Capture the detected delimiter from the parser
+				delimiter = event.delimiter;
 				break;
 		}
 	}

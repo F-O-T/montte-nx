@@ -1,4 +1,8 @@
+import { detectDelimiter } from "@f-o-t/csv";
 import type { BankFormat } from "./types";
+
+// Re-export from the library for backwards compatibility
+export { detectDelimiter };
 
 function normalizeHeader(header: string): string {
    return header
@@ -120,13 +124,6 @@ export const BANK_FORMATS: BankFormat[] = [
       detectPattern: () => false,
    },
 ];
-
-export function detectDelimiter(content: string): string {
-   const firstLine = content.split("\n")[0] || "";
-   const semicolonCount = (firstLine.match(/;/g) || []).length;
-   const commaCount = (firstLine.match(/,/g) || []).length;
-   return semicolonCount > commaCount ? ";" : ",";
-}
 
 export function detectBankFormat(headers: string[]): BankFormat | null {
    for (const format of BANK_FORMATS) {

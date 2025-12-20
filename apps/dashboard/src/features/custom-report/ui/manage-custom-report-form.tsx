@@ -289,91 +289,6 @@ export function ManageCustomReportForm({
       [form],
    );
 
-   // Edit mode: simple form with name and description only
-   if (isEditMode) {
-      return (
-         <form className="h-full flex flex-col" onSubmit={handleSubmit}>
-            <SheetHeader>
-               <SheetTitle>{modeTexts.title}</SheetTitle>
-               <SheetDescription>{modeTexts.description}</SheetDescription>
-            </SheetHeader>
-
-            <div className="grid gap-4 px-4 flex-1">
-               <FieldGroup>
-                  <form.Field name="name">
-                     {(field) => {
-                        const isInvalid =
-                           field.state.meta.isTouched &&
-                           !field.state.meta.isValid;
-                        return (
-                           <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
-                              <Input
-                                 aria-invalid={isInvalid}
-                                 id={field.name}
-                                 name={field.name}
-                                 onBlur={field.handleBlur}
-                                 onChange={(e) =>
-                                    field.handleChange(e.target.value)
-                                 }
-                                 placeholder="Ex: DRE Janeiro 2024"
-                                 value={field.state.value}
-                              />
-                              {isInvalid && (
-                                 <FieldError errors={field.state.meta.errors} />
-                              )}
-                           </Field>
-                        );
-                     }}
-                  </form.Field>
-               </FieldGroup>
-
-               <FieldGroup>
-                  <form.Field name="description">
-                     {(field) => (
-                        <Field>
-                           <FieldLabel htmlFor={field.name}>
-                              Descrição (opcional)
-                           </FieldLabel>
-                           <Textarea
-                              id={field.name}
-                              name={field.name}
-                              onBlur={field.handleBlur}
-                              onChange={(e) =>
-                                 field.handleChange(e.target.value)
-                              }
-                              placeholder="Descrição do relatório..."
-                              rows={3}
-                              value={field.state.value}
-                           />
-                        </Field>
-                     )}
-                  </form.Field>
-               </FieldGroup>
-            </div>
-
-            <SheetFooter>
-               <form.Subscribe>
-                  {(state) => (
-                     <Button
-                        className="w-full"
-                        disabled={
-                           !state.canSubmit ||
-                           state.isSubmitting ||
-                           updateReportMutation.isPending
-                        }
-                        type="submit"
-                     >
-                        Salvar Alterações
-                     </Button>
-                  )}
-               </form.Subscribe>
-            </SheetFooter>
-         </form>
-      );
-   }
-
-   // Create mode: stepper form
    function TypeStep() {
       return (
          <div className="grid gap-4">
@@ -390,26 +305,31 @@ export function ManageCustomReportForm({
                      value={field.state.value}
                   >
                      {(Object.keys(reportTypeConfig) as ReportType[]).map(
-                     (value) => {
-                        const config = reportTypeConfig[value];
-                        const Icon = config.icon;
-                        return (
-                           <ChoiceboxItem id={value} key={value} value={value}>
-                              <div className="flex items-center gap-3 p-1">
-                                 <Icon className="size-5 text-muted-foreground shrink-0" />
-                                 <ChoiceboxItemHeader className="flex-1 min-w-0">
-                                    <ChoiceboxItemTitle className="text-sm">
-                                       {config.label}
-                                    </ChoiceboxItemTitle>
-                                    <ChoiceboxItemDescription className="text-xs">
-                                       {config.description}
-                                    </ChoiceboxItemDescription>
-                                 </ChoiceboxItemHeader>
-                              </div>
-                              <ChoiceboxIndicator id={value} />
-                           </ChoiceboxItem>
-                        );
-                     })}
+                        (value) => {
+                           const config = reportTypeConfig[value];
+                           const Icon = config.icon;
+                           return (
+                              <ChoiceboxItem
+                                 id={value}
+                                 key={value}
+                                 value={value}
+                              >
+                                 <div className="flex items-center gap-3 p-1">
+                                    <Icon className="size-5 text-muted-foreground shrink-0" />
+                                    <ChoiceboxItemHeader className="flex-1 min-w-0">
+                                       <ChoiceboxItemTitle className="text-sm">
+                                          {config.label}
+                                       </ChoiceboxItemTitle>
+                                       <ChoiceboxItemDescription className="text-xs">
+                                          {config.description}
+                                       </ChoiceboxItemDescription>
+                                    </ChoiceboxItemHeader>
+                                 </div>
+                                 <ChoiceboxIndicator id={value} />
+                              </ChoiceboxItem>
+                           );
+                        },
+                     )}
                   </Choicebox>
                )}
             </form.Field>
@@ -662,6 +582,90 @@ export function ManageCustomReportForm({
                )}
             </form.Subscribe>
          </div>
+      );
+   }
+
+   // Edit mode: simple form with name and description only
+   if (isEditMode) {
+      return (
+         <form className="h-full flex flex-col" onSubmit={handleSubmit}>
+            <SheetHeader>
+               <SheetTitle>{modeTexts.title}</SheetTitle>
+               <SheetDescription>{modeTexts.description}</SheetDescription>
+            </SheetHeader>
+
+            <div className="grid gap-4 px-4 flex-1">
+               <FieldGroup>
+                  <form.Field name="name">
+                     {(field) => {
+                        const isInvalid =
+                           field.state.meta.isTouched &&
+                           !field.state.meta.isValid;
+                        return (
+                           <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
+                              <Input
+                                 aria-invalid={isInvalid}
+                                 id={field.name}
+                                 name={field.name}
+                                 onBlur={field.handleBlur}
+                                 onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                 }
+                                 placeholder="Ex: DRE Janeiro 2024"
+                                 value={field.state.value}
+                              />
+                              {isInvalid && (
+                                 <FieldError errors={field.state.meta.errors} />
+                              )}
+                           </Field>
+                        );
+                     }}
+                  </form.Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <form.Field name="description">
+                     {(field) => (
+                        <Field>
+                           <FieldLabel htmlFor={field.name}>
+                              Descrição (opcional)
+                           </FieldLabel>
+                           <Textarea
+                              id={field.name}
+                              name={field.name}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                 field.handleChange(e.target.value)
+                              }
+                              placeholder="Descrição do relatório..."
+                              rows={3}
+                              value={field.state.value}
+                           />
+                        </Field>
+                     )}
+                  </form.Field>
+               </FieldGroup>
+            </div>
+
+            <SheetFooter>
+               <form.Subscribe>
+                  {(state) => (
+                     <Button
+                        className="w-full"
+                        disabled={
+                           !state.canSubmit ||
+                           state.isSubmitting ||
+                           updateReportMutation.isPending
+                        }
+                        type="submit"
+                     >
+                        Salvar Alterações
+                     </Button>
+                  )}
+               </form.Subscribe>
+            </SheetFooter>
+         </form>
       );
    }
 

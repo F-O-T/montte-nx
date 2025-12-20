@@ -180,4 +180,35 @@ describe("createGenerator", () => {
 
 		expect(value).toBe("a,b,c");
 	});
+
+	test("streams rows incrementally", async () => {
+		const gen = createGenerator();
+		gen.addRow(["a", "b", "c"]);
+		gen.addRow(["1", "2", "3"]);
+		gen.addRow(["x", "y", "z"]);
+
+		const stream = gen.toStream();
+		const reader = stream.getReader();
+		const chunks: string[] = [];
+
+		let result = await reader.read();
+		while (!result.done) {
+			chunks.push(result.value);
+			result = await reader.read();
+		}
+
+		expect(chunks).toEqual(["a,b,c\n", "1,2,3\n", "x,y,z"]);
+		expect(chunks.join("")).toBe("a,b,c\n1,2,3\nx,y,z");
+	});
+
+	test("stream handles empty generator", async () => {
+		const gen = createGenerator();
+
+		const stream = gen.toStream();
+		const reader = stream.getReader();
+		const { done, value } = await reader.read();
+
+		expect(done).toBe(true);
+		expect(value).toBeUndefined();
+	});
 });

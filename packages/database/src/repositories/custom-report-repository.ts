@@ -1371,12 +1371,22 @@ export async function generateBudgetVsActualData(
       }
 
       // Add categories that have budget but no actual spending
-      for (const [catId, data] of budgetByCategory.entries()) {
-         if (!seenCategories.has(catId)) {
-            const cat = await dbClient.query.category.findFirst({
-               where: (c, { eq: eqOp }) => eqOp(c.id, catId),
-            });
-            if (cat) {
+      // Collect all unseen category IDs to fetch in a single query (avoid N+1)
+      const unseenCatIds = [...budgetByCategory.keys()].filter(
+         (id) => !seenCategories.has(id),
+      );
+
+      if (unseenCatIds.length > 0) {
+         const unseenCategories = await dbClient.query.category.findMany({
+            where: (c, { inArray: inArrayOp }) => inArrayOp(c.id, unseenCatIds),
+         });
+
+         const categoryMap = new Map(unseenCategories.map((c) => [c.id, c]));
+
+         for (const catId of unseenCatIds) {
+            const cat = categoryMap.get(catId);
+            const data = budgetByCategory.get(catId);
+            if (cat && data) {
                categoryComparisons.push({
                   actual: 0,
                   budgeted: data.budgeted,
@@ -2061,11 +2071,10 @@ export async function generateCounterpartyAnalysisData(
       const suppliers: CounterpartyAnalysisSnapshotData["suppliers"] = [];
 
       for (const [counterpartyId, stats] of counterpartyStats.entries()) {
-         const entry = {
+         const baseEntry = {
             counterpartyId,
             counterpartyName: stats.counterpartyName,
             lastTransactionDate: stats.lastTransactionDate.toISOString(),
-            percentOfTotal: 0,
             totalAmount: stats.totalAmount,
             transactionCount: stats.transactionCount,
          };
@@ -2074,19 +2083,23 @@ export async function generateCounterpartyAnalysisData(
             stats.counterpartyType === "client" ||
             stats.counterpartyType === "both"
          ) {
-            entry.percentOfTotal =
-               totalReceived > 0
-                  ? (stats.totalAmount / totalReceived) * 100
-                  : 0;
-            customers.push(entry);
+            customers.push({
+               ...baseEntry,
+               percentOfTotal:
+                  totalReceived > 0
+                     ? (stats.totalAmount / totalReceived) * 100
+                     : 0,
+            });
          }
          if (
             stats.counterpartyType === "supplier" ||
             stats.counterpartyType === "both"
          ) {
-            entry.percentOfTotal =
-               totalPaid > 0 ? (stats.totalAmount / totalPaid) * 100 : 0;
-            suppliers.push(entry);
+            suppliers.push({
+               ...baseEntry,
+               percentOfTotal:
+                  totalPaid > 0 ? (stats.totalAmount / totalPaid) * 100 : 0,
+            });
          }
       }
 

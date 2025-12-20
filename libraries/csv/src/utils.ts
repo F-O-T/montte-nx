@@ -1,3 +1,5 @@
+import type { ParsedRow } from "./types.ts";
+
 /**
  * Common delimiters to check during auto-detection.
  */
@@ -193,4 +195,39 @@ export function escapeField(
 		return `"${value.replace(/"/g, '""')}"`;
 	}
 	return value;
+}
+
+/**
+ * Creates a ParsedRow from raw field values.
+ *
+ * @param fields - The raw field values from the CSV row
+ * @param rowIndex - The 0-indexed row number in the original file
+ * @param headers - Optional header names for creating keyed record
+ * @param trimFields - Whether to trim whitespace from field values
+ * @returns A ParsedRow with fields array and optional record
+ */
+export function createParsedRow(
+	fields: string[],
+	rowIndex: number,
+	headers: string[] | undefined,
+	trimFields: boolean,
+): ParsedRow {
+	const processedFields = trimFields ? fields.map((f) => f.trim()) : fields;
+
+	const row: ParsedRow = {
+		rowIndex,
+		fields: processedFields,
+	};
+
+	if (headers) {
+		row.record = {};
+		for (let i = 0; i < headers.length; i++) {
+			const header = headers[i];
+			if (header !== undefined) {
+				row.record[header] = processedFields[i] ?? "";
+			}
+		}
+	}
+
+	return row;
 }

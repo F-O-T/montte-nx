@@ -660,6 +660,26 @@ invalid-date,Compra,-50,00`;
 			expect(events).toContain("headers");
 			expect(events).toContain("complete");
 		});
+
+		it("emits progress events for large files (>100 rows)", async () => {
+			// Generate CSV with 150 data rows to trigger progress emission (fires every 100 rows)
+			const rows = ["Data,Descrição,Valor"];
+			for (let i = 1; i <= 150; i++) {
+				rows.push(`15/06/2023,Compra ${i},-${i * 10},00`);
+			}
+			const csv = rows.join("\n");
+
+			const events: string[] = [];
+			await parseCsvContent(csv, {
+				onProgress: (event) => {
+					events.push(event.type);
+				},
+			});
+
+			expect(events).toContain("headers");
+			expect(events).toContain("progress");
+			expect(events).toContain("complete");
+		});
 	});
 });
 
