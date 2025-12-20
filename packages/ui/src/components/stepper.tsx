@@ -66,8 +66,21 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
          }) => {
             const { variant } = useStepperProvider();
             const { current } = useStepper();
-            const currentIndex = rest.utils.getIndex(current.id);
-            const totalSteps = rest.steps.length;
+            // Count actual rendered children instead of all defined steps
+            const childrenArray = React.Children.toArray(children);
+            const totalSteps = childrenArray.length;
+            // Find current step index among rendered children
+            const currentIndex = childrenArray.findIndex((child) => {
+               if (
+                  React.isValidElement(child) &&
+                  typeof child.props === "object" &&
+                  child.props !== null &&
+                  "of" in child.props
+               ) {
+                  return (child.props as { of: string }).of === current.id;
+               }
+               return false;
+            });
 
             if (variant === "line") {
                return (

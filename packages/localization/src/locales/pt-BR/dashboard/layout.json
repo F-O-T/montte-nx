@@ -18,7 +18,7 @@
       "bills": {
          "counterparties": "Fornecedores",
          "interest-templates": "Modelos de Juros",
-         "overview": "Visão Geral",
+         "overview": "Gestão de Contas",
          "payables": "Contas a Pagar",
          "receivables": "Contas a Receber",
          "title": "Contas"
