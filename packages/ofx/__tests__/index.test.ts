@@ -221,7 +221,7 @@ describe("ofx parser", () => {
          const result = await parseOfxContent(ofxContent);
 
          expect(result[0]?.amount).toBe(0);
-         expect(result[0]?.type).toBe("income");
+         expect(result[0]?.type).toBe("zero");
       });
 
       it("should parse date correctly from DTPOSTED", async () => {
