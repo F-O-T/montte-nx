@@ -1,5 +1,9 @@
-import { type CsvColumnMapping, parseCsvContent } from "@packages/csv";
-import { parseOfxBuffer } from "@packages/ofx";
+import {
+	type CsvColumnMapping,
+	type CsvProgressEvent,
+	parseCsvContent,
+} from "@packages/csv";
+import { type OfxProgressEvent, parseOfxBuffer } from "@packages/ofx";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
@@ -66,6 +70,7 @@ export function PreviewStep({
    const [isLoading, setIsLoading] = useState(
       initialParsedTransactions.length === 0,
    );
+   const [parseProgress, setParseProgress] = useState<string | null>(null);
    const [error, setError] = useState<string | null>(null);
    const [parsedTransactions, setParsedTransactions] = useState<
       ParsedTransaction[]
@@ -122,13 +127,23 @@ export function PreviewStep({
                      .join(""),
                );
 
+               // Progress callback for CSV parsing
+               const onCsvProgress = (event: CsvProgressEvent) => {
+                  if (event.type === "progress") {
+                     setParseProgress(`Processando linha ${event.parsed}...`);
+                  } else if (event.type === "complete") {
+                     setParseProgress(null);
+                  }
+               };
+
                // At this point we know columnMapping and csvPreviewData exist
-               const result = parseCsvContent(decodedContent, {
+               const result = await parseCsvContent(decodedContent, {
                   delimiter: csvPreviewData?.delimiter,
                   columnMapping: columnMapping as CsvColumnMapping,
                   dateFormat: "DD/MM/YYYY",
                   amountFormat: "decimal-comma",
                   skipRows: 1,
+                  onProgress: onCsvProgress,
                });
                transactions = result.rows;
 
@@ -150,12 +165,23 @@ export function PreviewStep({
                   console.warn("CSV parse warnings:", result.errors);
                }
             } else if (fileType === "ofx") {
+               // Progress callback for OFX parsing
+               const onOfxProgress = (event: OfxProgressEvent) => {
+                  if (event.type === "progress") {
+                     setParseProgress(`Processando transação ${event.parsed}...`);
+                  } else if (event.type === "complete") {
+                     setParseProgress(null);
+                  }
+               };
+
                // Parse OFX - use binary decoding
                const decodedContent = atob(content);
                const bytes = new Uint8Array(
                   decodedContent.split("").map((c) => c.charCodeAt(0)),
                );
-               const ofxTransactions = await parseOfxBuffer(bytes);
+               const ofxTransactions = await parseOfxBuffer(bytes, {
+                  onProgress: onOfxProgress,
+               });
                transactions = ofxTransactions.map((t, index) => ({
                   rowIndex: index,
                   date: t.date,
@@ -299,7 +325,7 @@ export function PreviewStep({
          <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2Icon className="size-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">
-               Processando transações...
+               {parseProgress ?? "Processando transações..."}
             </p>
          </div>
       );

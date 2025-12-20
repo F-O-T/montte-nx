@@ -1,0 +1,215 @@
+# @f-o-t/csv
+
+RFC 4180 compliant CSV parser with streaming support for JavaScript/TypeScript.
+
+## Features
+
+- RFC 4180 compliant parsing (handles quoted fields, multiline values, escaped quotes)
+- Streaming API for memory-efficient processing of large files
+- Automatic delimiter detection
+- Automatic encoding detection (UTF-8, UTF-16, Windows-1252, ISO-8859-1)
+- CSV generation with proper escaping
+- Zero dependencies at runtime (only zod for schema validation)
+- Full TypeScript support with exported types
+- Works in Bun, Node.js, and browsers
+
+## Installation
+
+```bash
+bun add @f-o-t/csv
+# or
+npm install @f-o-t/csv
+```
+
+## Quick Start
+
+### Parsing CSV
+
+```typescript
+import { parseOrThrow, parse } from "@f-o-t/csv";
+
+// Parse with error throwing
+const doc = parseOrThrow(csvContent, {
+  hasHeaders: true,
+  trimFields: true,
+});
+
+console.log(doc.headers);    // ["name", "age", "city"]
+console.log(doc.rows[0]);    // { rowIndex: 0, fields: ["John", "30", "NYC"], record: { name: "John", age: "30", city: "NYC" } }
+console.log(doc.totalRows);  // number of data rows
+
+// Safe parsing (returns Result type)
+const result = parse(csvContent);
+if (result.success) {
+  console.log(result.data);
+} else {
+  console.error(result.error);
+}
+```
+
+### Streaming Parser
+
+For large files, use the streaming API to process rows as they're parsed:
+
+```typescript
+import { parseStream } from "@f-o-t/csv";
+
+async function processLargeFile(content: string) {
+  const chunks = async function* () {
+    yield content;
+  };
+
+  for await (const event of parseStream(chunks(), { hasHeaders: true })) {
+    switch (event.type) {
+      case "headers":
+        console.log("Headers:", event.data);
+        break;
+      case "row":
+        console.log("Row:", event.data.rowIndex, event.data.fields);
+        break;
+      case "complete":
+        console.log("Total rows:", event.rowCount);
+        break;
+    }
+  }
+}
+```
+
+### Generating CSV
+
+```typescript
+import { generate, generateFromObjects } from "@f-o-t/csv";
+
+// From array of arrays
+const csv = generate({
+  headers: ["name", "age", "city"],
+  rows: [
+    ["John", "30", "NYC"],
+    ["Jane", "25", "LA"],
+  ],
+});
+
+// From array of objects
+const csvFromObjects = generateFromObjects(
+  [
+    { name: "John", age: 30, city: "NYC" },
+    { name: "Jane", age: 25, city: "LA" },
+  ],
+  { delimiter: "," }
+);
+```
+
+## API Reference
+
+### Parsing Functions
+
+#### `parse(content, options?)`
+Parses CSV content, returning a `ParseResult<CSVDocument>`.
+
+#### `parseOrThrow(content, options?)`
+Parses CSV content, throwing on error.
+
+#### `parseBuffer(buffer, options?)`
+Parses a binary buffer with automatic encoding detection.
+
+#### `parseBufferOrThrow(buffer, options?)`
+Parses a binary buffer, throwing on error.
+
+#### `parseToArray(content, options?)`
+Parses and returns just the data as a 2D array.
+
+### Streaming Functions
+
+#### `parseStream(chunks, options?)`
+Returns an async generator yielding `StreamEvent` objects.
+
+#### `parseBufferStream(buffer, options?)`
+Streams parsing from a binary buffer.
+
+#### `parseStreamToArray(chunks, options?)`
+Streams parsing and collects all rows into an array.
+
+### Generation Functions
+
+#### `generate(options)`
+Generates CSV string from headers and row arrays.
+
+#### `generateFromObjects(objects, options?)`
+Generates CSV from an array of objects.
+
+#### `generateRow(fields, options?)`
+Generates a single CSV row.
+
+#### `createGenerator(options?)`
+Creates a generator instance for incremental CSV building.
+
+### Utility Functions
+
+#### `detectDelimiter(content)`
+Auto-detects the delimiter used in CSV content.
+
+#### `detectEncoding(buffer)`
+Detects the encoding of a binary buffer.
+
+#### `decodeBuffer(buffer, encoding?)`
+Decodes a buffer to string with specified or auto-detected encoding.
+
+#### `escapeField(field, options?)`
+Properly escapes a field value for CSV output.
+
+#### `needsQuoting(field, delimiter?)`
+Checks if a field needs to be quoted.
+
+## Types
+
+```typescript
+interface ParseOptions {
+  delimiter?: string;      // Field delimiter (default: auto-detect)
+  skipRows?: number;       // Skip first N rows (default: 0)
+  hasHeaders?: boolean;    // Treat first row as headers (default: false)
+  trimFields?: boolean;    // Trim whitespace from fields (default: false)
+  columns?: string[];      // Column names if hasHeaders is false
+}
+
+interface StreamOptions extends ParseOptions {
+  chunkSize?: number;      // Chunk size for processing (default: 64KB)
+}
+
+interface CSVDocument {
+  headers?: string[];      // Header row if hasHeaders was true
+  rows: ParsedRow[];       // Parsed rows
+  delimiter: string;       // Detected or specified delimiter
+  totalRows: number;       // Total row count (excluding headers)
+}
+
+interface ParsedRow {
+  rowIndex: number;                    // 0-indexed row number
+  fields: string[];                    // Field values as array
+  record?: Record<string, string>;     // Keyed object if headers enabled
+}
+
+type StreamEvent =
+  | { type: "headers"; data: string[] }
+  | { type: "row"; data: ParsedRow }
+  | { type: "complete"; rowCount: number };
+
+interface GenerateOptions {
+  delimiter?: string;                  // Field delimiter (default: ',')
+  lineEnding?: "\n" | "\r\n";          // Line ending (default: '\n')
+  includeHeaders?: boolean;            // Include headers row
+  alwaysQuote?: boolean;               // Always quote all fields
+}
+```
+
+## RFC 4180 Compliance
+
+This parser fully implements RFC 4180:
+
+- Fields containing line breaks, commas, or double quotes are enclosed in double-quotes
+- Double quotes within fields are escaped by doubling them (`""`)
+- Handles CRLF and LF line endings
+- Properly handles multiline fields within quotes
+
+## License
+
+MIT
