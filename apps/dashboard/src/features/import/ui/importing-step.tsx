@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
-import type { ParsedTransaction } from "../types";
+import type { ParsedTransaction } from "../lib/use-import-wizard";
 
 interface ImportingStepProps {
    bankAccountId: string;

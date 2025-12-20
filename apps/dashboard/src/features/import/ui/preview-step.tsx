@@ -3,7 +3,12 @@ import {
 	type CsvProgressEvent,
 	parseCsvContent,
 } from "@packages/csv";
-import { type OfxProgressEvent, parseOfxBuffer } from "@packages/ofx";
+import {
+	type OfxProgressEvent,
+	type TransactionType,
+	parseOfxBuffer,
+} from "@packages/ofx";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
@@ -34,7 +39,7 @@ import type {
    DuplicateInfo,
    FileType,
    ParsedTransaction,
-} from "../types";
+} from "../lib/use-import-wizard";
 
 interface PreviewStepProps {
    bankAccountId: string;
@@ -303,11 +308,8 @@ export function PreviewStep({
       return date.toLocaleDateString("pt-BR");
    };
 
-   const formatAmount = (amount: number, type: "income" | "expense") => {
-      const formatted = Math.abs(amount).toLocaleString("pt-BR", {
-         style: "currency",
-         currency: "BRL",
-      });
+   const formatAmount = (amount: number, type: TransactionType) => {
+      const formatted = formatDecimalCurrency(Math.abs(amount));
       return type === "expense" ? `-${formatted}` : formatted;
    };
 
@@ -445,13 +447,16 @@ export function PreviewStep({
                                     className={
                                        trn.type === "income"
                                           ? "text-green-600"
-                                          : "text-red-600"
+                                          : trn.type === "expense"
+                                            ? "text-red-600"
+                                            : "text-muted-foreground"
                                     }
                                  >
                                     <span className="inline-flex items-center gap-1">
-                                       {trn.type === "income" ? (
+                                       {trn.type === "income" && (
                                           <ArrowUpIcon className="size-3" />
-                                       ) : (
+                                       )}
+                                       {trn.type === "expense" && (
                                           <ArrowDownIcon className="size-3" />
                                        )}
                                        {formatAmount(trn.amount, trn.type)}

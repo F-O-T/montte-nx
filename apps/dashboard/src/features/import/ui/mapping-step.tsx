@@ -2,7 +2,7 @@ import { previewCsv } from "@packages/csv";
 import { Loader2Icon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { ColumnMapping, CsvPreviewData } from "../types";
+import type { ColumnMapping, CsvPreviewData } from "../lib/use-import-wizard";
 import { CsvColumnMapper } from "./csv-column-mapper";
 
 interface MappingStepProps {

@@ -34,7 +34,9 @@ export const EXPORT_FORMATS: {
    },
 ];
 
-// Get steps for export flow
+/**
+ * Gets the wizard steps for export flow
+ */
 export function getExportSteps(): ExportStep[] {
    return ["select-account", "options", "exporting"];
 }

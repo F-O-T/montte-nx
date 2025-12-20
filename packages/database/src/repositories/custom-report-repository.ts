@@ -1537,15 +1537,27 @@ export async function generateBudgetVsActualData(
             sql`TO_CHAR(${transaction.date}, 'MM')`,
          );
 
+      // Build a map of actual amounts keyed by month for quick lookup
+      const actualByMonth = new Map<string, number>();
       for (const m of monthlyActual) {
          const monthKey = `${m.year}-${m.month}`;
-         const monthBudgeted = proratedBudgetByMonth.get(monthKey) ?? 0;
+         actualByMonth.set(monthKey, m.amount);
+      }
+
+      // Iterate over all months in the report range to include months with budget but no actuals
+      for (const { monthKey } of reportMonths) {
+         const parts = monthKey.split("-");
+         const year = Number(parts[0]);
+         const month = parts[1] as string;
+         const actual = actualByMonth.get(monthKey) ?? 0;
+         const budgeted = proratedBudgetByMonth.get(monthKey) ?? 0;
+
          monthlyBreakdown.push({
-            actual: m.amount,
-            budgeted: monthBudgeted,
-            month: m.month,
-            variance: monthBudgeted - m.amount,
-            year: m.year,
+            actual,
+            budgeted,
+            month,
+            variance: budgeted - actual,
+            year,
          });
       }
 

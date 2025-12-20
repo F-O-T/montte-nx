@@ -1,5 +1,6 @@
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 import { describe, expect, test } from "bun:test";
-import spectrum from "csv-spectrum";
 import { parseOrThrow } from "../src/parser.ts";
 
 interface SpectrumTest {
@@ -9,18 +10,27 @@ interface SpectrumTest {
 }
 
 /**
- * Loads csv-spectrum test data.
+ * Loads csv-spectrum test data from local fixtures.
+ * This avoids the csv-spectrum package which has a bug where fs.readdir
+ * returns files in non-deterministic order, causing CSV/JSON mismatches.
  */
-function loadSpectrumTests(): Promise<SpectrumTest[]> {
-	return new Promise((resolve, reject) => {
-		spectrum((err: Error | null, data: SpectrumTest[]) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(data);
-			}
-		});
-	});
+async function loadSpectrumTests(): Promise<SpectrumTest[]> {
+	const fixturesDir = path.join(import.meta.dir, "fixtures");
+	const files = await readdir(fixturesDir);
+	const csvFiles = files.filter((f) => f.endsWith(".csv"));
+
+	return Promise.all(
+		csvFiles.map(async (csvFile) => {
+			const name = path.basename(csvFile, ".csv");
+			const jsonFile = `${name}.json`;
+
+			return {
+				name,
+				csv: await readFile(path.join(fixturesDir, csvFile)),
+				json: await readFile(path.join(fixturesDir, jsonFile)),
+			};
+		}),
+	);
 }
 
 describe("csv-spectrum compliance", () => {

@@ -461,7 +461,7 @@ export const bankAccountRouter = router({
                   date: z.string(),
                   amount: z.number(),
                   description: z.string(),
-                  type: z.enum(["income", "expense"]),
+                  type: z.enum(["income", "expense", "zero"]),
                   externalId: z.string().optional(),
                }),
             ),

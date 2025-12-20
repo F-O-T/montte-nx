@@ -33,13 +33,34 @@ export interface ParseOfxOptions {
    onProgress?: OfxProgressCallback;
 }
 
+/**
+ * Transaction type classification.
+ * - "expense": Negative amount (money going out)
+ * - "income": Positive amount (money coming in)
+ * - "zero": Zero amount - typically balance adjustments, memo entries, or data
+ *   anomalies that callers should decide how to handle (ignore, log, or process)
+ */
+export type TransactionType = "expense" | "income" | "zero";
+
 // Domain-specific parsed transaction
 export interface ParsedTransaction {
    amount: number;
    date: Date;
    description: string;
    fitid: string;
-   type: "expense" | "income";
+   type: TransactionType;
+}
+
+/**
+ * Classifies a transaction amount into expense, income, or zero.
+ * Zero-amount transactions are separated so callers can decide whether to
+ * ignore them, log them for review, or process them as balance adjustments.
+ */
+function classifyTransactionType(amount: number): TransactionType {
+   if (amount === 0) {
+      return "zero";
+   }
+   return amount < 0 ? "expense" : "income";
 }
 
 function mapTransaction(trn: OFXTransaction): ParsedTransaction {
@@ -51,7 +72,7 @@ function mapTransaction(trn: OFXTransaction): ParsedTransaction {
       date,
       description: normalizeText(rawDescription),
       fitid: trn.FITID ?? "",
-      type: amount < 0 ? "expense" : "income",
+      type: classifyTransactionType(amount),
    };
 }
 

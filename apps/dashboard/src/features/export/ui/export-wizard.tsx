@@ -2,8 +2,11 @@ import { Button } from "@packages/ui/components/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Download, XIcon } from "lucide-react";
 import { Suspense, useCallback, useState } from "react";
-import type { ExportOptions, ExportStep } from "../types";
-import { getExportSteps } from "../types";
+import {
+   getExportSteps,
+   type ExportOptions,
+   type ExportStep,
+} from "../lib/use-export-wizard";
 import { AccountStep } from "./account-step";
 import { ExportingStep } from "./exporting-step";
 import { OptionsStep } from "./options-step";

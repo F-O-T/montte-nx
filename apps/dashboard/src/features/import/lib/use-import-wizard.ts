@@ -1,3 +1,5 @@
+import type { TransactionType } from "@packages/ofx";
+
 export type FileType = "csv" | "ofx";
 
 export type ImportStep =
@@ -32,7 +34,7 @@ export type ParsedTransaction = {
    date: Date;
    amount: number;
    description: string;
-   type: "income" | "expense";
+   type: TransactionType;
    externalId?: string; // FITID for OFX
 };
 
@@ -47,33 +49,23 @@ export type DuplicateInfo = {
    existingTransactionDescription: string;
 };
 
-// Helper to serialize transactions for session storage
-export function serializeTransactions(
-   transactions: ParsedTransaction[],
-): SerializedTransaction[] {
-   return transactions.map((t) => ({
-      ...t,
-      date: t.date.toISOString(),
-   }));
+/**
+ * Detects file type from filename extension
+ */
+export function detectFileType(filename: string): FileType | null {
+   const ext = filename.split(".").pop()?.toLowerCase();
+   if (ext === "csv") return "csv";
+   if (ext === "ofx") return "ofx";
+   return null;
 }
 
-// Helper to deserialize transactions from session storage
-export function deserializeTransactions(
-   transactions: SerializedTransaction[],
-): ParsedTransaction[] {
-   return transactions.map((t) => ({
-      ...t,
-      date: new Date(t.date),
-   }));
-}
-
-// Get steps based on file type
+/**
+ * Gets the wizard steps based on file type
+ */
 export function getStepsForFileType(fileType: FileType | null): ImportStep[] {
-   // Before file type is known (account + upload steps)
    if (!fileType) {
       return ["select-account", "upload"];
    }
-   // After file is uploaded
    if (fileType === "csv") {
       return [
          "select-account",
@@ -87,10 +79,26 @@ export function getStepsForFileType(fileType: FileType | null): ImportStep[] {
    return ["select-account", "upload", "preview", "importing"];
 }
 
-// Detect file type from filename
-export function detectFileType(filename: string): FileType | null {
-   const ext = filename.split(".").pop()?.toLowerCase();
-   if (ext === "csv") return "csv";
-   if (ext === "ofx") return "ofx";
-   return null;
+/**
+ * Serializes transactions for session storage
+ */
+export function serializeTransactions(
+   transactions: ParsedTransaction[],
+): SerializedTransaction[] {
+   return transactions.map((t) => ({
+      ...t,
+      date: t.date.toISOString(),
+   }));
+}
+
+/**
+ * Deserializes transactions from session storage
+ */
+export function deserializeTransactions(
+   transactions: SerializedTransaction[],
+): ParsedTransaction[] {
+   return transactions.map((t) => ({
+      ...t,
+      date: new Date(t.date),
+   }));
 }
