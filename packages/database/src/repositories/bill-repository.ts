@@ -3,6 +3,7 @@ import {
    encryptBillFields,
 } from "@packages/encryption/service";
 import { AppError, propagateError } from "@packages/utils/errors";
+import { centsToReais, reaisToCents } from "@packages/utils/money";
 import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import type { bankAccount } from "../schemas/bank-accounts";
@@ -825,10 +826,20 @@ export async function createBillWithInstallments(
       const baseAmount = Number(billData.amount);
       const baseDueDate = new Date(billData.dueDate);
 
-      const installmentAmounts: number[] =
-         amounts === "equal"
-            ? Array(totalInstallments).fill(baseAmount / totalInstallments)
-            : amounts;
+      // Use integer math in cents to avoid floating-point precision issues
+      let installmentAmounts: number[];
+      if (amounts === "equal") {
+         const totalCents = reaisToCents(baseAmount);
+         const baseCents = Math.floor(totalCents / totalInstallments);
+         const remainder = totalCents % totalInstallments;
+
+         installmentAmounts = Array.from({ length: totalInstallments }, (_, i) => {
+            const cents = baseCents + (i < remainder ? 1 : 0);
+            return centsToReais(cents);
+         });
+      } else {
+         installmentAmounts = amounts;
+      }
 
       if (installmentAmounts.length !== totalInstallments) {
          throw AppError.validation(

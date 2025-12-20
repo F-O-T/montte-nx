@@ -1,6 +1,7 @@
 import { createBillSchema } from "@packages/api/schemas/bill";
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
+import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
 import {
@@ -520,35 +521,31 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
             </FieldGroup>
 
             {!isEditMode && (
-               <form.Subscribe
-                  selector={(state) => ({
-                     hasInstallments: state.values.hasInstallments,
-                     isRecurring: state.values.isRecurring,
-                  })}
-               >
-                  {({ isRecurring }) =>
-                     !isRecurring && (
-                        <div className="space-y-4 rounded-lg border p-4">
-                           <FieldGroup>
-                              <form.Field name="hasInstallments">
-                                 {(field) => (
-                                    <div className="flex items-center space-x-2">
-                                       <Checkbox
-                                          checked={field.state.value}
-                                          id="hasInstallments"
-                                          onCheckedChange={(checked) =>
-                                             field.handleChange(!!checked)
-                                          }
-                                       />
-                                       <Label htmlFor="hasInstallments">
-                                          {translate(
-                                             "dashboard.routes.bills.features.create-bill.installments.enable",
-                                          )}
-                                       </Label>
-                                    </div>
+               <div className="space-y-4 rounded-lg border p-4">
+                  <FieldGroup>
+                     <form.Field name="hasInstallments">
+                        {(field) => (
+                           <div className="flex items-center space-x-2">
+                              <Checkbox
+                                 checked={field.state.value}
+                                 id="hasInstallments"
+                                 onCheckedChange={(checked) => {
+                                    field.handleChange(!!checked);
+                                    // Reset recurring when enabling installments
+                                    if (checked) {
+                                       form.setFieldValue("isRecurring", false);
+                                    }
+                                 }}
+                              />
+                              <Label htmlFor="hasInstallments">
+                                 {translate(
+                                    "dashboard.routes.bills.features.create-bill.installments.enable",
                                  )}
-                              </form.Field>
-                           </FieldGroup>
+                              </Label>
+                           </div>
+                        )}
+                     </form.Field>
+                  </FieldGroup>
 
                            <form.Subscribe
                               selector={(state) => ({
@@ -828,10 +825,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  )
                               }
                            </form.Subscribe>
-                        </div>
-                     )
-                  }
-               </form.Subscribe>
+               </div>
             )}
          </div>
       );
@@ -1186,96 +1180,112 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
    function AdditionalStep() {
       return (
          <div className="space-y-4">
-            <FieldGroup>
-               <form.Field name="isRecurring">
-                  {(field) => {
-                     return (
-                        <div className="flex items-center space-x-2">
-                           <Checkbox
-                              checked={field.state.value}
-                              id="isRecurring"
-                              onCheckedChange={(checked) =>
-                                 field.handleChange(!!checked)
-                              }
-                           />
-                           <label
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              htmlFor="isRecurring"
-                           >
-                              {translate(
-                                 "dashboard.routes.bills.features.create-bill.fields.isRecurring",
-                              )}
-                           </label>
-                        </div>
-                     );
-                  }}
-               </form.Field>
-            </FieldGroup>
-
-            <form.Subscribe selector={(state) => state.values.isRecurring}>
-               {(isRecurring) =>
-                  isRecurring && (
-                     <FieldGroup>
-                        <form.Field name="recurrencePattern">
-                           {(field) => {
-                              const isInvalid =
-                                 field.state.meta.isTouched &&
-                                 !field.state.meta.isValid;
-                              return (
-                                 <Field data-invalid={isInvalid}>
-                                    <FieldLabel htmlFor={field.name}>
-                                       {translate(
-                                          "dashboard.routes.bills.features.create-bill.fields.recurrencePattern",
-                                       )}
-                                    </FieldLabel>
-                                    <Select
-                                       onValueChange={(value) =>
-                                          field.handleChange(
-                                             value as RecurrencePattern,
-                                          )
-                                       }
-                                       value={field.state.value}
-                                    >
-                                       <SelectTrigger id={field.name}>
-                                          <SelectValue
-                                             placeholder={translate(
-                                                "dashboard.routes.bills.features.create-bill.placeholders.recurrencePattern",
-                                             )}
-                                          />
-                                       </SelectTrigger>
-                                       <SelectContent>
-                                          <SelectItem value="monthly">
-                                             {translate(
-                                                "dashboard.routes.bills.features.create-bill.recurrence.monthly",
-                                             )}
-                                          </SelectItem>
-                                          <SelectItem value="quarterly">
-                                             {translate(
-                                                "dashboard.routes.bills.features.create-bill.recurrence.quarterly",
-                                             )}
-                                          </SelectItem>
-                                          <SelectItem value="semiannual">
-                                             {translate(
-                                                "dashboard.routes.bills.features.create-bill.recurrence.semiannual",
-                                             )}
-                                          </SelectItem>
-                                          <SelectItem value="annual">
-                                             {translate(
-                                                "dashboard.routes.bills.features.create-bill.recurrence.annual",
-                                             )}
-                                          </SelectItem>
-                                       </SelectContent>
-                                    </Select>
-                                    {isInvalid && (
-                                       <FieldError
-                                          errors={field.state.meta.errors}
+            <form.Subscribe selector={(state) => state.values.hasInstallments}>
+               {(hasInstallments) =>
+                  !hasInstallments && (
+                     <>
+                        <FieldGroup>
+                           <form.Field name="isRecurring">
+                              {(field) => {
+                                 return (
+                                    <div className="flex items-center space-x-2">
+                                       <Checkbox
+                                          checked={field.state.value}
+                                          id="isRecurring"
+                                          onCheckedChange={(checked) =>
+                                             field.handleChange(!!checked)
+                                          }
                                        />
-                                    )}
-                                 </Field>
-                              );
-                           }}
-                        </form.Field>
-                     </FieldGroup>
+                                       <label
+                                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                          htmlFor="isRecurring"
+                                       >
+                                          {translate(
+                                             "dashboard.routes.bills.features.create-bill.fields.isRecurring",
+                                          )}
+                                       </label>
+                                    </div>
+                                 );
+                              }}
+                           </form.Field>
+                        </FieldGroup>
+
+                        <form.Subscribe
+                           selector={(state) => state.values.isRecurring}
+                        >
+                           {(isRecurring) =>
+                              isRecurring && (
+                                 <FieldGroup>
+                                    <form.Field name="recurrencePattern">
+                                       {(field) => {
+                                          const isInvalid =
+                                             field.state.meta.isTouched &&
+                                             !field.state.meta.isValid;
+                                          return (
+                                             <Field data-invalid={isInvalid}>
+                                                <FieldLabel
+                                                   htmlFor={field.name}
+                                                >
+                                                   {translate(
+                                                      "dashboard.routes.bills.features.create-bill.fields.recurrencePattern",
+                                                   )}
+                                                </FieldLabel>
+                                                <Select
+                                                   onValueChange={(value) =>
+                                                      field.handleChange(
+                                                         value as RecurrencePattern,
+                                                      )
+                                                   }
+                                                   value={field.state.value}
+                                                >
+                                                   <SelectTrigger
+                                                      id={field.name}
+                                                   >
+                                                      <SelectValue
+                                                         placeholder={translate(
+                                                            "dashboard.routes.bills.features.create-bill.placeholders.recurrencePattern",
+                                                         )}
+                                                      />
+                                                   </SelectTrigger>
+                                                   <SelectContent>
+                                                      <SelectItem value="monthly">
+                                                         {translate(
+                                                            "dashboard.routes.bills.features.create-bill.recurrence.monthly",
+                                                         )}
+                                                      </SelectItem>
+                                                      <SelectItem value="quarterly">
+                                                         {translate(
+                                                            "dashboard.routes.bills.features.create-bill.recurrence.quarterly",
+                                                         )}
+                                                      </SelectItem>
+                                                      <SelectItem value="semiannual">
+                                                         {translate(
+                                                            "dashboard.routes.bills.features.create-bill.recurrence.semiannual",
+                                                         )}
+                                                      </SelectItem>
+                                                      <SelectItem value="annual">
+                                                         {translate(
+                                                            "dashboard.routes.bills.features.create-bill.recurrence.annual",
+                                                         )}
+                                                      </SelectItem>
+                                                   </SelectContent>
+                                                </Select>
+                                                {isInvalid && (
+                                                   <FieldError
+                                                      errors={
+                                                         field.state.meta.errors
+                                                      }
+                                                   />
+                                                )}
+                                             </Field>
+                                          );
+                                       }}
+                                    </form.Field>
+                                 </FieldGroup>
+                              )
+                           }
+                        </form.Subscribe>
+                     </>
                   )
                }
             </form.Subscribe>
@@ -1348,7 +1358,20 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
          {({ methods }) => (
             <form className="h-full flex flex-col" onSubmit={handleSubmit}>
                <SheetHeader>
-                  <SheetTitle>{modeTexts.title}</SheetTitle>
+                  <SheetTitle className="flex items-center gap-2">
+                     {modeTexts.title}
+                     {isEditMode && bill?.installmentGroupId && (
+                        <Badge variant="secondary">
+                           {translate(
+                              "dashboard.routes.bills.features.create-bill.installments.badge",
+                              {
+                                 current: bill.installmentNumber,
+                                 total: bill.totalInstallments,
+                              },
+                           )}
+                        </Badge>
+                     )}
+                  </SheetTitle>
                   <SheetDescription>{modeTexts.description}</SheetDescription>
                </SheetHeader>
 

@@ -87,6 +87,7 @@ function BillDetailsContent() {
    const [deletingAttachmentId, setDeletingAttachmentId] = useState<
       string | null
    >(null);
+   const [showAllInstallments, setShowAllInstallments] = useState(false);
 
    const [billQuery, categoriesQuery] = useSuspenseQueries({
       queries: [
@@ -897,7 +898,10 @@ function BillDetailsContent() {
                </CardHeader>
                <CardContent>
                   <div className="space-y-2">
-                     {installmentBills.slice(0, 5).map((installment) => {
+                     {(showAllInstallments
+                        ? installmentBills
+                        : installmentBills.slice(0, 5)
+                     ).map((installment) => {
                         const isCurrent = installment.id === bill.id;
                         const isPaid = !!installment.completionDate;
 
@@ -958,10 +962,19 @@ function BillDetailsContent() {
                         );
                      })}
                      {installmentBills.length > 5 && (
-                        <Button className="w-full" size="sm" variant="ghost">
-                           {translate(
-                              "dashboard.routes.bills.details.installments.viewAll",
-                           )}
+                        <Button
+                           className="w-full"
+                           onClick={() =>
+                              setShowAllInstallments(!showAllInstallments)
+                           }
+                           size="sm"
+                           variant="ghost"
+                        >
+                           {showAllInstallments
+                              ? translate("common.actions.show-less")
+                              : translate(
+                                   "dashboard.routes.bills.details.installments.viewAll",
+                                )}
                         </Button>
                      )}
                   </div>

@@ -65,7 +65,6 @@ export const bill = pgTable(
          .defaultNow()
          .$onUpdate(() => new Date())
          .notNull(),
-      userId: uuid("user_id").notNull(),
    },
    (table) => [index("bill_organizationId_idx").on(table.organizationId)],
 );

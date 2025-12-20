@@ -341,7 +341,6 @@ export const billRouter = router({
             organizationId,
             originalAmount: input.originalAmount?.toString(),
             recurrencePattern: input.recurrencePattern,
-            userId: organizationId,
          });
 
          if (input.isRecurring && input.recurrencePattern) {
@@ -393,7 +392,6 @@ export const billRouter = router({
                   parentBillId: firstBill.id,
                   recurrencePattern: input.recurrencePattern,
                   type: input.type,
-                  userId: organizationId,
                });
             });
 
@@ -423,7 +421,6 @@ export const billRouter = router({
             notes: input.notes,
             organizationId,
             type: input.type,
-            userId: organizationId,
          });
 
          return result;
@@ -543,7 +540,6 @@ export const billRouter = router({
             parentBillId: existingBill.id,
             recurrencePattern: existingBill.recurrencePattern,
             type: existingBill.type,
-            userId: organizationId,
          });
       }),
 
@@ -653,7 +649,7 @@ export const billRouter = router({
 
          const billData = await findBillById(resolvedCtx.db, input.id);
 
-         if (!billData || billData.userId !== organizationId) {
+         if (!billData || billData.organizationId !== organizationId) {
             throw APIError.notFound("Bill not found");
          }
 
