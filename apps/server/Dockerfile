@@ -49,6 +49,7 @@ COPY packages/arcjet/package.json ./packages/arcjet/
 COPY packages/logging/package.json ./packages/logging/
 COPY packages/csv/package.json ./packages/csv/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
+COPY libraries/csv/package.json ./libraries/csv/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
 
