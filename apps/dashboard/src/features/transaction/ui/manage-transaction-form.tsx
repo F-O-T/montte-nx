@@ -883,6 +883,18 @@ export function ManageTransactionForm({
 
                               return (
                                  <>
+                                    <Button
+                                       className="w-full"
+                                       onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          methods.prev();
+                                       }}
+                                       type="button"
+                                       variant="ghost"
+                                    >
+                                       {translate("common.actions.previous")}
+                                    </Button>
                                     {hasAnyCategorization ? (
                                        <Button
                                           className="w-full"
@@ -910,18 +922,6 @@ export function ManageTransactionForm({
                                           {translate("common.actions.skip")}
                                        </Button>
                                     )}
-                                    <Button
-                                       className="w-full"
-                                       onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          methods.prev();
-                                       }}
-                                       type="button"
-                                       variant="ghost"
-                                    >
-                                       {translate("common.actions.previous")}
-                                    </Button>
                                  </>
                               );
                            }}
