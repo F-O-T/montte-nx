@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { organization } from "./auth";
+import { bill } from "./bills";
 import { transaction } from "./transactions";
 
 export const costCenter = pgTable("cost_center", {
@@ -18,6 +19,7 @@ export const costCenter = pgTable("cost_center", {
 });
 
 export const costCenterRelations = relations(costCenter, ({ one, many }) => ({
+   bills: many(bill),
    organization: one(organization, {
       fields: [costCenter.organizationId],
       references: [organization.id],

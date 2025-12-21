@@ -9,10 +9,10 @@ export type OnRowCompleteCallback = (row: string[]) => void;
  * State machine context maintained during parsing.
  */
 export interface StateMachineContext {
-	state: ParserState;
-	currentField: string;
-	currentRow: string[];
-	delimiter: string;
+   state: ParserState;
+   currentField: string;
+   currentRow: string[];
+   delimiter: string;
 }
 
 /**
@@ -22,14 +22,14 @@ export interface StateMachineContext {
  * @returns A fresh state machine context
  */
 export function createStateMachineContext(
-	delimiter: string,
+   delimiter: string,
 ): StateMachineContext {
-	return {
-		state: "FIELD_START",
-		currentField: "",
-		currentRow: [],
-		delimiter,
-	};
+   return {
+      state: "FIELD_START",
+      currentField: "",
+      currentRow: [],
+      delimiter,
+   };
 }
 
 /**
@@ -47,126 +47,126 @@ export function createStateMachineContext(
  * @returns Number of characters to skip after this one (0 or 1 for CRLF)
  */
 export function processChar(
-	ctx: StateMachineContext,
-	char: string,
-	nextChar: string | undefined,
-	onRowComplete: OnRowCompleteCallback,
+   ctx: StateMachineContext,
+   char: string,
+   nextChar: string | undefined,
+   onRowComplete: OnRowCompleteCallback,
 ): number {
-	let skipNext = 0;
+   let skipNext = 0;
 
-	switch (ctx.state) {
-		case "FIELD_START":
-			if (char === '"') {
-				ctx.state = "QUOTED_FIELD";
-			} else if (char === ctx.delimiter) {
-				ctx.currentRow.push(ctx.currentField);
-				ctx.currentField = "";
-				// Stay in FIELD_START for next field
-			} else if (char === "\r" && nextChar === "\n") {
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				skipNext = 1; // Skip \n
-			} else if (char === "\n") {
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-			} else {
-				ctx.currentField += char;
-				ctx.state = "UNQUOTED_FIELD";
-			}
-			break;
+   switch (ctx.state) {
+      case "FIELD_START":
+         if (char === '"') {
+            ctx.state = "QUOTED_FIELD";
+         } else if (char === ctx.delimiter) {
+            ctx.currentRow.push(ctx.currentField);
+            ctx.currentField = "";
+            // Stay in FIELD_START for next field
+         } else if (char === "\r" && nextChar === "\n") {
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            skipNext = 1; // Skip \n
+         } else if (char === "\n") {
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+         } else {
+            ctx.currentField += char;
+            ctx.state = "UNQUOTED_FIELD";
+         }
+         break;
 
-		case "UNQUOTED_FIELD":
-			if (char === ctx.delimiter) {
-				ctx.currentRow.push(ctx.currentField);
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-			} else if (char === "\r" && nextChar === "\n") {
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-				skipNext = 1; // Skip \n
-			} else if (char === "\n") {
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-			} else {
-				ctx.currentField += char;
-			}
-			break;
+      case "UNQUOTED_FIELD":
+         if (char === ctx.delimiter) {
+            ctx.currentRow.push(ctx.currentField);
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+         } else if (char === "\r" && nextChar === "\n") {
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+            skipNext = 1; // Skip \n
+         } else if (char === "\n") {
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+         } else {
+            ctx.currentField += char;
+         }
+         break;
 
-		case "QUOTED_FIELD":
-			if (char === '"') {
-				ctx.state = "QUOTE_IN_QUOTED";
-			} else {
-				// Newlines inside quotes are kept as-is (including \r\n)
-				ctx.currentField += char;
-			}
-			break;
+      case "QUOTED_FIELD":
+         if (char === '"') {
+            ctx.state = "QUOTE_IN_QUOTED";
+         } else {
+            // Newlines inside quotes are kept as-is (including \r\n)
+            ctx.currentField += char;
+         }
+         break;
 
-		case "QUOTE_IN_QUOTED":
-			if (char === '"') {
-				// Escaped quote ("" -> ")
-				ctx.currentField += '"';
-				ctx.state = "QUOTED_FIELD";
-			} else if (char === ctx.delimiter) {
-				// End of quoted field, followed by delimiter
-				ctx.currentRow.push(ctx.currentField);
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-			} else if (char === "\r" && nextChar === "\n") {
-				// End of quoted field, followed by CRLF
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-				skipNext = 1; // Skip \n
-			} else if (char === "\n") {
-				// End of quoted field, followed by LF
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-			} else {
-				// Characters after closing quote but before delimiter (non-strict)
-				// Some parsers ignore these, we'll keep them for compatibility
-				ctx.state = "FIELD_END";
-			}
-			break;
+      case "QUOTE_IN_QUOTED":
+         if (char === '"') {
+            // Escaped quote ("" -> ")
+            ctx.currentField += '"';
+            ctx.state = "QUOTED_FIELD";
+         } else if (char === ctx.delimiter) {
+            // End of quoted field, followed by delimiter
+            ctx.currentRow.push(ctx.currentField);
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+         } else if (char === "\r" && nextChar === "\n") {
+            // End of quoted field, followed by CRLF
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+            skipNext = 1; // Skip \n
+         } else if (char === "\n") {
+            // End of quoted field, followed by LF
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+         } else {
+            // Characters after closing quote but before delimiter (non-strict)
+            // Some parsers ignore these, we'll keep them for compatibility
+            ctx.state = "FIELD_END";
+         }
+         break;
 
-		case "FIELD_END":
-			if (char === ctx.delimiter) {
-				ctx.currentRow.push(ctx.currentField);
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-			} else if (char === "\r" && nextChar === "\n") {
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-				skipNext = 1; // Skip \n
-			} else if (char === "\n") {
-				ctx.currentRow.push(ctx.currentField);
-				onRowComplete(ctx.currentRow);
-				ctx.currentRow = [];
-				ctx.currentField = "";
-				ctx.state = "FIELD_START";
-			}
-			// Ignore other characters after closing quote
-			break;
-	}
+      case "FIELD_END":
+         if (char === ctx.delimiter) {
+            ctx.currentRow.push(ctx.currentField);
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+         } else if (char === "\r" && nextChar === "\n") {
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+            skipNext = 1; // Skip \n
+         } else if (char === "\n") {
+            ctx.currentRow.push(ctx.currentField);
+            onRowComplete(ctx.currentRow);
+            ctx.currentRow = [];
+            ctx.currentField = "";
+            ctx.state = "FIELD_START";
+         }
+         // Ignore other characters after closing quote
+         break;
+   }
 
-	return skipNext;
+   return skipNext;
 }
 
 /**
@@ -177,15 +177,15 @@ export function processChar(
  * @param onRowComplete - Callback invoked if there's a final row
  */
 export function flush(
-	ctx: StateMachineContext,
-	onRowComplete: OnRowCompleteCallback,
+   ctx: StateMachineContext,
+   onRowComplete: OnRowCompleteCallback,
 ): void {
-	if (ctx.currentField !== "" || ctx.currentRow.length > 0) {
-		ctx.currentRow.push(ctx.currentField);
-		onRowComplete(ctx.currentRow);
-		ctx.currentRow = [];
-		ctx.currentField = "";
-	}
+   if (ctx.currentField !== "" || ctx.currentRow.length > 0) {
+      ctx.currentRow.push(ctx.currentField);
+      onRowComplete(ctx.currentRow);
+      ctx.currentRow = [];
+      ctx.currentField = "";
+   }
 }
 
 /**
@@ -195,7 +195,7 @@ export function flush(
  * @returns True if there's pending data
  */
 export function hasPendingData(ctx: StateMachineContext): boolean {
-	return ctx.currentField !== "" || ctx.currentRow.length > 0;
+   return ctx.currentField !== "" || ctx.currentRow.length > 0;
 }
 
 /**
@@ -206,5 +206,5 @@ export function hasPendingData(ctx: StateMachineContext): boolean {
  * @returns True if currently parsing a quoted field
  */
 export function isInQuotedField(ctx: StateMachineContext): boolean {
-	return ctx.state === "QUOTED_FIELD";
+   return ctx.state === "QUOTED_FIELD";
 }

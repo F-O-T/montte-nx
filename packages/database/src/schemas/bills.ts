@@ -11,8 +11,10 @@ import {
 } from "drizzle-orm/pg-core";
 import { organization } from "./auth";
 import { bankAccount } from "./bank-accounts";
+import { costCenter } from "./cost-centers";
 import { counterparty } from "./counterparties";
 import { interestTemplate } from "./interest-templates";
+import { billTag } from "./tags";
 import { transaction } from "./transactions";
 
 export const bill = pgTable(
@@ -37,6 +39,9 @@ export const bill = pgTable(
       }),
       categoryId: text("category_id"),
       completionDate: timestamp("completion_date"),
+      costCenterId: uuid("cost_center_id").references(() => costCenter.id, {
+         onDelete: "set null",
+      }),
       counterpartyId: uuid("counterparty_id"),
       createdAt: timestamp("created_at").defaultNow().notNull(),
       description: text("description").notNull(),
@@ -65,7 +70,6 @@ export const bill = pgTable(
          .defaultNow()
          .$onUpdate(() => new Date())
          .notNull(),
-      userId: uuid("user_id").notNull(),
    },
    (table) => [index("bill_organizationId_idx").on(table.organizationId)],
 );
@@ -98,6 +102,11 @@ export const billRelations = relations(bill, ({ one, many }) => ({
    bankAccount: one(bankAccount, {
       fields: [bill.bankAccountId],
       references: [bankAccount.id],
+   }),
+   billTags: many(billTag),
+   costCenter: one(costCenter, {
+      fields: [bill.costCenterId],
+      references: [costCenter.id],
    }),
    counterparty: one(counterparty, {
       fields: [bill.counterpartyId],

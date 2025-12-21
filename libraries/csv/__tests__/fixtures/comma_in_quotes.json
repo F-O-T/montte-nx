@@ -1,9 +1,9 @@
 [
-  {
-    "first": "John",
-    "last": "Doe",
-    "address": "120 any st.",
-    "city": "Anytown, WW",
-    "zip": "08123"
-  }
+   {
+      "first": "John",
+      "last": "Doe",
+      "address": "120 any st.",
+      "city": "Anytown, WW",
+      "zip": "08123"
+   }
 ]

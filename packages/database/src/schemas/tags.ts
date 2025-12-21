@@ -7,6 +7,7 @@ import {
    uuid,
 } from "drizzle-orm/pg-core";
 import { organization } from "./auth";
+import { bill } from "./bills";
 import { transaction } from "./transactions";
 
 export const tag = pgTable("tag", {
@@ -38,7 +39,23 @@ export const transactionTag = pgTable(
    }),
 );
 
+export const billTag = pgTable(
+   "bill_tag",
+   {
+      billId: uuid("bill_id")
+         .notNull()
+         .references(() => bill.id, { onDelete: "cascade" }),
+      tagId: uuid("tag_id")
+         .notNull()
+         .references(() => tag.id, { onDelete: "cascade" }),
+   },
+   (table) => ({
+      pk: primaryKey({ columns: [table.billId, table.tagId] }),
+   }),
+);
+
 export const tagRelations = relations(tag, ({ one, many }) => ({
+   billTags: many(billTag),
    organization: one(organization, {
       fields: [tag.organizationId],
       references: [organization.id],
@@ -54,5 +71,16 @@ export const transactionTagRelations = relations(transactionTag, ({ one }) => ({
    transaction: one(transaction, {
       fields: [transactionTag.transactionId],
       references: [transaction.id],
+   }),
+}));
+
+export const billTagRelations = relations(billTag, ({ one }) => ({
+   bill: one(bill, {
+      fields: [billTag.billId],
+      references: [bill.id],
+   }),
+   tag: one(tag, {
+      fields: [billTag.tagId],
+      references: [tag.id],
    }),
 }));

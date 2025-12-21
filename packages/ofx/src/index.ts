@@ -1,10 +1,10 @@
 import {
    generateBankStatement,
-   parseStream,
    type OFXAccountType,
    type OFXHeader,
    type OFXTransaction,
    type OFXTransactionType,
+   parseStream,
 } from "@f-o-t/ofx";
 import { normalizeText } from "@packages/utils/text";
 

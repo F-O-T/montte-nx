@@ -1,3 +1,4 @@
+import type { ReportType } from "@packages/database/schemas/custom-reports";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -17,7 +18,6 @@ import {
    X,
 } from "lucide-react";
 import { useCredenza } from "@/hooks/use-credenza";
-import type { ReportType } from "@packages/database/schemas/custom-reports";
 import { CustomReportFilterCredenza } from "@/pages/custom-reports/features/custom-report-filter-credenza";
 
 type CustomReportFilterBarProps = {

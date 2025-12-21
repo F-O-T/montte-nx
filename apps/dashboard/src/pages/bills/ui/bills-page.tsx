@@ -1,13 +1,19 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
-import { MonthSelector } from "@packages/ui/components/month-selector";
-import { TimePeriodChips } from "@packages/ui/components/time-period-chips";
+import { Skeleton } from "@packages/ui/components/skeleton";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { useSearch } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
+import { Suspense, useEffect } from "react";
 import { DefaultHeader } from "@/default/default-header";
+import {
+   BillListProvider,
+   useBillList,
+} from "@/features/bill/lib/bill-list-context";
+import { ManageBillForm } from "@/features/bill/ui/manage-bill-form";
 import { useSheet } from "@/hooks/use-sheet";
-import { BillListProvider, useBillList } from "../features/bill-list-context";
-import { ManageBillForm } from "../features/manage-bill-form";
+import { useTRPC } from "@/integrations/clients";
+import { BillFilterBar } from "./bill-filter-bar";
 import { BillsListSection } from "./bills-list-section";
 import { BillsStats } from "./bills-stats";
 
@@ -15,8 +21,40 @@ type BillsSearch = {
    type?: "payable" | "receivable";
 };
 
-function BillsPageContent() {
-   const { openSheet } = useSheet();
+function BillFilterBarSkeleton() {
+   return (
+      <div className="space-y-3">
+         <div className="flex flex-wrap items-center gap-3">
+            <div className="flex gap-1">
+               {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton
+                     className="h-8 w-20"
+                     key={`period-skeleton-${i + 1}`}
+                  />
+               ))}
+            </div>
+            <Skeleton className="h-8 w-32" />
+         </div>
+         <div className="flex flex-wrap items-center gap-3">
+            <div className="flex gap-1">
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-24" />
+               <Skeleton className="h-8 w-24" />
+            </div>
+            <div className="h-4 w-px bg-border" />
+            <div className="flex gap-1">
+               <Skeleton className="h-8 w-20" />
+               <Skeleton className="h-8 w-24" />
+            </div>
+            <div className="h-4 w-px bg-border" />
+            <Skeleton className="h-8 w-28" />
+         </div>
+      </div>
+   );
+}
+
+function BillFilterBarWrapper() {
+   const trpc = useTRPC();
    const search = useSearch({
       from: "/$slug/_dashboard/bills/",
    }) as BillsSearch;
@@ -25,9 +63,74 @@ function BillsPageContent() {
    const {
       timePeriod,
       handleTimePeriodChange,
-      selectedMonth,
-      handleMonthChange,
+      customDateRange,
+      setCustomDateRange,
+      statusFilter,
+      setStatusFilter,
+      typeFilter,
+      setTypeFilter,
+      categoryFilter,
+      setCategoryFilter,
+      bankAccountFilter,
+      setBankAccountFilter,
+      clearFilters,
+      hasActiveFilters,
+      pageSize,
+      setPageSize,
+      currentFilterType,
+      setCurrentFilterType,
    } = useBillList();
+
+   // Set current filter type based on route
+   useEffect(() => {
+      const newFilterType =
+         billType === "payable" || billType === "receivable"
+            ? billType
+            : undefined;
+
+      if (newFilterType !== currentFilterType) {
+         setCurrentFilterType(newFilterType);
+      }
+   }, [billType, currentFilterType, setCurrentFilterType]);
+
+   const [categoriesQuery, bankAccountsQuery] = useSuspenseQueries({
+      queries: [
+         trpc.categories.getAll.queryOptions(),
+         trpc.bankAccounts.getAll.queryOptions(),
+      ],
+   });
+
+   return (
+      <BillFilterBar
+         bankAccountFilter={bankAccountFilter}
+         bankAccounts={bankAccountsQuery.data ?? []}
+         categories={categoriesQuery.data ?? []}
+         categoryFilter={categoryFilter}
+         currentFilterType={billType}
+         customDateRange={customDateRange}
+         hasActiveFilters={hasActiveFilters}
+         onBankAccountFilterChange={setBankAccountFilter}
+         onCategoryFilterChange={setCategoryFilter}
+         onClearFilters={clearFilters}
+         onCustomDateRangeChange={setCustomDateRange}
+         onPageSizeChange={setPageSize}
+         onStatusFilterChange={setStatusFilter}
+         onTimePeriodChange={handleTimePeriodChange}
+         onTypeFilterChange={setTypeFilter}
+         pageSize={pageSize}
+         statusFilter={statusFilter}
+         timePeriod={timePeriod}
+         typeFilter={typeFilter}
+      />
+   );
+}
+
+function BillsPageContent() {
+   const { openSheet } = useSheet();
+   const search = useSearch({
+      from: "/$slug/_dashboard/bills/",
+   }) as BillsSearch;
+   const billType = search.type;
 
    const getHeaderContent = () => {
       if (billType === "payable") {
@@ -77,19 +180,9 @@ function BillsPageContent() {
             title={title}
          />
 
-         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <TimePeriodChips
-               onValueChange={(period) => handleTimePeriodChange(period)}
-               size="sm"
-               value={timePeriod}
-            />
-            <div className="hidden sm:block h-4 w-px bg-border" />
-            <MonthSelector
-               date={selectedMonth}
-               disabled={timePeriod !== null && timePeriod !== "all-time"}
-               onSelect={handleMonthChange}
-            />
-         </div>
+         <Suspense fallback={<BillFilterBarSkeleton />}>
+            <BillFilterBarWrapper />
+         </Suspense>
 
          <BillsStats type={billType} />
          <BillsListSection type={billType} />

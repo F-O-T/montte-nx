@@ -56,7 +56,7 @@ export function CategoryAnnouncement({
    if (asLink && slug && (categoryId || category.id)) {
       return (
          <Link
-            params={{ slug, categoryId: categoryId || category.id! }}
+            params={{ slug, categoryId: (categoryId || category.id) as string }}
             to="/$slug/categories/$categoryId"
          >
             {content}

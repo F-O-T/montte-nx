@@ -1,14 +1,14 @@
-import type {
-	CSVDocument,
-	ParseOptions,
-	ParseResult,
-	ParsedRow,
-} from "./types.ts";
 import {
-	createStateMachineContext,
-	flush,
-	processChar,
+   createStateMachineContext,
+   flush,
+   processChar,
 } from "./csv-state-machine.ts";
+import type {
+   CSVDocument,
+   ParsedRow,
+   ParseOptions,
+   ParseResult,
+} from "./types.ts";
 import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
 
 /**
@@ -24,27 +24,27 @@ import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
  * @returns A 2D array of field values
  */
 function parseRawCSV(input: string, delimiter: string): string[][] {
-	const rows: string[][] = [];
-	const ctx = createStateMachineContext(delimiter);
+   const rows: string[][] = [];
+   const ctx = createStateMachineContext(delimiter);
 
-	const onRowComplete = (row: string[]) => {
-		// Only add non-empty rows (rows with content or more than one empty field)
-		if (row.length > 0 || (row.length === 1 && row[0] !== "")) {
-			rows.push([...row]);
-		}
-	};
+   const onRowComplete = (row: string[]) => {
+      // Only add non-empty rows (rows with content or more than one empty field)
+      if (row.length > 0 || (row.length === 1 && row[0] !== "")) {
+         rows.push([...row]);
+      }
+   };
 
-	for (let i = 0; i < input.length; i++) {
-		const char = input[i] as string;
-		const nextChar = input[i + 1];
-		const skip = processChar(ctx, char, nextChar, onRowComplete);
-		i += skip;
-	}
+   for (let i = 0; i < input.length; i++) {
+      const char = input[i] as string;
+      const nextChar = input[i + 1];
+      const skip = processChar(ctx, char, nextChar, onRowComplete);
+      i += skip;
+   }
 
-	// Handle final field/row
-	flush(ctx, onRowComplete);
+   // Handle final field/row
+   flush(ctx, onRowComplete);
 
-	return rows;
+   return rows;
 }
 
 /**
@@ -55,18 +55,18 @@ function parseRawCSV(input: string, delimiter: string): string[][] {
  * @returns A ParseResult containing either the parsed document or an error
  */
 export function parse(
-	content: string,
-	options?: ParseOptions,
+   content: string,
+   options?: ParseOptions,
 ): ParseResult<CSVDocument> {
-	try {
-		const data = parseOrThrow(content, options);
-		return { success: true, data };
-	} catch (error) {
-		return {
-			success: false,
-			error: error instanceof Error ? error : new Error(String(error)),
-		};
-	}
+   try {
+      const data = parseOrThrow(content, options);
+      return { success: true, data };
+   } catch (error) {
+      return {
+         success: false,
+         error: error instanceof Error ? error : new Error(String(error)),
+      };
+   }
 }
 
 /**
@@ -78,76 +78,76 @@ export function parse(
  * @throws Error if parsing fails
  */
 export function parseOrThrow(
-	content: string,
-	options?: ParseOptions,
+   content: string,
+   options?: ParseOptions,
 ): CSVDocument {
-	const delimiter = options?.delimiter ?? detectDelimiter(content);
-	const skipRows = options?.skipRows ?? 0;
-	const hasHeaders = options?.hasHeaders ?? false;
-	const trimFields = options?.trimFields ?? false;
-	const customColumns = options?.columns;
+   const delimiter = options?.delimiter ?? detectDelimiter(content);
+   const skipRows = options?.skipRows ?? 0;
+   const hasHeaders = options?.hasHeaders ?? false;
+   const trimFields = options?.trimFields ?? false;
+   const customColumns = options?.columns;
 
-	// Parse raw CSV
-	const rawRows = parseRawCSV(content, delimiter);
+   // Parse raw CSV
+   const rawRows = parseRawCSV(content, delimiter);
 
-	// Handle empty content
-	if (rawRows.length === 0) {
-		return {
-			headers: hasHeaders ? [] : undefined,
-			rows: [],
-			delimiter,
-			totalRows: 0,
-		};
-	}
+   // Handle empty content
+   if (rawRows.length === 0) {
+      return {
+         headers: hasHeaders ? [] : undefined,
+         rows: [],
+         delimiter,
+         totalRows: 0,
+      };
+   }
 
-	// Skip rows if requested
-	const dataRows = rawRows.slice(skipRows);
+   // Skip rows if requested
+   const dataRows = rawRows.slice(skipRows);
 
-	if (dataRows.length === 0) {
-		return {
-			headers: hasHeaders ? [] : undefined,
-			rows: [],
-			delimiter,
-			totalRows: 0,
-		};
-	}
+   if (dataRows.length === 0) {
+      return {
+         headers: hasHeaders ? [] : undefined,
+         rows: [],
+         delimiter,
+         totalRows: 0,
+      };
+   }
 
-	// Extract headers
-	let headers: string[] | undefined;
-	let startIndex = 0;
+   // Extract headers
+   let headers: string[] | undefined;
+   let startIndex = 0;
 
-	if (hasHeaders) {
-		const headerRow = dataRows[0];
-		if (headerRow) {
-			headers = trimFields ? headerRow.map((h) => h.trim()) : headerRow;
-			startIndex = 1;
-		}
-	} else if (customColumns) {
-		headers = customColumns;
-	}
+   if (hasHeaders) {
+      const headerRow = dataRows[0];
+      if (headerRow) {
+         headers = trimFields ? headerRow.map((h) => h.trim()) : headerRow;
+         startIndex = 1;
+      }
+   } else if (customColumns) {
+      headers = customColumns;
+   }
 
-	// Build parsed rows
-	const parsedRows: ParsedRow[] = [];
+   // Build parsed rows
+   const parsedRows: ParsedRow[] = [];
 
-	for (let i = startIndex; i < dataRows.length; i++) {
-		const rawRow = dataRows[i];
-		if (rawRow) {
-			// Skip completely empty rows (single empty field)
-			if (rawRow.length === 1 && rawRow[0] === "") {
-				continue;
-			}
-			parsedRows.push(
-				createParsedRow(rawRow, skipRows + i, headers, trimFields),
-			);
-		}
-	}
+   for (let i = startIndex; i < dataRows.length; i++) {
+      const rawRow = dataRows[i];
+      if (rawRow) {
+         // Skip completely empty rows (single empty field)
+         if (rawRow.length === 1 && rawRow[0] === "") {
+            continue;
+         }
+         parsedRows.push(
+            createParsedRow(rawRow, skipRows + i, headers, trimFields),
+         );
+      }
+   }
 
-	return {
-		headers,
-		rows: parsedRows,
-		delimiter,
-		totalRows: parsedRows.length,
-	};
+   return {
+      headers,
+      rows: parsedRows,
+      delimiter,
+      totalRows: parsedRows.length,
+   };
 }
 
 /**
@@ -158,18 +158,18 @@ export function parseOrThrow(
  * @returns A ParseResult containing either the parsed document or an error
  */
 export function parseBuffer(
-	buffer: Uint8Array,
-	options?: ParseOptions,
+   buffer: Uint8Array,
+   options?: ParseOptions,
 ): ParseResult<CSVDocument> {
-	try {
-		const data = parseBufferOrThrow(buffer, options);
-		return { success: true, data };
-	} catch (error) {
-		return {
-			success: false,
-			error: error instanceof Error ? error : new Error(String(error)),
-		};
-	}
+   try {
+      const data = parseBufferOrThrow(buffer, options);
+      return { success: true, data };
+   } catch (error) {
+      return {
+         success: false,
+         error: error instanceof Error ? error : new Error(String(error)),
+      };
+   }
 }
 
 /**
@@ -182,11 +182,11 @@ export function parseBuffer(
  * @throws Error if parsing fails
  */
 export function parseBufferOrThrow(
-	buffer: Uint8Array,
-	options?: ParseOptions,
+   buffer: Uint8Array,
+   options?: ParseOptions,
 ): CSVDocument {
-	const content = decodeBuffer(buffer);
-	return parseOrThrow(content, options);
+   const content = decodeBuffer(buffer);
+   return parseOrThrow(content, options);
 }
 
 /**
@@ -198,6 +198,6 @@ export function parseBufferOrThrow(
  * @returns A 2D array of field values
  */
 export function parseToArray(content: string, delimiter?: string): string[][] {
-	const effectiveDelimiter = delimiter ?? detectDelimiter(content);
-	return parseRawCSV(content, effectiveDelimiter);
+   const effectiveDelimiter = delimiter ?? detectDelimiter(content);
+   return parseRawCSV(content, effectiveDelimiter);
 }

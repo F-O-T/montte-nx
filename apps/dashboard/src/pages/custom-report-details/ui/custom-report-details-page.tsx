@@ -1,6 +1,6 @@
 import type {
-	DRESnapshotData,
-	TransactionSnapshot,
+   DRESnapshotData,
+   TransactionSnapshot,
 } from "@packages/database/schemas/custom-reports";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
@@ -67,64 +67,64 @@ const routeApi = getRouteApi("/$slug/_dashboard/custom-reports/$reportId");
  * placeholder values since they're not used by the display components.
  */
 function mapSnapshotToTableTransaction(
-	snapshot: TransactionSnapshot,
+   snapshot: TransactionSnapshot,
 ): Transaction {
-	const snapshotDate = new Date(snapshot.date);
+   const snapshotDate = new Date(snapshot.date);
 
-	return {
-		amount: snapshot.amount,
-		attachmentKey: null,
-		externalId: null,
-		bankAccount: snapshot.bankAccount
-			? {
-					...snapshot.bankAccount,
-					createdAt: snapshotDate,
-					organizationId: "",
-					status: "active" as const,
-					type: "checking" as const,
-					updatedAt: snapshotDate,
-				}
-			: null,
-		bankAccountId: snapshot.bankAccount?.id ?? null,
-		categorySplits: snapshot.categorySplits,
-		costCenter: snapshot.costCenter
-			? {
-					...snapshot.costCenter,
-					createdAt: snapshotDate,
-					organizationId: "",
-					updatedAt: snapshotDate,
-				}
-			: null,
-		costCenterId: snapshot.costCenter?.id ?? null,
-		createdAt: snapshotDate,
-		date: snapshotDate,
-		description: snapshot.description,
-		id: snapshot.id,
-		organizationId: "",
-		transactionCategories: snapshot.transactionCategories.map((tc) => ({
-			category: {
-				...tc.category,
-				createdAt: snapshotDate,
-				organizationId: "",
-				transactionTypes: [],
-				updatedAt: snapshotDate,
-			},
-			categoryId: tc.category.id,
-			transactionId: snapshot.id,
-		})),
-		transactionTags: snapshot.transactionTags.map((tt) => ({
-			tag: {
-				...tt.tag,
-				createdAt: snapshotDate,
-				organizationId: "",
-				updatedAt: snapshotDate,
-			},
-			tagId: tt.tag.id,
-			transactionId: snapshot.id,
-		})),
-		type: snapshot.type,
-		updatedAt: snapshotDate,
-	};
+   return {
+      amount: snapshot.amount,
+      attachmentKey: null,
+      externalId: null,
+      bankAccount: snapshot.bankAccount
+         ? {
+              ...snapshot.bankAccount,
+              createdAt: snapshotDate,
+              organizationId: "",
+              status: "active" as const,
+              type: "checking" as const,
+              updatedAt: snapshotDate,
+           }
+         : null,
+      bankAccountId: snapshot.bankAccount?.id ?? null,
+      categorySplits: snapshot.categorySplits,
+      costCenter: snapshot.costCenter
+         ? {
+              ...snapshot.costCenter,
+              createdAt: snapshotDate,
+              organizationId: "",
+              updatedAt: snapshotDate,
+           }
+         : null,
+      costCenterId: snapshot.costCenter?.id ?? null,
+      createdAt: snapshotDate,
+      date: snapshotDate,
+      description: snapshot.description,
+      id: snapshot.id,
+      organizationId: "",
+      transactionCategories: snapshot.transactionCategories.map((tc) => ({
+         category: {
+            ...tc.category,
+            createdAt: snapshotDate,
+            organizationId: "",
+            transactionTypes: [],
+            updatedAt: snapshotDate,
+         },
+         categoryId: tc.category.id,
+         transactionId: snapshot.id,
+      })),
+      transactionTags: snapshot.transactionTags.map((tt) => ({
+         tag: {
+            ...tt.tag,
+            createdAt: snapshotDate,
+            organizationId: "",
+            updatedAt: snapshotDate,
+         },
+         tagId: tt.tag.id,
+         transactionId: snapshot.id,
+      })),
+      type: snapshot.type,
+      updatedAt: snapshotDate,
+   };
 }
 
 function CustomReportDetailsErrorFallback(props: FallbackProps) {

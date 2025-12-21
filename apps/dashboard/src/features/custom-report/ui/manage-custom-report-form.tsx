@@ -203,8 +203,7 @@ export function ManageCustomReportForm({
                      value.costCenterIds.length > 0
                         ? value.costCenterIds
                         : undefined,
-                  tagIds:
-                     value.tagIds.length > 0 ? value.tagIds : undefined,
+                  tagIds: value.tagIds.length > 0 ? value.tagIds : undefined,
                };
 
                const hasFilters =

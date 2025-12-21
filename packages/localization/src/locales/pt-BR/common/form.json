@@ -110,6 +110,7 @@
       "label": "Observações",
       "placeholder": "Digite suas observações"
    },
+   "optional": "Opcional",
    "order-direction": {
       "label": "Direção da Ordenação",
       "placeholder": "Selecione a direção"
