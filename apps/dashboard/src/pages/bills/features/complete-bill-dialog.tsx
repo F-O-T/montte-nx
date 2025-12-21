@@ -1,8 +1,13 @@
-import type { Bill } from "@packages/database/repositories/bill-repository";
+import type { BillWithRelations } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { DatePicker } from "@packages/ui/components/date-picker";
-import { Label } from "@packages/ui/components/label";
+import {
+   Field,
+   FieldDescription,
+   FieldGroup,
+   FieldLabel,
+} from "@packages/ui/components/field";
 import {
    Select,
    SelectContent,
@@ -10,20 +15,24 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@packages/ui/components/select";
+import { Separator } from "@packages/ui/components/separator";
 import {
-   SheetClose,
    SheetDescription,
    SheetFooter,
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
 import { formatDate } from "@packages/utils/date";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AmountAnnouncement } from "@/features/transaction/ui/amount-announcement";
+import { CategoryAnnouncement } from "@/features/transaction/ui/category-announcement";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
+
+type Bill = BillWithRelations;
 
 interface CompleteBillSheetContentProps {
    bill: Bill;
@@ -39,12 +48,18 @@ function CompleteBillSheetContent({
       bill.bankAccountId || undefined,
    );
    const trpc = useTRPC();
+   const queryClient = useQueryClient();
 
    const { data: bankAccounts = [] } = useQuery(
       trpc.bankAccounts.getAll.queryOptions(),
    );
 
-   const activeBankAccounts = bankAccounts;
+   const { data: categories = [] } = useQuery(
+      trpc.categories.getAll.queryOptions(),
+   );
+
+   const isExpense = bill.type === "expense";
+   const category = categories.find((c) => c.id === bill.categoryId);
 
    const completeBillMutation = useMutation(
       trpc.bills.complete.mutationOptions({
@@ -52,13 +67,23 @@ function CompleteBillSheetContent({
             toast.error(
                error.message ||
                   translate(
-                     "dashboard.routes.bills.features.create-bill.error",
+                     "dashboard.routes.bills.features.complete-bill.error",
                   ),
             );
          },
          onSuccess: () => {
+            queryClient.invalidateQueries({
+               queryKey: trpc.bills.getById.queryKey({ id: bill.id }),
+            });
+            queryClient.invalidateQueries({
+               queryKey: trpc.bills.getAllPaginated.queryKey(),
+            });
             toast.success(
-               translate("dashboard.routes.bills.features.create-bill.success"),
+               translate(
+                  isExpense
+                     ? "dashboard.routes.bills.features.complete-bill.success-payment"
+                     : "dashboard.routes.bills.features.complete-bill.success-receipt",
+               ),
             );
             onClose();
          },
@@ -84,76 +109,156 @@ function CompleteBillSheetContent({
          <SheetHeader>
             <SheetTitle>
                {translate(
-                  "dashboard.routes.bills.features.complete-bill.title",
+                  isExpense
+                     ? "dashboard.routes.bills.features.complete-bill.title-expense"
+                     : "dashboard.routes.bills.features.complete-bill.title-income",
                )}
             </SheetTitle>
             <SheetDescription>
                {translate(
-                  "dashboard.routes.bills.features.complete-bill.description",
+                  isExpense
+                     ? "dashboard.routes.bills.features.complete-bill.description-expense"
+                     : "dashboard.routes.bills.features.complete-bill.description-income",
                )}
             </SheetDescription>
          </SheetHeader>
 
-         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
-            <div className="grid gap-2">
-               <Label>
+         <div className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+            {/* Bill Summary Card */}
+            <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   {translate(
-                     "dashboard.routes.bills.features.create-bill.fields.dueDate",
+                     "dashboard.routes.bills.features.complete-bill.summary",
                   )}
-               </Label>
-               <DatePicker
-                  date={completionDate}
-                  onSelect={(date) => setCompletionDate(date || new Date())}
-                  placeholder={translate(
-                     "dashboard.routes.bills.features.create-bill.placeholders.dueDate",
+               </p>
+               <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                     <span className="text-sm text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bills.table.columns.description",
+                        )}
+                     </span>
+                     <span className="font-medium text-sm truncate max-w-[200px]">
+                        {bill.description}
+                     </span>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                     <span className="text-sm text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bills.table.columns.dueDate",
+                        )}
+                     </span>
+                     <span className="text-sm">
+                        {formatDate(new Date(bill.dueDate), "DD/MM/YYYY")}
+                     </span>
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                     <span className="text-sm text-muted-foreground">
+                        {translate(
+                           "dashboard.routes.bills.table.columns.amount",
+                        )}
+                     </span>
+                     <AmountAnnouncement
+                        amount={Number(bill.amount)}
+                        isPositive={!isExpense}
+                     />
+                  </div>
+                  {category && (
+                     <>
+                        <Separator />
+                        <div className="flex items-center justify-between">
+                           <span className="text-sm text-muted-foreground">
+                              {translate(
+                                 "dashboard.routes.bills.features.create-bill.fields.category",
+                              )}
+                           </span>
+                           <CategoryAnnouncement
+                              category={{
+                                 color: category.color,
+                                 icon: category.icon || "Wallet",
+                                 name: category.name,
+                              }}
+                           />
+                        </div>
+                     </>
                   )}
-               />
+               </div>
             </div>
 
-            <div className="grid gap-2">
-               <Label>
-                  {translate(
-                     "dashboard.routes.bills.features.create-bill.fields.bankAccount",
-                  )}
-               </Label>
-               <Select onValueChange={setBankAccountId} value={bankAccountId}>
-                  <SelectTrigger>
-                     <SelectValue
-                        placeholder={translate(
-                           "dashboard.routes.bills.features.create-bill.placeholders.bankAccount",
+            {/* Form Fields */}
+            <div className="space-y-4">
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           isExpense
+                              ? "dashboard.routes.bills.features.complete-bill.completion-date-expense"
+                              : "dashboard.routes.bills.features.complete-bill.completion-date-income",
                         )}
+                     </FieldLabel>
+                     <DatePicker
+                        className="w-full"
+                        date={completionDate}
+                        onSelect={(date) => setCompletionDate(date || new Date())}
                      />
-                  </SelectTrigger>
-                  <SelectContent>
-                     {activeBankAccounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id}>
-                           {account.name} - {account.bank}
-                        </SelectItem>
-                     ))}
-                  </SelectContent>
-               </Select>
+                  </Field>
+               </FieldGroup>
+
+               <FieldGroup>
+                  <Field>
+                     <FieldLabel>
+                        {translate(
+                           "dashboard.routes.bills.features.complete-bill.bank-account",
+                        )}
+                     </FieldLabel>
+                     <Select
+                        onValueChange={setBankAccountId}
+                        value={bankAccountId}
+                     >
+                        <SelectTrigger>
+                           <SelectValue
+                              placeholder={translate(
+                                 "dashboard.routes.bills.features.create-bill.placeholders.bankAccount",
+                              )}
+                           />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {bankAccounts.map((account) => (
+                              <SelectItem key={account.id} value={account.id}>
+                                 {account.name} - {account.bank}
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                     <FieldDescription>
+                        {translate(
+                           "dashboard.routes.bills.features.complete-bill.bank-account-description",
+                        )}
+                     </FieldDescription>
+                  </Field>
+               </FieldGroup>
             </div>
          </div>
 
-         <SheetFooter>
-            <SheetClose asChild>
-               <Button variant="outline">
-                  {translate("common.actions.cancel")}
-               </Button>
-            </SheetClose>
+         <SheetFooter className="px-4">
             <Button
+               className="w-full"
                disabled={completeBillMutation.isPending}
                onClick={handleComplete}
             >
-               {completeBillMutation.isPending && (
-                  <Loader2 className="size-4 mr-2 animate-spin" />
+               {completeBillMutation.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+               ) : (
+                  <Check className="size-4" />
                )}
                {completeBillMutation.isPending
-                  ? translate(
-                       "dashboard.routes.bills.features.create-bill.creating",
-                    )
+                  ? translate("common.actions.loading")
                   : translate(
-                       "dashboard.routes.bills.features.create-bill.submit",
+                       isExpense
+                          ? "dashboard.routes.bills.features.complete-bill.confirm-payment"
+                          : "dashboard.routes.bills.features.complete-bill.confirm-receipt",
                     )}
             </Button>
          </SheetFooter>

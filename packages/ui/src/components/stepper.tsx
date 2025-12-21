@@ -69,18 +69,50 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             // Count actual rendered children instead of all defined steps
             const childrenArray = React.Children.toArray(children);
             const totalSteps = childrenArray.length;
-            // Find current step index among rendered children
-            const currentIndex = childrenArray.findIndex((child) => {
+
+            // Get step ID from a rendered child element
+            const getStepId = (child: React.ReactNode): string | null => {
                if (
                   React.isValidElement(child) &&
                   typeof child.props === "object" &&
                   child.props !== null &&
                   "of" in child.props
                ) {
-                  return (child.props as { of: string }).of === current.id;
+                  return (child.props as { of: string }).of;
                }
-               return false;
-            });
+               return null;
+            };
+
+            // Find current step index among rendered children
+            const foundIndex = childrenArray.findIndex(
+               (child) => getStepId(child) === current.id,
+            );
+
+            // Calculate current index with fallback logic
+            const currentIndex = (() => {
+               // If found directly, use that index
+               if (foundIndex !== -1) {
+                  return foundIndex;
+               }
+
+               // Current step not rendered - find the next closest rendered step
+               const currentStepDefinedIndex = rest.utils.getIndex(current.id);
+
+               // Find the first rendered step that comes at or after the current step
+               const nextRenderedIndex = childrenArray.findIndex((child) => {
+                  const stepId = getStepId(child);
+                  if (!stepId) return false;
+                  const stepDefinedIndex = rest.utils.getIndex(stepId);
+                  return stepDefinedIndex >= currentStepDefinedIndex;
+               });
+
+               if (nextRenderedIndex !== -1) {
+                  return nextRenderedIndex;
+               }
+
+               // No step found at or after current - use the last rendered step
+               return Math.max(0, totalSteps - 1);
+            })();
 
             if (variant === "line") {
                return (

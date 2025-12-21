@@ -110,8 +110,22 @@
          "title": "Tornar Recorrente"
       },
       "complete-bill": {
+         "bank-account": "Conta Bancária",
+         "bank-account-description": "Selecione a conta onde foi realizado o pagamento (opcional)",
+         "completion-date-expense": "Data do Pagamento",
+         "completion-date-income": "Data do Recebimento",
+         "confirm-payment": "Confirmar Pagamento",
+         "confirm-receipt": "Confirmar Recebimento",
          "description": "Marque a conta como paga ou recebida",
-         "title": "Concluir Conta"
+         "description-expense": "Marque esta conta como paga",
+         "description-income": "Marque este recebível como recebido",
+         "error": "Falha ao completar conta",
+         "success-payment": "Pagamento registrado com sucesso",
+         "success-receipt": "Recebimento registrado com sucesso",
+         "summary": "Resumo da Conta",
+         "title": "Concluir Conta",
+         "title-expense": "Pagar Conta",
+         "title-income": "Receber Pagamento"
       },
       "create-installments": {
          "description": "Divida esta conta em parcelas mensais",
