@@ -70,6 +70,11 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
             const childrenArray = React.Children.toArray(children);
             const totalSteps = childrenArray.length;
 
+            // Short-circuit when no steps are rendered to avoid "Step 1 of 0"
+            if (totalSteps === 0) {
+               return null;
+            }
+
             // Get step ID from a rendered child element
             const getStepId = (child: React.ReactNode): string | null => {
                if (
@@ -98,11 +103,18 @@ const defineStepper = <const Steps extends Stepperize.Step[]>(
                // Current step not rendered - find the next closest rendered step
                const currentStepDefinedIndex = rest.utils.getIndex(current.id);
 
+               // If current step is not found in defined steps, bail out
+               if (currentStepDefinedIndex === -1) {
+                  return Math.max(0, totalSteps - 1);
+               }
+
                // Find the first rendered step that comes at or after the current step
                const nextRenderedIndex = childrenArray.findIndex((child) => {
                   const stepId = getStepId(child);
                   if (!stepId) return false;
                   const stepDefinedIndex = rest.utils.getIndex(stepId);
+                  // Skip children with invalid indices
+                  if (stepDefinedIndex === -1) return false;
                   return stepDefinedIndex >= currentStepDefinedIndex;
                });
 
@@ -615,7 +627,7 @@ namespace Stepper {
                        }) => React.ReactNode);
                },
          ) => React.ReactElement;
-         Navigation: (props: React.ComponentProps<"nav">) => React.ReactElement;
+         Navigation: (props: React.ComponentProps<"nav">) => React.ReactElement | null;
          Step: (
             props: React.ComponentProps<"button"> & {
                of: Stepperize.Get.Id<Steps>;

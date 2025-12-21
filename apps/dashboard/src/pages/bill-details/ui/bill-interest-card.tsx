@@ -104,7 +104,7 @@ function InterestCardContent({ billId }: { billId: string }) {
       bill.type !== "income" ||
       !isOverdue ||
       isCompleted ||
-      !bill.interestTemplate ||
+      !template ||
       !result
    ) {
       return null;

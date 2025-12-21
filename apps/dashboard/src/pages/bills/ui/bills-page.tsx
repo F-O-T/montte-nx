@@ -4,7 +4,7 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { useSearch } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { DefaultHeader } from "@/default/default-header";
 import {
    BillListProvider,
@@ -77,17 +77,21 @@ function BillFilterBarWrapper() {
       hasActiveFilters,
       pageSize,
       setPageSize,
+      currentFilterType,
       setCurrentFilterType,
    } = useBillList();
 
    // Set current filter type based on route
-   if (billType === "payable") {
-      setCurrentFilterType("payable");
-   } else if (billType === "receivable") {
-      setCurrentFilterType("receivable");
-   } else {
-      setCurrentFilterType(undefined);
-   }
+   useEffect(() => {
+      const newFilterType =
+         billType === "payable" || billType === "receivable"
+            ? billType
+            : undefined;
+
+      if (newFilterType !== currentFilterType) {
+         setCurrentFilterType(newFilterType);
+      }
+   }, [billType, currentFilterType, setCurrentFilterType]);
 
    const [categoriesQuery, bankAccountsQuery] = useSuspenseQueries({
       queries: [
