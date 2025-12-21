@@ -3,13 +3,18 @@ import {
    encryptCounterpartyFields,
 } from "@packages/encryption/service";
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, count, eq, ilike, inArray } from "drizzle-orm";
+import { and, count, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { counterparty } from "../schemas/counterparties";
+import {
+   counterparty,
+   counterpartyAttachment,
+} from "../schemas/counterparties";
 
 export type Counterparty = typeof counterparty.$inferSelect;
 export type NewCounterparty = typeof counterparty.$inferInsert;
 export type CounterpartyType = "client" | "supplier" | "both";
+export type CounterpartyAttachment = typeof counterpartyAttachment.$inferSelect;
+export type NewCounterpartyAttachment = typeof counterpartyAttachment.$inferInsert;
 
 export async function createCounterparty(
    dbClient: DatabaseInstance,
@@ -102,11 +107,20 @@ export async function findCounterpartiesByOrganizationIdPaginated(
    options: {
       page?: number;
       limit?: number;
-      orderBy?: "name" | "type" | "createdAt" | "updatedAt";
+      orderBy?:
+         | "name"
+         | "type"
+         | "createdAt"
+         | "updatedAt"
+         | "tradeName"
+         | "legalName";
       orderDirection?: "asc" | "desc";
       search?: string;
       type?: CounterpartyType;
       isActive?: boolean;
+      industry?: string;
+      startDate?: Date;
+      endDate?: Date;
    } = {},
 ) {
    const {
@@ -117,6 +131,9 @@ export async function findCounterpartiesByOrganizationIdPaginated(
       search,
       type,
       isActive,
+      industry,
+      startDate,
+      endDate,
    } = options;
 
    const offset = (page - 1) * limit;
@@ -124,8 +141,17 @@ export async function findCounterpartiesByOrganizationIdPaginated(
    try {
       const conditions = [eq(counterparty.organizationId, organizationId)];
 
+      // Enhanced search across multiple fields
       if (search) {
-         conditions.push(ilike(counterparty.name, `%${search}%`));
+         conditions.push(
+            or(
+               ilike(counterparty.name, `%${search}%`),
+               ilike(counterparty.tradeName, `%${search}%`),
+               ilike(counterparty.legalName, `%${search}%`),
+               ilike(counterparty.document, `%${search}%`),
+               ilike(counterparty.email, `%${search}%`),
+            ) ?? ilike(counterparty.name, `%${search}%`),
+         );
       }
 
       if (type) {
@@ -134,6 +160,18 @@ export async function findCounterpartiesByOrganizationIdPaginated(
 
       if (isActive !== undefined) {
          conditions.push(eq(counterparty.isActive, isActive));
+      }
+
+      if (industry) {
+         conditions.push(eq(counterparty.industry, industry));
+      }
+
+      if (startDate) {
+         conditions.push(gte(counterparty.createdAt, startDate));
+      }
+
+      if (endDate) {
+         conditions.push(lte(counterparty.createdAt, endDate));
       }
 
       const whereCondition = and(...conditions);
@@ -410,6 +448,201 @@ export async function getCounterpartyStats(
       propagateError(err);
       throw AppError.database(
          `Failed to get counterparty stats: ${(err as Error).message}`,
+      );
+   }
+}
+
+// Toggle active status
+export async function toggleCounterpartyActive(
+   dbClient: DatabaseInstance,
+   counterpartyId: string,
+   organizationId: string,
+) {
+   try {
+      const existing = await findCounterpartyById(dbClient, counterpartyId);
+      if (!existing || existing.organizationId !== organizationId) {
+         throw AppError.notFound("Counterparty not found");
+      }
+
+      const result = await dbClient
+         .update(counterparty)
+         .set({ isActive: !existing.isActive })
+         .where(eq(counterparty.id, counterpartyId))
+         .returning();
+
+      return result[0] ? decryptCounterpartyFields(result[0]) : undefined;
+   } catch (err) {
+      if (err instanceof AppError) throw err;
+      propagateError(err);
+      throw AppError.database(
+         `Failed to toggle counterparty active: ${(err as Error).message}`,
+      );
+   }
+}
+
+// Bulk update type
+export async function bulkUpdateCounterpartyType(
+   dbClient: DatabaseInstance,
+   counterpartyIds: string[],
+   type: CounterpartyType,
+   organizationId: string,
+) {
+   if (counterpartyIds.length === 0) return [];
+
+   try {
+      const result = await dbClient
+         .update(counterparty)
+         .set({ type })
+         .where(
+            and(
+               inArray(counterparty.id, counterpartyIds),
+               eq(counterparty.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result.map(decryptCounterpartyFields);
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to bulk update counterparty type: ${(err as Error).message}`,
+      );
+   }
+}
+
+// Bulk update active status
+export async function bulkUpdateCounterpartyStatus(
+   dbClient: DatabaseInstance,
+   counterpartyIds: string[],
+   isActive: boolean,
+   organizationId: string,
+) {
+   if (counterpartyIds.length === 0) return [];
+
+   try {
+      const result = await dbClient
+         .update(counterparty)
+         .set({ isActive })
+         .where(
+            and(
+               inArray(counterparty.id, counterpartyIds),
+               eq(counterparty.organizationId, organizationId),
+            ),
+         )
+         .returning();
+
+      return result.map(decryptCounterpartyFields);
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to bulk update counterparty status: ${(err as Error).message}`,
+      );
+   }
+}
+
+// Get distinct industries for autocomplete
+export async function getDistinctIndustries(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .selectDistinct({ industry: counterparty.industry })
+         .from(counterparty)
+         .where(
+            and(
+               eq(counterparty.organizationId, organizationId),
+               sql`${counterparty.industry} IS NOT NULL AND ${counterparty.industry} != ''`,
+            ),
+         )
+         .orderBy(counterparty.industry);
+
+      return result
+         .map((r) => r.industry)
+         .filter((i): i is string => i !== null);
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get distinct industries: ${(err as Error).message}`,
+      );
+   }
+}
+
+// ==================== ATTACHMENT FUNCTIONS ====================
+
+export async function findCounterpartyAttachments(
+   dbClient: DatabaseInstance,
+   counterpartyId: string,
+) {
+   try {
+      const result = await dbClient.query.counterpartyAttachment.findMany({
+         where: eq(counterpartyAttachment.counterpartyId, counterpartyId),
+         orderBy: (att, { desc }) => desc(att.createdAt),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find counterparty attachments: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function createCounterpartyAttachment(
+   dbClient: DatabaseInstance,
+   data: NewCounterpartyAttachment,
+) {
+   try {
+      const result = await dbClient
+         .insert(counterpartyAttachment)
+         .values(data)
+         .returning();
+      return result[0];
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to create counterparty attachment: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteCounterpartyAttachment(
+   dbClient: DatabaseInstance,
+   attachmentId: string,
+) {
+   try {
+      const result = await dbClient
+         .delete(counterpartyAttachment)
+         .where(eq(counterpartyAttachment.id, attachmentId))
+         .returning();
+
+      if (!result.length) {
+         throw AppError.notFound("Attachment not found");
+      }
+
+      return result[0];
+   } catch (err) {
+      if (err instanceof AppError) throw err;
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete counterparty attachment: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findCounterpartyAttachmentById(
+   dbClient: DatabaseInstance,
+   attachmentId: string,
+) {
+   try {
+      const result = await dbClient.query.counterpartyAttachment.findFirst({
+         where: eq(counterpartyAttachment.id, attachmentId),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find counterparty attachment: ${(err as Error).message}`,
       );
    }
 }

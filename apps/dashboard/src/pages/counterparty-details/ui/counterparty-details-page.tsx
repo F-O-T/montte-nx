@@ -2,13 +2,6 @@ import { translate } from "@packages/localization";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardHeader,
-   CardTitle,
-} from "@packages/ui/components/card";
-import {
    Empty,
    EmptyContent,
    EmptyDescription,
@@ -16,53 +9,49 @@ import {
    EmptyTitle,
 } from "@packages/ui/components/empty";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatDate } from "@packages/utils/date";
+import { cn } from "@packages/ui/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
 import {
+   ArrowLeft,
    Building2,
-   Calendar,
-   Edit,
    FileText,
-   Home,
-   Mail,
-   Phone,
-   Trash2,
    User,
    Users,
 } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { ManageCounterpartyForm } from "../../counterparties/features/manage-counterparty-form";
-import { useDeleteCounterparty } from "../../counterparties/features/use-delete-counterparty";
+import { CounterpartyActionButtons } from "./counterparty-action-buttons";
+import { CounterpartyAddressCard } from "./counterparty-address-card";
+import { CounterpartyContactCard } from "./counterparty-contact-card";
+import { CounterpartyMetadataCard } from "./counterparty-metadata-card";
+import { CounterpartyNotesCard } from "./counterparty-notes-card";
 
 function getTypeIcon(type: string) {
    switch (type) {
       case "client":
-         return <User className="size-5" />;
+         return <User className="size-4" />;
       case "supplier":
-         return <Building2 className="size-5" />;
+         return <Building2 className="size-4" />;
       case "both":
-         return <Users className="size-5" />;
+         return <Users className="size-4" />;
       default:
-         return <User className="size-5" />;
+         return <User className="size-4" />;
    }
 }
 
-function getTypeVariant(type: string): "default" | "secondary" | "outline" {
+function getTypeColor(type: string): string {
    switch (type) {
       case "client":
-         return "default";
+         return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
       case "supplier":
-         return "secondary";
+         return "bg-blue-500/10 text-blue-600 border-blue-500/20";
       case "both":
-         return "outline";
+         return "bg-purple-500/10 text-purple-600 border-purple-500/20";
       default:
-         return "default";
+         return "";
    }
 }
 
@@ -84,11 +73,6 @@ function CounterpartyContent() {
          to: "/$slug/counterparties",
       });
    };
-   const { openSheet } = useSheet();
-   const { deleteCounterparty } = useDeleteCounterparty({
-      counterparty: counterparty,
-      onSuccess: handleDeleteSuccess,
-   });
 
    if (!counterpartyId) {
       return (
@@ -104,146 +88,80 @@ function CounterpartyContent() {
    }
 
    return (
-      <main className="space-y-4">
-         <DefaultHeader
-            description={translate(
-               "dashboard.routes.counterparties.description",
-            )}
-            title={counterparty.name}
-         />
+      <main className="space-y-6">
+         <div className="space-y-4">
+            <div className="flex items-center gap-3">
+               <Button
+                  asChild
+                  className="size-8"
+                  size="icon"
+                  variant="outline"
+               >
+                  <a
+                     href={`/${activeOrganization.slug}/counterparties`}
+                     onClick={(e) => {
+                        e.preventDefault();
+                        router.navigate({
+                           params: { slug: activeOrganization.slug },
+                           to: "/$slug/counterparties",
+                        });
+                     }}
+                  >
+                     <ArrowLeft className="size-4" />
+                  </a>
+               </Button>
+               <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                     <h1 className="text-2xl font-bold tracking-tight">
+                        {counterparty.name}
+                     </h1>
+                     <Badge
+                        className={cn(
+                           "gap-1 border",
+                           getTypeColor(counterparty.type),
+                        )}
+                        variant="outline"
+                     >
+                        {getTypeIcon(counterparty.type)}
+                        {translate(
+                           `dashboard.routes.counterparties.form.type.${counterparty.type}` as Parameters<
+                              typeof translate
+                           >[0],
+                        )}
+                     </Badge>
+                     {!counterparty.isActive && (
+                        <Badge variant="secondary">Inativo</Badge>
+                     )}
+                  </div>
+                  <p className="text-muted-foreground text-sm mt-1">
+                     {counterparty.tradeName ||
+                        counterparty.document ||
+                        "Parceiro comercial"}
+                  </p>
+               </div>
+            </div>
 
-         <div className="flex flex-wrap items-center gap-2">
-            <Badge
-               className="gap-1"
-               variant={getTypeVariant(counterparty.type)}
-            >
-               {getTypeIcon(counterparty.type)}
-               {translate(
-                  `dashboard.routes.counterparties.form.type.${counterparty.type}` as Parameters<
-                     typeof translate
-                  >[0],
-               )}
-            </Badge>
-            <Button
-               onClick={() =>
-                  openSheet({
-                     children: (
-                        <ManageCounterpartyForm counterparty={counterparty} />
-                     ),
-                  })
-               }
-               size="sm"
-               variant="outline"
-            >
-               <Edit className="size-4" />
-               {translate(
-                  "dashboard.routes.counterparties.list-section.actions.edit-counterparty",
-               )}
-            </Button>
-            <Button
-               className="text-destructive hover:text-destructive"
-               onClick={deleteCounterparty}
-               size="sm"
-               variant="outline"
-            >
-               <Trash2 className="size-4" />
-               {translate(
-                  "dashboard.routes.counterparties.list-section.actions.delete-counterparty",
-               )}
-            </Button>
+            <CounterpartyActionButtons
+               counterpartyId={counterpartyId}
+               onDeleteSuccess={handleDeleteSuccess}
+            />
          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-               <CardHeader>
-                  <CardTitle>
-                     {translate(
-                        "dashboard.routes.counterparties.form.name.label",
-                     )}
-                  </CardTitle>
-                  <CardDescription>Informações de contato</CardDescription>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                  {counterparty.email && (
-                     <div className="flex items-center gap-3">
-                        <Mail className="size-4 text-muted-foreground" />
-                        <div>
-                           <p className="text-xs text-muted-foreground">
-                              {translate(
-                                 "dashboard.routes.counterparties.form.email.label",
-                              )}
-                           </p>
-                           <p className="text-sm font-medium">
-                              {counterparty.email}
-                           </p>
-                        </div>
-                     </div>
-                  )}
-                  {counterparty.phone && (
-                     <div className="flex items-center gap-3">
-                        <Phone className="size-4 text-muted-foreground" />
-                        <div>
-                           <p className="text-xs text-muted-foreground">
-                              {translate(
-                                 "dashboard.routes.counterparties.form.phone.label",
-                              )}
-                           </p>
-                           <p className="text-sm font-medium">
-                              {counterparty.phone}
-                           </p>
-                        </div>
-                     </div>
-                  )}
-                  {counterparty.document && (
-                     <div className="flex items-center gap-3">
-                        <User className="size-4 text-muted-foreground" />
-                        <div>
-                           <p className="text-xs text-muted-foreground">
-                              {translate(
-                                 "dashboard.routes.counterparties.form.document.label",
-                              )}
-                           </p>
-                           <p className="text-sm font-medium">
-                              {counterparty.document}
-                           </p>
-                        </div>
-                     </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                     <Calendar className="size-4 text-muted-foreground" />
-                     <div>
-                        <p className="text-xs text-muted-foreground">
-                           {translate(
-                              "dashboard.routes.counterparties.table.columns.created-at",
-                           )}
-                        </p>
-                        <p className="text-sm font-medium">
-                           {formatDate(
-                              new Date(counterparty.createdAt),
-                              "DD MMM YYYY",
-                           )}
-                        </p>
-                     </div>
-                  </div>
-               </CardContent>
-            </Card>
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column - Metadata, Contact, Address */}
+            <div className="lg:col-span-1 space-y-6">
+               <CounterpartyMetadataCard counterpartyId={counterpartyId} />
+               <CounterpartyContactCard counterpartyId={counterpartyId} />
+               <CounterpartyAddressCard counterpartyId={counterpartyId} />
+            </div>
 
-            {counterparty.notes && (
-               <Card>
-                  <CardHeader>
-                     <CardTitle>
-                        {translate(
-                           "dashboard.routes.counterparties.form.notes.label",
-                        )}
-                     </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {counterparty.notes}
-                     </p>
-                  </CardContent>
-               </Card>
-            )}
+            {/* Right column - Notes and future financial info */}
+            <div className="lg:col-span-2 space-y-6">
+               <CounterpartyNotesCard counterpartyId={counterpartyId} />
+               {/* Future: CounterpartyFinancialSummaryCard */}
+               {/* Future: CounterpartyRelatedBillsCard */}
+               {/* Future: CounterpartyRelatedTransactionsCard */}
+            </div>
          </div>
       </main>
    );
@@ -251,19 +169,32 @@ function CounterpartyContent() {
 
 function CounterpartyPageSkeleton() {
    return (
-      <main className="space-y-4">
-         <div className="flex flex-col gap-2">
-            <Skeleton className="h-10 w-48" />
-            <Skeleton className="h-6 w-72" />
+      <main className="space-y-6">
+         <div className="space-y-4">
+            <div className="flex items-center gap-3">
+               <Skeleton className="size-8" />
+               <div className="flex-1 space-y-2">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-4 w-32" />
+               </div>
+            </div>
+            <div className="flex gap-2">
+               <Skeleton className="h-9 w-32" />
+               <Skeleton className="h-9 w-24" />
+               <Skeleton className="h-9 w-24" />
+               <Skeleton className="h-9 w-24" />
+            </div>
          </div>
-         <div className="flex gap-2">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-8 w-32" />
-         </div>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-6">
+               <Skeleton className="h-48 w-full" />
+               <Skeleton className="h-32 w-full" />
+               <Skeleton className="h-32 w-full" />
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+               <Skeleton className="h-32 w-full" />
+               <Skeleton className="h-48 w-full" />
+            </div>
          </div>
       </main>
    );
@@ -272,6 +203,7 @@ function CounterpartyPageSkeleton() {
 function CounterpartyPageError({ error, resetErrorBoundary }: FallbackProps) {
    const { activeOrganization } = useActiveOrganization();
    const router = useRouter();
+
    return (
       <main className="flex flex-col h-full w-full">
          <div className="flex-1 flex items-center justify-center">
@@ -297,8 +229,8 @@ function CounterpartyPageError({ error, resetErrorBoundary }: FallbackProps) {
                         size="default"
                         variant="outline"
                      >
-                        <Home className="size-4 mr-2" />
-                        {translate("dashboard.routes.counterparties.title")}
+                        <ArrowLeft className="size-4 mr-2" />
+                        Voltar para lista
                      </Button>
                      <Button
                         onClick={resetErrorBoundary}
