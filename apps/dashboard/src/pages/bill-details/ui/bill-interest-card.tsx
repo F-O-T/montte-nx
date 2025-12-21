@@ -11,15 +11,15 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    calculateInterest,
    type InterestConfig,
-   type InterestRates,
 } from "@packages/utils/interest";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { FileText, Percent, TrendingUp } from "lucide-react";
-import { Suspense } from "react";
+import { AlertTriangle, FileText, Percent, TrendingUp } from "lucide-react";
+import { Suspense, useMemo } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { useInterestRates } from "@/hooks/use-interest-rates";
 import { useTRPC } from "@/integrations/clients";
 
 function InterestCardErrorFallback() {
@@ -60,14 +60,14 @@ function InterestCardContent({ billId }: { billId: string }) {
       trpc.bills.getById.queryOptions({ id: billId }),
    );
 
-   // Calculate status
+   const { rates, isFallback } = useInterestRates();
+
    const today = new Date();
    today.setHours(0, 0, 0, 0);
    const isCompleted = !!bill.completionDate;
    const isOverdue =
       bill.dueDate && !bill.completionDate && new Date(bill.dueDate) < today;
 
-   // Only show for overdue income bills with interest template
    if (
       bill.type !== "income" ||
       !isOverdue ||
@@ -95,17 +95,15 @@ function InterestCardContent({ billId }: { billId: string }) {
          : null,
    };
 
-   const rates: InterestRates = {
-      cdi: 13.15,
-      ipca: 4.5,
-      selic: 13.25,
-   };
-
-   const result = calculateInterest(
-      Number(bill.amount),
-      new Date(bill.dueDate),
-      config,
-      rates,
+   const result = useMemo(
+      () =>
+         calculateInterest(
+            Number(bill.amount),
+            new Date(bill.dueDate),
+            config,
+            rates,
+         ),
+      [bill.amount, bill.dueDate, config, rates],
    );
 
    return (
@@ -117,6 +115,15 @@ function InterestCardContent({ billId }: { billId: string }) {
             </CardTitle>
          </CardHeader>
          <CardContent className="space-y-4">
+            {isFallback && (
+               <Alert variant="default" className="border-orange-200 bg-orange-50">
+                  <AlertTriangle className="size-4 text-orange-600" />
+                  <AlertDescription className="text-orange-800">
+                     Usando taxas de referência. Valores podem não refletir índices atuais (SELIC/IPCA/CDI).
+                  </AlertDescription>
+               </Alert>
+            )}
+
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                <div className="flex items-center gap-2">
                   <FileText className="size-4 text-muted-foreground" />
