@@ -91,20 +91,28 @@ export function DuplicateBillSheet({ bill }: DuplicateBillSheetProps) {
    };
 
    const isSubmitDisabled =
-      createBillMutation.isPending ||
-      (dateOption === "custom" && !customDate);
+      createBillMutation.isPending || (dateOption === "custom" && !customDate);
 
-   const dateOptionLabels: Record<DateOption, { title: string; description: string }> = {
+   const dateOptionLabels: Record<
+      DateOption,
+      { title: string; description: string }
+   > = {
       "same-day": {
-         title: translate("dashboard.routes.bills.features.duplicate-bill.date-options.same-day"),
+         title: translate(
+            "dashboard.routes.bills.features.duplicate-bill.date-options.same-day",
+         ),
          description: "",
       },
       today: {
-         title: translate("dashboard.routes.bills.features.duplicate-bill.date-options.today"),
+         title: translate(
+            "dashboard.routes.bills.features.duplicate-bill.date-options.today",
+         ),
          description: "",
       },
       custom: {
-         title: translate("dashboard.routes.bills.features.duplicate-bill.date-options.custom"),
+         title: translate(
+            "dashboard.routes.bills.features.duplicate-bill.date-options.custom",
+         ),
          description: "",
       },
    };
@@ -113,7 +121,9 @@ export function DuplicateBillSheet({ bill }: DuplicateBillSheetProps) {
       <>
          <SheetHeader>
             <SheetTitle>
-               {translate("dashboard.routes.bills.features.duplicate-bill.title")}
+               {translate(
+                  "dashboard.routes.bills.features.duplicate-bill.title",
+               )}
             </SheetTitle>
             <SheetDescription>
                {translate(
@@ -128,21 +138,23 @@ export function DuplicateBillSheet({ bill }: DuplicateBillSheetProps) {
                   onValueChange={(value) => setDateOption(value as DateOption)}
                   value={dateOption}
                >
-                  {(["same-day", "today", "custom"] as DateOption[]).map((option) => (
-                     <ChoiceboxItem id={option} key={option} value={option}>
-                        <ChoiceboxItemHeader>
-                           <ChoiceboxItemTitle>
-                              {dateOptionLabels[option].title}
-                           </ChoiceboxItemTitle>
-                           {dateOptionLabels[option].description && (
-                              <ChoiceboxItemDescription>
-                                 {dateOptionLabels[option].description}
-                              </ChoiceboxItemDescription>
-                           )}
-                        </ChoiceboxItemHeader>
-                        <ChoiceboxIndicator id={option} />
-                     </ChoiceboxItem>
-                  ))}
+                  {(["same-day", "today", "custom"] as DateOption[]).map(
+                     (option) => (
+                        <ChoiceboxItem id={option} key={option} value={option}>
+                           <ChoiceboxItemHeader>
+                              <ChoiceboxItemTitle>
+                                 {dateOptionLabels[option].title}
+                              </ChoiceboxItemTitle>
+                              {dateOptionLabels[option].description && (
+                                 <ChoiceboxItemDescription>
+                                    {dateOptionLabels[option].description}
+                                 </ChoiceboxItemDescription>
+                              )}
+                           </ChoiceboxItemHeader>
+                           <ChoiceboxIndicator id={option} />
+                        </ChoiceboxItem>
+                     ),
+                  )}
                </Choicebox>
 
                {dateOption === "custom" && (
@@ -162,7 +174,9 @@ export function DuplicateBillSheet({ bill }: DuplicateBillSheetProps) {
             <Button disabled={isSubmitDisabled} onClick={handleSubmit}>
                {createBillMutation.isPending
                   ? translate("common.actions.loading")
-                  : translate("dashboard.routes.bills.features.duplicate-bill.submit")}
+                  : translate(
+                       "dashboard.routes.bills.features.duplicate-bill.submit",
+                    )}
             </Button>
          </SheetFooter>
       </>

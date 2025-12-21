@@ -27,6 +27,8 @@ import type { RowSelectionState } from "@tanstack/react-table";
 import { Receipt, Search, Trash2, Wallet } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { useBillList } from "@/features/bill/lib/bill-list-context";
+import { useBillBulkActions } from "@/features/bill/lib/use-bill-bulk-actions";
 import {
    BillExpandedContent,
    BillMobileCard,
@@ -34,8 +36,6 @@ import {
 } from "@/features/bill/ui/bill-table-columns";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useTRPC } from "@/integrations/clients";
-import { useBillList } from "../features/bill-list-context";
-import { useBillBulkActions } from "../features/use-bill-bulk-actions";
 
 type BillsListSectionProps = {
    type?: "payable" | "receivable";

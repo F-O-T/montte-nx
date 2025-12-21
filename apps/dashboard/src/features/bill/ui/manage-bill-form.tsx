@@ -83,7 +83,7 @@ import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { useBillListOptional } from "./bill-list-context";
+import { useBillListOptional } from "../lib/bill-list-context";
 
 export type FromTransactionData = {
    amount: number;
@@ -2101,7 +2101,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                            </FieldLabel>
                            <Select
                               onValueChange={(value) =>
-                                 field.handleChange(value === "none" ? undefined : value)
+                                 field.handleChange(
+                                    value === "none" ? undefined : value,
+                                 )
                               }
                               value={field.state.value || "none"}
                            >
@@ -2116,7 +2118,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  <SelectItem value="none">-</SelectItem>
                                  {costCenters.map((cc) => (
                                     <SelectItem key={cc.id} value={cc.id}>
-                                       {cc.code ? `${cc.code} - ${cc.name}` : cc.name}
+                                       {cc.code
+                                          ? `${cc.code} - ${cc.name}`
+                                          : cc.name}
                                     </SelectItem>
                                  ))}
                               </SelectContent>
@@ -2157,7 +2161,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           {selectedTags.map((t) => (
                                              <Badge
                                                 key={t.id}
-                                                style={{ backgroundColor: t.color }}
+                                                style={{
+                                                   backgroundColor: t.color,
+                                                }}
                                                 variant="secondary"
                                              >
                                                 {t.name}
@@ -2166,7 +2172,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                        </div>
                                     ) : (
                                        <span className="text-muted-foreground">
-                                          {translate("common.form.tags.placeholder")}
+                                          {translate(
+                                             "common.form.tags.placeholder",
+                                          )}
                                        </span>
                                     )}
                                     <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -2181,7 +2189,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                     />
                                     <CommandList>
                                        <CommandEmpty>
-                                          {translate("common.form.search.no-results")}
+                                          {translate(
+                                             "common.form.search.no-results",
+                                          )}
                                        </CommandEmpty>
                                        <CommandGroup>
                                           {tags.map((tag) => {
@@ -2191,12 +2201,20 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                                 <CommandItem
                                                    key={tag.id}
                                                    onSelect={() => {
-                                                      const newTagIds = isSelected
-                                                         ? selectedTagIds.filter(
-                                                              (id) => id !== tag.id,
-                                                           )
-                                                         : [...selectedTagIds, tag.id];
-                                                      field.handleChange(newTagIds);
+                                                      const newTagIds =
+                                                         isSelected
+                                                            ? selectedTagIds.filter(
+                                                                 (id) =>
+                                                                    id !==
+                                                                    tag.id,
+                                                              )
+                                                            : [
+                                                                 ...selectedTagIds,
+                                                                 tag.id,
+                                                              ];
+                                                      field.handleChange(
+                                                         newTagIds,
+                                                      );
                                                    }}
                                                    value={tag.name}
                                                 >
@@ -2204,7 +2222,8 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                                       <div
                                                          className="w-3 h-3 rounded-full"
                                                          style={{
-                                                            backgroundColor: tag.color,
+                                                            backgroundColor:
+                                                               tag.color,
                                                          }}
                                                       />
                                                       <span>{tag.name}</span>

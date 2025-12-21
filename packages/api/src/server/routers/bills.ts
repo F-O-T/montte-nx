@@ -342,7 +342,9 @@ export const billRouter = router({
                organizationId,
             );
             const validTagIds = new Set(orgTags.map((t) => t.id));
-            const hasInvalidTags = input.tagIds.some((id) => !validTagIds.has(id));
+            const hasInvalidTags = input.tagIds.some(
+               (id) => !validTagIds.has(id),
+            );
             if (hasInvalidTags) {
                throw APIError.validation(
                   "One or more tags do not belong to this organization",
@@ -402,34 +404,40 @@ export const billRouter = router({
                     )
                : [];
 
-            const futureBillsPromises = futureDueDates.map(async (dueDate, index) => {
-               const futureBill = await createBill(resolvedCtx.db, {
-                  amount: input.amount.toString(),
-                  bankAccountId: input.bankAccountId,
-                  categoryId: input.categoryId,
-                  costCenterId: input.costCenterId,
-                  counterpartyId: input.counterpartyId,
-                  description: input.description || "",
-                  dueDate,
-                  id: crypto.randomUUID(),
-                  interestTemplateId: input.interestTemplateId,
-                  isRecurring: true,
-                  issueDate: futureIssueDates[index] ?? null,
-                  notes: input.notes,
-                  organizationId,
-                  originalAmount: input.originalAmount?.toString(),
-                  parentBillId: firstBill.id,
-                  recurrencePattern: input.recurrencePattern,
-                  type: input.type,
-               });
+            const futureBillsPromises = futureDueDates.map(
+               async (dueDate, index) => {
+                  const futureBill = await createBill(resolvedCtx.db, {
+                     amount: input.amount.toString(),
+                     bankAccountId: input.bankAccountId,
+                     categoryId: input.categoryId,
+                     costCenterId: input.costCenterId,
+                     counterpartyId: input.counterpartyId,
+                     description: input.description || "",
+                     dueDate,
+                     id: crypto.randomUUID(),
+                     interestTemplateId: input.interestTemplateId,
+                     isRecurring: true,
+                     issueDate: futureIssueDates[index] ?? null,
+                     notes: input.notes,
+                     organizationId,
+                     originalAmount: input.originalAmount?.toString(),
+                     parentBillId: firstBill.id,
+                     recurrencePattern: input.recurrencePattern,
+                     type: input.type,
+                  });
 
-               // Set tags for future bills too
-               if (input.tagIds && input.tagIds.length > 0) {
-                  await setBillTags(resolvedCtx.db, futureBill.id, input.tagIds);
-               }
+                  // Set tags for future bills too
+                  if (input.tagIds && input.tagIds.length > 0) {
+                     await setBillTags(
+                        resolvedCtx.db,
+                        futureBill.id,
+                        input.tagIds,
+                     );
+                  }
 
-               return futureBill;
-            });
+                  return futureBill;
+               },
+            );
 
             await Promise.all(futureBillsPromises);
          }
@@ -450,7 +458,9 @@ export const billRouter = router({
                organizationId,
             );
             const validTagIds = new Set(orgTags.map((t) => t.id));
-            const hasInvalidTags = input.tagIds.some((id) => !validTagIds.has(id));
+            const hasInvalidTags = input.tagIds.some(
+               (id) => !validTagIds.has(id),
+            );
             if (hasInvalidTags) {
                throw APIError.validation(
                   "One or more tags do not belong to this organization",
@@ -911,7 +921,11 @@ export const billRouter = router({
             updateData.costCenterId = input.data.costCenterId;
          }
 
-         const updatedBill = await updateBill(resolvedCtx.db, input.id, updateData);
+         const updatedBill = await updateBill(
+            resolvedCtx.db,
+            input.id,
+            updateData,
+         );
 
          // Update tags if provided
          if (input.data.tagIds !== undefined) {
@@ -954,7 +968,10 @@ export const billRouter = router({
 
    setBillTags: protectedProcedure
       .input(
-         z.object({ billId: z.string().uuid(), tagIds: z.array(z.string().uuid()) }),
+         z.object({
+            billId: z.string().uuid(),
+            tagIds: z.array(z.string().uuid()),
+         }),
       )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
@@ -973,7 +990,9 @@ export const billRouter = router({
                organizationId,
             );
             const validTagIds = new Set(orgTags.map((t) => t.id));
-            const hasInvalidTags = input.tagIds.some((id) => !validTagIds.has(id));
+            const hasInvalidTags = input.tagIds.some(
+               (id) => !validTagIds.has(id),
+            );
             if (hasInvalidTags) {
                throw APIError.validation(
                   "One or more tags do not belong to this organization",

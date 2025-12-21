@@ -37,8 +37,8 @@ import {
    X,
 } from "lucide-react";
 import { useState } from "react";
+import { BillFilterCredenza } from "@/features/bill/ui/bill-filter-credenza";
 import { useCredenza } from "@/hooks/use-credenza";
-import { BillFilterCredenza } from "../features/bill-filter-credenza";
 
 type BillFilterBarProps = {
    timePeriod: TimePeriod | null;

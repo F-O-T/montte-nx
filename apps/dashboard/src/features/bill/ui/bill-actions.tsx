@@ -13,8 +13,8 @@ import {
    Trash2,
    Wallet,
 } from "lucide-react";
-import { CompleteBillDialog } from "@/pages/bills/features/complete-bill-dialog";
 import { useBillActions } from "../lib/use-bill-actions";
+import { CompleteBillDialog } from "./complete-bill-dialog";
 
 type Bill = BillWithRelations;
 
@@ -107,7 +107,9 @@ export function BillActions({
                   variant="outline"
                >
                   <CalendarDays className="size-4" />
-                  {translate("dashboard.routes.bills.actions.mark-as-recurrent")}
+                  {translate(
+                     "dashboard.routes.bills.actions.mark-as-recurrent",
+                  )}
                </Button>
                <Button
                   onClick={handleCreateInstallments}
@@ -115,7 +117,9 @@ export function BillActions({
                   variant="outline"
                >
                   <Split className="size-4" />
-                  {translate("dashboard.routes.bills.actions.create-installments")}
+                  {translate(
+                     "dashboard.routes.bills.actions.create-installments",
+                  )}
                </Button>
                {/* Separator */}
                <div className="h-4 w-px bg-border" />

@@ -41,17 +41,18 @@ type MarkAsRecurrentFormProps = {
    onSuccess?: () => void;
 };
 
-type RecurrencePattern =
-   | "monthly"
-   | "quarterly"
-   | "semiannual"
-   | "annual";
+type RecurrencePattern = "monthly" | "quarterly" | "semiannual" | "annual";
 
 type OccurrenceType = "auto" | "count" | "until-date";
 
 type RecurringSection = "frequency" | "occurrence" | "review";
 
-const FREQUENCY_OPTIONS = ["monthly", "quarterly", "semiannual", "annual"] as const;
+const FREQUENCY_OPTIONS = [
+   "monthly",
+   "quarterly",
+   "semiannual",
+   "annual",
+] as const;
 const OCCURRENCE_OPTIONS = ["auto", "count", "until-date"] as const;
 
 export function MarkAsRecurrentForm({
@@ -61,11 +62,18 @@ export function MarkAsRecurrentForm({
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
-   const [activeSection, setActiveSection] = useState<RecurringSection>("frequency");
-   const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern | undefined>(undefined);
-   const [occurrenceType, setOccurrenceType] = useState<OccurrenceType | undefined>(undefined);
+   const [activeSection, setActiveSection] =
+      useState<RecurringSection>("frequency");
+   const [recurrencePattern, setRecurrencePattern] = useState<
+      RecurrencePattern | undefined
+   >(undefined);
+   const [occurrenceType, setOccurrenceType] = useState<
+      OccurrenceType | undefined
+   >(undefined);
    const [occurrenceCount, setOccurrenceCount] = useState<number>(12);
-   const [occurrenceUntilDate, setOccurrenceUntilDate] = useState<Date | undefined>(undefined);
+   const [occurrenceUntilDate, setOccurrenceUntilDate] = useState<
+      Date | undefined
+   >(undefined);
 
    const frequencyLabels: Record<string, string> = {
       annual: translate(
@@ -136,7 +144,10 @@ export function MarkAsRecurrentForm({
          issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
          notes: bill.notes || undefined,
          occurrenceCount: finalOccurrenceCount,
-         occurrenceUntilDate: occurrenceType === "until-date" && occurrenceUntilDate ? occurrenceUntilDate : undefined,
+         occurrenceUntilDate:
+            occurrenceType === "until-date" && occurrenceUntilDate
+               ? occurrenceUntilDate
+               : undefined,
          recurrencePattern,
          type: bill.type as "expense" | "income",
       });
@@ -196,7 +207,8 @@ export function MarkAsRecurrentForm({
                               )}
                            </div>
                            <div className="text-sm text-muted-foreground">
-                              {recurrencePattern && activeSection !== "frequency"
+                              {recurrencePattern &&
+                              activeSection !== "frequency"
                                  ? frequencyLabels[recurrencePattern]
                                  : translate(
                                       "dashboard.routes.bills.features.create-bill.recurrence-step.frequency.description",
@@ -248,7 +260,8 @@ export function MarkAsRecurrentForm({
                {/* Step 2: Occurrence */}
                <Collapsible
                   onOpenChange={(open) => {
-                     if (open && recurrencePattern) setActiveSection("occurrence");
+                     if (open && recurrencePattern)
+                        setActiveSection("occurrence");
                      else if (occurrenceType) setActiveSection("review");
                      else if (recurrencePattern) setActiveSection("frequency");
                   }}
@@ -283,10 +296,12 @@ export function MarkAsRecurrentForm({
                               )}
                            </div>
                            <div className="text-sm text-muted-foreground">
-                              {occurrenceType && activeSection !== "occurrence" ? (
+                              {occurrenceType &&
+                              activeSection !== "occurrence" ? (
                                  <>
                                     {occurrenceLabels[occurrenceType]}
-                                    {occurrenceType === "count" && ` (${occurrenceCount}x)`}
+                                    {occurrenceType === "count" &&
+                                       ` (${occurrenceCount}x)`}
                                     {occurrenceType === "until-date" &&
                                        occurrenceUntilDate &&
                                        ` (${occurrenceUntilDate.toLocaleDateString("pt-BR")})`}
@@ -352,7 +367,10 @@ export function MarkAsRecurrentForm({
                                  min={1}
                                  onBlur={() => {
                                     // Normalize NaN or values < 1 to minimum (1)
-                                    if (Number.isNaN(occurrenceCount) || occurrenceCount < 1) {
+                                    if (
+                                       Number.isNaN(occurrenceCount) ||
+                                       occurrenceCount < 1
+                                    ) {
                                        setOccurrenceCount(1);
                                     }
                                  }}
@@ -371,7 +389,9 @@ export function MarkAsRecurrentForm({
                                     }
                                  }}
                                  type="number"
-                                 value={occurrenceCount === 0 ? "" : occurrenceCount}
+                                 value={
+                                    occurrenceCount === 0 ? "" : occurrenceCount
+                                 }
                               />
                               <Button
                                  className="w-full mt-2"
@@ -403,32 +423,36 @@ export function MarkAsRecurrentForm({
                </Collapsible>
 
                {/* Preview - Shows when all steps are complete */}
-               {recurrencePattern && occurrenceType && activeSection === "review" && (
-                  <Alert>
-                     <CalendarCheck className="h-4 w-4" />
-                     <AlertTitle>
-                        {translate(
-                           "dashboard.routes.bills.features.create-bill.recurrence-step.preview.title",
-                        )}
-                     </AlertTitle>
-                     <AlertDescription>
-                        {translate(
-                           "dashboard.routes.bills.features.create-bill.recurrence-step.preview.message",
-                           {
-                              frequency: frequencyLabels[recurrencePattern],
-                              type:
-                                 occurrenceType === "auto"
-                                    ? translate(
-                                         "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.auto.title",
-                                      )
-                                    : occurrenceType === "count"
-                                      ? `${occurrenceCount}x`
-                                      : occurrenceUntilDate?.toLocaleDateString("pt-BR") || "",
-                           },
-                        )}
-                     </AlertDescription>
-                  </Alert>
-               )}
+               {recurrencePattern &&
+                  occurrenceType &&
+                  activeSection === "review" && (
+                     <Alert>
+                        <CalendarCheck className="h-4 w-4" />
+                        <AlertTitle>
+                           {translate(
+                              "dashboard.routes.bills.features.create-bill.recurrence-step.preview.title",
+                           )}
+                        </AlertTitle>
+                        <AlertDescription>
+                           {translate(
+                              "dashboard.routes.bills.features.create-bill.recurrence-step.preview.message",
+                              {
+                                 frequency: frequencyLabels[recurrencePattern],
+                                 type:
+                                    occurrenceType === "auto"
+                                       ? translate(
+                                            "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.auto.title",
+                                         )
+                                       : occurrenceType === "count"
+                                         ? `${occurrenceCount}x`
+                                         : occurrenceUntilDate?.toLocaleDateString(
+                                              "pt-BR",
+                                           ) || "",
+                              },
+                           )}
+                        </AlertDescription>
+                     </Alert>
+                  )}
             </div>
          </div>
 

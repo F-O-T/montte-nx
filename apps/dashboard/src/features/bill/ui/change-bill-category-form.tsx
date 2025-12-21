@@ -149,7 +149,9 @@ export function ChangeBillCategoryForm({
                         className="w-full justify-between"
                         createLabel={translate("common.form.category.create")}
                         disabled={isLoading}
-                        emptyMessage={translate("common.form.search.no-results")}
+                        emptyMessage={translate(
+                           "common.form.search.no-results",
+                        )}
                         onCreate={handleCreateCategory}
                         onValueChange={(value) =>
                            setSelectedCategoryId(value || "")
@@ -158,7 +160,9 @@ export function ChangeBillCategoryForm({
                         placeholder={translate(
                            "common.form.category.placeholder",
                         )}
-                        searchPlaceholder={translate("common.form.search.label")}
+                        searchPlaceholder={translate(
+                           "common.form.search.label",
+                        )}
                         value={selectedCategoryId}
                      />
                      <FieldDescription>

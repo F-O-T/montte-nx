@@ -6,10 +6,13 @@ import { useSearch } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { Suspense } from "react";
 import { DefaultHeader } from "@/default/default-header";
+import {
+   BillListProvider,
+   useBillList,
+} from "@/features/bill/lib/bill-list-context";
+import { ManageBillForm } from "@/features/bill/ui/manage-bill-form";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { BillListProvider, useBillList } from "../features/bill-list-context";
-import { ManageBillForm } from "../features/manage-bill-form";
 import { BillFilterBar } from "./bill-filter-bar";
 import { BillsListSection } from "./bills-list-section";
 import { BillsStats } from "./bills-stats";

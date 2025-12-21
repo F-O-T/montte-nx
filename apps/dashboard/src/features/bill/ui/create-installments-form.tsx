@@ -53,9 +53,12 @@ export function CreateInstallmentsForm({
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
-   const [activeSection, setActiveSection] = useState<InstallmentSection>("count");
+   const [activeSection, setActiveSection] =
+      useState<InstallmentSection>("count");
    const [installmentCount, setInstallmentCount] = useState<number>(12);
-   const [intervalType, setIntervalType] = useState<IntervalType | undefined>(undefined);
+   const [intervalType, setIntervalType] = useState<IntervalType | undefined>(
+      undefined,
+   );
    const [customDays, setCustomDays] = useState<number>(30);
 
    const totalAmount = Number(bill.amount);
@@ -156,7 +159,8 @@ export function CreateInstallmentsForm({
                <Collapsible
                   onOpenChange={(open) => {
                      if (open) setActiveSection("count");
-                     else if (installmentCount >= 2) setActiveSection("interval");
+                     else if (installmentCount >= 2)
+                        setActiveSection("interval");
                   }}
                   open={activeSection === "count"}
                >
@@ -182,7 +186,8 @@ export function CreateInstallmentsForm({
                               )}
                            </div>
                            <div className="text-sm text-muted-foreground">
-                              {activeSection !== "count" && installmentCount >= 2
+                              {activeSection !== "count" &&
+                              installmentCount >= 2
                                  ? `${installmentCount}x`
                                  : translate(
                                       "dashboard.routes.bills.features.create-bill.recurrence-step.installment.count.description",
@@ -204,7 +209,9 @@ export function CreateInstallmentsForm({
                                  className="h-9 w-9 rounded-full"
                                  disabled={installmentCount <= 2}
                                  onClick={() =>
-                                    setInstallmentCount(Math.max(2, installmentCount - 1))
+                                    setInstallmentCount(
+                                       Math.max(2, installmentCount - 1),
+                                    )
                                  }
                                  size="icon"
                                  type="button"
@@ -224,7 +231,9 @@ export function CreateInstallmentsForm({
                                  className="h-9 w-9 rounded-full"
                                  disabled={installmentCount >= 120}
                                  onClick={() =>
-                                    setInstallmentCount(Math.min(120, installmentCount + 1))
+                                    setInstallmentCount(
+                                       Math.min(120, installmentCount + 1),
+                                    )
                                  }
                                  size="icon"
                                  type="button"
@@ -241,7 +250,11 @@ export function CreateInstallmentsForm({
                                     onClick={() => setInstallmentCount(count)}
                                     size="sm"
                                     type="button"
-                                    variant={installmentCount === count ? "default" : "outline"}
+                                    variant={
+                                       installmentCount === count
+                                          ? "default"
+                                          : "outline"
+                                    }
                                  >
                                     {count}x
                                  </Button>
@@ -252,13 +265,17 @@ export function CreateInstallmentsForm({
                         {/* Value summary */}
                         <div className="p-3 bg-muted/50 rounded-lg space-y-1.5 text-sm">
                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Valor total:</span>
+                              <span className="text-muted-foreground">
+                                 Valor total:
+                              </span>
                               <span className="font-medium">
                                  {formatDecimalCurrency(totalAmount)}
                               </span>
                            </div>
                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Valor por parcela:</span>
+                              <span className="text-muted-foreground">
+                                 Valor por parcela:
+                              </span>
                               <span className="font-medium">
                                  {formatDecimalCurrency(amountPerInstallment)}
                               </span>
@@ -271,7 +288,8 @@ export function CreateInstallmentsForm({
                {/* Step 2: Interval */}
                <Collapsible
                   onOpenChange={(open) => {
-                     if (open && installmentCount >= 2) setActiveSection("interval");
+                     if (open && installmentCount >= 2)
+                        setActiveSection("interval");
                      else if (intervalType) setActiveSection("review");
                      else if (installmentCount >= 2) setActiveSection("count");
                   }}
@@ -345,7 +363,9 @@ export function CreateInstallmentsForm({
                                        {intervalLabels[option]}
                                     </ChoiceboxItemTitle>
                                  </ChoiceboxItemHeader>
-                                 <ChoiceboxIndicator id={`interval-${option}`} />
+                                 <ChoiceboxIndicator
+                                    id={`interval-${option}`}
+                                 />
                               </ChoiceboxItem>
                            ))}
                         </Choicebox>
@@ -376,7 +396,10 @@ export function CreateInstallmentsForm({
                                     } else {
                                        const parsed = Number(val);
                                        // Immediately clamp to valid range [1, 365]
-                                       const clamped = Math.max(1, Math.min(365, parsed));
+                                       const clamped = Math.max(
+                                          1,
+                                          Math.min(365, parsed),
+                                       );
                                        setCustomDays(clamped);
                                     }
                                  }}
@@ -398,25 +421,29 @@ export function CreateInstallmentsForm({
                </Collapsible>
 
                {/* Preview - Shows when all steps are complete */}
-               {installmentCount >= 2 && intervalType && activeSection === "review" && (
-                  <Alert>
-                     <CalendarCheck className="h-4 w-4" />
-                     <AlertTitle>
-                        {translate(
-                           "dashboard.routes.bills.features.create-bill.recurrence-step.preview.title",
-                        )}
-                     </AlertTitle>
-                     <AlertDescription>
-                        {translate(
-                           "dashboard.routes.bills.features.create-bill.installments.preview",
-                           {
-                              count: installmentCount,
-                              value: formatDecimalCurrency(amountPerInstallment),
-                           },
-                        )}
-                     </AlertDescription>
-                  </Alert>
-               )}
+               {installmentCount >= 2 &&
+                  intervalType &&
+                  activeSection === "review" && (
+                     <Alert>
+                        <CalendarCheck className="h-4 w-4" />
+                        <AlertTitle>
+                           {translate(
+                              "dashboard.routes.bills.features.create-bill.recurrence-step.preview.title",
+                           )}
+                        </AlertTitle>
+                        <AlertDescription>
+                           {translate(
+                              "dashboard.routes.bills.features.create-bill.installments.preview",
+                              {
+                                 count: installmentCount,
+                                 value: formatDecimalCurrency(
+                                    amountPerInstallment,
+                                 ),
+                              },
+                           )}
+                        </AlertDescription>
+                     </Alert>
+                  )}
             </div>
          </div>
 

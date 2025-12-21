@@ -346,7 +346,9 @@ export function LinkFileBillForm({ bill, onSuccess }: LinkFileBillFormProps) {
                   <Upload className="size-4" />
                   {hasExistingAttachments
                      ? "Adicionar mais arquivos"
-                     : translate("dashboard.routes.bills.link-file.select-file")}
+                     : translate(
+                          "dashboard.routes.bills.link-file.select-file",
+                       )}
                </p>
                <Dropzone
                   accept={ACCEPTED_FILE_TYPES}

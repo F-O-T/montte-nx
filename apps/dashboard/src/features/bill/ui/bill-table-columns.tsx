@@ -17,12 +17,12 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import {
    getRecurrenceLabel,
    type RecurrencePattern,
 } from "@packages/utils/recurrence";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
@@ -41,6 +41,7 @@ import type { Category } from "@/pages/categories/ui/categories-page";
 import { getBillStatus } from "../lib/bill-status";
 import { BillActions } from "./bill-actions";
 import { StatusAnnouncement } from "./status-announcement";
+import { TypeAnnouncement } from "./type-announcement";
 
 type Bill = BillWithRelations;
 
@@ -144,19 +145,7 @@ export function createBillColumns(categories: Category[]): ColumnDef<Bill>[] {
          },
          header: translate("dashboard.routes.bills.table.columns.status"),
       },
-      {
-         accessorKey: "type",
-         cell: ({ row }) => {
-            const type = row.getValue("type") as string;
-            const typeMap = {
-               expense: translate("dashboard.routes.bills.type.payable"),
-               income: translate("dashboard.routes.bills.type.receivable"),
-            };
-            return <span>{typeMap[type as keyof typeof typeMap]}</span>;
-         },
-         enableSorting: true,
-         header: translate("dashboard.routes.bills.table.columns.type"),
-      },
+
       {
          accessorKey: "amount",
          cell: ({ row }) => {
@@ -300,6 +289,13 @@ export function BillExpandedContent({
                   />
                </div>
                <Separator />
+               <div className="flex flex-col gap-1">
+                  <p className="text-xs text-muted-foreground">
+                     {translate("dashboard.routes.bills.table.columns.type")}
+                  </p>
+                  <TypeAnnouncement type={bill.type as "expense" | "income"} />
+               </div>
+               <Separator />
                <InfoItem
                   icon={Calendar}
                   label={translate(
@@ -416,6 +412,13 @@ export function BillExpandedContent({
                   amount={Number(bill.amount)}
                   isPositive={bill.type === "income"}
                />
+            </div>
+            <Separator className="h-8" orientation="vertical" />
+            <div className="flex flex-col gap-1">
+               <p className="text-xs text-muted-foreground">
+                  {translate("dashboard.routes.bills.table.columns.type")}
+               </p>
+               <TypeAnnouncement type={bill.type as "expense" | "income"} />
             </div>
             <Separator className="h-8" orientation="vertical" />
             <InfoItem

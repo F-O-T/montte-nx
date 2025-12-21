@@ -1,11 +1,11 @@
 import type { BillWithRelations } from "@packages/database/repositories/bill-repository";
 import { useSheet } from "@/hooks/use-sheet";
-import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 import { useDeleteBillDialog } from "../hooks/use-delete-bill-dialog";
 import { ChangeBillCategoryForm } from "../ui/change-bill-category-form";
 import { CreateInstallmentsForm } from "../ui/create-installments-form";
 import { DuplicateBillSheet } from "../ui/duplicate-bill-sheet";
 import { LinkFileBillForm } from "../ui/link-file-bill-form";
+import { ManageBillForm } from "../ui/manage-bill-form";
 import { MarkAsRecurrentForm } from "../ui/mark-as-recurrent-form";
 
 type Bill = BillWithRelations;
@@ -49,7 +49,9 @@ export function useBillActions(bill: Bill, options?: UseBillActionsOptions) {
 
    const handleChangeCategory = () => {
       openSheet({
-         children: <ChangeBillCategoryForm bill={bill} onSuccess={closeSheet} />,
+         children: (
+            <ChangeBillCategoryForm bill={bill} onSuccess={closeSheet} />
+         ),
       });
    };
 
@@ -61,7 +63,9 @@ export function useBillActions(bill: Bill, options?: UseBillActionsOptions) {
 
    const handleCreateInstallments = () => {
       openSheet({
-         children: <CreateInstallmentsForm bill={bill} onSuccess={closeSheet} />,
+         children: (
+            <CreateInstallmentsForm bill={bill} onSuccess={closeSheet} />
+         ),
       });
    };
 

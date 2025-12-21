@@ -201,7 +201,9 @@ function CompleteBillSheetContent({
                      <DatePicker
                         className="w-full"
                         date={completionDate}
-                        onSelect={(date) => setCompletionDate(date || new Date())}
+                        onSelect={(date) =>
+                           setCompletionDate(date || new Date())
+                        }
                      />
                   </Field>
                </FieldGroup>

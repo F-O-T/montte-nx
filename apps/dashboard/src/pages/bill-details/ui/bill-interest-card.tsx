@@ -68,43 +68,47 @@ function InterestCardContent({ billId }: { billId: string }) {
    const isOverdue =
       bill.dueDate && !bill.completionDate && new Date(bill.dueDate) < today;
 
+   const template = bill.interestTemplate;
+
+   const config = useMemo<InterestConfig | null>(() => {
+      if (!template) return null;
+      return {
+         gracePeriodDays: template.gracePeriodDays,
+         interestType: template.interestType as "none" | "daily" | "monthly",
+         interestValue: template.interestValue
+            ? Number(template.interestValue)
+            : null,
+         monetaryCorrectionIndex: template.monetaryCorrectionIndex as
+            | "none"
+            | "ipca"
+            | "selic"
+            | "cdi",
+         penaltyType: template.penaltyType as "none" | "percentage" | "fixed",
+         penaltyValue: template.penaltyValue
+            ? Number(template.penaltyValue)
+            : null,
+      };
+   }, [template]);
+
+   const result = useMemo(() => {
+      if (!config) return null;
+      return calculateInterest(
+         Number(bill.amount),
+         new Date(bill.dueDate),
+         config,
+         rates,
+      );
+   }, [bill.amount, bill.dueDate, config, rates]);
+
    if (
       bill.type !== "income" ||
       !isOverdue ||
       isCompleted ||
-      !bill.interestTemplate
+      !bill.interestTemplate ||
+      !result
    ) {
       return null;
    }
-
-   const template = bill.interestTemplate;
-   const config: InterestConfig = {
-      gracePeriodDays: template.gracePeriodDays,
-      interestType: template.interestType as "none" | "daily" | "monthly",
-      interestValue: template.interestValue
-         ? Number(template.interestValue)
-         : null,
-      monetaryCorrectionIndex: template.monetaryCorrectionIndex as
-         | "none"
-         | "ipca"
-         | "selic"
-         | "cdi",
-      penaltyType: template.penaltyType as "none" | "percentage" | "fixed",
-      penaltyValue: template.penaltyValue
-         ? Number(template.penaltyValue)
-         : null,
-   };
-
-   const result = useMemo(
-      () =>
-         calculateInterest(
-            Number(bill.amount),
-            new Date(bill.dueDate),
-            config,
-            rates,
-         ),
-      [bill.amount, bill.dueDate, config, rates],
-   );
 
    return (
       <Card>
@@ -116,10 +120,14 @@ function InterestCardContent({ billId }: { billId: string }) {
          </CardHeader>
          <CardContent className="space-y-4">
             {isFallback && (
-               <Alert variant="default" className="border-orange-200 bg-orange-50">
+               <Alert
+                  className="border-orange-200 bg-orange-50"
+                  variant="default"
+               >
                   <AlertTriangle className="size-4 text-orange-600" />
                   <AlertDescription className="text-orange-800">
-                     Usando taxas de referência. Valores podem não refletir índices atuais (SELIC/IPCA/CDI).
+                     Usando taxas de referência. Valores podem não refletir
+                     índices atuais (SELIC/IPCA/CDI).
                   </AlertDescription>
                </Alert>
             )}
