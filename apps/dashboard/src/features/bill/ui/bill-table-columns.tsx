@@ -17,12 +17,12 @@ import {
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import {
    getRecurrenceLabel,
    type RecurrencePattern,
 } from "@packages/utils/recurrence";
+import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
@@ -30,36 +30,25 @@ import {
    Calendar,
    CalendarDays,
    ChevronDown,
-   Edit,
    Eye,
    FileText,
-   Pencil,
-   Trash2,
    User,
-   Wallet,
 } from "lucide-react";
 import { AmountAnnouncement } from "@/features/transaction/ui/amount-announcement";
 import { CategoryAnnouncement } from "@/features/transaction/ui/category-announcement";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
-import { useSheet } from "@/hooks/use-sheet";
-import { CompleteBillDialog } from "@/pages/bills/features/complete-bill-dialog";
-import { ManageBillForm } from "@/pages/bills/features/manage-bill-form";
 import type { Category } from "@/pages/categories/ui/categories-page";
-import { useDeleteBillDialog } from "../hooks/use-delete-bill-dialog";
 import { getBillStatus } from "../lib/bill-status";
+import { BillActions } from "./bill-actions";
 import { StatusAnnouncement } from "./status-announcement";
 
 type Bill = BillWithRelations;
 
 function BillActionsCell({ bill }: { bill: Bill }) {
    const { activeOrganization } = useActiveOrganization();
-   const { openSheet } = useSheet();
-   const { handleDeleteBill } = useDeleteBillDialog({ bill });
-
-   const isCompleted = !!bill.completionDate;
 
    return (
-      <div className="flex justify-end gap-1">
+      <div className="flex justify-end">
          <Tooltip>
             <TooltipTrigger asChild>
                <Button asChild size="icon" variant="outline">
@@ -78,60 +67,6 @@ function BillActionsCell({ bill }: { bill: Bill }) {
                {translate(
                   "dashboard.routes.bills.list-section.actions.view-details",
                )}
-            </TooltipContent>
-         </Tooltip>
-
-         {!bill.completionDate && (
-            <CompleteBillDialog bill={bill}>
-               <Tooltip>
-                  <TooltipTrigger asChild>
-                     <Button size="icon" variant="outline">
-                        <Wallet className="size-4" />
-                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                     {bill.type === "expense"
-                        ? translate("dashboard.routes.bills.actions.pay")
-                        : translate("dashboard.routes.bills.actions.receive")}
-                  </TooltipContent>
-               </Tooltip>
-            </CompleteBillDialog>
-         )}
-
-         {!isCompleted && (
-            <Tooltip>
-               <TooltipTrigger asChild>
-                  <Button
-                     onClick={() =>
-                        openSheet({
-                           children: <ManageBillForm bill={bill} />,
-                        })
-                     }
-                     size="icon"
-                     variant="outline"
-                  >
-                     <Pencil className="size-4" />
-                  </Button>
-               </TooltipTrigger>
-               <TooltipContent>
-                  {translate("dashboard.routes.bills.actions.edit")}
-               </TooltipContent>
-            </Tooltip>
-         )}
-
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  className="text-destructive hover:text-destructive"
-                  onClick={handleDeleteBill}
-                  size="icon"
-                  variant="outline"
-               >
-                  <Trash2 className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate("dashboard.routes.bills.actions.delete")}
             </TooltipContent>
          </Tooltip>
       </div>
@@ -328,12 +263,10 @@ export function BillExpandedContent({
    row,
    categories,
 }: BillExpandedContentProps) {
-   const { openSheet } = useSheet();
    const bill = row.original;
    const category = categories.find((c) => c.id === bill.categoryId);
    const { activeOrganization } = useActiveOrganization();
    const isMobile = useIsMobile();
-   const { handleDeleteBill } = useDeleteBillDialog({ bill });
 
    const InfoItem = ({
       icon: Icon,
@@ -458,74 +391,23 @@ export function BillExpandedContent({
                )}
             </div>
 
-            <Separator />
-
-            <div className="space-y-2">
-               <Button
-                  asChild
-                  className="w-full justify-start"
-                  size="sm"
-                  variant="outline"
-               >
-                  <Link
-                     params={{
-                        billId: bill.id,
-                        slug: activeOrganization.slug,
-                     }}
-                     to="/$slug/bills/$billId"
-                  >
-                     <Eye className="size-4" />
-                     {translate(
-                        "dashboard.routes.bills.list-section.actions.view-details",
-                     )}
-                  </Link>
-               </Button>
-               {!bill.completionDate && (
-                  <CompleteBillDialog bill={bill}>
-                     <Button
-                        className="w-full justify-start"
-                        size="sm"
-                        variant="outline"
-                     >
-                        <Wallet className="size-4" />
-                        {bill.type === "expense"
-                           ? translate("dashboard.routes.bills.actions.pay")
-                           : translate(
-                                "dashboard.routes.bills.actions.receive",
-                             )}
-                     </Button>
-                  </CompleteBillDialog>
-               )}
-               {!bill.completionDate && (
-                  <Button
-                     className="w-full justify-start"
-                     onClick={() => {
-                        openSheet({ children: <ManageBillForm bill={bill} /> });
-                     }}
-                     size="sm"
-                     variant="outline"
-                  >
-                     <Edit className="size-4" />
-                     {translate("dashboard.routes.bills.actions.edit")}
-                  </Button>
-               )}
-               <Button
-                  className="w-full justify-start"
-                  onClick={handleDeleteBill}
-                  size="sm"
-                  variant="destructive"
-               >
-                  <Trash2 className="size-4" />
-                  {translate("dashboard.routes.bills.actions.delete")}
-               </Button>
+            {/* Actions Section - Below metadata with separator */}
+            <div className="pt-2 border-t">
+               <BillActions
+                  bill={bill}
+                  showViewDetails
+                  slug={activeOrganization.slug}
+                  variant="compact"
+               />
             </div>
          </div>
       );
    }
 
    return (
-      <div className="p-4 flex items-center justify-between gap-6">
-         <div className="flex items-center gap-6">
+      <div className="p-4 space-y-4">
+         {/* Metadata Section */}
+         <div className="flex flex-wrap items-center gap-6">
             <div className="flex flex-col gap-1">
                <p className="text-xs text-muted-foreground">
                   {translate("dashboard.routes.bills.table.columns.amount")}
@@ -606,48 +488,14 @@ export function BillExpandedContent({
             )}
          </div>
 
-         <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="outline">
-               <Link
-                  params={{
-                     billId: bill.id,
-                     slug: activeOrganization.slug,
-                  }}
-                  to="/$slug/bills/$billId"
-               >
-                  <Eye className="size-4" />
-                  {translate(
-                     "dashboard.routes.bills.list-section.actions.view-details",
-                  )}
-               </Link>
-            </Button>
-            {!bill.completionDate && (
-               <CompleteBillDialog bill={bill}>
-                  <Button size="sm" variant="outline">
-                     <Wallet className="size-4" />
-                     {bill.type === "expense"
-                        ? translate("dashboard.routes.bills.actions.pay")
-                        : translate("dashboard.routes.bills.actions.receive")}
-                  </Button>
-               </CompleteBillDialog>
-            )}
-
-            {!bill.completionDate && (
-               <Button
-                  onClick={() => {
-                     openSheet({ children: <ManageBillForm bill={bill} /> });
-                  }}
-                  size="sm"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-                  {translate("dashboard.routes.bills.actions.edit")}
-               </Button>
-            )}
-            <Button onClick={handleDeleteBill} size="sm" variant="destructive">
-               <Trash2 className="size-4" />
-               {translate("dashboard.routes.bills.actions.delete")}
-            </Button>
+         {/* Actions Section - Below metadata with separator */}
+         <div className="pt-2 border-t">
+            <BillActions
+               bill={bill}
+               showViewDetails
+               slug={activeOrganization.slug}
+               variant="compact"
+            />
          </div>
       </div>
    );

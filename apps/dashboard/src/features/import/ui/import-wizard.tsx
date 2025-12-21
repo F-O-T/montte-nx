@@ -4,11 +4,11 @@ import { FileUp, XIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { usePendingImport } from "@/hooks/use-pending-import";
 import {
-   getStepsForFileType,
    type ColumnMapping,
    type CsvPreviewData,
    type DuplicateInfo,
    type FileType,
+   getStepsForFileType,
    type ImportStep,
    type ParsedTransaction,
 } from "../lib/use-import-wizard";

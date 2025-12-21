@@ -9,10 +9,7 @@ import {
 } from "./templates/bank-statement";
 import { DREFiscalTemplate } from "./templates/dre-fiscal";
 import { DREGerencialTemplate } from "./templates/dre-gerencial";
-import {
-   type SupportedPdfReportType,
-   isSupportedPdfReportType,
-} from "./types";
+import { isSupportedPdfReportType, type SupportedPdfReportType } from "./types";
 
 export type RenderDREReportOptions = {
    name: string;
@@ -36,17 +33,15 @@ export async function renderDREReport(
    return Buffer.from(buffer);
 }
 
+export type { ReportType, SupportedPdfReportType } from "./types";
 // Re-export types and utilities for PDF support checking
 export { isSupportedPdfReportType } from "./types";
-export type { ReportType, SupportedPdfReportType } from "./types";
 
 /**
  * Check if a report type can be rendered as PDF.
  * Returns an error message if not supported, null if supported.
  */
-export function getUnsupportedReportTypeError(
-   type: ReportType,
-): string | null {
+export function getUnsupportedReportTypeError(type: ReportType): string | null {
    if (isSupportedPdfReportType(type)) {
       return null;
    }

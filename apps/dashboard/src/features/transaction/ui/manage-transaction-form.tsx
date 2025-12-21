@@ -119,11 +119,11 @@ export function ManageTransactionForm({
 
       const newParams = shouldUpdate
          ? {
-            amount: centsToReais(watchedValues.amount),
-            categoryIds: watchedValues.categoryIds || [],
-            costCenterId: watchedValues.costCenterId || "",
-            tagIds: watchedValues.tagIds || [],
-         }
+              amount: centsToReais(watchedValues.amount),
+              categoryIds: watchedValues.categoryIds || [],
+              costCenterId: watchedValues.costCenterId || "",
+              tagIds: watchedValues.tagIds || [],
+           }
          : null;
 
       setBudgetImpactParams(newParams);
@@ -410,7 +410,7 @@ export function ManageTransactionForm({
          amount: budgetImpactParams?.amount ?? 0,
          categoryIds:
             budgetImpactParams?.categoryIds &&
-               budgetImpactParams.categoryIds.length > 0
+            budgetImpactParams.categoryIds.length > 0
                ? budgetImpactParams.categoryIds
                : undefined,
          costCenterId: budgetImpactParams?.costCenterId || undefined,
@@ -772,14 +772,14 @@ export function ManageTransactionForm({
                         warning.severity === "danger"
                            ? XCircle
                            : warning.severity === "warning"
-                              ? AlertTriangle
-                              : Info;
+                             ? AlertTriangle
+                             : Info;
                      const variant =
                         warning.severity === "danger"
                            ? "destructive"
                            : warning.severity === "warning"
-                              ? "default"
-                              : "default";
+                             ? "default"
+                             : "default";
 
                      return (
                         <Alert key={warning.budgetId} variant={variant}>

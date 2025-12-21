@@ -1,14 +1,13 @@
 import {
-	type CsvColumnMapping,
-	type CsvProgressEvent,
-	parseCsvContent,
+   type CsvColumnMapping,
+   type CsvProgressEvent,
+   parseCsvContent,
 } from "@packages/csv";
 import {
-	type OfxProgressEvent,
-	type TransactionType,
-	parseOfxBuffer,
+   type OfxProgressEvent,
+   parseOfxBuffer,
+   type TransactionType,
 } from "@packages/ofx";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
@@ -21,6 +20,7 @@ import {
    TableHeader,
    TableRow,
 } from "@packages/ui/components/table";
+import { formatDecimalCurrency } from "@packages/utils/money";
 import { useMutation } from "@tanstack/react-query";
 import {
    AlertTriangleIcon,
@@ -173,7 +173,9 @@ export function PreviewStep({
                // Progress callback for OFX parsing
                const onOfxProgress = (event: OfxProgressEvent) => {
                   if (event.type === "progress") {
-                     setParseProgress(`Processando transação ${event.parsed}...`);
+                     setParseProgress(
+                        `Processando transação ${event.parsed}...`,
+                     );
                   } else if (event.type === "complete") {
                      setParseProgress(null);
                   }

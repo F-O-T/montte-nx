@@ -833,10 +833,13 @@ export async function createBillWithInstallments(
          const baseCents = Math.floor(totalCents / totalInstallments);
          const remainder = totalCents % totalInstallments;
 
-         installmentAmounts = Array.from({ length: totalInstallments }, (_, i) => {
-            const cents = baseCents + (i < remainder ? 1 : 0);
-            return centsToReais(cents);
-         });
+         installmentAmounts = Array.from(
+            { length: totalInstallments },
+            (_, i) => {
+               const cents = baseCents + (i < remainder ? 1 : 0);
+               return centsToReais(cents);
+            },
+         );
       } else {
          installmentAmounts = amounts;
       }

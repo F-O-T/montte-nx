@@ -1,3 +1,4 @@
+import type { ReportType } from "@packages/database/schemas/custom-reports";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -20,7 +21,6 @@ import {
    X,
 } from "lucide-react";
 import { useCredenza } from "@/hooks/use-credenza";
-import type { ReportType } from "@packages/database/schemas/custom-reports";
 
 type CustomReportFilterCredenzaProps = {
    typeFilter: ReportType | undefined;
@@ -116,7 +116,9 @@ export function CustomReportFilterCredenza({
                                        "bg-primary/10 border-primary text-primary",
                                  )}
                                  key={reportType.value ?? "all"}
-                                 onClick={() => handleTypeSelect(reportType.value)}
+                                 onClick={() =>
+                                    handleTypeSelect(reportType.value)
+                                 }
                                  size="sm"
                                  variant="outline"
                               >

@@ -1,4 +1,3 @@
-import type { createBillSchema as _createBillSchema } from "@packages/api/schemas/bill";
 import type { Bill } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
 import {
@@ -140,13 +139,7 @@ function getActiveSteps(
    }
 
    // recurring or installment - recurrence config comes before details
-   return [
-      "bill-type",
-      "bill-mode",
-      "recurrence",
-      "details",
-      "categorization",
-   ];
+   return ["bill-type", "bill-mode", "recurrence", "details", "categorization"];
 }
 
 export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
@@ -384,9 +377,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
       recurrencePattern: z
          .enum(["monthly", "quarterly", "semiannual", "annual"])
          .or(z.undefined()),
-      occurrenceType: z
-         .enum(["auto", "count", "until-date"])
-         .or(z.undefined()),
+      occurrenceType: z.enum(["auto", "count", "until-date"]).or(z.undefined()),
       occurrenceCount: z.number().min(1).max(365),
       occurrenceUntilDate: z.date().or(z.undefined()),
 
@@ -495,7 +486,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
             );
          }
       },
-      });
+   });
 
    const modeTexts = useMemo(() => {
       const createTexts = {
@@ -887,33 +878,62 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
    type RecurringSection = "frequency" | "occurrence" | "review";
    type InstallmentSection = "count" | "interval" | "amounts" | "review";
 
-   const frequencyOptions = ["monthly", "quarterly", "semiannual", "annual"] as const;
+   const frequencyOptions = [
+      "monthly",
+      "quarterly",
+      "semiannual",
+      "annual",
+   ] as const;
    const occurrenceOptions = ["auto", "count", "until-date"] as const;
    const intervalOptions = ["monthly", "biweekly", "weekly", "custom"] as const;
 
    const frequencyLabels: Record<string, string> = {
-      annual: translate("dashboard.routes.bills.features.create-bill.recurrence.annual"),
-      monthly: translate("dashboard.routes.bills.features.create-bill.recurrence.monthly"),
-      quarterly: translate("dashboard.routes.bills.features.create-bill.recurrence.quarterly"),
-      semiannual: translate("dashboard.routes.bills.features.create-bill.recurrence.semiannual"),
+      annual: translate(
+         "dashboard.routes.bills.features.create-bill.recurrence.annual",
+      ),
+      monthly: translate(
+         "dashboard.routes.bills.features.create-bill.recurrence.monthly",
+      ),
+      quarterly: translate(
+         "dashboard.routes.bills.features.create-bill.recurrence.quarterly",
+      ),
+      semiannual: translate(
+         "dashboard.routes.bills.features.create-bill.recurrence.semiannual",
+      ),
    };
 
    const occurrenceLabels: Record<string, string> = {
-      auto: translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.auto.title"),
-      count: translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.count.title"),
-      "until-date": translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.until-date.title"),
+      auto: translate(
+         "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.auto.title",
+      ),
+      count: translate(
+         "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.count.title",
+      ),
+      "until-date": translate(
+         "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.until-date.title",
+      ),
    };
 
    const intervalLabels: Record<string, string> = {
-      biweekly: translate("dashboard.routes.bills.features.create-bill.installments.intervalOptions.biweekly"),
-      custom: translate("dashboard.routes.bills.features.create-bill.installments.intervalOptions.custom"),
-      monthly: translate("dashboard.routes.bills.features.create-bill.installments.intervalOptions.monthly"),
-      weekly: translate("dashboard.routes.bills.features.create-bill.installments.intervalOptions.weekly"),
+      biweekly: translate(
+         "dashboard.routes.bills.features.create-bill.installments.intervalOptions.biweekly",
+      ),
+      custom: translate(
+         "dashboard.routes.bills.features.create-bill.installments.intervalOptions.custom",
+      ),
+      monthly: translate(
+         "dashboard.routes.bills.features.create-bill.installments.intervalOptions.monthly",
+      ),
+      weekly: translate(
+         "dashboard.routes.bills.features.create-bill.installments.intervalOptions.weekly",
+      ),
    };
 
    function RecurrenceStep() {
-      const [recurringSection, setRecurringSection] = useState<RecurringSection>("frequency");
-      const [installmentSection, setInstallmentSection] = useState<InstallmentSection>("count");
+      const [recurringSection, setRecurringSection] =
+         useState<RecurringSection>("frequency");
+      const [installmentSection, setInstallmentSection] =
+         useState<InstallmentSection>("count");
 
       return (
          <form.Subscribe
@@ -947,7 +967,8 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         <Collapsible
                            onOpenChange={(open) => {
                               if (open) setRecurringSection("frequency");
-                              else if (recurrencePattern) setRecurringSection("occurrence");
+                              else if (recurrencePattern)
+                                 setRecurringSection("occurrence");
                            }}
                            open={recurringSection === "frequency"}
                         >
@@ -960,22 +981,33 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           : "bg-muted text-muted-foreground"
                                     }`}
                                  >
-                                    {recurrencePattern ? <Check className="h-3.5 w-3.5" /> : "1"}
+                                    {recurrencePattern ? (
+                                       <Check className="h-3.5 w-3.5" />
+                                    ) : (
+                                       "1"
+                                    )}
                                  </div>
                                  <div className="text-left">
                                     <div className="font-medium">
-                                       {translate("dashboard.routes.bills.features.create-bill.recurrence-step.frequency.title")}
+                                       {translate(
+                                          "dashboard.routes.bills.features.create-bill.recurrence-step.frequency.title",
+                                       )}
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                       {recurrencePattern && recurringSection !== "frequency"
+                                       {recurrencePattern &&
+                                       recurringSection !== "frequency"
                                           ? frequencyLabels[recurrencePattern]
-                                          : translate("dashboard.routes.bills.features.create-bill.recurrence-step.frequency.description")}
+                                          : translate(
+                                               "dashboard.routes.bills.features.create-bill.recurrence-step.frequency.description",
+                                            )}
                                     </div>
                                  </div>
                               </div>
                               <ChevronDown
                                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                                    recurringSection === "frequency" ? "rotate-180" : ""
+                                    recurringSection === "frequency"
+                                       ? "rotate-180"
+                                       : ""
                                  }`}
                               />
                            </CollapsibleTrigger>
@@ -985,7 +1017,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                     {(field) => (
                                        <Choicebox
                                           onValueChange={(value) => {
-                                             field.handleChange(value as RecurrencePattern);
+                                             field.handleChange(
+                                                value as RecurrencePattern,
+                                             );
                                              setRecurringSection("occurrence");
                                           }}
                                           value={field.state.value || ""}
@@ -998,13 +1032,19 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                              >
                                                 <ChoiceboxItemHeader>
                                                    <ChoiceboxItemTitle>
-                                                      {translate(`dashboard.routes.bills.features.create-bill.recurrence-step.frequency.options.${option}.title`)}
+                                                      {translate(
+                                                         `dashboard.routes.bills.features.create-bill.recurrence-step.frequency.options.${option}.title`,
+                                                      )}
                                                    </ChoiceboxItemTitle>
                                                    <ChoiceboxItemDescription>
-                                                      {translate(`dashboard.routes.bills.features.create-bill.recurrence-step.frequency.options.${option}.description`)}
+                                                      {translate(
+                                                         `dashboard.routes.bills.features.create-bill.recurrence-step.frequency.options.${option}.description`,
+                                                      )}
                                                    </ChoiceboxItemDescription>
                                                 </ChoiceboxItemHeader>
-                                                <ChoiceboxIndicator id={`freq-${option}`} />
+                                                <ChoiceboxIndicator
+                                                   id={`freq-${option}`}
+                                                />
                                              </ChoiceboxItem>
                                           ))}
                                        </Choicebox>
@@ -1017,9 +1057,12 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         {/* Step 2: Occurrence */}
                         <Collapsible
                            onOpenChange={(open) => {
-                              if (open && recurrencePattern) setRecurringSection("occurrence");
-                              else if (occurrenceType) setRecurringSection("review");
-                              else if (recurrencePattern) setRecurringSection("frequency");
+                              if (open && recurrencePattern)
+                                 setRecurringSection("occurrence");
+                              else if (occurrenceType)
+                                 setRecurringSection("review");
+                              else if (recurrencePattern)
+                                 setRecurringSection("frequency");
                            }}
                            open={recurringSection === "occurrence"}
                         >
@@ -1039,29 +1082,42 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           : "bg-muted text-muted-foreground"
                                     }`}
                                  >
-                                    {occurrenceType ? <Check className="h-3.5 w-3.5" /> : "2"}
+                                    {occurrenceType ? (
+                                       <Check className="h-3.5 w-3.5" />
+                                    ) : (
+                                       "2"
+                                    )}
                                  </div>
                                  <div className="text-left">
                                     <div className="font-medium">
-                                       {translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.title")}
+                                       {translate(
+                                          "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.title",
+                                       )}
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                       {occurrenceType && recurringSection !== "occurrence" ? (
+                                       {occurrenceType &&
+                                       recurringSection !== "occurrence" ? (
                                           <>
                                              {occurrenceLabels[occurrenceType]}
-                                             {occurrenceType === "count" && ` (${occurrenceCount}x)`}
-                                             {occurrenceType === "until-date" && occurrenceUntilDate &&
+                                             {occurrenceType === "count" &&
+                                                ` (${occurrenceCount}x)`}
+                                             {occurrenceType === "until-date" &&
+                                                occurrenceUntilDate &&
                                                 ` (${occurrenceUntilDate.toLocaleDateString("pt-BR")})`}
                                           </>
                                        ) : (
-                                          translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.description")
+                                          translate(
+                                             "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.description",
+                                          )
                                        )}
                                     </div>
                                  </div>
                               </div>
                               <ChevronDown
                                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                                    recurringSection === "occurrence" ? "rotate-180" : ""
+                                    recurringSection === "occurrence"
+                                       ? "rotate-180"
+                                       : ""
                                  }`}
                               />
                            </CollapsibleTrigger>
@@ -1071,7 +1127,10 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                     {(field) => (
                                        <Choicebox
                                           onValueChange={(value) => {
-                                             const occ = value as "auto" | "count" | "until-date";
+                                             const occ = value as
+                                                | "auto"
+                                                | "count"
+                                                | "until-date";
                                              field.handleChange(occ);
                                              if (occ === "auto") {
                                                 setRecurringSection("review");
@@ -1087,13 +1146,19 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                              >
                                                 <ChoiceboxItemHeader>
                                                    <ChoiceboxItemTitle>
-                                                      {translate(`dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.${option}.title`)}
+                                                      {translate(
+                                                         `dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.${option}.title`,
+                                                      )}
                                                    </ChoiceboxItemTitle>
                                                    <ChoiceboxItemDescription>
-                                                      {translate(`dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.${option}.description`)}
+                                                      {translate(
+                                                         `dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.${option}.description`,
+                                                      )}
                                                    </ChoiceboxItemDescription>
                                                 </ChoiceboxItemHeader>
-                                                <ChoiceboxIndicator id={`occ-${option}`} />
+                                                <ChoiceboxIndicator
+                                                   id={`occ-${option}`}
+                                                />
                                              </ChoiceboxItem>
                                           ))}
                                        </Choicebox>
@@ -1103,7 +1168,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  {occurrenceType === "count" && (
                                     <div className="space-y-2">
                                        <Label>
-                                          {translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.count.input-label")}
+                                          {translate(
+                                             "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.count.input-label",
+                                          )}
                                        </Label>
                                        <form.Field name="occurrenceCount">
                                           {(field) => (
@@ -1120,17 +1187,25 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                                    if (val === "") {
                                                       field.handleChange(0);
                                                    } else {
-                                                      field.handleChange(Number(val));
+                                                      field.handleChange(
+                                                         Number(val),
+                                                      );
                                                    }
                                                 }}
                                                 type="number"
-                                                value={field.state.value === 0 ? "" : field.state.value}
+                                                value={
+                                                   field.state.value === 0
+                                                      ? ""
+                                                      : field.state.value
+                                                }
                                              />
                                           )}
                                        </form.Field>
                                        <Button
                                           className="w-full mt-2"
-                                          onClick={() => setRecurringSection("review")}
+                                          onClick={() =>
+                                             setRecurringSection("review")
+                                          }
                                           size="sm"
                                           type="button"
                                        >
@@ -1149,7 +1224,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                                 onSelect={(date) => {
                                                    field.handleChange(date);
                                                    if (date) {
-                                                      setRecurringSection("review");
+                                                      setRecurringSection(
+                                                         "review",
+                                                      );
                                                    }
                                                 }}
                                              />
@@ -1162,24 +1239,37 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         </Collapsible>
 
                         {/* Preview - Shows when all steps are complete */}
-                        {recurrencePattern && occurrenceType && recurringSection === "review" && (
-                           <Alert>
-                              <CalendarCheck className="h-4 w-4" />
-                              <AlertTitle>
-                                 {translate("dashboard.routes.bills.features.create-bill.recurrence-step.preview.title")}
-                              </AlertTitle>
-                              <AlertDescription>
-                                 {translate("dashboard.routes.bills.features.create-bill.recurrence-step.preview.message", {
-                                    frequency: frequencyLabels[recurrencePattern],
-                                    type: occurrenceType === "auto"
-                                       ? translate("dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.auto.title")
-                                       : occurrenceType === "count"
-                                         ? `${occurrenceCount}x`
-                                         : occurrenceUntilDate?.toLocaleDateString("pt-BR") || "",
-                                 })}
-                              </AlertDescription>
-                           </Alert>
-                        )}
+                        {recurrencePattern &&
+                           occurrenceType &&
+                           recurringSection === "review" && (
+                              <Alert>
+                                 <CalendarCheck className="h-4 w-4" />
+                                 <AlertTitle>
+                                    {translate(
+                                       "dashboard.routes.bills.features.create-bill.recurrence-step.preview.title",
+                                    )}
+                                 </AlertTitle>
+                                 <AlertDescription>
+                                    {translate(
+                                       "dashboard.routes.bills.features.create-bill.recurrence-step.preview.message",
+                                       {
+                                          frequency:
+                                             frequencyLabels[recurrencePattern],
+                                          type:
+                                             occurrenceType === "auto"
+                                                ? translate(
+                                                     "dashboard.routes.bills.features.create-bill.recurrence-step.occurrence.options.auto.title",
+                                                  )
+                                                : occurrenceType === "count"
+                                                  ? `${occurrenceCount}x`
+                                                  : occurrenceUntilDate?.toLocaleDateString(
+                                                       "pt-BR",
+                                                    ) || "",
+                                       },
+                                    )}
+                                 </AlertDescription>
+                              </Alert>
+                           )}
                      </>
                   )}
 
@@ -1189,7 +1279,8 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         <Collapsible
                            onOpenChange={(open) => {
                               if (open) setInstallmentSection("count");
-                              else if (installmentCount > 0) setInstallmentSection("interval");
+                              else if (installmentCount > 0)
+                                 setInstallmentSection("interval");
                            }}
                            open={installmentSection === "count"}
                         >
@@ -1202,22 +1293,33 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           : "bg-muted text-muted-foreground"
                                     }`}
                                  >
-                                    {installmentCount > 0 ? <Check className="h-3.5 w-3.5" /> : "1"}
+                                    {installmentCount > 0 ? (
+                                       <Check className="h-3.5 w-3.5" />
+                                    ) : (
+                                       "1"
+                                    )}
                                  </div>
                                  <div className="text-left">
                                     <div className="font-medium">
-                                       {translate("dashboard.routes.bills.features.create-bill.installments.count")}
+                                       {translate(
+                                          "dashboard.routes.bills.features.create-bill.installments.count",
+                                       )}
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                       {installmentSection !== "count" && installmentCount > 0
+                                       {installmentSection !== "count" &&
+                                       installmentCount > 0
                                           ? `${installmentCount}x`
-                                          : translate("dashboard.routes.bills.features.create-bill.recurrence-step.installment.count.description")}
+                                          : translate(
+                                               "dashboard.routes.bills.features.create-bill.recurrence-step.installment.count.description",
+                                            )}
                                     </div>
                                  </div>
                               </div>
                               <ChevronDown
                                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                                    installmentSection === "count" ? "rotate-180" : ""
+                                    installmentSection === "count"
+                                       ? "rotate-180"
+                                       : ""
                                  }`}
                               />
                            </CollapsibleTrigger>
@@ -1229,10 +1331,15 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           <div className="flex items-center justify-center gap-4">
                                              <Button
                                                 className="h-9 w-9 rounded-full"
-                                                disabled={field.state.value <= 2}
+                                                disabled={
+                                                   field.state.value <= 2
+                                                }
                                                 onClick={() =>
                                                    field.handleChange(
-                                                      Math.max(2, field.state.value - 1),
+                                                      Math.max(
+                                                         2,
+                                                         field.state.value - 1,
+                                                      ),
                                                    )
                                                 }
                                                 size="icon"
@@ -1251,10 +1358,15 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                              </div>
                                              <Button
                                                 className="h-9 w-9 rounded-full"
-                                                disabled={field.state.value >= 120}
+                                                disabled={
+                                                   field.state.value >= 120
+                                                }
                                                 onClick={() =>
                                                    field.handleChange(
-                                                      Math.min(120, field.state.value + 1),
+                                                      Math.min(
+                                                         120,
+                                                         field.state.value + 1,
+                                                      ),
                                                    )
                                                 }
                                                 size="icon"
@@ -1265,22 +1377,29 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                              </Button>
                                           </div>
                                           <div className="flex flex-wrap justify-center gap-1.5">
-                                             {[2, 3, 6, 10, 12, 24].map((count) => (
-                                                <Button
-                                                   className="h-7 px-2.5 text-xs"
-                                                   key={`installment-${count}`}
-                                                   onClick={() => field.handleChange(count)}
-                                                   size="sm"
-                                                   type="button"
-                                                   variant={
-                                                      field.state.value === count
-                                                         ? "default"
-                                                         : "outline"
-                                                   }
-                                                >
-                                                   {count}x
-                                                </Button>
-                                             ))}
+                                             {[2, 3, 6, 10, 12, 24].map(
+                                                (count) => (
+                                                   <Button
+                                                      className="h-7 px-2.5 text-xs"
+                                                      key={`installment-${count}`}
+                                                      onClick={() =>
+                                                         field.handleChange(
+                                                            count,
+                                                         )
+                                                      }
+                                                      size="sm"
+                                                      type="button"
+                                                      variant={
+                                                         field.state.value ===
+                                                         count
+                                                            ? "default"
+                                                            : "outline"
+                                                      }
+                                                   >
+                                                      {count}x
+                                                   </Button>
+                                                ),
+                                             )}
                                           </div>
                                        </div>
                                     )}
@@ -1293,7 +1412,8 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         <Collapsible
                            onOpenChange={(open) => {
                               if (open) setInstallmentSection("interval");
-                              else if (installmentIntervalType) setInstallmentSection("amounts");
+                              else if (installmentIntervalType)
+                                 setInstallmentSection("amounts");
                            }}
                            open={installmentSection === "interval"}
                         >
@@ -1313,22 +1433,35 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           : "bg-muted text-muted-foreground"
                                     }`}
                                  >
-                                    {installmentIntervalType ? <Check className="h-3.5 w-3.5" /> : "2"}
+                                    {installmentIntervalType ? (
+                                       <Check className="h-3.5 w-3.5" />
+                                    ) : (
+                                       "2"
+                                    )}
                                  </div>
                                  <div className="text-left">
                                     <div className="font-medium">
-                                       {translate("dashboard.routes.bills.features.create-bill.installments.interval")}
+                                       {translate(
+                                          "dashboard.routes.bills.features.create-bill.installments.interval",
+                                       )}
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                       {installmentSection !== "interval" && installmentIntervalType
-                                          ? intervalLabels[installmentIntervalType]
-                                          : translate("dashboard.routes.bills.features.create-bill.recurrence-step.installment.interval.description")}
+                                       {installmentSection !== "interval" &&
+                                       installmentIntervalType
+                                          ? intervalLabels[
+                                               installmentIntervalType
+                                            ]
+                                          : translate(
+                                               "dashboard.routes.bills.features.create-bill.recurrence-step.installment.interval.description",
+                                            )}
                                     </div>
                                  </div>
                               </div>
                               <ChevronDown
                                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                                    installmentSection === "interval" ? "rotate-180" : ""
+                                    installmentSection === "interval"
+                                       ? "rotate-180"
+                                       : ""
                                  }`}
                               />
                            </CollapsibleTrigger>
@@ -1338,10 +1471,16 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                     {(field) => (
                                        <Choicebox
                                           onValueChange={(value) => {
-                                             const interval = value as "monthly" | "biweekly" | "weekly" | "custom";
+                                             const interval = value as
+                                                | "monthly"
+                                                | "biweekly"
+                                                | "weekly"
+                                                | "custom";
                                              field.handleChange(interval);
                                              if (interval !== "custom") {
-                                                setInstallmentSection("amounts");
+                                                setInstallmentSection(
+                                                   "amounts",
+                                                );
                                              }
                                           }}
                                           value={field.state.value || ""}
@@ -1357,7 +1496,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                                       {intervalLabels[option]}
                                                    </ChoiceboxItemTitle>
                                                 </ChoiceboxItemHeader>
-                                                <ChoiceboxIndicator id={`interval-${option}`} />
+                                                <ChoiceboxIndicator
+                                                   id={`interval-${option}`}
+                                                />
                                              </ChoiceboxItem>
                                           ))}
                                        </Choicebox>
@@ -1367,7 +1508,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  {installmentIntervalType === "custom" && (
                                     <div className="space-y-2">
                                        <Label>
-                                          {translate("dashboard.routes.bills.features.create-bill.installments.customDays")}
+                                          {translate(
+                                             "dashboard.routes.bills.features.create-bill.installments.customDays",
+                                          )}
                                        </Label>
                                        <form.Field name="installmentCustomDays">
                                           {(field) => (
@@ -1384,17 +1527,25 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                                    if (val === "") {
                                                       field.handleChange(0);
                                                    } else {
-                                                      field.handleChange(Number(val));
+                                                      field.handleChange(
+                                                         Number(val),
+                                                      );
                                                    }
                                                 }}
                                                 type="number"
-                                                value={field.state.value === 0 ? "" : field.state.value}
+                                                value={
+                                                   field.state.value === 0
+                                                      ? ""
+                                                      : field.state.value
+                                                }
                                              />
                                           )}
                                        </form.Field>
                                        <Button
                                           className="w-full mt-2"
-                                          onClick={() => setInstallmentSection("amounts")}
+                                          onClick={() =>
+                                             setInstallmentSection("amounts")
+                                          }
                                           size="sm"
                                           type="button"
                                        >
@@ -1430,24 +1581,39 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                           : "bg-muted text-muted-foreground"
                                     }`}
                                  >
-                                    {installmentAmountType ? <Check className="h-3.5 w-3.5" /> : "3"}
+                                    {installmentAmountType ? (
+                                       <Check className="h-3.5 w-3.5" />
+                                    ) : (
+                                       "3"
+                                    )}
                                  </div>
                                  <div className="text-left">
                                     <div className="font-medium">
-                                       {translate("dashboard.routes.bills.features.create-bill.installments.amountType")}
+                                       {translate(
+                                          "dashboard.routes.bills.features.create-bill.installments.amountType",
+                                       )}
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                       {installmentSection !== "amounts" && installmentAmountType
+                                       {installmentSection !== "amounts" &&
+                                       installmentAmountType
                                           ? installmentAmountType === "equal"
-                                             ? translate("dashboard.routes.bills.features.create-bill.installments.amountEqual")
-                                             : translate("dashboard.routes.bills.features.create-bill.installments.amountCustom")
-                                          : translate("dashboard.routes.bills.features.create-bill.recurrence-step.installment.amounts.description")}
+                                             ? translate(
+                                                  "dashboard.routes.bills.features.create-bill.installments.amountEqual",
+                                               )
+                                             : translate(
+                                                  "dashboard.routes.bills.features.create-bill.installments.amountCustom",
+                                               )
+                                          : translate(
+                                               "dashboard.routes.bills.features.create-bill.recurrence-step.installment.amounts.description",
+                                            )}
                                     </div>
                                  </div>
                               </div>
                               <ChevronDown
                                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                                    installmentSection === "amounts" ? "rotate-180" : ""
+                                    installmentSection === "amounts"
+                                       ? "rotate-180"
+                                       : ""
                                  }`}
                               />
                            </CollapsibleTrigger>
@@ -1457,31 +1623,47 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                     {(field) => (
                                        <Choicebox
                                           onValueChange={(value) => {
-                                             field.handleChange(value as "equal" | "custom");
+                                             field.handleChange(
+                                                value as "equal" | "custom",
+                                             );
                                              if (value === "equal") {
                                                 setInstallmentSection("review");
                                              }
                                           }}
                                           value={field.state.value || ""}
                                        >
-                                          <ChoiceboxItem id="amount-equal" value="equal">
+                                          <ChoiceboxItem
+                                             id="amount-equal"
+                                             value="equal"
+                                          >
                                              <ChoiceboxItemHeader>
                                                 <ChoiceboxItemTitle>
-                                                   {translate("dashboard.routes.bills.features.create-bill.installments.amountEqual")}
+                                                   {translate(
+                                                      "dashboard.routes.bills.features.create-bill.installments.amountEqual",
+                                                   )}
                                                 </ChoiceboxItemTitle>
                                                 <ChoiceboxItemDescription>
-                                                   {translate("dashboard.routes.bills.features.create-bill.recurrence-step.installment.amounts.equal-description")}
+                                                   {translate(
+                                                      "dashboard.routes.bills.features.create-bill.recurrence-step.installment.amounts.equal-description",
+                                                   )}
                                                 </ChoiceboxItemDescription>
                                              </ChoiceboxItemHeader>
                                              <ChoiceboxIndicator id="amount-equal" />
                                           </ChoiceboxItem>
-                                          <ChoiceboxItem id="amount-custom" value="custom">
+                                          <ChoiceboxItem
+                                             id="amount-custom"
+                                             value="custom"
+                                          >
                                              <ChoiceboxItemHeader>
                                                 <ChoiceboxItemTitle>
-                                                   {translate("dashboard.routes.bills.features.create-bill.installments.amountCustom")}
+                                                   {translate(
+                                                      "dashboard.routes.bills.features.create-bill.installments.amountCustom",
+                                                   )}
                                                 </ChoiceboxItemTitle>
                                                 <ChoiceboxItemDescription>
-                                                   {translate("dashboard.routes.bills.features.create-bill.recurrence-step.installment.amounts.custom-description")}
+                                                   {translate(
+                                                      "dashboard.routes.bills.features.create-bill.recurrence-step.installment.amounts.custom-description",
+                                                   )}
                                                 </ChoiceboxItemDescription>
                                              </ChoiceboxItemHeader>
                                              <ChoiceboxIndicator id="amount-custom" />
@@ -1492,24 +1674,43 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
 
                                  {installmentAmountType === "custom" && (
                                     <div className="space-y-2">
-                                       {Array.from({ length: installmentCount }).map((_, index) => (
-                                          <form.Field key={`installment-${index + 1}`} name="installmentCustomAmounts">
+                                       {Array.from({
+                                          length: installmentCount,
+                                       }).map((_, index) => (
+                                          <form.Field
+                                             key={`installment-${index + 1}`}
+                                             name="installmentCustomAmounts"
+                                          >
                                              {(field) => (
                                                 <Field>
-                                                   <FieldLabel htmlFor={`installment-amount-${index}`}>
-                                                      {translate("dashboard.routes.bills.features.create-bill.installments.installmentLabel", {
-                                                         number: index + 1,
-                                                      })}
+                                                   <FieldLabel
+                                                      htmlFor={`installment-amount-${index}`}
+                                                   >
+                                                      {translate(
+                                                         "dashboard.routes.bills.features.create-bill.installments.installmentLabel",
+                                                         {
+                                                            number: index + 1,
+                                                         },
+                                                      )}
                                                    </FieldLabel>
                                                    <MoneyInput
                                                       id={`installment-amount-${index}`}
                                                       onChange={(value) => {
-                                                         const newAmounts = [...(field.state.value || [])];
-                                                         newAmounts[index] = value || 0;
-                                                         field.handleChange(newAmounts);
+                                                         const newAmounts = [
+                                                            ...(field.state
+                                                               .value || []),
+                                                         ];
+                                                         newAmounts[index] =
+                                                            value || 0;
+                                                         field.handleChange(
+                                                            newAmounts,
+                                                         );
                                                       }}
                                                       placeholder="0,00"
-                                                      value={(field.state.value || [])[index] || 0}
+                                                      value={
+                                                         (field.state.value ||
+                                                            [])[index] || 0
+                                                      }
                                                       valueInCents={false}
                                                    />
                                                 </Field>
@@ -1518,7 +1719,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                        ))}
                                        <Button
                                           className="w-full mt-2"
-                                          onClick={() => setInstallmentSection("review")}
+                                          onClick={() =>
+                                             setInstallmentSection("review")
+                                          }
                                           size="sm"
                                           type="button"
                                        >
@@ -1531,24 +1734,36 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         </Collapsible>
 
                         {/* Preview */}
-                        {installmentSection === "review" && installmentAmountType && amount > 0 && (
-                           <Alert>
-                              <CalendarCheck className="h-4 w-4" />
-                              <AlertTitle>
-                                 {translate("dashboard.routes.bills.features.create-bill.recurrence-step.preview.title")}
-                              </AlertTitle>
-                              <AlertDescription>
-                                 {installmentAmountType === "equal"
-                                    ? translate("dashboard.routes.bills.features.create-bill.installments.preview", {
-                                         count: installmentCount,
-                                         value: formatCurrency(amount / installmentCount),
-                                      })
-                                    : translate("dashboard.routes.bills.features.create-bill.installments.totalAmount", {
-                                         amount: formatCurrency(amount),
-                                      })}
-                              </AlertDescription>
-                           </Alert>
-                        )}
+                        {installmentSection === "review" &&
+                           installmentAmountType &&
+                           amount > 0 && (
+                              <Alert>
+                                 <CalendarCheck className="h-4 w-4" />
+                                 <AlertTitle>
+                                    {translate(
+                                       "dashboard.routes.bills.features.create-bill.recurrence-step.preview.title",
+                                    )}
+                                 </AlertTitle>
+                                 <AlertDescription>
+                                    {installmentAmountType === "equal"
+                                       ? translate(
+                                            "dashboard.routes.bills.features.create-bill.installments.preview",
+                                            {
+                                               count: installmentCount,
+                                               value: formatCurrency(
+                                                  amount / installmentCount,
+                                               ),
+                                            },
+                                         )
+                                       : translate(
+                                            "dashboard.routes.bills.features.create-bill.installments.totalAmount",
+                                            {
+                                               amount: formatCurrency(amount),
+                                            },
+                                         )}
+                                 </AlertDescription>
+                              </Alert>
+                           )}
                      </>
                   )}
                </div>
@@ -1562,7 +1777,9 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
          <div className="space-y-4">
             {/* Optional hint */}
             <p className="text-sm text-muted-foreground">
-               {translate("dashboard.routes.bills.features.create-bill.steps.categorization.optional-hint")}
+               {translate(
+                  "dashboard.routes.bills.features.create-bill.steps.categorization.optional-hint",
+               )}
             </p>
 
             <FieldGroup>
@@ -2019,7 +2236,11 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  state.fieldMeta.dueDate?.isValid !== false,
                            })}
                         >
-                           {({ amountValid, descriptionValid, dueDateValid }) => (
+                           {({
+                              amountValid,
+                              descriptionValid,
+                              dueDateValid,
+                           }) => (
                               <>
                                  {!isEditMode && (
                                     <Button

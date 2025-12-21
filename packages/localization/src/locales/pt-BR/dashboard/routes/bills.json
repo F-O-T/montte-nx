@@ -1,8 +1,13 @@
 {
    "actions": {
+      "change-category": "Alterar Categoria",
+      "create-installments": "Criar Parcelas",
       "delete": "Excluir",
+      "duplicate": "Duplicar",
       "edit": "Editar",
       "label": "Ações",
+      "link-file": "Anexar Arquivo",
+      "mark-as-recurrent": "Tornar Recorrente",
       "pay": "Pagar",
       "receive": "Receber"
    },
@@ -75,9 +80,49 @@
       "title": "Detalhes da Conta"
    },
    "features": {
+      "change-category": {
+         "description": "Altere a categoria desta conta",
+         "title": "Alterar Categoria"
+      },
+      "duplicate-bill": {
+         "date-options": {
+            "custom": "Data personalizada",
+            "same-day": "Mesmo dia do original",
+            "today": "Hoje"
+         },
+         "description": "Crie uma cópia desta conta com uma nova data de vencimento",
+         "submit": "Duplicar Conta",
+         "title": "Duplicar Conta"
+      },
+      "mark-as-recurrent": {
+         "by-count": "Por quantidade",
+         "by-date": "Por data",
+         "description": "Configure a recorrência para criar contas automaticamente",
+         "end-date": "Data final",
+         "end-date-description": "A recorrência termina nesta data",
+         "end-date-placeholder": "Selecione a data final",
+         "end-type": "Término da recorrência",
+         "occurrence-count": "Número de ocorrências",
+         "occurrence-count-description": "Quantas vezes a conta será criada",
+         "pattern-description": "Escolha com que frequência a conta se repete",
+         "submit": "Criar Recorrência",
+         "success": "Recorrência criada com sucesso",
+         "title": "Tornar Recorrente"
+      },
       "complete-bill": {
          "description": "Marque a conta como paga ou recebida",
          "title": "Concluir Conta"
+      },
+      "create-installments": {
+         "description": "Divida esta conta em parcelas mensais",
+         "installment-count": "Número de parcelas",
+         "installment-count-description": "Mínimo de 2 parcelas",
+         "start-date": "Data da primeira parcela",
+         "start-date-description": "As demais parcelas serão criadas mensalmente a partir desta data",
+         "start-date-placeholder": "Selecione a data",
+         "submit": "Criar Parcelas",
+         "success": "Parcelas criadas com sucesso",
+         "title": "Criar Parcelas"
       },
       "create-bill": {
          "creating": "Criando...",
@@ -300,6 +345,15 @@
    },
    "filter": {
       "tooltip": "Filtrar contas"
+   },
+   "link-file": {
+      "select-file": "Selecione um arquivo",
+      "sheet": {
+         "description": "Anexe documentos relacionados a esta conta",
+         "title": "Anexar Arquivo"
+      },
+      "upload": "Enviar",
+      "uploading": "Enviando..."
    },
    "list-section": {
       "actions": {

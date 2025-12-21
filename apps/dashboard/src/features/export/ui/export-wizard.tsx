@@ -3,9 +3,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { Download, XIcon } from "lucide-react";
 import { Suspense, useCallback, useState } from "react";
 import {
-   getExportSteps,
    type ExportOptions,
    type ExportStep,
+   getExportSteps,
 } from "../lib/use-export-wizard";
 import { AccountStep } from "./account-step";
 import { ExportingStep } from "./exporting-step";
