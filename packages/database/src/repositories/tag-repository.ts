@@ -613,18 +613,20 @@ export async function setBillTags(
    tagIds: string[],
 ) {
    try {
-      await dbClient.delete(billTag).where(eq(billTag.billId, billId));
+      return await dbClient.transaction(async (tx) => {
+         await tx.delete(billTag).where(eq(billTag.billId, billId));
 
-      if (tagIds.length === 0) {
-         return [];
-      }
+         if (tagIds.length === 0) {
+            return [];
+         }
 
-      const result = await dbClient
-         .insert(billTag)
-         .values(tagIds.map((tagId) => ({ billId, tagId })))
-         .returning();
+         const result = await tx
+            .insert(billTag)
+            .values(tagIds.map((tagId) => ({ billId, tagId })))
+            .returning();
 
-      return result;
+         return result;
+      });
    } catch (err) {
       propagateError(err);
       throw AppError.database(

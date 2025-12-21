@@ -31,6 +31,7 @@ import {
 } from "@packages/database/repositories/bill-repository";
 import {
    findTagsByBillId,
+   findTagsByOrganizationId,
    setBillTags,
 } from "@packages/database/repositories/tag-repository";
 import { createTransaction } from "@packages/database/repositories/transaction-repository";
@@ -334,6 +335,21 @@ export const billRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
+         // Verify all tags belong to this organization
+         if (input.tagIds && input.tagIds.length > 0) {
+            const orgTags = await findTagsByOrganizationId(
+               resolvedCtx.db,
+               organizationId,
+            );
+            const validTagIds = new Set(orgTags.map((t) => t.id));
+            const hasInvalidTags = input.tagIds.some((id) => !validTagIds.has(id));
+            if (hasInvalidTags) {
+               throw APIError.validation(
+                  "One or more tags do not belong to this organization",
+               );
+            }
+         }
+
          const firstBill = await createBill(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
@@ -426,6 +442,21 @@ export const billRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+
+         // Verify all tags belong to this organization
+         if (input.tagIds && input.tagIds.length > 0) {
+            const orgTags = await findTagsByOrganizationId(
+               resolvedCtx.db,
+               organizationId,
+            );
+            const validTagIds = new Set(orgTags.map((t) => t.id));
+            const hasInvalidTags = input.tagIds.some((id) => !validTagIds.has(id));
+            if (hasInvalidTags) {
+               throw APIError.validation(
+                  "One or more tags do not belong to this organization",
+               );
+            }
+         }
 
          const result = await createBillWithInstallments(resolvedCtx.db, {
             amount: input.amount.toString(),
@@ -884,6 +915,22 @@ export const billRouter = router({
 
          // Update tags if provided
          if (input.data.tagIds !== undefined) {
+            // Verify all tags belong to this organization
+            if (input.data.tagIds.length > 0) {
+               const orgTags = await findTagsByOrganizationId(
+                  resolvedCtx.db,
+                  organizationId,
+               );
+               const validTagIds = new Set(orgTags.map((t) => t.id));
+               const hasInvalidTags = input.data.tagIds.some(
+                  (id) => !validTagIds.has(id),
+               );
+               if (hasInvalidTags) {
+                  throw APIError.validation(
+                     "One or more tags do not belong to this organization",
+                  );
+               }
+            }
             await setBillTags(resolvedCtx.db, input.id, input.data.tagIds);
          }
 
@@ -906,7 +953,9 @@ export const billRouter = router({
       }),
 
    setBillTags: protectedProcedure
-      .input(z.object({ billId: z.string(), tagIds: z.array(z.string().uuid()) }))
+      .input(
+         z.object({ billId: z.string().uuid(), tagIds: z.array(z.string().uuid()) }),
+      )
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
@@ -915,6 +964,21 @@ export const billRouter = router({
 
          if (!bill || bill.organizationId !== organizationId) {
             throw APIError.notFound("Bill not found");
+         }
+
+         // Verify all tags belong to this organization
+         if (input.tagIds.length > 0) {
+            const orgTags = await findTagsByOrganizationId(
+               resolvedCtx.db,
+               organizationId,
+            );
+            const validTagIds = new Set(orgTags.map((t) => t.id));
+            const hasInvalidTags = input.tagIds.some((id) => !validTagIds.has(id));
+            if (hasInvalidTags) {
+               throw APIError.validation(
+                  "One or more tags do not belong to this organization",
+               );
+            }
          }
 
          return setBillTags(resolvedCtx.db, input.billId, input.tagIds);

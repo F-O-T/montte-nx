@@ -450,8 +450,8 @@ export function PreviewStep({
                                        trn.type === "income"
                                           ? "text-green-600"
                                           : trn.type === "expense"
-                                            ? "text-red-600"
-                                            : "text-muted-foreground"
+                                             ? "text-red-600"
+                                             : "text-muted-foreground"
                                     }
                                  >
                                     <span className="inline-flex items-center gap-1">
