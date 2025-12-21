@@ -1,5 +1,6 @@
 import { translate } from "@packages/localization";
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
+import { Badge } from "@packages/ui/components/badge";
 import {
    Card,
    CardContent,
@@ -19,6 +20,8 @@ import {
    CalendarDays,
    CheckCircle2,
    FileText,
+   Layers,
+   Tags,
    User,
 } from "lucide-react";
 import { Suspense } from "react";
@@ -66,12 +69,18 @@ function InfoCardContent({ billId }: { billId: string }) {
       trpc.bills.getById.queryOptions({ id: billId }),
    );
 
+   const { data: billTags = [] } = useSuspenseQuery(
+      trpc.bills.getBillTags.queryOptions({ billId }),
+   );
+
    const hasInfo =
       bill.issueDate ||
       bill.completionDate ||
       (bill.isRecurring && bill.recurrencePattern) ||
       bill.bankAccount ||
+      bill.costCenter ||
       bill.counterparty ||
+      billTags.length > 0 ||
       bill.notes;
 
    if (!hasInfo) {
@@ -164,6 +173,44 @@ function InfoCardContent({ billId }: { billId: string }) {
                         <p className="text-sm font-medium">
                            {bill.counterparty?.name}
                         </p>
+                     </div>
+                  </div>
+               )}
+
+               {bill.costCenter && (
+                  <div className="flex items-center gap-3">
+                     <Layers className="size-4 text-muted-foreground" />
+                     <div>
+                        <p className="text-xs text-muted-foreground">
+                           {translate("common.form.cost-center.label")}
+                        </p>
+                        <p className="text-sm font-medium">
+                           {bill.costCenter.code
+                              ? `${bill.costCenter.code} - ${bill.costCenter.name}`
+                              : bill.costCenter.name}
+                        </p>
+                     </div>
+                  </div>
+               )}
+
+               {billTags.length > 0 && (
+                  <div className="flex items-center gap-3">
+                     <Tags className="size-4 text-muted-foreground" />
+                     <div>
+                        <p className="text-xs text-muted-foreground">
+                           {translate("common.form.tags.label")}
+                        </p>
+                        <div className="flex gap-1 flex-wrap mt-0.5">
+                           {billTags.map((tag) => (
+                              <Badge
+                                 key={tag.id}
+                                 style={{ backgroundColor: tag.color }}
+                                 variant="secondary"
+                              >
+                                 {tag.name}
+                              </Badge>
+                           ))}
+                        </div>
                      </div>
                   </div>
                )}

@@ -29,6 +29,10 @@ import {
    type NewBill,
    updateBill,
 } from "@packages/database/repositories/bill-repository";
+import {
+   findTagsByBillId,
+   setBillTags,
+} from "@packages/database/repositories/tag-repository";
 import { createTransaction } from "@packages/database/repositories/transaction-repository";
 import {
    deleteFile,
@@ -63,6 +67,7 @@ const updateBillSchema = z.object({
    autoCreateNext: z.boolean().optional(),
    bankAccountId: z.string().optional(),
    categoryId: z.string().optional(),
+   costCenterId: z.string().uuid().nullable().optional(),
    counterpartyId: z.string().nullable().optional(),
    description: z.string().optional(),
    dueDate: z.string().optional(),
@@ -81,6 +86,7 @@ const updateBillSchema = z.object({
          "annual",
       ])
       .optional(),
+   tagIds: z.array(z.string().uuid()).optional(),
    type: z.enum(["income", "expense"]).optional(),
 });
 
@@ -331,6 +337,7 @@ export const billRouter = router({
          const firstBill = await createBill(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
+            costCenterId: input.costCenterId,
             counterpartyId: input.counterpartyId,
             description: input.description || "",
             dueDate: new Date(input.dueDate),
@@ -342,6 +349,11 @@ export const billRouter = router({
             originalAmount: input.originalAmount?.toString(),
             recurrencePattern: input.recurrencePattern,
          });
+
+         // Set tags if provided
+         if (input.tagIds && input.tagIds.length > 0) {
+            await setBillTags(resolvedCtx.db, firstBill.id, input.tagIds);
+         }
 
          if (input.isRecurring && input.recurrencePattern) {
             let futureDueDates: Date[];
@@ -374,11 +386,12 @@ export const billRouter = router({
                     )
                : [];
 
-            const futureBillsPromises = futureDueDates.map((dueDate, index) => {
-               return createBill(resolvedCtx.db, {
+            const futureBillsPromises = futureDueDates.map(async (dueDate, index) => {
+               const futureBill = await createBill(resolvedCtx.db, {
                   amount: input.amount.toString(),
                   bankAccountId: input.bankAccountId,
                   categoryId: input.categoryId,
+                  costCenterId: input.costCenterId,
                   counterpartyId: input.counterpartyId,
                   description: input.description || "",
                   dueDate,
@@ -393,6 +406,13 @@ export const billRouter = router({
                   recurrencePattern: input.recurrencePattern,
                   type: input.type,
                });
+
+               // Set tags for future bills too
+               if (input.tagIds && input.tagIds.length > 0) {
+                  await setBillTags(resolvedCtx.db, futureBill.id, input.tagIds);
+               }
+
+               return futureBill;
             });
 
             await Promise.all(futureBillsPromises);
@@ -411,6 +431,7 @@ export const billRouter = router({
             amount: input.amount.toString(),
             bankAccountId: input.bankAccountId,
             categoryId: input.categoryId,
+            costCenterId: input.costCenterId,
             counterpartyId: input.counterpartyId,
             description: input.description || "",
             dueDate: new Date(input.dueDate),
@@ -422,6 +443,14 @@ export const billRouter = router({
             organizationId,
             type: input.type,
          });
+
+         // Set tags for all installment bills
+         if (input.tagIds && input.tagIds.length > 0) {
+            const tagPromises = result.bills.map((bill) =>
+               setBillTags(resolvedCtx.db, bill.id, input.tagIds as string[]),
+            );
+            await Promise.all(tagPromises);
+         }
 
          return result;
       }),
@@ -847,6 +876,47 @@ export const billRouter = router({
             updateData.autoCreateNext = input.data.autoCreateNext;
          }
 
-         return updateBill(resolvedCtx.db, input.id, updateData);
+         if (input.data.costCenterId !== undefined) {
+            updateData.costCenterId = input.data.costCenterId;
+         }
+
+         const updatedBill = await updateBill(resolvedCtx.db, input.id, updateData);
+
+         // Update tags if provided
+         if (input.data.tagIds !== undefined) {
+            await setBillTags(resolvedCtx.db, input.id, input.data.tagIds);
+         }
+
+         return updatedBill;
+      }),
+
+   getBillTags: protectedProcedure
+      .input(z.object({ billId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         return findTagsByBillId(resolvedCtx.db, input.billId);
+      }),
+
+   setBillTags: protectedProcedure
+      .input(z.object({ billId: z.string(), tagIds: z.array(z.string().uuid()) }))
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         return setBillTags(resolvedCtx.db, input.billId, input.tagIds);
       }),
 });

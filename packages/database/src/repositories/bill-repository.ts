@@ -8,6 +8,7 @@ import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import type { bankAccount } from "../schemas/bank-accounts";
 import { bill } from "../schemas/bills";
+import type { costCenter } from "../schemas/cost-centers";
 import type { counterparty } from "../schemas/counterparties";
 import type { interestTemplate } from "../schemas/interest-templates";
 import { transaction } from "../schemas/transactions";
@@ -18,9 +19,11 @@ export type BankAccount = typeof bankAccount.$inferSelect;
 export type Transaction = typeof transaction.$inferSelect;
 export type Counterparty = typeof counterparty.$inferSelect;
 export type InterestTemplate = typeof interestTemplate.$inferSelect;
+export type CostCenter = typeof costCenter.$inferSelect;
 
 export type BillWithRelations = Bill & {
    bankAccount: BankAccount | null;
+   costCenter: CostCenter | null;
    counterparty: Counterparty | null;
    interestTemplate: InterestTemplate | null;
    transaction: Transaction | null;
@@ -45,6 +48,7 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
          where: (bill, { eq }) => eq(bill.id, createdBillId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -71,6 +75,7 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -95,6 +100,7 @@ export async function findBillByTransactionId(
          where: (bill, { eq }) => eq(bill.transactionId, transactionId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -120,6 +126,7 @@ export async function findBillsByOrganizationId(
          where: (bill, { eq }) => eq(bill.organizationId, organizationId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -181,6 +188,7 @@ export async function findBillsByOrganizationIdFiltered(
          where: buildWhereCondition,
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -270,6 +278,7 @@ export async function findBillsByOrganizationIdPaginated(
             where: buildWhereCondition,
             with: {
                bankAccount: true,
+               costCenter: true,
                counterparty: true,
                interestTemplate: true,
                transaction: true,
@@ -316,6 +325,7 @@ export async function findBillsByOrganizationIdAndType(
             and(eq(bill.organizationId, organizationId), eq(bill.type, type)),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -349,6 +359,7 @@ export async function findPendingBillsByOrganizationId(
             ),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -382,6 +393,7 @@ export async function findOverdueBillsByOrganizationId(
             ),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -411,6 +423,7 @@ export async function findCompletedBillsByOrganizationId(
             ),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -449,6 +462,7 @@ export async function updateBill(
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -753,6 +767,7 @@ export async function findBillsByInstallmentGroupId(
             eq(bill.installmentGroupId, installmentGroupId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -878,6 +893,7 @@ export async function createBillWithInstallments(
                where: (bill, { eq }) => eq(bill.id, billId),
                with: {
                   bankAccount: true,
+                  costCenter: true,
                   counterparty: true,
                   interestTemplate: true,
                   transaction: true,

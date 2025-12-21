@@ -1,12 +1,14 @@
 import { AppError, propagateError } from "@packages/utils/errors";
 import { and, count, eq, ilike, inArray, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
-import { tag, transactionTag } from "../schemas/tags";
+import { billTag, tag, transactionTag } from "../schemas/tags";
 
 export type Tag = typeof tag.$inferSelect;
 export type NewTag = typeof tag.$inferInsert;
 export type TransactionTag = typeof transactionTag.$inferSelect;
 export type NewTransactionTag = typeof transactionTag.$inferInsert;
+export type BillTag = typeof billTag.$inferSelect;
+export type NewBillTag = typeof billTag.$inferInsert;
 
 export async function createTag(dbClient: DatabaseInstance, data: NewTag) {
    try {
@@ -544,6 +546,117 @@ export async function findTagsByIds(
       propagateError(err);
       throw AppError.database(
          `Failed to find tags by ids: ${(err as Error).message}`,
+      );
+   }
+}
+
+// Bill Tag Functions
+
+export async function addTagToBill(
+   dbClient: DatabaseInstance,
+   billId: string,
+   tagId: string,
+) {
+   try {
+      const result = await dbClient
+         .insert(billTag)
+         .values({ billId, tagId })
+         .returning();
+
+      return result[0];
+   } catch (err: unknown) {
+      const error = err as Error & { code?: string };
+
+      if (error.code === "23505") {
+         throw AppError.conflict("Tag already linked to this bill", {
+            cause: err,
+         });
+      }
+
+      propagateError(err);
+      throw AppError.database(`Failed to add tag to bill: ${error.message}`, {
+         cause: err,
+      });
+   }
+}
+
+export async function removeTagFromBill(
+   dbClient: DatabaseInstance,
+   billId: string,
+   tagId: string,
+) {
+   try {
+      const result = await dbClient
+         .delete(billTag)
+         .where(and(eq(billTag.billId, billId), eq(billTag.tagId, tagId)))
+         .returning();
+
+      if (!result.length) {
+         throw AppError.notFound("Tag not linked to this bill");
+      }
+
+      return result[0];
+   } catch (err) {
+      if (err instanceof AppError) {
+         throw err;
+      }
+      propagateError(err);
+      throw AppError.database(
+         `Failed to remove tag from bill: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function setBillTags(
+   dbClient: DatabaseInstance,
+   billId: string,
+   tagIds: string[],
+) {
+   try {
+      await dbClient.delete(billTag).where(eq(billTag.billId, billId));
+
+      if (tagIds.length === 0) {
+         return [];
+      }
+
+      const result = await dbClient
+         .insert(billTag)
+         .values(tagIds.map((tagId) => ({ billId, tagId })))
+         .returning();
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to set bill tags: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findTagsByBillId(
+   dbClient: DatabaseInstance,
+   billId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({
+            color: tag.color,
+            createdAt: tag.createdAt,
+            id: tag.id,
+            name: tag.name,
+            organizationId: tag.organizationId,
+            updatedAt: tag.updatedAt,
+         })
+         .from(billTag)
+         .innerJoin(tag, eq(billTag.tagId, tag.id))
+         .where(eq(billTag.billId, billId))
+         .orderBy(tag.name);
+
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find tags by bill id: ${(err as Error).message}`,
       );
    }
 }

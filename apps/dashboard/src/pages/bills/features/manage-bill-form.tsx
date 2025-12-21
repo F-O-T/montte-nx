@@ -207,6 +207,12 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
       trpc.interestTemplates.getAll.queryOptions({ isActive: true }),
    );
 
+   const { data: tags = [] } = useQuery(trpc.tags.getAll.queryOptions());
+
+   const { data: costCenters = [] } = useQuery(
+      trpc.costCenters.getAll.queryOptions(),
+   );
+
    const activeBankAccounts = useMemo(
       () => bankAccounts.filter((account) => account.status === "active"),
       [bankAccounts],
@@ -249,6 +255,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
            billCategory: getDefaultBillCategory(),
            billMode: getDefaultBillMode(),
            category: bill.categoryId || undefined,
+           costCenterId: bill.costCenterId || undefined,
            counterpartyId: bill.counterpartyId || undefined,
            description: bill.description,
            dueDate: bill.dueDate ? new Date(bill.dueDate) : undefined,
@@ -276,6 +283,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
            recurrencePattern: bill.recurrencePattern as
               | RecurrencePattern
               | undefined,
+           tagIds: [] as string[],
            type: bill.type as "expense" | "income",
         }
       : fromTransaction
@@ -285,6 +293,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
              billCategory: getDefaultBillCategory(),
              billMode: getDefaultBillMode(),
              category: fromTransaction.categoryId || undefined,
+             costCenterId: undefined as string | undefined,
              counterpartyId: undefined as string | undefined,
              description: fromTransaction.description,
              dueDate: undefined as Date | undefined,
@@ -310,6 +319,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                 | undefined,
              occurrenceUntilDate: undefined as Date | undefined,
              recurrencePattern: "monthly" as RecurrencePattern | undefined,
+             tagIds: [] as string[],
              type: fromTransaction.type,
           }
         : {
@@ -318,6 +328,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
              billCategory: getDefaultBillCategory(),
              billMode: null as BillMode | null,
              category: undefined as string | undefined,
+             costCenterId: undefined as string | undefined,
              counterpartyId: undefined as string | undefined,
              description: "",
              dueDate: undefined as Date | undefined,
@@ -343,6 +354,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                 | undefined,
              occurrenceUntilDate: undefined as Date | undefined,
              recurrencePattern: undefined as RecurrencePattern | undefined,
+             tagIds: [] as string[],
              type: (currentFilterType === "payable"
                 ? "expense"
                 : currentFilterType === "receivable"
@@ -361,9 +373,11 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
       // Optional string fields (allow undefined or empty)
       bankAccountId: z.string().or(z.undefined()),
       category: z.string().or(z.undefined()),
+      costCenterId: z.string().or(z.undefined()),
       counterpartyId: z.string().or(z.undefined()),
       interestTemplateId: z.string().or(z.undefined()),
       notes: z.string().or(z.undefined()),
+      tagIds: z.array(z.string()),
 
       // Optional date fields
       dueDate: z.date().or(z.undefined()),
@@ -409,6 +423,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                      amount: amount,
                      bankAccountId: value.bankAccountId || undefined,
                      categoryId: value.category || undefined,
+                     costCenterId: value.costCenterId || undefined,
                      counterpartyId: value.counterpartyId || undefined,
                      description: value.description || undefined,
                      dueDate: value.dueDate
@@ -421,6 +436,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         : undefined,
                      notes: value.notes || undefined,
                      recurrencePattern: value.recurrencePattern,
+                     tagIds: value.tagIds || undefined,
                      type: value.type,
                   },
                   id: bill.id,
@@ -444,6 +460,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                   amount: amount,
                   bankAccountId: value.bankAccountId || undefined,
                   categoryId: value.category || undefined,
+                  costCenterId: value.costCenterId || undefined,
                   counterpartyId: value.counterpartyId || undefined,
                   description: value.description ?? "",
                   dueDate: value.dueDate ?? new Date(),
@@ -457,6 +474,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                      ? formatDate(value.issueDate, "YYYY-MM-DD")
                      : undefined,
                   notes: value.notes || undefined,
+                  tagIds: value.tagIds || undefined,
                   type: value.type ?? "expense",
                });
             } else {
@@ -464,6 +482,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                   amount: amount,
                   bankAccountId: value.bankAccountId || undefined,
                   categoryId: value.category || undefined,
+                  costCenterId: value.costCenterId || undefined,
                   counterpartyId: value.counterpartyId || undefined,
                   description: value.description ?? "",
                   dueDate: value.dueDate ?? new Date(),
@@ -476,6 +495,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                   recurrencePattern: value.isRecurring
                      ? value.recurrencePattern
                      : undefined,
+                  tagIds: value.tagIds || undefined,
                   type: value.type ?? "expense",
                });
             }
@@ -2059,6 +2079,147 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  ))}
                               </SelectContent>
                            </Select>
+                           {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                           )}
+                        </Field>
+                     );
+                  }}
+               </form.Field>
+            </FieldGroup>
+
+            {/* Cost Center Select */}
+            <FieldGroup>
+               <form.Field name="costCenterId">
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                     return (
+                        <Field data-invalid={isInvalid}>
+                           <FieldLabel htmlFor={field.name}>
+                              {translate("common.form.cost-center.label")}
+                           </FieldLabel>
+                           <Select
+                              onValueChange={(value) =>
+                                 field.handleChange(value === "none" ? undefined : value)
+                              }
+                              value={field.state.value || "none"}
+                           >
+                              <SelectTrigger id={field.name}>
+                                 <SelectValue
+                                    placeholder={translate(
+                                       "common.form.cost-center.placeholder",
+                                    )}
+                                 />
+                              </SelectTrigger>
+                              <SelectContent>
+                                 <SelectItem value="none">-</SelectItem>
+                                 {costCenters.map((cc) => (
+                                    <SelectItem key={cc.id} value={cc.id}>
+                                       {cc.code ? `${cc.code} - ${cc.name}` : cc.name}
+                                    </SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                           {isInvalid && (
+                              <FieldError errors={field.state.meta.errors} />
+                           )}
+                        </Field>
+                     );
+                  }}
+               </form.Field>
+            </FieldGroup>
+
+            {/* Tags Multi-Select */}
+            <FieldGroup>
+               <form.Field name="tagIds">
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                     const selectedTagIds = field.state.value || [];
+                     const selectedTags = tags.filter((t) =>
+                        selectedTagIds.includes(t.id),
+                     );
+
+                     return (
+                        <Field data-invalid={isInvalid}>
+                           <FieldLabel htmlFor={field.name}>
+                              {translate("common.form.tags.label")}
+                           </FieldLabel>
+                           <Popover>
+                              <PopoverTrigger asChild>
+                                 <Button
+                                    className="w-full justify-between"
+                                    variant="outline"
+                                 >
+                                    {selectedTags.length > 0 ? (
+                                       <div className="flex gap-1 flex-wrap">
+                                          {selectedTags.map((t) => (
+                                             <Badge
+                                                key={t.id}
+                                                style={{ backgroundColor: t.color }}
+                                                variant="secondary"
+                                             >
+                                                {t.name}
+                                             </Badge>
+                                          ))}
+                                       </div>
+                                    ) : (
+                                       <span className="text-muted-foreground">
+                                          {translate("common.form.tags.placeholder")}
+                                       </span>
+                                    )}
+                                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                 </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0">
+                                 <Command>
+                                    <CommandInput
+                                       placeholder={translate(
+                                          "common.form.search.placeholder",
+                                       )}
+                                    />
+                                    <CommandList>
+                                       <CommandEmpty>
+                                          {translate("common.form.search.no-results")}
+                                       </CommandEmpty>
+                                       <CommandGroup>
+                                          {tags.map((tag) => {
+                                             const isSelected =
+                                                selectedTagIds.includes(tag.id);
+                                             return (
+                                                <CommandItem
+                                                   key={tag.id}
+                                                   onSelect={() => {
+                                                      const newTagIds = isSelected
+                                                         ? selectedTagIds.filter(
+                                                              (id) => id !== tag.id,
+                                                           )
+                                                         : [...selectedTagIds, tag.id];
+                                                      field.handleChange(newTagIds);
+                                                   }}
+                                                   value={tag.name}
+                                                >
+                                                   <div className="flex items-center gap-2 flex-1">
+                                                      <div
+                                                         className="w-3 h-3 rounded-full"
+                                                         style={{
+                                                            backgroundColor: tag.color,
+                                                         }}
+                                                      />
+                                                      <span>{tag.name}</span>
+                                                   </div>
+                                                   {isSelected && (
+                                                      <CheckIcon className="ml-2 h-4 w-4" />
+                                                   )}
+                                                </CommandItem>
+                                             );
+                                          })}
+                                       </CommandGroup>
+                                    </CommandList>
+                                 </Command>
+                              </PopoverContent>
+                           </Popover>
                            {isInvalid && (
                               <FieldError errors={field.state.meta.errors} />
                            )}
