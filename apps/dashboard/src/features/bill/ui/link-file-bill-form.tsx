@@ -34,7 +34,7 @@ import {
    Upload,
    X,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
 import { useTRPC } from "@/integrations/clients";
@@ -66,6 +66,17 @@ export function LinkFileBillForm({ bill, onSuccess }: LinkFileBillFormProps) {
    const queryClient = useQueryClient();
    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
    const { uploadToPresignedUrl } = usePresignedUpload();
+
+   // Cleanup object URLs on unmount to prevent memory leaks
+   useEffect(() => {
+      return () => {
+         for (const pending of pendingFiles) {
+            if (pending.preview) {
+               URL.revokeObjectURL(pending.preview);
+            }
+         }
+      };
+   }, [pendingFiles]);
 
    const { data: attachments, isLoading: isLoadingAttachments } = useQuery({
       ...trpc.bills.getAttachments.queryOptions({
@@ -191,6 +202,12 @@ export function LinkFileBillForm({ bill, onSuccess }: LinkFileBillFormProps) {
          }
       }
 
+      // Revoke all object URLs before clearing to prevent memory leaks
+      for (const pending of pendingFiles) {
+         if (pending.preview) {
+            URL.revokeObjectURL(pending.preview);
+         }
+      }
       setPendingFiles([]);
    };
 

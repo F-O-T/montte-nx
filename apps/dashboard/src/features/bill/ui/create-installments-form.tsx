@@ -361,20 +361,27 @@ export function CreateInstallmentsForm({
                                  max={365}
                                  min={1}
                                  onBlur={() => {
+                                    // Safety net - ensure value is in valid range
                                     if (customDays < 1) {
                                        setCustomDays(1);
+                                    } else if (customDays > 365) {
+                                       setCustomDays(365);
                                     }
                                  }}
                                  onChange={(e) => {
                                     const val = e.target.value;
                                     if (val === "") {
-                                       setCustomDays(0);
+                                       // Treat empty input as minimum valid value
+                                       setCustomDays(1);
                                     } else {
-                                       setCustomDays(Number(val));
+                                       const parsed = Number(val);
+                                       // Immediately clamp to valid range [1, 365]
+                                       const clamped = Math.max(1, Math.min(365, parsed));
+                                       setCustomDays(clamped);
                                     }
                                  }}
                                  type="number"
-                                 value={customDays === 0 ? "" : customDays}
+                                 value={customDays}
                               />
                               <Button
                                  className="w-full mt-2"

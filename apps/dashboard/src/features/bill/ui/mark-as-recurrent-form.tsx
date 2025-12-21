@@ -116,6 +116,14 @@ export function MarkAsRecurrentForm({
    const handleSubmit = () => {
       if (!recurrencePattern) return;
 
+      // Final normalization: ensure occurrenceCount is valid (not NaN, >= 1)
+      const finalOccurrenceCount =
+         occurrenceType === "count"
+            ? Number.isNaN(occurrenceCount) || occurrenceCount < 1
+               ? 1
+               : occurrenceCount
+            : undefined;
+
       createBillMutation.mutate({
          amount: Number(bill.amount),
          bankAccountId: bill.bankAccountId || undefined,
@@ -127,7 +135,7 @@ export function MarkAsRecurrentForm({
          isRecurring: true,
          issueDate: bill.issueDate ? new Date(bill.issueDate) : undefined,
          notes: bill.notes || undefined,
-         occurrenceCount: occurrenceType === "count" ? occurrenceCount : undefined,
+         occurrenceCount: finalOccurrenceCount,
          occurrenceUntilDate: occurrenceType === "until-date" && occurrenceUntilDate ? occurrenceUntilDate : undefined,
          recurrencePattern,
          type: bill.type as "expense" | "income",
@@ -343,7 +351,8 @@ export function MarkAsRecurrentForm({
                                  max={365}
                                  min={1}
                                  onBlur={() => {
-                                    if (occurrenceCount < 1) {
+                                    // Normalize NaN or values < 1 to minimum (1)
+                                    if (Number.isNaN(occurrenceCount) || occurrenceCount < 1) {
                                        setOccurrenceCount(1);
                                     }
                                  }}
@@ -352,7 +361,13 @@ export function MarkAsRecurrentForm({
                                     if (val === "") {
                                        setOccurrenceCount(0);
                                     } else {
-                                       setOccurrenceCount(Number(val));
+                                       const parsed = Number(val);
+                                       // Guard against NaN by setting to 0
+                                       if (Number.isNaN(parsed)) {
+                                          setOccurrenceCount(0);
+                                       } else {
+                                          setOccurrenceCount(parsed);
+                                       }
                                     }
                                  }}
                                  type="number"
