@@ -1,195 +1,107 @@
-const logos = [
-   {
-      alt: "Nvidia Logo",
-      height: "h-5",
-      src: "https://html.tailus.io/blocks/customers/nvidia.svg",
-   },
-   {
-      alt: "Column Logo",
-      height: "h-4",
-      src: "https://html.tailus.io/blocks/customers/column.svg",
-   },
-   {
-      alt: "GitHub Logo",
-      height: "h-4",
-      src: "https://html.tailus.io/blocks/customers/github.svg",
-   },
-   {
-      alt: "Nike Logo",
-      height: "h-5",
-      src: "https://html.tailus.io/blocks/customers/nike.svg",
-   },
-   {
-      alt: "Lemon Squeezy Logo",
-      height: "h-5",
-      src: "https://html.tailus.io/blocks/customers/lemonsqueezy.svg",
-   },
-   {
-      alt: "Laravel Logo",
-      height: "h-4",
-      src: "https://html.tailus.io/blocks/customers/laravel.svg",
-   },
-   {
-      alt: "Lilly Logo",
-      height: "h-7",
-      src: "https://html.tailus.io/blocks/customers/lilly.svg",
-   },
-   {
-      alt: "OpenAI Logo",
-      height: "h-6",
-      src: "https://html.tailus.io/blocks/customers/openai.svg",
-   },
-];
+import { Quote } from "lucide-react";
 
 const testimonials = [
    {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-      handle: "@mariafinance",
-      hidden: false,
-      name: "Maria Santos",
-      quote: "This finance tracker completely changed how I manage my business expenses. Setup took 15 minutes and now I have complete visibility.",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Roberto",
+      handle: "@roberto_cfo",
+      role: "CFO na TechFlow",
+      name: "Roberto Almeida",
+      quote: "O fechamento mensal que levava 5 dias agora leva 4 horas. A conciliação automática via OFX e o DRE em tempo real mudaram nossa governança.",
+      highlight: true,
    },
    {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
-      handle: "@carlosdev",
-      hidden: true,
-      name: "Carlos Silva",
-      quote: "Finally a finance tool that understands freelancers. The automatic categorization saves me hours every month.",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Juliana",
+      handle: "@juliana_vc",
+      role: "Founder na ScaleUp",
+      name: "Juliana Costa",
+      quote: "Precisávamos de auditoria e logs de acesso para nossa rodada de investimento. O Montte entregou tudo pronto (compliance) sem custar uma fortuna.",
    },
    {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
-      handle: "@anaentrepreneur",
-      hidden: false,
-      name: "Ana Costa",
-      quote: "The dashboard is SO clean! A fantastic tool for tracking multiple revenue streams.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pedro",
-      handle: "@pedrobusiness",
-      hidden: false,
-      name: "Pedro Oliveira",
-      quote: "By far this has given me more financial insights than any other tool. The alerts for unusual spending patterns are incredibly useful. Great UX on top of all the features.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Julia",
-      handle: "@juliatech",
-      hidden: false,
-      name: "Julia Ferreira",
-      quote: "One tool to rule them all. This year, this finance tracker won my heart - well designed and thoughtfully built.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas",
-      handle: "@lucasstartup",
-      hidden: false,
-      name: "Lucas Mendes",
-      quote: "I just checked this out and have never been so happy with a financial tool. Perfect for our growing startup.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Beatriz",
-      handle: "@beatrizfreelance",
-      hidden: false,
-      name: "Beatriz Lima",
-      quote: "Looking for expense tracking? I recommend this tool. Perfect support, answered my questions in minutes, and it's the first actually good-looking finance app.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rafael",
-      handle: "@rafaelcfo",
-      hidden: true,
-      name: "Rafael Souza",
-      quote: "Switched from spreadsheets over the weekend, looking pretty good. Finally have real-time insights.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Camila",
-      handle: "@camilaops",
-      hidden: true,
-      name: "Camila Rodrigues",
-      quote: "What are you using for expense tracking and budgeting? For me the go-to is currently this app - love the simplicity and powerful features.",
-   },
-   {
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Diego",
-      handle: "@diegofounders",
-      hidden: true,
-      name: "Diego Almeida",
-      quote: "I'm utterly blown away! They do everything. I'm now tracking all my accounts, custom alerts for overspending, bill reminders, and loads more.",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcos",
+      handle: "@marcos_dev",
+      role: "CTO na DevHouse",
+      name: "Marcos Silva",
+      quote: "A API é impecável. Conectamos nosso sistema interno de faturamento ao Montte em uma tarde. Finalmente um financeiro developer-friendly.",
    },
    {
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fernanda",
-      handle: "@fernandadesign",
-      hidden: true,
-      name: "Fernanda Martins",
-      quote: "Simple, does a great job, and has a generous free plan for those just starting out. I don't remember finding anything close to it years ago.",
+      handle: "@fer_finance",
+      role: "Controller",
+      name: "Fernanda Lima",
+      quote: "A gestão de centros de custo e o budget vs. actual me dão a visibilidade que o Excel nunca deu. Consigo ver exatamente onde estamos queimando caixa.",
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+      handle: "@carlos_invest",
+      role: "Investidor Anjo",
+      name: "Carlos Mendes",
+      quote: "Recomendo para todas as startups do meu portfólio. É a maneira mais rápida de garantir que o dinheiro está sendo bem gerido desde o dia 1.",
+      highlight: true,
+   },
+   {
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Beatriz",
+      handle: "@bia_ops",
+      role: "Head de Ops",
+      name: "Beatriz Souza",
+      quote: "A funcionalidade de aprovação de gastos e gestão de time eliminou o gargalo de senhas compartilhadas. Seguro e eficiente.",
    },
 ];
 
 export default function SocialProof() {
    return (
-      <section className="bg-background py-16 sm:py-24">
-         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col items-center px-4 text-center">
-               <h2 className="bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-2xl font-semibold text-transparent md:text-4xl lg:text-[44px] lg:leading-tight">
-                  Don't just take our word for it
+      <section className="bg-[#151925] py-20 sm:py-28 relative overflow-hidden">
+         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+
+         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="flex flex-col items-center px-4 text-center mb-16">
+               <span className="text-emerald-500 font-semibold tracking-wider uppercase text-xs mb-4 border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 rounded-full">
+                  Comunidade & Parceiros
+               </span>
+               <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white max-w-3xl leading-[1.1]">
+                  A escolha de times que valorizam <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">
+                     governança e velocidade.
+                  </span>
                </h2>
-               <p className="text-muted-foreground mt-4 max-w-[624px]">
-                  We're proud to be working with businesses of all sizes - from
-                  individual freelancers to growing enterprises - and are
-                  thankful for their feedback, suggestions, and support.
+               <p className="text-gray-400 mt-6 max-w-2xl text-lg leading-relaxed">
+                  De startups em hipercrescimento a operações consolidadas. Veja
+                  por que CFOs e Founders estão migrando para o Montte.
                </p>
             </div>
 
-            <div className="mt-14" />
-
-            <div className="relative -mb-20 mt-4 flex flex-col items-center overflow-hidden">
-               <div className="mx-auto max-w-[1684px]">
-                  <div className="scale-75 md:scale-100">
-                     <div className="customers-scroll flex justify-center">
-                        <div className="flex min-w-max gap-16 px-8">
-                           {[...logos, ...logos].map((logo, index) => (
-                              <div
-                                 className="flex shrink-0 items-center"
-                                 key={index}
-                              >
-                                 <img
-                                    alt={logo.alt}
-                                    className={`${logo.height} w-auto dark:invert`}
-                                    src={logo.src}
-                                 />
-                              </div>
-                           ))}
-                        </div>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="pointer-events-none absolute inset-0 flex justify-center">
-                  <div className="from-background h-full grow bg-linear-to-r md:from-50%" />
-                  <div className="min-w-[200px] md:min-w-[1000px]" />
-                  <div className="from-background h-full grow bg-gradient-to-l md:from-50%" />
-               </div>
+            <div className="relative mb-24 flex flex-col items-center">
+               <p className="text-sm text-gray-500 mb-8 font-medium">
+                  INTEGRADO AO ECOSSISTEMA MODERNO
+               </p>
             </div>
 
-            <div className="mt-24 sm:columns-2 md:columns-3 lg:columns-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                {testimonials.map((testimonial, index) => (
-                  <div
-                     className={`mx-auto max-w-[320px] break-inside-avoid pb-4 ${testimonial.hidden ? "hidden sm:block" : ""}`}
-                     key={index}
-                  >
-                     <div className="bg-card/80 border-border/20 rounded-xl border p-5 backdrop-blur-xl">
-                        <p className="text-foreground/90">
-                           {testimonial.quote}
-                        </p>
-                        <div className="mt-5" />
-                        <div className="-m-5 flex items-start p-5">
+                  <div className={`break-inside-avoid h-full`} key={index}>
+                     <div
+                        className={`h-full flex flex-col justify-between rounded-2xl border p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${testimonial.highlight ? "bg-[#1C202E] border-primary/30 shadow-lg shadow-primary/5" : "bg-[#1C202E]/50 border-[#2A3042]"}`}
+                     >
+                        <div>
+                           <Quote
+                              className={`size-8 mb-4 ${testimonial.highlight ? "text-emerald-500" : "text-gray-600"}`}
+                           />
+                           <p className="text-gray-300 leading-relaxed text-[15px]">
+                              "{testimonial.quote}"
+                           </p>
+                        </div>
+
+                        <div className="mt-8 flex items-center gap-3 pt-6 border-t border-[#2A3042]">
                            <img
                               alt={testimonial.name}
-                              className="mt-1 size-9 shrink-0 rounded-full"
+                              className="size-10 rounded-full border border-[#2A3042]"
                               src={testimonial.avatar}
                            />
-                           <div className="mx-2 grow">
-                              <div className="text-foreground font-bold">
+                           <div>
+                              <div className="text-white font-bold text-sm">
                                  {testimonial.name}
                               </div>
-                              <div className="text-muted-foreground text-sm">
-                                 {testimonial.handle}
+                              <div className="text-emerald-500/80 text-xs font-medium">
+                                 {testimonial.role}
                               </div>
                            </div>
                         </div>
@@ -197,24 +109,23 @@ export default function SocialProof() {
                   </div>
                ))}
             </div>
-
-            <div className="h-32" />
          </div>
 
          <style>{`
             @keyframes scroll {
-               0% {
-                  transform: translateX(0);
-               }
-               100% {
-                  transform: translateX(-50%);
-               }
+               0% { transform: translateX(0); }
+               100% { transform: translateX(-33.33%); }
             }
-            .customers-scroll {
-               animation: scroll 30s linear infinite;
+            .logo-scroll {
+               animation: scroll 40s linear infinite;
             }
-            .customers-scroll:hover {
+            .logo-scroll:hover {
                animation-play-state: paused;
+            }
+            /* Utility class for masking edges */
+            .mask-linear-fade {
+                mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+                -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
             }
          `}</style>
       </section>

@@ -10,52 +10,55 @@ const { lang: _lang = "pt-BR" } = Astro.props;
 
 const budgetFeatures = [
    {
+      title: "Orçamento Multidimensional",
       description:
-         "Crie orçamentos por Categoria, Tags ou Centros de Custo. Crie quantos orçamentos precisar.",
-      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Cria%C3%A7%C3%A3o+de+Or%C3%A7amento",
-      title: "Criação Flexível de Orçamentos",
+         "Defina tetos de gastos por Categoria, Projeto (Tag) ou Centro de Custo. Tenha controle granular sobre para onde o dinheiro está indo.",
+      image: "https://placehold.co/350x478/151925/22c55e?text=Metas+por+Centro+de+Custo",
       width: "narrow" as const,
    },
    {
+      title: "Rollover de Saldo",
       description:
-         "Saldos não utilizados rolam automaticamente para o próximo período. Ou comece do zero a cada mês. Sua escolha.",
-      image: "https://placehold.co/725x478/0f0f23/22c55e?text=Saldo+Acumulado",
-      title: "Rollover e Acúmulo",
+         "Incentive a eficiência. Configure para que a verba não utilizada em um mês acumule automaticamente para o próximo período.",
+      image: "https://placehold.co/725x478/151925/22c55e?text=Rollover+Logic",
       width: "wide" as const,
    },
    {
+      title: "Alertas Preventivos",
       description:
-         "Barras de progresso visuais mostrando orçamento vs. real. Veja gastos excessivos instantaneamente.",
-      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Acompanhamento",
-      title: "Acompanhamento em Tempo Real",
+         "Não espere o mês fechar para saber que estourou. Receba notificações visuais quando atingir 80% ou 100% da verba planejada.",
+      image: "https://placehold.co/350x478/151925/22c55e?text=Alertas+de+Budget",
       width: "narrow" as const,
    },
    {
+      title: "Análise Budget vs. Actual",
       description:
-         "Compare gastos planejados vs. reais. Identifique onde você excedeu as metas.",
-      image: "https://placehold.co/725x478/0f0f23/22c55e?text=An%C3%A1lise+de+Vari%C3%A2ncia",
-      title: "Análise de Variância",
+         "Compare o Planejado vs. Realizado em tempo real. Identifique desvios de rota instantaneamente e ajuste a estratégia.",
+      image: "https://placehold.co/725x478/151925/22c55e?text=Relat%C3%B3rio+Previsto+vs+Real",
       width: "wide" as const,
    },
    {
+      title: "Forecast & Projeções",
       description:
-         "Projete gastos futuros baseado em padrões. Faça ajustes antes que seja tarde demais.",
-      image: "https://placehold.co/350x478/0f0f23/22c55e?text=Previs%C3%A3o",
-      title: "Previsão e Tendências",
+         "Baseado no seu histórico e nas metas atuais, o sistema projeta o fechamento do caixa antes do mês acabar.",
+      image: "https://placehold.co/350x478/151925/22c55e?text=Trend+Forecasting",
       width: "narrow" as const,
    },
 ];
 ---
 
-<section id="budgeting" class="py-16 md:py-24 overflow-hidden">
+<section id="budgeting" class="py-16 md:py-24 overflow-hidden relative">
+
+   <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+
    <FeatureCarousel
       client:load
-      label="Orçamentos e Previsões Completas"
-      title="Orçamentos Que Realmente Funcionam"
-      description="Defina metas. Acompanhe o progresso. Ajuste no momento. Realmente alcance seus objetivos."
-      ctaText="Explorar recursos"
-      ctaHref="#features"
-      benefitStatement="Defina metas. Acompanhe o progresso. Ajuste no momento. Realmente alcance seus objetivos."
-      items={budgetFeatures}
+      label="Planejamento Estratégico"
+      title="Transforme dados em estratégia."
+      description="Pare de dirigir olhando para o retrovisor. Crie orçamentos dinâmicos que se adaptam à realidade do seu negócio e garantem a saúde financeira."
+      ctaText="Ver recursos de análise"
+      ctaHref="#analytics"
+      benefitStatement="Defina metas. Acompanhe desvios. Garanta o lucro."
+      items={budgetFeatures as any}
    />
 </section>
