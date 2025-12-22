@@ -13,12 +13,13 @@ import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
 import { z } from "zod";
-import { useCreateTeam } from "@/features/organization-teams/hooks/use-create-team";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
+import { betterAuthClient } from "@/integrations/clients";
 
 function CreateTeamErrorFallback() {
    return (
@@ -51,12 +52,34 @@ function CreateTeamSkeleton() {
 const CreateTeamFormContent = () => {
    const { closeSheet } = useSheet();
    const { activeOrganization } = useActiveOrganization();
+   const [isPending, setIsPending] = useState(false);
 
-   const { createTeam, isPending } = useCreateTeam({
-      onSuccess: () => {
-         closeSheet();
+   const createTeam = useCallback(
+      async (data: { name: string; description?: string; organizationId?: string }) => {
+         await betterAuthClient.organization.createTeam(
+            {
+               name: data.name,
+               organizationId: data.organizationId,
+            },
+            {
+               onRequest: () => {
+                  setIsPending(true);
+                  toast.loading("Creating team...");
+               },
+               onSuccess: () => {
+                  setIsPending(false);
+                  toast.success("Team created successfully");
+                  closeSheet();
+               },
+               onError: (ctx) => {
+                  setIsPending(false);
+                  toast.error(ctx.error.message || "Failed to create team");
+               },
+            },
+         );
       },
-   });
+      [closeSheet],
+   );
 
    const schema = z.object({
       description: z

@@ -23,8 +23,8 @@ import { useRouter } from "@tanstack/react-router";
 import { ArrowRight, Mail } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { RoleBadge } from "@/features/organization-shared/ui/role-badge";
-import { StatusBadge } from "@/features/organization-shared/ui/status-badge";
+import { RoleBadge } from "@/features/organization/ui/shared/role-badge";
+import { StatusBadge } from "@/features/organization/ui/shared/status-badge";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 

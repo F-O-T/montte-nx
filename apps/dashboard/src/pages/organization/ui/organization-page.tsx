@@ -20,7 +20,7 @@ import { Building, Plus } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
-import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
+import { ManageOrganizationForm } from "@/features/organization/ui/manage-organization-form";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import { OrganizationOverviewInvitesSection } from "./organization-overview-invites-section";

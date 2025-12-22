@@ -16,8 +16,8 @@ import {
 import { formatDate } from "@packages/utils/date";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Eye, MoreVertical, Shield, Trash2 } from "lucide-react";
-import { MemberAvatarCell } from "@/features/organization-shared/ui/member-avatar-cell";
-import { RoleBadge } from "@/features/organization-shared/ui/role-badge";
+import { MemberAvatarCell } from "@/features/organization/ui/shared/member-avatar-cell";
+import { RoleBadge } from "@/features/organization/ui/shared/role-badge";
 
 export type Member =
 	RouterOutput["organization"]["getActiveOrganizationMembers"][number];

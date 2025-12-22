@@ -24,12 +24,12 @@ import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Eye, Plus, Users } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
+import { ManageOrganizationForm } from "@/features/organization/ui/manage-organization-form";
 import { useSetActiveOrganization } from "@/features/organization/hooks/use-set-active-organization";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { CreateTeamForm } from "@/pages/organization-teams/features/create-team-form";
+import { CreateTeamForm } from "@/features/organization/ui/create-team-form";
 
 //TODO: Adicionar textos no Locale
 function OrganizationSwitcherErrorFallback() {

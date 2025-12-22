@@ -19,12 +19,13 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { z } from "zod";
-import { useInviteMember } from "@/features/organization-invites/hooks/use-invite-member";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
+import { betterAuthClient } from "@/integrations/clients";
+import { toast } from "sonner";
 
 function InviteMemberErrorFallback() {
    return (
@@ -55,12 +56,39 @@ function InviteMemberSkeleton() {
 const InviteMemberFormContent = () => {
    const { closeSheet } = useSheet();
    const { activeOrganization } = useActiveOrganization();
+   const [isPending, setIsPending] = useState(false);
 
-   const { inviteMember, isPending } = useInviteMember({
-      onSuccess: () => {
-         closeSheet();
+   const inviteMember = useCallback(
+      async (data: {
+         email: string;
+         role: "member" | "admin" | "owner";
+         organizationId?: string;
+      }) => {
+         await betterAuthClient.organization.inviteMember(
+            {
+               email: data.email,
+               organizationId: data.organizationId,
+               role: data.role,
+            },
+            {
+               onRequest: () => {
+                  setIsPending(true);
+                  toast.loading("Sending invitation...");
+               },
+               onSuccess: () => {
+                  setIsPending(false);
+                  toast.success("Invitation sent successfully");
+                  closeSheet();
+               },
+               onError: (ctx) => {
+                  setIsPending(false);
+                  toast.error(ctx.error.message || "Failed to send invitation");
+               },
+            },
+         );
       },
-   });
+      [closeSheet],
+   );
 
    const schema = z.object({
       email: z.string().email("Valid email is required"),

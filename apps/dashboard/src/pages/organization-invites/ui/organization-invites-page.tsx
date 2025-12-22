@@ -1,14 +1,13 @@
 import { translate } from "@packages/localization";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
 import {
 	InvitesDataTable,
 	InvitesDataTableSkeleton,
-} from "@/features/organization-invites/ui/invites-data-table";
-import { useInviteMember } from "@/features/organization-invites/hooks/use-invite-member";
-import { useRevokeInvitation } from "@/features/organization-invites/hooks/use-revoke-invitation";
-import { useTRPC } from "@/integrations/clients";
+} from "@/features/organization/ui/invites-data-table";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 import { InvitesQuickActionsToolbar } from "./organization-invites-quick-actions-toolbar";
 
 function InvitesPageContent() {
@@ -26,8 +25,50 @@ function InvitesPageContent() {
 		}),
 	);
 
-	const { inviteMember } = useInviteMember();
-	const { revokeInvitation } = useRevokeInvitation();
+	const inviteMember = useCallback(
+		async (data: {
+			email: string;
+			role: "member" | "admin" | "owner";
+		}) => {
+			await betterAuthClient.organization.inviteMember(
+				{
+					email: data.email,
+					role: data.role,
+				},
+				{
+					onRequest: () => {
+						toast.loading("Sending invitation...");
+					},
+					onSuccess: () => {
+						toast.success("Invitation sent successfully");
+					},
+					onError: (ctx) => {
+						toast.error(ctx.error.message || "Failed to send invitation");
+					},
+				},
+			);
+		},
+		[],
+	);
+
+	const revokeInvitation = useCallback(async (invitationId: string) => {
+		await betterAuthClient.organization.cancelInvitation(
+			{
+				invitationId,
+			},
+			{
+				onRequest: () => {
+					toast.loading("Revoking invitation...");
+				},
+				onSuccess: () => {
+					toast.success("Invitation revoked successfully");
+				},
+				onError: (ctx) => {
+					toast.error(ctx.error.message || "Failed to revoke invitation");
+				},
+			},
+		);
+	}, []);
 
 	const handleResend = (invite: (typeof invitesData.invitations)[number]) => {
 		inviteMember({

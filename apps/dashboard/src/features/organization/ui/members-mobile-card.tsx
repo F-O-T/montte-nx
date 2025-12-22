@@ -21,8 +21,8 @@ import {
 import { formatDate } from "@packages/utils/date";
 import type { Row } from "@tanstack/react-table";
 import { ChevronDown, MoreVertical, Shield, Trash2 } from "lucide-react";
-import { MemberAvatarCell } from "@/features/organization-shared/ui/member-avatar-cell";
-import { RoleBadge } from "@/features/organization-shared/ui/role-badge";
+import { MemberAvatarCell } from "@/features/organization/ui/shared/member-avatar-cell";
+import { RoleBadge } from "@/features/organization/ui/shared/role-badge";
 import type { Member } from "./members-table-columns";
 
 type MembersMobileCardProps = {

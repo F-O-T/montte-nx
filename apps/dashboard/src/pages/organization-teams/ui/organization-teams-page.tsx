@@ -1,13 +1,13 @@
 import { translate } from "@packages/localization";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
 import {
 	TeamsDataTable,
 	TeamsDataTableSkeleton,
-} from "@/features/organization-teams/ui/teams-data-table";
-import { useDeleteTeam } from "@/features/organization-teams/hooks/use-delete-team";
-import { useTRPC } from "@/integrations/clients";
+} from "@/features/organization/ui/teams-data-table";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 import { TeamsQuickActionsToolbar } from "./organization-teams-quick-actions-toolbar";
 
 function TeamsPageContent() {
@@ -18,7 +18,27 @@ function TeamsPageContent() {
 		trpc.organizationTeams.listTeams.queryOptions(),
 	);
 
-	const { deleteTeam } = useDeleteTeam();
+	const deleteTeam = useCallback(
+		async (teamId: string) => {
+			await betterAuthClient.organization.removeTeam(
+				{
+					teamId,
+				},
+				{
+					onRequest: () => {
+						toast.loading("Deleting team...");
+					},
+					onSuccess: () => {
+						toast.success("Team deleted successfully");
+					},
+					onError: (ctx) => {
+						toast.error(ctx.error.message || "Failed to delete team");
+					},
+				},
+			);
+		},
+		[],
+	);
 
 	const handleDelete = (teamId: string) => {
 		deleteTeam(teamId);

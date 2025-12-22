@@ -1,7 +1,7 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { MailPlus } from "lucide-react";
-import { SendInvitationForm } from "@/features/organization-actions/ui/send-invitation-form";
+import { SendInvitationForm } from "@/features/organization/ui/send-invitation-form";
 import { useSheet } from "@/hooks/use-sheet";
 
 export function InvitesQuickActionsToolbar() {

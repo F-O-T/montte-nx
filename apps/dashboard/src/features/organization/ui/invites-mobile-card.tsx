@@ -13,8 +13,8 @@ import { Checkbox } from "@packages/ui/components/checkbox";
 import { formatDate } from "@packages/utils/date";
 import type { Row } from "@tanstack/react-table";
 import { RefreshCw, Trash2 } from "lucide-react";
-import { RoleBadge } from "@/features/organization-shared/ui/role-badge";
-import { StatusBadge } from "@/features/organization-shared/ui/status-badge";
+import { RoleBadge } from "@/features/organization/ui/shared/role-badge";
+import { StatusBadge } from "@/features/organization/ui/shared/status-badge";
 import type { Invite } from "./invites-table-columns";
 
 type InvitesMobileCardProps = {

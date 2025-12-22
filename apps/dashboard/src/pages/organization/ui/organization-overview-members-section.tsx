@@ -25,7 +25,7 @@ import { useRouter } from "@tanstack/react-router";
 import { ArrowRight, Users } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { RoleBadge } from "@/features/organization-shared/ui/role-badge";
+import { RoleBadge } from "@/features/organization/ui/shared/role-badge";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 

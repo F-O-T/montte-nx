@@ -42,24 +42,67 @@ import {
    RefreshCw,
    Trash2,
 } from "lucide-react";
-import { Fragment, Suspense, useState } from "react";
+import { Fragment, Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useInviteMember } from "@/features/organization-invites/hooks/use-invite-member";
-import { useRevokeInvitation } from "@/features/organization-invites/hooks/use-revoke-invitation";
-import { useTRPC } from "@/integrations/clients";
+import { toast } from "sonner";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 function InvitesListContent() {
    const trpc = useTRPC();
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize] = useState(10);
+   const [isResending, setIsResending] = useState(false);
    const { data: invitesData } = useSuspenseQuery(
       trpc.organizationInvites.listInvitations.queryOptions({
          limit: pageSize,
          offset: (currentPage - 1) * pageSize,
       }),
    );
-   const { inviteMember, isPending: isResending } = useInviteMember();
-   const { revokeInvitation } = useRevokeInvitation();
+
+   const inviteMember = useCallback(
+      async (data: { email: string; role: "member" | "admin" | "owner" }) => {
+         await betterAuthClient.organization.inviteMember(
+            {
+               email: data.email,
+               role: data.role,
+            },
+            {
+               onRequest: () => {
+                  setIsResending(true);
+                  toast.loading("Sending invitation...");
+               },
+               onSuccess: () => {
+                  setIsResending(false);
+                  toast.success("Invitation sent successfully");
+               },
+               onError: (ctx) => {
+                  setIsResending(false);
+                  toast.error(ctx.error.message || "Failed to send invitation");
+               },
+            },
+         );
+      },
+      [],
+   );
+
+   const revokeInvitation = useCallback(async (invitationId: string) => {
+      await betterAuthClient.organization.cancelInvitation(
+         {
+            invitationId,
+         },
+         {
+            onRequest: () => {
+               toast.loading("Revoking invitation...");
+            },
+            onSuccess: () => {
+               toast.success("Invitation revoked successfully");
+            },
+            onError: (ctx) => {
+               toast.error(ctx.error.message || "Failed to revoke invitation");
+            },
+         },
+      );
+   }, []);
 
    const handleResendInvite = async (
       invite: (typeof invitesData)["invitations"][number],

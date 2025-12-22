@@ -31,9 +31,10 @@ import {
 	ItemTitle,
 } from "@packages/ui/components/item";
 import { MoreHorizontal, UserMinus, UserPlus, Users } from "lucide-react";
-import { Fragment } from "react";
-import { useRemoveTeamMember } from "@/features/organization-teams/hooks/use-remove-team-member";
+import { Fragment, useCallback, useState } from "react";
+import { toast } from "sonner";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
+import { betterAuthClient } from "@/integrations/clients";
 
 interface Member {
 	id: string;
@@ -53,7 +54,33 @@ interface TeamMembersCardProps {
 
 export function TeamMembersCard({ teamId, members }: TeamMembersCardProps) {
 	const { openAlertDialog } = useAlertDialog();
-	const { removeTeamMember, isPending } = useRemoveTeamMember();
+	const [isPending, setIsPending] = useState(false);
+
+	const removeTeamMember = useCallback(
+		async (data: { teamId: string; userId: string }) => {
+			await betterAuthClient.organization.removeTeamMember(
+				{
+					teamId: data.teamId,
+					userId: data.userId,
+				},
+				{
+					onRequest: () => {
+						setIsPending(true);
+						toast.loading("Removing team member...");
+					},
+					onSuccess: () => {
+						setIsPending(false);
+						toast.success("Team member removed successfully");
+					},
+					onError: (ctx) => {
+						setIsPending(false);
+						toast.error(ctx.error.message || "Failed to remove team member");
+					},
+				},
+			);
+		},
+		[],
+	);
 
 	const handleRemoveMember = (member: Member) => {
 		openAlertDialog({

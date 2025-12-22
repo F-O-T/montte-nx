@@ -5,7 +5,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import {
 	MembersDataTable,
 	MembersDataTableSkeleton,
-} from "@/features/organization-members/ui/members-data-table";
+} from "@/features/organization/ui/members-data-table";
 import { useTRPC } from "@/integrations/clients";
 import { MembersQuickActionsToolbar } from "./organization-members-quick-actions-toolbar";
 

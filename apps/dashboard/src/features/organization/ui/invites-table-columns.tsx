@@ -16,8 +16,8 @@ import {
 import { formatDate } from "@packages/utils/date";
 import type { ColumnDef } from "@tanstack/react-table";
 import { MoreVertical, RefreshCw, Trash2 } from "lucide-react";
-import { RoleBadge } from "@/features/organization-shared/ui/role-badge";
-import { StatusBadge } from "@/features/organization-shared/ui/status-badge";
+import { RoleBadge } from "@/features/organization/ui/shared/role-badge";
+import { StatusBadge } from "@/features/organization/ui/shared/status-badge";
 
 export type Invite =
 	RouterOutput["organizationInvites"]["listInvitations"]["invitations"][number];

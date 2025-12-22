@@ -18,7 +18,7 @@ import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
    compressImage,
@@ -26,11 +26,9 @@ import {
 } from "@/features/file-upload/lib/image-compression";
 import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
 import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
-import { useCreateOrganization } from "@/features/organization/hooks/use-create-organization";
 import { useSetActiveOrganization } from "@/features/organization/hooks/use-set-active-organization";
-import { useUpdateOrganization } from "@/features/organization/hooks/use-update-organization";
 import { useSheet } from "@/hooks/use-sheet";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 type Organization =
    RouterOutput["organization"]["getActiveOrganization"]["organization"];
@@ -45,6 +43,8 @@ export function ManageOrganizationForm({
    const { closeSheet } = useSheet();
    const isEditMode = !!organization;
    const { uploadToPresignedUrl } = usePresignedUpload();
+   const [isCreatePending, setIsCreatePending] = useState(false);
+   const [isUpdatePending, setIsUpdatePending] = useState(false);
 
    const { data: logoData } = useQuery({
       ...trpc.organization.getLogo.queryOptions(),
@@ -74,22 +74,66 @@ export function ManageOrganizationForm({
       showToast: false,
    });
 
-   const { updateOrganization, isPending: isUpdatePending } = useUpdateOrganization({
-      onSuccess: () => {
-         fileUpload.clearFile();
-         closeSheet();
+   const createOrganization = useCallback(
+      async (data: { name: string; slug: string; description?: string }) => {
+         await betterAuthClient.organization.create(
+            {
+               name: data.name,
+               slug: data.slug,
+            },
+            {
+               onRequest: () => {
+                  setIsCreatePending(true);
+                  toast.loading("Creating organization...");
+               },
+               onSuccess: async (ctx) => {
+                  setIsCreatePending(false);
+                  toast.success("Organization created successfully");
+                  if (ctx.data?.id) {
+                     await setActiveOrganization({ organizationId: ctx.data.id });
+                  }
+                  fileUpload.clearFile();
+                  closeSheet();
+               },
+               onError: (ctx) => {
+                  setIsCreatePending(false);
+                  toast.error(ctx.error.message || "Failed to create organization");
+               },
+            },
+         );
       },
-   });
+      [closeSheet, fileUpload, setActiveOrganization],
+   );
 
-   const { createOrganization, isPending: isCreatePending } = useCreateOrganization({
-      onSuccess: async (data) => {
-         if (data?.id) {
-            await setActiveOrganization({ organizationId: data.id });
-         }
-         fileUpload.clearFile();
-         closeSheet();
+   const updateOrganization = useCallback(
+      async (data: { organizationId: string; name?: string }) => {
+         await betterAuthClient.organization.update(
+            {
+               data: {
+                  name: data.name,
+               },
+               organizationId: data.organizationId,
+            },
+            {
+               onRequest: () => {
+                  setIsUpdatePending(true);
+                  toast.loading("Updating organization...");
+               },
+               onSuccess: () => {
+                  setIsUpdatePending(false);
+                  toast.success("Organization updated successfully");
+                  fileUpload.clearFile();
+                  closeSheet();
+               },
+               onError: (ctx) => {
+                  setIsUpdatePending(false);
+                  toast.error(ctx.error.message || "Failed to update organization");
+               },
+            },
+         );
       },
-   });
+      [closeSheet, fileUpload],
+   );
 
    const requestLogoUploadUrlMutation = useMutation(
       trpc.organization.uploadLogo.mutationOptions({
