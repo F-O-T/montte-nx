@@ -32,7 +32,7 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
    Clock,
    Mail,
@@ -42,54 +42,79 @@ import {
    RefreshCw,
    Trash2,
 } from "lucide-react";
-import { Fragment, Suspense, useState } from "react";
+import { Fragment, Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 function InvitesListContent() {
    const trpc = useTRPC();
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize] = useState(10);
+   const [isResending, setIsResending] = useState(false);
    const { data: invitesData } = useSuspenseQuery(
       trpc.organizationInvites.listInvitations.queryOptions({
          limit: pageSize,
          offset: (currentPage - 1) * pageSize,
       }),
    );
-   const cancelInvitationMutation = useMutation(
-      trpc.organizationInvites.revokeInvitation.mutationOptions({
-         onError: (error) => {
-            toast.error(`Failed to cancel invitation: ${error.message}`);
-         },
-         onSuccess: () => {
-            toast.success("Invitation cancelled successfully");
-         },
-      }),
+
+   const inviteMember = useCallback(
+      async (data: { email: string; role: "member" | "admin" | "owner" }) => {
+         await betterAuthClient.organization.inviteMember(
+            {
+               email: data.email,
+               role: data.role,
+            },
+            {
+               onRequest: () => {
+                  setIsResending(true);
+                  toast.loading("Sending invitation...");
+               },
+               onSuccess: () => {
+                  setIsResending(false);
+                  toast.success("Invitation sent successfully");
+               },
+               onError: (ctx) => {
+                  setIsResending(false);
+                  toast.error(ctx.error.message || "Failed to send invitation");
+               },
+            },
+         );
+      },
+      [],
    );
-   const resendInviteMutation = useMutation(
-      trpc.organizationInvites.createInvitation.mutationOptions({
-         onError: (error) => {
-            toast.error(`Failed to resend invitation: ${error.message}`);
+
+   const revokeInvitation = useCallback(async (invitationId: string) => {
+      await betterAuthClient.organization.cancelInvitation(
+         {
+            invitationId,
          },
-         onSuccess: () => {
-            toast.success("Invitation resent successfully");
+         {
+            onRequest: () => {
+               toast.loading("Revoking invitation...");
+            },
+            onSuccess: () => {
+               toast.success("Invitation revoked successfully");
+            },
+            onError: (ctx) => {
+               toast.error(ctx.error.message || "Failed to revoke invitation");
+            },
          },
-      }),
-   );
+      );
+   }, []);
 
    const handleResendInvite = async (
       invite: (typeof invitesData)["invitations"][number],
    ) => {
-      await resendInviteMutation.mutateAsync({
+      await inviteMember({
          email: invite.email,
-         resend: true,
          role: invite.role.toLowerCase() as "member" | "admin" | "owner",
       });
    };
 
    const handleRevokeInvite = async (inviteId: string) => {
-      await cancelInvitationMutation.mutateAsync({ invitationId: inviteId });
+      await revokeInvitation(inviteId);
    };
 
    const getStatusIcon = (status: string) => {
@@ -147,9 +172,7 @@ function InvitesListContent() {
                                  {invite.status === "pending" && (
                                     <>
                                        <DropdownMenuItem
-                                          disabled={
-                                             resendInviteMutation.isPending
-                                          }
+                                          disabled={isResending}
                                           onClick={() =>
                                              handleResendInvite(invite)
                                           }

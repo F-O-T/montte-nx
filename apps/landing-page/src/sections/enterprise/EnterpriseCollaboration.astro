@@ -1,5 +1,16 @@
 ---
-const _collaborationFeatures = [
+import { Image } from "astro:assets";
+import { ArrowRight, Check, Lock, Shield } from "@lucide/astro";
+import {
+   Card,
+   CardDescription,
+   CardHeader,
+   CardTitle,
+} from "@packages/ui/components/card";
+import { Separator } from "@packages/ui/components/separator";
+import enterpriseShield from "@/assets/cards/enterprise-shield.png";
+
+const collaborationFeatures = [
    { title: "Controle quem vê cada conta e transação", icon: "Lock" },
    { title: "Rastreie toda alteração com autor e timestamp", icon: "Shield" },
    { title: "Aprovações de despesas direto na plataforma", icon: "Check" },

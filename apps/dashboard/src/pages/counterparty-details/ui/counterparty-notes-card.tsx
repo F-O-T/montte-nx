@@ -49,9 +49,7 @@ function NotesCardContent({ counterpartyId }: { counterpartyId: string }) {
    return (
       <Card className="h-fit">
          <CardHeader>
-            <CardTitle>
-               {translate("common.form.notes.label")}
-            </CardTitle>
+            <CardTitle>{translate("common.form.notes.label")}</CardTitle>
             <CardDescription>Observações sobre o parceiro</CardDescription>
          </CardHeader>
          <CardContent>

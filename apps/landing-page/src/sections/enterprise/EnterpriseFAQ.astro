@@ -1,14 +1,14 @@
 ---
-import type { FAQCategory, FAQItem } from "@/components/faq-tabs";
+import { type FAQCategory, type FAQItem, FAQTabs } from "@/components/faq-tabs";
 
-const _categories: FAQCategory[] = [
+const categories: FAQCategory[] = [
    { id: "pricing", label: "Preços e Planos" },
    { id: "infrastructure", label: "Infraestrutura" },
    { id: "security", label: "Segurança" },
    { id: "migration", label: "Migração e Suporte" },
 ];
 
-const _faqItems: FAQItem[] = [
+const faqItems: FAQItem[] = [
    {
       answer:
          "R$ 249/mês com usuários ilimitados, contas bancárias ilimitadas e suporte prioritário. Não há cobrança adicional por transação, integração ou módulo. A modalidade self-hosted na sua nuvem (AWS/Google Cloud/Azure) tem custo adicional baseado no uso de infraestrutura. Contrate anualmente e ganhe 2 meses de cortesia (equivalente a R$ 2.490/ano).",

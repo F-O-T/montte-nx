@@ -1,5 +1,6 @@
 ---
 import type { SupportedLng } from "@packages/localization";
+import { FeatureCarousel } from "@/components/feature-carousel";
 
 interface Props {
    lang?: SupportedLng;
@@ -7,7 +8,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const _openSourceFeatures = [
+const openSourceFeatures = [
    {
       description:
          "Licenciado sob Apache 2.0. Audite cada linha de código. Sem surpresas de código fechado.",

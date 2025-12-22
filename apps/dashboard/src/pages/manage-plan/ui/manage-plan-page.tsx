@@ -132,7 +132,7 @@ function ManagePlanPageContent() {
       return null;
    }
 
-   const PlanIcon = plan.name === PlanName.PRO ? Crown : Zap;
+   const PlanIcon = plan.name === PlanName.ERP ? Crown : Zap;
    const isTrialing = subscription.status === "trialing";
    const trialDaysRemaining = isTrialing
       ? getDaysRemaining(subscription.trialEnd)

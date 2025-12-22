@@ -92,7 +92,9 @@ function ContactCardContent({ counterpartyId }: { counterpartyId: string }) {
                      <TooltipTrigger asChild>
                         <Button
                            className="size-7 shrink-0"
-                           onClick={() => copyToClipboard(counterparty.email!)}
+                           onClick={() =>
+                              copyToClipboard(counterparty.email ?? "")
+                           }
                            size="icon"
                            variant="ghost"
                         >
@@ -109,7 +111,9 @@ function ContactCardContent({ counterpartyId }: { counterpartyId: string }) {
                   <div className="flex items-center gap-3 min-w-0">
                      <Phone className="size-4 text-muted-foreground shrink-0" />
                      <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">Telefone</p>
+                        <p className="text-xs text-muted-foreground">
+                           Telefone
+                        </p>
                         <a
                            className="text-sm font-medium hover:underline truncate block"
                            href={`tel:${counterparty.phone.replace(/\D/g, "")}`}
@@ -122,7 +126,9 @@ function ContactCardContent({ counterpartyId }: { counterpartyId: string }) {
                      <TooltipTrigger asChild>
                         <Button
                            className="size-7 shrink-0"
-                           onClick={() => copyToClipboard(counterparty.phone!)}
+                           onClick={() =>
+                              copyToClipboard(counterparty.phone ?? "")
+                           }
                            size="icon"
                            variant="ghost"
                         >

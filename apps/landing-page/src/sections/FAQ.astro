@@ -1,18 +1,19 @@
 ---
 import type { SupportedLng } from "@packages/localization";
+import { FAQTabs } from "@/components/faq-tabs";
 
 interface Props {
    lang?: SupportedLng;
 }
 
-const _categories = [
+const categories = [
    { id: "pricing", label: "Preços e Planos" },
    { id: "infrastructure", label: "Infraestrutura" },
    { id: "security", label: "Segurança" },
    { id: "migration", label: "Migração e Suporte" },
 ];
 
-const _faqItems = [
+const faqItems = [
    {
       answer:
          "R$ 249/mês com usuários ilimitados, contas bancárias ilimitadas e suporte prioritário. Não há cobrança adicional por transação, integração ou módulo. A modalidade self-hosted na sua nuvem (AWS/Google Cloud/Azure) tem custo adicional baseado no uso de infraestrutura. Contrate anualmente e ganhe 2 meses de cortesia (equivalente a R$ 2.490/ano).",

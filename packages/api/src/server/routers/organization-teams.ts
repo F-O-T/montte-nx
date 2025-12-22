@@ -3,98 +3,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 export const organizationTeamsRouter = router({
-   addMemberToTeam: protectedProcedure
-      .input(
-         z.object({
-            teamId: z.string().min(1, "Team ID is required"),
-            userId: z.string().min(1, "User ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const result = await resolvedCtx.auth.api.addTeamMember({
-               body: {
-                  teamId: input.teamId,
-                  userId: input.userId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return result;
-         } catch (error) {
-            console.error("Failed to add member to team:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to add member to team");
-         }
-      }),
-   createTeam: protectedProcedure
-      .input(
-         z.object({
-            description: z
-               .string()
-               .max(200, "Description must be less than 200 characters")
-               .optional(),
-            name: z
-               .string()
-               .min(1, "Team name is required")
-               .max(50, "Team name must be less than 50 characters"),
-            organizationId: z.string().optional(),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-         const organizationId =
-            input.organizationId ||
-            resolvedCtx.session?.session.activeOrganizationId;
-
-         if (!organizationId) {
-            throw APIError.validation("Organization not found");
-         }
-
-         try {
-            const team = await resolvedCtx.auth.api.createTeam({
-               body: {
-                  description: input.description,
-                  name: input.name,
-                  organizationId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return team;
-         } catch (error) {
-            console.error("Failed to create team:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to create team");
-         }
-      }),
-
-   deleteTeam: protectedProcedure
-      .input(
-         z.object({
-            teamId: z.string().min(1, "Team ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const result = await resolvedCtx.auth.api.removeTeam({
-               body: {
-                  teamId: input.teamId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return result;
-         } catch (error) {
-            console.error("Failed to delete team:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to delete team");
-         }
-      }),
+   // Queries only - mutations moved to Better Auth client
 
    getTeamStats: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
@@ -219,70 +128,40 @@ export const organizationTeamsRouter = router({
       }
    }),
 
-   removeMemberFromTeam: protectedProcedure
-      .input(
-         z.object({
-            teamId: z.string().min(1, "Team ID is required"),
-            userId: z.string().min(1, "User ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
+   getTeamById: protectedProcedure
+      .input(z.object({ teamId: z.string() }))
+      .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
+         const organizationId =
+            resolvedCtx.session?.session?.activeOrganizationId;
 
-         try {
-            const result = await resolvedCtx.auth.api.removeTeamMember({
-               body: {
-                  teamId: input.teamId,
-                  userId: input.userId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return result;
-         } catch (error) {
-            console.error("Failed to remove member from team:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to remove member from team");
+         if (!organizationId) {
+            throw APIError.notFound("No active organization found");
          }
-      }),
-
-   updateTeam: protectedProcedure
-      .input(
-         z.object({
-            description: z
-               .string()
-               .max(200, "Description must be less than 200 characters")
-               .optional(),
-            name: z
-               .string()
-               .min(1, "Team name is required")
-               .max(50, "Team name must be less than 50 characters")
-               .optional(),
-            teamId: z.string().min(1, "Team ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
 
          try {
-            const updatedTeam = await resolvedCtx.auth.api.updateTeam({
-               body: {
-                  data: {
-                     ...(input.name && { name: input.name }),
-                     ...(input.description !== undefined && {
-                        description: input.description,
-                     }),
-                  },
-                  teamId: input.teamId,
-               },
-               headers: resolvedCtx.headers,
-            });
+            const [teams, members] = await Promise.all([
+               resolvedCtx.auth.api.listOrganizationTeams({
+                  headers: resolvedCtx.headers,
+                  query: { organizationId },
+               }),
+               resolvedCtx.auth.api.listTeamMembers({
+                  headers: resolvedCtx.headers,
+                  query: { teamId: input.teamId },
+               }),
+            ]);
 
-            return updatedTeam;
+            const team = teams?.find((t) => t.id === input.teamId);
+
+            if (!team) {
+               throw APIError.notFound("Team not found");
+            }
+
+            return { ...team, members: members ?? [] };
          } catch (error) {
-            console.error("Failed to update team:", error);
+            console.error("Failed to get team by ID:", error);
             propagateError(error);
-            throw APIError.internal("Failed to update team");
+            throw APIError.internal("Failed to retrieve team");
          }
       }),
 });

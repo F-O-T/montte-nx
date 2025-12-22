@@ -1,3 +1,4 @@
+import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
    Empty,
@@ -7,6 +8,7 @@ import {
    EmptyMedia,
    EmptyTitle,
 } from "@packages/ui/components/empty";
+import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import {
    Tooltip,
@@ -17,15 +19,47 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Building, Plus } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
+import { DefaultHeader } from "@/default/default-header";
+import { ManageOrganizationForm } from "@/features/organization/ui/manage-organization-form";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { OrganizationInfo } from "./organization-information-section";
-import { QuickAccessCards } from "./organization-quick-access-cards";
-import { QuickActionsToolbar } from "./organization-quick-actions-toolbar";
-import { RecentInvites } from "./organization-recent-invites-section";
-import { OrganizationRoles } from "./organization-roles-section";
-import { OrganizationStats } from "./organization-stats";
+import { OrganizationOverviewInvitesSection } from "./organization-overview-invites-section";
+import { OrganizationOverviewMembersSection } from "./organization-overview-members-section";
+import { OrganizationOverviewQuickActions } from "./organization-overview-quick-actions";
+import { OrganizationOverviewStatsCard } from "./organization-overview-stats-card";
+
+function OrganizationPageErrorFallback(props: FallbackProps) {
+   return createErrorFallback({
+      errorDescription: translate(
+         "dashboard.routes.organization.state.error.description",
+      ),
+      errorTitle: translate("dashboard.routes.organization.state.error.title"),
+      retryText: translate("common.actions.retry"),
+   })(props);
+}
+
+function OrganizationPageSkeleton() {
+   return (
+      <main className="flex flex-col gap-6">
+         <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-48" />
+         </div>
+
+         <Skeleton className="h-40 w-full" />
+
+         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+               <Skeleton className="h-24" key={`skeleton-quick-${i}`} />
+            ))}
+         </div>
+
+         <div className="grid gap-4 md:grid-cols-2">
+            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className="h-[300px] w-full" />
+         </div>
+      </main>
+   );
+}
 
 function OrganizationContent() {
    const trpc = useTRPC();
@@ -49,10 +83,15 @@ function OrganizationContent() {
                      <EmptyMedia variant="icon">
                         <Building className="size-12 text-muted-foreground" />
                      </EmptyMedia>
-                     <EmptyTitle>No organization yet</EmptyTitle>
+                     <EmptyTitle>
+                        {translate(
+                           "dashboard.routes.organization.state.empty.title",
+                        )}
+                     </EmptyTitle>
                      <EmptyDescription>
-                        Create your first organization to start collaborating
-                        with your team and managing your finances together.
+                        {translate(
+                           "dashboard.routes.organization.state.empty.description",
+                        )}
                      </EmptyDescription>
                   </EmptyHeader>
                   <EmptyContent>
@@ -69,12 +108,18 @@ function OrganizationContent() {
                               variant="default"
                            >
                               <Plus className="size-4" />
-                              Create Organization
+                              {translate(
+                                 "dashboard.routes.organization.state.empty.action",
+                              )}
                            </Button>
                         </TooltipTrigger>
                         {hasReachedLimit && (
                            <TooltipContent>
-                              <p>Você não pode criar mais organizações</p>
+                              <p>
+                                 {translate(
+                                    "dashboard.routes.organization.state.limit-reached",
+                                 )}
+                              </p>
                            </TooltipContent>
                         )}
                      </Tooltip>
@@ -86,65 +131,19 @@ function OrganizationContent() {
    }
 
    return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid md:grid-cols-3 gap-4">
-            <div className="col-span-1 md:col-span-2 grid gap-4">
-               <QuickActionsToolbar />
-               <OrganizationInfo />
-               <OrganizationStats />
-            </div>
-            <QuickAccessCards />
-         </div>
+      <main className="flex flex-col gap-6">
+         <DefaultHeader
+            description={translate("dashboard.routes.organization.description")}
+            title={translate("dashboard.routes.organization.title")}
+         />
 
-         <div className="grid md:grid-cols-2 md:col-span-3 gap-4">
-            <OrganizationRoles />
-            <RecentInvites />
-         </div>
-      </main>
-   );
-}
+         <OrganizationOverviewStatsCard />
 
-function OrganizationPageSkeleton() {
-   return (
-      <main className="flex flex-col h-full w-full gap-4">
-         <div className="grid md:grid-cols-3 gap-4">
-            <div className="col-span-1 md:col-span-2 grid gap-4">
-               <Skeleton className="h-20 w-full" />
-               <Skeleton className="h-32 w-full" />
-               <Skeleton className="h-24 w-full" />
-            </div>
-            <Skeleton className="h-32 w-full" />
-         </div>
-         <div className="grid md:grid-cols-2 gap-4">
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-48 w-full" />
-         </div>
-      </main>
-   );
-}
+         <OrganizationOverviewQuickActions />
 
-function OrganizationPageError({ error, resetErrorBoundary }: FallbackProps) {
-   return (
-      <main className="flex flex-col h-full w-full">
-         <div className="flex-1 flex items-center justify-center">
-            <Empty>
-               <EmptyContent>
-                  <EmptyMedia variant="icon">
-                     <Building className="size-12 text-destructive" />
-                  </EmptyMedia>
-                  <EmptyTitle>Failed to load organization</EmptyTitle>
-                  <EmptyDescription>{error?.message}</EmptyDescription>
-                  <div className="mt-6">
-                     <Button
-                        onClick={resetErrorBoundary}
-                        size="default"
-                        variant="outline"
-                     >
-                        Try Again
-                     </Button>
-                  </div>
-               </EmptyContent>
-            </Empty>
+         <div className="grid gap-4 md:grid-cols-2">
+            <OrganizationOverviewMembersSection />
+            <OrganizationOverviewInvitesSection />
          </div>
       </main>
    );
@@ -152,7 +151,7 @@ function OrganizationPageError({ error, resetErrorBoundary }: FallbackProps) {
 
 export function OrganizationPage() {
    return (
-      <ErrorBoundary FallbackComponent={OrganizationPageError}>
+      <ErrorBoundary FallbackComponent={OrganizationPageErrorFallback}>
          <Suspense fallback={<OrganizationPageSkeleton />}>
             <OrganizationContent />
          </Suspense>

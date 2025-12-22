@@ -17,16 +17,15 @@ import {
 } from "@packages/ui/components/sheet";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient } from "@/integrations/clients";
 
 function InviteMemberErrorFallback() {
    return (
@@ -56,20 +55,39 @@ function InviteMemberSkeleton() {
 
 const InviteMemberFormContent = () => {
    const { closeSheet } = useSheet();
-   const trpc = useTRPC();
    const { activeOrganization } = useActiveOrganization();
+   const [isPending, setIsPending] = useState(false);
 
-   const createInvitationMutation = useMutation(
-      trpc.organizationInvites.createInvitation.mutationOptions({
-         onError: (error) => {
-            console.error("Invitation creation error:", error);
-            toast.error("Failed to send invitation");
-         },
-         onSuccess: (_, variables) => {
-            toast.success(`Invitation sent to ${variables.email}`);
-            closeSheet();
-         },
-      }),
+   const inviteMember = useCallback(
+      async (data: {
+         email: string;
+         role: "member" | "admin" | "owner";
+         organizationId?: string;
+      }) => {
+         await betterAuthClient.organization.inviteMember(
+            {
+               email: data.email,
+               organizationId: data.organizationId,
+               role: data.role,
+            },
+            {
+               onRequest: () => {
+                  setIsPending(true);
+                  toast.loading("Sending invitation...");
+               },
+               onSuccess: () => {
+                  setIsPending(false);
+                  toast.success("Invitation sent successfully");
+                  closeSheet();
+               },
+               onError: (ctx) => {
+                  setIsPending(false);
+                  toast.error(ctx.error.message || "Failed to send invitation");
+               },
+            },
+         );
+      },
+      [closeSheet],
    );
 
    const schema = z.object({
@@ -85,7 +103,11 @@ const InviteMemberFormContent = () => {
          role: "member" as "member" | "admin",
       },
       onSubmit: async ({ value, formApi }) => {
-         await createInvitationMutation.mutateAsync(value);
+         await inviteMember({
+            email: value.email,
+            organizationId: value.organizationId || undefined,
+            role: value.role,
+         });
          formApi.reset();
       },
 
@@ -174,14 +196,12 @@ const InviteMemberFormContent = () => {
                      disabled={
                         !formState.canSubmit ||
                         formState.isSubmitting ||
-                        createInvitationMutation.isPending
+                        isPending
                      }
                      onClick={() => form.handleSubmit()}
                      type="submit"
                   >
-                     {createInvitationMutation.isPending
-                        ? "Sending..."
-                        : "Send Invitation"}
+                     {isPending ? "Sending..." : "Send Invitation"}
                   </Button>
                )}
             </form.Subscribe>

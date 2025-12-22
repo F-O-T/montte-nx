@@ -59,6 +59,7 @@ export const createTRPCContext = async ({
    resendClient?: ResendClient;
    responseHeaders: Headers;
    stripeClient?: StripeClient;
+   userId?: string;
 }) => {
    const headers = request.headers;
 
@@ -77,6 +78,7 @@ export const createTRPCContext = async ({
    if (language) {
       changeLanguage(language);
    }
+   const userId = session?.user?.id || "";
 
    const organizationId = session?.session?.activeOrganizationId || "";
 
@@ -94,6 +96,7 @@ export const createTRPCContext = async ({
       responseHeaders,
       session,
       stripeClient,
+      userId,
    };
 };
 
@@ -224,6 +227,8 @@ const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
    return result;
 });
 
+export type MemberRole = "owner" | "admin" | "member";
+
 const isAuthed = t.middleware(async ({ ctx, next }) => {
    const resolvedCtx = await ctx;
 
@@ -234,6 +239,7 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    const userId = resolvedCtx.session.user.id;
    const organizationSlug = resolvedCtx.headers.get("x-organization-slug");
    let organizationId = resolvedCtx.session.session.activeOrganizationId;
+   let memberRole: MemberRole = "member";
 
    if (organizationSlug) {
       const { organization, membership } = await getOrganizationMembership(
@@ -253,12 +259,16 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
       }
 
       organizationId = organization.id;
+      memberRole = (membership.role as MemberRole) || "member";
    }
 
    return next({
       ctx: {
+         ...resolvedCtx,
+         memberRole,
          organizationId,
          session: { ...resolvedCtx.session },
+         userId,
       },
    });
 });
@@ -336,10 +346,10 @@ const telemetryMiddleware = t.middleware(
                   ...(result.ok
                      ? {}
                      : {
-                          errorCode: result.error.code,
-                          errorMessage: result.error.message,
-                          errorName: result.error.name,
-                       }),
+                        errorCode: result.error.code,
+                        errorMessage: result.error.message,
+                        errorName: result.error.name,
+                     }),
                },
             });
          }

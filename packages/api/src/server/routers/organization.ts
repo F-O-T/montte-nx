@@ -9,7 +9,7 @@ import {
    streamFileForProxy,
    verifyFileExists,
 } from "@packages/files/client";
-import { APIError, AppError, propagateError } from "@packages/utils/errors";
+import { APIError, propagateError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -38,107 +38,7 @@ const CancelLogoUploadInput = z.object({
 });
 
 export const organizationRouter = router({
-   createOrganization: protectedProcedure
-      .input(
-         z.object({
-            description: z.string().optional(),
-            name: z.string().min(1, "Organization name is required"),
-            slug: z.string().min(1, "Organization slug is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         if (!input.slug || input.slug.trim().length === 0) {
-            throw APIError.validation(
-               "Organization slug cannot be empty. Please provide a valid organization name.",
-            );
-         }
-
-         try {
-            const organization = await resolvedCtx.auth.api.createOrganization({
-               body: {
-                  description: input.description,
-                  name: input.name,
-                  slug: input.slug,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return organization;
-         } catch (error) {
-            console.error("Failed to create organization:", error);
-
-            if (error instanceof APIError || error instanceof AppError) {
-               throw error;
-            }
-
-            const errorMessage =
-               error instanceof Error
-                  ? error.message
-                  : "Failed to create organization";
-
-            throw APIError.internal(errorMessage);
-         }
-      }),
-
-   deleteOrganization: protectedProcedure.mutation(async ({ ctx }) => {
-      const resolvedCtx = await ctx;
-
-      // Get current organization info
-      const organization = await resolvedCtx.auth.api.getFullOrganization({
-         headers: resolvedCtx.headers,
-      });
-
-      if (!organization?.id) {
-         throw APIError.notFound("No active organization found");
-      }
-
-      const organizationId = organization.id;
-
-      try {
-         await resolvedCtx.auth.api.deleteOrganization({
-            body: { organizationId },
-            headers: resolvedCtx.headers,
-         });
-
-         return { success: true };
-      } catch (error) {
-         console.error("Failed to delete organization:", error);
-         propagateError(error);
-         throw APIError.internal("Failed to delete organization");
-      }
-   }),
-   editOrganization: protectedProcedure
-      .input(
-         z.object({
-            description: z.string().optional(),
-            name: z.string().min(1, "Organization name is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const updatedOrganization =
-               await resolvedCtx.auth.api.updateOrganization({
-                  body: {
-                     data: {
-                        description: input.description,
-                        name: input.name,
-                     },
-                  },
-                  headers: resolvedCtx.headers,
-               });
-
-            return updatedOrganization;
-         } catch (error) {
-            console.error("Failed to edit organization:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to edit organization");
-         }
-      }),
-
+   // Queries
    getActiveOrganizationMembers: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
@@ -154,6 +54,7 @@ export const organizationRouter = router({
          throw APIError.internal("Failed to retrieve organization members");
       }
    }),
+
    getLogo: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
 
@@ -301,31 +202,7 @@ export const organizationRouter = router({
          }
       }),
 
-   setActiveOrganization: protectedProcedure
-      .input(
-         z.object({
-            organizationId: z.string().optional(), // Empty string for personal account
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            await resolvedCtx.auth.api.setActiveOrganization({
-               body: {
-                  organizationId: input.organizationId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return { success: true };
-         } catch (error) {
-            console.error("Failed to set active organization:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to set active organization");
-         }
-      }),
-
+   // Logo upload mutations (require server-side MinIO access)
    uploadLogo: protectedProcedure
       .input(RequestLogoUploadUrlInput)
       .mutation(async ({ ctx, input }) => {

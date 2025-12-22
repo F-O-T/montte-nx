@@ -1,7 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { useSetActiveOrganization } from "@/features/organization/hooks/use-set-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 interface Organization {
    id: string;
@@ -20,52 +22,70 @@ export function useDeleteOrganization({
    const queryClient = useQueryClient();
    const trpc = useTRPC();
    const { openAlertDialog } = useAlertDialog();
+   const [isDeleting, setIsDeleting] = useState(false);
 
-   const setActiveOrganizationMutation = useMutation(
-      trpc.organization.setActiveOrganization.mutationOptions(),
-   );
+   const { setActiveOrganization } = useSetActiveOrganization({
+      showToast: false,
+   });
 
-   const deleteOrganizationMutation = useMutation(
-      trpc.organization.deleteOrganization.mutationOptions({
-         onError: (error) => {
-            console.error("Failed to delete organization", error);
-            toast.error("Failed to delete organization. Please try again.");
-         },
-         onSuccess: async () => {
-            const wasActiveOrganization = !!organization;
-            if (!wasActiveOrganization) return;
+   const handleDeleteSuccess = useCallback(async () => {
+      const wasActiveOrganization = !!organization;
+      if (!wasActiveOrganization) {
+         onSuccess?.();
+         setIsDeleting(false);
+         return;
+      }
 
-            const updatedOrganizations = await queryClient.fetchQuery(
-               trpc.organization.getOrganizations.queryOptions(),
-            );
+      const updatedOrganizations = await queryClient.fetchQuery(
+         trpc.organization.getOrganizations.queryOptions(),
+      );
 
-            if (updatedOrganizations && updatedOrganizations.length > 0) {
-               await setActiveOrganizationMutation.mutateAsync({
-                  organizationId: updatedOrganizations[0]?.id,
-               });
-            }
+      if (updatedOrganizations && updatedOrganizations.length > 0) {
+         await setActiveOrganization({
+            organizationId: updatedOrganizations[0]?.id,
+         });
+      }
 
-            toast.success("Organization deleted successfully");
-            onSuccess?.();
-         },
-      }),
-   );
+      onSuccess?.();
+      setIsDeleting(false);
+   }, [organization, onSuccess, queryClient, trpc, setActiveOrganization]);
 
-   const deleteOrganization = () => {
+   const deleteOrganization = useCallback(() => {
       openAlertDialog({
          actionLabel: "Delete Organization",
          description:
             "This action will permanently delete your organization and all its data. This action cannot be undone.",
          onAction: async () => {
-            await deleteOrganizationMutation.mutateAsync();
+            if (!organization?.id) return;
+            setIsDeleting(true);
+            await betterAuthClient.organization.delete(
+               {
+                  organizationId: organization.id,
+               },
+               {
+                  onRequest: () => {
+                     toast.loading("Deleting organization...");
+                  },
+                  onSuccess: async () => {
+                     toast.success("Organization deleted successfully");
+                     await handleDeleteSuccess();
+                  },
+                  onError: (ctx) => {
+                     setIsDeleting(false);
+                     toast.error(
+                        ctx.error.message || "Failed to delete organization",
+                     );
+                  },
+               },
+            );
          },
          title: "Delete Organization",
          variant: "destructive",
       });
-   };
+   }, [openAlertDialog, organization, handleDeleteSuccess]);
 
    return {
       deleteOrganization,
-      isDeleting: deleteOrganizationMutation.isPending,
+      isDeleting,
    };
 }

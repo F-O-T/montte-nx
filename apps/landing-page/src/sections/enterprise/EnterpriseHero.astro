@@ -1,6 +1,10 @@
 ---
-
-// Preload images for better performance
+import { Image } from "astro:assets";
+import { MessageSquare } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
+import enterpriseHeroDark from "@/assets/background/enterprise-hero-dark.png";
+import enterpriseHeroLight from "@/assets/background/enterprise-hero-light.png";
+import LogoCloud from "@/components/LogoCloud.astro";
 ---
 
 	<link rel="preload" as="image" href={enterpriseHeroLight.src} type="image/png">

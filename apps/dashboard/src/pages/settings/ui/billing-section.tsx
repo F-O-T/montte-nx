@@ -203,7 +203,7 @@ function UpgradeBanner({
          buttonText: "Ver planos",
          icon: Gift,
          message:
-            "Comece agora! Teste o plano Pro grátis por 14 dias, sem compromisso.",
+            "Comece agora! Teste o plano Pro gratis por 14 dias, sem compromisso.",
       };
    };
 
@@ -357,7 +357,7 @@ function BillingPlanCard({ subscription }: { subscription: Subscription }) {
       return null;
    }
 
-   const PlanIcon = plan.name === PlanName.PRO ? Crown : Zap;
+   const PlanIcon = plan.name === PlanName.ERP ? Crown : Zap;
    const isTrialing = subscription.status === "trialing";
    const trialDaysRemaining = isTrialing
       ? getDaysRemaining(subscription.trialEnd)

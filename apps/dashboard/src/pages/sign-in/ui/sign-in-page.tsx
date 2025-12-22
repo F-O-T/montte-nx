@@ -9,14 +9,23 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { betterAuthClient } from "@/integrations/clients";
 
-export function SignInPage() {
+interface SignInPageProps {
+   redirectUrl?: string;
+}
+
+export function SignInPage({ redirectUrl }: SignInPageProps) {
    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
    const lastMethod = betterAuthClient.getLastUsedLoginMethod();
+
+   // Determine callback URL - use redirect if provided, otherwise default
+   const callbackURL = redirectUrl
+      ? `${window.location.origin}${redirectUrl}`
+      : `${window.location.origin}/auth/sign-in`;
 
    const handleGoogleSignIn = useCallback(async () => {
       await betterAuthClient.signIn.social(
          {
-            callbackURL: `${window.location.origin}/auth/sign-in`,
+            callbackURL,
             provider: "google",
          },
          {
@@ -34,7 +43,7 @@ export function SignInPage() {
             },
          },
       );
-   }, []);
+   }, [callbackURL]);
 
    const TermsAndPrivacyText = () => {
       const text = translate(

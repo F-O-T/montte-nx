@@ -22,13 +22,7 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
-import {
-   CheckCircle2,
-   Inbox,
-   Search,
-   Trash2,
-   XCircle,
-} from "lucide-react";
+import { CheckCircle2, Inbox, Search, Trash2, XCircle } from "lucide-react";
 import { Fragment, Suspense, useEffect, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -202,7 +196,9 @@ function CounterpartiesListContent() {
                   </Empty>
                ) : (
                   <DataTable
-                     columns={createCounterpartyColumns(activeOrganization.slug)}
+                     columns={createCounterpartyColumns(
+                        activeOrganization.slug,
+                     )}
                      data={counterparties}
                      enableRowSelection
                      getRowId={(row) => row.id}
@@ -268,7 +264,9 @@ function CounterpartiesListContent() {
                }
                variant="destructive"
             >
-               {translate("dashboard.routes.counterparties.bulk-actions.delete")}
+               {translate(
+                  "dashboard.routes.counterparties.bulk-actions.delete",
+               )}
             </SelectionActionButton>
          </SelectionActionBar>
       </>

@@ -19,16 +19,16 @@ import {
 } from "@packages/ui/components/sheet";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import z from "zod";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 function SendInvitationErrorFallback() {
    return (
@@ -60,28 +60,54 @@ const SendInvitationFormContent = () => {
    const { closeSheet } = useSheet();
    const trpc = useTRPC();
    const { activeOrganization } = useActiveOrganization();
+   const [isPending, setIsPending] = useState(false);
    const { data: teams = [] } = useSuspenseQuery(
       trpc.organization.listTeams.queryOptions(),
    );
 
-   const sendInvitationMutation = useMutation(
-      trpc.organizationInvites.createInvitation.mutationOptions({
-         onError: (error) => {
-            console.error("Invitation error:", error);
-            toast.error("Failed to send invitation");
-         },
-         onSuccess: (_, variables) => {
-            toast.success(`Invitation sent to ${variables.email}`);
-            closeSheet();
-         },
-      }),
+   const inviteMember = useCallback(
+      async (data: {
+         email: string;
+         role: "member" | "admin" | "owner";
+         organizationId?: string;
+         teamId?: string;
+         resend?: boolean;
+      }) => {
+         await betterAuthClient.organization.inviteMember(
+            {
+               email: data.email,
+               organizationId: data.organizationId,
+               resend: data.resend,
+               role: data.role,
+               teamId: data.teamId,
+            },
+            {
+               onRequest: () => {
+                  setIsPending(true);
+                  toast.loading("Sending invitation...");
+               },
+               onSuccess: () => {
+                  setIsPending(false);
+                  toast.success("Invitation sent successfully");
+                  closeSheet();
+               },
+               onError: (ctx) => {
+                  setIsPending(false);
+                  toast.error(ctx.error.message || "Failed to send invitation");
+               },
+            },
+         );
+      },
+      [closeSheet],
    );
+
    const schema = z.object({
       email: z.email("Please enter a valid email address"),
       organizationId: z.string().optional(),
       resend: z.boolean().optional(),
       teamId: z.string().optional(),
    });
+
    const form = useForm({
       defaultValues: {
          email: "",
@@ -90,7 +116,7 @@ const SendInvitationFormContent = () => {
          teamId: "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await sendInvitationMutation.mutateAsync({
+         await inviteMember({
             email: value.email,
             organizationId: value.organizationId || undefined,
             resend: value.resend,
@@ -209,14 +235,12 @@ const SendInvitationFormContent = () => {
                      disabled={
                         !formState.canSubmit ||
                         formState.isSubmitting ||
-                        sendInvitationMutation.isPending
+                        isPending
                      }
                      onClick={() => form.handleSubmit()}
                      type="submit"
                   >
-                     {sendInvitationMutation.isPending
-                        ? "Sending..."
-                        : "Send Invitation"}
+                     {isPending ? "Sending..." : "Send Invitation"}
                   </Button>
                )}
             </form.Subscribe>
