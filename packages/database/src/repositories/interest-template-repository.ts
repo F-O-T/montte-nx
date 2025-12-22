@@ -1,5 +1,5 @@
 import { AppError, propagateError } from "@packages/utils/errors";
-import { and, count, eq, ilike, inArray } from "drizzle-orm";
+import { and, count, eq, gte, ilike, inArray, lte } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import { interestTemplate } from "../schemas/interest-templates";
 
@@ -100,6 +100,12 @@ export async function findInterestTemplatesByOrganizationIdPaginated(
       orderDirection?: "asc" | "desc";
       search?: string;
       isActive?: boolean;
+      monetaryCorrectionIndex?: MonetaryCorrectionIndex;
+      interestType?: InterestType;
+      penaltyType?: PenaltyType;
+      isDefault?: boolean;
+      startDate?: Date;
+      endDate?: Date;
    } = {},
 ) {
    const {
@@ -109,6 +115,12 @@ export async function findInterestTemplatesByOrganizationIdPaginated(
       orderDirection = "asc",
       search,
       isActive,
+      monetaryCorrectionIndex,
+      interestType,
+      penaltyType,
+      isDefault,
+      startDate,
+      endDate,
    } = options;
 
    const offset = (page - 1) * limit;
@@ -122,6 +134,32 @@ export async function findInterestTemplatesByOrganizationIdPaginated(
 
       if (isActive !== undefined) {
          conditions.push(eq(interestTemplate.isActive, isActive));
+      }
+
+      if (monetaryCorrectionIndex !== undefined) {
+         conditions.push(
+            eq(interestTemplate.monetaryCorrectionIndex, monetaryCorrectionIndex),
+         );
+      }
+
+      if (interestType !== undefined) {
+         conditions.push(eq(interestTemplate.interestType, interestType));
+      }
+
+      if (penaltyType !== undefined) {
+         conditions.push(eq(interestTemplate.penaltyType, penaltyType));
+      }
+
+      if (isDefault !== undefined) {
+         conditions.push(eq(interestTemplate.isDefault, isDefault));
+      }
+
+      if (startDate !== undefined) {
+         conditions.push(gte(interestTemplate.createdAt, startDate));
+      }
+
+      if (endDate !== undefined) {
+         conditions.push(lte(interestTemplate.createdAt, endDate));
       }
 
       const whereCondition = and(...conditions);

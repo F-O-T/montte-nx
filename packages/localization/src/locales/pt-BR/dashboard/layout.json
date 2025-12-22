@@ -4,7 +4,7 @@
       "budgets": "Orçamentos",
       "categories": "Categorias",
       "cost-centers": "Centros de Custo",
-      "counterparties": "Fornecedores",
+      "counterparties": "Cadastros",
       "interest-templates": "Modelos de Juros",
       "profile": "Perfil",
       "tags": "Tags",
@@ -16,7 +16,7 @@
    },
    "nav-main": {
       "bills": {
-         "counterparties": "Fornecedores",
+         "counterparties": "Cadastros",
          "interest-templates": "Modelos de Juros",
          "overview": "Gestão de Contas",
          "payables": "Contas a Pagar",
