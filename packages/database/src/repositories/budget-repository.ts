@@ -420,9 +420,7 @@ export async function calculateBudgetSpent(
                AND b.due_date >= ${new Date()}
                AND b.due_date <= ${periodEnd}
                AND b.completion_date IS NULL
-               AND b.user_id IN (
-                  SELECT m.user_id FROM member m WHERE m.organization_id = ${budgetData.organizationId}
-               )
+               AND b.organization_id = ${budgetData.organizationId}
          `);
          scheduledAmount = parseFloat(scheduledResult.rows[0]?.total || "0");
       } else if (target.type === "categories") {

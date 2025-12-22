@@ -36,7 +36,6 @@ import { useAlertDialog } from "@/hooks/use-alert-dialog";
 import { useTRPC } from "@/integrations/clients";
 import { useCounterpartyList } from "../features/counterparty-list-context";
 import { useCounterpartyBulkActions } from "../features/use-counterparty-bulk-actions";
-import { CounterpartyFilterBar } from "./counterparty-filter-bar";
 import {
    CounterpartyExpandedContent,
    CounterpartyMobileCard,
@@ -65,16 +64,7 @@ function CounterpartiesListSkeleton() {
    return (
       <Card>
          <CardContent className="pt-6 grid gap-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-               <Skeleton className="h-9 w-full sm:max-w-md" />
-               <Skeleton className="h-9 w-9" />
-            </div>
-            <div className="flex gap-2 flex-wrap">
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-32" />
-            </div>
+            <Skeleton className="h-9 w-full sm:max-w-md" />
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`counterparty-skeleton-${index + 1}`}>
@@ -106,7 +96,6 @@ function CounterpartiesListContent() {
       // Ordering
       orderBy,
       orderDirection,
-      setOrderDirection,
       // Pagination
       currentPage,
       setCurrentPage,
@@ -114,20 +103,12 @@ function CounterpartiesListContent() {
       setPageSize,
       // Filters
       typeFilter,
-      setTypeFilter,
       statusFilter,
-      setStatusFilter,
       searchTerm,
       setSearchTerm,
       industryFilter,
-      setIndustryFilter,
       startDate,
-      setStartDate,
       endDate,
-      setEndDate,
-      // Utilities
-      clearFilters,
-      hasActiveFilters,
    } = useCounterpartyList();
 
    const { activeOrganization } = useActiveOrganization();
@@ -142,11 +123,6 @@ function CounterpartiesListContent() {
       }, 300);
       return () => clearTimeout(timer);
    }, [searchTerm]);
-
-   // Fetch industries for autocomplete
-   const { data: industries = [] } = useSuspenseQuery(
-      trpc.counterparties.getIndustries.queryOptions(),
-   );
 
    // Convert statusFilter to isActive boolean
    const isActiveFilter =
@@ -190,51 +166,21 @@ function CounterpartiesListContent() {
       setRowSelection({});
    };
 
-   const handleDateRangeChange = (range: {
-      startDate: Date | null;
-      endDate: Date | null;
-   }) => {
-      setStartDate(range.startDate);
-      setEndDate(range.endDate);
-   };
-
    return (
       <>
          <Card>
             <CardContent className="pt-6 grid gap-4">
                {/* Search */}
-               <div className="flex gap-3">
-                  <InputGroup className="flex-1 sm:max-w-md">
-                     <InputGroupInput
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder={translate("common.form.search.placeholder")}
-                        value={searchTerm}
-                     />
-                     <InputGroupAddon>
-                        <Search />
-                     </InputGroupAddon>
-                  </InputGroup>
-               </div>
-
-               {/* Filter Bar */}
-               <CounterpartyFilterBar
-                  endDate={endDate}
-                  hasActiveFilters={hasActiveFilters}
-                  industries={industries}
-                  industryFilter={industryFilter}
-                  onClearFilters={clearFilters}
-                  onDateRangeChange={handleDateRangeChange}
-                  onIndustryFilterChange={setIndustryFilter}
-                  onOrderDirectionChange={setOrderDirection}
-                  onPageSizeChange={setPageSize}
-                  onStatusFilterChange={setStatusFilter}
-                  onTypeFilterChange={setTypeFilter}
-                  orderDirection={orderDirection}
-                  pageSize={pageSize}
-                  startDate={startDate}
-                  statusFilter={statusFilter}
-                  typeFilter={typeFilter}
-               />
+               <InputGroup className="sm:max-w-md">
+                  <InputGroupInput
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     placeholder={translate("common.form.search.placeholder")}
+                     value={searchTerm}
+                  />
+                  <InputGroupAddon>
+                     <Search />
+                  </InputGroupAddon>
+               </InputGroup>
 
                {counterparties.length === 0 && pagination.totalCount === 0 ? (
                   <Empty>

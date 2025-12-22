@@ -28,7 +28,7 @@
       "error": "Falha ao excluir contraparte",
       "success": "Contraparte excluída com sucesso"
    },
-   "description": "Gerencie seus clientes e fornecedores",
+   "description": "Gerencie seus clientes, fornecedores e parceiros comerciais",
    "features": {
       "create-counterparty": {
          "description": "Adicione um novo cliente ou fornecedor.",
@@ -260,7 +260,7 @@
          "status": "Status"
       }
    },
-   "title": "Contrapartes",
+   "title": "Cadastros",
    "type-filter": {
       "all": "Todos",
       "both": "Ambos",
