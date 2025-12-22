@@ -61,12 +61,14 @@ function HomeBalanceCardContent() {
    const trpc = useTRPC();
    const { end: endDate, start: startDate } = getCurrentMonthDates();
 
-   const { data: summary } = useSuspenseQuery(
-      trpc.reports.getFinancialSummary.queryOptions({
+   const { data: stats } = useSuspenseQuery(
+      trpc.transactions.getStats.queryOptions({
          endDate: endDate.toISOString(),
          startDate: startDate.toISOString(),
       }),
    );
+
+   const netBalance = stats.totalIncome - stats.totalExpenses;
 
    return (
       <Card>
@@ -75,7 +77,7 @@ function HomeBalanceCardContent() {
                {translate("dashboard.routes.home.balance-card.title")}
             </CardDescription>
             <CardTitle className="text-4xl font-bold">
-               {formatDecimalCurrency(summary.netBalance)}
+               {formatDecimalCurrency(netBalance)}
             </CardTitle>
          </CardHeader>
          <CardContent>
@@ -93,7 +95,7 @@ function HomeBalanceCardContent() {
                         </CardDescription>
                      </div>
                      <CardTitle className="text-xl text-green-500">
-                        {formatDecimalCurrency(summary.totalIncome)}
+                        {formatDecimalCurrency(stats.totalIncome)}
                      </CardTitle>
                   </CardHeader>
                </Card>
@@ -111,7 +113,7 @@ function HomeBalanceCardContent() {
                         </CardDescription>
                      </div>
                      <CardTitle className="text-xl text-red-500">
-                        {formatDecimalCurrency(summary.totalExpenses)}
+                        {formatDecimalCurrency(stats.totalExpenses)}
                      </CardTitle>
                   </CardHeader>
                </Card>

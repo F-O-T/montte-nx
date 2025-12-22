@@ -1,11 +1,16 @@
 import { stripeClient } from "@better-auth/stripe/client";
 import {
    adminClient,
-   apiKeyClient,
+   anonymousClient,
    emailOTPClient,
+   inferAdditionalFields,
+   lastLoginMethodClient,
+   magicLinkClient,
    organizationClient,
+   twoFactorClient,
 } from "better-auth/client/plugins";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
+import type { AuthInstance } from "./server";
 
 export interface AuthClientError {
    status: number;
@@ -40,16 +45,20 @@ export const createAuthClient = ({
          },
       },
       plugins: [
+         inferAdditionalFields<AuthInstance>(),
          stripeClient({
             subscription: true,
          }),
+         anonymousClient(),
+         magicLinkClient(),
          emailOTPClient(),
-         apiKeyClient(),
          adminClient(),
          organizationClient({
             teams: {
                enabled: true,
             },
          }),
+         twoFactorClient(),
+         lastLoginMethodClient(),
       ],
    });

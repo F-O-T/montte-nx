@@ -38,11 +38,14 @@ console.log(result.passed); // true
 ## Features
 
 - **Type-safe**: All types inferred from Zod schemas
-- **Multiple condition types**: string, number, boolean, date, array
+- **Multiple condition types**: string, number, boolean, date, array, custom
+- **Plugin System**: Create custom operators with `createOperator()` and `createEvaluator()`
+- **Weighted Scoring**: Support for weighted conditions with threshold-based evaluation
+- **Dynamic References**: Compare fields against other fields using `valueRef`
+- **Diagnostics**: Human-readable reasons, diff analysis, and dependency extraction
 - **Nested field access**: Access nested properties with dot notation (`user.profile.name`)
 - **Condition groups**: Combine conditions with AND/OR logic
 - **Zod validation**: All inputs validated at runtime
-- **Extensible operators**: Comprehensive operator set for each type
 
 ## API Reference
 
@@ -272,6 +275,98 @@ type GroupEvaluationResult = {
    passed: boolean;
    results: (EvaluationResult | GroupEvaluationResult)[];
 };
+```
+
+## Plugin System
+
+Create custom operators for domain-specific logic:
+
+```typescript
+import { createOperator, createEvaluator } from "@f-o-t/condition-evaluator";
+import { z } from "zod";
+
+// Define a custom operator
+const isPalindrome = createOperator({
+   name: "is_palindrome",
+   valueSchema: z.undefined(),
+   evaluate: (actual) => {
+      if (typeof actual !== "string") return false;
+      const cleaned = actual.toLowerCase().replace(/[^a-z0-9]/g, "");
+      return cleaned === cleaned.split("").reverse().join("");
+   },
+   reason: (passed, actual) =>
+      passed ? `"${actual}" is a palindrome` : `"${actual}" is not a palindrome`,
+});
+
+// Create evaluator with custom operators
+const customEvaluator = createEvaluator({
+   operators: { is_palindrome: isPalindrome },
+});
+
+// Use with custom condition type
+const result = customEvaluator.evaluateCondition(
+   {
+      id: "1",
+      type: "custom",
+      field: "word",
+      operator: "is_palindrome",
+   },
+   { data: { word: "racecar" } },
+);
+```
+
+## Weighted Scoring
+
+Use weighted conditions for fuzzy matching:
+
+```typescript
+const result = evaluateConditionGroup(
+   {
+      id: "g1",
+      operator: "AND",
+      scoringMode: "weighted",
+      threshold: 0.7, // 70% score required to pass
+      conditions: [
+         { id: "1", type: "string", field: "name", operator: "eq", value: "John", weight: 2 },
+         { id: "2", type: "number", field: "age", operator: "gte", value: 18, weight: 1 },
+      ],
+   },
+   { data: { name: "John", age: 16 } },
+);
+
+console.log(result.totalScore); // 2 (name matched)
+console.log(result.maxPossibleScore); // 3 (total weights)
+console.log(result.scorePercentage); // 0.666...
+```
+
+## Dynamic References
+
+Compare fields against other fields:
+
+```typescript
+const condition: Condition = {
+   id: "1",
+   type: "number",
+   field: "currentPrice",
+   operator: "lt",
+   valueRef: "maxBudget", // Compare against another field
+};
+
+evaluateCondition(condition, { data: { currentPrice: 50, maxBudget: 100 } });
+// Passes because 50 < 100
+```
+
+## Dependency Extraction
+
+Analyze condition dependencies for static analysis:
+
+```typescript
+import { extractDependencies } from "@f-o-t/condition-evaluator";
+
+const deps = extractDependencies(conditionGroup);
+console.log(deps.fields); // ["user.name", "order.total"]
+console.log(deps.references); // ["limits.maxOrder"]
+console.log(deps.maxDepth); // 2
 ```
 
 ## License

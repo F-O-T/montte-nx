@@ -3,6 +3,7 @@ import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { cn } from "@packages/ui/lib/utils";
 import type * as React from "react";
 import { useEffect } from "react";
+import { PWAInstallPrompt } from "@/default/pwa-install-prompt";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useBillReminderCheck } from "@/hooks/use-bill-reminder-check";
 import { useLastOrganization } from "@/hooks/use-last-organization";
@@ -15,6 +16,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
    const isMobile = useIsMobile();
    const isStandalone = useIsStandalone();
    const showBottomNav = isMobile && isStandalone;
+   const showPWAPrompt = isMobile && !isStandalone;
 
    const { activeOrganization } = useActiveOrganization();
    const { setLastSlug } = useLastOrganization();
@@ -42,6 +44,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                {children}
             </div>
             {showBottomNav && <BottomNavigation />}
+            {showPWAPrompt && <PWAInstallPrompt />}
          </SidebarInset>
       </SidebarProvider>
    );

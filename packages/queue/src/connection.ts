@@ -1,42 +1,28 @@
 import type { ConnectionOptions } from "bullmq";
-import { Redis } from "ioredis";
+import type { Redis as BullMQRedis } from "ioredis";
+import {
+   createRedisConnection as cacheCreateRedisConnection,
+   closeRedisConnection,
+   getRedisConnection as cacheGetRedisConnection,
+} from "@packages/cache/connection";
 
-let redisConnection: Redis | null = null;
+// Re-export close function as-is
+export { closeRedisConnection };
 
-export function createRedisConnection(url: string): Redis {
-   if (redisConnection) {
-      return redisConnection;
-   }
-
-   redisConnection = new Redis(`${url}?family=6`, {
-      maxRetriesPerRequest: null,
-   });
-
-   redisConnection.on("error", (err) => {
-      console.error("[Redis] Connection error:", err.message);
-   });
-
-   redisConnection.on("connect", () => {
-      console.log("[Redis] Connected successfully");
-   });
-
-   return redisConnection;
+// Wrap createRedisConnection to return BullMQ-compatible type
+export function createRedisConnection(url: string): BullMQRedis {
+   return cacheCreateRedisConnection(url) as unknown as BullMQRedis;
 }
 
+// Wrap getRedisConnection to return BullMQ-compatible type
+export function getRedisConnection(): BullMQRedis | null {
+   return cacheGetRedisConnection() as unknown as BullMQRedis | null;
+}
+
+// Export Redis type from ioredis (BullMQ-compatible)
+export type { BullMQRedis as Redis };
+
+// BullMQ-specific: returns a connection options type
 export function getConnectionOptions(url: string): ConnectionOptions {
-   return new Redis(`${url}?family=6`, {
-      maxRetriesPerRequest: null,
-   });
-}
-
-export async function closeRedisConnection(): Promise<void> {
-   if (redisConnection) {
-      await redisConnection.quit();
-      redisConnection = null;
-      console.log("[Redis] Connection closed");
-   }
-}
-
-export function getRedisConnection(): Redis | null {
-   return redisConnection;
+   return createRedisConnection(url);
 }

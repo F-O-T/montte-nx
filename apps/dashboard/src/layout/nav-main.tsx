@@ -10,8 +10,6 @@ import {
 } from "@packages/ui/components/sidebar";
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-   ArrowDownRight,
-   ArrowUpRight,
    BarChart3,
    Building2,
    CirclePlus,
@@ -62,7 +60,7 @@ export function NavMain() {
       {
          icon: BarChart3,
          id: "reports",
-         title: "Relatórios DRE",
+         title: translate("dashboard.layout.nav-main.finance.reports"),
          url: "/$slug/custom-reports",
       },
       {

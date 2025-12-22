@@ -1,3 +1,8 @@
+import {
+   type ConditionGroup,
+   type EvaluationContext,
+   evaluateConditionGroup,
+} from "@f-o-t/condition-evaluator";
 import { setTransactionCategories } from "@packages/database/repositories/category-repository";
 import { setTransactionTags } from "@packages/database/repositories/tag-repository";
 import {
@@ -28,16 +33,31 @@ import {
    findTransferLogByTransactionId,
 } from "@packages/database/repositories/transfer-log-repository";
 import type { CategorySplit } from "@packages/database/schemas/transactions";
-import { streamFileForProxy, uploadFile } from "@packages/files/client";
-import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
 import {
-   emitTransactionCreatedEvent,
-   emitTransactionUpdatedEvent,
-} from "@packages/rules-engine/queue/producer";
-import type { TransactionEventData } from "@packages/rules-engine/types/events";
+   deleteFile,
+   generatePresignedPutUrl,
+   streamFileForProxy,
+   verifyFileExists,
+} from "@packages/files/client";
+import { checkBudgetAlertsAfterTransaction } from "@packages/notifications/budget-alerts";
+import { APIError } from "@packages/utils/errors";
 import { validateCategorySplits as validateSplits } from "@packages/utils/split";
+import { enqueueWorkflowEvent } from "@packages/workflows/queue/producer";
+import {
+   createTransactionCreatedEvent,
+   createTransactionUpdatedEvent,
+   type TransactionEventData,
+} from "@packages/workflows/types/events";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
+
+const ALLOWED_ATTACHMENT_TYPES = [
+   "application/pdf",
+   "image/jpeg",
+   "image/png",
+   "image/webp",
+];
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10MB
 
 const categorySplitSchema = z.object({
    categoryId: z.string().uuid(),
@@ -101,7 +121,7 @@ function validateCategorySplitsForTransaction(
    const result = validateSplits(categorySplits, categoryIds, amountInCents);
 
    if (!result.isValid) {
-      throw new Error(result.errors.join("; "));
+      throw APIError.validation(result.errors.join("; "));
    }
 }
 
@@ -127,19 +147,23 @@ function buildTransactionEventData(
 }
 
 export const transactionRouter = router({
-   addAttachment: protectedProcedure
+   requestAttachmentUploadUrl: protectedProcedure
       .input(
          z.object({
-            contentType: z.string(),
-            fileBuffer: z.string(),
+            contentType: z
+               .string()
+               .refine((val) => ALLOWED_ATTACHMENT_TYPES.includes(val), {
+                  message: "File type must be PDF, JPEG, PNG, or WebP",
+               }),
             fileName: z.string(),
-            fileSize: z.number().optional(),
+            fileSize: z
+               .number()
+               .max(MAX_ATTACHMENT_SIZE, "File size must be less than 10MB"),
             transactionId: z.string(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         const { fileName, fileBuffer, contentType, fileSize, transactionId } =
-            input;
+         const { fileName, contentType, fileSize, transactionId } = input;
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
@@ -152,28 +176,144 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachmentId = crypto.randomUUID();
-         const key = `transactions/${organizationId}/${transactionId}/attachments/${attachmentId}/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
+         const storageKey = `transactions/${organizationId}/${transactionId}/attachments/${attachmentId}/${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return {
+            presignedUrl,
+            storageKey,
+            attachmentId,
+            contentType,
+            fileSize,
+         };
+      }),
+
+   confirmAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            attachmentId: z.string(),
+            contentType: z.string(),
+            fileName: z.string(),
+            fileSize: z.number(),
+            storageKey: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const {
+            attachmentId,
+            contentType,
+            fileName,
+            fileSize,
+            storageKey,
+            transactionId,
+         } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw APIError.notFound("Transaction not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `transactions/${organizationId}/${transactionId}/attachments/`,
+            )
+         ) {
+            throw APIError.validation(
+               "Invalid storage key for this transaction",
+            );
+         }
 
          const bucketName = resolvedCtx.minioBucket;
          const minioClient = resolvedCtx.minioClient;
 
-         await uploadFile(key, buffer, contentType, bucketName, minioClient);
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw APIError.validation("File was not uploaded successfully");
+         }
 
          const attachment = await createTransactionAttachment(resolvedCtx.db, {
             contentType,
             fileName,
-            fileSize: fileSize || buffer.length,
+            fileSize: fileSize || fileInfo.size,
             id: attachmentId,
-            storageKey: key,
+            storageKey,
             transactionId,
          });
 
          return attachment;
+      }),
+
+   cancelAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            storageKey: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey, transactionId } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw APIError.notFound("Transaction not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `transactions/${organizationId}/${transactionId}/attachments/`,
+            )
+         ) {
+            throw APIError.validation(
+               "Invalid storage key for this transaction",
+            );
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         try {
+            await deleteFile(storageKey, bucketName, minioClient);
+         } catch (error) {
+            console.error("Error deleting cancelled upload:", error);
+         }
+
+         return { success: true };
       }),
 
    completeTransferLink: protectedProcedure
@@ -197,11 +337,11 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (!existingTransaction.bankAccountId) {
-            throw new Error("Transaction must have a bank account");
+            throw APIError.validation("Transaction must have a bank account");
          }
 
          const existingLog = await findTransferLogByTransactionId(
@@ -210,7 +350,9 @@ export const transactionRouter = router({
          );
 
          if (existingLog) {
-            throw new Error("Transfer already has a linked transaction");
+            throw APIError.conflict(
+               "Transfer already has a linked transaction",
+            );
          }
 
          const amount = parseFloat(existingTransaction.amount);
@@ -270,7 +412,10 @@ export const transactionRouter = router({
          const transaction = await createTransaction(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
-            categorySplits: input.categorySplits || null,
+            categorySplits:
+               input.categorySplits && input.categorySplits.length > 0
+                  ? input.categorySplits
+                  : null,
             costCenterId: input.costCenterId || undefined,
             date: new Date(input.date),
             id: crypto.randomUUID(),
@@ -315,10 +460,11 @@ export const transactionRouter = router({
          }
 
          if (createdTransaction) {
-            emitTransactionCreatedEvent(
+            const event = createTransactionCreatedEvent(
                organizationId,
                buildTransactionEventData(createdTransaction),
-            ).catch((err: unknown) => {
+            );
+            enqueueWorkflowEvent(event).catch((err: unknown) => {
                console.error("Error emitting transaction created event:", err);
             });
          }
@@ -343,7 +489,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          return deleteTransaction(resolvedCtx.db, input.id);
@@ -361,7 +507,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachment = await findTransactionAttachmentById(
@@ -370,7 +516,7 @@ export const transactionRouter = router({
          );
 
          if (!attachment || attachment.transactionId !== input.transactionId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          try {
@@ -406,7 +552,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          return deleteTransactions(resolvedCtx.db, validIds);
@@ -429,7 +575,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const amount = Number(transaction.amount);
@@ -502,7 +648,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (!transaction.attachmentKey) {
@@ -542,7 +688,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachment = await findTransactionAttachmentById(
@@ -551,7 +697,7 @@ export const transactionRouter = router({
          );
 
          if (!attachment || attachment.transactionId !== input.transactionId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -587,7 +733,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          const attachments = await findTransactionAttachmentsByTransactionId(
@@ -610,7 +756,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          return transaction;
@@ -687,7 +833,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (transaction.type !== "transfer") {
@@ -723,18 +869,20 @@ export const transactionRouter = router({
             !fromTransaction ||
             fromTransaction.organizationId !== organizationId
          ) {
-            throw new Error("From transaction not found");
+            throw APIError.notFound("From transaction not found");
          }
 
          if (
             !toTransaction ||
             toTransaction.organizationId !== organizationId
          ) {
-            throw new Error("To transaction not found");
+            throw APIError.notFound("To transaction not found");
          }
 
          if (!fromTransaction.bankAccountId || !toTransaction.bankAccountId) {
-            throw new Error("Both transactions must have a bank account");
+            throw APIError.validation(
+               "Both transactions must have a bank account",
+            );
          }
 
          await Promise.all([
@@ -783,13 +931,12 @@ export const transactionRouter = router({
          );
 
          if (validTransactions.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          const results = await Promise.all(
             validTransactions.map(async (t) => {
                const amount = Number(t.amount);
-               const isOutgoing = amount < 0;
 
                await updateTransaction(resolvedCtx.db, t.id, {
                   type: "transfer",
@@ -838,17 +985,13 @@ export const transactionRouter = router({
                }
 
                await createTransferLog(resolvedCtx.db, {
-                  fromBankAccountId: isOutgoing
-                     ? (t.bankAccountId as string)
-                     : input.toBankAccountId,
-                  fromTransactionId: isOutgoing ? t.id : counterpartId,
+                  fromBankAccountId: t.bankAccountId as string,
+                  fromTransactionId: t.id,
                   id: crypto.randomUUID(),
                   notes: null,
                   organizationId,
-                  toBankAccountId: isOutgoing
-                     ? input.toBankAccountId
-                     : (t.bankAccountId as string),
-                  toTransactionId: isOutgoing ? counterpartId : t.id,
+                  toBankAccountId: input.toBankAccountId,
+                  toTransactionId: counterpartId,
                });
 
                return t.id;
@@ -870,7 +1013,7 @@ export const transactionRouter = router({
          );
 
          if (!transaction || transaction.organizationId !== organizationId) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (!transaction.attachmentKey) {
@@ -939,7 +1082,7 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
          }
 
          if (input.data.categorySplits !== undefined) {
@@ -1025,10 +1168,11 @@ export const transactionRouter = router({
 
          if (finalTransaction) {
             const previousData = buildTransactionEventData(existingTransaction);
-            emitTransactionUpdatedEvent(
+            const event = createTransactionUpdatedEvent(
                organizationId,
                buildTransactionEventData(finalTransaction, previousData),
-            ).catch((err: unknown) => {
+            );
+            enqueueWorkflowEvent(event).catch((err: unknown) => {
                console.error("Error emitting transaction updated event:", err);
             });
          }
@@ -1063,7 +1207,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          return updateTransactionsCategory(
@@ -1098,7 +1242,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          const results = await Promise.all(
@@ -1137,7 +1281,7 @@ export const transactionRouter = router({
             .map((t) => t.id);
 
          if (validIds.length === 0) {
-            throw new Error("No valid transactions found");
+            throw APIError.notFound("No valid transactions found");
          }
 
          await Promise.all(
@@ -1152,14 +1296,20 @@ export const transactionRouter = router({
    uploadAttachment: protectedProcedure
       .input(
          z.object({
-            contentType: z.string(),
-            fileBuffer: z.string(),
+            contentType: z
+               .string()
+               .refine((val) => ALLOWED_ATTACHMENT_TYPES.includes(val), {
+                  message: "File type must be PDF, JPEG, PNG, or WebP",
+               }),
             fileName: z.string(),
+            fileSize: z
+               .number()
+               .max(MAX_ATTACHMENT_SIZE, "File size must be less than 10MB"),
             transactionId: z.string(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         const { fileName, fileBuffer, contentType, transactionId } = input;
+         const { fileName, contentType, fileSize, transactionId } = input;
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
@@ -1172,40 +1322,224 @@ export const transactionRouter = router({
             !existingTransaction ||
             existingTransaction.organizationId !== organizationId
          ) {
-            throw new Error("Transaction not found");
+            throw APIError.notFound("Transaction not found");
+         }
+
+         const timestamp = Date.now();
+         const storageKey = `transactions/${organizationId}/${transactionId}/attachment/${timestamp}-${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return { presignedUrl, storageKey, contentType, fileSize };
+      }),
+
+   confirmUploadAttachment: protectedProcedure
+      .input(
+         z.object({
+            storageKey: z.string(),
+            transactionId: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey, transactionId } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingTransaction = await findTransactionById(
+            resolvedCtx.db,
+            transactionId,
+         );
+
+         if (
+            !existingTransaction ||
+            existingTransaction.organizationId !== organizationId
+         ) {
+            throw APIError.notFound("Transaction not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `transactions/${organizationId}/${transactionId}/attachment/`,
+            )
+         ) {
+            throw APIError.validation(
+               "Invalid storage key for this transaction",
+            );
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw APIError.validation("File was not uploaded successfully");
          }
 
          if (existingTransaction.attachmentKey) {
             try {
-               const bucketName = resolvedCtx.minioBucket;
-               const minioClient = resolvedCtx.minioClient;
-               await minioClient.removeObject(
-                  bucketName,
+               await deleteFile(
                   existingTransaction.attachmentKey,
+                  bucketName,
+                  minioClient,
                );
             } catch (error) {
                console.error("Error deleting old attachment:", error);
             }
          }
 
-         const key = `transactions/${organizationId}/${transactionId}/attachment/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
-
-         const bucketName = resolvedCtx.minioBucket;
-         const minioClient = resolvedCtx.minioClient;
-
-         const url = await uploadFile(
-            key,
-            buffer,
-            contentType,
-            bucketName,
-            minioClient,
-         );
-
          await updateTransaction(resolvedCtx.db, transactionId, {
-            attachmentKey: key,
+            attachmentKey: storageKey,
          });
 
-         return { key, url };
+         return { key: storageKey };
+      }),
+
+   getSimilarTransactions: protectedProcedure
+      .input(
+         z.object({
+            limit: z.number().min(1).max(100).default(5),
+            transactionId: z.string(),
+         }),
+      )
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const sourceTransaction = await findTransactionById(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (
+            !sourceTransaction ||
+            sourceTransaction.organizationId !== organizationId
+         ) {
+            throw APIError.notFound("Transaction not found");
+         }
+
+         const sourceAmount = Math.abs(Number(sourceTransaction.amount));
+         const sourceCategoryId =
+            sourceTransaction.transactionCategories?.[0]?.category.id || null;
+
+         const descriptionWords = sourceTransaction.description
+            .toLowerCase()
+            .split(/\s+/)
+            .filter((word) => word.length > 2);
+         const mainKeyword = descriptionWords[0] || "";
+
+         let transferCounterpartId: string | null = null;
+         if (sourceTransaction.type === "transfer") {
+            const transferLog = await findTransferLogByTransactionId(
+               resolvedCtx.db,
+               input.transactionId,
+            );
+            if (transferLog) {
+               transferCounterpartId =
+                  transferLog.fromTransactionId === input.transactionId
+                     ? transferLog.toTransactionId
+                     : transferLog.fromTransactionId;
+            }
+         }
+
+         const candidates = await findTransactionsByOrganizationIdPaginated(
+            resolvedCtx.db,
+            organizationId,
+            { limit: 100, page: 1 },
+         );
+
+         const excludeIds = new Set([input.transactionId]);
+         if (transferCounterpartId) {
+            excludeIds.add(transferCounterpartId);
+         }
+
+         const conditions: ConditionGroup["conditions"] = [];
+
+         if (sourceCategoryId) {
+            conditions.push({
+               field: "categoryId",
+               id: "category-match",
+               operator: "eq",
+               options: { weight: 30 },
+               type: "string",
+               value: sourceCategoryId,
+            });
+         }
+
+         if (sourceAmount > 0) {
+            conditions.push({
+               field: "amount",
+               id: "amount-proximity",
+               operator: "between",
+               options: { weight: 30 },
+               type: "number",
+               value: [sourceAmount * 0.8, sourceAmount * 1.2],
+            });
+         }
+
+         if (mainKeyword) {
+            conditions.push({
+               field: "description",
+               id: "description-contains",
+               operator: "contains",
+               options: { caseSensitive: false, weight: 40 },
+               type: "string",
+               value: mainKeyword,
+            });
+         }
+
+         if (conditions.length === 0) {
+            return [];
+         }
+
+         const similarityRule: ConditionGroup = {
+            conditions,
+            id: "similarity-check",
+            operator: "OR",
+            scoringMode: "weighted",
+            threshold: 30,
+         };
+
+         const scoredCandidates = candidates.transactions
+            .filter((t) => !excludeIds.has(t.id))
+            .map((candidate) => {
+               const candidateCategoryId =
+                  candidate.transactionCategories?.[0]?.category.id || "";
+               const candidateAmount = Math.abs(Number(candidate.amount));
+
+               const context: EvaluationContext = {
+                  data: {
+                     amount: candidateAmount,
+                     categoryId: candidateCategoryId,
+                     description: candidate.description.toLowerCase(),
+                  },
+               };
+
+               const result = evaluateConditionGroup(similarityRule, context);
+
+               return {
+                  score: result.totalScore ?? 0,
+                  transaction: candidate,
+               };
+            })
+            .filter((item) => item.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, input.limit);
+
+         return scoredCandidates.map((item) => ({
+            score: item.score,
+            transaction: item.transaction,
+         }));
       }),
 });

@@ -1,11 +1,8 @@
 {
+   "extends": "@tooling/typescript/typecheck.json",
    "compilerOptions": {
-      "jsx": "react-jsx"
+      "jsx": "react-jsx",
+      "lib": ["dom", "ES2022"]
    },
-   "extends": "@tooling/typescript/internal-package.json",
-   "references": [
-      {
-         "path": "../environment"
-      }
-   ]
+   "include": ["src"]
 }

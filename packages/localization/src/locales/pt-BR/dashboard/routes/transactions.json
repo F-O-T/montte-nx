@@ -55,6 +55,25 @@
          "description": "Adicione uma nova transação ao seu registro financeiro.",
          "title": "Adicionar Nova Transação"
       },
+      "duplicate": {
+         "date-options": {
+            "custom": {
+               "description": "Escolha uma data específica para a duplicação",
+               "title": "Data específica"
+            },
+            "same-day": {
+               "description": "Usar a mesma data da transação original",
+               "title": "Mesmo dia da transação"
+            },
+            "today": {
+               "description": "Usar a data de hoje para a duplicação",
+               "title": "Hoje"
+            }
+         },
+         "description": "Crie uma cópia desta transação com os mesmos dados.",
+         "submit": "Duplicar Transação",
+         "title": "Duplicar Transação"
+      },
       "edit": {
          "description": "Modifique os detalhes da transação selecionada.",
          "title": "Editar Transação"
@@ -81,6 +100,72 @@
             "placeholder": "Selecione a data inicial"
          },
          "title": "Filtrar Transações"
+      },
+      "recurrence": {
+         "description": "Configure uma conta recorrente a partir desta transação.",
+         "frequency": {
+            "biweekly": {
+               "description": "Cria uma conta a cada 15 dias",
+               "title": "Quinzenal"
+            },
+            "daily": {
+               "description": "Cria uma conta para cada dia",
+               "title": "Diario"
+            },
+            "monthly": {
+               "description": "Cria uma conta todo mes",
+               "title": "Mensal"
+            },
+            "title": "Frequencia",
+            "weekly": {
+               "description": "Cria uma conta toda semana",
+               "title": "Semanal"
+            },
+            "yearly": {
+               "description": "Cria uma conta todo ano",
+               "title": "Anual"
+            }
+         },
+         "occurrence": {
+            "auto": {
+               "description": "Quantidade baseada na frequencia selecionada",
+               "title": "Automatico"
+            },
+            "count": {
+               "description": "Especifique quantas vezes repetir",
+               "input-label": "Numero de repeticoes",
+               "title": "Numero de vezes"
+            },
+            "title": "Quantidade",
+            "until-date": {
+               "description": "Repete ate a data escolhida",
+               "title": "Ate uma data"
+            }
+         },
+         "preview": "Serao criadas {{count}} contas",
+         "start-date": "Data de inicio",
+         "submit": "Criar Recorrencia",
+         "success": "Recorrencia criada com sucesso",
+         "title": "Criar Recorrencia"
+      },
+      "refund": {
+         "date-options": {
+            "custom": {
+               "description": "Escolha uma data específica para o estorno",
+               "title": "Data específica"
+            },
+            "same-day": {
+               "description": "Usar a mesma data da transação original",
+               "title": "Mesmo dia da transação"
+            },
+            "today": {
+               "description": "Usar a data de hoje para o estorno",
+               "title": "Hoje"
+            }
+         },
+         "description": "Crie uma transação de estorno para reverter esta transação.",
+         "submit": "Criar Estorno",
+         "title": "Estornar Transação"
       }
    },
    "link-file": {
@@ -100,9 +185,12 @@
    },
    "list-section": {
       "actions": {
+         "create-bill": "Criar Recorrencia",
          "delete": "Excluir transação",
+         "duplicate": "Duplicar",
          "edit": "Editar transação",
          "label": "Gerencie sua transação",
+         "refund": "Estornar",
          "view-details": "Ver detalhes"
       },
       "description": "Veja todas as suas transações financeiras aqui.",

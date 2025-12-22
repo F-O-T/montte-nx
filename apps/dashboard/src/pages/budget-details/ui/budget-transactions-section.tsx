@@ -126,7 +126,6 @@ function BudgetTransactionsContent({
    const [pageSize, setPageSize] = useState(10);
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [typeFilter, setTypeFilter] = useState("");
 
    const dateKey = useMemo(
       () => `${startDate?.getTime()}-${endDate?.getTime()}`,
@@ -162,10 +161,7 @@ function BudgetTransactionsContent({
                search: debouncedSearchTerm || undefined,
                startDate: startDate?.toISOString(),
                tagId,
-               type:
-                  typeFilter === "all" || typeFilter === ""
-                     ? "expense"
-                     : (typeFilter as "income" | "expense" | "transfer"),
+               type: "expense",
             },
             {
                placeholderData: keepPreviousData,
@@ -179,12 +175,7 @@ function BudgetTransactionsContent({
    const { totalPages, totalCount } = pagination;
    const categories = categoriesQuery.data ?? [];
 
-   const handleClearFilters = () => {
-      setSearchTerm("");
-      setTypeFilter("");
-   };
-
-   const hasActiveFilters = debouncedSearchTerm.length > 0 || typeFilter !== "";
+   const hasActiveFilters = debouncedSearchTerm.length > 0;
 
    if (transactions.length === 0 && !hasActiveFilters) {
       return (
@@ -234,13 +225,8 @@ function BudgetTransactionsContent({
             "dashboard.routes.budgets.details.transactions.empty.title",
          )}
          filters={{
-            categoryFilter: "all",
-            onCategoryFilterChange: () => {},
-            onClearFilters: handleClearFilters,
             onSearchChange: setSearchTerm,
-            onTypeFilterChange: setTypeFilter,
             searchTerm,
-            typeFilter,
          }}
          pagination={{
             currentPage,
@@ -253,7 +239,6 @@ function BudgetTransactionsContent({
             totalCount,
             totalPages,
          }}
-         showTypeToggle={false}
          transactions={transactions}
       />
    );

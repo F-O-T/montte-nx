@@ -1,11 +1,19 @@
-import type { DRESnapshotData } from "@packages/database/schemas/custom-reports";
+import type {
+   DRESnapshotData,
+   ReportType,
+} from "@packages/database/schemas/custom-reports";
 import { renderToBuffer } from "@react-pdf/renderer";
+import {
+   type BankStatementProps,
+   BankStatementTemplate,
+} from "./templates/bank-statement";
 import { DREFiscalTemplate } from "./templates/dre-fiscal";
 import { DREGerencialTemplate } from "./templates/dre-gerencial";
+import { isSupportedPdfReportType, type SupportedPdfReportType } from "./types";
 
 export type RenderDREReportOptions = {
    name: string;
-   type: "dre_gerencial" | "dre_fiscal";
+   type: SupportedPdfReportType;
    startDate: string;
    endDate: string;
    snapshotData: DRESnapshotData;
@@ -25,5 +33,47 @@ export async function renderDREReport(
    return Buffer.from(buffer);
 }
 
+export type { ReportType, SupportedPdfReportType } from "./types";
+// Re-export types and utilities for PDF support checking
+export { isSupportedPdfReportType } from "./types";
+
+/**
+ * Check if a report type can be rendered as PDF.
+ * Returns an error message if not supported, null if supported.
+ */
+export function getUnsupportedReportTypeError(type: ReportType): string | null {
+   if (isSupportedPdfReportType(type)) {
+      return null;
+   }
+
+   const unsupportedTypes: Record<
+      Exclude<ReportType, SupportedPdfReportType>,
+      string
+   > = {
+      budget_vs_actual: "Budget vs Actual",
+      cash_flow_forecast: "Cash Flow Forecast",
+      counterparty_analysis: "Counterparty Analysis",
+      spending_trends: "Spending Trends",
+   };
+
+   const typeName = unsupportedTypes[type];
+   return `PDF export is not yet available for "${typeName}" reports`;
+}
+
+export type RenderBankStatementOptions = BankStatementProps;
+
+export async function renderBankStatement(
+   options: RenderBankStatementOptions,
+): Promise<Buffer> {
+   const document = BankStatementTemplate(options);
+   const buffer = await renderToBuffer(document);
+   return Buffer.from(buffer);
+}
+
+export type {
+   BankStatementProps,
+   BankStatementTransaction,
+} from "./templates/bank-statement";
+export { BankStatementTemplate } from "./templates/bank-statement";
 export { DREFiscalTemplate } from "./templates/dre-fiscal";
 export { DREGerencialTemplate } from "./templates/dre-gerencial";

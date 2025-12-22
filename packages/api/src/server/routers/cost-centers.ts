@@ -9,6 +9,7 @@ import {
    getTotalCostCentersByOrganizationId,
    updateCostCenter,
 } from "@packages/database/repositories/cost-center-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -59,7 +60,7 @@ export const costCenterRouter = router({
             !existingCostCenter ||
             existingCostCenter.organizationId !== organizationId
          ) {
-            throw new Error("Cost center not found");
+            throw APIError.notFound("Cost center not found");
          }
 
          return deleteCostCenter(resolvedCtx.db, input.id);
@@ -113,7 +114,7 @@ export const costCenterRouter = router({
          const costCenter = await findCostCenterById(resolvedCtx.db, input.id);
 
          if (!costCenter || costCenter.organizationId !== organizationId) {
-            throw new Error("Cost center not found");
+            throw APIError.notFound("Cost center not found");
          }
 
          return costCenter;
@@ -156,7 +157,7 @@ export const costCenterRouter = router({
             !existingCostCenter ||
             existingCostCenter.organizationId !== organizationId
          ) {
-            throw new Error("Cost center not found");
+            throw APIError.notFound("Cost center not found");
          }
 
          return updateCostCenter(resolvedCtx.db, input.id, input.data);

@@ -1,31 +1,8 @@
 ---
 export const prerender = true;
 
-import {
-   AlertCircle,
-   ArrowRight,
-   Bell,
-   Calculator,
-   CalendarClock,
-   ChartNoAxesCombined,
-   Check,
-   CheckCircle2,
-   ChevronDown,
-   ChevronRight,
-   Clock,
-   FileText,
-   Globe,
-   Link as LinkIcon,
-   Repeat,
-   ScrollText,
-   Zap,
-} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
-import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -34,9 +11,9 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const lang = (locale || "pt-BR") as SupportedLng;
+const _lang = (locale || "pt-BR") as SupportedLng;
 
-const relatedFeatures = [
+const _relatedFeatures = [
    {
       description: "Vincule pagamentos de contas as transacoes automaticamente",
       href: "/features/smart-transactions",
@@ -59,7 +36,7 @@ const relatedFeatures = [
    },
 ];
 
-const testimonials = [
+const _testimonials = [
    {
       avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Marcus",
       name: "Marcus T.",
@@ -83,7 +60,7 @@ const testimonials = [
    },
 ];
 
-const faqs = [
+const _faqs = [
    {
       answer:
          "Sim. Quando voce registra uma transacao de pagamento, ela e automaticamente vinculada a conta e marcada como paga.",

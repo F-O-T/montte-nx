@@ -1,8 +1,13 @@
 {
    "actions": {
+      "change-category": "Alterar Categoria",
+      "create-installments": "Criar Parcelas",
       "delete": "Excluir",
+      "duplicate": "Duplicar",
       "edit": "Editar",
       "label": "Ações",
+      "link-file": "Anexar Arquivo",
+      "mark-as-recurrent": "Tornar Recorrente",
       "pay": "Pagar",
       "receive": "Receber"
    },
@@ -75,13 +80,176 @@
       "title": "Detalhes da Conta"
    },
    "features": {
+      "change-category": {
+         "description": "Altere a categoria desta conta",
+         "title": "Alterar Categoria"
+      },
+      "duplicate-bill": {
+         "date-options": {
+            "custom": "Data personalizada",
+            "same-day": "Mesmo dia do original",
+            "today": "Hoje"
+         },
+         "description": "Crie uma cópia desta conta com uma nova data de vencimento",
+         "submit": "Duplicar Conta",
+         "title": "Duplicar Conta"
+      },
+      "mark-as-recurrent": {
+         "by-count": "Por quantidade",
+         "by-date": "Por data",
+         "description": "Configure a recorrência para criar contas automaticamente",
+         "end-date": "Data final",
+         "end-date-description": "A recorrência termina nesta data",
+         "end-date-placeholder": "Selecione a data final",
+         "end-type": "Término da recorrência",
+         "occurrence-count": "Número de ocorrências",
+         "occurrence-count-description": "Quantas vezes a conta será criada",
+         "pattern-description": "Escolha com que frequência a conta se repete",
+         "submit": "Criar Recorrência",
+         "success": "Recorrência criada com sucesso",
+         "title": "Tornar Recorrente"
+      },
       "complete-bill": {
+         "bank-account": "Conta Bancária",
+         "bank-account-description": "Selecione a conta onde foi realizado o pagamento (opcional)",
+         "completion-date-expense": "Data do Pagamento",
+         "completion-date-income": "Data do Recebimento",
+         "confirm-payment": "Confirmar Pagamento",
+         "confirm-receipt": "Confirmar Recebimento",
          "description": "Marque a conta como paga ou recebida",
-         "title": "Concluir Conta"
+         "description-expense": "Marque esta conta como paga",
+         "description-income": "Marque este recebível como recebido",
+         "error": "Falha ao completar conta",
+         "success-payment": "Pagamento registrado com sucesso",
+         "success-receipt": "Recebimento registrado com sucesso",
+         "summary": "Resumo da Conta",
+         "title": "Concluir Conta",
+         "title-expense": "Pagar Conta",
+         "title-income": "Receber Pagamento"
+      },
+      "create-installments": {
+         "description": "Divida esta conta em parcelas mensais",
+         "installment-count": "Número de parcelas",
+         "installment-count-description": "Mínimo de 2 parcelas",
+         "start-date": "Data da primeira parcela",
+         "start-date-description": "As demais parcelas serão criadas mensalmente a partir desta data",
+         "start-date-placeholder": "Selecione a data",
+         "submit": "Criar Parcelas",
+         "success": "Parcelas criadas com sucesso",
+         "title": "Criar Parcelas"
       },
       "create-bill": {
          "creating": "Criando...",
          "description": "Adicione uma nova conta a pagar ou a receber",
+         "steps": {
+            "bill-type": {
+               "title": "Tipo",
+               "description": "Selecione o tipo de conta",
+               "question": "Que tipo de conta você deseja criar?",
+               "options": {
+                  "payable": {
+                     "title": "A Pagar",
+                     "description": "Despesas e contas que você precisa pagar"
+                  },
+                  "receivable": {
+                     "title": "A Receber",
+                     "description": "Receitas e valores que você vai receber"
+                  }
+               }
+            },
+            "bill-mode": {
+               "title": "Modalidade",
+               "description": "Como esta conta será paga/recebida?",
+               "question": "Como esta conta será paga/recebida?",
+               "options": {
+                  "onetime": {
+                     "title": "Única",
+                     "description": "Pagamento ou recebimento único"
+                  },
+                  "recurring": {
+                     "title": "Recorrente",
+                     "description": "Conta fixa que se repete (mensal, trimestral, etc.)"
+                  },
+                  "installment": {
+                     "title": "Parcelada",
+                     "description": "Dividida em várias parcelas com datas específicas"
+                  }
+               }
+            },
+            "details": {
+               "title": "Detalhes",
+               "description": "Informe os dados principais da conta"
+            },
+            "recurrence": {
+               "title": "Recorrência",
+               "description": "Configure a periodicidade ou parcelamento"
+            },
+            "categorization": {
+               "title": "Categorização",
+               "description": "Associe uma categoria e conta bancária",
+               "optional-hint": "Todos os campos abaixo são opcionais. Você pode pular esta etapa se preferir."
+            }
+         },
+         "recurrence-step": {
+            "frequency": {
+               "title": "Frequência",
+               "description": "Escolha com que frequência a conta se repete",
+               "options": {
+                  "monthly": {
+                     "title": "Mensal",
+                     "description": "Repete todo mês"
+                  },
+                  "quarterly": {
+                     "title": "Trimestral",
+                     "description": "Repete a cada 3 meses"
+                  },
+                  "semiannual": {
+                     "title": "Semestral",
+                     "description": "Repete a cada 6 meses"
+                  },
+                  "annual": {
+                     "title": "Anual",
+                     "description": "Repete todo ano"
+                  }
+               }
+            },
+            "occurrence": {
+               "title": "Quantidade",
+               "description": "Defina quantas vezes a conta será criada",
+               "options": {
+                  "auto": {
+                     "title": "Automático",
+                     "description": "Usa padrão baseado na frequência"
+                  },
+                  "count": {
+                     "title": "Número de vezes",
+                     "description": "Define quantidade específica",
+                     "input-label": "Quantidade de repetições"
+                  },
+                  "until-date": {
+                     "title": "Até uma data",
+                     "description": "Repete até a data escolhida"
+                  }
+               }
+            },
+            "preview": {
+               "title": "Resumo",
+               "message": "{{frequency}} - {{type}}"
+            },
+            "installment": {
+               "count": {
+                  "description": "Defina em quantas parcelas será dividido"
+               },
+               "interval": {
+                  "description": "Escolha o intervalo entre as parcelas"
+               },
+               "amounts": {
+                  "description": "Como os valores serão distribuídos",
+                  "equal-description": "Divide o valor total em parcelas iguais",
+                  "custom-description": "Define um valor diferente para cada parcela"
+               }
+            }
+         },
          "error": "Erro ao criar conta",
          "fields": {
             "amount": "Valor",
@@ -101,6 +269,7 @@
             "amountCustom": "Personalizados",
             "amountEqual": "Iguais",
             "amountType": "Valores das parcelas",
+            "badge": "Parcela {{current}}/{{total}}",
             "count": "Número de parcelas",
             "customDays": "Dias personalizados",
             "eachAmount": "({{amount}} cada)",
@@ -113,6 +282,7 @@
                "monthly": "Mensal (30 dias)",
                "weekly": "Semanal (7 dias)"
             },
+            "preview": "{{count}} parcelas de {{value}}",
             "title": "Parcelamento",
             "totalAmount": "Total: {{amount}}"
          },
@@ -161,6 +331,10 @@
          "title": "Editar Conta",
          "updating": "Atualizando..."
       },
+      "from-transaction": {
+         "description": "Crie uma conta a pagar/receber recorrente baseada nesta transação",
+         "title": "Criar Conta a partir de Transação"
+      },
       "filter": {
          "actions": {
             "clear-filters": "Limpar Filtros"
@@ -185,6 +359,15 @@
    },
    "filter": {
       "tooltip": "Filtrar contas"
+   },
+   "link-file": {
+      "select-file": "Selecione um arquivo",
+      "sheet": {
+         "description": "Anexe documentos relacionados a esta conta",
+         "title": "Anexar Arquivo"
+      },
+      "upload": "Enviar",
+      "uploading": "Enviando..."
    },
    "list-section": {
       "actions": {

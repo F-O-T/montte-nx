@@ -22,29 +22,23 @@ const styles = StyleSheet.create({
       textAlign: "right",
       width: "15%",
    },
-   categoryBadge: {
-      backgroundColor: "#e5e7eb",
-      borderRadius: 2,
-      marginRight: 2,
-      paddingHorizontal: 4,
-      paddingVertical: 2,
-   },
    categoryCell: {
       color: "#374151",
       fontSize: 8,
-      width: "20%",
+      width: "25%",
    },
-   categoryText: {
-      color: "#374151",
-      fontSize: 7,
+   categoryDot: {
+      borderRadius: 2,
+      height: 6,
+      marginRight: 4,
+      width: 6,
+   },
+   categoryRow: {
+      alignItems: "center",
+      flexDirection: "row",
    },
    container: {
       marginBottom: 20,
-   },
-   costCenterCell: {
-      color: "#6b7280",
-      fontSize: 8,
-      width: "15%",
    },
    dateCell: {
       color: "#374151",
@@ -54,7 +48,14 @@ const styles = StyleSheet.create({
    descCell: {
       color: "#374151",
       fontSize: 8,
-      width: "28%",
+      width: "33%",
+   },
+   expandedRow: {
+      backgroundColor: "#f9fafb",
+      borderBottomColor: "#e5e7eb",
+      borderBottomWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
    },
    headerCell: {
       color: "#374151",
@@ -83,15 +84,43 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
       paddingVertical: 6,
    },
+   splitAmount: {
+      color: "#374151",
+      fontSize: 7,
+      textAlign: "right",
+      width: 60,
+   },
+   splitCategory: {
+      color: "#374151",
+      fontSize: 7,
+      flex: 1,
+   },
+   splitDot: {
+      borderRadius: 2,
+      height: 5,
+      marginRight: 4,
+      width: 5,
+   },
+   splitItem: {
+      alignItems: "center",
+      flexDirection: "row",
+      marginRight: 12,
+   },
+   splitLabel: {
+      color: "#6b7280",
+      fontSize: 7,
+      marginRight: 8,
+   },
+   splitsContainer: {
+      alignItems: "center",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 4,
+   },
    table: {
       borderColor: "#e5e7eb",
       borderRadius: 4,
       borderWidth: 1,
-   },
-   tagsCell: {
-      color: "#9ca3af",
-      fontSize: 7,
-      width: "10%",
    },
    title: {
       color: "#111827",
@@ -118,35 +147,79 @@ function formatDate(dateStr: string): string {
 
 export function TransactionRow({ transaction }: TransactionRowProps) {
    const isIncome = transaction.type === "income";
-   const categoryNames = transaction.categories.map((c) => c.name).join(", ");
-   const tagNames = transaction.tags.map((t) => t.name).join(", ");
+   const primaryCategory = transaction.transactionCategories[0]?.category;
+   const hasSplits =
+      transaction.categorySplits && transaction.categorySplits.length > 0;
 
    return (
-      <View style={styles.row}>
-         <Text style={styles.dateCell}>{formatDate(transaction.date)}</Text>
-         <Text style={styles.descCell}>
-            {transaction.description.substring(0, 35)}
-            {transaction.description.length > 35 ? "..." : ""}
-         </Text>
-         <Text
-            style={
-               isIncome ? styles.amountCellPositive : styles.amountCellNegative
-            }
-         >
-            {isIncome ? "+" : "-"}
-            {formatCurrency(transaction.amount)}
-         </Text>
-         <Text style={styles.categoryCell}>
-            {categoryNames.substring(0, 20)}
-            {categoryNames.length > 20 ? "..." : ""}
-         </Text>
-         <Text style={styles.costCenterCell}>
-            {transaction.costCenter?.name?.substring(0, 15) || "-"}
-         </Text>
-         <Text style={styles.tagsCell}>
-            {tagNames.substring(0, 15)}
-            {tagNames.length > 15 ? "..." : ""}
-         </Text>
+      <View>
+         <View style={styles.row}>
+            <Text style={styles.dateCell}>{formatDate(transaction.date)}</Text>
+            <Text style={styles.descCell}>
+               {transaction.description.substring(0, 40)}
+               {transaction.description.length > 40 ? "..." : ""}
+            </Text>
+            <Text
+               style={
+                  isIncome
+                     ? styles.amountCellPositive
+                     : styles.amountCellNegative
+               }
+            >
+               {isIncome ? "+" : "-"}
+               {formatCurrency(Number(transaction.amount))}
+            </Text>
+            <View style={[styles.categoryCell, styles.categoryRow]}>
+               {primaryCategory && (
+                  <>
+                     <View
+                        style={[
+                           styles.categoryDot,
+                           { backgroundColor: primaryCategory.color },
+                        ]}
+                     />
+                     <Text>
+                        {primaryCategory.name.substring(0, 20)}
+                        {primaryCategory.name.length > 20 ? "..." : ""}
+                        {hasSplits ? " (split)" : ""}
+                     </Text>
+                  </>
+               )}
+               {!primaryCategory && <Text>-</Text>}
+            </View>
+         </View>
+
+         {hasSplits && (
+            <View style={styles.expandedRow}>
+               <View style={styles.splitsContainer}>
+                  <Text style={styles.splitLabel}>Divisão:</Text>
+                  {transaction.categorySplits?.map((split) => {
+                     const category = transaction.transactionCategories.find(
+                        (tc) => tc.category.id === split.categoryId,
+                     )?.category;
+                     return (
+                        <View key={split.categoryId} style={styles.splitItem}>
+                           <View
+                              style={[
+                                 styles.splitDot,
+                                 {
+                                    backgroundColor:
+                                       category?.color || "#6b7280",
+                                 },
+                              ]}
+                           />
+                           <Text style={styles.splitCategory}>
+                              {category?.name || "Sem categoria"}
+                           </Text>
+                           <Text style={styles.splitAmount}>
+                              {formatCurrency(split.value / 100)}
+                           </Text>
+                        </View>
+                     );
+                  })}
+               </View>
+            </View>
+         )}
       </View>
    );
 }
@@ -159,7 +232,7 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
          <View style={styles.table}>
             <View style={styles.headerRow}>
                <Text style={[styles.headerCell, { width: "12%" }]}>Data</Text>
-               <Text style={[styles.headerCell, { width: "28%" }]}>
+               <Text style={[styles.headerCell, { width: "33%" }]}>
                   Descrição
                </Text>
                <Text
@@ -170,13 +243,9 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                >
                   Valor
                </Text>
-               <Text style={[styles.headerCell, { width: "20%" }]}>
+               <Text style={[styles.headerCell, { width: "25%" }]}>
                   Categoria
                </Text>
-               <Text style={[styles.headerCell, { width: "15%" }]}>
-                  Centro de Custo
-               </Text>
-               <Text style={[styles.headerCell, { width: "10%" }]}>Tags</Text>
             </View>
 
             {transactions.length === 0 && (
@@ -184,7 +253,10 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
             )}
 
             {transactions.map((transaction, index) => (
-               <TransactionRow key={index} transaction={transaction} />
+               <TransactionRow
+                  key={`transaction-${index + 1}`}
+                  transaction={transaction}
+               />
             ))}
          </View>
       </View>

@@ -1,4 +1,7 @@
-import type { DRESnapshotData } from "@packages/database/repositories/custom-report-repository";
+import type {
+   DRESnapshotData,
+   TransactionSnapshot,
+} from "@packages/database/schemas/custom-reports";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -8,6 +11,12 @@ import {
    CardHeader,
    CardTitle,
 } from "@packages/ui/components/card";
+import {
+   type ChartConfig,
+   ChartContainer,
+   ChartTooltip,
+   ChartTooltipContent,
+} from "@packages/ui/components/chart";
 import { DataTable } from "@packages/ui/components/data-table";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
@@ -23,15 +32,9 @@ import {
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { getRouteApi, Link } from "@tanstack/react-router";
-import type { ColumnDef } from "@tanstack/react-table";
+import { getRouteApi } from "@tanstack/react-router";
 import {
-   ArrowDownLeft,
-   ArrowLeft,
-   ArrowUpRight,
-   BarChart3,
    Building2,
-   Calculator,
    Download,
    Edit,
    Filter,
@@ -40,7 +43,16 @@ import {
 } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { Cell, Pie, PieChart } from "recharts";
+import { DefaultHeader } from "@/default/default-header";
 import { ManageCustomReportForm } from "@/features/custom-report/ui/manage-custom-report-form";
+import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
+import type {
+   Category,
+   Transaction,
+} from "@/features/transaction/ui/transaction-list";
+import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
+import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
@@ -48,15 +60,72 @@ import { useExportPdf } from "@/pages/custom-reports/features/use-export-pdf";
 
 const routeApi = getRouteApi("/$slug/_dashboard/custom-reports/$reportId");
 
-type TransactionRow = {
-   id: string;
-   description: string;
-   date: string;
-   amount: number;
-   type: "income" | "expense" | "transfer";
-   categoryName?: string;
-   bankAccountName?: string;
-};
+/**
+ * Maps TransactionSnapshot to the structure expected by table components.
+ * TransactionSnapshot has all display-relevant fields. This function fills
+ * in additional metadata fields required by the Transaction type with
+ * placeholder values since they're not used by the display components.
+ */
+function mapSnapshotToTableTransaction(
+   snapshot: TransactionSnapshot,
+): Transaction {
+   const snapshotDate = new Date(snapshot.date);
+
+   return {
+      amount: snapshot.amount,
+      attachmentKey: null,
+      externalId: null,
+      bankAccount: snapshot.bankAccount
+         ? {
+              ...snapshot.bankAccount,
+              createdAt: snapshotDate,
+              organizationId: "",
+              status: "active" as const,
+              type: "checking" as const,
+              updatedAt: snapshotDate,
+           }
+         : null,
+      bankAccountId: snapshot.bankAccount?.id ?? null,
+      categorySplits: snapshot.categorySplits,
+      costCenter: snapshot.costCenter
+         ? {
+              ...snapshot.costCenter,
+              createdAt: snapshotDate,
+              organizationId: "",
+              updatedAt: snapshotDate,
+           }
+         : null,
+      costCenterId: snapshot.costCenter?.id ?? null,
+      createdAt: snapshotDate,
+      date: snapshotDate,
+      description: snapshot.description,
+      id: snapshot.id,
+      organizationId: "",
+      transactionCategories: snapshot.transactionCategories.map((tc) => ({
+         category: {
+            ...tc.category,
+            createdAt: snapshotDate,
+            organizationId: "",
+            transactionTypes: [],
+            updatedAt: snapshotDate,
+         },
+         categoryId: tc.category.id,
+         transactionId: snapshot.id,
+      })),
+      transactionTags: snapshot.transactionTags.map((tt) => ({
+         tag: {
+            ...tt.tag,
+            createdAt: snapshotDate,
+            organizationId: "",
+            updatedAt: snapshotDate,
+         },
+         tagId: tt.tag.id,
+         transactionId: snapshot.id,
+      })),
+      type: snapshot.type,
+      updatedAt: snapshotDate,
+   };
+}
 
 function CustomReportDetailsErrorFallback(props: FallbackProps) {
    return (
@@ -287,139 +356,200 @@ function CategoryBreakdownSection({
       return null;
    }
 
+   const expenseChartData = snapshotData.categoryBreakdown
+      .filter((cat) => cat.expenses > 0)
+      .map((cat) => ({
+         category: cat.categoryName,
+         color: cat.categoryColor,
+         value: cat.expenses,
+      }));
+
+   const incomeChartData = snapshotData.categoryBreakdown
+      .filter((cat) => cat.income > 0)
+      .map((cat) => ({
+         category: cat.categoryName,
+         color: cat.categoryColor,
+         value: cat.income,
+      }));
+
+   const expenseChartConfig = expenseChartData.reduce((acc, item) => {
+      acc[item.category] = { color: item.color, label: item.category };
+      return acc;
+   }, {} as ChartConfig);
+
+   const incomeChartConfig = incomeChartData.reduce((acc, item) => {
+      acc[item.category] = { color: item.color, label: item.category };
+      return acc;
+   }, {} as ChartConfig);
+
    return (
-      <Card>
-         <CardHeader>
-            <CardTitle>Breakdown por Categoria</CardTitle>
-            <CardDescription>
-               Distribuição de receitas e despesas por categoria
-            </CardDescription>
-         </CardHeader>
-         <CardContent>
-            <div className="space-y-3">
-               {snapshotData.categoryBreakdown.map((cat) => (
-                  <div
-                     className="flex items-center justify-between p-3 rounded-lg border"
-                     key={cat.categoryId}
+      <div className="grid gap-4 md:grid-cols-2">
+         {incomeChartData.length > 0 && (
+            <Card>
+               <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                     Receitas por Categoria
+                  </CardTitle>
+                  <CardDescription>
+                     Distribuição das receitas do período
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <ChartContainer
+                     className="mx-auto aspect-square max-h-[250px]"
+                     config={incomeChartConfig}
                   >
-                     <div className="flex items-center gap-3">
-                        <div
-                           className="w-3 h-3 rounded-full"
-                           style={{ backgroundColor: cat.categoryColor }}
+                     <PieChart>
+                        <ChartTooltip
+                           content={
+                              <ChartTooltipContent
+                                 formatter={(value) =>
+                                    formatDecimalCurrency(Number(value))
+                                 }
+                                 hideLabel
+                              />
+                           }
                         />
-                        <span className="font-medium">{cat.categoryName}</span>
-                     </div>
-                     <div className="flex items-center gap-6">
-                        <div className="text-right">
-                           <p className="text-xs text-muted-foreground">
-                              Receitas
-                           </p>
-                           <p className="text-sm font-medium text-emerald-600">
-                              +{formatDecimalCurrency(cat.income)}
-                           </p>
+                        <Pie
+                           data={incomeChartData}
+                           dataKey="value"
+                           innerRadius={50}
+                           nameKey="category"
+                           strokeWidth={2}
+                        >
+                           {incomeChartData.map((entry) => (
+                              <Cell fill={entry.color} key={entry.category} />
+                           ))}
+                        </Pie>
+                     </PieChart>
+                  </ChartContainer>
+                  <div className="mt-4 space-y-2">
+                     {incomeChartData.map((cat) => (
+                        <div
+                           className="flex items-center justify-between text-sm"
+                           key={cat.category}
+                        >
+                           <div className="flex items-center gap-2">
+                              <div
+                                 className="size-3 rounded-full"
+                                 style={{ backgroundColor: cat.color }}
+                              />
+                              <span className="truncate max-w-[150px]">
+                                 {cat.category}
+                              </span>
+                           </div>
+                           <span className="font-medium text-emerald-600">
+                              +{formatDecimalCurrency(cat.value)}
+                           </span>
                         </div>
-                        <div className="text-right">
-                           <p className="text-xs text-muted-foreground">
-                              Despesas
-                           </p>
-                           <p className="text-sm font-medium text-destructive">
-                              -{formatDecimalCurrency(cat.expenses)}
-                           </p>
-                        </div>
-                     </div>
+                     ))}
                   </div>
-               ))}
-            </div>
-         </CardContent>
-      </Card>
+               </CardContent>
+            </Card>
+         )}
+
+         {expenseChartData.length > 0 && (
+            <Card>
+               <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                     Despesas por Categoria
+                  </CardTitle>
+                  <CardDescription>
+                     Distribuição das despesas do período
+                  </CardDescription>
+               </CardHeader>
+               <CardContent>
+                  <ChartContainer
+                     className="mx-auto aspect-square max-h-[250px]"
+                     config={expenseChartConfig}
+                  >
+                     <PieChart>
+                        <ChartTooltip
+                           content={
+                              <ChartTooltipContent
+                                 formatter={(value) =>
+                                    formatDecimalCurrency(Number(value))
+                                 }
+                                 hideLabel
+                              />
+                           }
+                        />
+                        <Pie
+                           data={expenseChartData}
+                           dataKey="value"
+                           innerRadius={50}
+                           nameKey="category"
+                           strokeWidth={2}
+                        >
+                           {expenseChartData.map((entry) => (
+                              <Cell fill={entry.color} key={entry.category} />
+                           ))}
+                        </Pie>
+                     </PieChart>
+                  </ChartContainer>
+                  <div className="mt-4 space-y-2">
+                     {expenseChartData.map((cat) => (
+                        <div
+                           className="flex items-center justify-between text-sm"
+                           key={cat.category}
+                        >
+                           <div className="flex items-center gap-2">
+                              <div
+                                 className="size-3 rounded-full"
+                                 style={{ backgroundColor: cat.color }}
+                              />
+                              <span className="truncate max-w-[150px]">
+                                 {cat.category}
+                              </span>
+                           </div>
+                           <span className="font-medium text-destructive">
+                              -{formatDecimalCurrency(cat.value)}
+                           </span>
+                        </div>
+                     ))}
+                  </div>
+               </CardContent>
+            </Card>
+         )}
+      </div>
    );
 }
 
 function TransactionsSection({
    snapshotData,
+   slug,
 }: {
    snapshotData: DRESnapshotData;
+   slug: string;
 }) {
    const [currentPage, setCurrentPage] = useState(1);
    const [pageSize, setPageSize] = useState(20);
 
    const transactions = snapshotData.transactions || [];
 
-   const columns: ColumnDef<TransactionRow>[] = useMemo(
-      () => [
-         {
-            accessorKey: "date",
-            cell: ({ row }) =>
-               formatDate(new Date(row.original.date), "DD/MM/YYYY"),
-            header: "Data",
-         },
-         {
-            accessorKey: "description",
-            header: "Descrição",
-         },
-         {
-            accessorKey: "categoryName",
-            cell: ({ row }) => row.original.categoryName || "-",
-            header: "Categoria",
-         },
-         {
-            accessorKey: "type",
-            cell: ({ row }) => {
-               const type = row.original.type;
-               const typeConfig = {
-                  expense: {
-                     icon: <ArrowUpRight className="size-4 text-destructive" />,
-                     label: "Despesa",
-                  },
-                  income: {
-                     icon: (
-                        <ArrowDownLeft className="size-4 text-emerald-500" />
-                     ),
-                     label: "Receita",
-                  },
-                  transfer: {
-                     icon: <ArrowUpRight className="size-4 text-blue-500" />,
-                     label: "Transferência",
-                  },
-               };
-               const config = typeConfig[type];
-               return (
-                  <div className="flex items-center gap-1">
-                     {config.icon}
-                     <span className="text-xs">{config.label}</span>
-                  </div>
-               );
-            },
-            header: "Tipo",
-         },
-         {
-            accessorKey: "amount",
-            cell: ({ row }) => {
-               const type = row.original.type;
-               const colorClass =
-                  type === "income"
-                     ? "text-emerald-600"
-                     : type === "transfer"
-                       ? "text-blue-600"
-                       : "text-destructive";
-               const prefix = type === "income" ? "+" : "-";
-               return (
-                  <span className={colorClass}>
-                     {prefix}
-                     {formatDecimalCurrency(row.original.amount)}
-                  </span>
-               );
-            },
-            header: () => <div className="text-right">Valor</div>,
-         },
-      ],
-      [],
-   );
+   const categories = useMemo(() => {
+      const categoryMap = new Map<string, Category>();
+      for (const tx of transactions) {
+         for (const tc of tx.transactionCategories) {
+            if (!categoryMap.has(tc.category.id)) {
+               categoryMap.set(tc.category.id, tc.category);
+            }
+         }
+      }
+      return Array.from(categoryMap.values());
+   }, [transactions]);
 
    const paginatedData = useMemo(() => {
       const startIndex = (currentPage - 1) * pageSize;
-      return transactions.slice(startIndex, startIndex + pageSize);
+      return transactions
+         .slice(startIndex, startIndex + pageSize)
+         .map(mapSnapshotToTableTransaction);
    }, [transactions, currentPage, pageSize]);
+
+   const columns = useMemo(
+      () => createTransactionColumns(categories, slug),
+      [categories, slug],
+   );
 
    const totalPages = Math.ceil(transactions.length / pageSize);
 
@@ -448,6 +578,16 @@ function TransactionsSection({
                   totalCount: transactions.length,
                   totalPages,
                }}
+               renderMobileCard={(props) => (
+                  <TransactionMobileCard {...props} categories={categories} />
+               )}
+               renderSubComponent={(props) => (
+                  <TransactionExpandedContent
+                     {...props}
+                     categories={categories}
+                     slug={slug}
+                  />
+               )}
             />
          </CardContent>
       </Card>
@@ -471,68 +611,35 @@ function CustomReportDetailsContent() {
 
    return (
       <div className="space-y-6">
-         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-4">
-               <Button asChild size="icon" variant="outline">
-                  <Link
-                     params={{ slug: activeOrganization.slug }}
-                     to="/$slug/custom-reports"
+         <DefaultHeader
+            actions={
+               <>
+                  <Button
+                     disabled={isExporting}
+                     onClick={() => exportPdf(report.id)}
+                     variant="outline"
                   >
-                     <ArrowLeft className="size-4" />
-                  </Link>
-               </Button>
-               <div>
-                  <div className="flex items-center gap-2">
-                     <h1 className="text-2xl font-bold">{report.name}</h1>
-                     <Badge
-                        variant={
-                           report.type === "dre_gerencial"
-                              ? "outline"
-                              : "secondary"
-                        }
-                     >
-                        {report.type === "dre_gerencial" ? (
-                           <>
-                              <BarChart3 className="size-3 mr-1" />
-                              DRE Gerencial
-                           </>
-                        ) : (
-                           <>
-                              <Calculator className="size-3 mr-1" />
-                              DRE Fiscal
-                           </>
-                        )}
-                     </Badge>
-                  </div>
-                  {report.description && (
-                     <p className="text-muted-foreground">
-                        {report.description}
-                     </p>
-                  )}
-               </div>
-            </div>
-            <div className="flex items-center gap-2">
-               <Button
-                  disabled={isExporting}
-                  onClick={() => exportPdf(report.id)}
-                  variant="outline"
-               >
-                  <Download className="size-4" />
-                  Exportar PDF
-               </Button>
-               <Button
-                  onClick={() =>
-                     openSheet({
-                        children: <ManageCustomReportForm report={report} />,
-                     })
-                  }
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-                  Editar
-               </Button>
-            </div>
-         </div>
+                     <Download className="size-4" />
+                     Exportar PDF
+                  </Button>
+                  <Button
+                     onClick={() =>
+                        openSheet({
+                           children: <ManageCustomReportForm report={report} />,
+                        })
+                     }
+                     variant="outline"
+                  >
+                     <Edit className="size-4" />
+                     Editar
+                  </Button>
+               </>
+            }
+            description={
+               report.description || "Relatório financeiro personalizado"
+            }
+            title={report.name}
+         />
 
          <div className="grid gap-4 md:grid-cols-4">
             <StatsCard
@@ -561,27 +668,139 @@ function CustomReportDetailsContent() {
 
          <FilterMetadataSection snapshotData={snapshotData} />
 
-         <Card>
-            <CardHeader>
-               <CardTitle>
-                  DRE - Demonstração do Resultado do Exercício
-               </CardTitle>
-               <CardDescription>
-                  Gerado em{" "}
-                  {formatDate(
-                     new Date(snapshotData.generatedAt),
-                     "DD/MM/YYYY [às] HH:mm",
-                  )}
-               </CardDescription>
-            </CardHeader>
-            <CardContent>
-               <DRETable snapshotData={snapshotData} type={report.type} />
-            </CardContent>
-         </Card>
+         {(report.type === "dre_gerencial" || report.type === "dre_fiscal") &&
+            snapshotData.dreLines && (
+               <div className="grid gap-4 md:grid-cols-3">
+                  <Card className="md:col-span-2">
+                     <CardHeader>
+                        <CardTitle>
+                           DRE - Demonstração do Resultado do Exercício
+                        </CardTitle>
+                        <CardDescription>
+                           Gerado em{" "}
+                           {formatDate(
+                              new Date(snapshotData.generatedAt),
+                              "DD/MM/YYYY [às] HH:mm",
+                           )}
+                        </CardDescription>
+                     </CardHeader>
+                     <CardContent>
+                        <DRETable
+                           snapshotData={snapshotData}
+                           type={report.type}
+                        />
+                     </CardContent>
+                  </Card>
+                  <Card>
+                     <CardHeader>
+                        <CardTitle className="text-base">
+                           Resumo do Período
+                        </CardTitle>
+                        <CardDescription>{periodLabel}</CardDescription>
+                     </CardHeader>
+                     <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                           <p className="text-sm text-muted-foreground">
+                              Receita Bruta
+                           </p>
+                           <p className="text-2xl font-bold text-emerald-600">
+                              +
+                              {formatDecimalCurrency(
+                                 snapshotData.summary.totalIncome,
+                              )}
+                           </p>
+                        </div>
+                        <div className="space-y-2">
+                           <p className="text-sm text-muted-foreground">
+                              Despesas Totais
+                           </p>
+                           <p className="text-2xl font-bold text-destructive">
+                              -
+                              {formatDecimalCurrency(
+                                 snapshotData.summary.totalExpenses,
+                              )}
+                           </p>
+                        </div>
+                        <div className="border-t pt-4 space-y-2">
+                           <p className="text-sm text-muted-foreground">
+                              Resultado Líquido
+                           </p>
+                           <p
+                              className={`text-3xl font-bold ${
+                                 snapshotData.summary.netResult >= 0
+                                    ? "text-emerald-600"
+                                    : "text-destructive"
+                              }`}
+                           >
+                              {snapshotData.summary.netResult >= 0 ? "+" : ""}
+                              {formatDecimalCurrency(
+                                 snapshotData.summary.netResult,
+                              )}
+                           </p>
+                           <Badge
+                              variant={
+                                 snapshotData.summary.netResult >= 0
+                                    ? "default"
+                                    : "destructive"
+                              }
+                           >
+                              {snapshotData.summary.netResult >= 0
+                                 ? "Lucro"
+                                 : "Prejuízo"}
+                           </Badge>
+                        </div>
+                        {report.type === "dre_fiscal" &&
+                           (() => {
+                              const dreLine9 = snapshotData.dreLines.find(
+                                 (l) => l.code === "9",
+                              );
+                              const variance = dreLine9?.variance || 0;
+                              return (
+                                 <div className="border-t pt-4 space-y-2">
+                                    <p className="text-sm text-muted-foreground">
+                                       Análise de Variação
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                       <div>
+                                          <p className="text-muted-foreground">
+                                             Previsto
+                                          </p>
+                                          <p className="font-medium">
+                                             {formatDecimalCurrency(
+                                                dreLine9?.plannedValue || 0,
+                                             )}
+                                          </p>
+                                       </div>
+                                       <div>
+                                          <p className="text-muted-foreground">
+                                             Variação
+                                          </p>
+                                          <p
+                                             className={`font-medium ${
+                                                variance >= 0
+                                                   ? "text-emerald-600"
+                                                   : "text-destructive"
+                                             }`}
+                                          >
+                                             {variance >= 0 ? "+" : ""}
+                                             {formatDecimalCurrency(variance)}
+                                          </p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              );
+                           })()}
+                     </CardContent>
+                  </Card>
+               </div>
+            )}
 
          <CategoryBreakdownSection snapshotData={snapshotData} />
 
-         <TransactionsSection snapshotData={snapshotData} />
+         <TransactionsSection
+            slug={activeOrganization.slug}
+            snapshotData={snapshotData}
+         />
       </div>
    );
 }

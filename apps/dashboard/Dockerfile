@@ -15,6 +15,7 @@ COPY packages/ui/package.json ./packages/ui/
 COPY packages/ofx/package.json ./packages/ofx/
 COPY tooling/typescript/package.json ./tooling/typescript/
 COPY packages/posthog/package.json ./packages/posthog/
+COPY packages/encryption/package.json ./packages/encryption/
 COPY packages/api/package.json ./packages/api/
 COPY packages/authentication/package.json ./packages/authentication/
 COPY packages/environment/package.json ./packages/environment/
@@ -23,13 +24,18 @@ COPY packages/files/package.json ./packages/files/
 COPY packages/transactional/package.json ./packages/transactional/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/brasil-api/package.json ./packages/brasil-api/
+COPY packages/cache/package.json ./packages/cache/
 COPY packages/pdf/package.json ./packages/pdf/
 COPY packages/notifications/package.json ./packages/notifications/
-COPY packages/rules-engine/package.json ./packages/rules-engine/
+COPY packages/workflows/package.json ./packages/workflows/
 COPY packages/queue/package.json ./packages/queue/
 COPY libraries/ofx/package.json ./libraries/ofx/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY packages/stripe/package.json ./packages/stripe/
+COPY packages/arcjet/package.json ./packages/arcjet/
+COPY packages/csv/package.json ./packages/csv/
+COPY libraries/csv/package.json ./libraries/csv/
+COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
 
 # Install dependencies
@@ -40,7 +46,21 @@ RUN bun install
 COPY . .
 
 # Build the condition-evaluator library
-RUN cd libraries/condition-evaluator && bun run build
+WORKDIR /app/libraries/ofx
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/condition-evaluator
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/csv
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/rules-engine
+RUN bun run build
+WORKDIR /app
 
 # Build the dashboard application
 ENV NODE_ENV=production

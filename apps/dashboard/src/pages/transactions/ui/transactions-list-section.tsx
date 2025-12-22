@@ -48,16 +48,8 @@ function TransactionsListContent() {
    const [searchTerm, setSearchTerm] = useState("");
    const [pageSize, setPageSize] = useState(10);
 
-   const {
-      categoryFilter,
-      setCategoryFilter,
-      typeFilter,
-      setTypeFilter,
-      bankAccountFilter,
-      setBankAccountFilter,
-      startDate,
-      endDate,
-   } = useTransactionList();
+   const { categoryFilter, typeFilter, bankAccountFilter, startDate, endDate } =
+      useTransactionList();
 
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
    useEffect(() => {
@@ -72,62 +64,42 @@ function TransactionsListContent() {
       setCurrentPage(1);
    }, []);
 
-   const [transactionsQuery, categoriesQuery, bankAccountsQuery] =
-      useSuspenseQueries({
-         queries: [
-            trpc.transactions.getAllPaginated.queryOptions(
-               {
-                  bankAccountId:
-                     bankAccountFilter === "all"
-                        ? undefined
-                        : bankAccountFilter,
-                  categoryId:
-                     categoryFilter === "all" ? undefined : categoryFilter,
-                  endDate: endDate?.toISOString(),
-                  limit: pageSize,
-                  page: currentPage,
-                  search: debouncedSearchTerm || undefined,
-                  startDate: startDate?.toISOString(),
-                  type:
-                     typeFilter === "all" || typeFilter === ""
-                        ? undefined
-                        : (typeFilter as "income" | "expense" | "transfer"),
-               },
-               {
-                  placeholderData: keepPreviousData,
-               },
-            ),
-            trpc.categories.getAll.queryOptions(),
-            trpc.bankAccounts.getAll.queryOptions(),
-         ],
-      });
+   const [transactionsQuery, categoriesQuery] = useSuspenseQueries({
+      queries: [
+         trpc.transactions.getAllPaginated.queryOptions(
+            {
+               bankAccountId:
+                  bankAccountFilter === "all" ? undefined : bankAccountFilter,
+               categoryId:
+                  categoryFilter === "all" ? undefined : categoryFilter,
+               endDate: endDate?.toISOString(),
+               limit: pageSize,
+               page: currentPage,
+               search: debouncedSearchTerm || undefined,
+               startDate: startDate?.toISOString(),
+               type:
+                  typeFilter === "" || typeFilter === "all"
+                     ? undefined
+                     : (typeFilter as "income" | "expense" | "transfer"),
+            },
+            {
+               placeholderData: keepPreviousData,
+            },
+         ),
+         trpc.categories.getAll.queryOptions(),
+      ],
+   });
 
    const { transactions, pagination } = transactionsQuery.data;
    const { totalPages, totalCount } = pagination;
    const categories = categoriesQuery.data ?? [];
-   const bankAccounts = bankAccountsQuery.data ?? [];
-
-   const handleClearFilters = () => {
-      setCategoryFilter("all");
-      setTypeFilter("");
-      setBankAccountFilter("all");
-      setSearchTerm("");
-   };
 
    return (
       <TransactionList
-         bankAccounts={bankAccounts}
          categories={categories}
          filters={{
-            bankAccountFilter,
-            categoryFilter,
-            onBankAccountFilterChange: setBankAccountFilter,
-            onCategoryFilterChange: setCategoryFilter,
-            onClearFilters: handleClearFilters,
             onSearchChange: setSearchTerm,
-            onTypeFilterChange: setTypeFilter,
             searchTerm,
-            typeFilter,
          }}
          pagination={{
             currentPage,

@@ -38,6 +38,19 @@ const router = createRouter({
    defaultPreload: "intent",
    defaultPreloadDelay: 0,
    defaultPreloadStaleTime: 0,
+   defaultViewTransition: {
+      types: ({ fromLocation, toLocation }) => {
+         let direction = "none";
+
+         if (fromLocation) {
+            const fromIndex = fromLocation.state.__TSR_index;
+            const toIndex = toLocation.state.__TSR_index;
+            direction = fromIndex > toIndex ? "right" : "left";
+         }
+
+         return [`slide-${direction}`];
+      },
+   },
    routeTree,
    scrollRestoration: true,
 });

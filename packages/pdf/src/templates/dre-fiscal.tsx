@@ -115,7 +115,7 @@ function TransactionsTableHeader() {
    return (
       <View style={styles.tableHeader}>
          <Text style={[styles.tableHeaderCell, { width: "12%" }]}>Data</Text>
-         <Text style={[styles.tableHeaderCell, { width: "28%" }]}>
+         <Text style={[styles.tableHeaderCell, { width: "33%" }]}>
             Descrição
          </Text>
          <Text
@@ -126,13 +126,9 @@ function TransactionsTableHeader() {
          >
             Valor
          </Text>
-         <Text style={[styles.tableHeaderCell, { width: "20%" }]}>
+         <Text style={[styles.tableHeaderCell, { width: "25%" }]}>
             Categoria
          </Text>
-         <Text style={[styles.tableHeaderCell, { width: "15%" }]}>
-            Centro de Custo
-         </Text>
-         <Text style={[styles.tableHeaderCell, { width: "10%" }]}>Tags</Text>
       </View>
    );
 }

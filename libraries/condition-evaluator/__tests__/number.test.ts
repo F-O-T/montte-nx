@@ -90,6 +90,7 @@ describe("Number Operators", () => {
       });
 
       it("returns false for invalid range", () => {
+         // biome-ignore lint/suspicious/noExplicitAny: Testing invalid input type
          expect(evaluateNumber("between", 5, [1] as any)).toBe(false);
          expect(evaluateNumber("between", 5, 5)).toBe(false);
       });
@@ -106,6 +107,7 @@ describe("Number Operators", () => {
       });
 
       it("returns true for invalid range", () => {
+         // biome-ignore lint/suspicious/noExplicitAny: Testing invalid input type
          expect(evaluateNumber("not_between", 5, [1] as any)).toBe(true);
       });
    });

@@ -1,50 +1,5 @@
 {
    "extends": "@tooling/typescript/base.json",
-   "references": [
-      {
-         "path": "./packages/transactional"
-      },
-      {
-         "path": "./packages/environment"
-      },
-      {
-         "path": "./packages/database"
-      },
-      {
-         "path": "./packages/posthog"
-      },
-      {
-         "path": "./packages/files"
-      },
-      {
-         "path": "./packages/ui"
-      },
-      {
-         "path": "./packages/localization"
-      },
-      {
-         "path": "./packages/utils"
-      },
-      {
-         "path": "./packages/brasil-api"
-      },
-      {
-         "path": "./packages/ofx"
-      },
-      {
-         "path": "./packages/pdf"
-      },
-      {
-         "path": "./packages/notifications"
-      },
-      {
-         "path": "./packages/rules-engine"
-      },
-      {
-         "path": "./packages/queue"
-      },
-      {
-         "path": "./packages/stripe"
-      }
-   ]
+   "files": [],
+   "references": []
 }

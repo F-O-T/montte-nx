@@ -231,7 +231,8 @@ export async function deleteBankAccounts(
 export async function createDefaultWalletBankAccount(
    dbClient: DatabaseInstance,
    organizationId: string,
-   name = "Wallet",
+   name = "Wallet", // English fallback
+   bank = "Default", // English fallback
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
@@ -249,7 +250,7 @@ export async function createDefaultWalletBankAccount(
       const result = await dbClient
          .insert(bankAccount)
          .values({
-            bank: "Default",
+            bank,
             name,
             organizationId,
             type: "checking",
@@ -267,7 +268,8 @@ export async function createDefaultWalletBankAccount(
 export async function createDefaultBusinessBankAccount(
    dbClient: DatabaseInstance,
    organizationId: string,
-   name = "Caixa",
+   name = "Cash", // English fallback
+   bank = "Cash", // English fallback
 ) {
    try {
       const existingAccount = await dbClient.query.bankAccount.findFirst({
@@ -285,7 +287,7 @@ export async function createDefaultBusinessBankAccount(
       const result = await dbClient
          .insert(bankAccount)
          .values({
-            bank: "Caixa",
+            bank,
             name,
             organizationId,
             type: "checking",
@@ -303,12 +305,27 @@ export async function createDefaultBusinessBankAccount(
 export async function getBankAccountStats(
    dbClient: DatabaseInstance,
    organizationId: string,
+   filters?: {
+      status?: "active" | "inactive";
+      type?: "checking" | "savings" | "investment";
+   },
 ) {
    try {
+      const conditions = [eq(bankAccount.organizationId, organizationId)];
+
+      if (filters?.status) {
+         conditions.push(eq(bankAccount.status, filters.status));
+      }
+      if (filters?.type) {
+         conditions.push(eq(bankAccount.type, filters.type));
+      }
+
+      const whereClause = and(...conditions);
+
       const totalAccountsResult = await dbClient
          .select({ count: sql<number>`count(*)` })
          .from(bankAccount)
-         .where(eq(bankAccount.organizationId, organizationId));
+         .where(whereClause);
 
       const totalAccounts = totalAccountsResult[0]?.count || 0;
 
@@ -343,7 +360,7 @@ export async function getBankAccountStats(
          })
          .from(bankAccount)
          .leftJoin(transaction, eq(transaction.bankAccountId, bankAccount.id))
-         .where(eq(bankAccount.organizationId, organizationId));
+         .where(whereClause);
 
       return {
          totalAccounts,

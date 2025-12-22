@@ -1,14 +1,16 @@
+import { isConditionGroup } from "@f-o-t/condition-evaluator";
 import type {
-   Action,
    ActionConfig,
    ActionType,
    Condition,
    ConditionGroup,
+   ConditionOperator,
+   ConditionType,
+   Consequence,
    FlowData,
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
-import { isConditionGroup } from "@packages/database/schema";
 import type {
    ActionNodeData,
    AutomationEdge,
@@ -51,8 +53,8 @@ export function extractRuleDataFromNodes(
 ): {
    triggerType: TriggerType;
    triggerConfig: TriggerConfig;
-   conditions: ConditionGroup[];
-   actions: Action[];
+   conditions: ConditionGroup;
+   consequences: Consequence[];
 } {
    const triggerNodes = nodes.filter((n) => n.type === "trigger");
    const conditionNodes = nodes.filter((n) => n.type === "condition");
@@ -72,29 +74,35 @@ export function extractRuleDataFromNodes(
    }
    const triggerData = triggerNode.data as TriggerNodeData;
 
-   const conditions: ConditionGroup[] = conditionNodes.map((node) => {
-      const data = node.data as ConditionNodeData;
-      return {
-         conditions: data.conditions as Condition[],
-         id: node.id,
-         operator: data.operator,
-      };
-   });
+   // Build a single ConditionGroup with nested conditions
+   const conditionGroupConditions: (Condition | ConditionGroup)[] =
+      conditionNodes.map((node) => {
+         const data = node.data as ConditionNodeData;
+         return {
+            conditions: data.conditions as Condition[],
+            id: node.id,
+            operator: data.operator,
+         };
+      });
+
+   const conditions: ConditionGroup = {
+      id: crypto.randomUUID(),
+      operator: "AND",
+      conditions: conditionGroupConditions,
+   };
 
    const orderedActionNodes = topologicalSort(actionNodes, edges);
 
-   const actions: Action[] = orderedActionNodes.map((node) => {
+   const consequences: Consequence[] = orderedActionNodes.map((node) => {
       const data = node.data as ActionNodeData;
       return {
-         config: data.config,
-         continueOnError: data.continueOnError,
-         id: node.id,
+         payload: data.config,
          type: data.actionType,
       };
    });
 
    return {
-      actions,
+      consequences,
       conditions,
       triggerConfig: triggerData.config,
       triggerType: triggerData.triggerType,
@@ -156,8 +164,8 @@ function topologicalSort(
 export function ruleDataToNodes(
    triggerType: TriggerType,
    triggerConfig: TriggerConfig,
-   conditions: ConditionGroup[],
-   actions: Action[],
+   conditions: ConditionGroup | ConditionGroup[],
+   consequences: Consequence[],
 ): { nodes: AutomationNode[]; edges: AutomationEdge[] } {
    const nodes: AutomationNode[] = [];
    const edges: AutomationEdge[] = [];
@@ -177,7 +185,14 @@ export function ruleDataToNodes(
    let lastNodeId = triggerId;
    let yPosition = 150;
 
-   for (const condition of conditions) {
+   // Handle both single ConditionGroup and array of ConditionGroups
+   const conditionGroups = Array.isArray(conditions)
+      ? conditions
+      : conditions.conditions.filter((c): c is ConditionGroup =>
+           isConditionGroup(c),
+        );
+
+   for (const condition of conditionGroups) {
       const conditionId = condition.id || `condition-${crypto.randomUUID()}`;
       nodes.push({
          data: {
@@ -186,8 +201,8 @@ export function ruleDataToNodes(
                .map((c) => ({
                   field: c.field,
                   id: c.id,
-                  operator: c.operator,
-                  type: c.type,
+                  operator: c.operator as ConditionOperator,
+                  type: c.type as ConditionType,
                   value: c.value,
                })),
             label: `Condição ${condition.operator}`,
@@ -201,21 +216,22 @@ export function ruleDataToNodes(
       edges.push({
          id: `edge-${lastNodeId}-${conditionId}`,
          source: lastNodeId,
+         sourceHandle: "bottom",
          target: conditionId,
+         targetHandle: "top",
       });
 
       lastNodeId = conditionId;
       yPosition += 150;
    }
 
-   for (const action of actions) {
-      const actionId = action.id || `action-${crypto.randomUUID()}`;
+   for (const consequence of consequences) {
+      const actionId = `action-${crypto.randomUUID()}`;
       nodes.push({
          data: {
-            actionType: action.type,
-            config: action.config,
-            continueOnError: action.continueOnError,
-            label: getActionLabel(action.type),
+            actionType: consequence.type,
+            config: consequence.payload,
+            label: getActionLabel(consequence.type),
          },
          id: actionId,
          position: { x: 250, y: yPosition },
@@ -225,7 +241,9 @@ export function ruleDataToNodes(
       edges.push({
          id: `edge-${lastNodeId}-${actionId}`,
          source: lastNodeId,
+         sourceHandle: "bottom",
          target: actionId,
+         targetHandle: "top",
       });
 
       lastNodeId = actionId;
@@ -239,6 +257,7 @@ function getActionLabel(actionType: ActionType): string {
    const labels: Record<ActionType, string> = {
       add_tag: "Adicionar Tag",
       create_transaction: "Criar Transação",
+      mark_as_transfer: "Marcar como Transferência",
       remove_tag: "Remover Tag",
       send_email: "Enviar E-mail",
       send_push_notification: "Enviar Notificação",
@@ -300,26 +319,26 @@ export function createDefaultActionNode(
 
 export function schemaToFlowData(
    triggerType: TriggerType,
-   conditions: ConditionGroup[],
-   actions: Action[],
+   conditions: ConditionGroup | ConditionGroup[],
+   consequences: Consequence[],
    existingFlowData: { nodes: unknown[]; edges: unknown[] } | null,
 ): { nodes: AutomationNode[]; edges: AutomationEdge[] } {
    if (existingFlowData?.nodes?.length) {
       return flowDataToNodesAndEdges(existingFlowData as FlowData);
    }
-   return ruleDataToNodes(triggerType, {}, conditions, actions);
+   return ruleDataToNodes(triggerType, {}, conditions, consequences);
 }
 
 export function flowDataToSchema(
    nodes: AutomationNode[],
    edges: AutomationEdge[],
 ): {
-   conditions: ConditionGroup[];
-   actions: Action[];
+   conditions: ConditionGroup;
+   consequences: Consequence[];
 } {
    const result = extractRuleDataFromNodes(nodes, edges);
    return {
-      actions: result.actions,
+      consequences: result.consequences,
       conditions: result.conditions,
    };
 }

@@ -10,6 +10,7 @@ import {
    getTotalTagsByOrganizationId,
    updateTag,
 } from "@packages/database/repositories/tag-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -56,7 +57,7 @@ export const tagRouter = router({
          const existingTag = await findTagById(resolvedCtx.db, input.id);
 
          if (!existingTag || existingTag.organizationId !== organizationId) {
-            throw new Error("Tag not found");
+            throw APIError.notFound("Tag not found");
          }
 
          return deleteTag(resolvedCtx.db, input.id);
@@ -106,7 +107,7 @@ export const tagRouter = router({
          const tag = await findTagById(resolvedCtx.db, input.id);
 
          if (!tag || tag.organizationId !== organizationId) {
-            throw new Error("Tag not found");
+            throw APIError.notFound("Tag not found");
          }
 
          return tag;
@@ -142,7 +143,7 @@ export const tagRouter = router({
          const tag = await findTagById(resolvedCtx.db, input.id);
 
          if (!tag || tag.organizationId !== organizationId) {
-            throw new Error("Tag not found");
+            throw APIError.notFound("Tag not found");
          }
 
          return findTransactionsByTagId(resolvedCtx.db, input.id, {
@@ -165,7 +166,7 @@ export const tagRouter = router({
          const existingTag = await findTagById(resolvedCtx.db, input.id);
 
          if (!existingTag || existingTag.organizationId !== organizationId) {
-            throw new Error("Tag not found");
+            throw APIError.notFound("Tag not found");
          }
 
          return updateTag(resolvedCtx.db, input.id, input.data);

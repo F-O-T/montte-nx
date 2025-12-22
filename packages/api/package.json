@@ -1,8 +1,11 @@
 {
    "dependencies": {
       "@f-o-t/condition-evaluator": "workspace:*",
+      "@packages/arcjet": "workspace:*",
       "@packages/authentication": "workspace:*",
       "@packages/brasil-api": "workspace:*",
+      "@packages/cache": "workspace:*",
+      "@packages/csv": "workspace:*",
       "@packages/database": "workspace:*",
       "@packages/files": "workspace:*",
       "@packages/localization": "workspace:*",
@@ -10,7 +13,7 @@
       "@packages/ofx": "workspace:*",
       "@packages/pdf": "workspace:*",
       "@packages/posthog": "workspace:*",
-      "@packages/rules-engine": "workspace:*",
+      "@packages/workflows": "workspace:*",
       "@packages/utils": "workspace:*",
 
       "@trpc/client": "catalog:trpc",

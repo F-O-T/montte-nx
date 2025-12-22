@@ -19,7 +19,7 @@ import {
 import { Switch } from "@packages/ui/components/switch";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { Activity, Globe, Moon } from "lucide-react";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 import { LanguageCommand } from "@/layout/language-command";
 import { ThemeSwitcher } from "@/layout/theme-provider";
 
@@ -29,9 +29,13 @@ export function PreferencesSection() {
       trpc.session.getSession.queryOptions(),
    );
 
-   const updateConsentMutation = useMutation(
-      trpc.session.updateTelemetryConsent.mutationOptions(),
-   );
+   const updateConsentMutation = useMutation({
+      mutationFn: async (consent: boolean) => {
+         return betterAuthClient.updateUser({
+            telemetryConsent: consent,
+         });
+      },
+   });
 
    const hasConsent = session?.user?.telemetryConsent ?? true;
 
@@ -117,7 +121,7 @@ export function PreferencesSection() {
                         checked={hasConsent}
                         disabled={updateConsentMutation.isPending}
                         onCheckedChange={(checked) => {
-                           updateConsentMutation.mutate({ consent: checked });
+                           updateConsentMutation.mutate(checked);
                         }}
                      />
                   </ItemActions>

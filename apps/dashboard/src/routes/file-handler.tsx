@@ -72,7 +72,7 @@ function FileHandlerComponent() {
                   if (!launchParams.files?.length || !launchParams.files[0]) {
                      navigate({
                         params: { slug: orgSlug },
-                        to: "/$slug/import-ofx",
+                        to: "/$slug/import",
                      });
                      return;
                   }
@@ -89,25 +89,37 @@ function FileHandlerComponent() {
                   }
                   const base64Content = btoa(binaryString);
 
+                  // Detect file type from extension
+                  const ext = file.name.split(".").pop()?.toLowerCase();
+                  const fileType = ext === "csv" ? "csv" : "ofx";
+
                   sessionStorage.setItem(
-                     "montte:pending-ofx-import",
+                     "montte:pending-import",
                      JSON.stringify({
+                        fileType,
                         content: base64Content,
                         filename: file.name,
                         timestamp: Date.now(),
+                        bankAccountId: null,
+                        parsedTransactions: [],
+                        selectedRowIndices: [],
+                        duplicates: [],
+                        duplicatesChecked: false,
+                        csvPreviewData: null,
+                        columnMapping: null,
                      }),
                   );
 
                   navigate({
                      params: { slug: orgSlug },
-                     to: "/$slug/import-ofx",
+                     to: "/$slug/import",
                   });
                },
             );
          } else {
             navigate({
                params: { slug: orgSlug },
-               to: "/$slug/import-ofx",
+               to: "/$slug/import",
             });
          }
       }

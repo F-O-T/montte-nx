@@ -1,9 +1,5 @@
-import {
-   createFileRoute,
-   Outlet,
-   redirect,
-   useLocation,
-} from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { CookieConsentBanner } from "@/features/cookie-consent/cookie-consent-banner";
 import { getQueryClient, trpc } from "@/integrations/clients";
 import { DashboardLayout } from "@/layout/dashboard-layout";
 
@@ -57,14 +53,10 @@ export const Route = createFileRoute("/$slug/_dashboard")({
 });
 
 function RouteComponent() {
-   const location = useLocation();
-
    return (
       <DashboardLayout>
-         <div
-            className="duration-700 animate-in slide-in-from-bottom-4 fade-in h-full w-full"
-            key={location.pathname}
-         >
+         <CookieConsentBanner />
+         <div className="h-full w-full [view-transition-name:main-content]">
             <Outlet />
          </div>
       </DashboardLayout>

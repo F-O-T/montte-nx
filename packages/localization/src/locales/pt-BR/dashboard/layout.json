@@ -4,7 +4,7 @@
       "budgets": "Orçamentos",
       "categories": "Categorias",
       "cost-centers": "Centros de Custo",
-      "counterparties": "Fornecedores",
+      "counterparties": "Cadastros",
       "interest-templates": "Modelos de Juros",
       "profile": "Perfil",
       "tags": "Tags",
@@ -16,9 +16,9 @@
    },
    "nav-main": {
       "bills": {
-         "counterparties": "Fornecedores",
+         "counterparties": "Cadastros",
          "interest-templates": "Modelos de Juros",
-         "overview": "Visão Geral",
+         "overview": "Gestão de Contas",
          "payables": "Contas a Pagar",
          "receivables": "Contas a Receber",
          "title": "Contas"
@@ -49,7 +49,10 @@
          "title": "Confirmar saída"
       },
       "main": {
-         "account": "Conta"
+         "account": "Conta",
+         "billing": "Cobrança",
+         "notifications": "Notificações",
+         "upgrade": "Atualizar para Pro"
       },
       "messages": {
          "logging-out": "Saindo...",

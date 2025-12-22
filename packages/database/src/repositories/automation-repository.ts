@@ -81,7 +81,7 @@ export async function findActiveAutomationRulesByTrigger(
             and(
                eq(rule.organizationId, organizationId),
                eq(rule.triggerType, triggerType),
-               eq(rule.isActive, true),
+               eq(rule.enabled, true),
             ),
       });
       return result;
@@ -103,7 +103,7 @@ export async function findAutomationRulesByOrganizationIdPaginated(
       orderDirection?: "asc" | "desc";
       search?: string;
       triggerType?: TriggerType;
-      isActive?: boolean;
+      enabled?: boolean;
    } = {},
 ) {
    const {
@@ -113,7 +113,7 @@ export async function findAutomationRulesByOrganizationIdPaginated(
       orderDirection = "desc",
       search,
       triggerType,
-      isActive,
+      enabled,
    } = options;
 
    const offset = (page - 1) * limit;
@@ -129,8 +129,8 @@ export async function findAutomationRulesByOrganizationIdPaginated(
          conditions.push(eq(automationRule.triggerType, triggerType));
       }
 
-      if (isActive !== undefined) {
-         conditions.push(eq(automationRule.isActive, isActive));
+      if (enabled !== undefined) {
+         conditions.push(eq(automationRule.enabled, enabled));
       }
 
       const whereCondition = and(...conditions);
@@ -275,12 +275,12 @@ export async function deleteManyAutomationRules(
 export async function toggleAutomationRule(
    dbClient: DatabaseInstance,
    ruleId: string,
-   isActive: boolean,
+   enabled: boolean,
 ) {
    try {
       const result = await dbClient
          .update(automationRule)
-         .set({ isActive })
+         .set({ enabled })
          .where(eq(automationRule.id, ruleId))
          .returning();
 
@@ -330,7 +330,7 @@ export async function getActiveAutomationRulesCount(
          .where(
             and(
                eq(automationRule.organizationId, organizationId),
-               eq(automationRule.isActive, true),
+               eq(automationRule.enabled, true),
             ),
          );
 
@@ -365,7 +365,7 @@ export async function duplicateAutomationRule(
          .insert(automationRule)
          .values({
             ...ruleData,
-            isActive: false,
+            enabled: false,
             name: newName,
          })
          .returning();

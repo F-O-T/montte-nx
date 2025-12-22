@@ -11,6 +11,7 @@ import {
    deleteBill,
    deleteManyBills,
    findBillById,
+   findBillByTransactionId,
    findBillsByInstallmentGroupId,
    findBillsByOrganizationId,
    findBillsByOrganizationIdAndType,
@@ -28,11 +29,24 @@ import {
    type NewBill,
    updateBill,
 } from "@packages/database/repositories/bill-repository";
+import {
+   findTagsByBillId,
+   findTagsByOrganizationId,
+   setBillTags,
+} from "@packages/database/repositories/tag-repository";
 import { createTransaction } from "@packages/database/repositories/transaction-repository";
-import { streamFileForProxy, uploadFile } from "@packages/files/client";
+import {
+   deleteFile,
+   generatePresignedPutUrl,
+   streamFileForProxy,
+   verifyFileExists,
+} from "@packages/files/client";
+import { APIError } from "@packages/utils/errors";
 import {
    generateFutureDates,
+   generateFutureDatesUntil,
    getNextDueDate,
+   type RecurrencePattern,
 } from "@packages/utils/recurrence";
 import { z } from "zod";
 import {
@@ -41,11 +55,20 @@ import {
 } from "../schemas/bill";
 import { protectedProcedure, router } from "../trpc";
 
+const ALLOWED_ATTACHMENT_TYPES = [
+   "application/pdf",
+   "image/jpeg",
+   "image/png",
+   "image/webp",
+];
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024; // 10MB
+
 const updateBillSchema = z.object({
    amount: z.number().optional(),
    autoCreateNext: z.boolean().optional(),
    bankAccountId: z.string().optional(),
    categoryId: z.string().optional(),
+   costCenterId: z.string().uuid().nullable().optional(),
    counterpartyId: z.string().nullable().optional(),
    description: z.string().optional(),
    dueDate: z.string().optional(),
@@ -54,8 +77,17 @@ const updateBillSchema = z.object({
    issueDate: z.string().optional(),
    notes: z.string().optional(),
    recurrencePattern: z
-      .enum(["monthly", "quarterly", "semiannual", "annual"])
+      .enum([
+         "daily",
+         "weekly",
+         "biweekly",
+         "monthly",
+         "quarterly",
+         "semiannual",
+         "annual",
+      ])
       .optional(),
+   tagIds: z.array(z.string().uuid()).optional(),
    type: z.enum(["income", "expense"]).optional(),
 });
 
@@ -88,47 +120,153 @@ const filterSchema = z.object({
 });
 
 export const billRouter = router({
-   addAttachment: protectedProcedure
+   requestAttachmentUploadUrl: protectedProcedure
       .input(
          z.object({
             billId: z.string(),
-            contentType: z.string(),
-            fileBuffer: z.string(),
+            contentType: z
+               .string()
+               .refine((val) => ALLOWED_ATTACHMENT_TYPES.includes(val), {
+                  message: "File type must be PDF, JPEG, PNG, or WebP",
+               }),
             fileName: z.string(),
-            fileSize: z.number().optional(),
+            fileSize: z
+               .number()
+               .max(MAX_ATTACHMENT_SIZE, "File size must be less than 10MB"),
          }),
       )
       .mutation(async ({ ctx, input }) => {
-         const { billId, fileName, fileBuffer, contentType, fileSize } = input;
+         const { billId, fileName, contentType, fileSize } = input;
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
          const existingBill = await findBillById(resolvedCtx.db, billId);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachmentId = crypto.randomUUID();
-         const key = `bills/${organizationId}/${billId}/attachments/${attachmentId}/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
+         const storageKey = `bills/${organizationId}/${billId}/attachments/${attachmentId}/${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return {
+            presignedUrl,
+            storageKey,
+            attachmentId,
+            contentType,
+            fileSize,
+         };
+      }),
+
+   confirmAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            attachmentId: z.string(),
+            billId: z.string(),
+            contentType: z.string(),
+            fileName: z.string(),
+            fileSize: z.number(),
+            storageKey: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const {
+            attachmentId,
+            billId,
+            contentType,
+            fileName,
+            fileSize,
+            storageKey,
+         } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingBill = await findBillById(resolvedCtx.db, billId);
+
+         if (!existingBill || existingBill.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `bills/${organizationId}/${billId}/attachments/`,
+            )
+         ) {
+            throw APIError.validation("Invalid storage key for this bill");
+         }
 
          const bucketName = resolvedCtx.minioBucket;
          const minioClient = resolvedCtx.minioClient;
 
-         await uploadFile(key, buffer, contentType, bucketName, minioClient);
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw APIError.validation("File was not uploaded successfully");
+         }
 
          const attachment = await createBillAttachment(resolvedCtx.db, {
             billId,
             contentType,
             fileName,
-            fileSize: fileSize || buffer.length,
+            fileSize: fileSize || fileInfo.size,
             id: attachmentId,
-            storageKey: key,
+            storageKey,
          });
 
          return attachment;
       }),
+
+   cancelAttachmentUpload: protectedProcedure
+      .input(
+         z.object({
+            billId: z.string(),
+            storageKey: z.string(),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const { billId, storageKey } = input;
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const existingBill = await findBillById(resolvedCtx.db, billId);
+
+         if (!existingBill || existingBill.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         if (
+            !storageKey.startsWith(
+               `bills/${organizationId}/${billId}/attachments/`,
+            )
+         ) {
+            throw APIError.validation("Invalid storage key for this bill");
+         }
+
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         try {
+            await deleteFile(storageKey, bucketName, minioClient);
+         } catch (error) {
+            console.error("Error deleting cancelled upload:", error);
+         }
+
+         return { success: true };
+      }),
+
    complete: protectedProcedure
       .input(
          z.object({
@@ -143,11 +281,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (existingBill.completionDate) {
-            throw new Error("Bill already completed");
+            throw APIError.conflict("Bill already completed");
          }
 
          const transaction = await createTransaction(resolvedCtx.db, {
@@ -197,9 +335,27 @@ export const billRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
+         // Verify all tags belong to this organization
+         if (input.tagIds && input.tagIds.length > 0) {
+            const orgTags = await findTagsByOrganizationId(
+               resolvedCtx.db,
+               organizationId,
+            );
+            const validTagIds = new Set(orgTags.map((t) => t.id));
+            const hasInvalidTags = input.tagIds.some(
+               (id) => !validTagIds.has(id),
+            );
+            if (hasInvalidTags) {
+               throw APIError.validation(
+                  "One or more tags do not belong to this organization",
+               );
+            }
+         }
+
          const firstBill = await createBill(resolvedCtx.db, {
             ...input,
             amount: input.amount.toString(),
+            costCenterId: input.costCenterId,
             counterpartyId: input.counterpartyId,
             description: input.description || "",
             dueDate: new Date(input.dueDate),
@@ -210,42 +366,78 @@ export const billRouter = router({
             organizationId,
             originalAmount: input.originalAmount?.toString(),
             recurrencePattern: input.recurrencePattern,
-            userId: organizationId,
          });
 
+         // Set tags if provided
+         if (input.tagIds && input.tagIds.length > 0) {
+            await setBillTags(resolvedCtx.db, firstBill.id, input.tagIds);
+         }
+
          if (input.isRecurring && input.recurrencePattern) {
-            const futureDueDates = generateFutureDates(
-               new Date(input.dueDate),
-               input.recurrencePattern,
-            );
+            let futureDueDates: Date[];
+
+            if (input.occurrenceUntilDate) {
+               futureDueDates = generateFutureDatesUntil(
+                  new Date(input.dueDate),
+                  input.recurrencePattern,
+                  new Date(input.occurrenceUntilDate),
+               );
+            } else {
+               futureDueDates = generateFutureDates(
+                  new Date(input.dueDate),
+                  input.recurrencePattern,
+                  input.occurrenceCount,
+               );
+            }
+
             const futureIssueDates = input.issueDate
-               ? generateFutureDates(
-                    new Date(input.issueDate),
-                    input.recurrencePattern,
-                 )
+               ? input.occurrenceUntilDate
+                  ? generateFutureDatesUntil(
+                       new Date(input.issueDate),
+                       input.recurrencePattern,
+                       new Date(input.occurrenceUntilDate),
+                    )
+                  : generateFutureDates(
+                       new Date(input.issueDate),
+                       input.recurrencePattern,
+                       input.occurrenceCount,
+                    )
                : [];
 
-            const futureBillsPromises = futureDueDates.map((dueDate, index) => {
-               return createBill(resolvedCtx.db, {
-                  amount: input.amount.toString(),
-                  bankAccountId: input.bankAccountId,
-                  categoryId: input.categoryId,
-                  counterpartyId: input.counterpartyId,
-                  description: input.description || "",
-                  dueDate,
-                  id: crypto.randomUUID(),
-                  interestTemplateId: input.interestTemplateId,
-                  isRecurring: true,
-                  issueDate: futureIssueDates[index] ?? null,
-                  notes: input.notes,
-                  organizationId,
-                  originalAmount: input.originalAmount?.toString(),
-                  parentBillId: firstBill.id,
-                  recurrencePattern: input.recurrencePattern,
-                  type: input.type,
-                  userId: organizationId,
-               });
-            });
+            const futureBillsPromises = futureDueDates.map(
+               async (dueDate, index) => {
+                  const futureBill = await createBill(resolvedCtx.db, {
+                     amount: input.amount.toString(),
+                     bankAccountId: input.bankAccountId,
+                     categoryId: input.categoryId,
+                     costCenterId: input.costCenterId,
+                     counterpartyId: input.counterpartyId,
+                     description: input.description || "",
+                     dueDate,
+                     id: crypto.randomUUID(),
+                     interestTemplateId: input.interestTemplateId,
+                     isRecurring: true,
+                     issueDate: futureIssueDates[index] ?? null,
+                     notes: input.notes,
+                     organizationId,
+                     originalAmount: input.originalAmount?.toString(),
+                     parentBillId: firstBill.id,
+                     recurrencePattern: input.recurrencePattern,
+                     type: input.type,
+                  });
+
+                  // Set tags for future bills too
+                  if (input.tagIds && input.tagIds.length > 0) {
+                     await setBillTags(
+                        resolvedCtx.db,
+                        futureBill.id,
+                        input.tagIds,
+                     );
+                  }
+
+                  return futureBill;
+               },
+            );
 
             await Promise.all(futureBillsPromises);
          }
@@ -259,10 +451,28 @@ export const billRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
+         // Verify all tags belong to this organization
+         if (input.tagIds && input.tagIds.length > 0) {
+            const orgTags = await findTagsByOrganizationId(
+               resolvedCtx.db,
+               organizationId,
+            );
+            const validTagIds = new Set(orgTags.map((t) => t.id));
+            const hasInvalidTags = input.tagIds.some(
+               (id) => !validTagIds.has(id),
+            );
+            if (hasInvalidTags) {
+               throw APIError.validation(
+                  "One or more tags do not belong to this organization",
+               );
+            }
+         }
+
          const result = await createBillWithInstallments(resolvedCtx.db, {
             amount: input.amount.toString(),
             bankAccountId: input.bankAccountId,
             categoryId: input.categoryId,
+            costCenterId: input.costCenterId,
             counterpartyId: input.counterpartyId,
             description: input.description || "",
             dueDate: new Date(input.dueDate),
@@ -273,8 +483,15 @@ export const billRouter = router({
             notes: input.notes,
             organizationId,
             type: input.type,
-            userId: organizationId,
          });
+
+         // Set tags for all installment bills
+         if (input.tagIds && input.tagIds.length > 0) {
+            const tagPromises = result.bills.map((bill) =>
+               setBillTags(resolvedCtx.db, bill.id, input.tagIds as string[]),
+            );
+            await Promise.all(tagPromises);
+         }
 
          return result;
       }),
@@ -288,11 +505,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (existingBill.completionDate && existingBill.transactionId) {
-            throw new Error(
+            throw APIError.conflict(
                "Cannot delete completed bill. Delete the associated transaction first.",
             );
          }
@@ -309,7 +526,7 @@ export const billRouter = router({
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
          if (!bill || bill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachment = await findBillAttachmentById(
@@ -318,7 +535,7 @@ export const billRouter = router({
          );
 
          if (!attachment || attachment.billId !== input.billId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          try {
@@ -358,30 +575,22 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (!existingBill.isRecurring || !existingBill.recurrencePattern) {
-            throw new Error("Bill is not recurring");
+            throw APIError.validation("Bill is not recurring");
          }
 
          const nextDueDate = getNextDueDate(
             existingBill.dueDate,
-            existingBill.recurrencePattern as
-               | "monthly"
-               | "quarterly"
-               | "semiannual"
-               | "annual",
+            existingBill.recurrencePattern as RecurrencePattern,
          );
 
          const nextIssueDate = existingBill.issueDate
             ? getNextDueDate(
                  existingBill.issueDate,
-                 existingBill.recurrencePattern as
-                    | "monthly"
-                    | "quarterly"
-                    | "semiannual"
-                    | "annual",
+                 existingBill.recurrencePattern as RecurrencePattern,
               )
             : nextDueDate;
 
@@ -401,7 +610,6 @@ export const billRouter = router({
             parentBillId: existingBill.id,
             recurrencePattern: existingBill.recurrencePattern,
             type: existingBill.type,
-            userId: organizationId,
          });
       }),
 
@@ -450,7 +658,7 @@ export const billRouter = router({
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
          if (!bill || bill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachment = await findBillAttachmentById(
@@ -459,7 +667,7 @@ export const billRouter = router({
          );
 
          if (!attachment || attachment.billId !== input.billId) {
-            throw new Error("Attachment not found");
+            throw APIError.notFound("Attachment not found");
          }
 
          const bucketName = resolvedCtx.minioBucket;
@@ -492,7 +700,7 @@ export const billRouter = router({
          const bill = await findBillById(resolvedCtx.db, input.billId);
 
          if (!bill || bill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          const attachments = await findBillAttachmentsByBillId(
@@ -511,8 +719,26 @@ export const billRouter = router({
 
          const billData = await findBillById(resolvedCtx.db, input.id);
 
-         if (!billData || billData.userId !== organizationId) {
-            throw new Error("Bill not found");
+         if (!billData || billData.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         return billData;
+      }),
+
+   getByTransactionId: protectedProcedure
+      .input(z.object({ transactionId: z.string().uuid() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const billData = await findBillByTransactionId(
+            resolvedCtx.db,
+            input.transactionId,
+         );
+
+         if (!billData || billData.organizationId !== organizationId) {
+            return null;
          }
 
          return billData;
@@ -534,7 +760,7 @@ export const billRouter = router({
          );
 
          if (filteredBills.length === 0) {
-            throw new Error("Installment group not found");
+            throw APIError.notFound("Installment group not found");
          }
 
          return filteredBills;
@@ -630,11 +856,11 @@ export const billRouter = router({
          const existingBill = await findBillById(resolvedCtx.db, input.id);
 
          if (!existingBill || existingBill.organizationId !== organizationId) {
-            throw new Error("Bill not found");
+            throw APIError.notFound("Bill not found");
          }
 
          if (existingBill.completionDate) {
-            throw new Error("Cannot edit completed bill");
+            throw APIError.conflict("Cannot edit completed bill");
          }
 
          const updateData: Partial<NewBill> = {};
@@ -691,6 +917,89 @@ export const billRouter = router({
             updateData.autoCreateNext = input.data.autoCreateNext;
          }
 
-         return updateBill(resolvedCtx.db, input.id, updateData);
+         if (input.data.costCenterId !== undefined) {
+            updateData.costCenterId = input.data.costCenterId;
+         }
+
+         const updatedBill = await updateBill(
+            resolvedCtx.db,
+            input.id,
+            updateData,
+         );
+
+         // Update tags if provided
+         if (input.data.tagIds !== undefined) {
+            // Verify all tags belong to this organization
+            if (input.data.tagIds.length > 0) {
+               const orgTags = await findTagsByOrganizationId(
+                  resolvedCtx.db,
+                  organizationId,
+               );
+               const validTagIds = new Set(orgTags.map((t) => t.id));
+               const hasInvalidTags = input.data.tagIds.some(
+                  (id) => !validTagIds.has(id),
+               );
+               if (hasInvalidTags) {
+                  throw APIError.validation(
+                     "One or more tags do not belong to this organization",
+                  );
+               }
+            }
+            await setBillTags(resolvedCtx.db, input.id, input.data.tagIds);
+         }
+
+         return updatedBill;
+      }),
+
+   getBillTags: protectedProcedure
+      .input(z.object({ billId: z.string() }))
+      .query(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         return findTagsByBillId(resolvedCtx.db, input.billId);
+      }),
+
+   setBillTags: protectedProcedure
+      .input(
+         z.object({
+            billId: z.string().uuid(),
+            tagIds: z.array(z.string().uuid()),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+
+         const bill = await findBillById(resolvedCtx.db, input.billId);
+
+         if (!bill || bill.organizationId !== organizationId) {
+            throw APIError.notFound("Bill not found");
+         }
+
+         // Verify all tags belong to this organization
+         if (input.tagIds.length > 0) {
+            const orgTags = await findTagsByOrganizationId(
+               resolvedCtx.db,
+               organizationId,
+            );
+            const validTagIds = new Set(orgTags.map((t) => t.id));
+            const hasInvalidTags = input.tagIds.some(
+               (id) => !validTagIds.has(id),
+            );
+            if (hasInvalidTags) {
+               throw APIError.validation(
+                  "One or more tags do not belong to this organization",
+               );
+            }
+         }
+
+         return setBillTags(resolvedCtx.db, input.billId, input.tagIds);
       }),
 });

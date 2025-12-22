@@ -130,7 +130,18 @@ export function ManageTransactionForm({
    }, [watchedValues]);
 
    const modeTexts = useMemo(() => {
-      const createTexts = {
+      if (isEditMode) {
+         return {
+            description: translate(
+               "dashboard.routes.transactions.features.edit.description",
+            ),
+            title: translate(
+               "dashboard.routes.transactions.features.edit.title",
+            ),
+         };
+      }
+
+      return {
          description: translate(
             "dashboard.routes.transactions.features.add-new.description",
          ),
@@ -138,19 +149,23 @@ export function ManageTransactionForm({
             "dashboard.routes.transactions.features.add-new.title",
          ),
       };
-
-      const editTexts = {
-         description: translate(
-            "dashboard.routes.transactions.features.edit.description",
-         ),
-         title: translate("dashboard.routes.transactions.features.edit.title"),
-      };
-
-      return isEditMode ? editTexts : createTexts;
    }, [isEditMode]);
 
+   // Determine the initial transaction type for category filtering
+   const initialTransactionType = useMemo(() => {
+      if (transaction?.type === "transfer") return "expense";
+      if (transaction?.type) return transaction.type as "expense" | "income";
+      return "expense";
+   }, [transaction?.type]);
+
+   const [currentTransactionType, setCurrentTransactionType] = useState<
+      "expense" | "income"
+   >(initialTransactionType);
+
    const { data: categories = [] } = useQuery(
-      trpc.categories.getAll.queryOptions(),
+      trpc.categories.getByTransactionType.queryOptions({
+         type: currentTransactionType,
+      }),
    );
 
    const { data: bankAccounts = [] } = useQuery(
@@ -320,9 +335,11 @@ export function ManageTransactionForm({
    const handleCreateCategory = useCallback(
       async (name: string) => {
          try {
+            const transactionType = form.getFieldValue("type");
             const data = await createCategoryMutation.mutateAsync({
                color: getRandomColor(),
                name,
+               transactionTypes: [transactionType],
             });
 
             if (!data) return;
@@ -559,11 +576,13 @@ export function ManageTransactionForm({
                               {translate("common.form.type.label")}
                            </FieldLabel>
                            <Select
-                              onValueChange={(value) =>
-                                 field.handleChange(
-                                    value as "expense" | "income",
-                                 )
-                              }
+                              onValueChange={(value) => {
+                                 const typedValue = value as
+                                    | "expense"
+                                    | "income";
+                                 field.handleChange(typedValue);
+                                 setCurrentTransactionType(typedValue);
+                              }}
                               value={field.state.value}
                            >
                               <SelectTrigger id={field.name}>
@@ -864,6 +883,18 @@ export function ManageTransactionForm({
 
                               return (
                                  <>
+                                    <Button
+                                       className="w-full"
+                                       onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          methods.prev();
+                                       }}
+                                       type="button"
+                                       variant="ghost"
+                                    >
+                                       {translate("common.actions.previous")}
+                                    </Button>
                                     {hasAnyCategorization ? (
                                        <Button
                                           className="w-full"
@@ -891,18 +922,6 @@ export function ManageTransactionForm({
                                           {translate("common.actions.skip")}
                                        </Button>
                                     )}
-                                    <Button
-                                       className="w-full"
-                                       onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          methods.prev();
-                                       }}
-                                       type="button"
-                                       variant="ghost"
-                                    >
-                                       {translate("common.actions.previous")}
-                                    </Button>
                                  </>
                               );
                            }}

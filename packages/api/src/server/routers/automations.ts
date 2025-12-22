@@ -19,15 +19,27 @@ import {
    toggleAutomationRule,
    updateAutomationRule,
 } from "@packages/database/repositories/automation-repository";
+import {
+   computeDiff,
+   createSnapshotFromRule,
+   createVersion,
+   getVersionHistory,
+} from "@packages/database/repositories/automation-version-repository";
 import type {
-   Action,
    ConditionGroup,
+   Consequence,
    FlowData,
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
-import { emitManualTrigger } from "@packages/rules-engine/queue/producer";
-import type { AutomationEvent } from "@packages/rules-engine/types/events";
+import type { AutomationRuleVersionSnapshot } from "@packages/database/schemas/automations";
+import { APIError } from "@packages/utils/errors";
+import { enqueueManualWorkflowRun } from "@packages/workflows/queue/producer";
+import {
+   createTransactionCreatedEvent,
+   createTransactionUpdatedEvent,
+   type WorkflowEvent,
+} from "@packages/workflows/types/events";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -45,10 +57,16 @@ const actionTypeSchema = z.enum([
    "set_cost_center",
    "update_description",
    "create_transaction",
+   "mark_as_transfer",
    "send_push_notification",
    "send_email",
    "stop_execution",
 ]);
+
+const categorySplitConfigSchema = z.object({
+   categoryId: z.string(),
+   value: z.number().min(0),
+});
 
 const actionConfigSchema = z.object({
    amountField: z.string().optional(),
@@ -56,10 +74,16 @@ const actionConfigSchema = z.object({
    bankAccountId: z.string().optional(),
    body: z.string().optional(),
    categoryId: z.string().optional(),
+   categoryIds: z.array(z.string()).optional(),
+   categorySplitMode: z
+      .enum(["equal", "percentage", "fixed", "dynamic"])
+      .optional(),
+   categorySplits: z.array(categorySplitConfigSchema).optional(),
    costCenterId: z.string().optional(),
    customEmail: z.string().optional(),
    dateField: z.string().optional(),
    description: z.string().optional(),
+   dynamicSplitPattern: z.string().optional(),
    mode: z.enum(["replace", "append", "prepend"]).optional(),
    reason: z.string().optional(),
    subject: z.string().optional(),
@@ -67,15 +91,14 @@ const actionConfigSchema = z.object({
    template: z.boolean().optional(),
    title: z.string().optional(),
    to: z.enum(["owner", "custom"]).optional(),
+   toBankAccountId: z.string().optional(),
    type: z.enum(["income", "expense"]).optional(),
    url: z.string().optional(),
    value: z.string().optional(),
 });
 
-const actionSchema = z.object({
-   config: actionConfigSchema,
-   continueOnError: z.boolean().optional(),
-   id: z.string(),
+const consequenceSchema = z.object({
+   payload: actionConfigSchema,
    type: actionTypeSchema,
 });
 
@@ -95,33 +118,35 @@ const flowDataSchema = z
    .nullable();
 
 const createAutomationRuleSchema = z.object({
-   actions: z.array(actionSchema).min(1, "At least one action is required"),
-   conditions: z.array(ConditionGroupSchema).default([]),
+   consequences: z
+      .array(consequenceSchema)
+      .min(1, "At least one consequence is required"),
+   conditions: ConditionGroupSchema.optional(),
    description: z.string().optional(),
    flowData: flowDataSchema,
-   isActive: z.boolean().default(false),
+   enabled: z.boolean().default(false),
    name: z.string().min(1, "Name is required"),
    priority: z.number().int().default(0),
-   stopOnFirstMatch: z.boolean().default(false),
+   stopOnMatch: z.boolean().default(false),
    triggerConfig: triggerConfigSchema,
    triggerType: triggerTypeSchema,
 });
 
 const updateAutomationRuleSchema = z.object({
-   actions: z.array(actionSchema).optional(),
-   conditions: z.array(ConditionGroupSchema).optional(),
+   consequences: z.array(consequenceSchema).optional(),
+   conditions: ConditionGroupSchema.optional(),
    description: z.string().optional().nullable(),
    flowData: flowDataSchema,
-   isActive: z.boolean().optional(),
+   enabled: z.boolean().optional(),
    name: z.string().min(1).optional(),
    priority: z.number().int().optional(),
-   stopOnFirstMatch: z.boolean().optional(),
+   stopOnMatch: z.boolean().optional(),
    triggerConfig: triggerConfigSchema.optional(),
    triggerType: triggerTypeSchema.optional(),
 });
 
 const paginationSchema = z.object({
-   isActive: z.boolean().optional(),
+   enabled: z.boolean().optional(),
    limit: z.coerce.number().min(1).max(100).default(10),
    orderBy: z
       .enum(["name", "createdAt", "updatedAt", "priority"])
@@ -147,16 +172,34 @@ export const automationRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.session?.user?.id;
 
-         return createAutomationRule(resolvedCtx.db, {
+         // Default empty condition group if none provided
+         const conditions: ConditionGroup = input.conditions
+            ? (input.conditions as ConditionGroup)
+            : { id: crypto.randomUUID(), operator: "AND", conditions: [] };
+
+         const createdRule = await createAutomationRule(resolvedCtx.db, {
             ...input,
-            actions: input.actions as Action[],
-            conditions: input.conditions as ConditionGroup[],
-            createdBy: resolvedCtx.session?.user?.id,
+            consequences: input.consequences as Consequence[],
+            conditions,
+            createdBy: userId,
             flowData: input.flowData as FlowData | undefined,
             organizationId,
             triggerConfig: input.triggerConfig as TriggerConfig,
          });
+
+         if (createdRule) {
+            const snapshot = createSnapshotFromRule(createdRule);
+            await createVersion(resolvedCtx.db, {
+               changeType: "created",
+               changedBy: userId,
+               ruleId: createdRule.id,
+               snapshot: snapshot as AutomationRuleVersionSnapshot,
+            });
+         }
+
+         return createdRule;
       }),
 
    delete: protectedProcedure
@@ -171,7 +214,7 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return deleteAutomationRule(resolvedCtx.db, input.id);
@@ -207,7 +250,7 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return duplicateAutomationRule(
@@ -237,7 +280,7 @@ export const automationRouter = router({
             resolvedCtx.db,
             organizationId,
             {
-               isActive: input.isActive,
+               enabled: input.enabled,
                limit: input.limit,
                orderBy: input.orderBy,
                orderDirection: input.orderDirection,
@@ -257,7 +300,7 @@ export const automationRouter = router({
          const rule = await findAutomationRuleById(resolvedCtx.db, input.id);
 
          if (!rule || rule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
          return rule;
@@ -328,7 +371,7 @@ export const automationRouter = router({
             );
 
             if (!rule || rule.organizationId !== organizationId) {
-               throw new Error("Automation rule not found");
+               throw APIError.notFound("Automation rule not found");
             }
 
             return findAutomationLogsByRuleId(resolvedCtx.db, input.ruleId, {
@@ -371,11 +414,42 @@ export const automationRouter = router({
          }),
    }),
 
+   versions: router({
+      getHistory: protectedProcedure
+         .input(
+            z.object({
+               limit: z.coerce.number().min(1).max(100).default(20),
+               page: z.coerce.number().min(1).default(1),
+               ruleId: z.string(),
+            }),
+         )
+         .query(async ({ ctx, input }) => {
+            const resolvedCtx = await ctx;
+            const organizationId = resolvedCtx.organizationId;
+
+            const rule = await findAutomationRuleById(
+               resolvedCtx.db,
+               input.ruleId,
+            );
+
+            if (!rule || rule.organizationId !== organizationId) {
+               throw APIError.notFound("Automation rule not found");
+            }
+
+            const offset = (input.page - 1) * input.limit;
+
+            return getVersionHistory(resolvedCtx.db, input.ruleId, {
+               limit: input.limit,
+               offset,
+            });
+         }),
+   }),
+
    toggle: protectedProcedure
       .input(
          z.object({
             id: z.string(),
-            isActive: z.boolean(),
+            enabled: z.boolean(),
          }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -388,10 +462,10 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
-         return toggleAutomationRule(resolvedCtx.db, input.id, input.isActive);
+         return toggleAutomationRule(resolvedCtx.db, input.id, input.enabled);
       }),
 
    triggerManually: protectedProcedure
@@ -429,18 +503,20 @@ export const automationRouter = router({
          );
 
          if (!rule || rule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
-         if (!rule.isActive) {
-            throw new Error("Cannot trigger inactive automation rule");
+         if (!rule.enabled) {
+            throw APIError.validation(
+               "Cannot trigger inactive automation rule",
+            );
          }
 
          if (
             rule.triggerType !== "transaction.created" &&
             rule.triggerType !== "transaction.updated"
          ) {
-            throw new Error(
+            throw APIError.validation(
                "Manual trigger is only supported for transaction-based automations",
             );
          }
@@ -451,32 +527,31 @@ export const automationRouter = router({
             type: "expense" as const,
          };
 
-         const event: AutomationEvent = {
-            data: {
-               amount: txData.amount,
-               bankAccountId: txData.bankAccountId ?? null,
-               categoryIds: txData.categoryIds ?? [],
-               costCenterId: txData.costCenterId ?? null,
-               counterpartyId: txData.counterpartyId ?? null,
-               date: txData.date ?? new Date().toISOString(),
-               description: txData.description,
-               id: txData.id ?? crypto.randomUUID(),
-               metadata: txData.metadata ?? {},
-               organizationId,
-               tagIds: txData.tagIds ?? [],
-               type: txData.type,
-            },
-            id: crypto.randomUUID(),
+         const eventData = {
+            amount: txData.amount,
+            bankAccountId: txData.bankAccountId ?? null,
+            categoryIds: txData.categoryIds ?? [],
+            costCenterId: txData.costCenterId ?? null,
+            counterpartyId: txData.counterpartyId ?? null,
+            date: txData.date ?? new Date().toISOString(),
+            description: txData.description,
+            id: txData.id ?? crypto.randomUUID(),
+            metadata: txData.metadata ?? {},
             organizationId,
-            timestamp: new Date().toISOString(),
-            type: rule.triggerType,
+            tagIds: txData.tagIds ?? [],
+            type: txData.type,
          };
 
-         const job = await emitManualTrigger(event);
+         const event: WorkflowEvent =
+            rule.triggerType === "transaction.created"
+               ? createTransactionCreatedEvent(organizationId, eventData)
+               : createTransactionUpdatedEvent(organizationId, eventData);
+
+         const jobId = await enqueueManualWorkflowRun(event);
 
          return {
             eventId: event.id,
-            jobId: job.id,
+            jobId,
             status: "queued",
             triggerType: rule.triggerType,
          };
@@ -492,6 +567,7 @@ export const automationRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.session?.user?.id;
 
          const existingRule = await findAutomationRuleById(
             resolvedCtx.db,
@@ -499,17 +575,42 @@ export const automationRouter = router({
          );
 
          if (!existingRule || existingRule.organizationId !== organizationId) {
-            throw new Error("Automation rule not found");
+            throw APIError.notFound("Automation rule not found");
          }
 
-         return updateAutomationRule(resolvedCtx.db, input.id, {
-            ...input.data,
-            actions: input.data.actions as Action[] | undefined,
-            conditions: input.data.conditions as ConditionGroup[] | undefined,
-            flowData: input.data.flowData as FlowData | undefined | null,
-            triggerConfig: input.data.triggerConfig as
-               | TriggerConfig
-               | undefined,
-         });
+         const oldSnapshot = createSnapshotFromRule(existingRule);
+
+         const updatedRule = await updateAutomationRule(
+            resolvedCtx.db,
+            input.id,
+            {
+               ...input.data,
+               consequences: input.data.consequences as
+                  | Consequence[]
+                  | undefined,
+               conditions: input.data.conditions as ConditionGroup | undefined,
+               flowData: input.data.flowData as FlowData | undefined | null,
+               triggerConfig: input.data.triggerConfig as
+                  | TriggerConfig
+                  | undefined,
+            },
+         );
+
+         if (updatedRule) {
+            const newSnapshot = createSnapshotFromRule(updatedRule);
+            const diff = computeDiff(oldSnapshot, newSnapshot);
+
+            if (diff.length > 0) {
+               await createVersion(resolvedCtx.db, {
+                  changeType: "updated",
+                  changedBy: userId,
+                  diff,
+                  ruleId: input.id,
+                  snapshot: newSnapshot as AutomationRuleVersionSnapshot,
+               });
+            }
+         }
+
+         return updatedRule;
       }),
 });

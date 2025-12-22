@@ -118,7 +118,7 @@ export async function* parseStream(
    };
 
    let detectedEncoding: string | undefined = options?.encoding;
-   let decoder = new TextDecoder(detectedEncoding ?? "utf-8");
+   let decoder = new TextDecoder((detectedEncoding ?? "utf-8") as "utf-8");
    const tagRegex = /<(\/?)([\w.]+)>([^<]*)/g;
 
    let pendingLedgerBalance: OFXBalance | undefined;
@@ -141,7 +141,7 @@ export async function* parseStream(
                detectedEncoding = getEncodingFromCharset(
                   headerResult.header.CHARSET,
                );
-               decoder = new TextDecoder(detectedEncoding);
+               decoder = new TextDecoder(detectedEncoding as "utf-8");
             }
 
             yield { data: headerResult.header, type: "header" };
@@ -277,9 +277,9 @@ export async function* parseStream(
                offset += chunk.length;
             }
 
-            const headerSection = new TextDecoder("ascii").decode(
-               combined.slice(0, Math.min(combined.length, 1000)),
-            );
+            const headerSection = new TextDecoder(
+               "iso-8859-1" as unknown as "utf-8",
+            ).decode(combined.slice(0, Math.min(combined.length, 1000)));
 
             if (
                headerSection.includes("<OFX") ||
@@ -288,7 +288,7 @@ export async function* parseStream(
                const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
                if (charsetMatch && !detectedEncoding) {
                   detectedEncoding = getEncodingFromCharset(charsetMatch[1]);
-                  decoder = new TextDecoder(detectedEncoding);
+                  decoder = new TextDecoder(detectedEncoding as "utf-8");
                }
                headerFound = true;
 

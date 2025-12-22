@@ -1,12 +1,4 @@
 {
-   "extends": "@tooling/typescript/internal-package.json",
-   "include": ["src", "__tests__/*.test.ts"],
-   "references": [
-      {
-         "path": "../database"
-      },
-      {
-         "path": "../utils"
-      }
-   ]
+   "extends": "@tooling/typescript/typecheck.json",
+   "include": ["src", "__tests__/*.test.ts"]
 }

@@ -1,0 +1,10 @@
+{
+   "enabled": "Ativado",
+   "disabled": "Desativado",
+   "active": "Ativo",
+   "inactive": "Inativo",
+   "pending": "Pendente",
+   "completed": "Concluído",
+   "failed": "Falhou",
+   "loading": "Carregando"
+}

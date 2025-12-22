@@ -1,25 +1,8 @@
 ---
 export const prerender = true;
 
-import {
-   ArrowRight,
-   BarChart3,
-   ChevronRight,
-   FileText,
-   Layers,
-   LineChart,
-   Sparkles,
-   Target,
-   TrendingUp,
-   Wallet,
-} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
-import LogoCloud from "@/components/LogoCloud.astro";
-import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -28,9 +11,9 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const lang = (locale || "pt-BR") as SupportedLng;
+const _lang = (locale || "pt-BR") as SupportedLng;
 
-const testimonials = [
+const _testimonials = [
    {
       avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Taylor",
       handle: "@taylorfinance",
@@ -81,7 +64,7 @@ const testimonials = [
    },
 ];
 
-const relatedFeatures = [
+const _relatedFeatures = [
    {
       description: "Relatórios bonitos e interativos",
       href: "/features/smart-transactions",

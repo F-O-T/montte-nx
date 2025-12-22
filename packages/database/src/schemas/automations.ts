@@ -1,18 +1,17 @@
-import {
-   isConditionGroup,
-   type ArrayOperator as LibArrayOperator,
-   type BooleanOperator as LibBooleanOperator,
-   type Condition as LibCondition,
-   type ConditionGroup as LibConditionGroup,
-   type ConditionGroupInput as LibConditionGroupInput,
-   type DateOperator as LibDateOperator,
-   type EvaluationContext as LibEvaluationContext,
-   type EvaluationResult as LibEvaluationResult,
-   type GroupEvaluationResult as LibGroupEvaluationResult,
-   type GroupEvaluationResultInput as LibGroupEvaluationResultInput,
-   type LogicalOperator as LibLogicalOperator,
-   type NumberOperator as LibNumberOperator,
-   type StringOperator as LibStringOperator,
+import type {
+   ArrayOperator as LibArrayOperator,
+   BooleanOperator as LibBooleanOperator,
+   Condition as LibCondition,
+   ConditionGroup as LibConditionGroup,
+   ConditionGroupInput as LibConditionGroupInput,
+   DateOperator as LibDateOperator,
+   EvaluationContext as LibEvaluationContext,
+   EvaluationResult as LibEvaluationResult,
+   GroupEvaluationResult as LibGroupEvaluationResult,
+   GroupEvaluationResultInput as LibGroupEvaluationResultInput,
+   LogicalOperator as LibLogicalOperator,
+   NumberOperator as LibNumberOperator,
+   StringOperator as LibStringOperator,
 } from "@f-o-t/condition-evaluator";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -42,8 +41,6 @@ export type EvaluationResult = LibEvaluationResult;
 export type GroupEvaluationResult = LibGroupEvaluationResult;
 export type GroupEvaluationResultInput = LibGroupEvaluationResultInput;
 
-export { isConditionGroup };
-
 export type ConditionOperator =
    | StringOperator
    | NumberOperator
@@ -51,7 +48,13 @@ export type ConditionOperator =
    | DateOperator
    | ArrayOperator;
 
-export type ConditionType = "string" | "number" | "boolean" | "date" | "array";
+export type ConditionType =
+   | "string"
+   | "number"
+   | "boolean"
+   | "date"
+   | "array"
+   | "custom";
 
 export type TriggerType = "transaction.created" | "transaction.updated";
 
@@ -64,12 +67,24 @@ export type ActionType =
    | "set_cost_center"
    | "update_description"
    | "create_transaction"
+   | "mark_as_transfer"
    | "send_push_notification"
    | "send_email"
    | "stop_execution";
 
+export type CategorySplitMode = "equal" | "percentage" | "fixed" | "dynamic";
+
+export type CategorySplitConfig = {
+   categoryId: string;
+   value: number;
+};
+
 export type ActionConfig = {
    categoryId?: string;
+   categoryIds?: string[];
+   categorySplitMode?: CategorySplitMode;
+   categorySplits?: CategorySplitConfig[];
+   dynamicSplitPattern?: string;
    mode?: "replace" | "append" | "prepend";
    tagIds?: string[];
    costCenterId?: string;
@@ -80,6 +95,7 @@ export type ActionConfig = {
    amountFixed?: number;
    description?: string;
    bankAccountId?: string;
+   toBankAccountId?: string;
    dateField?: string;
    title?: string;
    body?: string;
@@ -90,11 +106,13 @@ export type ActionConfig = {
    reason?: string;
 };
 
-export type Action = {
-   id: string;
+/**
+ * Consequence type aligned with @f-o-t/rules-engine
+ * Replaces the old Action type
+ */
+export type Consequence = {
    type: ActionType;
-   config: ActionConfig;
-   continueOnError?: boolean;
+   payload: ActionConfig;
 };
 
 export type FlowData = {
@@ -110,23 +128,33 @@ export type FlowData = {
 export const automationRule = pgTable(
    "automation_rule",
    {
-      actions: jsonb("actions").$type<Action[]>().notNull().default([]),
-      conditions: jsonb("conditions")
-         .$type<ConditionGroup[]>()
+      category: text("category"),
+      // Changed from ConditionGroup[] to single ConditionGroup (aligned with rules-engine)
+      conditions: jsonb("conditions").$type<ConditionGroup>().notNull(),
+      // Renamed from actions to consequences (aligned with rules-engine)
+      consequences: jsonb("consequences")
+         .$type<Consequence[]>()
          .notNull()
          .default([]),
       createdAt: timestamp("created_at").defaultNow().notNull(),
       createdBy: uuid("created_by").references(() => user.id),
       description: text("description"),
+      // Renamed from isActive to enabled (aligned with rules-engine)
+      enabled: boolean("enabled").notNull().default(true),
       flowData: jsonb("flow_data").$type<FlowData>(),
       id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
-      isActive: boolean("is_active").notNull().default(true),
+      metadata: jsonb("metadata")
+         .$type<Record<string, unknown>>()
+         .notNull()
+         .default({}),
       name: text("name").notNull(),
       organizationId: uuid("organization_id")
          .notNull()
          .references(() => organization.id, { onDelete: "cascade" }),
       priority: integer("priority").notNull().default(0),
-      stopOnFirstMatch: boolean("stop_on_first_match").default(false),
+      // Renamed from stopOnFirstMatch to stopOnMatch (aligned with rules-engine)
+      stopOnMatch: boolean("stop_on_match").default(false),
+      tags: text("tags").array().notNull().default([]),
       triggerConfig: jsonb("trigger_config").$type<TriggerConfig>().default({}),
       triggerType: text("trigger_type").$type<TriggerType>().notNull(),
       updatedAt: timestamp("updated_at")
@@ -139,20 +167,19 @@ export const automationRule = pgTable(
          table.organizationId,
          table.name,
       ),
-      index("idx_automation_rule_org_active").on(
+      index("idx_automation_rule_org_enabled").on(
          table.organizationId,
-         table.isActive,
+         table.enabled,
       ),
-      index("idx_automation_rule_trigger").on(
-         table.triggerType,
-         table.isActive,
-      ),
+      index("idx_automation_rule_trigger").on(table.triggerType, table.enabled),
+      index("idx_automation_rule_category").on(table.category),
    ],
 );
 
 export type AutomationLogStatus = "success" | "partial" | "failed" | "skipped";
 export type TriggeredBy = "event" | "manual";
 export type RelatedEntityType = "transaction";
+export type RuleChangeType = "created" | "updated" | "restored" | "deleted";
 
 export type ConditionEvaluationLogResult = {
    conditionId: string;
@@ -161,8 +188,8 @@ export type ConditionEvaluationLogResult = {
    expectedValue?: unknown;
 };
 
-export type ActionExecutionLogResult = {
-   actionId: string;
+export type ConsequenceExecutionLogResult = {
+   consequenceIndex: number;
    type: ActionType;
    success: boolean;
    result?: unknown;
@@ -172,8 +199,9 @@ export type ActionExecutionLogResult = {
 export const automationLog = pgTable(
    "automation_log",
    {
-      actionsExecuted:
-         jsonb("actions_executed").$type<ActionExecutionLogResult[]>(),
+      consequencesExecuted: jsonb("consequences_executed").$type<
+         ConsequenceExecutionLogResult[]
+      >(),
       completedAt: timestamp("completed_at"),
       conditionsEvaluated: jsonb("conditions_evaluated").$type<
          ConditionEvaluationLogResult[]
@@ -225,6 +253,7 @@ export const automationRuleRelations = relations(
          fields: [automationRule.organizationId],
          references: [organization.id],
       }),
+      versions: many(automationRuleVersion),
    }),
 );
 
@@ -238,3 +267,66 @@ export const automationLogRelations = relations(automationLog, ({ one }) => ({
       references: [automationRule.id],
    }),
 }));
+
+export type AutomationRuleVersionSnapshot = {
+   id: string;
+   name: string;
+   description?: string | null;
+   triggerType: TriggerType;
+   triggerConfig: TriggerConfig;
+   conditions: ConditionGroup;
+   consequences: Consequence[];
+   flowData?: FlowData | null;
+   enabled: boolean;
+   priority: number;
+   stopOnMatch?: boolean | null;
+   tags: string[];
+   category?: string | null;
+   metadata: Record<string, unknown>;
+};
+
+export type AutomationRuleVersionDiff = {
+   field: string;
+   oldValue: unknown;
+   newValue: unknown;
+}[];
+
+export const automationRuleVersion = pgTable(
+   "automation_rule_version",
+   {
+      changeDescription: text("change_description"),
+      changedAt: timestamp("changed_at").defaultNow().notNull(),
+      changedBy: uuid("changed_by").references(() => user.id),
+      changeType: text("change_type").$type<RuleChangeType>().notNull(),
+      diff: jsonb("diff").$type<AutomationRuleVersionDiff>(),
+      id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+      ruleId: uuid("rule_id")
+         .notNull()
+         .references(() => automationRule.id, { onDelete: "cascade" }),
+      snapshot: jsonb("snapshot")
+         .$type<AutomationRuleVersionSnapshot>()
+         .notNull(),
+      version: integer("version").notNull(),
+   },
+   (table) => [
+      index("idx_automation_rule_version_rule").on(table.ruleId),
+      unique("automation_rule_version_rule_version_unique").on(
+         table.ruleId,
+         table.version,
+      ),
+   ],
+);
+
+export const automationRuleVersionRelations = relations(
+   automationRuleVersion,
+   ({ one }) => ({
+      changedByUser: one(user, {
+         fields: [automationRuleVersion.changedBy],
+         references: [user.id],
+      }),
+      rule: one(automationRule, {
+         fields: [automationRuleVersion.ruleId],
+         references: [automationRule.id],
+      }),
+   }),
+);

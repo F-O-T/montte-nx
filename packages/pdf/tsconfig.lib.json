@@ -1,0 +1,12 @@
+{
+   "extends": "@tooling/typescript/internal-package.json",
+   "compilerOptions": {
+      "jsx": "react-jsx",
+      "jsxImportSource": "react"
+   },
+   "include": ["src"],
+   "exclude": ["**/*.test.ts", "**/__tests__/**"],
+   "references": [
+      { "path": "../database/tsconfig.lib.json" }
+   ]
+}

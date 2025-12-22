@@ -3,6 +3,7 @@ import {
    findUnreadNotificationsByUserId,
    markNotificationAsRead,
 } from "@packages/database/repositories/notification-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -20,7 +21,7 @@ export const notificationRouter = router({
          const userId = resolvedCtx.session?.user.id;
 
          if (!userId) {
-            throw new Error("Unauthorized");
+            throw APIError.unauthorized("Unauthorized");
          }
 
          if (input?.onlyUnread !== false) {

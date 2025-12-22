@@ -1,7 +1,10 @@
 import { translate } from "@packages/localization";
-import { Badge } from "@packages/ui/components/badge";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Button } from "@packages/ui/components/button";
-import { ItemMedia } from "@packages/ui/components/item";
 import {
    Tooltip,
    TooltipContent,
@@ -11,13 +14,11 @@ import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Eye, Pencil, Split, Trash2 } from "lucide-react";
+import { Check, CheckCheck, Eye, Minus, Split, X } from "lucide-react";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
-import { useSheet } from "@/hooks/use-sheet";
-import { ManageTransactionForm } from "./manage-transaction-form";
+import { AmountAnnouncement } from "./amount-announcement";
 import type { Category, Transaction } from "./transaction-list";
-import { useDeleteTransaction } from "./use-delete-transaction";
 
 type CategorySplit = {
    categoryId: string;
@@ -49,11 +50,8 @@ function TransactionActionsCell({
    transaction: Transaction;
    slug: string;
 }) {
-   const { openSheet } = useSheet();
-   const { deleteTransaction } = useDeleteTransaction({ transaction });
-
    return (
-      <div className="flex justify-end gap-1">
+      <div className="flex justify-end">
          <Tooltip>
             <TooltipTrigger asChild>
                <Button asChild size="icon" variant="outline">
@@ -74,47 +72,153 @@ function TransactionActionsCell({
                )}
             </TooltipContent>
          </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  onClick={() =>
-                     openSheet({
-                        children: (
-                           <ManageTransactionForm transaction={transaction} />
-                        ),
-                     })
-                  }
-                  size="icon"
-                  variant="outline"
-               >
-                  <Pencil className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.transactions.list-section.actions.edit",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  className="text-destructive hover:text-destructive"
-                  onClick={deleteTransaction}
-                  size="icon"
-                  variant="outline"
-               >
-                  <Trash2 className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.transactions.list-section.actions.delete",
-               )}
-            </TooltipContent>
-         </Tooltip>
       </div>
    );
+}
+
+export type TransactionWithScore = Transaction & { score?: number };
+
+function getSimilarityConfig(score: number) {
+   if (score >= 80) {
+      return {
+         color: "#10b981",
+         icon: CheckCheck,
+         label: "Muito similar",
+      };
+   }
+   if (score >= 60) {
+      return {
+         color: "#3b82f6",
+         icon: Check,
+         label: "Similar",
+      };
+   }
+   if (score >= 40) {
+      return {
+         color: "#eab308",
+         icon: Minus,
+         label: "Pouco similar",
+      };
+   }
+   return {
+      color: "#6b7280",
+      icon: X,
+      label: "Não similar",
+   };
+}
+
+export function createSimilarTransactionColumns(
+   categories: Category[],
+   slug: string,
+): ColumnDef<TransactionWithScore>[] {
+   return [
+      {
+         accessorKey: "score",
+         cell: ({ row }) => {
+            const score = row.original.score ?? 0;
+            const config = getSimilarityConfig(score);
+            const Icon = config.icon;
+
+            return (
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${config.color}20`,
+                        color: config.color,
+                     }}
+                  >
+                     <Icon className="size-3.5" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle>
+                     {score}% - {config.label}
+                  </AnnouncementTitle>
+               </Announcement>
+            );
+         },
+         enableSorting: false,
+         header: "Similaridade",
+         size: 180,
+      },
+      {
+         accessorKey: "description",
+         cell: ({ row }) => {
+            const transaction = row.original;
+            return (
+               <span className="font-medium block max-w-[180px] truncate">
+                  {transaction.description}
+               </span>
+            );
+         },
+         enableSorting: false,
+         header: translate(
+            "dashboard.routes.transactions.table.columns.description",
+         ),
+         maxSize: 180,
+      },
+      {
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const category = getCategoryDetails(transaction, categories);
+
+            return (
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${category.color}20`,
+                        color: category.color,
+                     }}
+                  >
+                     <IconDisplay
+                        iconName={category.icon as IconName}
+                        size={14}
+                     />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="max-w-[100px] truncate">
+                     {category.name}
+                  </AnnouncementTitle>
+               </Announcement>
+            );
+         },
+         enableSorting: false,
+         header: translate(
+            "dashboard.routes.transactions.table.columns.category",
+         ),
+         id: "category",
+      },
+      {
+         accessorKey: "date",
+         cell: ({ row }) => {
+            return formatDate(new Date(row.getValue("date")), "DD MMM YYYY");
+         },
+         enableSorting: false,
+         header: translate("dashboard.routes.transactions.table.columns.date"),
+      },
+      {
+         accessorKey: "amount",
+         cell: ({ row }) => {
+            const transaction = row.original;
+            const amount = Number.parseFloat(transaction.amount);
+            const isPositive =
+               transaction.type === "income" ||
+               (transaction.type === "transfer" && amount > 0);
+
+            return (
+               <AmountAnnouncement amount={amount} isPositive={isPositive} />
+            );
+         },
+         enableSorting: false,
+         header: translate(
+            "dashboard.routes.transactions.table.columns.amount",
+         ),
+      },
+      {
+         cell: ({ row }) => (
+            <TransactionActionsCell slug={slug} transaction={row.original} />
+         ),
+         header: "",
+         id: "actions",
+      },
+   ];
 }
 
 export function createTransactionColumns(
@@ -122,24 +226,6 @@ export function createTransactionColumns(
    slug: string,
 ): ColumnDef<Transaction>[] {
    return [
-      {
-         cell: ({ row }) => {
-            const transaction = row.original;
-            const category = getCategoryDetails(transaction, categories);
-
-            return (
-               <ItemMedia
-                  style={{ backgroundColor: category.color }}
-                  variant="icon"
-               >
-                  <IconDisplay iconName={category.icon as IconName} size={16} />
-               </ItemMedia>
-            );
-         },
-         header: "",
-         id: "icon",
-         size: 48,
-      },
       {
          accessorKey: "description",
          cell: ({ row }) => {
@@ -205,20 +291,25 @@ export function createTransactionColumns(
             const category = getCategoryDetails(transaction, categories);
 
             return (
-               <Badge
-                  className="font-normal truncate max-w-[120px]"
-                  style={{
-                     backgroundColor: `${category.color}20`,
-                     color: category.color,
-                  }}
-                  variant="secondary"
-               >
-                  {category.name}
-               </Badge>
+               <Announcement>
+                  <AnnouncementTag
+                     style={{
+                        backgroundColor: `${category.color}20`,
+                        color: category.color,
+                     }}
+                  >
+                     <IconDisplay
+                        iconName={category.icon as IconName}
+                        size={14}
+                     />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="max-w-[120px] truncate">
+                     {category.name}
+                  </AnnouncementTitle>
+               </Announcement>
             );
          },
          enableSorting: false,
-
          header: translate(
             "dashboard.routes.transactions.table.columns.category",
          ),
@@ -234,21 +325,6 @@ export function createTransactionColumns(
          header: translate("dashboard.routes.transactions.table.columns.date"),
       },
       {
-         accessorKey: "type",
-         cell: ({ row }) => {
-            const type = row.getValue("type") as string;
-            const typeMap = {
-               expense: "Despesa",
-               income: "Receita",
-               transfer: "Transferência",
-            };
-            return <span>{typeMap[type as keyof typeof typeMap]}</span>;
-         },
-         enableSorting: false,
-
-         header: translate("dashboard.routes.transactions.table.columns.type"),
-      },
-      {
          accessorKey: "amount",
          cell: ({ row }) => {
             const transaction = row.original;
@@ -256,22 +332,14 @@ export function createTransactionColumns(
             const isPositive =
                transaction.type === "income" ||
                (transaction.type === "transfer" && amount > 0);
-            const formattedAmount = formatDecimalCurrency(Math.abs(amount));
 
             return (
-               <div>
-                  <Badge variant={isPositive ? "default" : "destructive"}>
-                     {isPositive ? "+" : "-"}
-                     {formattedAmount}
-                  </Badge>
-               </div>
+               <AmountAnnouncement amount={amount} isPositive={isPositive} />
             );
          },
          enableSorting: true,
-         header: () => (
-            <div className="text-right">
-               {translate("dashboard.routes.transactions.table.columns.amount")}
-            </div>
+         header: translate(
+            "dashboard.routes.transactions.table.columns.amount",
          ),
       },
       {

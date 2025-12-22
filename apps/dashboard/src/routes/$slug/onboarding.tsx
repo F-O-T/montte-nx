@@ -31,9 +31,10 @@ import {
    ChevronRightIcon,
    PiggyBankIcon,
    ShieldCheckIcon,
+   UserIcon,
    WalletIcon,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { BankAccountCombobox } from "@/features/bank-account/ui/bank-account-combobox";
@@ -41,7 +42,7 @@ import {
    getIconComponent,
    type IconName,
 } from "@/features/icon-selector/lib/available-icons";
-import { useTRPC } from "@/integrations/clients";
+import { betterAuthClient, useTRPC } from "@/integrations/clients";
 
 const defaultCategoryKeys = [
    "food",
@@ -104,12 +105,14 @@ const bankAccountSchema = z.object({
 
 type StepId =
    | "welcome"
+   | "profile"
    | "account-created"
    | "additional-account"
    | "categories";
 
-const allSteps: StepId[] = [
+const allPossibleSteps: StepId[] = [
    "welcome",
+   "profile",
    "account-created",
    "additional-account",
    "categories",
@@ -117,7 +120,13 @@ const allSteps: StepId[] = [
 
 const searchSchema = z.object({
    step: z
-      .enum(["welcome", "account-created", "additional-account", "categories"])
+      .enum([
+         "welcome",
+         "profile",
+         "account-created",
+         "additional-account",
+         "categories",
+      ])
       .optional()
       .default("welcome"),
 });
@@ -136,13 +145,25 @@ function RouteComponent() {
    const [selectedDefaultCategories, setSelectedDefaultCategories] = useState<
       DefaultCategoryKey[]
    >([]);
+   const [profileName, setProfileName] = useState("");
 
-   const currentStepIndex = allSteps.indexOf(step);
-   const totalSteps = allSteps.length;
+   const { data: session } = useQuery(trpc.session.getSession.queryOptions());
 
    const { data: onboardingStatus } = useQuery(
       trpc.onboarding.getOnboardingStatus.queryOptions(),
    );
+
+   // Compute effective steps based on whether user has a name
+   const effectiveSteps = useMemo(() => {
+      const userName = session?.user?.name?.trim();
+      if (userName && userName.length > 0) {
+         return allPossibleSteps.filter((s) => s !== "profile");
+      }
+      return allPossibleSteps;
+   }, [session?.user?.name]);
+
+   const currentStepIndex = effectiveSteps.indexOf(step);
+   const totalSteps = effectiveSteps.length;
 
    const createDefaultPersonalAccount = useMutation(
       trpc.bankAccounts.createDefaultPersonal.mutationOptions({
@@ -196,6 +217,33 @@ function RouteComponent() {
       }),
    );
 
+   const updateUserName = useMutation({
+      mutationFn: async (name: string) => {
+         return betterAuthClient.updateUser({ name });
+      },
+      onError: () => {
+         toast.error(
+            translate("dashboard.routes.onboarding.profile.toast.error"),
+         );
+      },
+      onSuccess: () => {
+         // After saving name, create default account and navigate
+         const isBusinessContext =
+            onboardingStatus?.organizationContext === "business";
+         const accountType = isBusinessContext ? "business" : "personal";
+         const defaultName = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.name`,
+         );
+         const defaultBank = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.bank`,
+         );
+         createDefaultPersonalAccount.mutate({
+            name: defaultName,
+            bank: defaultBank,
+         });
+      },
+   });
+
    const createSelectedCategories = useCallback(async () => {
       await Promise.all(
          selectedDefaultCategories.map((key) => {
@@ -219,11 +267,39 @@ function RouteComponent() {
    };
 
    const handleWelcomeNext = () => {
-      const defaultName =
-         onboardingStatus?.organizationContext === "business"
-            ? translate("dashboard.routes.onboarding.default-account.business")
-            : translate("dashboard.routes.onboarding.default-account.personal");
-      createDefaultPersonalAccount.mutate({ name: defaultName });
+      // Check if profile step is in the effective steps (user needs to enter name)
+      const nextStep = effectiveSteps[effectiveSteps.indexOf("welcome") + 1];
+
+      if (nextStep === "profile") {
+         // User needs to enter their name first
+         navigate({
+            params: { slug },
+            search: { step: "profile" },
+         });
+      } else {
+         // User already has a name, create default account directly
+         const isBusinessContext =
+            onboardingStatus?.organizationContext === "business";
+         const accountType = isBusinessContext ? "business" : "personal";
+         const defaultName = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.name`,
+         );
+         const defaultBank = translate(
+            `dashboard.routes.onboarding.default-account.${accountType}.bank`,
+         );
+         createDefaultPersonalAccount.mutate({
+            name: defaultName,
+            bank: defaultBank,
+         });
+      }
+   };
+
+   const handleProfileNext = () => {
+      const trimmedName = profileName.trim();
+      if (trimmedName.length < 2) {
+         return;
+      }
+      updateUserName.mutate(trimmedName);
    };
 
    const bankAccountForm = useForm({
@@ -265,7 +341,7 @@ function RouteComponent() {
 
    const goToPreviousStep = () => {
       if (currentStepIndex > 0) {
-         const prevStep = allSteps[currentStepIndex - 1];
+         const prevStep = effectiveSteps[currentStepIndex - 1];
          navigate({
             params: { slug },
             search: { step: prevStep },
@@ -275,7 +351,7 @@ function RouteComponent() {
 
    const goToNextStep = () => {
       if (currentStepIndex < totalSteps - 1) {
-         const nextStep = allSteps[currentStepIndex + 1];
+         const nextStep = effectiveSteps[currentStepIndex + 1];
          navigate({
             params: { slug },
             search: { step: nextStep },
@@ -287,6 +363,8 @@ function RouteComponent() {
       switch (step) {
          case "welcome":
             return translate("dashboard.routes.onboarding.welcome.title");
+         case "profile":
+            return translate("dashboard.routes.onboarding.profile.title");
          case "account-created":
             return translate(
                "dashboard.routes.onboarding.default-account-created.title",
@@ -306,6 +384,8 @@ function RouteComponent() {
       switch (step) {
          case "welcome":
             return translate("dashboard.routes.onboarding.welcome.description");
+         case "profile":
+            return translate("dashboard.routes.onboarding.profile.description");
          case "account-created":
             return translate(
                "dashboard.routes.onboarding.default-account-created.description",
@@ -399,6 +479,48 @@ function RouteComponent() {
                </div>
             );
 
+         case "profile":
+            return (
+               <div className="max-w-md mx-auto space-y-4">
+                  <div className="flex flex-col items-center gap-4 p-6 rounded-lg border bg-card">
+                     <div className="p-4 rounded-full bg-primary/10">
+                        <UserIcon className="size-8 text-primary" />
+                     </div>
+                     <div className="text-center space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                           {translate(
+                              "dashboard.routes.onboarding.profile.form.description",
+                           )}
+                        </p>
+                     </div>
+                  </div>
+                  <FieldGroup>
+                     <Field>
+                        <FieldLabel htmlFor="profile-name">
+                           {translate(
+                              "dashboard.routes.onboarding.profile.form.name.label",
+                           )}
+                        </FieldLabel>
+                        <Input
+                           autoFocus
+                           id="profile-name"
+                           name="profile-name"
+                           onChange={(e) => setProfileName(e.target.value)}
+                           placeholder={translate(
+                              "dashboard.routes.onboarding.profile.form.name.placeholder",
+                           )}
+                           value={profileName}
+                        />
+                        <FieldDescription>
+                           {translate(
+                              "dashboard.routes.onboarding.profile.form.name.description",
+                           )}
+                        </FieldDescription>
+                     </Field>
+                  </FieldGroup>
+               </div>
+            );
+
          case "account-created": {
             const titleKey =
                onboardingStatus?.organizationContext === "business"
@@ -437,7 +559,7 @@ function RouteComponent() {
                            <Field>
                               <FieldLabel htmlFor={field.name}>
                                  {translate(
-                                    "dashboard.routes.onboarding.optional-bank-account.form.name.label",
+                                    "common.form.bank-account-nickname.label",
                                  )}
                               </FieldLabel>
                               <Input
@@ -448,13 +570,13 @@ function RouteComponent() {
                                     field.handleChange(e.target.value)
                                  }
                                  placeholder={translate(
-                                    "dashboard.routes.onboarding.optional-bank-account.form.name.placeholder",
+                                    "common.form.bank-account-nickname.placeholder",
                                  )}
                                  value={field.state.value}
                               />
                               <FieldDescription>
                                  {translate(
-                                    "dashboard.routes.onboarding.optional-bank-account.form.name.description",
+                                    "common.form.bank-account-nickname.description",
                                  )}
                               </FieldDescription>
                            </Field>
@@ -609,7 +731,7 @@ function RouteComponent() {
    const StepIndicator = () => (
       <div className="flex items-center gap-4">
          <div className="flex items-center gap-1.5">
-            {allSteps.map((stepId, index) => (
+            {effectiveSteps.map((stepId, index) => (
                <div
                   className={`h-1 w-8 rounded-full transition-colors duration-300 ${
                      index <= currentStepIndex ? "bg-primary" : "bg-muted"
@@ -672,6 +794,21 @@ function RouteComponent() {
                         onClick={handleWelcomeNext}
                      >
                         {createDefaultPersonalAccount.isPending
+                           ? translate("common.actions.loading")
+                           : translate("common.actions.next")}
+                        <ChevronRightIcon className="size-4" />
+                     </Button>
+                  )}
+                  {step === "profile" && (
+                     <Button
+                        className="gap-2"
+                        disabled={
+                           profileName.trim().length < 2 ||
+                           updateUserName.isPending
+                        }
+                        onClick={handleProfileNext}
+                     >
+                        {updateUserName.isPending
                            ? translate("common.actions.loading")
                            : translate("common.actions.next")}
                         <ChevronRightIcon className="size-4" />

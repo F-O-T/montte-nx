@@ -1,7 +1,8 @@
 {
    "dependencies": {
-      "bullmq": "^5.34.8",
-      "ioredis": "^5.4.2",
+      "@packages/cache": "workspace:*",
+      "bullmq": "catalog:workers",
+      "ioredis": "catalog:workers",
       "zod": "catalog:validation"
    },
    "devDependencies": {

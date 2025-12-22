@@ -3,16 +3,38 @@ import {
    findOrganizationById,
    updateOrganization,
 } from "@packages/database/repositories/auth-repository";
-import { streamFileForProxy, uploadFile } from "@packages/files/client";
-import { compressImage } from "@packages/files/image-helper";
+import {
+   deleteFile,
+   generatePresignedPutUrl,
+   streamFileForProxy,
+   verifyFileExists,
+} from "@packages/files/client";
 import { APIError, AppError, propagateError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
-const OrganizationLogoUploadInput = z.object({
-   contentType: z.string(),
-   fileBuffer: z.base64(), // base64 encoded
+const ALLOWED_LOGO_TYPES = [
+   "image/jpeg",
+   "image/png",
+   "image/webp",
+   "image/avif",
+];
+const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
+
+const RequestLogoUploadUrlInput = z.object({
+   contentType: z.string().refine((val) => ALLOWED_LOGO_TYPES.includes(val), {
+      message: "File type must be JPEG, PNG, WebP, or AVIF",
+   }),
    fileName: z.string(),
+   fileSize: z.number().max(MAX_LOGO_SIZE, "File size must be less than 5MB"),
+});
+
+const ConfirmLogoUploadInput = z.object({
+   storageKey: z.string(),
+});
+
+const CancelLogoUploadInput = z.object({
+   storageKey: z.string(),
 });
 
 export const organizationRouter = router({
@@ -69,7 +91,7 @@ export const organizationRouter = router({
       });
 
       if (!organization?.id) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
 
       const organizationId = organization.id;
@@ -217,7 +239,7 @@ export const organizationRouter = router({
       const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
 
       if (!organizationId) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
 
       try {
@@ -241,7 +263,7 @@ export const organizationRouter = router({
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
       if (!organizationId) {
-         throw new Error("No active organization found");
+         throw APIError.notFound("No active organization found");
       }
       try {
          const teams = await resolvedCtx.auth.api.listOrganizationTeams({
@@ -305,79 +327,136 @@ export const organizationRouter = router({
       }),
 
    uploadLogo: protectedProcedure
-      .input(OrganizationLogoUploadInput)
+      .input(RequestLogoUploadUrlInput)
       .mutation(async ({ ctx, input }) => {
-         const { fileName, fileBuffer } = input;
+         const { fileName, contentType, fileSize } = input;
          const resolvedCtx = await ctx;
 
-         // Get current organization info
          const organization = await resolvedCtx.auth.api.getFullOrganization({
             headers: resolvedCtx.headers,
          });
 
          if (!organization?.id) {
-            throw new Error("No active organization found");
+            throw APIError.notFound("No active organization found");
          }
 
          const organizationId = organization.id;
+         const timestamp = Date.now();
+         const storageKey = `organizations/${organizationId}/logo/${timestamp}-${fileName}`;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
+
+         const presignedUrl = await generatePresignedPutUrl(
+            storageKey,
+            bucketName,
+            minioClient,
+            300,
+         );
+
+         return { presignedUrl, storageKey, contentType, fileSize };
+      }),
+
+   confirmLogoUpload: protectedProcedure
+      .input(ConfirmLogoUploadInput)
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey } = input;
+         const resolvedCtx = await ctx;
+
+         const organization = await resolvedCtx.auth.api.getFullOrganization({
+            headers: resolvedCtx.headers,
+         });
+
+         if (!organization?.id) {
+            throw APIError.notFound("No active organization found");
+         }
+
+         const organizationId = organization.id;
+         const bucketName = resolvedCtx.minioBucket;
+         const minioClient = resolvedCtx.minioClient;
          const db = resolvedCtx.db;
 
-         // Get current organization from database to check for existing logo
+         if (!storageKey.startsWith(`organizations/${organizationId}/logo/`)) {
+            throw APIError.validation(
+               "Invalid storage key for this organization",
+            );
+         }
+
+         const fileInfo = await verifyFileExists(
+            storageKey,
+            bucketName,
+            minioClient,
+         );
+
+         if (!fileInfo) {
+            throw APIError.validation("File was not uploaded successfully");
+         }
+
          const currentOrganization = await findOrganizationById(
             db,
             organizationId,
          );
 
-         // Delete old logo if it exists
-         if (currentOrganization?.logo) {
+         if (
+            currentOrganization?.logo &&
+            currentOrganization.logo !== storageKey
+         ) {
             try {
-               const bucketName = resolvedCtx.minioBucket;
-               const minioClient = resolvedCtx.minioClient;
-               await minioClient.removeObject(
-                  bucketName,
+               await deleteFile(
                   currentOrganization.logo,
+                  bucketName,
+                  minioClient,
                );
             } catch (error) {
                console.error("Error deleting old organization logo:", error);
-               // Continue with upload even if deletion fails
             }
          }
 
-         const key = `organizations/${organizationId}/logo/${fileName}`;
-         const buffer = Buffer.from(fileBuffer, "base64");
+         try {
+            await updateOrganization(db, organizationId, { logo: storageKey });
+         } catch (error) {
+            console.error("Error updating organization logo:", error);
+            try {
+               await deleteFile(storageKey, bucketName, minioClient);
+            } catch (cleanupError) {
+               console.error("Error cleaning up uploaded file:", cleanupError);
+            }
+            throw APIError.internal("Failed to update organization logo");
+         }
 
-         // Compress the image
-         const compressedBuffer = await compressImage(buffer, {
-            format: "webp",
-            quality: 80,
+         return { success: true };
+      }),
+
+   cancelLogoUpload: protectedProcedure
+      .input(CancelLogoUploadInput)
+      .mutation(async ({ ctx, input }) => {
+         const { storageKey } = input;
+         const resolvedCtx = await ctx;
+
+         const organization = await resolvedCtx.auth.api.getFullOrganization({
+            headers: resolvedCtx.headers,
          });
+
+         if (!organization?.id) {
+            throw APIError.notFound("No active organization found");
+         }
+
+         const organizationId = organization.id;
+
+         if (!storageKey.startsWith(`organizations/${organizationId}/logo/`)) {
+            throw APIError.validation(
+               "Invalid storage key for this organization",
+            );
+         }
 
          const bucketName = resolvedCtx.minioBucket;
          const minioClient = resolvedCtx.minioClient;
 
-         // Upload to S3/Minio
-         const url = await uploadFile(
-            key,
-            compressedBuffer,
-            "image/webp",
-            bucketName,
-            minioClient,
-         );
-
-         // Update organization logo directly in database
          try {
-            await updateOrganization(db, organizationId, { logo: key });
+            await deleteFile(storageKey, bucketName, minioClient);
          } catch (error) {
-            console.error("Error updating organization logo:", error);
-            // If database update fails, try to clean up uploaded file
-            try {
-               await minioClient.removeObject(bucketName, key);
-            } catch (cleanupError) {
-               console.error("Error cleaning up uploaded file:", cleanupError);
-            }
-            throw new Error("Failed to update organization logo");
+            console.error("Error deleting cancelled upload:", error);
          }
 
-         return { key, url };
+         return { success: true };
       }),
 });

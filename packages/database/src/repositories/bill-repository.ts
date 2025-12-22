@@ -1,8 +1,14 @@
+import {
+   decryptBillFields,
+   encryptBillFields,
+} from "@packages/encryption/service";
 import { AppError, propagateError } from "@packages/utils/errors";
+import { centsToReais, reaisToCents } from "@packages/utils/money";
 import { and, eq, gte, ilike, lte, sql } from "drizzle-orm";
 import type { DatabaseInstance } from "../client";
 import type { bankAccount } from "../schemas/bank-accounts";
 import { bill } from "../schemas/bills";
+import type { costCenter } from "../schemas/cost-centers";
 import type { counterparty } from "../schemas/counterparties";
 import type { interestTemplate } from "../schemas/interest-templates";
 import { transaction } from "../schemas/transactions";
@@ -13,9 +19,11 @@ export type BankAccount = typeof bankAccount.$inferSelect;
 export type Transaction = typeof transaction.$inferSelect;
 export type Counterparty = typeof counterparty.$inferSelect;
 export type InterestTemplate = typeof interestTemplate.$inferSelect;
+export type CostCenter = typeof costCenter.$inferSelect;
 
 export type BillWithRelations = Bill & {
    bankAccount: BankAccount | null;
+   costCenter: CostCenter | null;
    counterparty: Counterparty | null;
    interestTemplate: InterestTemplate | null;
    transaction: Transaction | null;
@@ -23,7 +31,13 @@ export type BillWithRelations = Bill & {
 
 export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
    try {
-      const result = await dbClient.insert(bill).values(data).returning();
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptBillFields(data);
+
+      const result = await dbClient
+         .insert(bill)
+         .values(encryptedData)
+         .returning();
 
       const createdBillId = result[0]?.id;
       if (!createdBillId) {
@@ -34,6 +48,7 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
          where: (bill, { eq }) => eq(bill.id, createdBillId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -44,7 +59,8 @@ export async function createBill(dbClient: DatabaseInstance, data: NewBill) {
          throw AppError.database("Failed to fetch created bill");
       }
 
-      return createdBill;
+      // Decrypt sensitive fields before returning
+      return decryptBillFields(createdBill);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -59,16 +75,43 @@ export async function findBillById(dbClient: DatabaseInstance, billId: string) {
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result ? decryptBillFields(result) : result;
    } catch (err) {
       propagateError(err);
       throw AppError.database(
          `Failed to find bill by id: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function findBillByTransactionId(
+   dbClient: DatabaseInstance,
+   transactionId: string,
+) {
+   try {
+      const result = await dbClient.query.bill.findFirst({
+         where: (bill, { eq }) => eq(bill.transactionId, transactionId),
+         with: {
+            bankAccount: true,
+            costCenter: true,
+            counterparty: true,
+            interestTemplate: true,
+            transaction: true,
+         },
+      });
+      // Decrypt sensitive fields before returning
+      return result ? decryptBillFields(result) : result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bill by transaction id: ${(err as Error).message}`,
       );
    }
 }
@@ -83,12 +126,14 @@ export async function findBillsByOrganizationId(
          where: (bill, { eq }) => eq(bill.organizationId, organizationId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -143,13 +188,15 @@ export async function findBillsByOrganizationIdFiltered(
          where: buildWhereCondition,
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
 
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -231,6 +278,7 @@ export async function findBillsByOrganizationIdPaginated(
             where: buildWhereCondition,
             with: {
                bankAccount: true,
+               costCenter: true,
                counterparty: true,
                interestTemplate: true,
                transaction: true,
@@ -246,7 +294,8 @@ export async function findBillsByOrganizationIdPaginated(
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
-         bills,
+         // Decrypt sensitive fields before returning
+         bills: bills.map(decryptBillFields),
          pagination: {
             currentPage: page,
             hasNextPage: page < totalPages,
@@ -276,12 +325,14 @@ export async function findBillsByOrganizationIdAndType(
             and(eq(bill.organizationId, organizationId), eq(bill.type, type)),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -308,12 +359,14 @@ export async function findPendingBillsByOrganizationId(
             ),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -340,12 +393,14 @@ export async function findOverdueBillsByOrganizationId(
             ),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -368,12 +423,14 @@ export async function findCompletedBillsByOrganizationId(
             ),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -388,9 +445,12 @@ export async function updateBill(
    data: Partial<NewBill>,
 ) {
    try {
+      // Encrypt sensitive fields before storing
+      const encryptedData = encryptBillFields(data);
+
       const result = await dbClient
          .update(bill)
-         .set(data)
+         .set(encryptedData)
          .where(eq(bill.id, billId))
          .returning();
 
@@ -402,6 +462,7 @@ export async function updateBill(
          where: (bill, { eq }) => eq(bill.id, billId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
@@ -412,7 +473,8 @@ export async function updateBill(
          throw AppError.database("Failed to fetch updated bill");
       }
 
-      return updatedBill;
+      // Decrypt sensitive fields before returning
+      return decryptBillFields(updatedBill);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -705,12 +767,14 @@ export async function findBillsByInstallmentGroupId(
             eq(bill.installmentGroupId, installmentGroupId),
          with: {
             bankAccount: true,
+            costCenter: true,
             counterparty: true,
             interestTemplate: true,
             transaction: true,
          },
       });
-      return result;
+      // Decrypt sensitive fields before returning
+      return result.map(decryptBillFields);
    } catch (err) {
       propagateError(err);
       throw AppError.database(
@@ -777,10 +841,23 @@ export async function createBillWithInstallments(
       const baseAmount = Number(billData.amount);
       const baseDueDate = new Date(billData.dueDate);
 
-      const installmentAmounts: number[] =
-         amounts === "equal"
-            ? Array(totalInstallments).fill(baseAmount / totalInstallments)
-            : amounts;
+      // Use integer math in cents to avoid floating-point precision issues
+      let installmentAmounts: number[];
+      if (amounts === "equal") {
+         const totalCents = reaisToCents(baseAmount);
+         const baseCents = Math.floor(totalCents / totalInstallments);
+         const remainder = totalCents % totalInstallments;
+
+         installmentAmounts = Array.from(
+            { length: totalInstallments },
+            (_, i) => {
+               const cents = baseCents + (i < remainder ? 1 : 0);
+               return centsToReais(cents);
+            },
+         );
+      } else {
+         installmentAmounts = amounts;
+      }
 
       if (installmentAmounts.length !== totalInstallments) {
          throw AppError.validation(
@@ -816,6 +893,7 @@ export async function createBillWithInstallments(
                where: (bill, { eq }) => eq(bill.id, billId),
                with: {
                   bankAccount: true,
+                  costCenter: true,
                   counterparty: true,
                   interestTemplate: true,
                   transaction: true,

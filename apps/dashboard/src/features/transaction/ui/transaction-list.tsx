@@ -1,6 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
@@ -21,39 +20,23 @@ import {
    SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   ToggleGroup,
-   ToggleGroupItem,
-} from "@packages/ui/components/toggle-group";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
-   ArrowDownLeft,
    ArrowLeftRight,
-   ArrowUpRight,
-   Filter,
    FolderOpen,
    Search,
    Trash2,
    Wallet,
-   X,
 } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
-import { useCredenza } from "@/hooks/use-credenza";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTransactionBulkActions } from "../lib/use-transaction-bulk-actions";
 import { CategorizeForm } from "./categorize-form";
 import { MarkAsTransferForm } from "./mark-as-transfer-form";
 import { TransactionExpandedContent } from "./transaction-expanded-content";
-import { TransactionFilterCredenza } from "./transaction-filter-credenza";
 import { TransactionMobileCard } from "./transaction-mobile-card";
 import { createTransactionColumns } from "./transaction-table-columns";
 
@@ -76,7 +59,6 @@ export type BankAccount = {
 type TransactionListProps = {
    transactions: Transaction[];
    categories: Category[];
-   bankAccounts?: BankAccount[];
    pagination: {
       currentPage: number;
       totalPages: number;
@@ -88,16 +70,8 @@ type TransactionListProps = {
    filters: {
       searchTerm: string;
       onSearchChange: (value: string) => void;
-      typeFilter: string;
-      onTypeFilterChange: (value: string) => void;
-      categoryFilter: string;
-      onCategoryFilterChange: (value: string) => void;
-      bankAccountFilter?: string;
-      onBankAccountFilterChange?: (value: string) => void;
-      onClearFilters: () => void;
    };
    bankAccountId?: string;
-   showTypeToggle?: boolean;
    emptyStateTitle?: string;
    emptyStateDescription?: string;
 };
@@ -108,11 +82,6 @@ export function TransactionListSkeleton() {
          <CardContent className="pt-6 grid gap-4">
             <div className="flex flex-col sm:flex-row gap-3">
                <Skeleton className="h-9 flex-1 sm:max-w-md" />
-            </div>
-            <div className="flex gap-2">
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-28" />
             </div>
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
@@ -142,17 +111,13 @@ export function TransactionListSkeleton() {
 export function TransactionList({
    transactions,
    categories,
-   bankAccounts = [],
    pagination,
    filters,
    bankAccountId,
-   showTypeToggle = true,
    emptyStateTitle,
    emptyStateDescription,
 }: TransactionListProps) {
-   const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
-   const { openCredenza } = useCredenza();
    const { openAlertDialog } = useAlertDialog();
    const { openSheet } = useSheet();
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -164,11 +129,7 @@ export function TransactionList({
       },
    });
 
-   const hasActiveFilters =
-      filters.searchTerm ||
-      (filters.typeFilter !== "" && filters.typeFilter !== "all") ||
-      filters.categoryFilter !== "all" ||
-      (filters.bankAccountFilter && filters.bankAccountFilter !== "all");
+   const hasSearchTerm = filters.searchTerm.length > 0;
 
    const selectedIds = Object.keys(rowSelection).filter(
       (id) => rowSelection[id],
@@ -187,7 +148,7 @@ export function TransactionList({
       setRowSelection({});
    };
 
-   if (transactions.length === 0 && !hasActiveFilters) {
+   if (transactions.length === 0 && !hasSearchTerm) {
       return (
          <Card>
             <CardContent className="pt-6">
@@ -219,126 +180,16 @@ export function TransactionList({
       <>
          <Card>
             <CardContent className="space-y-4">
-               <div className="flex flex-col sm:flex-row gap-3">
-                  <InputGroup className="flex-1 sm:max-w-md">
-                     <InputGroupInput
-                        onChange={(e) => filters.onSearchChange(e.target.value)}
-                        placeholder={translate(
-                           "common.form.search.placeholder",
-                        )}
-                        value={filters.searchTerm}
-                     />
-                     <InputGroupAddon>
-                        <Search />
-                     </InputGroupAddon>
-                  </InputGroup>
-
-                  {isMobile && (
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Button
-                              onClick={() =>
-                                 openCredenza({
-                                    children: (
-                                       <TransactionFilterCredenza
-                                          bankAccountFilter={
-                                             filters.bankAccountFilter
-                                          }
-                                          bankAccounts={bankAccounts}
-                                          categories={categories}
-                                          categoryFilter={
-                                             filters.categoryFilter
-                                          }
-                                          onBankAccountFilterChange={
-                                             filters.onBankAccountFilterChange
-                                          }
-                                          onCategoryFilterChange={
-                                             filters.onCategoryFilterChange
-                                          }
-                                          onClearFilters={
-                                             filters.onClearFilters
-                                          }
-                                          onTypeFilterChange={
-                                             filters.onTypeFilterChange
-                                          }
-                                          typeFilter={filters.typeFilter}
-                                       />
-                                    ),
-                                 })
-                              }
-                              size="icon"
-                              variant={hasActiveFilters ? "default" : "outline"}
-                           >
-                              <Filter className="size-4" />
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>Filtrar transações</p>
-                        </TooltipContent>
-                     </Tooltip>
-                  )}
-               </div>
-
-               {!isMobile && showTypeToggle && (
-                  <div className="flex flex-wrap items-center gap-3">
-                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                           Tipo:
-                        </span>
-                        <ToggleGroup
-                           onValueChange={filters.onTypeFilterChange}
-                           size="sm"
-                           spacing={2}
-                           type="single"
-                           value={filters.typeFilter}
-                           variant="outline"
-                        >
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
-                              value="income"
-                           >
-                              <ArrowDownLeft className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.income",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-red-500 data-[state=on]:text-red-600"
-                              value="expense"
-                           >
-                              <ArrowUpRight className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.expense",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-blue-500 data-[state=on]:text-blue-600"
-                              value="transfer"
-                           >
-                              <ArrowLeftRight className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.transfer",
-                              )}
-                           </ToggleGroupItem>
-                        </ToggleGroup>
-                     </div>
-
-                     {hasActiveFilters && (
-                        <>
-                           <div className="h-4 w-px bg-border" />
-                           <Button
-                              className="h-8 text-xs"
-                              onClick={filters.onClearFilters}
-                              size="sm"
-                              variant="outline"
-                           >
-                              <X className="size-3" />
-                              {translate("common.actions.clear-filters")}
-                           </Button>
-                        </>
-                     )}
-                  </div>
-               )}
+               <InputGroup className="sm:max-w-md">
+                  <InputGroupInput
+                     onChange={(e) => filters.onSearchChange(e.target.value)}
+                     placeholder={translate("common.form.search.placeholder")}
+                     value={filters.searchTerm}
+                  />
+                  <InputGroupAddon>
+                     <Search />
+                  </InputGroupAddon>
+               </InputGroup>
 
                {transactions.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground">

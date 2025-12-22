@@ -1,22 +1,60 @@
 {
    "$schema": "./node_modules/nx/schemas/nx-schema.json",
    "defaultBase": "master",
+   "namedInputs": {
+      "default": ["{projectRoot}/**/*", "sharedGlobals"],
+      "sharedGlobals": [
+         "{workspaceRoot}/biome.json",
+         "{workspaceRoot}/tsconfig.json",
+         "{workspaceRoot}/tooling/typescript/*.json"
+      ],
+      "production": [
+         "default",
+         "!{projectRoot}/**/*.spec.ts",
+         "!{projectRoot}/**/*.test.ts",
+         "!{projectRoot}/**/__tests__/**/*",
+         "!{projectRoot}/.env*"
+      ]
+   },
    "plugins": [
       {
+         "plugin": "@nx/js/typescript",
          "options": {
             "build": {
-               "buildDepsName": "build-deps",
                "configName": "tsconfig.lib.json",
-               "targetName": "build",
-               "watchDepsName": "watch-deps"
+               "targetName": "build"
             },
             "typecheck": {
-               "targetName": "tsc:typecheck"
+               "configName": "tsconfig.json",
+               "targetName": "typecheck"
             }
-         },
-         "plugin": "@nx/js/typescript"
+         }
       }
    ],
+   "targetDefaults": {
+      "build": {
+         "cache": true,
+         "dependsOn": ["^build"],
+         "inputs": ["production", "^production"],
+         "outputs": ["{projectRoot}/dist", "{projectRoot}/.cache"]
+      },
+      "typecheck": {
+         "cache": true,
+         "inputs": ["default", "^default"],
+         "outputs": ["{projectRoot}/.cache/tsbuildinfo.json"]
+      },
+      "check": {
+         "cache": true,
+         "inputs": ["default"]
+      },
+      "dev": {
+         "cache": false
+      },
+      "test": {
+         "cache": true,
+         "inputs": ["default", "^production"]
+      }
+   },
    "release": {
       "changelog": {
          "automaticFromRef": true,
@@ -44,36 +82,9 @@
          }
       }
    },
-   "targetDefaults": {
-      "build": {
-         "cache": true,
-         "dependsOn": ["^build:all"],
-         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
-         "outputs": []
-      },
-      "check": {
-         "cache": true,
-         "dependsOn": ["^check"],
-         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
-         "outputs": []
-      },
-      "dev": {
-         "cache": false
-      },
-      "test": {
-         "cache": true,
-         "dependsOn": ["^test"],
-         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
-         "outputs": []
-      },
-      "typecheck": {
-         "cache": true,
-         "dependsOn": ["^build"],
-         "inputs": ["{projectRoot}/**/*", "{projectRoot}/.env*"],
-         "outputs": []
-      }
-   },
    "tui": {
       "enabled": true
-   }
+   },
+   "useDaemonProcess": true,
+   "parallel": 8
 }

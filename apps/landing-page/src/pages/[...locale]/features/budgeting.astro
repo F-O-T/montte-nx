@@ -1,34 +1,8 @@
 ---
 export const prerender = true;
 
-import {
-   ArrowRight,
-   BarChart3,
-   Bell,
-   Calendar,
-   Check,
-   ChevronDown,
-   ChevronRight,
-   Github,
-   Layers,
-   LineChart,
-   PiggyBank,
-   RefreshCw,
-   Shield,
-   Smartphone,
-   Target,
-   TrendingUp,
-   Users,
-   Wallet,
-   Zap,
-} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
-import LogoCloud from "@/components/LogoCloud.astro";
-import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Landing.astro";
-import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -37,9 +11,9 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const lang = (locale || "pt-BR") as SupportedLng;
+const _lang = (locale || "pt-BR") as SupportedLng;
 
-const relatedFeatures = [
+const _relatedFeatures = [
    {
       description: "Capture transacoes com IA e automacao",
       href: "/features/smart-transactions",
@@ -62,7 +36,7 @@ const relatedFeatures = [
    },
 ];
 
-const testimonials = [
+const _testimonials = [
    {
       avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Juliana",
       name: "Juliana K.",
@@ -86,7 +60,7 @@ const testimonials = [
    },
 ];
 
-const faqs = [
+const _faqs = [
    {
       question: "Posso ajustar um orcamento no meio do mes?",
       answer:
@@ -119,7 +93,7 @@ const faqs = [
    },
 ];
 
-const comparisonData = [
+const _comparisonData = [
    { name: "Montte", price: "Gratis", highlight: true, width: "10%" },
    { name: "YNAB", price: "R$ 75/mes", width: "45%" },
    { name: "Mobills", price: "R$ 30/mes", width: "25%" },

@@ -158,7 +158,7 @@ export async function findAutomationLogsByOrganizationIdPaginated(
                rule: {
                   columns: {
                      id: true,
-                     isActive: true,
+                     enabled: true,
                      name: true,
                   },
                },
@@ -329,6 +329,28 @@ export async function deleteOldAutomationLogs(
       propagateError(err);
       throw AppError.database(
          `Failed to delete old automation logs: ${(err as Error).message}`,
+      );
+   }
+}
+
+export async function deleteOldAutomationLogsGlobal(
+   dbClient: DatabaseInstance,
+   olderThanDays: number = 7,
+) {
+   try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
+
+      const result = await dbClient
+         .delete(automationLog)
+         .where(lte(automationLog.createdAt, cutoffDate))
+         .returning({ id: automationLog.id });
+
+      return result.length;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to delete old automation logs globally: ${(err as Error).message}`,
       );
    }
 }

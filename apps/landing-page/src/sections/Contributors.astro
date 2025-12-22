@@ -1,7 +1,5 @@
 ---
-import { Github } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import {
    fetchGitHubContributors,
    fetchGitHubRepoStats,
@@ -13,10 +11,10 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const contributors = await fetchGitHubContributors(10);
-const githubStats = await fetchGitHubRepoStats();
+const _contributors = await fetchGitHubContributors(10);
+const _githubStats = await fetchGitHubRepoStats();
 
-const avatarPositions = [
+const _avatarPositions = [
    { left: "left-1", size: "size-20", top: "top-1" },
    { left: "right-2/5", size: "size-16", top: "top-7" },
    { left: "left-1/4", size: "size-18", top: "top-1/4" },

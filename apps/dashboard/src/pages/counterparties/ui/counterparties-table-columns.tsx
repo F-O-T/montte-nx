@@ -17,13 +17,16 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
+import { cn } from "@packages/ui/lib/utils";
 import { formatDate } from "@packages/utils/date";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
    Building2,
    Calendar,
+   CheckCircle2,
    ChevronDown,
+   Copy,
    Edit,
    Eye,
    Mail,
@@ -31,7 +34,9 @@ import {
    Trash2,
    User,
    Users,
+   XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import type { Counterparty } from "@/pages/counterparties/ui/counterparties-page";
@@ -51,17 +56,22 @@ function getTypeIcon(type: string) {
    }
 }
 
-function getTypeVariant(type: string): "default" | "secondary" | "outline" {
+function getTypeColor(type: string): string {
    switch (type) {
       case "client":
-         return "default";
+         return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
       case "supplier":
-         return "secondary";
+         return "bg-blue-500/10 text-blue-600 border-blue-500/20";
       case "both":
-         return "outline";
+         return "bg-purple-500/10 text-purple-600 border-purple-500/20";
       default:
-         return "default";
+         return "";
    }
+}
+
+function copyToClipboard(text: string) {
+   navigator.clipboard.writeText(text);
+   toast.success("Copiado para a área de transferência");
 }
 
 function CounterpartyActionsCell({
@@ -149,14 +159,29 @@ export function createCounterpartyColumns(
             const counterparty = row.original;
             return (
                <div className="flex items-center gap-3">
-                  <div className="size-8 rounded-sm flex items-center justify-center bg-muted">
+                  <div
+                     className={cn(
+                        "size-8 rounded-sm flex items-center justify-center border",
+                        getTypeColor(counterparty.type),
+                     )}
+                  >
                      {getTypeIcon(counterparty.type)}
                   </div>
                   <div className="flex flex-col">
-                     <span className="font-medium">{counterparty.name}</span>
-                     {counterparty.email && (
+                     <div className="flex items-center gap-2">
+                        <span className="font-medium">{counterparty.name}</span>
+                        {!counterparty.isActive && (
+                           <Badge
+                              className="text-[10px] px-1.5 py-0"
+                              variant="secondary"
+                           >
+                              Inativo
+                           </Badge>
+                        )}
+                     </div>
+                     {counterparty.tradeName && (
                         <span className="text-xs text-muted-foreground">
-                           {counterparty.email}
+                           {counterparty.tradeName}
                         </span>
                      )}
                   </div>
@@ -169,13 +194,50 @@ export function createCounterpartyColumns(
          ),
       },
       {
+         accessorKey: "document",
+         cell: ({ row }) => {
+            const counterparty = row.original;
+            if (!counterparty.document) {
+               return (
+                  <span className="text-muted-foreground text-sm">-</span>
+               );
+            }
+            return (
+               <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-sm">
+                     {counterparty.document}
+                  </span>
+                  <Tooltip>
+                     <TooltipTrigger asChild>
+                        <Button
+                           className="size-6"
+                           onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(counterparty.document!);
+                           }}
+                           size="icon"
+                           variant="ghost"
+                        >
+                           <Copy className="size-3" />
+                        </Button>
+                     </TooltipTrigger>
+                     <TooltipContent>Copiar documento</TooltipContent>
+                  </Tooltip>
+               </div>
+            );
+         },
+         header: translate(
+            "dashboard.routes.counterparties.form.document.label",
+         ),
+      },
+      {
          accessorKey: "type",
          cell: ({ row }) => {
             const counterparty = row.original;
             return (
                <Badge
-                  className="gap-1"
-                  variant={getTypeVariant(counterparty.type)}
+                  className={cn("gap-1 border", getTypeColor(counterparty.type))}
+                  variant="outline"
                >
                   {getTypeIcon(counterparty.type)}
                   {translate(
@@ -192,11 +254,35 @@ export function createCounterpartyColumns(
          ),
       },
       {
+         accessorKey: "isActive",
+         cell: ({ row }) => {
+            const counterparty = row.original;
+            return counterparty.isActive ? (
+               <Badge
+                  className="gap-1 bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                  variant="outline"
+               >
+                  <CheckCircle2 className="size-3" />
+                  Ativo
+               </Badge>
+            ) : (
+               <Badge
+                  className="gap-1 bg-muted text-muted-foreground"
+                  variant="outline"
+               >
+                  <XCircle className="size-3" />
+                  Inativo
+               </Badge>
+            );
+         },
+         header: "Status",
+      },
+      {
          accessorKey: "createdAt",
          cell: ({ row }) => {
             const counterparty = row.original;
             return (
-               <span className="text-muted-foreground">
+               <span className="text-muted-foreground text-sm">
                   {formatDate(new Date(counterparty.createdAt), "DD/MM/YYYY")}
                </span>
             );
@@ -507,22 +593,45 @@ export function CounterpartyMobileCard({
       <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
          <CardHeader>
             <div className="flex items-center gap-3">
-               <div className="size-10 rounded-sm flex items-center justify-center bg-muted">
+               <div
+                  className={cn(
+                     "size-10 rounded-sm flex items-center justify-center border",
+                     getTypeColor(counterparty.type),
+                  )}
+               >
                   {getTypeIcon(counterparty.type)}
                </div>
-               <div className="flex-1">
-                  <CardTitle className="text-base">
-                     {counterparty.name}
-                  </CardTitle>
-                  <CardDescription>
-                     {counterparty.email ||
+               <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                     <CardTitle className="text-base truncate">
+                        {counterparty.name}
+                     </CardTitle>
+                     {!counterparty.isActive && (
+                        <Badge
+                           className="shrink-0 text-[10px] px-1.5 py-0"
+                           variant="secondary"
+                        >
+                           Inativo
+                        </Badge>
+                     )}
+                  </div>
+                  <CardDescription className="truncate">
+                     {counterparty.document ||
+                        counterparty.email ||
                         formatDate(
                            new Date(counterparty.createdAt),
                            "DD MMM YYYY",
                         )}
                   </CardDescription>
                </div>
-               <Badge variant={getTypeVariant(counterparty.type)}>
+               <Badge
+                  className={cn(
+                     "shrink-0 gap-1 border",
+                     getTypeColor(counterparty.type),
+                  )}
+                  variant="outline"
+               >
+                  {getTypeIcon(counterparty.type)}
                   {translate(
                      `dashboard.routes.counterparties.form.type.${counterparty.type}` as Parameters<
                         typeof translate

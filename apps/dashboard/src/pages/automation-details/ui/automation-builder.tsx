@@ -1,7 +1,7 @@
 import type {
-   ActionExecutionLogResult,
    ActionType,
    ConditionEvaluationLogResult,
+   ConsequenceExecutionLogResult,
    TriggeredBy,
    TriggerType,
 } from "@packages/database/schema";
@@ -29,13 +29,15 @@ import {
    ChevronUp,
    CircleSlash,
    Filter,
+   Pencil,
    Play,
    SkipForward,
+   Trash2,
    X,
    XCircle,
    Zap,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
 import {
    createDefaultActionNode,
@@ -44,6 +46,8 @@ import {
 } from "../lib/flow-serialization";
 import type { AutomationEdge, AutomationNode } from "../lib/types";
 import { AutomationCanvas } from "./automation-canvas";
+import { AutomationVersionHistoryView } from "./automation-version-history-view";
+import type { ViewMode } from "./canvas-toolbar";
 import { NodeConfigurationPanel } from "./node-configuration-panel";
 
 type AutomationBuilderProps = {
@@ -51,6 +55,7 @@ type AutomationBuilderProps = {
    initialNodes?: AutomationNode[];
    initialEdges?: AutomationEdge[];
    onChange?: (nodes: AutomationNode[], edges: AutomationEdge[]) => void;
+   onViewModeChange?: (mode: ViewMode) => void;
    readOnly?: boolean;
 };
 
@@ -59,6 +64,7 @@ function AutomationBuilderContent({
    initialNodes = [],
    initialEdges = [],
    onChange,
+   onViewModeChange,
    readOnly = false,
 }: AutomationBuilderProps) {
    const [nodes, setNodes, onNodesChange] =
@@ -66,7 +72,12 @@ function AutomationBuilderContent({
    const [edges, setEdges, onEdgesChange] =
       useEdgesState<AutomationEdge>(initialEdges);
    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+   const [viewMode, setViewMode] = useState<ViewMode>("editor");
    const { fitView } = useReactFlow();
+
+   useEffect(() => {
+      onViewModeChange?.(viewMode);
+   }, [viewMode, onViewModeChange]);
 
    const selectedNode = nodes.find((n) => n.id === selectedNodeId) ?? null;
    const hasTrigger = nodes.some((n) => n.type === "trigger");
@@ -185,35 +196,56 @@ function AutomationBuilderContent({
       [nodes, edges, setNodes, onChange],
    );
 
+   const handleAutoLayout = useCallback(
+      (layoutedNodes: AutomationNode[]) => {
+         setNodes(layoutedNodes);
+         onChange?.(layoutedNodes, edges);
+      },
+      [setNodes, edges, onChange],
+   );
+
    const handleClosePanel = useCallback(() => {
       setSelectedNodeId(null);
    }, []);
 
    return (
       <div className="relative h-full w-full">
-         <AutomationCanvas
-            edges={edges}
-            hasTrigger={hasTrigger}
-            nodes={nodes}
-            onAddNode={handleAddNode}
-            onConnect={onConnect}
-            onDeleteNode={handleDeleteNode}
-            onDuplicateNode={handleDuplicateNode}
-            onEdgesChange={onEdgesChange}
-            onNodeSelect={handleNodeSelect}
-            onNodesChange={onNodesChange}
-            readOnly={readOnly}
-         />
+         {viewMode === "history" && automationId ? (
+            <AutomationVersionHistoryView
+               automationId={automationId}
+               onBackToEditor={() => setViewMode("editor")}
+            />
+         ) : (
+            <AutomationCanvas
+               edges={edges}
+               hasTrigger={hasTrigger}
+               nodes={nodes}
+               onAddNode={handleAddNode}
+               onAutoLayout={handleAutoLayout}
+               onConnect={onConnect}
+               onDeleteNode={handleDeleteNode}
+               onDuplicateNode={handleDuplicateNode}
+               onEdgesChange={onEdgesChange}
+               onNodeSelect={handleNodeSelect}
+               onNodesChange={onNodesChange}
+               onViewModeChange={automationId ? setViewMode : undefined}
+               readOnly={readOnly}
+               viewMode={viewMode}
+            />
+         )}
 
-         {selectedNode && !readOnly && (
+         {selectedNode && !readOnly && viewMode === "editor" && (
             <NodeDetailsPanel
                node={selectedNode}
                onClose={handleClosePanel}
+               onDelete={handleDeleteNode}
                onUpdate={handleNodeUpdate}
             />
          )}
 
-         {automationId && <ActivityPanel automationId={automationId} />}
+         {automationId && viewMode === "editor" && (
+            <ActivityPanel automationId={automationId} />
+         )}
       </div>
    );
 }
@@ -239,11 +271,87 @@ const NODE_TYPE_CONFIG = {
 type NodeDetailsPanelProps = {
    node: AutomationNode;
    onClose: () => void;
+   onDelete: (nodeId: string) => void;
    onUpdate: (nodeId: string, data: Partial<AutomationNode["data"]>) => void;
 };
 
-function NodeDetailsPanel({ node, onClose, onUpdate }: NodeDetailsPanelProps) {
-   const [activeTab, setActiveTab] = useState<"config">("config");
+function EditableTitle({
+   value,
+   onChange,
+   placeholder,
+}: {
+   value: string;
+   onChange: (value: string) => void;
+   placeholder?: string;
+}) {
+   const [isEditing, setIsEditing] = useState(false);
+   const [localValue, setLocalValue] = useState(value);
+   const inputRef = useRef<HTMLInputElement>(null);
+
+   useEffect(() => {
+      setLocalValue(value);
+   }, [value]);
+
+   useEffect(() => {
+      if (isEditing && inputRef.current) {
+         inputRef.current.focus();
+         inputRef.current.select();
+      }
+   }, [isEditing]);
+
+   const handleSave = () => {
+      setIsEditing(false);
+      const trimmed = localValue.trim();
+      if (trimmed && trimmed !== value) {
+         onChange(trimmed);
+      } else {
+         setLocalValue(value || placeholder || "");
+      }
+   };
+
+   const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+         handleSave();
+      } else if (e.key === "Escape") {
+         setLocalValue(value || placeholder || "");
+         setIsEditing(false);
+      }
+   };
+
+   if (isEditing) {
+      return (
+         <input
+            className="flex-1 bg-transparent text-lg font-semibold outline-none border-b border-primary"
+            onBlur={handleSave}
+            onChange={(e) => setLocalValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            ref={inputRef}
+            value={localValue}
+         />
+      );
+   }
+
+   return (
+      <button
+         className="group flex flex-1 items-center gap-2 text-left"
+         onClick={() => setIsEditing(true)}
+         type="button"
+      >
+         <span className="text-lg font-semibold border-b border-transparent group-hover:border-muted-foreground/50 transition-colors">
+            {value || placeholder}
+         </span>
+         <Pencil className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+      </button>
+   );
+}
+
+function NodeDetailsPanel({
+   node,
+   onClose,
+   onDelete,
+   onUpdate,
+}: NodeDetailsPanelProps) {
+   const [activeTab, setActiveTab] = useState<"config" | "settings">("config");
    const nodeType = node.type as keyof typeof NODE_TYPE_CONFIG;
    const config = NODE_TYPE_CONFIG[nodeType];
    const NodeIcon = config.icon;
@@ -251,12 +359,14 @@ function NodeDetailsPanel({ node, onClose, onUpdate }: NodeDetailsPanelProps) {
    return (
       <div className="absolute left-4 top-4 z-20 flex max-h-[calc(100%-2rem)] w-[420px] flex-col overflow-hidden rounded-xl border bg-background/95 shadow-xl backdrop-blur-sm">
          <div className="flex items-center gap-3 px-5 pt-4">
-            <NodeIcon className={cn("size-5", config.color)} />
-            <h2 className="text-lg font-semibold">
-               {node.data.label || config.label}
-            </h2>
+            <NodeIcon className={cn("size-5 shrink-0", config.color)} />
+            <EditableTitle
+               onChange={(newLabel) => onUpdate(node.id, { label: newLabel })}
+               placeholder={config.label}
+               value={node.data.label}
+            />
             <Button
-               className="ml-auto size-8"
+               className="ml-auto size-8 shrink-0"
                onClick={onClose}
                size="icon"
                variant="ghost"
@@ -281,15 +391,57 @@ function NodeDetailsPanel({ node, onClose, onUpdate }: NodeDetailsPanelProps) {
                   <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
                )}
             </button>
+            <button
+               className={cn(
+                  "relative py-3 text-sm font-medium transition-colors",
+                  activeTab === "settings"
+                     ? "text-foreground"
+                     : "text-muted-foreground hover:text-foreground",
+               )}
+               onClick={() => setActiveTab("settings")}
+               type="button"
+            >
+               Settings
+               {activeTab === "settings" && (
+                  <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
+               )}
+            </button>
          </div>
 
          <ScrollArea className="flex-1">
             <div className="p-5">
-               <NodeConfigurationPanel
-                  node={node}
-                  onClose={onClose}
-                  onUpdate={onUpdate}
-               />
+               {activeTab === "config" && (
+                  <NodeConfigurationPanel
+                     node={node}
+                     onClose={onClose}
+                     onUpdate={onUpdate}
+                  />
+               )}
+               {activeTab === "settings" && (
+                  <div className="space-y-4">
+                     <div className="rounded-md border p-3">
+                        <p className="text-xs text-muted-foreground">
+                           ID do Node
+                        </p>
+                        <p className="font-mono text-sm">{node.id}</p>
+                     </div>
+                     <div className="rounded-md border p-3">
+                        <p className="text-xs text-muted-foreground">Tipo</p>
+                        <p className="text-sm">{config.label}</p>
+                     </div>
+                     <Button
+                        className="w-full"
+                        onClick={() => {
+                           onDelete(node.id);
+                           onClose();
+                        }}
+                        variant="destructive"
+                     >
+                        <Trash2 className="mr-2 size-4" />
+                        Deletar Node
+                     </Button>
+                  </div>
+               )}
             </div>
          </ScrollArea>
       </div>
@@ -341,6 +493,7 @@ const TRIGGERED_BY_LABELS: Record<TriggeredBy, string> = {
 const ACTION_TYPE_LABELS: Record<ActionType, string> = {
    add_tag: "Adicionar tag",
    create_transaction: "Criar transação",
+   mark_as_transfer: "Marcar como transferência",
    remove_tag: "Remover tag",
    send_email: "Enviar e-mail",
    send_push_notification: "Enviar notificação",
@@ -357,7 +510,7 @@ type ExecutionLog = {
    triggeredBy: string | null;
    triggerEvent: unknown;
    conditionsEvaluated: ConditionEvaluationLogResult[] | null;
-   actionsExecuted: ActionExecutionLogResult[] | null;
+   consequencesExecuted: ConsequenceExecutionLogResult[] | null;
    errorMessage: string | null;
    durationMs: number | null;
    createdAt: Date | string;
@@ -477,10 +630,12 @@ function ExecutionLogItem({
    const transactionAmount = triggerEvent?.amount;
    const transactionType = triggerEvent?.type;
 
-   const actionsExecuted = execution.actionsExecuted ?? [];
+   const consequencesExecuted = execution.consequencesExecuted ?? [];
    const conditionsEvaluated = execution.conditionsEvaluated ?? [];
 
-   const successActions = actionsExecuted.filter((a) => a.success).length;
+   const successConsequences = consequencesExecuted.filter(
+      (a) => a.success,
+   ).length;
    const passedConditions = conditionsEvaluated.filter((c) => c.passed).length;
    const totalConditions = conditionsEvaluated.length;
 
@@ -545,10 +700,11 @@ function ExecutionLogItem({
                         locale: ptBR,
                      })}
                   </span>
-                  {actionsExecuted.length > 0 && (
+                  {consequencesExecuted.length > 0 && (
                      <span className="flex items-center gap-1">
                         <Play className="size-3" />
-                        {successActions}/{actionsExecuted.length} ações
+                        {successConsequences}/{consequencesExecuted.length}{" "}
+                        ações
                      </span>
                   )}
                   {totalConditions > 0 && (
@@ -615,29 +771,29 @@ function ExecutionLogItem({
                   </div>
                )}
 
-               {actionsExecuted.length > 0 && (
+               {consequencesExecuted.length > 0 && (
                   <div>
                      <p className="text-xs font-medium text-muted-foreground mb-1.5">
                         Ações executadas
                      </p>
                      <div className="space-y-1">
-                        {actionsExecuted.map((action, idx) => (
+                        {consequencesExecuted.map((consequence, idx) => (
                            <div
                               className="flex items-center gap-2 text-xs"
-                              key={action.actionId || idx}
+                              key={consequence.consequenceIndex ?? idx}
                            >
-                              {action.success ? (
+                              {consequence.success ? (
                                  <CheckCircle2 className="size-3 text-green-500" />
                               ) : (
                                  <XCircle className="size-3 text-red-500" />
                               )}
                               <span>
-                                 {ACTION_TYPE_LABELS[action.type] ??
-                                    action.type}
+                                 {ACTION_TYPE_LABELS[consequence.type] ??
+                                    consequence.type}
                               </span>
-                              {action.error && (
+                              {consequence.error && (
                                  <span className="text-red-500 truncate">
-                                    - {action.error}
+                                    - {consequence.error}
                                  </span>
                               )}
                            </div>

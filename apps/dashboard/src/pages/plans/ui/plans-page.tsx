@@ -1,5 +1,13 @@
 import { translate } from "@packages/localization";
 import { PlanName, STRIPE_PLANS } from "@packages/stripe/constants";
+import { Badge } from "@packages/ui/components/badge";
+import {
+   Banner,
+   BannerAction,
+   BannerClose,
+   BannerIcon,
+   BannerTitle,
+} from "@packages/ui/components/banner";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -15,7 +23,7 @@ import {
    ToggleGroup,
    ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
-import { Check, Crown, Sparkles, Zap } from "lucide-react";
+import { Check, Clock, Crown, Gift, Rocket, Sparkles, Zap } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
@@ -32,6 +40,99 @@ interface Plan {
    features: string[];
    icon: React.ReactNode;
    highlighted?: boolean;
+   hasFreeTrial?: boolean;
+}
+
+interface Subscription {
+   id: string;
+   plan: string;
+   status: string;
+   periodStart: Date | string | null;
+   periodEnd: Date | string | null;
+   trialStart: Date | string | null;
+   trialEnd: Date | string | null;
+   cancelAtPeriodEnd: boolean;
+   seats: number | null;
+   referenceId: string;
+}
+
+function getDaysRemaining(date: Date | string | null): number | null {
+   if (!date) return null;
+   const d = new Date(date);
+   const now = new Date();
+   const diff = d.getTime() - now.getTime();
+   return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function UpgradeBanner({
+   subscription,
+}: {
+   subscription: Subscription | null;
+}) {
+   // Don't show if already on Pro and active (not trialing)
+   const isProActive =
+      subscription?.plan?.toLowerCase() === "pro" &&
+      subscription?.status === "active";
+
+   if (isProActive) {
+      return null;
+   }
+
+   const isOnBasic = subscription?.plan?.toLowerCase() === "basic";
+   const isTrialing = subscription?.status === "trialing";
+   const trialDays = isTrialing
+      ? getDaysRemaining(subscription?.trialEnd ?? null)
+      : null;
+
+   // Determine banner content based on user state
+   const getBannerContent = () => {
+      if (isTrialing && trialDays !== null) {
+         return {
+            buttonText: "Continuar explorando",
+            icon: Clock,
+            message: `Aproveite seu teste! ${trialDays} ${trialDays === 1 ? "dia restante" : "dias restantes"} para explorar todos os recursos Pro.`,
+         };
+      }
+
+      if (isOnBasic) {
+         return {
+            buttonText: "Fazer upgrade",
+            icon: Rocket,
+            message:
+               "Desbloqueie mais recursos! Faça upgrade para o Pro e tenha acesso a relatórios avançados e mais.",
+         };
+      }
+
+      // No subscription - new user
+      return {
+         buttonText: "Começar teste grátis",
+         icon: Gift,
+         message:
+            "Comece agora! Teste o plano Pro grátis por 14 dias, sem compromisso.",
+      };
+   };
+
+   const { icon, message, buttonText } = getBannerContent();
+
+   const scrollToProPlan = () => {
+      const proCard = document.querySelector('[data-plan="pro"]');
+      proCard?.scrollIntoView({ behavior: "smooth", block: "center" });
+   };
+
+   return (
+      <Banner className="rounded-lg" inset>
+         <div className="flex items-center gap-3 flex-1 min-w-0">
+            <BannerIcon icon={icon} />
+            <BannerTitle className="line-clamp-2 md:line-clamp-1">
+               {message}
+            </BannerTitle>
+         </div>
+         <div className="flex items-center gap-2 shrink-0">
+            <BannerAction onClick={scrollToProPlan}>{buttonText}</BannerAction>
+            <BannerClose />
+         </div>
+      </Banner>
+   );
 }
 
 const plans: Plan[] = STRIPE_PLANS.map((plan) => {
@@ -43,6 +144,7 @@ const plans: Plan[] = STRIPE_PLANS.map((plan) => {
          ) : (
             <Crown className="size-6" />
          ),
+      hasFreeTrial: plan.name === PlanName.PRO,
    };
 });
 
@@ -71,19 +173,38 @@ function PlansPageSkeleton() {
 function PlanCard({
    plan,
    isAnnual,
-   currentPlan,
+   subscription,
    onSelect,
    isLoading,
 }: {
    plan: Plan;
    isAnnual: boolean;
-   currentPlan?: string;
+   subscription?: Subscription | null;
    onSelect: (planName: string) => void;
    isLoading: boolean;
 }) {
-   const isCurrentPlan = currentPlan?.toLowerCase() === plan.name.toLowerCase();
+   const isCurrentPlan =
+      subscription?.plan?.toLowerCase() === plan.name.toLowerCase();
+   const isTrialing = subscription?.status === "trialing";
+   const trialDaysRemaining =
+      isTrialing && isCurrentPlan
+         ? getDaysRemaining(subscription?.trialEnd ?? null)
+         : null;
    const price = isAnnual && plan.annualPrice ? plan.annualPrice : plan.price;
    const period = isAnnual ? "/ano" : "/mês";
+
+   const getButtonText = () => {
+      if (isCurrentPlan) {
+         if (isTrialing && trialDaysRemaining) {
+            return `${trialDaysRemaining} dias restantes`;
+         }
+         return "Plano atual";
+      }
+      if (isLoading) return "Processando...";
+      if (isTrialing) return "Fazer upgrade";
+      if (plan.hasFreeTrial && !subscription) return "Iniciar teste grátis";
+      return "Assinar";
+   };
 
    return (
       <Card
@@ -92,6 +213,7 @@ function PlanCard({
                ? "border-primary shadow-md ring-2 ring-primary/20"
                : ""
          } ${isCurrentPlan ? "border-green-500 bg-green-500/5" : ""}`}
+         data-plan={plan.name.toLowerCase()}
       >
          {plan.highlighted && !isCurrentPlan && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -104,8 +226,12 @@ function PlanCard({
          {isCurrentPlan && (
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-                  <Check className="size-3" />
-                  Plano atual
+                  {isTrialing ? (
+                     <Clock className="size-3" />
+                  ) : (
+                     <Check className="size-3" />
+                  )}
+                  {isTrialing ? "Em teste" : "Plano atual"}
                </span>
             </div>
          )}
@@ -134,6 +260,14 @@ function PlanCard({
                   </p>
                )}
             </div>
+            {plan.hasFreeTrial && !subscription && (
+               <div className="flex justify-center mb-4">
+                  <Badge className="gap-1" variant="secondary">
+                     <Clock className="size-3" />
+                     14 dias grátis
+                  </Badge>
+               </div>
+            )}
             <ul className="space-y-3">
                {plan.features.map((feature) => (
                   <li className="flex items-center gap-2" key={feature}>
@@ -150,11 +284,7 @@ function PlanCard({
                onClick={() => onSelect(plan.name)}
                variant={plan.highlighted ? "default" : "outline"}
             >
-               {isCurrentPlan
-                  ? "Plano atual"
-                  : isLoading
-                    ? "Processando..."
-                    : "Assinar"}
+               {getButtonText()}
             </Button>
          </CardFooter>
       </Card>
@@ -199,6 +329,10 @@ function PlansPageContent() {
             title="Planos"
          />
 
+         <UpgradeBanner
+            subscription={activeSubscription as Subscription | null}
+         />
+
          <div className="flex justify-center mb-4">
             <ToggleGroup
                className="bg-muted p-1 rounded-lg"
@@ -221,12 +355,12 @@ function PlansPageContent() {
          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto w-full">
             {plans.map((plan) => (
                <PlanCard
-                  currentPlan={activeSubscription?.plan}
                   isAnnual={isAnnual}
                   isLoading={isLoading}
                   key={plan.name}
                   onSelect={handleSelectPlan}
                   plan={plan}
+                  subscription={activeSubscription as Subscription | null}
                />
             ))}
          </div>

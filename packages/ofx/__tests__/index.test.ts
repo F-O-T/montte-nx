@@ -221,7 +221,7 @@ describe("ofx parser", () => {
          const result = await parseOfxContent(ofxContent);
 
          expect(result[0]?.amount).toBe(0);
-         expect(result[0]?.type).toBe("income");
+         expect(result[0]?.type).toBe("zero");
       });
 
       it("should parse date correctly from DTPOSTED", async () => {
@@ -286,15 +286,15 @@ describe("ofx parser", () => {
          }
       });
 
-      it("should throw AppError for invalid OFX content", () => {
+      it("should return empty array for invalid OFX content", async () => {
          const invalidContent = "This is not valid OFX content";
 
-         expect(parseOfxContent(invalidContent)).rejects.toThrow(
-            "Failed to parse OFX file",
-         );
+         const result = await parseOfxContent(invalidContent);
+
+         expect(result).toEqual([]);
       });
 
-      it("should throw AppError for malformed OFX structure", () => {
+      it("should return empty array for malformed OFX structure", async () => {
          const malformedContent = `
 OFXHEADER:100
 DATA:OFXSGML
@@ -305,9 +305,9 @@ DATA:OFXSGML
 </OFX>
 `;
 
-         expect(parseOfxContent(malformedContent)).rejects.toThrow(
-            "Failed to parse OFX file",
-         );
+         const result = await parseOfxContent(malformedContent);
+
+         expect(result).toEqual([]);
       });
 
       it("should handle decimal amounts correctly", async () => {
@@ -520,21 +520,21 @@ ${transactions}
          expect(result[0]?.amount).toBe(75);
       });
 
-      it("should throw AppError for invalid buffer content", () => {
+      it("should return empty array for invalid buffer content", async () => {
          const invalidContent = "This is not valid OFX content";
          const buffer = new TextEncoder().encode(invalidContent);
 
-         expect(parseOfxBuffer(buffer)).rejects.toThrow(
-            "Failed to parse OFX file",
-         );
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toEqual([]);
       });
 
-      it("should throw AppError for empty buffer", () => {
+      it("should return empty array for empty buffer", async () => {
          const buffer = new Uint8Array(0);
 
-         expect(parseOfxBuffer(buffer)).rejects.toThrow(
-            "Failed to parse OFX file",
-         );
+         const result = await parseOfxBuffer(buffer);
+
+         expect(result).toEqual([]);
       });
    });
 });

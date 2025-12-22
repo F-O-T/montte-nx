@@ -20,7 +20,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
+import {
+   compressImage,
+   getCompressedFileName,
+} from "@/features/file-upload/lib/image-compression";
 import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
+import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -36,6 +41,7 @@ export function ManageOrganizationForm({
    const trpc = useTRPC();
    const { closeSheet } = useSheet();
    const isEditMode = !!organization;
+   const { uploadToPresignedUrl } = usePresignedUpload();
 
    const { data: logoData } = useQuery({
       ...trpc.organization.getLogo.queryOptions(),
@@ -105,12 +111,22 @@ export function ManageOrganizationForm({
       }),
    );
 
-   const uploadLogoMutation = useMutation(
+   const requestLogoUploadUrlMutation = useMutation(
       trpc.organization.uploadLogo.mutationOptions({
          onError: (error) => {
-            console.error("Logo upload error:", error);
-            toast.error("Failed to upload logo");
-            fileUpload.setError("Failed to upload logo");
+            console.error("Logo upload URL request error:", error);
+            toast.error("Failed to request upload URL");
+            fileUpload.setError("Failed to request upload URL");
+         },
+      }),
+   );
+
+   const confirmLogoUploadMutation = useMutation(
+      trpc.organization.confirmLogoUpload.mutationOptions({
+         onError: (error) => {
+            console.error("Logo upload confirm error:", error);
+            toast.error("Failed to confirm logo upload");
+            fileUpload.setError("Failed to confirm logo upload");
          },
          onSuccess: () => {
             toast.success("Logo uploaded successfully");
@@ -118,6 +134,49 @@ export function ManageOrganizationForm({
          },
       }),
    );
+
+   const cancelLogoUploadMutation = useMutation(
+      trpc.organization.cancelLogoUpload.mutationOptions({}),
+   );
+
+   const uploadLogo = async (file: File) => {
+      fileUpload.setUploading(true);
+      let storageKey: string | null = null;
+
+      try {
+         const compressed = await compressImage(file, {
+            format: "webp",
+            quality: 0.8,
+            maxWidth: 512,
+            maxHeight: 512,
+         });
+
+         const compressedFileName = getCompressedFileName(file.name, "webp");
+
+         const { presignedUrl, storageKey: key } =
+            await requestLogoUploadUrlMutation.mutateAsync({
+               contentType: "image/webp",
+               fileName: compressedFileName,
+               fileSize: compressed.size,
+            });
+
+         storageKey = key;
+
+         await uploadToPresignedUrl(presignedUrl, compressed, "image/webp");
+
+         await confirmLogoUploadMutation.mutateAsync({
+            storageKey: key,
+         });
+      } catch (error) {
+         console.error("Logo upload failed:", error);
+         if (storageKey) {
+            await cancelLogoUploadMutation.mutateAsync({ storageKey });
+         }
+         throw error;
+      } finally {
+         fileUpload.setUploading(false);
+      }
+   };
 
    const handleFileSelect = (acceptedFiles: File[]) => {
       fileUpload.handleFileSelect(acceptedFiles, (file) => {
@@ -134,57 +193,33 @@ export function ManageOrganizationForm({
       onSubmit: async ({ value, formApi }) => {
          try {
             if (isEditMode && organization) {
-               // Edit mode: Upload logo first if a file is selected
                if (value.logo) {
                   try {
-                     fileUpload.setUploading(true);
-                     const base64 = await fileUpload.convertToBase64(
-                        value.logo,
-                     );
-
-                     await uploadLogoMutation.mutateAsync({
-                        contentType: value.logo.type,
-                        fileBuffer: base64,
-                        fileName: value.logo.name,
-                     });
+                     await uploadLogo(value.logo);
                   } catch (error) {
                      console.error("Logo upload failed:", error);
                      toast.error("Failed to upload logo");
-                     fileUpload.setUploading(false);
                      return;
                   }
                }
 
-               // Then update organization details
                await editOrganizationMutation.mutateAsync({
                   description: value.description,
                   name: value.name,
                });
             } else {
-               // Create organization first
                await createOrganizationMutation.mutateAsync({
                   description: value.description,
                   name: value.name,
                   slug: createSlug(value.name),
                });
 
-               // Upload logo if a file is selected (after organization is created)
                if (value.logo) {
                   try {
-                     fileUpload.setUploading(true);
-                     const base64 = await fileUpload.convertToBase64(
-                        value.logo,
-                     );
-
-                     await uploadLogoMutation.mutateAsync({
-                        contentType: value.logo.type,
-                        fileBuffer: base64,
-                        fileName: value.logo.name,
-                     });
+                     await uploadLogo(value.logo);
                   } catch (error) {
                      console.error("Logo upload failed:", error);
                      toast.error("Failed to upload logo");
-                     fileUpload.setUploading(false);
                   }
                }
             }
@@ -239,7 +274,8 @@ export function ManageOrganizationForm({
                            className="h-44"
                            disabled={
                               fileUpload.isUploading ||
-                              uploadLogoMutation.isPending
+                              requestLogoUploadUrlMutation.isPending ||
+                              confirmLogoUploadMutation.isPending
                            }
                            maxFiles={1}
                            maxSize={5 * 1024 * 1024}

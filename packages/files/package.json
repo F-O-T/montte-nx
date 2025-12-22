@@ -2,8 +2,7 @@
    "dependencies": {
       "@packages/environment": "workspace:*",
       "fflate": "catalog:files",
-      "minio": "catalog:files",
-      "sharp": "catalog:files"
+      "minio": "catalog:files"
    },
    "devDependencies": {
       "@tooling/typescript": "workspace:*",
@@ -13,10 +12,6 @@
       "./client": {
          "default": "./src/client.ts",
          "types": "./dist/src/client.d.ts"
-      },
-      "./image-helper": {
-         "default": "./src/image-helpers.ts",
-         "types": "./dist/src/image-helpers.d.ts"
       },
       "./text-file-helper": {
          "default": "./src/text-file-helpers.ts",

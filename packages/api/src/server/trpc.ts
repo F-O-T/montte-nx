@@ -1,53 +1,85 @@
+import {
+   arcjetInstance,
+   BOT_DETECTION,
+   TRPC_RATE_LIMITS,
+} from "@packages/arcjet/config";
 import type { AuthInstance } from "@packages/authentication/server";
+import { createCacheClient, TTL } from "@packages/cache/client";
+import { getRedisConnection } from "@packages/cache/connection";
 import type { DatabaseInstance } from "@packages/database/client";
 import { getOrganizationMembership } from "@packages/database/repositories/auth-repository";
+import { serverEnv } from "@packages/environment/server";
 import type { MinioClient } from "@packages/files/client";
 import { changeLanguage, type SupportedLng } from "@packages/localization";
+import { getServerLogger } from "@packages/logging/server";
 import { captureError, identifyUser, setGroup } from "@packages/posthog/server";
+import type { StripeClient } from "@packages/stripe";
+import type { ResendClient } from "@packages/transactional/client";
 import { APIError } from "@packages/utils/errors";
 import { sanitizeData } from "@packages/utils/sanitization";
 import { initTRPC } from "@trpc/server";
 import type { PostHog } from "posthog-node";
 import SuperJSON from "superjson";
 
+const logger = getServerLogger(serverEnv);
+
+// Initialize cache client lazily
+let cache: ReturnType<typeof createCacheClient> | null = null;
+
+function getCache() {
+   if (!cache) {
+      const redis = getRedisConnection();
+      if (!redis) {
+         throw new Error(
+            "[Cache] Redis connection not initialized. Ensure createRedisConnection() is called before using cache.",
+         );
+      }
+      cache = createCacheClient(redis);
+   }
+   return cache;
+}
+
 export const createTRPCContext = async ({
    auth,
    db,
-   headers,
+   request,
    minioClient,
    minioBucket,
    posthog,
+   resendClient,
    responseHeaders,
+   stripeClient,
 }: {
    auth: AuthInstance;
    db: DatabaseInstance;
    minioClient: MinioClient;
    minioBucket: string;
    posthog: PostHog;
-   headers: Headers;
+   request: Request;
+   resendClient?: ResendClient;
    responseHeaders: Headers;
-}): Promise<{
-   minioBucket: string;
-   db: DatabaseInstance;
-   minioClient: MinioClient;
-   auth: AuthInstance;
-   headers: Headers;
-   posthog: PostHog;
-   session: AuthInstance["$Infer"]["Session"] | null;
-   language: SupportedLng;
-   responseHeaders: Headers;
-   organizationId: string;
-}> => {
-   const session = await auth.api.getSession({
-      headers,
-   });
+   stripeClient?: StripeClient;
+}) => {
+   const headers = request.headers;
+
+   let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+   try {
+      session = await auth.api.getSession({ headers });
+   } catch (error: unknown) {
+      logger.error(
+         { err: error },
+         "getSession() failed, continuing without session",
+      );
+   }
 
    const language = headers.get("x-locale") as SupportedLng;
 
    if (language) {
       changeLanguage(language);
    }
-   const organizationId = session?.session.activeOrganizationId || "";
+
+   const organizationId = session?.session?.activeOrganizationId || "";
+
    return {
       auth,
       db,
@@ -57,8 +89,11 @@ export const createTRPCContext = async ({
       minioClient,
       organizationId,
       posthog,
+      request,
+      resendClient,
       responseHeaders,
       session,
+      stripeClient,
    };
 };
 
@@ -70,24 +105,128 @@ export const t = initTRPC
 
 export const router = t.router;
 
+const arcjetPublicMiddleware = t.middleware(async ({ ctx, next }) => {
+   const resolvedCtx = await ctx;
+
+   if (!arcjetInstance) {
+      return next();
+   }
+
+   const aj = arcjetInstance
+      .withRule(TRPC_RATE_LIMITS.PUBLIC)
+      .withRule(BOT_DETECTION);
+
+   const decision = await aj
+      .protect(resolvedCtx.request, { requested: 1 })
+      .catch((error: unknown) => {
+         logger.error(
+            { err: error },
+            "Arcjet tRPC Public protect() failed, allowing request (fail-open)",
+         );
+         return null;
+      });
+
+   if (!decision) {
+      return next();
+   }
+
+   logger.debug(
+      { conclusion: decision.conclusion, reasonType: decision.reason.type },
+      "Arcjet tRPC Public decision",
+   );
+
+   if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+         throw APIError.tooManyRequests(
+            "Too many requests. Please try again later.",
+         );
+      }
+
+      if (decision.reason.isBot()) {
+         throw APIError.forbidden("Automated requests are not permitted.");
+      }
+
+      if (decision.reason.isShield()) {
+         throw APIError.forbidden("Request blocked for security reasons.");
+      }
+
+      throw APIError.forbidden("Access denied.");
+   }
+
+   return next();
+});
+
+const arcjetProtectedMiddleware = t.middleware(async ({ ctx, next }) => {
+   const resolvedCtx = await ctx;
+
+   if (!arcjetInstance) {
+      return next();
+   }
+
+   const aj = arcjetInstance
+      .withRule(TRPC_RATE_LIMITS.PROTECTED)
+      .withRule(BOT_DETECTION);
+
+   const decision = await aj
+      .protect(resolvedCtx.request, { requested: 1 })
+      .catch((error: unknown) => {
+         logger.error(
+            { err: error },
+            "Arcjet tRPC Protected protect() failed, allowing request (fail-open)",
+         );
+         return null;
+      });
+
+   if (!decision) {
+      return next();
+   }
+
+   logger.debug(
+      { conclusion: decision.conclusion, reasonType: decision.reason.type },
+      "Arcjet tRPC Protected decision",
+   );
+
+   if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+         throw APIError.tooManyRequests(
+            "Too many requests. Please try again later.",
+         );
+      }
+
+      if (decision.reason.isBot()) {
+         throw APIError.forbidden("Automated requests are not permitted.");
+      }
+
+      if (decision.reason.isShield()) {
+         throw APIError.forbidden("Request blocked for security reasons.");
+      }
+
+      throw APIError.forbidden("Access denied.");
+   }
+
+   return next();
+});
+
 const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
-   console.log(`Request: ${type} ${path}`);
+   const requestId = crypto.randomUUID();
    const start = Date.now();
+
+   logger.info({ requestId, path, type }, "Request started");
+
    const result = await next();
    const durationMs = Date.now() - start;
-   console.log(`Response: ${type} ${path} - ${durationMs}ms`);
+
+   logger.info(
+      { requestId, path, type, durationMs, success: result.ok },
+      "Request completed",
+   );
+
    return result;
 });
 
 const isAuthed = t.middleware(async ({ ctx, next }) => {
    const resolvedCtx = await ctx;
-   const apikey = resolvedCtx.headers.get("sdk-api-key");
 
-   if (apikey) {
-      throw APIError.forbidden(
-         "This endpoint does not accept API Key authentication.",
-      );
-   }
    if (!resolvedCtx.session?.user) {
       throw APIError.forbidden("Access denied.");
    }
@@ -124,42 +263,12 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    });
 });
 
-const sdkAuth = t.middleware(async ({ ctx, next }) => {
-   const resolvedCtx = await ctx;
-   // 1. Get the Authorization header from the incoming request.
-   const authHeader = resolvedCtx.headers.get("sdk-api-key");
-   if (!authHeader) {
-      throw APIError.unauthorized("Missing API Key.");
-   }
-
-   const apiKeyData = await resolvedCtx.auth.api.verifyApiKey({
-      body: { key: authHeader },
-      headers: resolvedCtx.headers,
-   });
-
-   if (!apiKeyData.valid) {
-      throw APIError.unauthorized("Invalid API Key.");
-   }
-   const session = await resolvedCtx.auth.api.getSession({
-      headers: new Headers({
-         "sdk-api-key": authHeader,
-      }),
-   });
-   return next({
-      ctx: {
-         session: {
-            ...session,
-         },
-      },
-   });
-});
-
 const timingMiddleware = t.middleware(async ({ next, path }) => {
    const start = Date.now();
    const result = await next();
-   const end = Date.now();
+   const durationMs = Date.now() - start;
 
-   console.info(`[TRPC] ${path} took ${end - start}ms to execute`);
+   logger.debug({ path, durationMs }, "tRPC procedure timing");
 
    return result;
 });
@@ -235,18 +344,49 @@ const telemetryMiddleware = t.middleware(
             });
          }
       } catch (err) {
-         console.error(`Error on telemetry capture ${path}`, err);
+         logger.error({ err, path }, "Error on telemetry capture");
       }
 
       return result;
    },
 );
 
-export const publicProcedure = t.procedure
-   .use(loggerMiddleware)
-   .use(timingMiddleware);
+const baseProcedure = t.procedure.use(loggerMiddleware).use(timingMiddleware);
 
-export const protectedProcedure = publicProcedure
+export const publicProcedure = baseProcedure.use(arcjetPublicMiddleware);
+
+export const protectedProcedure = baseProcedure
+   .use(arcjetProtectedMiddleware)
    .use(isAuthed)
    .use(telemetryMiddleware);
-export const sdkProcedure = publicProcedure.use(sdkAuth);
+
+// Helper to wrap a query function with lazy caching
+export function withCache<T>(
+   cacheKey: string,
+   fetcher: () => Promise<T>,
+   ttl: number = TTL.LONG,
+): () => Promise<T> {
+   return async (): Promise<T> => {
+      const cacheClient = getCache();
+
+      // Check cache first
+      const cached = await cacheClient.getJSON<T>(cacheKey);
+      if (cached !== null) {
+         logger.debug({ cacheKey }, "Cache hit");
+         return cached;
+      }
+
+      // Fetch fresh data
+      const result = await fetcher();
+
+      // Store in cache (fire and forget)
+      cacheClient.setJSON(cacheKey, result, ttl).catch((error) => {
+         logger.error({ err: error, cacheKey }, "Cache write failed");
+      });
+      logger.debug({ cacheKey, ttl }, "Cache stored");
+
+      return result;
+   };
+}
+
+export { TTL };

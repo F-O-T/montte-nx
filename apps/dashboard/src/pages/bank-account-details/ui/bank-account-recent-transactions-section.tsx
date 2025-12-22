@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
@@ -21,29 +20,15 @@ import {
    SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   ToggleGroup,
-   ToggleGroupItem,
-} from "@packages/ui/components/toggle-group";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
-   ArrowDownLeft,
    ArrowLeftRight,
-   ArrowUpRight,
-   Filter,
    FolderOpen,
    Search,
    Trash2,
    Wallet,
-   X,
 } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -51,12 +36,10 @@ import { useTransactionBulkActions } from "@/features/transaction/lib/use-transa
 import { CategorizeForm } from "@/features/transaction/ui/categorize-form";
 import { MarkAsTransferForm } from "@/features/transaction/ui/mark-as-transfer-form";
 import { TransactionExpandedContent } from "@/features/transaction/ui/transaction-expanded-content";
-import { TransactionFilterCredenza } from "@/features/transaction/ui/transaction-filter-credenza";
 import { TransactionMobileCard } from "@/features/transaction/ui/transaction-mobile-card";
 import { createTransactionColumns } from "@/features/transaction/ui/transaction-table-columns";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
-import { useCredenza } from "@/hooks/use-credenza";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -116,15 +99,17 @@ function RecentTransactionsContent({
    bankAccountId,
    startDate,
    endDate,
+   typeFilter = "",
+   categoryFilter = "all",
 }: {
    bankAccountId: string;
    startDate: Date | null;
    endDate: Date | null;
+   typeFilter?: string;
+   categoryFilter?: string;
 }) {
    const trpc = useTRPC();
-   const isMobile = useIsMobile();
    const { activeOrganization } = useActiveOrganization();
-   const { openCredenza } = useCredenza();
    const { openAlertDialog } = useAlertDialog();
    const { openSheet } = useSheet();
    const [currentPage, setCurrentPage] = useState(1);
@@ -133,8 +118,6 @@ function RecentTransactionsContent({
 
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [categoryFilter, setCategoryFilter] = useState("all");
-   const [typeFilter, setTypeFilter] = useState<string>("");
 
    useEffect(() => {
       const timer = setTimeout(() => {
@@ -184,8 +167,9 @@ function RecentTransactionsContent({
       },
    });
 
+   const hasSearchFilter = Boolean(debouncedSearchTerm);
    const hasActiveFilters =
-      debouncedSearchTerm || typeFilter !== "" || categoryFilter !== "all";
+      hasSearchFilter || typeFilter !== "" || categoryFilter !== "all";
 
    const selectedIds = Object.keys(rowSelection).filter(
       (id) => rowSelection[id],
@@ -202,12 +186,6 @@ function RecentTransactionsContent({
 
    const handleClearSelection = () => {
       setRowSelection({});
-   };
-
-   const handleClearFilters = () => {
-      setTypeFilter("");
-      setCategoryFilter("all");
-      setSearchTerm("");
    };
 
    const handleBulkChangeCategory = () => {
@@ -262,113 +240,16 @@ function RecentTransactionsContent({
       <>
          <Card>
             <CardContent className="space-y-4">
-               <div className="flex flex-col sm:flex-row gap-3">
-                  <InputGroup className="flex-1 sm:max-w-md">
-                     <InputGroupInput
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder={translate(
-                           "common.form.search.placeholder",
-                        )}
-                        value={searchTerm}
-                     />
-                     <InputGroupAddon>
-                        <Search />
-                     </InputGroupAddon>
-                  </InputGroup>
-
-                  {isMobile && (
-                     <Tooltip>
-                        <TooltipTrigger asChild>
-                           <Button
-                              onClick={() =>
-                                 openCredenza({
-                                    children: (
-                                       <TransactionFilterCredenza
-                                          categories={categories}
-                                          categoryFilter={categoryFilter}
-                                          onCategoryFilterChange={
-                                             setCategoryFilter
-                                          }
-                                          onClearFilters={handleClearFilters}
-                                          onTypeFilterChange={setTypeFilter}
-                                          typeFilter={typeFilter}
-                                       />
-                                    ),
-                                 })
-                              }
-                              size="icon"
-                              variant={hasActiveFilters ? "default" : "outline"}
-                           >
-                              <Filter className="size-4" />
-                           </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                           <p>Filtrar transações</p>
-                        </TooltipContent>
-                     </Tooltip>
-                  )}
-               </div>
-
-               {!isMobile && (
-                  <div className="flex flex-wrap items-center gap-3">
-                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                           Tipo:
-                        </span>
-                        <ToggleGroup
-                           onValueChange={setTypeFilter}
-                           size="sm"
-                           spacing={2}
-                           type="single"
-                           value={typeFilter}
-                           variant="outline"
-                        >
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
-                              value="income"
-                           >
-                              <ArrowDownLeft className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.income",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-red-500 data-[state=on]:text-red-600"
-                              value="expense"
-                           >
-                              <ArrowUpRight className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.expense",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-blue-500 data-[state=on]:text-blue-600"
-                              value="transfer"
-                           >
-                              <ArrowLeftRight className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.transactions.list-section.types.transfer",
-                              )}
-                           </ToggleGroupItem>
-                        </ToggleGroup>
-                     </div>
-
-                     {hasActiveFilters && (
-                        <>
-                           <div className="h-4 w-px bg-border" />
-                           <Button
-                              className="h-8 text-xs"
-                              onClick={handleClearFilters}
-                              size="sm"
-                              variant="outline"
-                           >
-                              <X className="size-3" />
-                              {translate("common.actions.clear-filters")}
-                           </Button>
-                        </>
-                     )}
-                  </div>
-               )}
+               <InputGroup className="max-w-md">
+                  <InputGroupInput
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     placeholder={translate("common.form.search.placeholder")}
+                     value={searchTerm}
+                  />
+                  <InputGroupAddon>
+                     <Search />
+                  </InputGroupAddon>
+               </InputGroup>
 
                {transactions.length === 0 ? (
                   <div className="py-8 text-center text-muted-foreground">
@@ -461,18 +342,24 @@ export function RecentTransactions({
    bankAccountId,
    startDate,
    endDate,
+   typeFilter,
+   categoryFilter,
 }: {
    bankAccountId: string;
    startDate: Date | null;
    endDate: Date | null;
+   typeFilter?: string;
+   categoryFilter?: string;
 }) {
    return (
       <ErrorBoundary FallbackComponent={RecentTransactionsErrorFallback}>
          <Suspense fallback={<RecentTransactionsSkeleton />}>
             <RecentTransactionsContent
                bankAccountId={bankAccountId}
+               categoryFilter={categoryFilter}
                endDate={endDate}
                startDate={startDate}
+               typeFilter={typeFilter}
             />
          </Suspense>
       </ErrorBoundary>

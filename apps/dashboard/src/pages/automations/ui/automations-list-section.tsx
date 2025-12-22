@@ -139,7 +139,7 @@ function AutomationsListContent() {
    const { data: paginatedData } = useSuspenseQuery(
       trpc.automations.getAllPaginated.queryOptions(
          {
-            isActive:
+            enabled:
                statusFilter === "active"
                   ? true
                   : statusFilter === "inactive"

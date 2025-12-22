@@ -10,6 +10,7 @@ import {
    searchInterestTemplates,
    updateInterestTemplate,
 } from "@packages/database/repositories/interest-template-repository";
+import { APIError } from "@packages/utils/errors";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -41,12 +42,18 @@ const updateInterestTemplateSchema = z.object({
 });
 
 const paginationSchema = z.object({
+   endDate: z.coerce.date().optional(),
+   interestType: interestTypeSchema.optional(),
    isActive: z.boolean().optional(),
+   isDefault: z.boolean().optional(),
    limit: z.coerce.number().min(1).max(100).default(10),
+   monetaryCorrectionIndex: monetaryCorrectionIndexSchema.optional(),
    orderBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),
+   penaltyType: penaltyTypeSchema.optional(),
    search: z.string().optional(),
+   startDate: z.coerce.date().optional(),
 });
 
 export const interestTemplateRouter = router({
@@ -78,7 +85,7 @@ export const interestTemplateRouter = router({
             !existingTemplate ||
             existingTemplate.organizationId !== organizationId
          ) {
-            throw new Error("Interest template not found");
+            throw APIError.notFound("Interest template not found");
          }
 
          return deleteInterestTemplate(resolvedCtx.db, input.id);
@@ -128,12 +135,18 @@ export const interestTemplateRouter = router({
             resolvedCtx.db,
             organizationId,
             {
+               endDate: input.endDate,
+               interestType: input.interestType,
                isActive: input.isActive,
+               isDefault: input.isDefault,
                limit: input.limit,
+               monetaryCorrectionIndex: input.monetaryCorrectionIndex,
                orderBy: input.orderBy,
                orderDirection: input.orderDirection,
                page: input.page,
+               penaltyType: input.penaltyType,
                search: input.search,
+               startDate: input.startDate,
             },
          );
       }),
@@ -150,7 +163,7 @@ export const interestTemplateRouter = router({
          );
 
          if (!template || template.organizationId !== organizationId) {
-            throw new Error("Interest template not found");
+            throw APIError.notFound("Interest template not found");
          }
 
          return template;
@@ -213,7 +226,7 @@ export const interestTemplateRouter = router({
             !existingTemplate ||
             existingTemplate.organizationId !== organizationId
          ) {
-            throw new Error("Interest template not found");
+            throw APIError.notFound("Interest template not found");
          }
 
          return updateInterestTemplate(resolvedCtx.db, input.id, input.data);

@@ -104,6 +104,20 @@ const actionOptions: NodeOption[] = [
       type: "action",
    },
    {
+      data: { actionType: "create_transaction" },
+      description: "Criar uma nova transação",
+      keywords: ["transação", "criar", "nova", "adicionar"],
+      label: ACTION_TYPE_LABELS.create_transaction,
+      type: "action",
+   },
+   {
+      data: { actionType: "mark_as_transfer" },
+      description: "Marcar transação como transferência para outra conta",
+      keywords: ["transferência", "transfer", "marcar", "conta", "mover"],
+      label: ACTION_TYPE_LABELS.mark_as_transfer,
+      type: "action",
+   },
+   {
       data: { actionType: "stop_execution" },
       description: "Parar execução da regra",
       keywords: ["parar", "stop", "interromper", "cancelar"],

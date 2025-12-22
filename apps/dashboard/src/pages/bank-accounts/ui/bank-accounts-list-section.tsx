@@ -1,5 +1,4 @@
 import { translate } from "@packages/localization";
-import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
@@ -21,33 +20,14 @@ import {
    SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import {
-   ToggleGroup,
-   ToggleGroupItem,
-} from "@packages/ui/components/toggle-group";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
-import {
-   Building,
-   Check,
-   CheckCircle,
-   CircleDashed,
-   CreditCard,
-   Filter,
-   PiggyBank,
-   Search,
-   Trash2,
-   TrendingUp,
-   X,
-} from "lucide-react";
+import { Building, Check, Search, Trash2, X } from "lucide-react";
 import { Fragment, Suspense, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useAlertDialog } from "@/hooks/use-alert-dialog";
-import { useCredenza } from "@/hooks/use-credenza";
 import { useTRPC } from "@/integrations/clients";
-import { BankAccountsFilterCredenza } from "../features/bank-accounts-filter-credenza";
 import { useBankAccountBulkActions } from "../features/use-bank-account-bulk-actions";
 import {
    BankAccountExpandedContent,
@@ -74,17 +54,7 @@ function BankAccountsListSkeleton() {
    return (
       <Card>
          <CardContent className="pt-6 grid gap-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-               <Skeleton className="h-9 w-full sm:max-w-md" />
-               <Skeleton className="h-9 w-9" />
-            </div>
-            <div className="flex gap-2">
-               <Skeleton className="h-8 w-20" />
-               <Skeleton className="h-8 w-20" />
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-24" />
-               <Skeleton className="h-8 w-28" />
-            </div>
+            <Skeleton className="h-9 w-full sm:max-w-md" />
             <ItemGroup>
                {Array.from({ length: 5 }).map((_, index) => (
                   <Fragment key={`bank-account-skeleton-${index + 1}`}>
@@ -110,19 +80,20 @@ function BankAccountsListSkeleton() {
    );
 }
 
-type SortOption = "name" | "balance" | "createdAt" | "bank";
+type BankAccountsListContentProps = {
+   statusFilter: string;
+   typeFilter: string;
+};
 
-function BankAccountsListContent() {
+function BankAccountsListContent({
+   statusFilter,
+   typeFilter,
+}: BankAccountsListContentProps) {
    const trpc = useTRPC();
-   const isMobile = useIsMobile();
-   const { openCredenza } = useCredenza();
    const { openAlertDialog } = useAlertDialog();
    const [currentPage, setCurrentPage] = useState(1);
    const [searchTerm, setSearchTerm] = useState("");
    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-   const [statusFilter, setStatusFilter] = useState<string>("");
-   const [typeFilter, setTypeFilter] = useState<string>("");
-   const [sortBy, setSortBy] = useState<SortOption>("name");
    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
    const [pageSize, setPageSize] = useState(10);
 
@@ -202,152 +173,20 @@ function BankAccountsListContent() {
       setRowSelection({});
    };
 
-   const handleClearFilters = () => {
-      setStatusFilter("");
-      setTypeFilter("");
-      setSearchTerm("");
-   };
-
    return (
       <>
          <Card>
             <CardContent className="pt-6 grid gap-4">
-               <div className="flex gap-6">
-                  <InputGroup className="flex-1 sm:max-w-md">
-                     <InputGroupInput
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder={translate(
-                           "common.form.search.placeholder",
-                        )}
-                        value={searchTerm}
-                     />
-                     <InputGroupAddon>
-                        <Search />
-                     </InputGroupAddon>
-                  </InputGroup>
-
-                  {isMobile && (
-                     <Button
-                        onClick={() =>
-                           openCredenza({
-                              children: (
-                                 <BankAccountsFilterCredenza
-                                    onClearFilters={handleClearFilters}
-                                    onSortByChange={(value) =>
-                                       setSortBy(value as SortOption)
-                                    }
-                                    onStatusFilterChange={setStatusFilter}
-                                    onTypeFilterChange={setTypeFilter}
-                                    sortBy={sortBy}
-                                    statusFilter={statusFilter}
-                                    typeFilter={typeFilter}
-                                 />
-                              ),
-                           })
-                        }
-                        size="icon"
-                        variant="outline"
-                     >
-                        <Filter className="size-4" />
-                     </Button>
-                  )}
-               </div>
-
-               {!isMobile && (
-                  <div className="flex flex-wrap items-center gap-3">
-                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                           Status:
-                        </span>
-                        <ToggleGroup
-                           onValueChange={setStatusFilter}
-                           size="sm"
-                           spacing={2}
-                           type="single"
-                           value={statusFilter}
-                           variant="outline"
-                        >
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-emerald-500 data-[state=on]:text-emerald-600"
-                              value="active"
-                           >
-                              <CheckCircle className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.bank-accounts.status.active",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-muted-foreground data-[state=on]:text-muted-foreground"
-                              value="inactive"
-                           >
-                              <CircleDashed className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.bank-accounts.status.inactive",
-                              )}
-                           </ToggleGroupItem>
-                        </ToggleGroup>
-                     </div>
-
-                     <div className="h-4 w-px bg-border" />
-
-                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                           Tipo:
-                        </span>
-                        <ToggleGroup
-                           onValueChange={setTypeFilter}
-                           size="sm"
-                           spacing={2}
-                           type="single"
-                           value={typeFilter}
-                           variant="outline"
-                        >
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
-                              value="checking"
-                           >
-                              <CreditCard className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.bank-accounts.types.checking",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
-                              value="savings"
-                           >
-                              <PiggyBank className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.bank-accounts.types.savings",
-                              )}
-                           </ToggleGroupItem>
-                           <ToggleGroupItem
-                              className="gap-1.5 data-[state=on]:bg-transparent data-[state=on]:border-primary data-[state=on]:text-primary"
-                              value="investment"
-                           >
-                              <TrendingUp className="size-3.5" />
-                              {translate(
-                                 "dashboard.routes.bank-accounts.types.investment",
-                              )}
-                           </ToggleGroupItem>
-                        </ToggleGroup>
-                     </div>
-
-                     {hasActiveFilters && (
-                        <>
-                           <div className="h-4 w-px bg-border" />
-                           <Button
-                              className="h-8 text-xs"
-                              onClick={handleClearFilters}
-                              size="sm"
-                              variant="outline"
-                           >
-                              <X className="size-3" />
-                              Limpar filtros
-                           </Button>
-                        </>
-                     )}
-                  </div>
-               )}
+               <InputGroup className="sm:max-w-md">
+                  <InputGroupInput
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     placeholder={translate("common.form.search.placeholder")}
+                     value={searchTerm}
+                  />
+                  <InputGroupAddon>
+                     <Search />
+                  </InputGroupAddon>
+               </InputGroup>
 
                {bankAccounts.length === 0 ? (
                   <Empty>
@@ -513,11 +352,22 @@ function BankAccountsListContent() {
    );
 }
 
-export function BankAccountsListSection() {
+type BankAccountsListSectionProps = {
+   statusFilter: string;
+   typeFilter: string;
+};
+
+export function BankAccountsListSection({
+   statusFilter,
+   typeFilter,
+}: BankAccountsListSectionProps) {
    return (
       <ErrorBoundary FallbackComponent={BankAccountsListErrorFallback}>
          <Suspense fallback={<BankAccountsListSkeleton />}>
-            <BankAccountsListContent />
+            <BankAccountsListContent
+               statusFilter={statusFilter}
+               typeFilter={typeFilter}
+            />
          </Suspense>
       </ErrorBoundary>
    );

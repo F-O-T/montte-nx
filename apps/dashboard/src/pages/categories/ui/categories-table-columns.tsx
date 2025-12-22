@@ -1,4 +1,9 @@
 import { translate } from "@packages/localization";
+import {
+   Announcement,
+   AnnouncementTag,
+   AnnouncementTitle,
+} from "@packages/ui/components/announcement";
 import { Button } from "@packages/ui/components/button";
 import {
    Card,
@@ -9,19 +14,18 @@ import {
    CardTitle,
 } from "@packages/ui/components/card";
 import { CollapsibleTrigger } from "@packages/ui/components/collapsible";
-import { Separator } from "@packages/ui/components/separator";
 import {
    Tooltip,
    TooltipContent,
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
-import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { formatDate } from "@packages/utils/date";
 import { formatDecimalCurrency } from "@packages/utils/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {
    ArrowDownLeft,
+   ArrowLeftRight,
    ArrowUpRight,
    Calendar,
    ChevronDown,
@@ -39,11 +43,9 @@ import { useDeleteCategory } from "../features/use-delete-category";
 
 function CategoryActionsCell({ category }: { category: Category }) {
    const { activeOrganization } = useActiveOrganization();
-   const { openSheet } = useSheet();
-   const { deleteCategory } = useDeleteCategory({ category });
 
    return (
-      <div className="flex justify-end gap-1">
+      <div className="flex justify-end">
          <Tooltip>
             <TooltipTrigger asChild>
                <Button asChild size="icon" variant="outline">
@@ -64,46 +66,33 @@ function CategoryActionsCell({ category }: { category: Category }) {
                )}
             </TooltipContent>
          </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  onClick={() =>
-                     openSheet({
-                        children: <ManageCategoryForm category={category} />,
-                     })
-                  }
-                  size="icon"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.edit-category",
-               )}
-            </TooltipContent>
-         </Tooltip>
-         <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                  className="text-destructive hover:text-destructive"
-                  onClick={deleteCategory}
-                  size="icon"
-                  variant="outline"
-               >
-                  <Trash2 className="size-4" />
-               </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.delete-category",
-               )}
-            </TooltipContent>
-         </Tooltip>
       </div>
    );
 }
+
+const TRANSACTION_TYPE_CONFIG = {
+   expense: {
+      color: "#ef4444",
+      icon: ArrowUpRight,
+      label: translate(
+         "dashboard.routes.transactions.list-section.types.expense",
+      ),
+   },
+   income: {
+      color: "#10b981",
+      icon: ArrowDownLeft,
+      label: translate(
+         "dashboard.routes.transactions.list-section.types.income",
+      ),
+   },
+   transfer: {
+      color: "#3b82f6",
+      icon: ArrowLeftRight,
+      label: translate(
+         "dashboard.routes.transactions.list-section.types.transfer",
+      ),
+   },
+};
 
 export function createCategoryColumns(_slug: string): ColumnDef<Category>[] {
    return [
@@ -112,23 +101,22 @@ export function createCategoryColumns(_slug: string): ColumnDef<Category>[] {
          cell: ({ row }) => {
             const category = row.original;
             return (
-               <div className="flex items-center gap-3">
-                  <div
-                     className="size-8 rounded-sm flex items-center justify-center"
+               <Announcement>
+                  <AnnouncementTag
                      style={{
-                        backgroundColor: category.color,
+                        backgroundColor: `${category.color}20`,
+                        color: category.color,
                      }}
                   >
                      <IconDisplay
-                        className="text-white"
                         iconName={(category.icon || "Wallet") as IconName}
-                        size={16}
+                        size={14}
                      />
-                  </div>
-                  <div className="flex flex-col">
-                     <span className="font-medium">{category.name}</span>
-                  </div>
-               </div>
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="max-w-[150px] truncate">
+                     {category.name}
+                  </AnnouncementTitle>
+               </Announcement>
             );
          },
          enableSorting: true,
@@ -139,9 +127,14 @@ export function createCategoryColumns(_slug: string): ColumnDef<Category>[] {
          cell: ({ row }) => {
             const category = row.original;
             return (
-               <span className="text-muted-foreground">
-                  {formatDate(new Date(category.createdAt), "DD/MM/YYYY")}
-               </span>
+               <Announcement>
+                  <AnnouncementTag>
+                     <Calendar className="size-3.5" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="text-muted-foreground">
+                     {formatDate(new Date(category.createdAt), "DD MMM YYYY")}
+                  </AnnouncementTitle>
+               </Announcement>
             );
          },
          enableSorting: true,
@@ -171,206 +164,119 @@ export function CategoryExpandedContent({
    const category = row.original;
    const { activeOrganization } = useActiveOrganization();
    const { openSheet } = useSheet();
-   const isMobile = useIsMobile();
    const { deleteCategory } = useDeleteCategory({ category });
+   const types = category.transactionTypes || ["income", "expense", "transfer"];
 
-   if (isMobile) {
-      return (
-         <div className="p-4 space-y-4">
-            <div className="space-y-3">
-               <div className="flex items-center gap-2">
-                  <ArrowDownLeft className="size-4 text-emerald-500" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.stats-section.total-income.title",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium text-emerald-500">
-                        +{formatDecimalCurrency(income)}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <ArrowUpRight className="size-4 text-destructive" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium text-destructive">
-                        -{formatDecimalCurrency(expenses)}
-                     </p>
-                  </div>
-               </div>
-               <Separator />
-               <div className="flex items-center gap-2">
-                  <Calendar className="size-4 text-muted-foreground" />
-                  <div>
-                     <p className="text-xs text-muted-foreground">
-                        {translate(
-                           "dashboard.routes.categories.table.columns.created-at",
-                        )}
-                     </p>
-                     <p className="text-sm font-medium">
-                        {formatDate(
-                           new Date(category.createdAt),
-                           "DD MMM YYYY",
-                        )}
-                     </p>
-                  </div>
-               </div>
-            </div>
+   const statsRow = (
+      <div className="flex flex-wrap items-center gap-2">
+         <Announcement>
+            <AnnouncementTag className="flex items-center gap-1.5">
+               <ArrowDownLeft className="size-3.5 text-emerald-500" />
+               {translate(
+                  "dashboard.routes.bank-accounts.stats-section.total-income.title",
+               )}
+            </AnnouncementTag>
+            <AnnouncementTitle className="text-emerald-500">
+               +{formatDecimalCurrency(income)}
+            </AnnouncementTitle>
+         </Announcement>
 
-            <Separator />
+         <div className="h-4 w-px bg-border" />
 
-            <div className="space-y-2">
-               <Button
-                  asChild
-                  className="w-full justify-start"
-                  size="sm"
-                  variant="outline"
-               >
-                  <Link
-                     params={{
-                        categoryId: category.id,
-                        slug: activeOrganization.slug,
-                     }}
-                     to="/$slug/categories/$categoryId"
-                  >
-                     <Eye className="size-4" />
-                     {translate(
-                        "dashboard.routes.categories.list-section.actions.view-details",
-                     )}
-                  </Link>
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     openSheet({
-                        children: <ManageCategoryForm category={category} />,
-                     });
-                  }}
-                  size="sm"
-                  variant="outline"
-               >
-                  <Edit className="size-4" />
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.edit-category",
-                  )}
-               </Button>
-               <Button
-                  className="w-full justify-start"
-                  onClick={(e) => {
-                     e.stopPropagation();
-                     deleteCategory();
-                  }}
-                  size="sm"
-                  variant="destructive"
-               >
-                  <Trash2 className="size-4" />
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.delete-category",
-                  )}
-               </Button>
-            </div>
+         <Announcement>
+            <AnnouncementTag className="flex items-center gap-1.5">
+               <ArrowUpRight className="size-3.5 text-destructive" />
+               {translate(
+                  "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
+               )}
+            </AnnouncementTag>
+            <AnnouncementTitle className="text-destructive">
+               -{formatDecimalCurrency(expenses)}
+            </AnnouncementTitle>
+         </Announcement>
+
+         <div className="h-4 w-px bg-border" />
+
+         <div className="flex items-center gap-1">
+            {types.map((type) => {
+               const config =
+                  TRANSACTION_TYPE_CONFIG[
+                     type as keyof typeof TRANSACTION_TYPE_CONFIG
+                  ];
+               if (!config) return null;
+               const Icon = config.icon;
+               return (
+                  <Announcement key={type}>
+                     <AnnouncementTag
+                        className="flex items-center gap-1"
+                        style={{
+                           backgroundColor: `${config.color}20`,
+                           color: config.color,
+                        }}
+                     >
+                        <Icon className="size-3" />
+                     </AnnouncementTag>
+                     <AnnouncementTitle style={{ color: config.color }}>
+                        {config.label}
+                     </AnnouncementTitle>
+                  </Announcement>
+               );
+            })}
          </div>
-      );
-   }
+      </div>
+   );
+
+   const actionsRow = (
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+         <Button asChild size="sm" variant="outline">
+            <Link
+               params={{
+                  categoryId: category.id,
+                  slug: activeOrganization.slug,
+               }}
+               to="/$slug/categories/$categoryId"
+            >
+               <Eye className="size-4" />
+               {translate(
+                  "dashboard.routes.categories.list-section.actions.view-details",
+               )}
+            </Link>
+         </Button>
+         <Button
+            onClick={(e) => {
+               e.stopPropagation();
+               openSheet({
+                  children: <ManageCategoryForm category={category} />,
+               });
+            }}
+            size="sm"
+            variant="outline"
+         >
+            <Edit className="size-4" />
+            {translate(
+               "dashboard.routes.categories.list-section.actions.edit-category",
+            )}
+         </Button>
+         <Button
+            onClick={(e) => {
+               e.stopPropagation();
+               deleteCategory();
+            }}
+            size="sm"
+            variant="destructive"
+         >
+            <Trash2 className="size-4" />
+            {translate(
+               "dashboard.routes.categories.list-section.actions.delete-category",
+            )}
+         </Button>
+      </div>
+   );
 
    return (
-      <div className="p-4 flex items-center justify-between gap-6">
-         <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-               <ArrowDownLeft className="size-4 text-emerald-500" />
-               <div>
-                  <p className="text-xs text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.bank-accounts.stats-section.total-income.title",
-                     )}
-                  </p>
-                  <p className="text-sm font-medium text-emerald-500">
-                     +{formatDecimalCurrency(income)}
-                  </p>
-               </div>
-            </div>
-            <Separator className="h-8" orientation="vertical" />
-            <div className="flex items-center gap-2">
-               <ArrowUpRight className="size-4 text-destructive" />
-               <div>
-                  <p className="text-xs text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.bank-accounts.stats-section.total-expenses.title",
-                     )}
-                  </p>
-                  <p className="text-sm font-medium text-destructive">
-                     -{formatDecimalCurrency(expenses)}
-                  </p>
-               </div>
-            </div>
-            <Separator className="h-8" orientation="vertical" />
-            <div className="flex items-center gap-2">
-               <Calendar className="size-4 text-muted-foreground" />
-               <div>
-                  <p className="text-xs text-muted-foreground">
-                     {translate(
-                        "dashboard.routes.categories.table.columns.created-at",
-                     )}
-                  </p>
-                  <p className="text-sm font-medium">
-                     {formatDate(new Date(category.createdAt), "DD MMM YYYY")}
-                  </p>
-               </div>
-            </div>
-         </div>
-
-         <div className="flex items-center gap-2">
-            <Button asChild size="sm" variant="outline">
-               <Link
-                  params={{
-                     categoryId: category.id,
-                     slug: activeOrganization.slug,
-                  }}
-                  to="/$slug/categories/$categoryId"
-               >
-                  <Eye className="size-4" />
-                  {translate(
-                     "dashboard.routes.categories.list-section.actions.view-details",
-                  )}
-               </Link>
-            </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  openSheet({
-                     children: <ManageCategoryForm category={category} />,
-                  });
-               }}
-               size="sm"
-               variant="outline"
-            >
-               <Edit className="size-4" />
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.edit-category",
-               )}
-            </Button>
-            <Button
-               onClick={(e) => {
-                  e.stopPropagation();
-                  deleteCategory();
-               }}
-               size="sm"
-               variant="destructive"
-            >
-               <Trash2 className="size-4" />
-               {translate(
-                  "dashboard.routes.categories.list-section.actions.delete-category",
-               )}
-            </Button>
-         </div>
+      <div className="p-4 space-y-4">
+         {statsRow}
+         {actionsRow}
       </div>
    );
 }
@@ -387,8 +293,14 @@ export function CategoryMobileCard({
    row,
    isExpanded,
    toggleExpanded,
+   income,
+   expenses,
 }: CategoryMobileCardProps) {
    const category = row.original;
+   const { activeOrganization } = useActiveOrganization();
+   const { openSheet } = useSheet();
+   const { deleteCategory } = useDeleteCategory({ category });
+   const types = category.transactionTypes || ["income", "expense", "transfer"];
 
    return (
       <Card className={isExpanded ? "rounded-b-none border-b-0" : ""}>
@@ -412,8 +324,54 @@ export function CategoryMobileCard({
                </div>
             </div>
          </CardHeader>
-         <CardContent />
-         <CardFooter>
+         <CardContent className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+               {types.map((type) => {
+                  const config =
+                     TRANSACTION_TYPE_CONFIG[
+                        type as keyof typeof TRANSACTION_TYPE_CONFIG
+                     ];
+                  if (!config) return null;
+                  const Icon = config.icon;
+                  return (
+                     <Announcement key={type}>
+                        <AnnouncementTag
+                           className="flex items-center gap-1"
+                           style={{
+                              backgroundColor: `${config.color}20`,
+                              color: config.color,
+                           }}
+                        >
+                           <Icon className="size-3" />
+                        </AnnouncementTag>
+                        <AnnouncementTitle style={{ color: config.color }}>
+                           {config.label}
+                        </AnnouncementTitle>
+                     </Announcement>
+                  );
+               })}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+               <Announcement>
+                  <AnnouncementTag className="flex items-center gap-1.5">
+                     <ArrowDownLeft className="size-3.5 text-emerald-500" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="text-emerald-500">
+                     +{formatDecimalCurrency(income)}
+                  </AnnouncementTitle>
+               </Announcement>
+               <Announcement>
+                  <AnnouncementTag className="flex items-center gap-1.5">
+                     <ArrowUpRight className="size-3.5 text-destructive" />
+                  </AnnouncementTag>
+                  <AnnouncementTitle className="text-destructive">
+                     -{formatDecimalCurrency(expenses)}
+                  </AnnouncementTitle>
+               </Announcement>
+            </div>
+         </CardContent>
+         <CardFooter className="flex-col gap-2">
             <CollapsibleTrigger asChild>
                <Button
                   className="w-full"
@@ -431,6 +389,59 @@ export function CategoryMobileCard({
                   />
                </Button>
             </CollapsibleTrigger>
+            {isExpanded && (
+               <div className="w-full space-y-2 pt-2 border-t">
+                  <Button
+                     asChild
+                     className="w-full justify-start"
+                     size="sm"
+                     variant="outline"
+                  >
+                     <Link
+                        params={{
+                           categoryId: category.id,
+                           slug: activeOrganization.slug,
+                        }}
+                        to="/$slug/categories/$categoryId"
+                     >
+                        <Eye className="size-4" />
+                        {translate(
+                           "dashboard.routes.categories.list-section.actions.view-details",
+                        )}
+                     </Link>
+                  </Button>
+                  <Button
+                     className="w-full justify-start"
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        openSheet({
+                           children: <ManageCategoryForm category={category} />,
+                        });
+                     }}
+                     size="sm"
+                     variant="outline"
+                  >
+                     <Edit className="size-4" />
+                     {translate(
+                        "dashboard.routes.categories.list-section.actions.edit-category",
+                     )}
+                  </Button>
+                  <Button
+                     className="w-full justify-start"
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        deleteCategory();
+                     }}
+                     size="sm"
+                     variant="destructive"
+                  >
+                     <Trash2 className="size-4" />
+                     {translate(
+                        "dashboard.routes.categories.list-section.actions.delete-category",
+                     )}
+                  </Button>
+               </div>
+            )}
          </CardFooter>
       </Card>
    );
