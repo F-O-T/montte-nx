@@ -21,6 +21,25 @@ export async function findMemberByUserId(
    }
 }
 
+export async function findMemberByUserIdAndOrganizationId(
+   dbClient: DatabaseInstance,
+   userId: string,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient.query.member.findFirst({
+         where: (member, { eq, and }) =>
+            and(eq(member.userId, userId), eq(member.organizationId, organizationId)),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find member: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findOrganizationById(
    dbClient: DatabaseInstance,
    organizationId: string,

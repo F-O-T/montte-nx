@@ -62,6 +62,32 @@ export async function findBankAccountsByOrganizationId(
    }
 }
 
+export async function findBankAccountsByIds(
+   dbClient: DatabaseInstance,
+   ids: string[],
+   organizationId: string,
+) {
+   try {
+      if (ids.length === 0) {
+         return [];
+      }
+      const result = await dbClient.query.bankAccount.findMany({
+         orderBy: (bankAccount, { asc }) => asc(bankAccount.name),
+         where: (bankAccount, { and, eq, inArray }) =>
+            and(
+               eq(bankAccount.organizationId, organizationId),
+               inArray(bankAccount.id, ids),
+            ),
+      });
+      return result;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to find bank accounts by ids: ${(err as Error).message}`,
+      );
+   }
+}
+
 export async function findBankAccountsByOrganizationIdPaginated(
    dbClient: DatabaseInstance,
    organizationId: string,

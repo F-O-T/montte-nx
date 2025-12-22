@@ -1,3 +1,4 @@
+import { Button } from "@packages/ui/components/button";
 import {
    Card,
    CardContent,
@@ -17,17 +18,28 @@ import {
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Users } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
+import { ChevronRight, Users } from "lucide-react";
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useTRPC } from "@/integrations/clients";
 
 function TeamsListContent() {
    const trpc = useTRPC();
+   const router = useRouter();
+   const { activeOrganization } = useActiveOrganization();
 
    const { data: teamsData } = useSuspenseQuery(
       trpc.organizationTeams.listTeams.queryOptions(),
    );
+
+   const handleTeamClick = (teamId: string) => {
+      router.navigate({
+         params: { slug: activeOrganization.slug, teamId },
+         to: "/$slug/organization/teams/$teamId",
+      });
+   };
 
    return (
       <Card>
@@ -41,18 +53,30 @@ function TeamsListContent() {
             <ItemGroup>
                {teamsData.map((team, index) => (
                   <Fragment key={team.id}>
-                     <Item>
+                     <Item
+                        className="cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => handleTeamClick(team.id)}
+                     >
                         <ItemMedia className="size-10" variant="icon">
-                           <Users className="size-4 " />
+                           <Users className="size-4" />
                         </ItemMedia>
                         <ItemContent>
                            <ItemTitle className="truncate">
                               {team.name}
                            </ItemTitle>
                            <ItemDescription>
-                              {team.description ?? ""}
+                              {team.description ?? "No description"}
                            </ItemDescription>
                         </ItemContent>
+                        <ItemActions>
+                           <Button
+                              size="icon"
+                              variant="ghost"
+                              className="size-8"
+                           >
+                              <ChevronRight className="size-4" />
+                           </Button>
+                        </ItemActions>
                      </Item>
                      {index !== teamsData.length - 1 && <ItemSeparator />}
                   </Fragment>

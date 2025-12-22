@@ -1,4 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
+import { createSlug } from "@packages/utils/text";
 import { Button } from "@packages/ui/components/button";
 import {
    Dropzone,
@@ -14,7 +15,6 @@ import {
    SheetTitle,
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
-import { createSlug } from "@packages/utils/text";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building } from "lucide-react";
@@ -26,6 +26,9 @@ import {
 } from "@/features/file-upload/lib/image-compression";
 import { useFileUpload } from "@/features/file-upload/lib/use-file-upload";
 import { usePresignedUpload } from "@/features/file-upload/lib/use-presigned-upload";
+import { useCreateOrganization } from "@/features/organization/hooks/use-create-organization";
+import { useSetActiveOrganization } from "@/features/organization/hooks/use-set-active-organization";
+import { useUpdateOrganization } from "@/features/organization/hooks/use-update-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 
@@ -67,49 +70,26 @@ export function ManageOrganizationForm({
       maxSize: 5 * 1024 * 1024,
    });
 
-   const setActiveOrganizationMutation = useMutation(
-      trpc.organization.setActiveOrganization.mutationOptions({
-         onError: (error) => {
-            console.error("Failed to set active organization:", error);
-            toast.error("Failed to set active organization");
-         },
-         onSuccess: () => {
-            toast.success("Active organization set successfully");
-         },
-      }),
-   );
-   const editOrganizationMutation = useMutation(
-      trpc.organization.editOrganization.mutationOptions({
-         onError: (error) => {
-            console.error("Failed to update organization:", error);
-            toast.error("Failed to update organization");
-         },
-         onSuccess: () => {
-            toast.success("Organization updated successfully");
-            fileUpload.clearFile();
-            closeSheet();
-         },
-      }),
-   );
+   const { setActiveOrganization } = useSetActiveOrganization({
+      showToast: false,
+   });
 
-   const createOrganizationMutation = useMutation(
-      trpc.organization.createOrganization.mutationOptions({
-         onError: (error) => {
-            console.error("Create organization error:", error);
-            toast.error("Failed to create organization");
-         },
-         onSuccess: async (data) => {
-            toast.success("Organization created successfully");
-            if (!data?.id) {
-               await setActiveOrganizationMutation.mutateAsync({
-                  organizationId: data?.id,
-               });
-            }
-            fileUpload.clearFile();
-            closeSheet();
-         },
-      }),
-   );
+   const { updateOrganization, isPending: isUpdatePending } = useUpdateOrganization({
+      onSuccess: () => {
+         fileUpload.clearFile();
+         closeSheet();
+      },
+   });
+
+   const { createOrganization, isPending: isCreatePending } = useCreateOrganization({
+      onSuccess: async (data) => {
+         if (data?.id) {
+            await setActiveOrganization({ organizationId: data.id });
+         }
+         fileUpload.clearFile();
+         closeSheet();
+      },
+   });
 
    const requestLogoUploadUrlMutation = useMutation(
       trpc.organization.uploadLogo.mutationOptions({
@@ -203,12 +183,12 @@ export function ManageOrganizationForm({
                   }
                }
 
-               await editOrganizationMutation.mutateAsync({
-                  description: value.description,
+               await updateOrganization({
+                  organizationId: organization.id,
                   name: value.name,
                });
             } else {
-               await createOrganizationMutation.mutateAsync({
+               await createOrganization({
                   description: value.description,
                   name: value.name,
                   slug: createSlug(value.name),
@@ -389,8 +369,8 @@ export function ManageOrganizationForm({
                      disabled={
                         !state.canSubmit ||
                         state.isSubmitting ||
-                        createOrganizationMutation.isPending ||
-                        editOrganizationMutation.isPending
+                        isCreatePending ||
+                        isUpdatePending
                      }
                      type="submit"
                   >

@@ -11,16 +11,14 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { Textarea } from "@packages/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { toast } from "sonner";
 import { z } from "zod";
+import { useCreateTeam } from "@/features/organization-teams/hooks/use-create-team";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
-import { useTRPC } from "@/integrations/clients";
 
 function CreateTeamErrorFallback() {
    return (
@@ -53,20 +51,12 @@ function CreateTeamSkeleton() {
 const CreateTeamFormContent = () => {
    const { closeSheet } = useSheet();
    const { activeOrganization } = useActiveOrganization();
-   const trpc = useTRPC();
 
-   const createTeamMutation = useMutation(
-      trpc.organizationTeams.createTeam.mutationOptions({
-         onError: (error) => {
-            console.error("Team creation error:", error);
-            toast.error("Failed to create team");
-         },
-         onSuccess: (_, variables) => {
-            toast.success(`Team "${variables.name}" created successfully`);
-            closeSheet();
-         },
-      }),
-   );
+   const { createTeam, isPending } = useCreateTeam({
+      onSuccess: () => {
+         closeSheet();
+      },
+   });
 
    const schema = z.object({
       description: z
@@ -87,7 +77,11 @@ const CreateTeamFormContent = () => {
          organizationId: activeOrganization?.id ?? "",
       },
       onSubmit: async ({ value, formApi }) => {
-         await createTeamMutation.mutateAsync(value);
+         await createTeam({
+            name: value.name,
+            description: value.description,
+            organizationId: value.organizationId,
+         });
          formApi.reset();
       },
 
@@ -172,14 +166,12 @@ const CreateTeamFormContent = () => {
                      disabled={
                         !formState.canSubmit ||
                         formState.isSubmitting ||
-                        createTeamMutation.isPending
+                        isPending
                      }
                      onClick={() => form.handleSubmit()}
                      type="submit"
                   >
-                     {createTeamMutation.isPending
-                        ? "Creating..."
-                        : "Create Team"}
+                     {isPending ? "Creating..." : "Create Team"}
                   </Button>
                )}
             </form.Subscribe>

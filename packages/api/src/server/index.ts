@@ -17,12 +17,14 @@ import { costCenterRouter } from "./routers/cost-centers";
 import { counterpartyRouter } from "./routers/counterparties";
 import { customReportRouter } from "./routers/custom-reports";
 import { encryptionRouter } from "./routers/encryption";
+import { expenseSplitsRouter } from "./routers/expense-splits";
 import { interestTemplateRouter } from "./routers/interest-templates";
 import { notificationRouter } from "./routers/notifications";
 import { onboardingRouter } from "./routers/onboarding";
 import { organizationRouter } from "./routers/organization";
 import { organizationInvitesRouter } from "./routers/organization-invites";
 import { organizationTeamsRouter } from "./routers/organization-teams";
+import { permissionsRouter } from "./routers/permissions";
 import { pushNotificationRouter } from "./routers/push-notifications";
 import { sessionRouter } from "./routers/session";
 import { tagRouter } from "./routers/tags";
@@ -45,12 +47,14 @@ export const appRouter = router({
    counterparties: counterpartyRouter,
    customReports: customReportRouter,
    encryption: encryptionRouter,
+   expenseSplits: expenseSplitsRouter,
    interestTemplates: interestTemplateRouter,
    notifications: notificationRouter,
    onboarding: onboardingRouter,
    organization: organizationRouter,
    organizationInvites: organizationInvitesRouter,
    organizationTeams: organizationTeamsRouter,
+   permissions: permissionsRouter,
    pushNotifications: pushNotificationRouter,
    session: sessionRouter,
    tags: tagRouter,

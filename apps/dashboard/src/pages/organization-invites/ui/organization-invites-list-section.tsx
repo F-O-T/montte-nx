@@ -32,7 +32,7 @@ import {
    PaginationPrevious,
 } from "@packages/ui/components/pagination";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
    Clock,
    Mail,
@@ -44,7 +44,8 @@ import {
 } from "lucide-react";
 import { Fragment, Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { toast } from "sonner";
+import { useInviteMember } from "@/features/organization-invites/hooks/use-invite-member";
+import { useRevokeInvitation } from "@/features/organization-invites/hooks/use-revoke-invitation";
 import { useTRPC } from "@/integrations/clients";
 
 function InvitesListContent() {
@@ -57,39 +58,20 @@ function InvitesListContent() {
          offset: (currentPage - 1) * pageSize,
       }),
    );
-   const cancelInvitationMutation = useMutation(
-      trpc.organizationInvites.revokeInvitation.mutationOptions({
-         onError: (error) => {
-            toast.error(`Failed to cancel invitation: ${error.message}`);
-         },
-         onSuccess: () => {
-            toast.success("Invitation cancelled successfully");
-         },
-      }),
-   );
-   const resendInviteMutation = useMutation(
-      trpc.organizationInvites.createInvitation.mutationOptions({
-         onError: (error) => {
-            toast.error(`Failed to resend invitation: ${error.message}`);
-         },
-         onSuccess: () => {
-            toast.success("Invitation resent successfully");
-         },
-      }),
-   );
+   const { inviteMember, isPending: isResending } = useInviteMember();
+   const { revokeInvitation } = useRevokeInvitation();
 
    const handleResendInvite = async (
       invite: (typeof invitesData)["invitations"][number],
    ) => {
-      await resendInviteMutation.mutateAsync({
+      await inviteMember({
          email: invite.email,
-         resend: true,
          role: invite.role.toLowerCase() as "member" | "admin" | "owner",
       });
    };
 
    const handleRevokeInvite = async (inviteId: string) => {
-      await cancelInvitationMutation.mutateAsync({ invitationId: inviteId });
+      await revokeInvitation(inviteId);
    };
 
    const getStatusIcon = (status: string) => {
@@ -147,9 +129,7 @@ function InvitesListContent() {
                                  {invite.status === "pending" && (
                                     <>
                                        <DropdownMenuItem
-                                          disabled={
-                                             resendInviteMutation.isPending
-                                          }
+                                          disabled={isResending}
                                           onClick={() =>
                                              handleResendInvite(invite)
                                           }

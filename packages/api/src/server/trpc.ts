@@ -224,6 +224,8 @@ const loggerMiddleware = t.middleware(async ({ path, type, next }) => {
    return result;
 });
 
+export type MemberRole = "owner" | "admin" | "member";
+
 const isAuthed = t.middleware(async ({ ctx, next }) => {
    const resolvedCtx = await ctx;
 
@@ -234,6 +236,7 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
    const userId = resolvedCtx.session.user.id;
    const organizationSlug = resolvedCtx.headers.get("x-organization-slug");
    let organizationId = resolvedCtx.session.session.activeOrganizationId;
+   let memberRole: MemberRole = "member";
 
    if (organizationSlug) {
       const { organization, membership } = await getOrganizationMembership(
@@ -253,10 +256,13 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
       }
 
       organizationId = organization.id;
+      memberRole = (membership.role as MemberRole) || "member";
    }
 
    return next({
       ctx: {
+         ...resolvedCtx,
+         memberRole,
          organizationId,
          session: { ...resolvedCtx.session },
       },

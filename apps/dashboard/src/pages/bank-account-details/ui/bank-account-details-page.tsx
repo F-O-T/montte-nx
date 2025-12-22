@@ -21,6 +21,7 @@ import {
    Edit,
    Home,
    Plus,
+   Shield,
    Trash2,
    Upload,
 } from "lucide-react";
@@ -28,6 +29,7 @@ import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { DefaultHeader } from "@/default/default-header";
 import { ManageBankAccountForm } from "@/features/bank-account/ui/manage-bank-account-form";
+import { BankAccountPermissionsSheet } from "@/features/permissions/ui/bank-account-permissions-sheet";
 import { TransactionListProvider } from "@/features/transaction/lib/transaction-list-context";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -195,6 +197,23 @@ function BankAccountContent() {
             >
                <Trash2 className="size-4" />
                Excluir Conta
+            </Button>
+            <Button
+               onClick={() =>
+                  openSheet({
+                     children: (
+                        <BankAccountPermissionsSheet
+                           bankAccountId={bankAccountId}
+                           bankAccountName={bankAccount.name || "Conta Bancária"}
+                        />
+                     ),
+                  })
+               }
+               size="sm"
+               variant="outline"
+            >
+               <Shield className="size-4" />
+               Gerenciar Acessos
             </Button>
          </div>
 

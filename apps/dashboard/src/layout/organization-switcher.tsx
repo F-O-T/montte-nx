@@ -19,16 +19,13 @@ import {
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { toast } from "@packages/ui/components/sonner";
 import { getInitials } from "@packages/utils/text";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { ChevronsUpDown, Eye, Plus, Users } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
+import { useSetActiveOrganization } from "@/features/organization/hooks/use-set-active-organization";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
@@ -122,14 +119,10 @@ function OrganizationDropdownContent({
 
    const { activeOrganization } = useActiveOrganization();
    const queryClient = useQueryClient();
-
-   const setActiveOrganization = useMutation(
-      trpc.organization.setActiveOrganization.mutationOptions({
-         onSuccess: async () => {
-            toast.success("Organization set successfully");
-         },
-      }),
-   );
+   const { setActiveOrganization, isPending: isSettingActive } =
+      useSetActiveOrganization({
+         showToast: false,
+      });
 
    async function handleOrganizationClick(
       organizationId: string,
@@ -144,9 +137,8 @@ function OrganizationDropdownContent({
       await queryClient.invalidateQueries();
 
       if (!isCurrentOrg) {
-         setActiveOrganization.mutate({
-            organizationId,
-         });
+         await setActiveOrganization({ organizationId });
+         toast.success("Organization set successfully");
       }
    }
 
@@ -159,7 +151,7 @@ function OrganizationDropdownContent({
             <DropdownMenuSub key={organization.name}>
                <DropdownMenuSubTrigger
                   className="gap-2 p-2"
-                  disabled={setActiveOrganization.isPending}
+                  disabled={isSettingActive}
                   onClick={() => {
                      handleOrganizationClick(
                         organization.id,
