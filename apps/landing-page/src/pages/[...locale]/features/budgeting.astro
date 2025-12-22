@@ -1,14 +1,34 @@
 ---
 export const prerender = true;
 
+import {
+   ArrowRight,
+   BarChart3,
+   Bell,
+   Calendar,
+   Check,
+   ChevronDown,
+   ChevronRight,
+   Github,
+   Layers,
+   LineChart,
+   PiggyBank,
+   RefreshCw,
+   Shield,
+   Smartphone,
+   Target,
+   TrendingUp,
+   Users,
+   Wallet,
+   Zap,
+} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { ArrowRight, BarChart3, Bell, Calendar, Check, ChevronDown, ChevronRight, Github, Layers, LineChart, PiggyBank, RefreshCw, Shield, Smartphone, Target, TrendingUp, Users, Wallet, Zap } from "@lucide/astro";
 import { Button } from "@packages/ui/components/button";
-import Layout from "@/layouts/Landing.astro";
-import StickyNavbar from "@/components/StickyNavbar.astro";
-import Footer from "@/sections/Footer.astro";
 import LogoCloud from "@/components/LogoCloud.astro";
+import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({

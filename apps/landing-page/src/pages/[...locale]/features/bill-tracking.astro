@@ -1,13 +1,31 @@
 ---
 export const prerender = true;
 
+import {
+   AlertCircle,
+   ArrowRight,
+   Bell,
+   Calculator,
+   CalendarClock,
+   ChartNoAxesCombined,
+   Check,
+   CheckCircle2,
+   ChevronDown,
+   ChevronRight,
+   Clock,
+   FileText,
+   Globe,
+   LinkIcon,
+   Repeat,
+   ScrollText,
+   Zap,
+} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { AlertCircle, ArrowRight, Bell, Calculator, CalendarClock, ChartNoAxesCombined, Check, CheckCircle2, ChevronDown, ChevronRight, Clock, FileText, Globe, LinkIcon, Repeat, ScrollText, Zap } from "@lucide/astro";
 import { Button } from "@packages/ui/components/button";
-import Layout from "@/layouts/Landing.astro";
 import StickyNavbar from "@/components/StickyNavbar.astro";
-import Footer from "@/sections/Footer.astro";
 import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({

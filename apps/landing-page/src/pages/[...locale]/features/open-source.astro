@@ -1,13 +1,30 @@
 ---
 export const prerender = true;
 
+import {
+   ArrowRight,
+   ChevronDown,
+   ChevronRight,
+   Code2,
+   CpuIcon,
+   FileJson,
+   GitBranch,
+   Github,
+   Heart,
+   LinkIcon,
+   Lock,
+   MessageCircle,
+   Server,
+   Shield,
+   ShieldCheck,
+   Users,
+} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
-import { ArrowRight, ChevronDown, ChevronRight, Code2, CpuIcon, FileJson, GitBranch, Github, Heart, LinkIcon, Lock, MessageCircle, Server, Shield, ShieldCheck, Users } from "@lucide/astro";
 import { Button } from "@packages/ui/components/button";
-import Layout from "@/layouts/Landing.astro";
 import StickyNavbar from "@/components/StickyNavbar.astro";
-import Footer from "@/sections/Footer.astro";
 import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
