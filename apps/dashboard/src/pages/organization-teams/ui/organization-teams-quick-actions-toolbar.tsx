@@ -2,7 +2,7 @@ import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Plus } from "lucide-react";
 import { useSheet } from "@/hooks/use-sheet";
-import { CreateTeamForm } from "../features/create-team-form";
+import { CreateTeamForm } from "@/features/organization/ui/create-team-form";
 
 export function TeamsQuickActionsToolbar() {
 	const { openSheet } = useSheet();
