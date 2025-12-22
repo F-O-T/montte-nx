@@ -3,10 +3,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
+import { UpgradeRequired } from "@/components/upgrade-required";
 import {
    InvitesDataTable,
    InvitesDataTableSkeleton,
 } from "@/features/organization/ui/invites-data-table";
+import { usePlanFeatures } from "@/hooks/use-plan-features";
 import { betterAuthClient, useTRPC } from "@/integrations/clients";
 import { InvitesQuickActionsToolbar } from "./organization-invites-quick-actions-toolbar";
 
@@ -145,29 +147,37 @@ function InvitesPageError({ error }: { error: Error }) {
 }
 
 export function OrganizationInvitesPage() {
-   return (
-      <main className="flex flex-col gap-4">
-         <div className="flex items-center justify-between">
-            <div>
-               <h1 className="text-2xl font-bold">
-                  {translate(
-                     "dashboard.routes.organization.invites-table.title",
-                  )}
-               </h1>
-               <p className="text-muted-foreground">
-                  {translate(
-                     "dashboard.routes.organization.invites-table.description",
-                  )}
-               </p>
-            </div>
-            <InvitesQuickActionsToolbar />
-         </div>
+   const { canAccessOrgMembers } = usePlanFeatures();
 
-         <ErrorBoundary FallbackComponent={InvitesPageError}>
-            <Suspense fallback={<InvitesDataTableSkeleton />}>
-               <InvitesPageContent />
-            </Suspense>
-         </ErrorBoundary>
-      </main>
+   return (
+      <UpgradeRequired
+         featureName="Convites da Organização"
+         hasAccess={canAccessOrgMembers}
+         requiredPlan="erp"
+      >
+         <main className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+               <div>
+                  <h1 className="text-2xl font-bold">
+                     {translate(
+                        "dashboard.routes.organization.invites-table.title",
+                     )}
+                  </h1>
+                  <p className="text-muted-foreground">
+                     {translate(
+                        "dashboard.routes.organization.invites-table.description",
+                     )}
+                  </p>
+               </div>
+               <InvitesQuickActionsToolbar />
+            </div>
+
+            <ErrorBoundary FallbackComponent={InvitesPageError}>
+               <Suspense fallback={<InvitesDataTableSkeleton />}>
+                  <InvitesPageContent />
+               </Suspense>
+            </ErrorBoundary>
+         </main>
+      </UpgradeRequired>
    );
 }

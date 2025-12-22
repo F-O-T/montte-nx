@@ -14,8 +14,10 @@ import {
    Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+import { UpgradeRequired } from "@/components/upgrade-required";
 import { DefaultHeader } from "@/default/default-header";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
+import { usePlanFeatures } from "@/hooks/use-plan-features";
 import { useTRPC } from "@/integrations/clients";
 import {
    AutomationsListProvider,
@@ -197,9 +199,17 @@ function AutomationsPageContent() {
 }
 
 export function AutomationsPage() {
+   const { canAccessAutomations } = usePlanFeatures();
+
    return (
-      <AutomationsListProvider>
-         <AutomationsPageContent />
-      </AutomationsListProvider>
+      <UpgradeRequired
+         featureName="Automações"
+         hasAccess={canAccessAutomations}
+         requiredPlan="erp"
+      >
+         <AutomationsListProvider>
+            <AutomationsPageContent />
+         </AutomationsListProvider>
+      </UpgradeRequired>
    );
 }
