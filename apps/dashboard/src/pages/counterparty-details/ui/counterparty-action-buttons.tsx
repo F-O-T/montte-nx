@@ -2,15 +2,13 @@ import { translate } from "@packages/localization";
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import { Button } from "@packages/ui/components/button";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
 import {
-   CheckCircle2,
-   Edit,
-   Receipt,
-   Trash2,
-   XCircle,
-} from "lucide-react";
+   useMutation,
+   useQueryClient,
+   useSuspenseQuery,
+} from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { CheckCircle2, Edit, Receipt, Trash2, XCircle } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
@@ -148,10 +146,10 @@ function ActionButtonsContent({
          </Button>
 
          <Button
+            disabled={toggleActiveMutation.isPending}
             onClick={handleToggleActive}
             size="sm"
             variant="outline"
-            disabled={toggleActiveMutation.isPending}
          >
             {counterparty.isActive ? (
                <>
@@ -168,10 +166,10 @@ function ActionButtonsContent({
 
          <Button
             className="text-destructive hover:text-destructive"
+            disabled={deleteMutation.isPending}
             onClick={handleDelete}
             size="sm"
             variant="outline"
-            disabled={deleteMutation.isPending}
          >
             <Trash2 className="size-4" />
             Excluir

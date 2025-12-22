@@ -132,7 +132,8 @@ export const organizationTeamsRouter = router({
       .input(z.object({ teamId: z.string() }))
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
-         const organizationId = resolvedCtx.session?.session?.activeOrganizationId;
+         const organizationId =
+            resolvedCtx.session?.session?.activeOrganizationId;
 
          if (!organizationId) {
             throw APIError.notFound("No active organization found");

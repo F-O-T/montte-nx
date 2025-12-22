@@ -56,10 +56,10 @@ describe("csv-spectrum compliance", () => {
    test("comma_in_quotes - handles commas within quoted fields", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "comma_in_quotes");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -70,10 +70,10 @@ describe("csv-spectrum compliance", () => {
    test("empty - handles empty files", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "empty");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -84,10 +84,10 @@ describe("csv-spectrum compliance", () => {
    test("empty_crlf - handles empty files with CRLF", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "empty_crlf");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -98,10 +98,10 @@ describe("csv-spectrum compliance", () => {
    test("escaped_quotes - handles escaped quotes", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "escaped_quotes");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -112,10 +112,10 @@ describe("csv-spectrum compliance", () => {
    test("json - handles JSON in fields", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "json");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -126,10 +126,10 @@ describe("csv-spectrum compliance", () => {
    test("newlines - handles newlines in quoted fields", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "newlines");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -140,10 +140,10 @@ describe("csv-spectrum compliance", () => {
    test("newlines_crlf - handles CRLF newlines in quoted fields", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "newlines_crlf");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -154,10 +154,10 @@ describe("csv-spectrum compliance", () => {
    test("quotes_and_newlines - handles quotes and newlines combined", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "quotes_and_newlines");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -168,10 +168,10 @@ describe("csv-spectrum compliance", () => {
    test("simple - handles simple CSV", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "simple");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -182,10 +182,10 @@ describe("csv-spectrum compliance", () => {
    test("simple_crlf - handles simple CSV with CRLF", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "simple_crlf");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);
@@ -196,10 +196,10 @@ describe("csv-spectrum compliance", () => {
    test("utf8 - handles UTF-8 characters", async () => {
       const tests = await loadSpectrumTests();
       const testCase = tests.find((t) => t.name === "utf8");
-      expect(testCase).toBeDefined();
+      if (!testCase) throw new Error("Test case not found");
 
-      const csvContent = testCase!.csv.toString("utf-8");
-      const expectedJson = JSON.parse(testCase!.json.toString("utf-8"));
+      const csvContent = testCase.csv.toString("utf-8");
+      const expectedJson = JSON.parse(testCase.json.toString("utf-8"));
 
       const result = parseOrThrow(csvContent, { hasHeaders: true });
       const actualRows = result.rows.map((row) => row.record);

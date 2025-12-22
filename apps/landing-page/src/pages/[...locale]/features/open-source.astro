@@ -2,6 +2,11 @@
 export const prerender = true;
 
 import type { SupportedLng } from "@packages/localization";
+import { ArrowRight, ChevronDown, ChevronRight, Code2, CpuIcon, FileJson, GitBranch, Github, Heart, LinkIcon, Lock, MessageCircle, Server, Shield, ShieldCheck, Users } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
+import Layout from "@/layouts/Landing.astro";
+import StickyNavbar from "@/components/StickyNavbar.astro";
+import Footer from "@/sections/Footer.astro";
 import { supportedLanguages } from "@/i18n/config";
 
 export function getStaticPaths() {
@@ -11,9 +16,9 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const _lang = (locale || "pt-BR") as SupportedLng;
+const lang = (locale || "pt-BR") as SupportedLng;
 
-const _scaleFeatures = [
+const scaleFeatures = [
    {
       title: "Transparência radical no código",
       description:
@@ -30,7 +35,7 @@ const _scaleFeatures = [
    },
 ];
 
-const _selfHostOptions = [
+const selfHostOptions = [
    { name: "Docker Compose", time: "5 min" },
    { name: "Vercel", time: "2 min" },
    { name: "Railway", time: "1-click" },
@@ -38,7 +43,7 @@ const _selfHostOptions = [
    { name: "Raspberry Pi", time: "15 min" },
 ];
 
-const _troubleshootFeatures = [
+const troubleshootFeatures = [
    {
       title: "Exporte seus dados a qualquer momento",
       description:
@@ -51,7 +56,7 @@ const _troubleshootFeatures = [
    },
 ];
 
-const _resolveFeatures = [
+const resolveFeatures = [
    {
       title: "Licença Apache 2.0",
       description:
@@ -66,7 +71,7 @@ const _resolveFeatures = [
    },
 ];
 
-const _enterpriseFeatures = [
+const enterpriseFeatures = [
    {
       icon: "CpuIcon",
       title: "Escalável de forma confiável",
@@ -87,7 +92,7 @@ const _enterpriseFeatures = [
    },
 ];
 
-const _faqs = [
+const faqs = [
    {
       question: "O Montte é realmente gratuito e open source?",
       answer:
@@ -212,7 +217,7 @@ const _faqs = [
                </a>
             </div>
             <p class="mt-5 pb-2 text-muted-foreground text-sm sm:text-base text-center">
-               Comece grátis ou
+               Comece gratis ou
                <a class="text-foreground underline underline-offset-4 transition decoration-muted-foreground/30 hover:decoration-foreground" href="/contact">
                   agende uma demo
                </a>
@@ -597,7 +602,7 @@ const _faqs = [
             </div>
 
             <p class="mt-5 pb-2 text-muted-foreground text-sm sm:text-base text-center">
-               Comece grátis ou
+               Comece gratis ou
                <a class="text-foreground underline underline-offset-4 transition decoration-muted-foreground/30 hover:decoration-foreground" href="/contact">
                   agende uma demo
                </a>

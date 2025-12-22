@@ -138,7 +138,10 @@ export async function findInterestTemplatesByOrganizationIdPaginated(
 
       if (monetaryCorrectionIndex !== undefined) {
          conditions.push(
-            eq(interestTemplate.monetaryCorrectionIndex, monetaryCorrectionIndex),
+            eq(
+               interestTemplate.monetaryCorrectionIndex,
+               monetaryCorrectionIndex,
+            ),
          );
       }
 

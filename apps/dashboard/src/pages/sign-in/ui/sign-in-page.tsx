@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { betterAuthClient } from "@/integrations/clients";
 
 interface SignInPageProps {
-	redirectUrl?: string;
+   redirectUrl?: string;
 }
 
 export function SignInPage({ redirectUrl }: SignInPageProps) {

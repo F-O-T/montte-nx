@@ -627,7 +627,9 @@ namespace Stepper {
                        }) => React.ReactNode);
                },
          ) => React.ReactElement;
-         Navigation: (props: React.ComponentProps<"nav">) => React.ReactElement | null;
+         Navigation: (
+            props: React.ComponentProps<"nav">,
+         ) => React.ReactElement | null;
          Step: (
             props: React.ComponentProps<"button"> & {
                of: Stepperize.Get.Id<Steps>;

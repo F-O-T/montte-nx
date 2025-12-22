@@ -1,5 +1,10 @@
 ---
 import type { SupportedLng } from "@packages/localization";
+import { ChevronRight, Lock, Table } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@packages/ui/components/card";
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@packages/ui/components/item";
+import { Separator } from "@packages/ui/components/separator";
 
 interface Props {
    lang?: SupportedLng;
@@ -7,7 +12,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const _competitors = [
+const competitors = [
    {
       id: "spreadsheets",
       name: "Planilhas",
@@ -32,7 +37,7 @@ const _competitors = [
    },
 ];
 
-const _usageTiers = [
+const usageTiers = [
    {
       value: "1.000",
       label: "transações/mês",
@@ -50,7 +55,7 @@ const _usageTiers = [
    },
 ];
 
-const _stats = [
+const stats = [
    {
       prefix: "A partir de",
       value: "R$29",

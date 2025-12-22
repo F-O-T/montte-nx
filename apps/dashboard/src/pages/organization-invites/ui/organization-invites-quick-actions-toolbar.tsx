@@ -5,18 +5,18 @@ import { SendInvitationForm } from "@/features/organization/ui/send-invitation-f
 import { useSheet } from "@/hooks/use-sheet";
 
 export function InvitesQuickActionsToolbar() {
-	const { openSheet } = useSheet();
+   const { openSheet } = useSheet();
 
-	return (
-		<Button
-			onClick={() =>
-				openSheet({
-					children: <SendInvitationForm />,
-				})
-			}
-		>
-			<MailPlus className="size-4" />
-			{translate("dashboard.routes.organization.invites-table.actions.send")}
-		</Button>
-	);
+   return (
+      <Button
+         onClick={() =>
+            openSheet({
+               children: <SendInvitationForm />,
+            })
+         }
+      >
+         <MailPlus className="size-4" />
+         {translate("dashboard.routes.organization.invites-table.actions.send")}
+      </Button>
+   );
 }

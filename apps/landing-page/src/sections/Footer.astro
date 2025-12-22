@@ -1,5 +1,11 @@
 ---
 import type { SupportedLng } from "@packages/localization";
+import { ArrowRight, Github } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
+import { Input } from "@packages/ui/components/input";
+import { Separator } from "@packages/ui/components/separator";
+import Logo from "@/components/Logo.astro";
+import LogoCloud from "@/components/LogoCloud.astro";
 
 interface Props {
    lang?: SupportedLng;
@@ -7,7 +13,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const _companyLinks = [
+const companyLinks = [
    { href: "/about", title: "Sobre" },
    { href: "/features", title: "Funcionalidades" },
    { href: "/blog", title: "Blog" },
@@ -18,14 +24,14 @@ const _companyLinks = [
    },
 ];
 
-const _helpLinks = [
+const helpLinks = [
    { href: "https://docs.montte.co", title: "Documentação", external: true },
    { href: "https://discord.gg/montte", title: "Comunidade", external: true },
    { href: "/terms", title: "Termos de Uso" },
    { href: "/privacy", title: "Política de Privacidade" },
 ];
 
-const _year = new Date().getFullYear();
+const year = new Date().getFullYear();
 ---
 
 <footer class="bg-muted">

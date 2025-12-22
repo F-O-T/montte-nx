@@ -55,7 +55,11 @@ const CreateTeamFormContent = () => {
    const [isPending, setIsPending] = useState(false);
 
    const createTeam = useCallback(
-      async (data: { name: string; description?: string; organizationId?: string }) => {
+      async (data: {
+         name: string;
+         description?: string;
+         organizationId?: string;
+      }) => {
          await betterAuthClient.organization.createTeam(
             {
                name: data.name,

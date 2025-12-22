@@ -21,11 +21,11 @@ import { AlertTriangle } from "lucide-react";
 import type { FC, FormEvent } from "react";
 import { Suspense, useCallback, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { toast } from "sonner";
 import { z } from "zod";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { betterAuthClient } from "@/integrations/clients";
-import { toast } from "sonner";
 
 function InviteMemberErrorFallback() {
    return (

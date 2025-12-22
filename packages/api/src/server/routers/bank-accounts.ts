@@ -29,9 +29,10 @@ import {
 import { type MemberRole, protectedProcedure, router } from "../trpc";
 
 // Helper to extract permission-related context from protectedProcedure
-// The isAuthed middleware guarantees session.user exists and adds memberRole
+// The isAuthed middleware guarantees session.user exists and adds memberRole and userId
 type ProtectedContext = {
    memberRole?: MemberRole;
+   userId: string;
 };
 
 const createBankAccountSchema = z.object({
@@ -111,9 +112,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         // isAuthed middleware guarantees session.user exists
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as { memberRole?: MemberRole }).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as { memberRole?: MemberRole })
+            .memberRole ?? "member") as MemberRole;
 
          const existingBankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -146,8 +147,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          // Check manage permission for each bank account
          for (const id of input.ids) {
@@ -177,8 +179,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -261,8 +264,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -344,8 +348,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -421,8 +426,9 @@ export const bankAccountRouter = router({
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
-      const userId = resolvedCtx.session!.user.id;
-      const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+      const userId = resolvedCtx.userId;
+      const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+         "member") as MemberRole;
 
       // Get accessible bank accounts based on permissions
       const { isOwner, resourceIds } = await getAccessibleResources(
@@ -436,7 +442,10 @@ export const bankAccountRouter = router({
 
       // Owners see all bank accounts
       if (isOwner) {
-         return findBankAccountsByOrganizationId(resolvedCtx.db, organizationId);
+         return findBankAccountsByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         );
       }
 
       // Non-owners only see bank accounts they have access to
@@ -480,8 +489,9 @@ export const bankAccountRouter = router({
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -541,8 +551,9 @@ export const bankAccountRouter = router({
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -599,8 +610,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -675,8 +687,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -749,8 +762,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const existingBankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -803,8 +817,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
-         const userId = resolvedCtx.session!.user.id;
-         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ?? "member") as MemberRole;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          // Check edit permission for each bank account
          for (const id of input.ids) {

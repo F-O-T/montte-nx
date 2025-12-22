@@ -2,10 +2,10 @@
 export const prerender = true;
 
 import type { SupportedLng } from "@packages/localization";
+import Footer from "@/sections/Footer.astro";
+import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
-import Layout from "@/layouts/Layout.astro";
-import StickyNavbar from "@/components/sticky-navbar.astro";
-import Footer from "@/components/footer.astro";
+import Layout from "@/layouts/Landing.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -14,6 +14,7 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
+// biome-ignore lint/correctness/noUnusedVariables: Used in Astro template
 const lang = (locale || "pt-BR") as SupportedLng;
 ---
 

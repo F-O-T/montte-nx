@@ -1,10 +1,10 @@
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import {
-	Sidebar,
-	SidebarContent,
-	SidebarHeader,
-	SidebarProvider,
+   Sidebar,
+   SidebarContent,
+   SidebarHeader,
+   SidebarProvider,
 } from "@packages/ui/components/sidebar";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -15,61 +15,63 @@ import { OrganizationMobileNav } from "./organization-mobile-nav";
 import { OrganizationSidebar } from "./organization-sidebar";
 
 interface OrganizationLayoutProps {
-	children: React.ReactNode;
+   children: React.ReactNode;
 }
 
 export function OrganizationLayout({ children }: OrganizationLayoutProps) {
-	const isMobile = useIsMobile();
-	const { pathname } = useLocation();
-	const { activeOrganization } = useActiveOrganization();
+   const isMobile = useIsMobile();
+   const { pathname } = useLocation();
+   const { activeOrganization } = useActiveOrganization();
 
-	const isIndexRoute = pathname.endsWith("/organization");
+   const isIndexRoute = pathname.endsWith("/organization");
 
-	// Mobile: show navigation list at index, content with back header otherwise
-	if (isMobile) {
-		if (isIndexRoute) {
-			return <OrganizationMobileNav />;
-		}
+   // Mobile: show navigation list at index, content with back header otherwise
+   if (isMobile) {
+      if (isIndexRoute) {
+         return <OrganizationMobileNav />;
+      }
 
-		return (
-			<div className="flex h-full flex-col gap-4">
-				<Button asChild className="w-fit" size="sm" variant="ghost">
-					<Link
-						params={{ slug: activeOrganization.slug }}
-						to="/$slug/organization"
-					>
-						<ChevronLeft className="size-4 mr-1" />
-						{translate("dashboard.routes.organization.nav.back-to-organization")}
-					</Link>
-				</Button>
-				<div className="flex-1">{children}</div>
-			</div>
-		);
-	}
+      return (
+         <div className="flex h-full flex-col gap-4">
+            <Button asChild className="w-fit" size="sm" variant="ghost">
+               <Link
+                  params={{ slug: activeOrganization.slug }}
+                  to="/$slug/organization"
+               >
+                  <ChevronLeft className="size-4 mr-1" />
+                  {translate(
+                     "dashboard.routes.organization.nav.back-to-organization",
+                  )}
+               </Link>
+            </Button>
+            <div className="flex-1">{children}</div>
+         </div>
+      );
+   }
 
-	// Desktop: sidebar + content layout
-	return (
-		<SidebarProvider defaultOpen>
-			<div className="flex h-full w-full gap-4">
-				<Sidebar
-					className="border rounded-xl bg-card shadow-sm"
-					collapsible="none"
-					variant="inset"
-				>
-					<SidebarHeader className="px-4 pt-4">
-						<h1 className="text-lg font-semibold font-serif">
-							{translate("dashboard.routes.organization.title")}
-						</h1>
-						<p className="text-xs text-muted-foreground">
-							{translate("dashboard.routes.organization.description")}
-						</p>
-					</SidebarHeader>
-					<SidebarContent>
-						<OrganizationSidebar />
-					</SidebarContent>
-				</Sidebar>
-				<main className="flex-1 min-w-0">{children}</main>
-			</div>
-		</SidebarProvider>
-	);
+   // Desktop: sidebar + content layout
+   return (
+      <SidebarProvider defaultOpen>
+         <div className="flex h-full w-full gap-4">
+            <Sidebar
+               className="border rounded-xl bg-card shadow-sm"
+               collapsible="none"
+               variant="inset"
+            >
+               <SidebarHeader className="px-4 pt-4">
+                  <h1 className="text-lg font-semibold font-serif">
+                     {translate("dashboard.routes.organization.title")}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                     {translate("dashboard.routes.organization.description")}
+                  </p>
+               </SidebarHeader>
+               <SidebarContent>
+                  <OrganizationSidebar />
+               </SidebarContent>
+            </Sidebar>
+            <main className="flex-1 min-w-0">{children}</main>
+         </div>
+      </SidebarProvider>
+   );
 }

@@ -14,7 +14,8 @@ export type Counterparty = typeof counterparty.$inferSelect;
 export type NewCounterparty = typeof counterparty.$inferInsert;
 export type CounterpartyType = "client" | "supplier" | "both";
 export type CounterpartyAttachment = typeof counterpartyAttachment.$inferSelect;
-export type NewCounterpartyAttachment = typeof counterpartyAttachment.$inferInsert;
+export type NewCounterpartyAttachment =
+   typeof counterpartyAttachment.$inferInsert;
 
 export async function createCounterparty(
    dbClient: DatabaseInstance,

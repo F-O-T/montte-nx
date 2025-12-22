@@ -12,13 +12,7 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { cn } from "@packages/ui/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
-import {
-   ArrowLeft,
-   Building2,
-   FileText,
-   User,
-   Users,
-} from "lucide-react";
+import { ArrowLeft, Building2, FileText, User, Users } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
@@ -91,12 +85,7 @@ function CounterpartyContent() {
       <main className="space-y-6">
          <div className="space-y-4">
             <div className="flex items-center gap-3">
-               <Button
-                  asChild
-                  className="size-8"
-                  size="icon"
-                  variant="outline"
-               >
+               <Button asChild className="size-8" size="icon" variant="outline">
                   <a
                      href={`/${activeOrganization.slug}/counterparties`}
                      onClick={(e) => {

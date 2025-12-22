@@ -1,5 +1,6 @@
 ---
-import { Building2, Server, Sparkles } from "@lucide/astro";
+import { Building2, Check, Github, Rocket, Server, Sparkles } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
 import type { SupportedLng } from "@packages/localization";
 
 interface Props {
@@ -8,7 +9,7 @@ interface Props {
 
 const { lang: _lang = "pt-BR" } = Astro.props;
 
-const _plans = [
+const plans = [
    {
       name: "Free",
       icon: Server,
@@ -116,7 +117,7 @@ const _plans = [
             Preços Simples. Sem Surpresas.
          </h2>
          <p class="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
-            Do grátis para sempre ao plano empresarial. Evolua conforme suas necessidades crescem.
+            Do gratis para sempre ao plano empresarial. Evolua conforme suas necessidades crescem.
          </p>
       </div>
 

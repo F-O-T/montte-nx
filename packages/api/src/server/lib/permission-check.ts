@@ -1,11 +1,11 @@
 import type { DatabaseInstance } from "@packages/database/client";
 import {
-	getAccessibleResourceIds,
-	hasPermission,
+   getAccessibleResourceIds,
+   hasPermission,
 } from "@packages/database/repositories/resource-permission-repository";
 import type {
-	PermissionLevel,
-	ResourceType,
+   PermissionLevel,
+   ResourceType,
 } from "@packages/database/schemas/resource-permissions";
 import { APIError } from "@packages/utils/errors";
 import type { MemberRole } from "../trpc";
@@ -17,33 +17,33 @@ import type { MemberRole } from "../trpc";
  * @throws APIError.forbidden if permission denied
  */
 export async function checkResourcePermission(
-	db: DatabaseInstance,
-	userId: string,
-	organizationId: string,
-	memberRole: MemberRole,
-	resourceType: ResourceType,
-	resourceId: string,
-	requiredPermission: PermissionLevel,
+   db: DatabaseInstance,
+   userId: string,
+   organizationId: string,
+   memberRole: MemberRole,
+   resourceType: ResourceType,
+   resourceId: string,
+   requiredPermission: PermissionLevel,
 ): Promise<void> {
-	// Owners bypass all permission checks
-	if (memberRole === "owner") {
-		return;
-	}
+   // Owners bypass all permission checks
+   if (memberRole === "owner") {
+      return;
+   }
 
-	const hasAccess = await hasPermission(
-		db,
-		userId,
-		organizationId,
-		resourceType,
-		resourceId,
-		requiredPermission,
-	);
+   const hasAccess = await hasPermission(
+      db,
+      userId,
+      organizationId,
+      resourceType,
+      resourceId,
+      requiredPermission,
+   );
 
-	if (!hasAccess) {
-		throw APIError.forbidden(
-			"You do not have permission to access this resource.",
-		);
-	}
+   if (!hasAccess) {
+      throw APIError.forbidden(
+         "You do not have permission to access this resource.",
+      );
+   }
 }
 
 /**
@@ -53,36 +53,36 @@ export async function checkResourcePermission(
  * @returns Object with isOwner flag and resourceIds (null for owners)
  */
 export async function getAccessibleResources(
-	db: DatabaseInstance,
-	userId: string,
-	organizationId: string,
-	memberRole: MemberRole,
-	resourceType: ResourceType,
-	minPermission: PermissionLevel,
+   db: DatabaseInstance,
+   userId: string,
+   organizationId: string,
+   memberRole: MemberRole,
+   resourceType: ResourceType,
+   minPermission: PermissionLevel,
 ): Promise<{
-	isOwner: boolean;
-	resourceIds: string[] | null;
+   isOwner: boolean;
+   resourceIds: string[] | null;
 }> {
-	// Owners can access everything
-	if (memberRole === "owner") {
-		return {
-			isOwner: true,
-			resourceIds: null,
-		};
-	}
+   // Owners can access everything
+   if (memberRole === "owner") {
+      return {
+         isOwner: true,
+         resourceIds: null,
+      };
+   }
 
-	const resourceIds = await getAccessibleResourceIds(
-		db,
-		userId,
-		organizationId,
-		resourceType,
-		minPermission,
-	);
+   const resourceIds = await getAccessibleResourceIds(
+      db,
+      userId,
+      organizationId,
+      resourceType,
+      minPermission,
+   );
 
-	return {
-		isOwner: false,
-		resourceIds,
-	};
+   return {
+      isOwner: false,
+      resourceIds,
+   };
 }
 
 /**
@@ -91,14 +91,16 @@ export async function getAccessibleResources(
  * @throws APIError.forbidden if not an owner
  */
 export function checkCanManagePermissions(memberRole: MemberRole): void {
-	if (memberRole !== "owner") {
-		throw APIError.forbidden("Only organization owners can manage permissions.");
-	}
+   if (memberRole !== "owner") {
+      throw APIError.forbidden(
+         "Only organization owners can manage permissions.",
+      );
+   }
 }
 
 /**
  * Check if user is an organization owner.
  */
 export function isOwner(memberRole: MemberRole): boolean {
-	return memberRole === "owner";
+   return memberRole === "owner";
 }

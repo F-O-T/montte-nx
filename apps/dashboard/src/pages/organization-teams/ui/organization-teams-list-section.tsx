@@ -70,9 +70,9 @@ function TeamsListContent() {
                         </ItemContent>
                         <ItemActions>
                            <Button
+                              className="size-8"
                               size="icon"
                               variant="ghost"
-                              className="size-8"
                            >
                               <ChevronRight className="size-4" />
                            </Button>

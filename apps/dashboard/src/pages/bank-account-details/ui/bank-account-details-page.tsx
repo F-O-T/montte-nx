@@ -204,7 +204,9 @@ function BankAccountContent() {
                      children: (
                         <BankAccountPermissionsSheet
                            bankAccountId={bankAccountId}
-                           bankAccountName={bankAccount.name || "Conta Bancária"}
+                           bankAccountName={
+                              bankAccount.name || "Conta Bancária"
+                           }
                         />
                      ),
                   })

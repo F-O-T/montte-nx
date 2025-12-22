@@ -1,7 +1,8 @@
 ---
 import { MessageSquare, Users } from "@lucide/astro";
+import { Card, CardContent, CardDescription, CardTitle } from "@packages/ui/components/card";
 
-const _features = [
+const features = [
    {
       icon: "MessageSquare",
       title: "Resposta em até 1 dia útil",
@@ -16,7 +17,7 @@ const _features = [
    },
 ] as const;
 
-const _iconComponents = {
+const iconComponents = {
    MessageSquare,
    Users,
 };

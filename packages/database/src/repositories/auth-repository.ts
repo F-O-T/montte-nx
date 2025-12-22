@@ -29,7 +29,10 @@ export async function findMemberByUserIdAndOrganizationId(
    try {
       const result = await dbClient.query.member.findFirst({
          where: (member, { eq, and }) =>
-            and(eq(member.userId, userId), eq(member.organizationId, organizationId)),
+            and(
+               eq(member.userId, userId),
+               eq(member.organizationId, organizationId),
+            ),
       });
       return result;
    } catch (err) {

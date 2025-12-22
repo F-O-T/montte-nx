@@ -59,6 +59,7 @@ export const createTRPCContext = async ({
    resendClient?: ResendClient;
    responseHeaders: Headers;
    stripeClient?: StripeClient;
+   userId?: string;
 }) => {
    const headers = request.headers;
 
@@ -77,6 +78,7 @@ export const createTRPCContext = async ({
    if (language) {
       changeLanguage(language);
    }
+   const userId = session?.user?.id || "";
 
    const organizationId = session?.session?.activeOrganizationId || "";
 
@@ -94,6 +96,7 @@ export const createTRPCContext = async ({
       responseHeaders,
       session,
       stripeClient,
+      userId,
    };
 };
 
@@ -265,6 +268,7 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
          memberRole,
          organizationId,
          session: { ...resolvedCtx.session },
+         userId,
       },
    });
 });
@@ -342,10 +346,10 @@ const telemetryMiddleware = t.middleware(
                   ...(result.ok
                      ? {}
                      : {
-                          errorCode: result.error.code,
-                          errorMessage: result.error.message,
-                          errorName: result.error.name,
-                       }),
+                        errorCode: result.error.code,
+                        errorMessage: result.error.message,
+                        errorName: result.error.name,
+                     }),
                },
             });
          }

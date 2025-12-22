@@ -1,5 +1,4 @@
 import type { RouterOutput } from "@packages/api/client";
-import { createSlug } from "@packages/utils/text";
 import { Button } from "@packages/ui/components/button";
 import {
    Dropzone,
@@ -15,6 +14,7 @@ import {
    SheetTitle,
 } from "@packages/ui/components/sheet";
 import { Textarea } from "@packages/ui/components/textarea";
+import { createSlug } from "@packages/utils/text";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Building } from "lucide-react";
@@ -90,14 +90,18 @@ export function ManageOrganizationForm({
                   setIsCreatePending(false);
                   toast.success("Organization created successfully");
                   if (ctx.data?.id) {
-                     await setActiveOrganization({ organizationId: ctx.data.id });
+                     await setActiveOrganization({
+                        organizationId: ctx.data.id,
+                     });
                   }
                   fileUpload.clearFile();
                   closeSheet();
                },
                onError: (ctx) => {
                   setIsCreatePending(false);
-                  toast.error(ctx.error.message || "Failed to create organization");
+                  toast.error(
+                     ctx.error.message || "Failed to create organization",
+                  );
                },
             },
          );
@@ -127,7 +131,9 @@ export function ManageOrganizationForm({
                },
                onError: (ctx) => {
                   setIsUpdatePending(false);
-                  toast.error(ctx.error.message || "Failed to update organization");
+                  toast.error(
+                     ctx.error.message || "Failed to update organization",
+                  );
                },
             },
          );

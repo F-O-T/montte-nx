@@ -1,5 +1,6 @@
 ---
 import { Code, GitFork, Heart, Star } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
 import type { SupportedLng } from "@packages/localization";
 import { fetchGitHubRepoStats } from "@/services/github";
 
@@ -11,7 +12,7 @@ const { lang: _lang = "pt-BR" } = Astro.props;
 
 const githubStats = await fetchGitHubRepoStats();
 
-const _stats = [
+const stats = [
    {
       description: "Estrelas no GitHub",
       icon: Star,
