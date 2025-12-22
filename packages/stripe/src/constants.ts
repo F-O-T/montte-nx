@@ -1,6 +1,7 @@
 export enum PlanName {
 	FREE = "free",
 	BASIC = "basic",
+	SHARED = "shared",
 	ERP = "erp",
 }
 
@@ -39,6 +40,25 @@ export const STRIPE_PLANS = [
 		price: "R$ 15",
 	},
 	{
+		annualPrice: "R$ 250",
+		description: "Para casais e famílias",
+		displayName: "Compartilhado",
+		features: [
+			"2 usuários",
+			"Ideal para casais e noivos",
+			"Categorias",
+			"Tags",
+			"Transações ilimitadas",
+			"Mais opções de relatórios",
+			"Importação OFX/CSV",
+			"Exportação OFX/CSV/PDF",
+			"Suporte por email",
+			"14 dias de teste grátis",
+		],
+		name: PlanName.SHARED,
+		price: "R$ 25",
+	},
+	{
 		annualPrice: "R$ 1500",
 		description: "Para equipes e empresas em crescimento",
 		displayName: "ERP",
@@ -59,19 +79,3 @@ export const STRIPE_PLANS = [
 		price: "R$ 150",
 	},
 ];
-
-export const STRIPE_ADDONS = {
-	sharedFinances: {
-		name: "shared-finances",
-		displayName: "Finanças Compartilhadas",
-		description: "Convide uma pessoa para gerenciar suas finanças juntos",
-		price: "R$ 10",
-		annualPrice: "R$ 100",
-		features: [
-			"Convide 1 pessoa adicional",
-			"Ideal para casais e noivos",
-			"Acesso compartilhado às finanças",
-		],
-		availableFor: [PlanName.BASIC],
-	},
-};

@@ -1,5 +1,5 @@
 import { translate } from "@packages/localization";
-import { PlanName, STRIPE_PLANS, STRIPE_ADDONS } from "@packages/stripe/constants";
+import { PlanName, STRIPE_PLANS } from "@packages/stripe/constants";
 import { Badge } from "@packages/ui/components/badge";
 import {
 	Banner,
@@ -23,7 +23,7 @@ import {
 	ToggleGroup,
 	ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
-import { Building2, Check, Clock, Crown, Gift, Heart, Rocket, Sparkles, User, Zap } from "lucide-react";
+import { Building2, Check, Clock, Crown, Gift, Rocket, Sparkles, User, Users, Zap } from "lucide-react";
 import { Suspense, useState, useTransition } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { toast } from "sonner";
@@ -142,6 +142,8 @@ const getIconForPlan = (planName: string) => {
 			return <User className="size-6" />;
 		case PlanName.BASIC:
 			return <Zap className="size-6" />;
+		case PlanName.SHARED:
+			return <Users className="size-6" />;
 		case PlanName.ERP:
 			return <Building2 className="size-6" />;
 		default:
@@ -152,6 +154,7 @@ const getIconForPlan = (planName: string) => {
 const getTrialDaysForPlan = (planName: string) => {
 	switch (planName) {
 		case PlanName.BASIC:
+		case PlanName.SHARED:
 			return 14;
 		case PlanName.ERP:
 			return 7;
@@ -184,7 +187,8 @@ function PlansPageSkeleton() {
 			<div className="flex items-center justify-between">
 				<Skeleton className="h-9 w-48" />
 			</div>
-			<div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto w-full">
+			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto w-full">
+				<Skeleton className="h-[450px]" />
 				<Skeleton className="h-[450px]" />
 				<Skeleton className="h-[450px]" />
 				<Skeleton className="h-[450px]" />
@@ -317,94 +321,6 @@ function PlanCard({
 	);
 }
 
-function SharedFinancesAddon({
-	isAnnual,
-	subscription,
-	onSelect,
-	isLoading,
-}: {
-	isAnnual: boolean;
-	subscription?: Subscription | null;
-	onSelect: () => void;
-	isLoading: boolean;
-}) {
-	const addon = STRIPE_ADDONS.sharedFinances;
-	const isOnBasic = subscription?.plan?.toLowerCase() === "basic";
-	const price = isAnnual ? addon.annualPrice : addon.price;
-	const period = isAnnual ? "/ano" : "/mês";
-
-	// Only show for Basic plan users
-	if (!isOnBasic) {
-		return null;
-	}
-
-	return (
-		<div className="space-y-4">
-			<div className="flex items-center gap-2">
-				<Badge variant="secondary" className="gap-1">
-					<Heart className="size-3" />
-					Complemento disponível
-				</Badge>
-			</div>
-			<Card>
-				<CardContent className="p-5">
-					<div className="flex items-start gap-3 mb-4">
-						<div className="p-2.5 rounded-full bg-pink-100 dark:bg-pink-900/30">
-							<Heart className="size-5 text-pink-500" />
-						</div>
-						<div>
-							<h4 className="font-bold text-lg">
-								{addon.displayName}
-							</h4>
-							<p className="text-sm text-muted-foreground">
-								{addon.description}
-							</p>
-						</div>
-					</div>
-					
-					<ul className="space-y-2 mb-4">
-						<li className="flex items-start gap-2 text-sm">
-							<Check className="size-4 text-pink-500 shrink-0 mt-0.5" />
-							<span>Cada membro tem acesso completo às finanças compartilhadas</span>
-						</li>
-						<li className="flex items-start gap-2 text-sm">
-							<Check className="size-4 text-pink-500 shrink-0 mt-0.5" />
-							<span>Visualização centralizada e atualizada em tempo real</span>
-						</li>
-						<li className="flex items-start gap-2 text-sm">
-							<Check className="size-4 text-pink-500 shrink-0 mt-0.5" />
-							<span>Ideal para casais e noivos gerenciarem juntos</span>
-						</li>
-					</ul>
-
-					<p className="text-xs text-muted-foreground mb-4">
-						Adicione 1 pessoa extra à sua conta por apenas {price}{period}
-					</p>
-				</CardContent>
-				
-				<CardFooter className="border-t p-4 flex items-center justify-between">
-					<div>
-						<div className="flex items-baseline gap-1">
-							<span className="text-2xl font-bold">{price}</span>
-							<span className="text-sm text-muted-foreground">{period}</span>
-						</div>
-						{isAnnual && (
-							<p className="text-xs text-green-600">Economize 2 meses</p>
-						)}
-					</div>
-					<Button
-						className="bg-pink-500 hover:bg-pink-600"
-						disabled={isLoading}
-						onClick={onSelect}
-					>
-						{isLoading ? "Processando..." : "Adicionar ao plano"}
-					</Button>
-				</CardFooter>
-			</Card>
-		</div>
-	);
-}
-
 function PlansPageContent() {
 	const { activeOrganization, activeSubscription } = useActiveOrganization();
 	const [isAnnual, setIsAnnual] = useState(true);
@@ -469,7 +385,7 @@ function PlansPageContent() {
 				</ToggleGroup>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto w-full">
+			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto w-full">
 				{plans.map((plan) => (
 					<PlanCard
 						isAnnual={isAnnual}
@@ -480,20 +396,6 @@ function PlansPageContent() {
 						subscription={activeSubscription as Subscription | null}
 					/>
 				))}
-			</div>
-
-			<div className="max-w-2xl mx-auto w-full">
-				<SharedFinancesAddon
-					isAnnual={isAnnual}
-					isLoading={isLoading}
-					onSelect={() => {
-						// TODO: Implement shared finances addon checkout
-						toast.info("Em breve!", {
-							description: "O complemento Finanças Compartilhadas estará disponível em breve.",
-						});
-					}}
-					subscription={activeSubscription as Subscription | null}
-				/>
 			</div>
 
 			<p className="text-center text-sm text-muted-foreground mt-4">

@@ -35,6 +35,8 @@ const EnvSchema = z.object({
    STRIPE_ERP_ANNUAL_PRICE_ID: z.string(),
    STRIPE_ERP_PRICE_ID: z.string(),
    STRIPE_SECRET_KEY: z.string(),
+   STRIPE_SHARED_ANNUAL_PRICE_ID: z.string(),
+   STRIPE_SHARED_PRICE_ID: z.string(),
    STRIPE_WEBHOOK_SECRET: z.string(),
    VAPID_PRIVATE_KEY: z.string().optional(),
    VAPID_PUBLIC_KEY: z.string().optional(),
