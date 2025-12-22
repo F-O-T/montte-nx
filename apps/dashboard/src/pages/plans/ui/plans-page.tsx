@@ -339,47 +339,69 @@ function SharedFinancesAddon({
 	}
 
 	return (
-		<Card className="border-pink-200 bg-gradient-to-br from-pink-50/50 to-rose-50/50 dark:from-pink-950/20 dark:to-rose-950/20">
-			<CardHeader className="pb-2">
-				<div className="flex items-center gap-3">
-					<div className="p-2 rounded-full bg-pink-100 dark:bg-pink-900/30">
-						<Heart className="size-5 text-pink-500" />
+		<div className="space-y-4">
+			<div className="flex items-center gap-2">
+				<Badge variant="secondary" className="gap-1">
+					<Heart className="size-3" />
+					Complemento disponível
+				</Badge>
+			</div>
+			<Card>
+				<CardContent className="p-5">
+					<div className="flex items-start gap-3 mb-4">
+						<div className="p-2.5 rounded-full bg-pink-100 dark:bg-pink-900/30">
+							<Heart className="size-5 text-pink-500" />
+						</div>
+						<div>
+							<h4 className="font-bold text-lg">
+								{addon.displayName}
+							</h4>
+							<p className="text-sm text-muted-foreground">
+								{addon.description}
+							</p>
+						</div>
 					</div>
-					<div>
-						<CardTitle className="text-lg">{addon.displayName}</CardTitle>
-						<CardDescription>{addon.description}</CardDescription>
-					</div>
-				</div>
-			</CardHeader>
-			<CardContent>
-				<div className="flex items-center justify-between">
-					<ul className="space-y-2">
-						{addon.features.map((feature) => (
-							<li className="flex items-center gap-2 text-sm" key={feature}>
-								<Check className="size-4 text-pink-500 shrink-0" />
-								<span>{feature}</span>
-							</li>
-						))}
+					
+					<ul className="space-y-2 mb-4">
+						<li className="flex items-start gap-2 text-sm">
+							<Check className="size-4 text-pink-500 shrink-0 mt-0.5" />
+							<span>Cada membro tem acesso completo às finanças compartilhadas</span>
+						</li>
+						<li className="flex items-start gap-2 text-sm">
+							<Check className="size-4 text-pink-500 shrink-0 mt-0.5" />
+							<span>Visualização centralizada e atualizada em tempo real</span>
+						</li>
+						<li className="flex items-start gap-2 text-sm">
+							<Check className="size-4 text-pink-500 shrink-0 mt-0.5" />
+							<span>Ideal para casais e noivos gerenciarem juntos</span>
+						</li>
 					</ul>
-					<div className="text-right">
-						<span className="text-2xl font-bold">{price}</span>
-						<span className="text-muted-foreground">{period}</span>
+
+					<p className="text-xs text-muted-foreground mb-4">
+						Adicione 1 pessoa extra à sua conta por apenas {price}{period}
+					</p>
+				</CardContent>
+				
+				<CardFooter className="border-t p-4 flex items-center justify-between">
+					<div>
+						<div className="flex items-baseline gap-1">
+							<span className="text-2xl font-bold">{price}</span>
+							<span className="text-sm text-muted-foreground">{period}</span>
+						</div>
 						{isAnnual && (
 							<p className="text-xs text-green-600">Economize 2 meses</p>
 						)}
 					</div>
-				</div>
-			</CardContent>
-			<CardFooter>
-				<Button
-					className="w-full bg-pink-500 hover:bg-pink-600"
-					disabled={isLoading}
-					onClick={onSelect}
-				>
-					{isLoading ? "Processando..." : "Adicionar ao plano"}
-				</Button>
-			</CardFooter>
-		</Card>
+					<Button
+						className="bg-pink-500 hover:bg-pink-600"
+						disabled={isLoading}
+						onClick={onSelect}
+					>
+						{isLoading ? "Processando..." : "Adicionar ao plano"}
+					</Button>
+				</CardFooter>
+			</Card>
+		</div>
 	);
 }
 
