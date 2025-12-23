@@ -12,7 +12,7 @@ interface AstroTooltipProps {
 export function AstroTooltip({ children, content }: AstroTooltipProps) {
    return (
       <Tooltip>
-         <TooltipTrigger className="inline-block flex shrink-0 items-center justify-center">
+         <TooltipTrigger className=" flex shrink-0 items-center justify-center">
             {children}
          </TooltipTrigger>
          <TooltipContent>{content}</TooltipContent>
