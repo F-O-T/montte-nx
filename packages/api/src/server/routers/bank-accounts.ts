@@ -752,6 +752,222 @@ export const bankAccountRouter = router({
          return { duplicates };
       }),
 
+   checkBatchDuplicates: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            transactions: z.array(
+               z.object({
+                  rowIndex: z.number(),
+                  fileIndex: z.number(),
+                  date: z.string(),
+                  amount: z.number(),
+                  description: z.string(),
+               }),
+            ),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
+
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw APIError.notFound("Bank account not found");
+         }
+
+         // Require view permission to check duplicates
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "view",
+         );
+
+         // Weights for duplicate detection (total: 6)
+         const WEIGHTS = {
+            amount: 3, // Most important - exact match
+            date: 2, // Important - within tolerance
+            description: 1, // Less important - similarity
+         };
+         const MAX_SCORE = WEIGHTS.amount + WEIGHTS.date + WEIGHTS.description;
+         const THRESHOLD_PERCENTAGE = 0.8; // 80% match
+         const DATE_TOLERANCE_DAYS = 1;
+
+         const duplicates: Array<{
+            rowIndex: number;
+            fileIndex: number;
+            existingTransactionId: string;
+            existingTransactionDate: string;
+            existingTransactionDescription: string;
+            duplicateType: "within_batch" | "existing_database";
+            matchScore: number;
+            matchedFileIndex?: number;
+            matchedRowIndex?: number;
+         }> = [];
+
+         // Helper function to check date tolerance
+         const datesWithinTolerance = (date1: Date, date2: Date): boolean => {
+            const diffMs = Math.abs(date1.getTime() - date2.getTime());
+            const diffDays = diffMs / (1000 * 60 * 60 * 24);
+            return diffDays <= DATE_TOLERANCE_DAYS;
+         };
+
+         // Helper function to extract tokens from description
+         const extractTokens = (description: string): string[] => {
+            const stopWords = new Set([
+               "de", "da", "do", "para", "com", "em", "no", "na", "os", "as",
+               "um", "uma", "the", "a", "an", "of", "to", "in", "for", "on", "at",
+            ]);
+            return description
+               .toLowerCase()
+               .replace(/[^\w\sáàâãéèêíìîóòôõúùûç]/g, " ")
+               .split(/\s+/)
+               .filter((token) => token.length > 2 && !stopWords.has(token));
+         };
+
+         // Helper function to calculate token similarity
+         const calculateTokenSimilarity = (tokens1: string[], tokens2: string[]): number => {
+            if (tokens1.length === 0 || tokens2.length === 0) return 0;
+            const set1 = new Set(tokens1);
+            const set2 = new Set(tokens2);
+            let intersectionSize = 0;
+            for (const token of set1) {
+               if (set2.has(token)) intersectionSize++;
+            }
+            const unionSize = set1.size + set2.size - intersectionSize;
+            return unionSize === 0 ? 0 : intersectionSize / unionSize;
+         };
+
+         // Helper function to calculate duplicate score
+         const calculateScore = (
+            candidate: { date: Date; amount: number; description: string },
+            target: { date: Date; amount: number; description: string },
+         ): { score: number; scorePercentage: number; passed: boolean } => {
+            let score = 0;
+
+            // Amount match (exact)
+            if (candidate.amount === target.amount) {
+               score += WEIGHTS.amount;
+            }
+
+            // Date match (within tolerance)
+            if (datesWithinTolerance(candidate.date, target.date)) {
+               score += WEIGHTS.date;
+            }
+
+            // Description similarity
+            const candidateTokens = extractTokens(candidate.description);
+            const targetTokens = extractTokens(target.description);
+            const similarity = calculateTokenSimilarity(candidateTokens, targetTokens);
+
+            if (similarity >= 0.5) {
+               score += WEIGHTS.description * similarity;
+            }
+
+            const scorePercentage = score / MAX_SCORE;
+            const passed = scorePercentage >= THRESHOLD_PERCENTAGE;
+
+            return { score, scorePercentage, passed };
+         };
+
+         // Check within-batch duplicates
+         const seenDuplicatePairs = new Set<string>();
+         for (let i = 0; i < input.transactions.length; i++) {
+            const candidate = input.transactions[i];
+            if (!candidate) continue;
+
+            for (let j = i + 1; j < input.transactions.length; j++) {
+               const target = input.transactions[j];
+               if (!target) continue;
+
+               const { scorePercentage, passed } = calculateScore(
+                  { date: new Date(candidate.date), amount: candidate.amount, description: candidate.description },
+                  { date: new Date(target.date), amount: target.amount, description: target.description },
+               );
+
+               if (passed) {
+                  // Only add one side of the pair to avoid duplicates
+                  const pairKey = `${candidate.fileIndex}:${candidate.rowIndex}-${target.fileIndex}:${target.rowIndex}`;
+                  if (!seenDuplicatePairs.has(pairKey)) {
+                     seenDuplicatePairs.add(pairKey);
+                     duplicates.push({
+                        rowIndex: target.rowIndex,
+                        fileIndex: target.fileIndex,
+                        existingTransactionId: "",
+                        existingTransactionDate: candidate.date,
+                        existingTransactionDescription: candidate.description,
+                        duplicateType: "within_batch",
+                        matchScore: scorePercentage,
+                        matchedFileIndex: candidate.fileIndex,
+                        matchedRowIndex: candidate.rowIndex,
+                     });
+                  }
+               }
+            }
+         }
+
+         // Check against existing database transactions
+         for (const trn of input.transactions) {
+            const trnDate = new Date(trn.date);
+            // Extended date range for weighted matching
+            const startDate = new Date(trnDate);
+            startDate.setDate(startDate.getDate() - DATE_TOLERANCE_DAYS);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(trnDate);
+            endDate.setDate(endDate.getDate() + DATE_TOLERANCE_DAYS);
+            endDate.setHours(23, 59, 59, 999);
+
+            // Find potential matches within date range
+            const potentialMatches = await resolvedCtx.db.query.transaction.findMany({
+               where: (transaction, { eq, and, gte, lte }) =>
+                  and(
+                     eq(transaction.bankAccountId, input.bankAccountId),
+                     gte(transaction.date, startDate),
+                     lte(transaction.date, endDate),
+                  ),
+               limit: 50,
+            });
+
+            for (const existingTrn of potentialMatches) {
+               const { scorePercentage, passed } = calculateScore(
+                  { date: trnDate, amount: trn.amount, description: trn.description },
+                  { 
+                     date: existingTrn.date, 
+                     amount: Number.parseFloat(existingTrn.amount), 
+                     description: existingTrn.description ?? "" 
+                  },
+               );
+
+               if (passed) {
+                  duplicates.push({
+                     rowIndex: trn.rowIndex,
+                     fileIndex: trn.fileIndex,
+                     existingTransactionId: existingTrn.id,
+                     existingTransactionDate: existingTrn.date.toISOString(),
+                     existingTransactionDescription: existingTrn.description ?? "",
+                     duplicateType: "existing_database",
+                     matchScore: scorePercentage,
+                  });
+                  // Only keep first match for each transaction
+                  break;
+               }
+            }
+         }
+
+         return { duplicates };
+      }),
+
    update: protectedProcedure
       .input(
          z.object({

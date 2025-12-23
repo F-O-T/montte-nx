@@ -26,6 +26,7 @@ export type CsvPreviewData = {
    delimiter: string;
 };
 
+// Single file transaction (legacy support)
 export type SerializedTransaction = {
    rowIndex: number;
    date: string; // ISO string
@@ -35,6 +36,13 @@ export type SerializedTransaction = {
    externalId?: string; // FITID for OFX
 };
 
+// Batch transaction with file tracking
+export type SerializedBatchTransaction = SerializedTransaction & {
+   fileIndex: number;
+   filename: string;
+};
+
+// Single file duplicate info (legacy support)
 export type DuplicateInfo = {
    rowIndex: number;
    existingTransactionId: string;
@@ -42,23 +50,72 @@ export type DuplicateInfo = {
    existingTransactionDescription: string;
 };
 
-export type PendingImport = {
+// Batch duplicate info with type and score
+export type BatchDuplicateInfo = DuplicateInfo & {
+   fileIndex: number;
+   duplicateType: "within_batch" | "existing_database";
+   matchScore: number; // 0-1 weighted score
+   matchedFileIndex?: number; // For within-batch duplicates
+   matchedRowIndex?: number;
+};
+
+// File info for batch import
+export type ImportedFileInfo = {
+   fileIndex: number;
+   filename: string;
    fileType: FileType;
    content: string; // base64
-   filename: string;
+   status: "pending" | "parsing" | "parsed" | "error";
+   transactionCount?: number;
+   error?: string;
+};
+
+// CSV preview data per file (for batch imports)
+export type CsvPreviewDataPerFile = {
+   fileIndex: number;
+   previewData: CsvPreviewData;
+};
+
+export type PendingImport = {
+   // Multi-file support
+   files: ImportedFileInfo[];
+   
    timestamp: number;
    bankAccountId: string | null;
 
    // Parsed data (survives navigation)
-   parsedTransactions: SerializedTransaction[];
-   selectedRowIndices: number[];
-   duplicates: DuplicateInfo[];
+   parsedTransactions: SerializedBatchTransaction[];
+   selectedRowKeys: string[]; // Format: "fileIndex:rowIndex"
+   duplicates: BatchDuplicateInfo[];
    duplicatesChecked: boolean;
 
-   // CSV-specific
-   csvPreviewData: CsvPreviewData | null;
+   // CSV-specific - shared mapping for all CSVs
+   csvPreviewDataList: CsvPreviewDataPerFile[];
    columnMapping: ColumnMapping | null;
 };
+
+/**
+ * Creates a compound key for batch row selection
+ * Format: "fileIndex:rowIndex"
+ */
+export function createRowKey(fileIndex: number, rowIndex: number): string {
+   return `${fileIndex}:${rowIndex}`;
+}
+
+/**
+ * Parses a compound batch row key
+ */
+export function parseRowKey(key: string): {
+   fileIndex: number;
+   rowIndex: number;
+} | null {
+   const parts = key.split(":");
+   if (parts.length !== 2) return null;
+   const fileIndex = Number.parseInt(parts[0] ?? "", 10);
+   const rowIndex = Number.parseInt(parts[1] ?? "", 10);
+   if (Number.isNaN(fileIndex) || Number.isNaN(rowIndex)) return null;
+   return { fileIndex, rowIndex };
+}
 
 export function usePendingImport() {
    const getPending = useCallback((): PendingImport | null => {

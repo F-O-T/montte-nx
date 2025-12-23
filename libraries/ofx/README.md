@@ -260,6 +260,62 @@ console.log("Accounts:", result.accounts);
 console.log("Balances:", result.balances);
 ```
 
+### Batch Streaming Functions
+
+For processing multiple OFX files in a single operation with progress tracking.
+
+#### `parseBatchStream(files): AsyncGenerator<BatchStreamEvent>`
+
+Parses multiple OFX files sequentially, yielding events as they are parsed. Ideal for importing multiple bank statements at once.
+
+```typescript
+import { parseBatchStream, type BatchFileInput } from "@fot/ofx";
+import { readFileSync } from "node:fs";
+
+const files: BatchFileInput[] = [
+  { filename: "january.ofx", buffer: new Uint8Array(readFileSync("january.ofx")) },
+  { filename: "february.ofx", buffer: new Uint8Array(readFileSync("february.ofx")) },
+  { filename: "march.ofx", buffer: new Uint8Array(readFileSync("march.ofx")) },
+];
+
+for await (const event of parseBatchStream(files)) {
+  switch (event.type) {
+    case "file_start":
+      console.log(`Processing: ${event.filename}`);
+      break;
+    case "transaction":
+      console.log(`File ${event.fileIndex}: ${event.data.NAME} - ${event.data.TRNAMT}`);
+      break;
+    case "file_complete":
+      console.log(`Completed ${event.filename}: ${event.transactionCount} transactions`);
+      break;
+    case "file_error":
+      console.error(`Error in ${event.filename}: ${event.error}`);
+      break;
+    case "batch_complete":
+      console.log(`Batch done: ${event.totalTransactions} transactions from ${event.totalFiles} files`);
+      break;
+  }
+}
+```
+
+#### `parseBatchStreamToArray(files): Promise<BatchParsedFile[]>`
+
+Collects all batch results into an array for easier processing.
+
+```typescript
+import { parseBatchStreamToArray } from "@fot/ofx";
+
+const results = await parseBatchStreamToArray(files);
+
+for (const file of results) {
+  console.log(`${file.filename}: ${file.transactions.length} transactions`);
+  if (file.error) {
+    console.error(`  Error: ${file.error}`);
+  }
+}
+```
+
 ## Encoding Support
 
 The library automatically detects and handles various character encodings commonly used in OFX files, especially from Brazilian banks.

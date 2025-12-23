@@ -11,6 +11,10 @@
       ".": {
          "default": "./src/index.ts",
          "types": "./dist/src/index.d.ts"
+      },
+      "./batch": {
+         "default": "./src/batch.ts",
+         "types": "./dist/src/batch.d.ts"
       }
    },
    "files": [

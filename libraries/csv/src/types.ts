@@ -99,3 +99,40 @@ export type StreamEvent =
    | { type: "headers"; data: string[] }
    | { type: "row"; data: ParsedRow }
    | { type: "complete"; rowCount: number; delimiter: string };
+
+// Batch streaming types
+export interface BatchCsvFileInput {
+   /** Filename for tracking */
+   filename: string;
+   /** Already decoded string content */
+   content: string;
+}
+
+export type BatchCsvStreamEvent =
+   | { type: "file_start"; fileIndex: number; filename: string }
+   | { type: "headers"; fileIndex: number; data: string[] }
+   | { type: "row"; fileIndex: number; data: ParsedRow }
+   | {
+        type: "file_complete";
+        fileIndex: number;
+        filename: string;
+        rowCount: number;
+        delimiter: string;
+     }
+   | { type: "file_error"; fileIndex: number; filename: string; error: string }
+   | {
+        type: "batch_complete";
+        totalFiles: number;
+        totalRows: number;
+        errorCount: number;
+     };
+
+export interface BatchParsedCsvFile {
+   fileIndex: number;
+   filename: string;
+   headers?: string[];
+   rows: ParsedRow[];
+   delimiter: string;
+   totalRows: number;
+   error?: string;
+}
