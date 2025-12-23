@@ -365,6 +365,78 @@ describe("parseBatchStream", () => {
          expect(rowEvent.data.fields).toEqual(["1", "2"]);
       }
    });
+
+   test("handles file errors without stopping batch", async () => {
+      const files: BatchCsvFileInput[] = [
+         createBatchCsvInput("name,age\nJohn,30\nJane,25", "valid1.csv"),
+         createBatchCsvInput("city,country\n\"Unclosed quote,USA", "malformed.csv"),
+         createBatchCsvInput("product,price\nApple,1.50\nBanana,0.75", "valid2.csv"),
+      ];
+
+      const events: BatchCsvStreamEvent[] = [];
+      for await (const event of parseBatchStream(files, { hasHeaders: true })) {
+         events.push(event);
+      }
+
+      // Verify exactly one file_error event
+      const errorEvents = events.filter((e) => e.type === "file_error");
+      expect(errorEvents.length).toBe(1);
+      if (errorEvents[0]?.type === "file_error") {
+         expect(errorEvents[0].filename).toBe("malformed.csv");
+         expect(errorEvents[0].fileIndex).toBe(1);
+         expect(errorEvents[0].error).toBeDefined();
+      }
+
+      // Verify batch_complete event has correct totals
+      const batchComplete = events.find((e) => e.type === "batch_complete");
+      expect(batchComplete).toBeDefined();
+      if (batchComplete?.type === "batch_complete") {
+         expect(batchComplete.totalFiles).toBe(3);
+         expect(batchComplete.errorCount).toBe(1);
+         // Only rows from valid files should be counted
+         expect(batchComplete.totalRows).toBe(4); // 2 from valid1 + 2 from valid2
+      }
+
+      // Verify events for valid1.csv (fileIndex 0)
+      const valid1Events = events.filter(
+         (e) =>
+            (e.type === "file_start" ||
+               e.type === "headers" ||
+               e.type === "row" ||
+               e.type === "file_complete") &&
+            "fileIndex" in e &&
+            e.fileIndex === 0,
+      );
+      expect(valid1Events.length).toBeGreaterThan(0);
+
+      // Verify events for valid2.csv (fileIndex 2) to confirm isolation
+      const valid2Events = events.filter(
+         (e) =>
+            (e.type === "file_start" ||
+               e.type === "headers" ||
+               e.type === "row" ||
+               e.type === "file_complete") &&
+            "fileIndex" in e &&
+            e.fileIndex === 2,
+      );
+      expect(valid2Events.length).toBeGreaterThan(0);
+
+      // Verify valid2 rows were actually parsed (after the error)
+      const valid2Rows = events.filter(
+         (e) => e.type === "row" && e.fileIndex === 2,
+      );
+      expect(valid2Rows.length).toBe(2);
+      if (valid2Rows[0]?.type === "row") {
+         expect(valid2Rows[0].data.record).toEqual({
+            product: "Apple",
+            price: "1.50",
+         });
+      }
+
+      // Verify file_complete for valid files
+      const completeEvents = events.filter((e) => e.type === "file_complete");
+      expect(completeEvents.length).toBe(2); // Only valid files
+   });
 });
 
 describe("parseBatchStreamToArray", () => {

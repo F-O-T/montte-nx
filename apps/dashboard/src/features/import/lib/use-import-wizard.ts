@@ -77,6 +77,12 @@ export type BatchDuplicateInfo = DuplicateInfo & {
    matchedRowIndex?: number;
 };
 
+// CSV preview data per file (for batch imports)
+export type CsvPreviewDataPerFile = {
+   fileIndex: number;
+   previewData: CsvPreviewData;
+};
+
 /**
  * Detects file type from filename extension
  */

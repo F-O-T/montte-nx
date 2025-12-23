@@ -21,6 +21,10 @@ import {
 import { generateOfxContent } from "@packages/ofx";
 import { renderBankStatement } from "@packages/pdf";
 import { APIError } from "@packages/utils/errors";
+import { 
+	calculateDuplicateScore,
+	DATE_TOLERANCE_DAYS,
+} from "@packages/utils/duplicate-detection";
 import { z } from "zod";
 import {
    checkResourcePermission,
@@ -794,16 +798,6 @@ export const bankAccountRouter = router({
             "view",
          );
 
-         // Weights for duplicate detection (total: 6)
-         const WEIGHTS = {
-            amount: 3, // Most important - exact match
-            date: 2, // Important - within tolerance
-            description: 1, // Less important - similarity
-         };
-         const MAX_SCORE = WEIGHTS.amount + WEIGHTS.date + WEIGHTS.description;
-         const THRESHOLD_PERCENTAGE = 0.8; // 80% match
-         const DATE_TOLERANCE_DAYS = 1;
-
          const duplicates: Array<{
             rowIndex: number;
             fileIndex: number;
@@ -816,71 +810,6 @@ export const bankAccountRouter = router({
             matchedRowIndex?: number;
          }> = [];
 
-         // Helper function to check date tolerance
-         const datesWithinTolerance = (date1: Date, date2: Date): boolean => {
-            const diffMs = Math.abs(date1.getTime() - date2.getTime());
-            const diffDays = diffMs / (1000 * 60 * 60 * 24);
-            return diffDays <= DATE_TOLERANCE_DAYS;
-         };
-
-         // Helper function to extract tokens from description
-         const extractTokens = (description: string): string[] => {
-            const stopWords = new Set([
-               "de", "da", "do", "para", "com", "em", "no", "na", "os", "as",
-               "um", "uma", "the", "a", "an", "of", "to", "in", "for", "on", "at",
-            ]);
-            return description
-               .toLowerCase()
-               .replace(/[^\w\sáàâãéèêíìîóòôõúùûç]/g, " ")
-               .split(/\s+/)
-               .filter((token) => token.length > 2 && !stopWords.has(token));
-         };
-
-         // Helper function to calculate token similarity
-         const calculateTokenSimilarity = (tokens1: string[], tokens2: string[]): number => {
-            if (tokens1.length === 0 || tokens2.length === 0) return 0;
-            const set1 = new Set(tokens1);
-            const set2 = new Set(tokens2);
-            let intersectionSize = 0;
-            for (const token of set1) {
-               if (set2.has(token)) intersectionSize++;
-            }
-            const unionSize = set1.size + set2.size - intersectionSize;
-            return unionSize === 0 ? 0 : intersectionSize / unionSize;
-         };
-
-         // Helper function to calculate duplicate score
-         const calculateScore = (
-            candidate: { date: Date; amount: number; description: string },
-            target: { date: Date; amount: number; description: string },
-         ): { score: number; scorePercentage: number; passed: boolean } => {
-            let score = 0;
-
-            // Amount match (exact)
-            if (candidate.amount === target.amount) {
-               score += WEIGHTS.amount;
-            }
-
-            // Date match (within tolerance)
-            if (datesWithinTolerance(candidate.date, target.date)) {
-               score += WEIGHTS.date;
-            }
-
-            // Description similarity
-            const candidateTokens = extractTokens(candidate.description);
-            const targetTokens = extractTokens(target.description);
-            const similarity = calculateTokenSimilarity(candidateTokens, targetTokens);
-
-            if (similarity >= 0.5) {
-               score += WEIGHTS.description * similarity;
-            }
-
-            const scorePercentage = score / MAX_SCORE;
-            const passed = scorePercentage >= THRESHOLD_PERCENTAGE;
-
-            return { score, scorePercentage, passed };
-         };
-
          // Check within-batch duplicates
          const seenDuplicatePairs = new Set<string>();
          for (let i = 0; i < input.transactions.length; i++) {
@@ -891,7 +820,7 @@ export const bankAccountRouter = router({
                const target = input.transactions[j];
                if (!target) continue;
 
-               const { scorePercentage, passed } = calculateScore(
+               const { scorePercentage, passed } = calculateDuplicateScore(
                   { date: new Date(candidate.date), amount: candidate.amount, description: candidate.description },
                   { date: new Date(target.date), amount: target.amount, description: target.description },
                );
@@ -933,6 +862,7 @@ export const bankAccountRouter = router({
                where: (transaction, { eq, and, gte, lte }) =>
                   and(
                      eq(transaction.bankAccountId, input.bankAccountId),
+                     eq(transaction.amount, trn.amount.toString()),
                      gte(transaction.date, startDate),
                      lte(transaction.date, endDate),
                   ),
@@ -940,7 +870,7 @@ export const bankAccountRouter = router({
             });
 
             for (const existingTrn of potentialMatches) {
-               const { scorePercentage, passed } = calculateScore(
+               const { scorePercentage, passed } = calculateDuplicateScore(
                   { date: trnDate, amount: trn.amount, description: trn.description },
                   { 
                      date: existingTrn.date, 

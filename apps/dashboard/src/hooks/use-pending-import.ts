@@ -1,5 +1,14 @@
 import type { TransactionType } from "@packages/ofx";
 import { useCallback } from "react";
+import type {
+	BatchDuplicateInfo,
+	CsvPreviewDataPerFile,
+	ImportedFile,
+} from "@/features/import/lib/use-import-wizard";
+import {
+	createBatchRowKey,
+	parseBatchRowKey,
+} from "@/features/import/lib/use-import-wizard";
 
 const STORAGE_KEY = "montte:pending-import";
 const EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
@@ -50,35 +59,9 @@ export type DuplicateInfo = {
    existingTransactionDescription: string;
 };
 
-// Batch duplicate info with type and score
-export type BatchDuplicateInfo = DuplicateInfo & {
-   fileIndex: number;
-   duplicateType: "within_batch" | "existing_database";
-   matchScore: number; // 0-1 weighted score
-   matchedFileIndex?: number; // For within-batch duplicates
-   matchedRowIndex?: number;
-};
-
-// File info for batch import
-export type ImportedFileInfo = {
-   fileIndex: number;
-   filename: string;
-   fileType: FileType;
-   content: string; // base64
-   status: "pending" | "parsing" | "parsed" | "error";
-   transactionCount?: number;
-   error?: string;
-};
-
-// CSV preview data per file (for batch imports)
-export type CsvPreviewDataPerFile = {
-   fileIndex: number;
-   previewData: CsvPreviewData;
-};
-
 export type PendingImport = {
    // Multi-file support
-   files: ImportedFileInfo[];
+   files: ImportedFile[];
    
    timestamp: number;
    bankAccountId: string | null;
@@ -97,25 +80,15 @@ export type PendingImport = {
 /**
  * Creates a compound key for batch row selection
  * Format: "fileIndex:rowIndex"
+ * @see createBatchRowKey from use-import-wizard.ts
  */
-export function createRowKey(fileIndex: number, rowIndex: number): string {
-   return `${fileIndex}:${rowIndex}`;
-}
+export const createRowKey = createBatchRowKey;
 
 /**
  * Parses a compound batch row key
+ * @see parseBatchRowKey from use-import-wizard.ts
  */
-export function parseRowKey(key: string): {
-   fileIndex: number;
-   rowIndex: number;
-} | null {
-   const parts = key.split(":");
-   if (parts.length !== 2) return null;
-   const fileIndex = Number.parseInt(parts[0] ?? "", 10);
-   const rowIndex = Number.parseInt(parts[1] ?? "", 10);
-   if (Number.isNaN(fileIndex) || Number.isNaN(rowIndex)) return null;
-   return { fileIndex, rowIndex };
-}
+export const parseRowKey = parseBatchRowKey;
 
 export function usePendingImport() {
    const getPending = useCallback((): PendingImport | null => {

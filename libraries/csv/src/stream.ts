@@ -190,6 +190,11 @@ export async function* parseStream(
 
    // Process any remaining data in buffer
    if (parserState.buffer.length > 0 || hasPendingData(parserState.ctx)) {
+      // Check for unclosed quoted field - this is a parse error
+      if (parserState.ctx.state === "QUOTED_FIELD") {
+         throw new Error("Unclosed quoted field at end of file");
+      }
+
       // Add final field to current row and emit
       if (hasPendingData(parserState.ctx)) {
          parserState.ctx.currentRow.push(parserState.ctx.currentField);

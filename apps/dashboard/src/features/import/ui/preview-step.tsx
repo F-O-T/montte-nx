@@ -134,13 +134,12 @@ export function PreviewStep({
                setParseProgress(`Processando ${csvFiles.length} arquivo(s) CSV...`);
                
                const csvInputs = csvFiles.map((f) => {
-                  // Decode base64 content preserving UTF-8 characters
-                  const decodedContent = decodeURIComponent(
-                     atob(f.content)
-                        .split("")
-                        .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
-                        .join(""),
+                  // Decode base64 content and convert to UTF-8 string
+                  const binaryString = atob(f.content);
+                  const bytes = new Uint8Array(
+                     binaryString.split("").map((c) => c.charCodeAt(0)),
                   );
+                  const decodedContent = new TextDecoder('utf-8').decode(bytes);
                   return {
                      filename: f.filename,
                      content: decodedContent,
@@ -206,13 +205,19 @@ export function PreviewStep({
 
                const ofxTransactions = await parseOfxBatch(ofxInputs, { onProgress });
 
+               // Initialize per-file row counters
+               const fileRowCounters = new Map<number, number>();
+               
                // Map to batch transactions with correct file indices
                for (const trn of ofxTransactions) {
                   const originalFile = ofxFiles[trn.fileIndex];
                   if (!originalFile) continue;
                   
+                  // Get current row index for this file (defaults to 0)
+                  const currentRowIndex = fileRowCounters.get(originalFile.fileIndex) ?? 0;
+                  
                   allTransactions.push({
-                     rowIndex: allTransactions.filter((t) => t.fileIndex === originalFile.fileIndex).length,
+                     rowIndex: currentRowIndex,
                      fileIndex: originalFile.fileIndex,
                      filename: originalFile.filename,
                      date: trn.date,
@@ -221,6 +226,9 @@ export function PreviewStep({
                      type: trn.type,
                      externalId: trn.fitid,
                   });
+                  
+                  // Increment counter for this file
+                  fileRowCounters.set(originalFile.fileIndex, currentRowIndex + 1);
                }
             }
 
@@ -304,6 +312,15 @@ export function PreviewStep({
       }
       return stats;
    }, [files, parsedTransactions]);
+
+   // Precompute file lookup map to avoid O(n) scans per row
+   const filesByIndex = useMemo(() => {
+      const map = new Map<number, ImportedFile>();
+      for (const file of files) {
+         map.set(file.fileIndex, file);
+      }
+      return map;
+   }, [files]);
 
    const allSelected = filteredTransactions.length > 0 && 
       filteredTransactions.every((t) => selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)));
@@ -513,7 +530,7 @@ export function PreviewStep({
                               {files.length > 1 && (
                                  <TableCell>
                                     <div className="flex items-center gap-1.5">
-                                       {files.find((f) => f.fileIndex === trn.fileIndex)?.fileType === "csv" ? (
+                                       {filesByIndex.get(trn.fileIndex)?.fileType === "csv" ? (
                                           <FileSpreadsheetIcon className="size-3.5 text-green-600" />
                                        ) : (
                                           <FileTextIcon className="size-3.5 text-blue-600" />

@@ -153,11 +153,6 @@ export async function parseCsvBatch(
    const amountFormat = options.amountFormat ?? "decimal-comma";
    let totalErrors = 0;
 
-   // Track row counts per file for reporting
-   const fileRowCounts: number[] = files.map(() => 0);
-   const fileErrors: CsvParseError[][] = files.map(() => []);
-   const fileHeaders: (string[] | undefined)[] = files.map(() => undefined);
-
    for await (const event of parseBatchStream(files, {
       delimiter: options.delimiter,
       hasHeaders: true,
@@ -173,7 +168,6 @@ export async function parseCsvBatch(
             break;
 
          case "headers": {
-            fileHeaders[event.fileIndex] = event.data;
             const result = fileResults[event.fileIndex];
             if (result) result.headers = event.data;
             options.onProgress?.({
@@ -188,22 +182,23 @@ export async function parseCsvBatch(
             const file = files[event.fileIndex];
             if (!file) break;
 
-            const fileErrorList = fileErrors[event.fileIndex] ?? [];
+            const result = fileResults[event.fileIndex];
+            if (!result) break;
+
             const parsed = processRow(
                event.data.rowIndex,
                event.data.fields,
                options.columnMapping,
                dateFormat,
                amountFormat,
-               fileErrorList,
+               result.errors,
                event.fileIndex,
                file.filename,
             );
 
             if (parsed) {
                rows.push(parsed);
-               fileRowCounts[event.fileIndex] =
-                  (fileRowCounts[event.fileIndex] ?? 0) + 1;
+               result.rowCount++;
                options.onProgress?.({
                   type: "row",
                   fileIndex: event.fileIndex,
@@ -214,20 +209,17 @@ export async function parseCsvBatch(
          }
 
          case "file_complete": {
-            const errors = fileErrors[event.fileIndex] ?? [];
             const result = fileResults[event.fileIndex];
             if (result) {
-               result.rowCount = fileRowCounts[event.fileIndex] ?? 0;
-               result.errors = errors;
+               allErrors.push(...result.errors);
+               totalErrors += result.errors.length;
             }
-            allErrors.push(...errors);
-            totalErrors += errors.length;
             options.onProgress?.({
                type: "file_complete",
                fileIndex: event.fileIndex,
                filename: event.filename,
-               rowCount: fileRowCounts[event.fileIndex] ?? 0,
-               errors,
+               rowCount: result?.rowCount ?? 0,
+               errors: result?.errors ?? [],
             });
             break;
          }
