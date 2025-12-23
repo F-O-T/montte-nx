@@ -13,8 +13,8 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { Edit, Trash2, UserPlus } from "lucide-react";
-import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
-import { SendInvitationForm } from "@/features/organization-actions/ui/send-invitation-form";
+import { ManageOrganizationForm } from "@/features/organization/ui/manage-organization-form";
+import { SendInvitationForm } from "@/features/organization/ui/send-invitation-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useSheet } from "@/hooks/use-sheet";
 import { useDeleteOrganization } from "../features/use-delete-organization";

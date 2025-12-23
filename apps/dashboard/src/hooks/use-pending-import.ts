@@ -1,5 +1,14 @@
 import type { TransactionType } from "@packages/ofx";
 import { useCallback } from "react";
+import type {
+	BatchDuplicateInfo,
+	CsvPreviewDataPerFile,
+	ImportedFile,
+} from "@/features/import/lib/use-import-wizard";
+import {
+	createBatchRowKey,
+	parseBatchRowKey,
+} from "@/features/import/lib/use-import-wizard";
 
 const STORAGE_KEY = "montte:pending-import";
 const EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
@@ -26,6 +35,7 @@ export type CsvPreviewData = {
    delimiter: string;
 };
 
+// Single file transaction (legacy support)
 export type SerializedTransaction = {
    rowIndex: number;
    date: string; // ISO string
@@ -35,6 +45,13 @@ export type SerializedTransaction = {
    externalId?: string; // FITID for OFX
 };
 
+// Batch transaction with file tracking
+export type SerializedBatchTransaction = SerializedTransaction & {
+   fileIndex: number;
+   filename: string;
+};
+
+// Single file duplicate info (legacy support)
 export type DuplicateInfo = {
    rowIndex: number;
    existingTransactionId: string;
@@ -43,22 +60,35 @@ export type DuplicateInfo = {
 };
 
 export type PendingImport = {
-   fileType: FileType;
-   content: string; // base64
-   filename: string;
+   // Multi-file support
+   files: ImportedFile[];
+   
    timestamp: number;
    bankAccountId: string | null;
 
    // Parsed data (survives navigation)
-   parsedTransactions: SerializedTransaction[];
-   selectedRowIndices: number[];
-   duplicates: DuplicateInfo[];
+   parsedTransactions: SerializedBatchTransaction[];
+   selectedRowKeys: string[]; // Format: "fileIndex:rowIndex"
+   duplicates: BatchDuplicateInfo[];
    duplicatesChecked: boolean;
 
-   // CSV-specific
-   csvPreviewData: CsvPreviewData | null;
+   // CSV-specific - shared mapping for all CSVs
+   csvPreviewDataList: CsvPreviewDataPerFile[];
    columnMapping: ColumnMapping | null;
 };
+
+/**
+ * Creates a compound key for batch row selection
+ * Format: "fileIndex:rowIndex"
+ * @see createBatchRowKey from use-import-wizard.ts
+ */
+export const createRowKey = createBatchRowKey;
+
+/**
+ * Parses a compound batch row key
+ * @see parseBatchRowKey from use-import-wizard.ts
+ */
+export const parseRowKey = parseBatchRowKey;
 
 export function usePendingImport() {
    const getPending = useCallback((): PendingImport | null => {

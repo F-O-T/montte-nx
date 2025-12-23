@@ -9,7 +9,13 @@ import {
 
 type CounterpartyType = "client" | "supplier" | "both" | "all";
 type StatusFilter = "active" | "inactive" | "all";
-type OrderBy = "name" | "type" | "createdAt" | "updatedAt" | "tradeName" | "legalName";
+type OrderBy =
+   | "name"
+   | "type"
+   | "createdAt"
+   | "updatedAt"
+   | "tradeName"
+   | "legalName";
 
 interface CounterpartyListContextType {
    // Selection
@@ -124,7 +130,14 @@ export function CounterpartyListProvider({
          startDate !== null ||
          endDate !== null
       );
-   }, [typeFilter, statusFilter, searchTerm, industryFilter, startDate, endDate]);
+   }, [
+      typeFilter,
+      statusFilter,
+      searchTerm,
+      industryFilter,
+      startDate,
+      endDate,
+   ]);
 
    // Clear all filters
    const clearFilters = useCallback(() => {

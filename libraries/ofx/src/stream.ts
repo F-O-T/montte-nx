@@ -23,6 +23,50 @@ export type StreamEvent =
    | { type: "balance"; data: { ledger?: OFXBalance; available?: OFXBalance } }
    | { type: "complete"; transactionCount: number };
 
+// Batch streaming types
+export interface BatchFileInput {
+   filename: string;
+   buffer: Uint8Array;
+}
+
+export type BatchStreamEvent =
+   | { type: "file_start"; fileIndex: number; filename: string }
+   | { type: "header"; fileIndex: number; data: OFXHeader }
+   | { type: "transaction"; fileIndex: number; data: OFXTransaction }
+   | {
+        type: "account";
+        fileIndex: number;
+        data: OFXBankAccount | OFXCreditCardAccount;
+     }
+   | {
+        type: "balance";
+        fileIndex: number;
+        data: { ledger?: OFXBalance; available?: OFXBalance };
+     }
+   | {
+        type: "file_complete";
+        fileIndex: number;
+        filename: string;
+        transactionCount: number;
+     }
+   | { type: "file_error"; fileIndex: number; filename: string; error: string }
+   | {
+        type: "batch_complete";
+        totalFiles: number;
+        totalTransactions: number;
+        errorCount: number;
+     };
+
+export interface BatchParsedFile {
+   fileIndex: number;
+   filename: string;
+   header?: OFXHeader;
+   transactions: OFXTransaction[];
+   accounts: (OFXBankAccount | OFXCreditCardAccount)[];
+   balances: { ledger?: OFXBalance; available?: OFXBalance }[];
+   error?: string;
+}
+
 const ENTITY_MAP: Record<string, string> = {
    "&amp;": "&",
    "&apos;": "'",
@@ -357,4 +401,161 @@ export async function parseStreamToArray(
    }
 
    return result;
+}
+
+/**
+ * Creates an async iterable that yields chunks of the content string.
+ * Yields to the main thread between chunks for UI responsiveness.
+ */
+async function* createChunkIterable(
+   content: string,
+   chunkSize = 65536,
+): AsyncGenerator<string> {
+   for (let i = 0; i < content.length; i += chunkSize) {
+      yield content.slice(i, i + chunkSize);
+      // Yield to main thread between chunks for UI responsiveness
+      await new Promise((resolve) => setTimeout(resolve, 0));
+   }
+}
+
+/**
+ * Streaming batch parser - processes files sequentially, yielding events.
+ * Yields control between files for UI responsiveness.
+ *
+ * @param files - Array of files with filename and buffer
+ * @param options - Stream options (encoding)
+ * @yields BatchStreamEvent for each file start, transaction, completion, or error
+ */
+export async function* parseBatchStream(
+   files: BatchFileInput[],
+   options?: StreamOptions,
+): AsyncGenerator<BatchStreamEvent> {
+   let totalTransactions = 0;
+   let errorCount = 0;
+
+   for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file) continue;
+
+      yield { type: "file_start", fileIndex: i, filename: file.filename };
+
+      try {
+         let fileTransactionCount = 0;
+
+         // Detect encoding from the first part of the buffer
+         const headerSection = new TextDecoder("iso-8859-1").decode(
+            file.buffer.slice(0, Math.min(file.buffer.length, 1000)),
+         );
+         const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
+         const encoding = charsetMatch
+            ? getEncodingFromCharset(charsetMatch[1])
+            : options?.encoding ?? "utf-8";
+
+         // Decode the entire buffer
+         const decoder = new TextDecoder(encoding as "utf-8");
+         const content = decoder.decode(file.buffer);
+
+         // Create chunked async iterable
+         const chunkIterable = createChunkIterable(content);
+
+         for await (const event of parseStream(chunkIterable, options)) {
+            switch (event.type) {
+               case "header":
+                  yield { type: "header", fileIndex: i, data: event.data };
+                  break;
+               case "transaction":
+                  yield { type: "transaction", fileIndex: i, data: event.data };
+                  fileTransactionCount++;
+                  break;
+               case "account":
+                  yield { type: "account", fileIndex: i, data: event.data };
+                  break;
+               case "balance":
+                  yield { type: "balance", fileIndex: i, data: event.data };
+                  break;
+               case "complete":
+                  // Handled below
+                  break;
+            }
+         }
+
+         totalTransactions += fileTransactionCount;
+         yield {
+            type: "file_complete",
+            fileIndex: i,
+            filename: file.filename,
+            transactionCount: fileTransactionCount,
+         };
+      } catch (err) {
+         errorCount++;
+         yield {
+            type: "file_error",
+            fileIndex: i,
+            filename: file.filename,
+            error: err instanceof Error ? err.message : String(err),
+         };
+      }
+
+      // Yield control between files for UI responsiveness
+      await new Promise((resolve) => setTimeout(resolve, 0));
+   }
+
+   yield {
+      type: "batch_complete",
+      totalFiles: files.length,
+      totalTransactions,
+      errorCount,
+   };
+}
+
+/**
+ * Convenience function that collects streaming batch results into arrays.
+ *
+ * @param files - Array of files with filename and buffer
+ * @param options - Stream options (encoding)
+ * @returns Array of parsed file results
+ */
+export async function parseBatchStreamToArray(
+   files: BatchFileInput[],
+   options?: StreamOptions,
+): Promise<BatchParsedFile[]> {
+   const results: BatchParsedFile[] = files.map((file, index) => ({
+      fileIndex: index,
+      filename: file.filename,
+      transactions: [],
+      accounts: [],
+      balances: [],
+   }));
+
+   for await (const event of parseBatchStream(files, options)) {
+      switch (event.type) {
+         case "header": {
+            const result = results[event.fileIndex];
+            if (result) result.header = event.data;
+            break;
+         }
+         case "transaction": {
+            const result = results[event.fileIndex];
+            if (result) result.transactions.push(event.data);
+            break;
+         }
+         case "account": {
+            const result = results[event.fileIndex];
+            if (result) result.accounts.push(event.data);
+            break;
+         }
+         case "balance": {
+            const result = results[event.fileIndex];
+            if (result) result.balances.push(event.data);
+            break;
+         }
+         case "file_error": {
+            const result = results[event.fileIndex];
+            if (result) result.error = event.error;
+            break;
+         }
+      }
+   }
+
+   return results;
 }

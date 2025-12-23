@@ -3,87 +3,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
 export const organizationInvitesRouter = router({
-   acceptInvitation: protectedProcedure
-      .input(
-         z.object({
-            invitationId: z.string().min(1, "Invitation ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const result = await resolvedCtx.auth.api.acceptInvitation({
-               body: {
-                  invitationId: input.invitationId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return result;
-         } catch (error) {
-            console.error("Failed to accept invitation:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to accept invitation");
-         }
-      }),
-   createInvitation: protectedProcedure
-      .input(
-         z.object({
-            email: z.email("Valid email is required"),
-            organizationId: z.string().optional(),
-            resend: z.boolean().optional(),
-            role: z.enum(["member", "admin", "owner"]),
-            teamId: z.string().optional(),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const invitation = await resolvedCtx.auth.api.createInvitation({
-               body: {
-                  email: input.email,
-                  organizationId: input.organizationId,
-                  resend: input.resend,
-                  role: input.role,
-                  teamId: input.teamId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return invitation;
-         } catch (error) {
-            console.error("Failed to create invitation:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to create invitation");
-         }
-      }),
-
-   declineInvitation: protectedProcedure
-      .input(
-         z.object({
-            invitationId: z.string().min(1, "Invitation ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const result = await resolvedCtx.auth.api.rejectInvitation({
-               body: {
-                  invitationId: input.invitationId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return result;
-         } catch (error) {
-            console.error("Failed to decline invitation:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to decline invitation");
-         }
-      }),
+   // Queries only - mutations moved to Better Auth client
 
    getInvitation: protectedProcedure
       .input(
@@ -204,30 +124,6 @@ export const organizationInvitesRouter = router({
             console.error("Failed to list invitations:", error);
             propagateError(error);
             throw APIError.internal("Failed to list invitations");
-         }
-      }),
-   revokeInvitation: protectedProcedure
-      .input(
-         z.object({
-            invitationId: z.string().min(1, "Invitation ID is required"),
-         }),
-      )
-      .mutation(async ({ ctx, input }) => {
-         const resolvedCtx = await ctx;
-
-         try {
-            const result = await resolvedCtx.auth.api.cancelInvitation({
-               body: {
-                  invitationId: input.invitationId,
-               },
-               headers: resolvedCtx.headers,
-            });
-
-            return result;
-         } catch (error) {
-            console.error("Failed to revoke invitation:", error);
-            propagateError(error);
-            throw APIError.internal("Failed to revoke invitation");
          }
       }),
 });

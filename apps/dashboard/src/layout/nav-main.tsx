@@ -24,12 +24,20 @@ import {
    Zap,
 } from "lucide-react";
 import { ManageTransactionForm } from "@/features/transaction/ui/manage-transaction-form";
+import { usePlanFeatures } from "@/hooks/use-plan-features";
 import { useSheet } from "@/hooks/use-sheet";
 
 export function NavMain() {
    const { openSheet } = useSheet();
    const { pathname, searchStr } = useLocation();
    const { setOpenMobile, state } = useSidebar();
+   const {
+      canAccessTags,
+      canAccessCostCenters,
+      canAccessCounterparties,
+      canAccessInterestTemplates,
+      canAccessAutomations,
+   } = usePlanFeatures();
 
    const isActive = (url: string) => {
       if (!url) return false;
@@ -78,18 +86,26 @@ export function NavMain() {
          title: translate("dashboard.layout.nav-main.bills.overview"),
          url: "/$slug/bills",
       },
-      {
-         icon: Users,
-         id: "counterparties",
-         title: translate("dashboard.layout.nav-main.bills.counterparties"),
-         url: "/$slug/counterparties",
-      },
-      {
-         icon: Percent,
-         id: "interest-templates",
-         title: translate("dashboard.layout.nav-main.bills.interest-templates"),
-         url: "/$slug/interest-templates",
-      },
+      ...(canAccessCounterparties
+         ? [
+              {
+                 icon: Users,
+                 id: "counterparties",
+                 title: translate("dashboard.layout.nav-main.bills.counterparties"),
+                 url: "/$slug/counterparties",
+              },
+           ]
+         : []),
+      ...(canAccessInterestTemplates
+         ? [
+              {
+                 icon: Percent,
+                 id: "interest-templates",
+                 title: translate("dashboard.layout.nav-main.bills.interest-templates"),
+                 url: "/$slug/interest-templates",
+              },
+           ]
+         : []),
    ];
 
    const categorizationItems = [
@@ -101,30 +117,72 @@ export function NavMain() {
          ),
          url: "/$slug/categories",
       },
-      {
-         icon: Landmark,
-         id: "cost-centers",
-         title: translate(
-            "dashboard.layout.nav-main.categorization.cost-centers",
-         ),
-         url: "/$slug/cost-centers",
-      },
-      {
-         icon: Tag,
-         id: "tags",
-         title: translate("dashboard.layout.nav-main.categorization.tags"),
-         url: "/$slug/tags",
-      },
+      ...(canAccessCostCenters
+         ? [
+              {
+                 icon: Landmark,
+                 id: "cost-centers",
+                 title: translate(
+                    "dashboard.layout.nav-main.categorization.cost-centers",
+                 ),
+                 url: "/$slug/cost-centers",
+              },
+           ]
+         : []),
+      ...(canAccessTags
+         ? [
+              {
+                 icon: Tag,
+                 id: "tags",
+                 title: translate("dashboard.layout.nav-main.categorization.tags"),
+                 url: "/$slug/tags",
+              },
+           ]
+         : []),
    ];
 
-   const automationItems = [
-      {
-         icon: Zap,
-         id: "automations",
-         title: "Automações",
-         url: "/$slug/automations",
-      },
-   ];
+   const automationItems = canAccessAutomations
+      ? [
+           {
+              icon: Zap,
+              id: "automations",
+              title: "Automações",
+              url: "/$slug/automations",
+           },
+        ]
+      : [];
+
+   const renderNavItem = (item: {
+      icon: typeof TrendingUp;
+      id: string;
+      title: string;
+      url: string;
+   }) => {
+      const Icon = item.icon;
+
+      return (
+         <SidebarMenuItem key={item.id}>
+            <SidebarMenuButton
+               asChild
+               className={
+                  isActive(item.url)
+                     ? "bg-primary/10 text-primary rounded-lg"
+                     : ""
+               }
+               tooltip={item.title}
+            >
+               <Link
+                  onClick={() => setOpenMobile(false)}
+                  params={{}}
+                  to={item.url}
+               >
+                  <Icon />
+                  <span>{item.title}</span>
+               </Link>
+            </SidebarMenuButton>
+         </SidebarMenuItem>
+      );
+   };
 
    return (
       <SidebarGroup className="group-data-[collapsible=icon]">
@@ -153,28 +211,7 @@ export function NavMain() {
                </SidebarGroupLabel>
             )}
             <SidebarMenu>
-               {financeItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                     <SidebarMenuButton
-                        asChild
-                        className={
-                           isActive(item.url)
-                              ? "bg-primary/10 text-primary rounded-lg"
-                              : ""
-                        }
-                        tooltip={item.title}
-                     >
-                        <Link
-                           onClick={() => setOpenMobile(false)}
-                           params={{}}
-                           to={item.url}
-                        >
-                           <item.icon />
-                           <span>{item.title}</span>
-                        </Link>
-                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-               ))}
+               {financeItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
             {state === "expanded" && (
                <SidebarGroupLabel>
@@ -182,28 +219,7 @@ export function NavMain() {
                </SidebarGroupLabel>
             )}
             <SidebarMenu>
-               {billsItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                     <SidebarMenuButton
-                        asChild
-                        className={
-                           isActive(item.url)
-                              ? "bg-primary/10 text-primary rounded-lg"
-                              : ""
-                        }
-                        tooltip={item.title}
-                     >
-                        <Link
-                           onClick={() => setOpenMobile(false)}
-                           params={{}}
-                           to={item.url}
-                        >
-                           <item.icon />
-                           <span>{item.title}</span>
-                        </Link>
-                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-               ))}
+               {billsItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
             {state === "expanded" && (
                <SidebarGroupLabel>
@@ -211,56 +227,16 @@ export function NavMain() {
                </SidebarGroupLabel>
             )}
             <SidebarMenu>
-               {categorizationItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                     <SidebarMenuButton
-                        asChild
-                        className={
-                           isActive(item.url)
-                              ? "bg-primary/10 text-primary rounded-lg"
-                              : ""
-                        }
-                        tooltip={item.title}
-                     >
-                        <Link
-                           onClick={() => setOpenMobile(false)}
-                           params={{}}
-                           to={item.url}
-                        >
-                           <item.icon />
-                           <span>{item.title}</span>
-                        </Link>
-                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-               ))}
+               {categorizationItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
-            {state === "expanded" && (
+            {state === "expanded" && automationItems.length > 0 && (
                <SidebarGroupLabel>Automação</SidebarGroupLabel>
             )}
-            <SidebarMenu>
-               {automationItems.map((item) => (
-                  <SidebarMenuItem key={item.id}>
-                     <SidebarMenuButton
-                        asChild
-                        className={
-                           isActive(item.url)
-                              ? "bg-primary/10 text-primary rounded-lg"
-                              : ""
-                        }
-                        tooltip={item.title}
-                     >
-                        <Link
-                           onClick={() => setOpenMobile(false)}
-                           params={{}}
-                           to={item.url}
-                        >
-                           <item.icon />
-                           <span>{item.title}</span>
-                        </Link>
-                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-               ))}
-            </SidebarMenu>
+            {automationItems.length > 0 && (
+               <SidebarMenu>
+                  {automationItems.map((item) => renderNavItem(item))}
+               </SidebarMenu>
+            )}
          </SidebarGroupContent>
       </SidebarGroup>
    );

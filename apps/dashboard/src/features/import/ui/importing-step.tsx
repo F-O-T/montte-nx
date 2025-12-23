@@ -8,12 +8,13 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTRPC } from "@/integrations/clients";
-import type { ParsedTransaction } from "../lib/use-import-wizard";
+import type { BatchParsedTransaction } from "../lib/use-import-wizard";
+import { createBatchRowKey } from "../lib/use-import-wizard";
 
 interface ImportingStepProps {
    bankAccountId: string;
-   transactions: ParsedTransaction[];
-   selectedRows: Set<number>;
+   transactions: BatchParsedTransaction[];
+   selectedRows: Set<string>; // compound keys: "fileIndex:rowIndex"
    onComplete: () => void;
    onError: () => void;
 }
@@ -59,7 +60,7 @@ export function ImportingStep({
 
       // Filter to only selected transactions and format for API
       const selectedTransactions = transactions
-         .filter((t) => selectedRows.has(t.rowIndex))
+         .filter((t) => selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)))
          .map((t) => ({
             date: t.date.toISOString(),
             amount: t.amount,

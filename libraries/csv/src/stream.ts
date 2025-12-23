@@ -9,6 +9,9 @@ import type {
    ParsedRow,
    StreamEvent,
    StreamOptions,
+   BatchCsvFileInput,
+   BatchCsvStreamEvent,
+   BatchParsedCsvFile,
 } from "./types.ts";
 import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
 
@@ -187,6 +190,11 @@ export async function* parseStream(
 
    // Process any remaining data in buffer
    if (parserState.buffer.length > 0 || hasPendingData(parserState.ctx)) {
+      // Check for unclosed quoted field - this is a parse error
+      if (parserState.ctx.state === "QUOTED_FIELD") {
+         throw new Error("Unclosed quoted field at end of file");
+      }
+
       // Add final field to current row and emit
       if (hasPendingData(parserState.ctx)) {
          parserState.ctx.currentRow.push(parserState.ctx.currentField);
@@ -268,4 +276,142 @@ export async function* parseBufferStream(
    }
 
    yield* parseStream(chunkGenerator(), options);
+}
+
+/**
+ * Creates an async iterable that yields chunks of the content string.
+ * Yields to the main thread between chunks for UI responsiveness.
+ */
+async function* createChunkIterable(
+   content: string,
+   chunkSize = 65536,
+): AsyncGenerator<string> {
+   for (let i = 0; i < content.length; i += chunkSize) {
+      yield content.slice(i, i + chunkSize);
+      // Yield to main thread between chunks for UI responsiveness
+      await new Promise((resolve) => setTimeout(resolve, 0));
+   }
+}
+
+/**
+ * Streaming batch parser - processes files sequentially, yielding events.
+ * Yields control between files for UI responsiveness.
+ *
+ * @param files - Array of files with filename and content
+ * @param options - Stream options
+ * @yields BatchCsvStreamEvent for each file start, row, completion, or error
+ */
+export async function* parseBatchStream(
+   files: BatchCsvFileInput[],
+   options?: StreamOptions,
+): AsyncGenerator<BatchCsvStreamEvent> {
+   let totalRows = 0;
+   let errorCount = 0;
+
+   for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file) continue;
+
+      yield { type: "file_start", fileIndex: i, filename: file.filename };
+
+      try {
+         let fileRowCount = 0;
+         let fileDelimiter = options?.delimiter ?? ",";
+
+         // Create chunked async iterable
+         const chunkIterable = createChunkIterable(file.content);
+
+         for await (const event of parseStream(chunkIterable, options)) {
+            switch (event.type) {
+               case "headers":
+                  yield { type: "headers", fileIndex: i, data: event.data };
+                  break;
+               case "row":
+                  yield { type: "row", fileIndex: i, data: event.data };
+                  fileRowCount++;
+                  break;
+               case "complete":
+                  fileDelimiter = event.delimiter;
+                  break;
+            }
+         }
+
+         totalRows += fileRowCount;
+         yield {
+            type: "file_complete",
+            fileIndex: i,
+            filename: file.filename,
+            rowCount: fileRowCount,
+            delimiter: fileDelimiter,
+         };
+      } catch (err) {
+         errorCount++;
+         yield {
+            type: "file_error",
+            fileIndex: i,
+            filename: file.filename,
+            error: err instanceof Error ? err.message : String(err),
+         };
+      }
+
+      // Yield control between files for UI responsiveness
+      await new Promise((resolve) => setTimeout(resolve, 0));
+   }
+
+   yield {
+      type: "batch_complete",
+      totalFiles: files.length,
+      totalRows,
+      errorCount,
+   };
+}
+
+/**
+ * Convenience function that collects streaming batch results into arrays.
+ *
+ * @param files - Array of files with filename and content
+ * @param options - Stream options
+ * @returns Array of parsed file results
+ */
+export async function parseBatchStreamToArray(
+   files: BatchCsvFileInput[],
+   options?: StreamOptions,
+): Promise<BatchParsedCsvFile[]> {
+   const results: BatchParsedCsvFile[] = files.map((file, index) => ({
+      fileIndex: index,
+      filename: file.filename,
+      rows: [],
+      delimiter: options?.delimiter ?? ",",
+      totalRows: 0,
+   }));
+
+   for await (const event of parseBatchStream(files, options)) {
+      switch (event.type) {
+         case "headers": {
+            const result = results[event.fileIndex];
+            if (result) result.headers = event.data;
+            break;
+         }
+         case "row": {
+            const result = results[event.fileIndex];
+            if (result) result.rows.push(event.data);
+            break;
+         }
+         case "file_complete": {
+            const result = results[event.fileIndex];
+            if (result) {
+               result.totalRows = event.rowCount;
+               result.delimiter = event.delimiter;
+            }
+            break;
+         }
+         case "file_error": {
+            const result = results[event.fileIndex];
+            if (result) result.error = event.error;
+            break;
+         }
+      }
+   }
+
+   return results;
 }

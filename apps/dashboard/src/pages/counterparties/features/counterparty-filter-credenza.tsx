@@ -293,7 +293,9 @@ export function CounterpartyFilterCredenza({
                   <Field>
                      <FieldLabel>Itens por página</FieldLabel>
                      <Select
-                        onValueChange={(value) => onPageSizeChange(Number(value))}
+                        onValueChange={(value) =>
+                           onPageSizeChange(Number(value))
+                        }
                         value={String(pageSize)}
                      >
                         <SelectTrigger>

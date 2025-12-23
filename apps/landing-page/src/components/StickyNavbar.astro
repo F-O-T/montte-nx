@@ -1,6 +1,11 @@
 ---
 import type { SupportedLng } from "@packages/localization";
 import { translate } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import Logo from "./Logo.astro";
+import { MobileMenu } from "./mobile-menu";
+import { NavMenu } from "./nav-menu";
+import ThemeToggler from "./ThemeToggler.astro";
 
 interface Props {
    lang?: SupportedLng;

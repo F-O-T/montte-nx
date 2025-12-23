@@ -13,9 +13,9 @@ import {
    useCounterpartyList,
 } from "../features/counterparty-list-context";
 import { ManageCounterpartyForm } from "../features/manage-counterparty-form";
-import { CounterpartyFilterBar } from "./counterparty-filter-bar";
 import { CounterpartiesListSection } from "./counterparties-list-section";
 import { CounterpartiesStats } from "./counterparties-stats";
+import { CounterpartyFilterBar } from "./counterparty-filter-bar";
 
 export type Counterparty =
    RouterOutput["counterparties"]["getAllPaginated"]["counterparties"][0];
@@ -112,7 +112,9 @@ function CounterpartiesPageContent() {
                   {translate("dashboard.routes.counterparties.actions.add-new")}
                </Button>
             }
-            description={translate("dashboard.routes.counterparties.description")}
+            description={translate(
+               "dashboard.routes.counterparties.description",
+            )}
             title={translate("dashboard.routes.counterparties.title")}
          />
 

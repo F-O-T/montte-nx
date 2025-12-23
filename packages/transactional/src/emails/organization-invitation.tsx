@@ -17,51 +17,71 @@ export default function OrganizationInvitationEmail({
    inviteLink,
 }: OrganizationInvitationEmailProps) {
    return (
-      <DefaultEmailLayout preview={`Você foi convidado para ${teamName}`}>
+      <DefaultEmailLayout
+         preview={`${invitedByUsername} convidou você para ${teamName}`}
+      >
          <DefaultHeading />
          <Section style={{ padding: "32px 24px", textAlign: "center" }}>
             <Text
                style={{
                   color: "#1a1a2e",
-                  fontSize: "22px",
-                  fontWeight: 600,
-                  lineHeight: "28px",
-                  margin: "0 0 8px 0",
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  lineHeight: "32px",
+                  margin: "0 0 16px 0",
                }}
             >
-               Você foi convidado!
+               Você recebeu um convite!
             </Text>
+
             <Text
                style={{
-                  color: "#6b7280",
-                  fontSize: "15px",
-                  lineHeight: "24px",
+                  color: "#374151",
+                  fontSize: "16px",
+                  lineHeight: "26px",
                   margin: "0 0 24px 0",
                }}
             >
                <strong style={{ color: "#1a1a2e" }}>{invitedByUsername}</strong>{" "}
-               ({invitedByEmail}) convidou você para fazer parte da organização{" "}
-               <strong style={{ color: "#1a1a2e" }}>{teamName}</strong>.
+               está convidando você para colaborar na organização{" "}
+               <strong style={{ color: "#1a1a2e" }}>{teamName}</strong> no
+               Montte.
             </Text>
+
             <Section
                style={{
-                  backgroundColor: "#f0fdf4",
+                  backgroundColor: "#f8fafc",
                   borderRadius: "12px",
-                  margin: "0 0 24px 0",
-                  padding: "20px",
+                  border: "1px solid #e2e8f0",
+                  margin: "0 0 28px 0",
+                  padding: "24px",
                }}
             >
                <Text
                   style={{
-                     color: "#0C5343",
+                     color: "#475569",
                      fontSize: "14px",
                      lineHeight: "22px",
-                     margin: "0 0 16px 0",
+                     margin: "0 0 8px 0",
+                     fontWeight: 600,
                   }}
                >
-                  Ao aceitar, você terá acesso aos recursos financeiros
-                  compartilhados pela equipe.
+                  O que você poderá fazer:
                </Text>
+               <Text
+                  style={{
+                     color: "#64748b",
+                     fontSize: "14px",
+                     lineHeight: "24px",
+                     margin: "0 0 20px 0",
+                     textAlign: "left",
+                  }}
+               >
+                  • Visualizar transações e contas compartilhadas
+                  <br />• Acompanhar orçamentos e metas financeiras
+                  <br />• Colaborar com a equipe em tempo real
+               </Text>
+
                <Button
                   href={inviteLink}
                   style={{
@@ -69,25 +89,36 @@ export default function OrganizationInvitationEmail({
                      borderRadius: "8px",
                      color: "#ffffff",
                      display: "inline-block",
-                     fontSize: "15px",
+                     fontSize: "16px",
                      fontWeight: 600,
-                     padding: "12px 32px",
+                     padding: "14px 36px",
                      textDecoration: "none",
                   }}
                >
                   Aceitar convite
                </Button>
             </Section>
+
             <Text
                style={{
-                  color: "#9ca3af",
+                  color: "#94a3b8",
                   fontSize: "13px",
                   lineHeight: "20px",
+                  margin: "0 0 8px 0",
+               }}
+            >
+               Convite enviado por {invitedByEmail}
+            </Text>
+            <Text
+               style={{
+                  color: "#94a3b8",
+                  fontSize: "12px",
+                  lineHeight: "18px",
                   margin: 0,
                }}
             >
-               Se você não esperava este convite, pode ignorar este e-mail com
-               segurança.
+               Se você não conhece esta pessoa ou não esperava este convite,
+               pode ignorar este e-mail com segurança.
             </Text>
          </Section>
          <DefaultFooter />
@@ -98,6 +129,6 @@ export default function OrganizationInvitationEmail({
 OrganizationInvitationEmail.PreviewProps = {
    invitedByEmail: "maria@exemplo.com",
    invitedByUsername: "Maria Silva",
-   inviteLink: "https://app.montte.co/invite/abc123",
+   inviteLink: "https://app.montte.co/callback/organization/invitation/abc123",
    teamName: "Empresa ABC",
 } satisfies OrganizationInvitationEmailProps;

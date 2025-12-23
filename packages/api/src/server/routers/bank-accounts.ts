@@ -5,6 +5,7 @@ import {
    deleteBankAccount,
    deleteBankAccounts,
    findBankAccountById,
+   findBankAccountsByIds,
    findBankAccountsByOrganizationId,
    findBankAccountsByOrganizationIdPaginated,
    getBankAccountBalances,
@@ -20,8 +21,23 @@ import {
 import { generateOfxContent } from "@packages/ofx";
 import { renderBankStatement } from "@packages/pdf";
 import { APIError } from "@packages/utils/errors";
+import { 
+	calculateDuplicateScore,
+	DATE_TOLERANCE_DAYS,
+} from "@packages/utils/duplicate-detection";
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import {
+   checkResourcePermission,
+   getAccessibleResources,
+} from "../lib/permission-check";
+import { type MemberRole, protectedProcedure, router } from "../trpc";
+
+// Helper to extract permission-related context from protectedProcedure
+// The isAuthed middleware guarantees session.user exists and adds memberRole and userId
+type ProtectedContext = {
+   memberRole?: MemberRole;
+   userId: string;
+};
 
 const createBankAccountSchema = z.object({
    bank: z.string().min(1, "Bank is required"),
@@ -53,6 +69,8 @@ export const bankAccountRouter = router({
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
 
+         // No permission check for create - any org member can create
+         // Creator gets implicit access through org membership
          return createBankAccount(resolvedCtx.db, {
             ...input,
             id: crypto.randomUUID(),
@@ -98,6 +116,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as { memberRole?: MemberRole })
+            .memberRole ?? "member") as MemberRole;
 
          const existingBankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -111,6 +132,17 @@ export const bankAccountRouter = router({
             throw APIError.notFound("Bank account not found");
          }
 
+         // Require manage permission to delete
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.id,
+            "manage",
+         );
+
          return deleteBankAccount(resolvedCtx.db, input.id);
       }),
 
@@ -119,6 +151,22 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
+
+         // Check manage permission for each bank account
+         for (const id of input.ids) {
+            await checkResourcePermission(
+               resolvedCtx.db,
+               userId,
+               organizationId,
+               memberRole,
+               "bank_account",
+               id,
+               "manage",
+            );
+         }
 
          return deleteBankAccounts(resolvedCtx.db, input.ids, organizationId);
       }),
@@ -135,6 +183,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -144,6 +195,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require view permission to export
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "view",
+         );
 
          const startDate = input.startDate
             ? new Date(input.startDate)
@@ -206,6 +268,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -215,6 +280,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require view permission to export
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "view",
+         );
 
          const startDate = input.startDate
             ? new Date(input.startDate)
@@ -276,6 +352,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -285,6 +364,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require view permission to export
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "view",
+         );
 
          const startDate = input.startDate
             ? new Date(input.startDate)
@@ -340,8 +430,34 @@ export const bankAccountRouter = router({
    getAll: protectedProcedure.query(async ({ ctx }) => {
       const resolvedCtx = await ctx;
       const organizationId = resolvedCtx.organizationId;
+      const userId = resolvedCtx.userId;
+      const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+         "member") as MemberRole;
 
-      return findBankAccountsByOrganizationId(resolvedCtx.db, organizationId);
+      // Get accessible bank accounts based on permissions
+      const { isOwner, resourceIds } = await getAccessibleResources(
+         resolvedCtx.db,
+         userId,
+         organizationId,
+         memberRole,
+         "bank_account",
+         "view",
+      );
+
+      // Owners see all bank accounts
+      if (isOwner) {
+         return findBankAccountsByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         );
+      }
+
+      // Non-owners only see bank accounts they have access to
+      if (!resourceIds || resourceIds.length === 0) {
+         return [];
+      }
+
+      return findBankAccountsByIds(resolvedCtx.db, resourceIds, organizationId);
    }),
 
    getAllPaginated: protectedProcedure
@@ -377,6 +493,9 @@ export const bankAccountRouter = router({
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -386,6 +505,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require view permission
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.id,
+            "view",
+         );
 
          return bankAccount;
       }),
@@ -425,6 +555,9 @@ export const bankAccountRouter = router({
       .query(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -434,6 +567,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require view permission
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.id,
+            "view",
+         );
 
          return findTransactionsByBankAccountIdPaginated(
             resolvedCtx.db,
@@ -470,6 +614,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -479,6 +626,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require edit permission to import transactions
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "edit",
+         );
 
          const createdTransactions = [];
 
@@ -533,6 +691,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const bankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -542,6 +703,17 @@ export const bankAccountRouter = router({
          if (!bankAccount || bankAccount.organizationId !== organizationId) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require view permission to check duplicates
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "view",
+         );
 
          const duplicates: Array<{
             rowIndex: number;
@@ -584,6 +756,142 @@ export const bankAccountRouter = router({
          return { duplicates };
       }),
 
+   checkBatchDuplicates: protectedProcedure
+      .input(
+         z.object({
+            bankAccountId: z.string(),
+            transactions: z.array(
+               z.object({
+                  rowIndex: z.number(),
+                  fileIndex: z.number(),
+                  date: z.string(),
+                  amount: z.number(),
+                  description: z.string(),
+               }),
+            ),
+         }),
+      )
+      .mutation(async ({ ctx, input }) => {
+         const resolvedCtx = await ctx;
+         const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
+
+         const bankAccount = await findBankAccountById(
+            resolvedCtx.db,
+            input.bankAccountId,
+         );
+
+         if (!bankAccount || bankAccount.organizationId !== organizationId) {
+            throw APIError.notFound("Bank account not found");
+         }
+
+         // Require view permission to check duplicates
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.bankAccountId,
+            "view",
+         );
+
+         const duplicates: Array<{
+            rowIndex: number;
+            fileIndex: number;
+            existingTransactionId: string;
+            existingTransactionDate: string;
+            existingTransactionDescription: string;
+            duplicateType: "within_batch" | "existing_database";
+            matchScore: number;
+            matchedFileIndex?: number;
+            matchedRowIndex?: number;
+         }> = [];
+
+         // Check within-batch duplicates
+         for (let i = 0; i < input.transactions.length; i++) {
+            const candidate = input.transactions[i];
+            if (!candidate) continue;
+
+            for (let j = i + 1; j < input.transactions.length; j++) {
+               const target = input.transactions[j];
+               if (!target) continue;
+
+               const { scorePercentage, passed } = calculateDuplicateScore(
+                  { date: new Date(candidate.date), amount: candidate.amount, description: candidate.description },
+                  { date: new Date(target.date), amount: target.amount, description: target.description },
+               );
+
+               if (passed) {
+                  duplicates.push({
+                     rowIndex: target.rowIndex,
+                     fileIndex: target.fileIndex,
+                     existingTransactionId: "",
+                     existingTransactionDate: candidate.date,
+                     existingTransactionDescription: candidate.description,
+                     duplicateType: "within_batch",
+                     matchScore: scorePercentage,
+                     matchedFileIndex: candidate.fileIndex,
+                     matchedRowIndex: candidate.rowIndex,
+                  });
+               }
+            }
+         }
+
+         // Check against existing database transactions
+         for (const trn of input.transactions) {
+            const trnDate = new Date(trn.date);
+            // Extended date range for weighted matching
+            const startDate = new Date(trnDate);
+            startDate.setDate(startDate.getDate() - DATE_TOLERANCE_DAYS);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(trnDate);
+            endDate.setDate(endDate.getDate() + DATE_TOLERANCE_DAYS);
+            endDate.setHours(23, 59, 59, 999);
+
+            // Find potential matches within date range
+            const potentialMatches = await resolvedCtx.db.query.transaction.findMany({
+               where: (transaction, { eq, and, gte, lte }) =>
+                  and(
+                     eq(transaction.bankAccountId, input.bankAccountId),
+                     eq(transaction.amount, trn.amount.toString()),
+                     gte(transaction.date, startDate),
+                     lte(transaction.date, endDate),
+                  ),
+               limit: 10,
+            });
+
+            for (const existingTrn of potentialMatches) {
+               const { scorePercentage, passed } = calculateDuplicateScore(
+                  { date: trnDate, amount: trn.amount, description: trn.description },
+                  { 
+                     date: existingTrn.date, 
+                     amount: Number.parseFloat(existingTrn.amount), 
+                     description: existingTrn.description ?? "" 
+                  },
+               );
+
+               if (passed) {
+                  duplicates.push({
+                     rowIndex: trn.rowIndex,
+                     fileIndex: trn.fileIndex,
+                     existingTransactionId: existingTrn.id,
+                     existingTransactionDate: existingTrn.date.toISOString(),
+                     existingTransactionDescription: existingTrn.description ?? "",
+                     duplicateType: "existing_database",
+                     matchScore: scorePercentage,
+                  });
+                  // Only keep first match for each transaction
+                  break;
+               }
+            }
+         }
+
+         return { duplicates };
+      }),
+
    update: protectedProcedure
       .input(
          z.object({
@@ -594,6 +902,9 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
 
          const existingBankAccount = await findBankAccountById(
             resolvedCtx.db,
@@ -606,6 +917,17 @@ export const bankAccountRouter = router({
          ) {
             throw APIError.notFound("Bank account not found");
          }
+
+         // Require edit permission to update
+         await checkResourcePermission(
+            resolvedCtx.db,
+            userId,
+            organizationId,
+            memberRole,
+            "bank_account",
+            input.id,
+            "edit",
+         );
 
          const updateData: {
             type?: "checking" | "savings" | "investment";
@@ -635,6 +957,22 @@ export const bankAccountRouter = router({
       .mutation(async ({ ctx, input }) => {
          const resolvedCtx = await ctx;
          const organizationId = resolvedCtx.organizationId;
+         const userId = resolvedCtx.userId;
+         const memberRole = ((resolvedCtx as ProtectedContext).memberRole ??
+            "member") as MemberRole;
+
+         // Check edit permission for each bank account
+         for (const id of input.ids) {
+            await checkResourcePermission(
+               resolvedCtx.db,
+               userId,
+               organizationId,
+               memberRole,
+               "bank_account",
+               id,
+               "edit",
+            );
+         }
 
          return updateBankAccountsStatus(
             resolvedCtx.db,

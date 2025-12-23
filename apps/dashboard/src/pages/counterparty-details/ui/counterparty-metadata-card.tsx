@@ -154,13 +154,15 @@ function MetadataCardContent({ counterpartyId }: { counterpartyId: string }) {
                              : "Documento"}
                      </AnnouncementTag>
                      <AnnouncementTitle className="flex items-center gap-1.5">
-                        <span className="font-mono">{counterparty.document}</span>
+                        <span className="font-mono">
+                           {counterparty.document}
+                        </span>
                         <Tooltip>
                            <TooltipTrigger asChild>
                               <Button
                                  className="size-5"
                                  onClick={() =>
-                                    copyToClipboard(counterparty.document!)
+                                    copyToClipboard(counterparty.document ?? "")
                                  }
                                  size="icon"
                                  variant="ghost"
@@ -180,7 +182,10 @@ function MetadataCardContent({ counterpartyId }: { counterpartyId: string }) {
                      Cadastrado em
                   </AnnouncementTag>
                   <AnnouncementTitle>
-                     {formatDate(new Date(counterparty.createdAt), "DD/MM/YYYY")}
+                     {formatDate(
+                        new Date(counterparty.createdAt),
+                        "DD/MM/YYYY",
+                     )}
                   </AnnouncementTitle>
                </Announcement>
 
@@ -205,7 +210,9 @@ function MetadataCardContent({ counterpartyId }: { counterpartyId: string }) {
                {counterparty.industry && (
                   <Announcement>
                      <AnnouncementTag>Setor</AnnouncementTag>
-                     <AnnouncementTitle>{counterparty.industry}</AnnouncementTitle>
+                     <AnnouncementTitle>
+                        {counterparty.industry}
+                     </AnnouncementTitle>
                   </Announcement>
                )}
 

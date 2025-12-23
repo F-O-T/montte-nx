@@ -174,9 +174,7 @@ const COMMON_INDUSTRIES = [
 ] as const;
 
 // Helper functions
-function detectDocumentType(
-   digits: string,
-): "cpf" | "cnpj" | "foreign" | null {
+function detectDocumentType(digits: string): "cpf" | "cnpj" | "foreign" | null {
    if (digits.length === 11) return "cpf";
    if (digits.length === 14) return "cnpj";
    return null;
@@ -1166,7 +1164,9 @@ export function ManageCounterpartyForm({
                               <Button
                                  className="h-8 px-3 text-sm"
                                  key={`payment-term-${option.value}`}
-                                 onClick={() => field.handleChange(option.value)}
+                                 onClick={() =>
+                                    field.handleChange(option.value)
+                                 }
                                  size="sm"
                                  type="button"
                                  variant={
@@ -1186,9 +1186,7 @@ export function ManageCounterpartyForm({
                               min={0}
                               onChange={(e) =>
                                  field.handleChange(
-                                    e.target.value
-                                       ? Number(e.target.value)
-                                       : 0,
+                                    e.target.value ? Number(e.target.value) : 0,
                                  )
                               }
                               placeholder="30"
@@ -1454,7 +1452,9 @@ export function ManageCounterpartyForm({
                                     >
                                        <PopoverTrigger asChild>
                                           <Button
-                                             aria-expanded={categoryComboboxOpen}
+                                             aria-expanded={
+                                                categoryComboboxOpen
+                                             }
                                              className="w-full justify-between"
                                              role="combobox"
                                              variant="outline"
@@ -1568,11 +1568,11 @@ export function ManageCounterpartyForm({
 
                <div className="px-4 flex-1 overflow-y-auto">
                   {methods.switch({
-                     "address": () => <AddressStep />,
+                     address: () => <AddressStep />,
                      "basic-info": () => <BasicInfoStep />,
-                     "contact": () => <ContactStep />,
-                     "financial": () => <FinancialStep />,
-                     "type": () => <TypeStep />,
+                     contact: () => <ContactStep />,
+                     financial: () => <FinancialStep />,
+                     type: () => <TypeStep />,
                   })}
                </div>
 

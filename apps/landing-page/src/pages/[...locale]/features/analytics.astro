@@ -1,8 +1,25 @@
 ---
 export const prerender = true;
 
+import {
+   ArrowRight,
+   BarChart3,
+   ChevronRight,
+   FileText,
+   Layers,
+   LineChart,
+   Sparkles,
+   Target,
+   TrendingUp,
+   Wallet,
+} from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
+import { Button } from "@packages/ui/components/button";
+import LogoCloud from "@/components/LogoCloud.astro";
+import StickyNavbar from "@/components/StickyNavbar.astro";
 import { supportedLanguages } from "@/i18n/config";
+import Layout from "@/layouts/Landing.astro";
+import Footer from "@/sections/Footer.astro";
 
 export function getStaticPaths() {
    return supportedLanguages.map((locale) => ({
@@ -11,9 +28,9 @@ export function getStaticPaths() {
 }
 
 const { locale } = Astro.params;
-const _lang = (locale || "pt-BR") as SupportedLng;
+const lang = (locale || "pt-BR") as SupportedLng;
 
-const _testimonials = [
+const testimonials = [
    {
       avatar: "https://api.dicebear.com/9.x/notionists/svg?seed=Taylor",
       handle: "@taylorfinance",
@@ -64,7 +81,7 @@ const _testimonials = [
    },
 ];
 
-const _relatedFeatures = [
+const relatedFeatures = [
    {
       description: "Relatórios bonitos e interativos",
       href: "/features/smart-transactions",
@@ -599,7 +616,7 @@ const _relatedFeatures = [
                </a>
             </div>
             <p class="mt-5 text-sm text-muted-foreground text-center">
-               Comece a analisar grátis ou{" "}
+               Comece a analisar gratis ou{" "}
                <a class="text-foreground underline underline-offset-4 hover:text-primary transition" href="/book-demo">
                   agende uma demo
                </a>

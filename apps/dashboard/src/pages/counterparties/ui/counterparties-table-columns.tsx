@@ -198,9 +198,7 @@ export function createCounterpartyColumns(
          cell: ({ row }) => {
             const counterparty = row.original;
             if (!counterparty.document) {
-               return (
-                  <span className="text-muted-foreground text-sm">-</span>
-               );
+               return <span className="text-muted-foreground text-sm">-</span>;
             }
             return (
                <div className="flex items-center gap-1.5">
@@ -213,7 +211,7 @@ export function createCounterpartyColumns(
                            className="size-6"
                            onClick={(e) => {
                               e.stopPropagation();
-                              copyToClipboard(counterparty.document!);
+                              copyToClipboard(counterparty.document ?? "");
                            }}
                            size="icon"
                            variant="ghost"
@@ -236,7 +234,10 @@ export function createCounterpartyColumns(
             const counterparty = row.original;
             return (
                <Badge
-                  className={cn("gap-1 border", getTypeColor(counterparty.type))}
+                  className={cn(
+                     "gap-1 border",
+                     getTypeColor(counterparty.type),
+                  )}
                   variant="outline"
                >
                   {getTypeIcon(counterparty.type)}

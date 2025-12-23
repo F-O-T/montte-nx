@@ -1,6 +1,10 @@
 ---
+import { ArrowRight, ChevronRight } from "@lucide/astro";
+import { Badge } from "@packages/ui/components/badge";
+import { Separator } from "@packages/ui/components/separator";
+import montteLogo from "@/assets/montte-logo.svg";
 
-const _costItems = [
+const costItems = [
    { name: "Conta Azul Performance", price: "R$ 849", widthClass: "w-full" },
    {
       name: "Omie ERP (empresas maiores)",
@@ -77,7 +81,7 @@ const _costItems = [
             <div class="flex justify-between items-center gap-5">
                <div class="flex items-center gap-2">
                   <div class="shrink-0">
-                     <img src={montteLogo} alt="Montte Logo" class="size-4" />
+                     <img src={montteLogo.src} alt="Montte Logo" class="size-4" />
                   </div>
                   <div class="font-medium">Montte Empresas</div>
                </div>

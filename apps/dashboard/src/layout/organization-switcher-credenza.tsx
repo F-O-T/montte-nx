@@ -10,22 +10,19 @@ import { Skeleton } from "@packages/ui/components/skeleton";
 import { toast } from "@packages/ui/components/sonner";
 import { cn } from "@packages/ui/lib/utils";
 import { getInitials } from "@packages/utils/text";
-import {
-   useMutation,
-   useQueryClient,
-   useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { Building2, Check, Eye, Plus, Users } from "lucide-react";
 import React, { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { ManageOrganizationForm } from "@/features/organization-actions/ui/manage-organization-form";
+import { useSetActiveOrganization } from "@/features/organization/hooks/use-set-active-organization";
+import { CreateTeamForm } from "@/features/organization/ui/create-team-form";
+import { ManageOrganizationForm } from "@/features/organization/ui/manage-organization-form";
 import { useActiveOrganization } from "@/hooks/use-active-organization";
 import { useCredenza } from "@/hooks/use-credenza";
 import { useHaptic } from "@/hooks/use-haptic";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
-import { CreateTeamForm } from "@/pages/organization-teams/features/create-team-form";
 
 function OrganizationSwitcherErrorFallback() {
    return (
@@ -272,14 +269,9 @@ function OrganizationSwitcherContent() {
    );
 
    const { activeOrganization } = useActiveOrganization();
-
-   const setActiveOrganization = useMutation(
-      trpc.organization.setActiveOrganization.mutationOptions({
-         onSuccess: async () => {
-            toast.success("Organization set successfully");
-         },
-      }),
-   );
+   const { setActiveOrganization } = useSetActiveOrganization({
+      showToast: false,
+   });
 
    const hasReachedLimit =
       (organizations?.length ?? 0) >= (organizationLimit ?? 3);
@@ -297,9 +289,8 @@ function OrganizationSwitcherContent() {
       await queryClient.invalidateQueries();
 
       if (!isCurrentOrg) {
-         setActiveOrganization.mutate({
-            organizationId,
-         });
+         await setActiveOrganization({ organizationId });
+         toast.success("Organization set successfully");
       }
    }
 

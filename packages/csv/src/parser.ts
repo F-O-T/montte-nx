@@ -63,6 +63,36 @@ export function parseAmount(
    return parsed;
 }
 
+/**
+ * Validates if a string represents a valid numeric amount.
+ * Returns true for valid numbers including zero representations ("0", "0.00", "0,00", "-0").
+ * Returns false for invalid/unparseable strings.
+ */
+export function isValidAmount(
+   value: string,
+   format: "decimal-comma" | "decimal-dot",
+): boolean {
+   if (!value || value.trim() === "") {
+      return false;
+   }
+
+   let normalized = value.trim();
+
+   // Remove currency symbols and spaces (same normalization as parseAmount)
+   normalized = normalized.replace(/[R$\s]/g, "");
+
+   // Normalize decimal separators based on format
+   if (format === "decimal-comma") {
+      normalized = normalized.replace(/\./g, "").replace(",", ".");
+   } else {
+      normalized = normalized.replace(/,/g, "");
+   }
+
+   // Check if the normalized value is a valid finite number
+   const parsed = Number(normalized);
+   return Number.isFinite(parsed);
+}
+
 export function parseDate(value: string, format: string): Date | null {
    if (!value || value.trim() === "") {
       return null;
@@ -178,8 +208,7 @@ function processRow(
       return null;
    }
 
-   const amount = parseAmount(amountValue, amountFormat);
-   if (amount === 0 && amountValue?.trim() !== "0") {
+   if (!isValidAmount(amountValue, amountFormat)) {
       errors.push({
          row: rowIndex,
          column: mapping.amount,
@@ -187,6 +216,8 @@ function processRow(
       });
       return null;
    }
+
+   const amount = parseAmount(amountValue, amountFormat);
 
    const description = normalizeText(descriptionValue || "Sem descrição");
 

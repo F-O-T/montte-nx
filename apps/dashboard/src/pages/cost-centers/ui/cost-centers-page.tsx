@@ -2,7 +2,9 @@ import type { RouterOutput } from "@packages/api/client";
 import { translate } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
 import { Plus } from "lucide-react";
+import { UpgradeRequired } from "@/components/upgrade-required";
 import { DefaultHeader } from "@/default/default-header";
+import { usePlanFeatures } from "@/hooks/use-plan-features";
 import { useSheet } from "@/hooks/use-sheet";
 import { CostCenterListProvider } from "../features/cost-center-list-context";
 import { ManageCostCenterForm } from "../features/manage-cost-center-form";
@@ -15,34 +17,41 @@ export type CostCenter =
 
 export function CostCentersPage() {
    const { openSheet } = useSheet();
+   const { canAccessCostCenters } = usePlanFeatures();
 
    return (
-      <CostCenterListProvider>
-         <main className="space-y-4">
-            <DefaultHeader
-               actions={
-                  <Button
-                     onClick={() =>
-                        openSheet({
-                           children: <ManageCostCenterForm />,
-                        })
-                     }
-                  >
-                     <Plus className="size-4" />
-                     {translate("common.actions.add")}
-                  </Button>
-               }
-               description={translate(
-                  "dashboard.routes.cost-centers.list-section.description",
-               )}
-               title={translate(
-                  "dashboard.routes.cost-centers.list-section.title",
-               )}
-            />
-            <CostCentersStats />
-            <CostCentersListSection />
-            <CostCentersCharts />
-         </main>
-      </CostCenterListProvider>
+      <UpgradeRequired
+         featureName="Centros de Custo"
+         hasAccess={canAccessCostCenters}
+         requiredPlan="erp"
+      >
+         <CostCenterListProvider>
+            <main className="space-y-4">
+               <DefaultHeader
+                  actions={
+                     <Button
+                        onClick={() =>
+                           openSheet({
+                              children: <ManageCostCenterForm />,
+                           })
+                        }
+                     >
+                        <Plus className="size-4" />
+                        {translate("common.actions.add")}
+                     </Button>
+                  }
+                  description={translate(
+                     "dashboard.routes.cost-centers.list-section.description",
+                  )}
+                  title={translate(
+                     "dashboard.routes.cost-centers.list-section.title",
+                  )}
+               />
+               <CostCentersStats />
+               <CostCentersListSection />
+               <CostCentersCharts />
+            </main>
+         </CostCenterListProvider>
+      </UpgradeRequired>
    );
 }

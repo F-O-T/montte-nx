@@ -112,7 +112,14 @@ const paginationSchema = z.object({
    isActive: z.boolean().optional(),
    limit: z.coerce.number().min(1).max(100).default(10),
    orderBy: z
-      .enum(["name", "type", "createdAt", "updatedAt", "tradeName", "legalName"])
+      .enum([
+         "name",
+         "type",
+         "createdAt",
+         "updatedAt",
+         "tradeName",
+         "legalName",
+      ])
       .default("name"),
    orderDirection: z.enum(["asc", "desc"]).default("asc"),
    page: z.coerce.number().min(1).default(1),

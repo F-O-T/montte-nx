@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { type FormEvent, useCallback, useMemo } from "react";
 import { z } from "zod";
+import { usePlanFeatures } from "@/hooks/use-plan-features";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import type { CustomReport } from "@/pages/custom-reports/ui/custom-reports-page";
@@ -112,6 +113,7 @@ export function ManageCustomReportForm({
 }: ManageCustomReportFormProps) {
    const trpc = useTRPC();
    const { closeSheet } = useSheet();
+   const { canAccessTags, canAccessCostCenters } = usePlanFeatures();
    const isEditMode = !!report;
 
    const modeTexts = useMemo(() => {
@@ -453,43 +455,47 @@ export function ManageCustomReportForm({
                </form.Field>
             </FieldGroup>
 
-            <FieldGroup>
-               <form.Field name="costCenterIds">
-                  {(field) => (
-                     <Field>
-                        <FieldLabel>Centros de Custo</FieldLabel>
-                        <MultiSelect
-                           onChange={(selected) => field.handleChange(selected)}
-                           options={costCenterOptions}
-                           placeholder="Todos os centros de custo"
-                           selected={field.state.value}
-                        />
-                        <FieldDescription>
-                           Opcional. Filtre por centros de custo específicos.
-                        </FieldDescription>
-                     </Field>
-                  )}
-               </form.Field>
-            </FieldGroup>
+            {canAccessCostCenters && (
+               <FieldGroup>
+                  <form.Field name="costCenterIds">
+                     {(field) => (
+                        <Field>
+                           <FieldLabel>Centros de Custo</FieldLabel>
+                           <MultiSelect
+                              onChange={(selected) => field.handleChange(selected)}
+                              options={costCenterOptions}
+                              placeholder="Todos os centros de custo"
+                              selected={field.state.value}
+                           />
+                           <FieldDescription>
+                              Opcional. Filtre por centros de custo específicos.
+                           </FieldDescription>
+                        </Field>
+                     )}
+                  </form.Field>
+               </FieldGroup>
+            )}
 
-            <FieldGroup>
-               <form.Field name="tagIds">
-                  {(field) => (
-                     <Field>
-                        <FieldLabel>Tags</FieldLabel>
-                        <MultiSelect
-                           onChange={(selected) => field.handleChange(selected)}
-                           options={tagOptions}
-                           placeholder="Todas as tags"
-                           selected={field.state.value}
-                        />
-                        <FieldDescription>
-                           Opcional. Filtre por tags específicas.
-                        </FieldDescription>
-                     </Field>
-                  )}
-               </form.Field>
-            </FieldGroup>
+            {canAccessTags && (
+               <FieldGroup>
+                  <form.Field name="tagIds">
+                     {(field) => (
+                        <Field>
+                           <FieldLabel>Tags</FieldLabel>
+                           <MultiSelect
+                              onChange={(selected) => field.handleChange(selected)}
+                              options={tagOptions}
+                              placeholder="Todas as tags"
+                              selected={field.state.value}
+                           />
+                           <FieldDescription>
+                              Opcional. Filtre por tags específicas.
+                           </FieldDescription>
+                        </Field>
+                     )}
+                  </form.Field>
+               </FieldGroup>
+            )}
          </div>
       );
    }
