@@ -3,7 +3,11 @@ import {
    generateBankStatement,
    parseStream,
    parseStreamToArray,
+   parseBatchStream,
+   parseBatchStreamToArray,
    type StreamEvent,
+   type BatchStreamEvent,
+   type BatchFileInput,
 } from "../src";
 
 function stringToReadableStream(str: string): ReadableStream<Uint8Array> {
@@ -214,5 +218,230 @@ describe("streaming performance", () => {
       console.log(
          `Streamed 5000 transactions in ${duration.toFixed(2)}ms (${(5000 / (duration / 1000)).toFixed(0)} txn/s)`,
       );
+   });
+});
+
+// Helper to convert OFX string to BatchFileInput
+function createBatchFileInput(
+   content: string,
+   filename: string,
+): BatchFileInput {
+   return {
+      filename,
+      buffer: new TextEncoder().encode(content),
+   };
+}
+
+describe("parseBatchStream", () => {
+   test("yields file_start event for each file", async () => {
+      const ofx1 = generateTestOFX(3);
+      const ofx2 = generateTestOFX(5);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const events: BatchStreamEvent[] = [];
+      for await (const event of parseBatchStream(files)) {
+         events.push(event);
+      }
+
+      const fileStartEvents = events.filter((e) => e.type === "file_start");
+      expect(fileStartEvents.length).toBe(2);
+      expect(fileStartEvents[0]).toEqual({
+         type: "file_start",
+         fileIndex: 0,
+         filename: "file1.ofx",
+      });
+      expect(fileStartEvents[1]).toEqual({
+         type: "file_start",
+         fileIndex: 1,
+         filename: "file2.ofx",
+      });
+   });
+
+   test("yields transactions with correct fileIndex", async () => {
+      const ofx1 = generateTestOFX(3);
+      const ofx2 = generateTestOFX(5);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const events: BatchStreamEvent[] = [];
+      for await (const event of parseBatchStream(files)) {
+         events.push(event);
+      }
+
+      const transactionEvents = events.filter((e) => e.type === "transaction");
+      expect(transactionEvents.length).toBe(8); // 3 + 5
+
+      const file1Transactions = transactionEvents.filter(
+         (e) => e.type === "transaction" && e.fileIndex === 0,
+      );
+      const file2Transactions = transactionEvents.filter(
+         (e) => e.type === "transaction" && e.fileIndex === 1,
+      );
+
+      expect(file1Transactions.length).toBe(3);
+      expect(file2Transactions.length).toBe(5);
+   });
+
+   test("yields file_complete with transaction count", async () => {
+      const ofx1 = generateTestOFX(3);
+      const ofx2 = generateTestOFX(7);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const events: BatchStreamEvent[] = [];
+      for await (const event of parseBatchStream(files)) {
+         events.push(event);
+      }
+
+      const completeEvents = events.filter((e) => e.type === "file_complete");
+      expect(completeEvents.length).toBe(2);
+
+      if (completeEvents[0]?.type === "file_complete") {
+         expect(completeEvents[0].transactionCount).toBe(3);
+         expect(completeEvents[0].filename).toBe("file1.ofx");
+      }
+      if (completeEvents[1]?.type === "file_complete") {
+         expect(completeEvents[1].transactionCount).toBe(7);
+         expect(completeEvents[1].filename).toBe("file2.ofx");
+      }
+   });
+
+   test("yields batch_complete with totals", async () => {
+      const ofx1 = generateTestOFX(4);
+      const ofx2 = generateTestOFX(6);
+      const ofx3 = generateTestOFX(2);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+         createBatchFileInput(ofx3, "file3.ofx"),
+      ];
+
+      const events: BatchStreamEvent[] = [];
+      for await (const event of parseBatchStream(files)) {
+         events.push(event);
+      }
+
+      const batchComplete = events.find((e) => e.type === "batch_complete");
+      expect(batchComplete).toBeDefined();
+      if (batchComplete?.type === "batch_complete") {
+         expect(batchComplete.totalFiles).toBe(3);
+         expect(batchComplete.totalTransactions).toBe(12); // 4 + 6 + 2
+         expect(batchComplete.errorCount).toBe(0);
+      }
+   });
+
+   test("processes multiple files sequentially", async () => {
+      const ofx1 = generateTestOFX(2);
+      const ofx2 = generateTestOFX(3);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const eventTypes: string[] = [];
+      for await (const event of parseBatchStream(files)) {
+         eventTypes.push(`${event.type}:${event.type === "batch_complete" ? "batch" : "fileIndex" in event ? event.fileIndex : ""}`);
+      }
+
+      // Verify file1 events come before file2 events
+      const file1CompleteIndex = eventTypes.findIndex((e) =>
+         e.startsWith("file_complete:0"),
+      );
+      const file2StartIndex = eventTypes.findIndex((e) =>
+         e.startsWith("file_start:1"),
+      );
+
+      expect(file1CompleteIndex).toBeLessThan(file2StartIndex);
+   });
+
+   test("yields header events for each file", async () => {
+      const ofx1 = generateTestOFX(1);
+      const ofx2 = generateTestOFX(1);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const events: BatchStreamEvent[] = [];
+      for await (const event of parseBatchStream(files)) {
+         events.push(event);
+      }
+
+      const headerEvents = events.filter((e) => e.type === "header");
+      expect(headerEvents.length).toBe(2);
+      expect(headerEvents[0]?.type === "header" && headerEvents[0].fileIndex).toBe(0);
+      expect(headerEvents[1]?.type === "header" && headerEvents[1].fileIndex).toBe(1);
+   });
+});
+
+describe("parseBatchStreamToArray", () => {
+   test("collects all files into array", async () => {
+      const ofx1 = generateTestOFX(3);
+      const ofx2 = generateTestOFX(5);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const results = await parseBatchStreamToArray(files);
+
+      expect(results.length).toBe(2);
+      expect(results[0]?.filename).toBe("file1.ofx");
+      expect(results[1]?.filename).toBe("file2.ofx");
+   });
+
+   test("each file has correct transactions", async () => {
+      const ofx1 = generateTestOFX(4);
+      const ofx2 = generateTestOFX(6);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const results = await parseBatchStreamToArray(files);
+
+      expect(results[0]?.transactions.length).toBe(4);
+      expect(results[1]?.transactions.length).toBe(6);
+
+      // Verify first transaction of each file
+      expect(results[0]?.transactions[0]?.FITID).toBe("TXN000000");
+      expect(results[1]?.transactions[0]?.FITID).toBe("TXN000000");
+   });
+
+   test("each file has header info", async () => {
+      const ofx1 = generateTestOFX(1);
+      const ofx2 = generateTestOFX(1);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const results = await parseBatchStreamToArray(files);
+
+      expect(results[0]?.header).toBeDefined();
+      expect(results[1]?.header).toBeDefined();
+   });
+
+   test("each file has account and balance info", async () => {
+      const ofx1 = generateTestOFX(1);
+      const ofx2 = generateTestOFX(1);
+      const files: BatchFileInput[] = [
+         createBatchFileInput(ofx1, "file1.ofx"),
+         createBatchFileInput(ofx2, "file2.ofx"),
+      ];
+
+      const results = await parseBatchStreamToArray(files);
+
+      expect(results[0]?.accounts.length).toBe(1);
+      expect(results[1]?.accounts.length).toBe(1);
+      expect(results[0]?.balances.length).toBe(1);
+      expect(results[1]?.balances.length).toBe(1);
    });
 });

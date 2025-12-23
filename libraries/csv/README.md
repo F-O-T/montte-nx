@@ -129,6 +129,68 @@ Streams parsing from a binary buffer.
 #### `parseStreamToArray(chunks, options?)`
 Streams parsing and collects all rows into an array.
 
+### Batch Streaming Functions
+
+For processing multiple CSV files in a single operation with progress tracking.
+
+#### `parseBatchStream(files, options?)`
+
+Parses multiple CSV files sequentially, yielding events as they are parsed. Ideal for importing multiple spreadsheets at once.
+
+```typescript
+import { parseBatchStream, type BatchCsvFileInput } from "@f-o-t/csv";
+import { readFileSync } from "node:fs";
+
+const files: BatchCsvFileInput[] = [
+  { filename: "january.csv", content: readFileSync("january.csv", "utf-8") },
+  { filename: "february.csv", content: readFileSync("february.csv", "utf-8") },
+  { filename: "march.csv", content: readFileSync("march.csv", "utf-8") },
+];
+
+for await (const event of parseBatchStream(files, { hasHeaders: true })) {
+  switch (event.type) {
+    case "file_start":
+      console.log(`Processing: ${event.filename}`);
+      break;
+    case "headers":
+      console.log(`File ${event.fileIndex} headers:`, event.data);
+      break;
+    case "row":
+      console.log(`File ${event.fileIndex}, Row ${event.data.rowIndex}:`, event.data.fields);
+      break;
+    case "file_complete":
+      console.log(`Completed ${event.filename}: ${event.rowCount} rows`);
+      break;
+    case "file_error":
+      console.error(`Error in ${event.filename}: ${event.error}`);
+      break;
+    case "batch_complete":
+      console.log(`Batch done: ${event.totalRows} rows from ${event.totalFiles} files`);
+      break;
+  }
+}
+```
+
+#### `parseBatchStreamToArray(files, options?)`
+
+Collects all batch results into an array for easier processing.
+
+```typescript
+import { parseBatchStreamToArray } from "@f-o-t/csv";
+
+const results = await parseBatchStreamToArray(files, { hasHeaders: true });
+
+for (const file of results) {
+  console.log(`${file.filename}: ${file.rows.length} rows`);
+  if (file.headers) {
+    console.log(`  Headers: ${file.headers.join(", ")}`);
+  }
+  if (file.error) {
+    console.error(`  Error: ${file.error}`);
+  }
+}
+```
+
 ### Generation Functions
 
 #### `generate(options)`
@@ -198,6 +260,27 @@ interface GenerateOptions {
   lineEnding?: "\n" | "\r\n";          // Line ending (default: '\n')
   includeHeaders?: boolean;            // Include headers row
   alwaysQuote?: boolean;               // Always quote all fields
+}
+
+// Batch streaming types
+interface BatchCsvFileInput {
+  filename: string;                    // File name for tracking
+  content: string;                     // CSV content as string
+}
+
+type BatchCsvStreamEvent =
+  | { type: "file_start"; fileIndex: number; filename: string }
+  | { type: "headers"; fileIndex: number; data: string[] }
+  | { type: "row"; fileIndex: number; data: ParsedRow }
+  | { type: "file_complete"; fileIndex: number; filename: string; rowCount: number }
+  | { type: "file_error"; fileIndex: number; filename: string; error: string }
+  | { type: "batch_complete"; totalFiles: number; totalRows: number; errorCount: number };
+
+interface BatchParsedCsvFile {
+  filename: string;                    // Original filename
+  headers?: string[];                  // Headers if hasHeaders was true
+  rows: ParsedRow[];                   // All parsed rows
+  error?: string;                      // Error message if parsing failed
 }
 ```
 

@@ -6,11 +6,11 @@ import { usePendingImport } from "@/hooks/use-pending-import";
 import {
    type ColumnMapping,
    type CsvPreviewData,
-   type DuplicateInfo,
-   type FileType,
-   getStepsForFileType,
+   type BatchDuplicateInfo,
+   type ImportedFile,
+   getStepsForBatchFileType,
    type ImportStep,
-   type ParsedTransaction,
+   type BatchParsedTransaction,
 } from "../lib/use-import-wizard";
 import { AccountStep } from "./account-step";
 import { ImportingStep } from "./importing-step";
@@ -37,9 +37,7 @@ export function ImportWizard({
    const [bankAccountId, setBankAccountId] = useState<string | null>(
       initialBankAccountId ?? null,
    );
-   const [fileType, setFileType] = useState<FileType | null>(null);
-   const [filename, setFilename] = useState<string | null>(null);
-   const [content, setContent] = useState<string | null>(null);
+   const [files, setFiles] = useState<ImportedFile[]>([]);
    const [csvPreviewData, setCsvPreviewData] = useState<CsvPreviewData | null>(
       null,
    );
@@ -47,21 +45,19 @@ export function ImportWizard({
       null,
    );
    const [parsedTransactions, setParsedTransactions] = useState<
-      ParsedTransaction[]
+      BatchParsedTransaction[]
    >([]);
-   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
-   const [duplicates, setDuplicates] = useState<DuplicateInfo[]>([]);
+   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+   const [duplicates, setDuplicates] = useState<BatchDuplicateInfo[]>([]);
    const [duplicatesChecked, setDuplicatesChecked] = useState(false);
 
    // Load state from session storage on mount
    useEffect(() => {
       const pending = getPending();
       if (pending) {
-         setFileType(pending.fileType);
-         setFilename(pending.filename);
-         setContent(pending.content);
+         setFiles(pending.files);
          setBankAccountId(pending.bankAccountId);
-         setCsvPreviewData(pending.csvPreviewData);
+         setCsvPreviewData(pending.csvPreviewDataList[0]?.previewData ?? null);
          setColumnMapping(pending.columnMapping);
          setDuplicates(pending.duplicates);
          setDuplicatesChecked(pending.duplicatesChecked);
@@ -76,35 +72,33 @@ export function ImportWizard({
          }
 
          // Deserialize selected rows
-         if (pending.selectedRowIndices.length > 0) {
-            setSelectedRows(new Set(pending.selectedRowIndices));
+         if (pending.selectedRowKeys.length > 0) {
+            setSelectedRows(new Set(pending.selectedRowKeys));
          }
       }
    }, [getPending]);
 
    // Persist state changes to session storage
    const persistState = useCallback(() => {
-      if (!fileType || !content || !filename) return;
+      if (files.length === 0) return;
 
       updatePending({
-         fileType,
-         filename,
-         content,
+         files,
          bankAccountId,
-         csvPreviewData,
+         csvPreviewDataList: csvPreviewData
+            ? [{ fileIndex: 0, previewData: csvPreviewData }]
+            : [],
          columnMapping,
          parsedTransactions: parsedTransactions.map((t) => ({
             ...t,
             date: t.date.toISOString(),
          })),
-         selectedRowIndices: Array.from(selectedRows),
+         selectedRowKeys: Array.from(selectedRows),
          duplicates,
          duplicatesChecked,
       });
    }, [
-      fileType,
-      filename,
-      content,
+      files,
       bankAccountId,
       csvPreviewData,
       columnMapping,
@@ -117,15 +111,15 @@ export function ImportWizard({
 
    // Persist on state changes (debounced via effect)
    useEffect(() => {
-      if (fileType && content && filename) {
+      if (files.length > 0) {
          persistState();
       }
-   }, [fileType, content, filename, persistState]);
+   }, [files, persistState]);
 
    // Navigation
-   const steps = getStepsForFileType(fileType);
+   const steps = getStepsForBatchFileType(files);
    const currentStepIndex = steps.indexOf(step);
-   const totalSteps = fileType ? steps.length : 5; // Show 5 steps in indicator before file type is known
+   const totalSteps = files.length > 0 ? steps.length : 5;
 
    const handleCancel = useCallback(() => {
       clearPending();
@@ -158,20 +152,15 @@ export function ImportWizard({
       [goToStep],
    );
 
-   const handleFileUploaded = useCallback(
-      (
-         uploadedFileType: FileType,
-         uploadedFilename: string,
-         uploadedContent: string,
-      ) => {
-         setFileType(uploadedFileType);
-         setFilename(uploadedFilename);
-         setContent(uploadedContent);
+   const handleFilesUploaded = useCallback(
+      (uploadedFiles: ImportedFile[]) => {
+         setFiles(uploadedFiles);
 
-         // If OFX, skip column mapping
-         if (uploadedFileType === "ofx") {
+         // If only OFX files, skip column mapping
+         const hasCsv = uploadedFiles.some((f) => f.fileType === "csv");
+         if (!hasCsv && uploadedFiles.length > 0) {
             goToStep("preview");
-         } else {
+         } else if (hasCsv) {
             goToStep("column-mapping");
          }
       },
@@ -189,9 +178,9 @@ export function ImportWizard({
 
    const handlePreviewComplete = useCallback(
       (
-         transactions: ParsedTransaction[],
-         selected: Set<number>,
-         dups: DuplicateInfo[],
+         transactions: BatchParsedTransaction[],
+         selected: Set<string>,
+         dups: BatchDuplicateInfo[],
       ) => {
          setParsedTransactions(transactions);
          setSelectedRows(selected);
@@ -241,7 +230,7 @@ export function ImportWizard({
          case "select-account":
             return "Selecionar Conta";
          case "upload":
-            return "Selecionar Arquivo";
+            return "Selecionar Arquivos";
          case "column-mapping":
             return "Mapear Colunas";
          case "preview":
@@ -258,17 +247,20 @@ export function ImportWizard({
          case "select-account":
             return "Escolha a conta bancária para importar as transações";
          case "upload":
-            return "Arraste ou selecione um arquivo CSV ou OFX";
+            return `Arraste ou selecione até 10 arquivos CSV ou OFX${files.length > 0 ? ` (${files.length} selecionado${files.length > 1 ? "s" : ""})` : ""}`;
          case "column-mapping":
             return "Indique quais colunas correspondem a data, valor e descrição";
          case "preview":
             return "Revise e selecione as transações a importar";
          case "importing":
-            return "Processando o arquivo e criando as transações...";
+            return "Processando os arquivos e criando as transações...";
          default:
             return "";
       }
    };
+
+   // Check if we have CSV files for mapping step
+   const hasCsv = files.some((f) => f.fileType === "csv");
 
    return (
       <div className="min-h-screen flex flex-col">
@@ -326,15 +318,18 @@ export function ImportWizard({
                   )}
 
                   {step === "upload" && bankAccountId && (
-                     <UploadStep onFileUploaded={handleFileUploaded} />
+                     <UploadStep
+                        initialFiles={files}
+                        onFilesUploaded={handleFilesUploaded}
+                     />
                   )}
 
                   {step === "column-mapping" &&
                      bankAccountId &&
-                     content &&
-                     fileType === "csv" && (
+                     files.length > 0 &&
+                     hasCsv && (
                         <MappingStep
-                           content={content}
+                           files={files}
                            initialColumnMapping={columnMapping}
                            initialCsvPreviewData={csvPreviewData}
                            onBack={handleBack}
@@ -344,17 +339,14 @@ export function ImportWizard({
 
                   {step === "preview" &&
                      bankAccountId &&
-                     content &&
-                     fileType &&
+                     files.length > 0 &&
                      // For CSV, ensure column mapping and preview data are set
-                     (fileType === "ofx" ||
-                        (columnMapping && csvPreviewData)) && (
+                     (!hasCsv || (columnMapping && csvPreviewData)) && (
                         <PreviewStep
                            bankAccountId={bankAccountId}
                            columnMapping={columnMapping}
-                           content={content}
                            csvPreviewData={csvPreviewData}
-                           fileType={fileType}
+                           files={files}
                            initialDuplicates={duplicates}
                            initialParsedTransactions={parsedTransactions}
                            initialSelectedRows={selectedRows}

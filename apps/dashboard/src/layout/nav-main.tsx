@@ -141,9 +141,6 @@ export function NavMain() {
          : []),
    ];
 
-   // Only show categorization section if user has access to more than just categories
-   const showCategorizationSection = canAccessTags || canAccessCostCenters;
-
    const automationItems = canAccessAutomations
       ? [
            {
@@ -224,16 +221,14 @@ export function NavMain() {
             <SidebarMenu>
                {billsItems.map((item) => renderNavItem(item))}
             </SidebarMenu>
-            {state === "expanded" && showCategorizationSection && (
+            {state === "expanded" && (
                <SidebarGroupLabel>
                   {translate("dashboard.layout.nav-main.categorization.title")}
                </SidebarGroupLabel>
             )}
-            {showCategorizationSection && (
-               <SidebarMenu>
-                  {categorizationItems.map((item) => renderNavItem(item))}
-               </SidebarMenu>
-            )}
+            <SidebarMenu>
+               {categorizationItems.map((item) => renderNavItem(item))}
+            </SidebarMenu>
             {state === "expanded" && automationItems.length > 0 && (
                <SidebarGroupLabel>Automação</SidebarGroupLabel>
             )}

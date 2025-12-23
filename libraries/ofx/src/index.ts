@@ -48,7 +48,12 @@ export type {
 export {
    parseStream,
    parseStreamToArray,
+   parseBatchStream,
+   parseBatchStreamToArray,
    type StreamEvent,
    type StreamOptions,
+   type BatchFileInput,
+   type BatchStreamEvent,
+   type BatchParsedFile,
 } from "./stream";
 export { formatOfxDate } from "./utils";

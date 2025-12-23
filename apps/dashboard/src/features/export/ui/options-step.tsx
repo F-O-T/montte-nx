@@ -1,15 +1,14 @@
 import { Button } from "@packages/ui/components/button";
-import { Calendar } from "@packages/ui/components/calendar";
+import {
+   Choicebox,
+   ChoiceboxIndicator,
+   ChoiceboxItem,
+   ChoiceboxItemDescription,
+   ChoiceboxItemHeader,
+   ChoiceboxItemTitle,
+} from "@packages/ui/components/choicebox";
+import { DateRangePickerPopover } from "@packages/ui/components/date-range-picker-popover";
 import { Label } from "@packages/ui/components/label";
-import {
-   Popover,
-   PopoverContent,
-   PopoverTrigger,
-} from "@packages/ui/components/popover";
-import {
-   RadioGroup,
-   RadioGroupItem,
-} from "@packages/ui/components/radio-group";
 import {
    Select,
    SelectContent,
@@ -17,14 +16,8 @@ import {
    SelectTrigger,
    SelectValue,
 } from "@packages/ui/components/select";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import {
-   CalendarIcon,
-   FileIcon,
-   FileSpreadsheetIcon,
-   FileTextIcon,
-} from "lucide-react";
+import { Separator } from "@packages/ui/components/separator";
+import { FileIcon, FileSpreadsheetIcon, FileTextIcon } from "lucide-react";
 import { useState } from "react";
 import {
    EXPORT_FORMATS,
@@ -61,9 +54,12 @@ export function OptionsStep({
       initialOptions.typeFilter,
    );
 
-   const formatDateDisplay = (date: Date | null) => {
-      if (!date) return "Selecione uma data";
-      return format(date, "dd/MM/yyyy", { locale: ptBR });
+   const handleDateRangeChange = (range: {
+      startDate: Date | null;
+      endDate: Date | null;
+   }) => {
+      setStartDate(range.startDate);
+      setEndDate(range.endDate);
    };
 
    const handleContinue = () => {
@@ -77,87 +73,46 @@ export function OptionsStep({
 
    return (
       <div className="space-y-6">
-         <div className="space-y-4">
-            <div className="space-y-3">
-               <Label>Formato de Exportação</Label>
-               <RadioGroup
-                  className="grid grid-cols-3 gap-3"
-                  onValueChange={(value) =>
-                     setExportFormat(value as ExportFormat)
-                  }
-                  value={exportFormat}
-               >
-                  {EXPORT_FORMATS.map((fmt) => (
-                     <Label
-                        className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all hover:border-primary/50 ${
-                           exportFormat === fmt.id
-                              ? "border-primary bg-primary/5"
-                              : "border-muted"
-                        }`}
-                        htmlFor={fmt.id}
-                        key={fmt.id}
-                     >
-                        <RadioGroupItem
-                           className="sr-only"
-                           id={fmt.id}
-                           value={fmt.id}
-                        />
-                        {FORMAT_ICONS[fmt.id]}
-                        <span className="font-medium text-sm">{fmt.name}</span>
-                        <span className="text-xs text-muted-foreground text-center">
+         <div className="space-y-3">
+            <Label>Formato de Exportação</Label>
+            <Choicebox
+               className="grid grid-cols-1 md:grid-cols-3 gap-3"
+               onValueChange={(value) =>
+                  setExportFormat(value as ExportFormat)
+               }
+               value={exportFormat}
+            >
+               {EXPORT_FORMATS.map((fmt) => (
+                  <ChoiceboxItem
+                     id={`export-format-${fmt.id}`}
+                     key={fmt.id}
+                     value={fmt.id}
+                  >
+                     {FORMAT_ICONS[fmt.id]}
+                     <ChoiceboxItemHeader>
+                        <ChoiceboxItemTitle>{fmt.name}</ChoiceboxItemTitle>
+                        <ChoiceboxItemDescription>
                            {fmt.description}
-                        </span>
-                     </Label>
-                  ))}
-               </RadioGroup>
-            </div>
+                        </ChoiceboxItemDescription>
+                     </ChoiceboxItemHeader>
+                     <ChoiceboxIndicator id={`export-format-${fmt.id}`} />
+                  </ChoiceboxItem>
+               ))}
+            </Choicebox>
+         </div>
 
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <Label>Data Inicial</Label>
-                  <Popover>
-                     <PopoverTrigger asChild>
-                        <Button
-                           className="w-full justify-start text-left font-normal"
-                           variant="outline"
-                        >
-                           <CalendarIcon className="mr-2 size-4" />
-                           {formatDateDisplay(startDate)}
-                        </Button>
-                     </PopoverTrigger>
-                     <PopoverContent align="start" className="w-auto p-0">
-                        <Calendar
-                           locale={ptBR}
-                           mode="single"
-                           onSelect={(date) => setStartDate(date ?? null)}
-                           selected={startDate ?? undefined}
-                        />
-                     </PopoverContent>
-                  </Popover>
-               </div>
+         <Separator />
 
-               <div className="space-y-2">
-                  <Label>Data Final</Label>
-                  <Popover>
-                     <PopoverTrigger asChild>
-                        <Button
-                           className="w-full justify-start text-left font-normal"
-                           variant="outline"
-                        >
-                           <CalendarIcon className="mr-2 size-4" />
-                           {formatDateDisplay(endDate)}
-                        </Button>
-                     </PopoverTrigger>
-                     <PopoverContent align="start" className="w-auto p-0">
-                        <Calendar
-                           locale={ptBR}
-                           mode="single"
-                           onSelect={(date) => setEndDate(date ?? null)}
-                           selected={endDate ?? undefined}
-                        />
-                     </PopoverContent>
-                  </Popover>
-               </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+               <Label>Período</Label>
+               <DateRangePickerPopover
+                  className="w-full"
+                  endDate={endDate}
+                  onRangeChange={handleDateRangeChange}
+                  placeholder="Selecione o período"
+                  startDate={startDate}
+               />
             </div>
 
             <div className="space-y-2">
@@ -168,7 +123,7 @@ export function OptionsStep({
                   }
                   value={typeFilter}
                >
-                  <SelectTrigger id="type-filter">
+                  <SelectTrigger className="w-full" id="type-filter">
                      <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -181,7 +136,9 @@ export function OptionsStep({
             </div>
          </div>
 
-         <div className="flex items-center justify-between pt-4">
+         <Separator />
+
+         <div className="flex items-center justify-between">
             <Button onClick={onBack} variant="ghost">
                Voltar
             </Button>
