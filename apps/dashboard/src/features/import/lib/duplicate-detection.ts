@@ -1,6 +1,6 @@
 import type { BatchDuplicateInfo, BatchParsedTransaction } from "./use-import-wizard";
 import {
-	calculateDuplicateScore as calculateDuplicateScoreCore,
+	calculateDuplicateScore,
 } from "@packages/utils/duplicate-detection";
 
 export interface DuplicateCandidate {
@@ -155,13 +155,5 @@ export function toBatchDuplicateInfos(
    });
 }
 
-/**
- * Calculates duplicate score between two transactions.
- * Returns score details with percentage.
- */
-export function calculateDuplicateScore(
-	candidate: DuplicateCandidate,
-	target: DuplicateCandidate | ExistingTransaction,
-): { score: number; scorePercentage: number; passed: boolean } {
-	return calculateDuplicateScoreCore(candidate, target);
-}
+// Re-export shared duplicate detection logic
+export { calculateDuplicateScore };

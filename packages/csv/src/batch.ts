@@ -68,6 +68,34 @@ function processRow(
    fileIndex: number,
    filename: string,
 ): BatchParsedCsvRow | null {
+   // Bounds checks for required columns
+   if (mapping.date < 0 || mapping.date >= fields.length) {
+      errors.push({
+         row: rowIndex,
+         column: mapping.date,
+         message: `Missing column at index ${mapping.date} for date`,
+      });
+      return null;
+   }
+
+   if (mapping.amount < 0 || mapping.amount >= fields.length) {
+      errors.push({
+         row: rowIndex,
+         column: mapping.amount,
+         message: `Missing column at index ${mapping.amount} for amount`,
+      });
+      return null;
+   }
+
+   if (mapping.description < 0 || mapping.description >= fields.length) {
+      errors.push({
+         row: rowIndex,
+         column: mapping.description,
+         message: `Missing column at index ${mapping.description} for description`,
+      });
+      return null;
+   }
+
    const dateValue = fields[mapping.date] ?? "";
    const amountValue = fields[mapping.amount] ?? "";
    const descriptionValue = fields[mapping.description] ?? "";
@@ -97,6 +125,16 @@ function processRow(
    let type: "income" | "expense" = amount >= 0 ? "income" : "expense";
 
    if (mapping.type !== undefined) {
+      // Bounds check for optional type column
+      if (mapping.type < 0 || mapping.type >= fields.length) {
+         errors.push({
+            row: rowIndex,
+            column: mapping.type,
+            message: `Missing column at index ${mapping.type} for type`,
+         });
+         return null;
+      }
+
       const typeValue = fields[mapping.type]?.toLowerCase();
       if (
          typeValue?.includes("credit") ||

@@ -866,7 +866,7 @@ export const bankAccountRouter = router({
                      gte(transaction.date, startDate),
                      lte(transaction.date, endDate),
                   ),
-               limit: 50,
+               limit: 10,
             });
 
             for (const existingTrn of potentialMatches) {

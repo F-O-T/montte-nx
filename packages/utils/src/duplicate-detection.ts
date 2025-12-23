@@ -28,6 +28,38 @@ export const THRESHOLD_PERCENTAGE = 0.8;
 export const DATE_TOLERANCE_DAYS = 1;
 
 /**
+ * Stop words to filter out from descriptions (Portuguese and English)
+ */
+const STOP_WORDS = new Set([
+	"de",
+	"da",
+	"do",
+	"para",
+	"com",
+	"em",
+	"no",
+	"na",
+	"os",
+	"as",
+	"um",
+	"uma",
+	"the",
+	"a",
+	"an",
+	"of",
+	"to",
+	"in",
+	"for",
+	"on",
+	"at",
+]);
+
+/**
+ * Regex to remove special characters while preserving accented characters
+ */
+const SPECIAL_CHARS_REGEX = /[^\w\sáàâãéèêíìîóòôõúùûç]/g;
+
+/**
  * Transaction-like object for duplicate detection
  */
 export interface DuplicateDetectionTransaction {
@@ -69,35 +101,11 @@ export function datesWithinTolerance(
  * @returns Array of normalized tokens
  */
 export function extractDescriptionTokens(description: string): string[] {
-	const stopWords = new Set([
-		"de",
-		"da",
-		"do",
-		"para",
-		"com",
-		"em",
-		"no",
-		"na",
-		"os",
-		"as",
-		"um",
-		"uma",
-		"the",
-		"a",
-		"an",
-		"of",
-		"to",
-		"in",
-		"for",
-		"on",
-		"at",
-	]);
-
 	return description
 		.toLowerCase()
-		.replace(/[^\w\sáàâãéèêíìîóòôõúùûç]/g, " ")
+		.replace(SPECIAL_CHARS_REGEX, " ")
 		.split(/\s+/)
-		.filter((token) => token.length > 2 && !stopWords.has(token));
+		.filter((token) => token.length > 2 && !STOP_WORDS.has(token));
 }
 
 /**

@@ -141,8 +141,8 @@ export function NavMain() {
          : []),
    ];
 
-   // Only show categorization section if user has access to more than just categories
-   const showCategorizationSection = canAccessTags || canAccessCostCenters;
+   // Always show categorization section since categories are available for all plans
+   const showCategorizationSection = true;
 
    const automationItems = canAccessAutomations
       ? [
