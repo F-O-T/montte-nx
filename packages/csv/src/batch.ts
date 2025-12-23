@@ -56,6 +56,35 @@ export interface BatchCsvFileResult {
 }
 
 /**
+ * Transaction type keyword mapping for income and expense detection.
+ */
+const TYPE_KEYWORDS = {
+   income: ["credit", "credito", "crédito", "entrada"],
+   expense: ["debit", "debito", "débito", "saida", "saída"],
+} as const;
+
+/**
+ * Infers transaction type from a type column value by checking against known keywords.
+ * @param typeValue - Raw type column value
+ * @returns "income" or "expense" if matched, null otherwise
+ */
+function inferType(typeValue: string | undefined): "income" | "expense" | null {
+   if (!typeValue) return null;
+
+   const normalized = typeValue.toLowerCase();
+
+   if (TYPE_KEYWORDS.income.some((keyword) => normalized.includes(keyword))) {
+      return "income";
+   }
+
+   if (TYPE_KEYWORDS.expense.some((keyword) => normalized.includes(keyword))) {
+      return "expense";
+   }
+
+   return null;
+}
+
+/**
  * Processes a single row from the CSV and converts it to a ParsedCsvRow.
  */
 function processRow(
@@ -111,7 +140,7 @@ function processRow(
    }
 
    const amount = parseAmount(amountValue, amountFormat);
-   if (amount === 0 && amountValue?.trim() !== "0") {
+   if (!amount && amountValue?.trim() !== "0") {
       errors.push({
          row: rowIndex,
          column: mapping.amount,
@@ -135,22 +164,10 @@ function processRow(
          return null;
       }
 
-      const typeValue = fields[mapping.type]?.toLowerCase();
-      if (
-         typeValue?.includes("credit") ||
-         typeValue?.includes("credito") ||
-         typeValue?.includes("crédito") ||
-         typeValue?.includes("entrada")
-      ) {
-         type = "income";
-      } else if (
-         typeValue?.includes("debit") ||
-         typeValue?.includes("debito") ||
-         typeValue?.includes("débito") ||
-         typeValue?.includes("saida") ||
-         typeValue?.includes("saída")
-      ) {
-         type = "expense";
+      const typeValue = fields[mapping.type];
+      const inferredType = inferType(typeValue);
+      if (inferredType) {
+         type = inferredType;
       }
    }
 

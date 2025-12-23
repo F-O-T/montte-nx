@@ -811,7 +811,6 @@ export const bankAccountRouter = router({
          }> = [];
 
          // Check within-batch duplicates
-         const seenDuplicatePairs = new Set<string>();
          for (let i = 0; i < input.transactions.length; i++) {
             const candidate = input.transactions[i];
             if (!candidate) continue;
@@ -826,22 +825,17 @@ export const bankAccountRouter = router({
                );
 
                if (passed) {
-                  // Only add one side of the pair to avoid duplicates
-                  const pairKey = `${candidate.fileIndex}:${candidate.rowIndex}-${target.fileIndex}:${target.rowIndex}`;
-                  if (!seenDuplicatePairs.has(pairKey)) {
-                     seenDuplicatePairs.add(pairKey);
-                     duplicates.push({
-                        rowIndex: target.rowIndex,
-                        fileIndex: target.fileIndex,
-                        existingTransactionId: "",
-                        existingTransactionDate: candidate.date,
-                        existingTransactionDescription: candidate.description,
-                        duplicateType: "within_batch",
-                        matchScore: scorePercentage,
-                        matchedFileIndex: candidate.fileIndex,
-                        matchedRowIndex: candidate.rowIndex,
-                     });
-                  }
+                  duplicates.push({
+                     rowIndex: target.rowIndex,
+                     fileIndex: target.fileIndex,
+                     existingTransactionId: "",
+                     existingTransactionDate: candidate.date,
+                     existingTransactionDescription: candidate.description,
+                     duplicateType: "within_batch",
+                     matchScore: scorePercentage,
+                     matchedFileIndex: candidate.fileIndex,
+                     matchedRowIndex: candidate.rowIndex,
+                  });
                }
             }
          }
