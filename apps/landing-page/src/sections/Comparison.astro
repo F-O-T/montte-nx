@@ -29,56 +29,56 @@ const { lang: _lang = "pt-BR" } = Astro.props;
 const competitors = [
    {
       id: "spreadsheets",
-      name: "Planilhas",
-      price: "Horas",
-      priceLabel: "de trabalho manual",
+      name: "Planilhas Manuais",
+      price: "Incalculável",
+      priceLabel: "(horas perdidas + risco de erro)",
       barWidth: "100%",
    },
    {
       id: "closedApps",
-      name: "Apps Fechados",
-      price: "R$50–100",
-      priceLabel: "por mês",
-      barWidth: "80%",
+      name: "ERPs Tradicionais",
+      price: "R$ 500+",
+      priceLabel: "por mês + taxa de implantação",
+      barWidth: "75%",
    },
    {
       id: "montte",
-      name: "Montte Cloud",
-      price: "R$29",
-      priceLabel: "por mês",
-      barWidth: "29%",
+      name: "Ecossistema Montte",
+      price: "R$ 39",
+      priceLabel: "por mês (preço fixo)",
+      barWidth: "25%",
       highlighted: true,
    },
 ];
 
 const usageTiers = [
    {
-      value: "1.000",
-      label: "transações/mês",
-      sublabel: "no plano Basic",
+      value: "Essencial",
+      label: "para freelancers",
+      sublabel: "Comece Grátis",
    },
    {
-      value: "10.000",
-      label: "transações/mês",
+      value: "Growth",
+      label: "para times ágeis",
       sublabel: "no plano Pro",
    },
    {
       value: "Ilimitado",
-      label: "auto-hospedado",
-      sublabel: "grátis para sempre",
+      label: "via Open Source",
+      sublabel: "Soberania de dados",
    },
 ];
 
 const stats = [
    {
-      prefix: "A partir de",
-      value: "R$29",
+      prefix: "Comece com",
+      value: "R$39",
       suffix: "por mês",
    },
    {
-      prefix: "ou",
-      value: "R$0",
-      suffix: "auto-hospedado",
+      prefix: "ou use a versão",
+      value: "Grátis",
+      suffix: "Community Edition",
    },
 ];
 ---
@@ -87,14 +87,17 @@ const stats = [
    <div class="mx-auto flex max-w-6xl flex-col gap-y-10 px-4 md:items-center md:justify-between md:px-6 lg:flex-row lg:gap-x-16 xl:gap-x-20">
       <div class="max-lg:w-full max-lg:max-w-[629px]">
          <div class="flex max-w-[356px] flex-col max-lg:pl-4">
-            <h2 class="mt-2 max-w-[629px] bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text pb-2 text-[28px] font-bold leading-[108%] text-transparent md:text-[40px]">
-               Por uma fração
+
+            <h2 class="mt-2 max-w-[629px] bg-linear-to-r from-emerald-400 to-emerald-600 bg-clip-text pb-2 text-[28px] font-bold leading-[108%] text-transparent md:text-[40px]">
+               Governança de elite.
                <br />
-               do custo atual
+               Custo de startup.
             </h2>
+
             <p class="text-muted-foreground mt-3 max-w-[441px] leading-[145%] tracking-[-0.01em]">
-               Tenha uma relação preço-valor incomparável. Plano Basic a partir de R$29/mês ou auto-hospede gratuitamente com todos os recursos incluídos.
+               Abandone o risco das planilhas quebravéis e o custo proibitivo dos ERPs corporativos. Tenha o controle financeiro de uma grande empresa por um valor que cabe no bolso.
             </p>
+
             <div class="mt-6">
                <Button
                   variant="outline"
@@ -102,7 +105,7 @@ const stats = [
                   asChild
                >
                   <a href="#pricing">
-                     <span class="leading-[100%]">Explorar preços</span>
+                     <span class="leading-[100%]">Ver tabela de preços</span>
                      <ChevronRight class="text-muted-foreground size-3 group-hover:text-white" />
                   </a>
                </Button>
@@ -152,7 +155,7 @@ const stats = [
                            <div class:list={[
                               "flex size-6 shrink-0 items-center justify-center rounded-full",
                               competitor.highlighted
-                                 ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                 ? "bg-linear-to-r from-emerald-400 to-emerald-600"
                                  : "bg-[hsl(var(--muted))]"
                            ]}>
                               {competitor.id === "montte" ? (
@@ -176,13 +179,13 @@ const stats = [
                               class:list={[
                                  "h-[13px] rounded-[44px]",
                                  competitor.highlighted
-                                    ? "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                    ? "bg-linear-to-r from-emerald-400 to-emerald-600"
                                     : "border-border/5 bg-muted/50 border"
                               ]}
                               style={`width: ${competitor.barWidth};`}
                            />
                            <ItemDescription className="text-muted-foreground mt-2 text-base leading-[145%] tracking-[-0.14px]">
-                              {!competitor.highlighted && "aprox. "}
+                              {!competitor.highlighted && " "}
                               <span class="text-white">{competitor.price}</span>
                               {" "}{competitor.priceLabel}
                            </ItemDescription>
@@ -197,7 +200,8 @@ const stats = [
 
             <div class="px-6 pb-4 pt-2 flex w-full items-center justify-center">
                <p class="text-muted-foreground max-w-[610px] text-center text-[10px] leading-[145%] tracking-[-1%]">
-                  Plano Basic: R$29/mês (R$290/ano) com até 3 membros e 1.000 transações. Plano Pro: R$79/mês (R$790/ano) com até 10 membros e 10.000 transações. Auto-hospedado: grátis para sempre com todos os recursos, na sua própria infraestrutura.
+                  Plano Pro: R$39/mês para até 10 membros e automações ilimitadas.
+                  Auto-hospedado (Self-hosted): 100% gratuito, auditável e sem limites de uso na sua infraestrutura.
                </p>
             </div>
          </CardContent>

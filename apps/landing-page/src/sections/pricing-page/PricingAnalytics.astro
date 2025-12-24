@@ -1,0 +1,104 @@
+---
+import { ArrowRight, Check, Zap } from "@lucide/astro";
+import { Button } from "@packages/ui/components/button";
+import { Card, CardContent } from "@packages/ui/components/card";
+import {
+   Table,
+   TableBody,
+   TableCell,
+   TableRow,
+} from "@packages/ui/components/table";
+
+const analyticsFeatures = {
+   title: "Inteligência Financeira",
+   description:
+      "Não apenas veja números, entenda a saúde do seu negócio. Transforme dados complexos em estratégias de crescimento.",
+   included: {
+      label: "Incluso em todos os planos",
+      value: "Visão Geral do Caixa",
+   },
+   addons: [
+      {
+         name: "DRE Gerencial e Fiscal Detalhado",
+         price: "Enterprise",
+         isEnterprise: true,
+      },
+      {
+         name: "Exportação de Relatórios para Contabilidade",
+         price: "Incluso",
+         isEnterprise: false,
+      },
+      { name: "Relatórios em PDF", price: "Incluso", isEnterprise: false },
+   ],
+   features: [
+      "Saldo Líquido em Tempo Real",
+      "Comparativo: Entradas vs. Saídas",
+      "Histórico de Movimentações",
+      "DRE Gerencial Automático",
+      "Planejado vs. Realizado (Budget)",
+      "Relatórios prontos para impressão (PDF)",
+      "Gráfico de Evolução Patrimonial",
+      "Breakdown de Despesas por Categoria",
+      "Sazonalidade e Tendências Mensais",
+      "Análise de Pontualidade de Recebimentos",
+      "Filtros Avançados de Período",
+      "Comparativo Anual/Mensal (YoY)",
+   ],
+};
+---
+
+<!-- ANALYTICS SECTION -->
+<section id="analytics" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-2">{analyticsFeatures.title}</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">{analyticsFeatures.description}</p>
+
+   <!-- Pricing Table -->
+   <Card className="mb-8 py-0 overflow-hidden">
+      <Table>
+         <TableBody>
+            <TableRow className="bg-muted/30">
+               <TableCell className="font-medium text-foreground py-4 px-6">{analyticsFeatures.included.label}</TableCell>
+               <TableCell className="text-right text-sm font-medium text-primary py-4 px-6">{analyticsFeatures.included.value}</TableCell>
+            </TableRow>
+            {analyticsFeatures.addons.map((addon, index) => (
+               <TableRow className={index < analyticsFeatures.addons.length - 1 ? "border-dashed" : "border-0"}>
+                  <TableCell className="py-4 px-6">
+                     <div class="flex items-center gap-2">
+                        <Zap class="size-4 text-primary" />
+                        <span class="text-sm">{addon.name}</span>
+                     </div>
+                  </TableCell>
+                  <TableCell className={`text-right text-sm py-4 px-6 ${addon.isEnterprise ? "text-primary font-medium" : "text-muted-foreground"}`}>
+                     {addon.price}
+                  </TableCell>
+               </TableRow>
+            ))}
+         </TableBody>
+      </Table>
+   </Card>
+
+   <!-- Features Grid -->
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-6">
+      {analyticsFeatures.features.map((feature) => (
+         <div class="flex items-center gap-2">
+            <Check class="size-4 text-primary shrink-0" />
+            <span class="text-muted-foreground">{feature}</span>
+         </div>
+      ))}
+   </div>
+
+   <!-- Enterprise CTA -->
+   <Card className="border-dashed bg-muted/20 py-4">
+      <CardContent className="flex items-center justify-between py-0">
+         <p class="text-sm text-muted-foreground">
+            <span class="font-medium text-foreground">Para empresas:</span> DRE completo e projeção de fluxo de caixa inclusos no plano Enterprise.
+         </p>
+         <Button  variant="link" className="shrink-0 text-primary p-0 h-auto">
+            <a href="/enterprise">
+               Ver Enterprise
+               <ArrowRight class="size-3" />
+            </a>
+         </Button>
+      </CardContent>
+   </Card>
+</section>

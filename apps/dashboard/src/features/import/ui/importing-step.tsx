@@ -60,7 +60,9 @@ export function ImportingStep({
 
       // Filter to only selected transactions and format for API
       const selectedTransactions = transactions
-         .filter((t) => selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)))
+         .filter((t) =>
+            selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)),
+         )
          .map((t) => ({
             date: t.date.toISOString(),
             amount: t.amount,

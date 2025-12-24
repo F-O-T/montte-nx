@@ -4,10 +4,19 @@ import {
    AlertDescription,
    AlertTitle,
 } from "@packages/ui/components/alert";
-import { FileSpreadsheetIcon, InfoIcon, Loader2Icon, XIcon } from "lucide-react";
+import {
+   FileSpreadsheetIcon,
+   InfoIcon,
+   Loader2Icon,
+   XIcon,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { ColumnMapping, CsvPreviewData, ImportedFile } from "../lib/use-import-wizard";
+import type {
+   ColumnMapping,
+   CsvPreviewData,
+   ImportedFile,
+} from "../lib/use-import-wizard";
 import { CsvColumnMapper } from "./csv-column-mapper";
 
 interface MappingStepProps {
@@ -111,17 +120,20 @@ export function MappingStep({
                <AlertTitle>Mapeamento compartilhado</AlertTitle>
                <AlertDescription className="space-y-2">
                   <p>
-                     Este mapeamento será aplicado a todos os {csvFiles.length} arquivos CSV.
-                     Certifique-se de que todos os arquivos possuem a mesma estrutura de colunas.
+                     Este mapeamento será aplicado a todos os {csvFiles.length}{" "}
+                     arquivos CSV. Certifique-se de que todos os arquivos
+                     possuem a mesma estrutura de colunas.
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
                      {csvFiles.map((file) => (
                         <div
-                           key={`csv-file-${file.fileIndex}`}
                            className="flex items-center gap-1.5 px-2 py-1 rounded bg-muted text-xs"
+                           key={`csv-file-${file.fileIndex}`}
                         >
                            <FileSpreadsheetIcon className="size-3 text-green-600" />
-                           <span className="truncate max-w-[120px]">{file.filename}</span>
+                           <span className="truncate max-w-[120px]">
+                              {file.filename}
+                           </span>
                         </div>
                      ))}
                   </div>
@@ -132,7 +144,8 @@ export function MappingStep({
          {/* Show which file is being used for preview */}
          {csvFiles.length > 1 && firstCsvFile && (
             <p className="text-xs text-muted-foreground">
-               Visualizando: <span className="font-medium">{firstCsvFile.filename}</span>
+               Visualizando:{" "}
+               <span className="font-medium">{firstCsvFile.filename}</span>
             </p>
          )}
 

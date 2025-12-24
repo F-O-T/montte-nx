@@ -1,0 +1,48 @@
+---
+import { Image } from "astro:assets";
+import pricingHeroDark from "@/assets/background/pricing-hero-dark.png";
+import pricingHeroLight from "@/assets/background/pricing-hero-light.png";
+import { BillingToggle } from "@/components/BillingToggle";
+---
+
+<link rel="preload" as="image" href={pricingHeroLight.src} type="image/png">
+<link rel="preload" as="image" href={pricingHeroDark.src} type="image/png">
+
+<section class="relative py-18 md:py-28 overflow-hidden">
+	<!-- Background Images (full width, outside container) -->
+	<div class="absolute inset-0">
+		<Image
+			src={pricingHeroLight}
+			alt="Pricing hero background"
+			class="absolute inset-0 w-full h-full object-cover opacity-100 dark:opacity-0 transition-opacity duration-300"
+			priority={true}
+		/>
+		<Image
+			src={pricingHeroDark}
+			alt="Pricing hero background"
+			class="absolute inset-0 w-full h-full object-cover opacity-0 dark:opacity-100 transition-opacity duration-300"
+			priority={true}
+		/>
+		<!-- Overlay for better text readability -->
+		<div class="absolute inset-0 bg-background/80 dark:bg-background/85 pointer-events-none"></div>
+		<!-- Bottom gradient to fade images to the next section -->
+		<div class="absolute inset-x-0 bottom-0 h-24 pointer-events-none bg-gradient-to-b from-transparent to-background"></div>
+	</div>
+
+	<!-- Content (contained) -->
+	<div class="relative z-10 px-8 container max-w-7xl mx-auto flex flex-col gap-12 items-center">
+		<p class="text-base uppercase font-bold text-center tracking-[0.20em]">
+			<span class="text-primary">Planos</span> e Preços
+		</p>
+
+		<h1 class="inline-block font-semibold tracking-tight text-center text-4xl sm:text-6xl lg:text-7xl leading-tight max-w-3xl text-foreground">
+			Controle financeiro sem complicação
+		</h1>
+
+		<p class="sm:text-xl text-center max-w-sm sm:max-w-xl text-foreground/70">
+			Planos flexíveis para cada momento. Upgrade ou cancele quando quiser.
+		</p>
+
+		<BillingToggle client:load id="pricing-toggle" showDiscount={true} />
+	</div>
+</section>

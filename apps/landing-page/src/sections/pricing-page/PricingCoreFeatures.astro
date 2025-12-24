@@ -1,0 +1,60 @@
+---
+import { Check } from "@lucide/astro";
+import { Card, CardContent, CardHeader } from "@packages/ui/components/card";
+import {
+   Table,
+   TableBody,
+   TableCell,
+   TableRow,
+} from "@packages/ui/components/table";
+
+const coreFeatures = {
+   title: "Gestão Financeira Centralizada",
+   description:
+      "O coração do seu financeiro. Organize contas, concilie extratos e tenha controle absoluto sobre cada centavo que entra e sai.",
+   included: {
+      label: "Liberdade total",
+      value: "Transações e Contas Ilimitadas",
+   },
+   features: [
+      "Gestão completa de Receitas e Despesas",
+      "Rateio (Split) de categorias por lançamento",
+      "Arquivo Digital: Anexos de comprovantes/NF",
+      "Edição em massa para alta produtividade",
+      "Conciliação inteligente de transferências",
+      "Controle Multi-contas (Corrente, Caixa, Investimento)",
+      "Suporte a todos os bancos brasileiros",
+      "Importação de Extratos Bancários (OFX)",
+      "Arquivamento de contas com histórico preservado",
+      "Sistema inteligente anti-duplicidade",
+   ],
+};
+---
+
+<!-- CORE FEATURES SECTION -->
+<section id="core" class="scroll-mt-24">
+   <h2 class="text-foreground text-3xl font-bold mb-2">{coreFeatures.title}</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">{coreFeatures.description}</p>
+
+   <!-- Pricing Table -->
+   <Card className="mb-8 py-0 overflow-hidden">
+      <Table>
+         <TableBody>
+            <TableRow className="bg-muted/30 border-b">
+               <TableCell className="font-medium text-foreground py-4 px-6">{coreFeatures.included.label}</TableCell>
+               <TableCell className="text-right text-sm font-medium text-primary py-4 px-6">{coreFeatures.included.value}</TableCell>
+            </TableRow>
+         </TableBody>
+      </Table>
+   </Card>
+
+   <!-- Features Grid -->
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+      {coreFeatures.features.map((feature) => (
+         <div class="flex items-center gap-2">
+            <Check class="size-4 text-primary shrink-0" />
+            <span class="text-muted-foreground">{feature}</span>
+         </div>
+      ))}
+   </div>
+</section>

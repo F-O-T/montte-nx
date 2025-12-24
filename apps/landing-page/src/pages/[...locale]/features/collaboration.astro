@@ -166,7 +166,7 @@ const comparisonData = [
                         <div class="px-5 space-y-3">
                            <div class="flex items-center w-full justify-between">
                               <div class="flex items-center gap-x-2">
-                                 <div class={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${item.highlight ? 'bg-gradient-to-r from-primary to-chart-2' : 'bg-muted-foreground/20'}`}>
+                                 <div class={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${item.highlight ? 'bg-linear-to-r from-primary to-chart-2' : 'bg-muted-foreground/20'}`}>
                                     {item.highlight && <Check class="w-3 h-3 text-primary-foreground" />}
                                  </div>
                                  <span class="font-medium text-foreground leading-[145%] tracking-tight">
@@ -180,7 +180,7 @@ const comparisonData = [
                               </div>
                            </div>
                            <div
-                              class={`h-3 rounded-sm ${item.highlight ? 'bg-gradient-to-r from-primary to-chart-2' : 'bg-muted-foreground/20'}`}
+                              class={`h-3 rounded-sm ${item.highlight ? 'bg-linear-to-r from-primary to-chart-2' : 'bg-muted-foreground/20'}`}
                               style={`width: ${item.width}`}
                            ></div>
                         </div>

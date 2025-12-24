@@ -77,9 +77,7 @@ export function OptionsStep({
             <Label>Formato de Exportação</Label>
             <Choicebox
                className="grid grid-cols-1 md:grid-cols-3 gap-3"
-               onValueChange={(value) =>
-                  setExportFormat(value as ExportFormat)
-               }
+               onValueChange={(value) => setExportFormat(value as ExportFormat)}
                value={exportFormat}
             >
                {EXPORT_FORMATS.map((fmt) => (

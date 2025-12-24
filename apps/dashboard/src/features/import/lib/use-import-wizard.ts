@@ -65,7 +65,10 @@ export type BatchParsedTransaction = ParsedTransaction & {
    filename: string;
 };
 
-export type SerializedBatchTransaction = Omit<BatchParsedTransaction, "date"> & {
+export type SerializedBatchTransaction = Omit<
+   BatchParsedTransaction,
+   "date"
+> & {
    date: string; // ISO string
 };
 

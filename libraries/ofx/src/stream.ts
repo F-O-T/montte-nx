@@ -449,7 +449,7 @@ export async function* parseBatchStream(
          const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
          const encoding = charsetMatch
             ? getEncodingFromCharset(charsetMatch[1])
-            : options?.encoding ?? "utf-8";
+            : (options?.encoding ?? "utf-8");
 
          // Decode the entire buffer
          const decoder = new TextDecoder(encoding as "utf-8");

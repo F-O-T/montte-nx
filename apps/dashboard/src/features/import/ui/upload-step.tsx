@@ -36,7 +36,10 @@ interface UploadStepProps {
    initialFiles?: ImportedFile[];
 }
 
-export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepProps) {
+export function UploadStep({
+   onFilesUploaded,
+   initialFiles = [],
+}: UploadStepProps) {
    const [error, setError] = useState<string | null>(null);
    const [isProcessing, setIsProcessing] = useState(false);
    const [files, setFiles] = useState<ImportedFile[]>(initialFiles);
@@ -127,9 +130,7 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
             detectFileType(f.name),
          );
          if (supportedFiles.length === 0) {
-            setError(
-               "Nenhum arquivo suportado. Use arquivos .csv ou .ofx",
-            );
+            setError("Nenhum arquivo suportado. Use arquivos .csv ou .ofx");
             return;
          }
 
@@ -158,9 +159,7 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
             setFiles(newFiles);
             onFilesUploaded(newFiles);
 
-            toast.success(
-               `${successfulFiles.length} arquivo(s) adicionado(s)`,
-            );
+            toast.success(`${successfulFiles.length} arquivo(s) adicionado(s)`);
          } catch (err) {
             console.error("Failed to process files:", err);
             setError("Erro ao processar os arquivos. Tente novamente.");
@@ -197,8 +196,8 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
             <ShieldCheckIcon className="size-4" />
             <AlertTitle>Processamento local e seguro</AlertTitle>
             <AlertDescription>
-               Seus arquivos são processados localmente no seu navegador. Apenas os
-               dados necessários são enviados ao servidor para importação.
+               Seus arquivos são processados localmente no seu navegador. Apenas
+               os dados necessários são enviados ao servidor para importação.
             </AlertDescription>
          </Alert>
 
@@ -227,7 +226,8 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
                         </span>
                      </p>
                      <p className="text-sm text-muted-foreground">
-                        Formatos aceitos: CSV, OFX (máx. {MAX_FILES} arquivos, 10MB cada)
+                        Formatos aceitos: CSV, OFX (máx. {MAX_FILES} arquivos,
+                        10MB cada)
                      </p>
                   </div>
                </div>
@@ -255,10 +255,10 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
                      )}
                   </p>
                   <Button
-                     variant="ghost"
-                     size="sm"
-                     onClick={handleClearAll}
                      className="text-muted-foreground hover:text-destructive"
+                     onClick={handleClearAll}
+                     size="sm"
+                     variant="ghost"
                   >
                      Limpar tudo
                   </Button>
@@ -266,8 +266,8 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
                <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
                   {files.map((file, index) => (
                      <div
-                        key={`file-${index + 1}`}
                         className="flex items-center justify-between p-3 hover:bg-muted/50"
+                        key={`file-${index + 1}`}
                      >
                         <div className="flex items-center gap-3 min-w-0">
                            <div
@@ -293,10 +293,10 @@ export function UploadStep({ onFilesUploaded, initialFiles = [] }: UploadStepPro
                            </div>
                         </div>
                         <Button
-                           variant="ghost"
-                           size="icon"
                            className="size-8 shrink-0 text-muted-foreground hover:text-destructive"
                            onClick={() => handleRemoveFile(index)}
+                           size="icon"
+                           variant="ghost"
                         >
                            <XIcon className="size-4" />
                         </Button>

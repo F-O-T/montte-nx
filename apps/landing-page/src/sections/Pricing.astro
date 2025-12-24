@@ -6,6 +6,7 @@ import {
    Rocket,
    Server,
    Sparkles,
+   Users,
 } from "@lucide/astro";
 import type { SupportedLng } from "@packages/localization";
 import { Button } from "@packages/ui/components/button";
@@ -24,91 +25,94 @@ const plans = [
       price: "R$0",
       period: "/mês",
       description:
-         "Controle completo das suas finanças pessoais. 100% funcional, para sempre.",
+         "Para começar a organizar suas finanças pessoais. 100% funcional, para sempre.",
       cta: "Comece Grátis",
       ctaHref: "/signup",
       ctaVariant: "outline" as const,
       selfHostOptions: true,
       features: [
+         "1 usuário",
+         "Categorias básicas",
          "Transações ilimitadas",
-         "Contas bancárias ilimitadas",
-         "Categorias e tags ilimitadas",
-         "Importação OFX",
-         "Split de transações",
-         "Linking de transferências",
-         "Contas a pagar/receber",
-         "Orçamentos (até 10)",
-         "Automação básica (até 5 regras)",
-         "Dashboard e relatórios básicos",
-         "Export CSV",
-         "Mobile-responsive",
+         "Relatórios básicos",
+         "Importação OFX/CSV",
+         "Exportação OFX/CSV/PDF",
+         "50 MB de armazenamento",
       ],
       limitations: [
-         "Sem anexos de arquivos",
-         "Sem DRE e centros de custo",
-         "Sem export OFX/PDF",
+         "Sem tags",
+         "Sem automações",
+         "Sem centros de custo",
          "Apenas você no workspace",
       ],
    },
    {
-      name: "Plus",
+      name: "Pessoal",
       icon: Sparkles,
-      tagline: "Pessoal Premium",
-      price: "R$10",
+      tagline: "Finanças pessoais",
+      price: "R$15",
       period: "/mês",
-      annualPrice: "ou R$100/ano (2 meses grátis)",
-      description:
-         "Automação poderosa e recursos profissionais. Ideal para freelancers e MEIs.",
-      cta: "Teste 30 Dias Grátis",
-      ctaHref: "/signup?plan=plus",
-      ctaVariant: "primary" as const,
-      badge: "Mais Popular",
-      popular: true,
-      features: [
-         "✨ Tudo do Free +",
-         "Anexos ilimitados (recibos/notas)",
-         "Backup automático diário",
-         "Export OFX e PDF",
-         "Automação ilimitada com visual builder",
-         "Lógica complexa (AND/OR) e Regex",
-         "Templates de juros (IPCA/SELIC/CDI)",
-         "Parcelamentos customizados",
-         "Orçamentos ilimitados com rollover",
-         "Notificações push personalizadas",
-         "Temas e ícones customizados",
-         "+ 1 membro no workspace",
-         "Suporte prioritário (48h)",
-      ],
-      highlight: "Menos de R$0,33/dia",
-   },
-   {
-      name: "Business",
-      icon: Building2,
-      tagline: "Para empresas",
-      price: "R$39",
-      period: "/mês",
-      annualPrice: "ou R$390/ano (1 mês grátis)",
-      description:
-         "Gestão financeira completa para MEI, PMEs e pequenos escritórios contábeis.",
-      cta: "Teste 30 Dias Grátis",
-      ctaHref: "/signup?plan=business",
+      annualPrice: "ou R$150/ano (17% de desconto)",
+      description: "Para quem quer mais controle sobre suas finanças pessoais.",
+      cta: "Teste 14 Dias Grátis",
+      ctaHref: "/signup?plan=basic",
       ctaVariant: "outline" as const,
       features: [
-         "✨ Tudo do Plus +",
-         "Centros de custo ilimitados",
-         "DRE Gerencial e Fiscal",
-         "Modo Business (budgets strict)",
-         "Multi-organização (até 3)",
-         "Até 10 membros com roles",
-         "Permissões granulares",
-         "Audit log completo",
-         "API REST + Webhooks",
-         "Dashboard executivo",
-         "Relatórios consolidados",
-         "White-label básico",
-         "Suporte prioritário (24h) + Chat",
+         "✨ Tudo do Free +",
+         "Tags personalizáveis",
+         "Mais opções de relatórios",
+         "1 GB de armazenamento",
+         "Suporte por email",
       ],
-      highlight: "Cresce com você até Enterprise",
+   },
+   {
+      name: "Compartilhado",
+      icon: Users,
+      tagline: "Casais e famílias",
+      price: "R$25",
+      period: "/mês",
+      annualPrice: "ou R$250/ano (17% de desconto)",
+      description:
+         "Ideal para casais, noivos e famílias compartilharem finanças.",
+      cta: "Teste 14 Dias Grátis",
+      ctaHref: "/signup?plan=shared",
+      ctaVariant: "primary" as const,
+      badge: "Popular",
+      popular: true,
+      features: [
+         "✨ Tudo do Pessoal +",
+         "2 usuários",
+         "Workspaces compartilhados",
+         "5 GB de armazenamento",
+         "Perfeito para planejar a dois",
+      ],
+      highlight: "Ideal para casais",
+   },
+   {
+      name: "ERP",
+      icon: Building2,
+      tagline: "Equipes e empresas",
+      price: "R$150",
+      period: "/mês",
+      annualPrice: "ou R$1500/ano (17% de desconto)",
+      description:
+         "Gestão financeira completa para equipes e empresas em crescimento.",
+      cta: "Teste 7 Dias Grátis",
+      ctaHref: "/signup?plan=erp",
+      ctaVariant: "outline" as const,
+      features: [
+         "✨ Tudo do Compartilhado +",
+         "Membros ilimitados",
+         "Centros de custo",
+         "Modelos de juros",
+         "Automações",
+         "Fornecedores/Contrapartes",
+         "Suporte prioritário",
+         "Chamada 1:1 para automações",
+         "API access",
+         "Armazenamento ilimitado",
+      ],
+      highlight: "Mais completo",
    },
 ];
 ---
@@ -129,15 +133,15 @@ const plans = [
       </div>
 
       <!-- Pricing Cards -->
-      <div class="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto mb-12">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 max-w-7xl mx-auto mb-12">
          {plans.map((plan) => {
             const Icon = plan.icon;
             const isPopular = plan.popular;
-            
+
             return (
                <div class={`relative flex flex-col p-6 md:p-8 rounded-2xl bg-background transition-all ${
-                  isPopular 
-                     ? 'border-2 border-primary shadow-xl shadow-primary/10 md:scale-105 md:-mt-4 md:mb-4' 
+                  isPopular
+                     ? 'border-2 border-primary shadow-xl shadow-primary/10 md:scale-105 md:-mt-4 md:mb-4'
                      : 'border border-border/50 hover:border-primary/30'
                }`}>
                   {plan.badge && (
@@ -229,14 +233,14 @@ const plans = [
                      <ul class="space-y-2.5 text-sm">
                         {plan.features.map((feature) => (
                            <li class="flex items-start gap-3">
-                              <span class="flex-shrink-0 mt-0.5">
+                              <span class="shrink-0 mt-0.5">
                                  <Check class={`w-4 h-4 ${isPopular ? 'text-primary' : 'text-muted-foreground'}`} />
                               </span>
                               <span class="text-muted-foreground">{feature}</span>
                            </li>
                         ))}
                      </ul>
-                     
+
                      {plan.limitations && (
                         <div class="mt-4 pt-4 border-t border-border/50">
                            <p class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -245,7 +249,7 @@ const plans = [
                            <ul class="space-y-1.5 text-xs">
                               {plan.limitations.map((limitation) => (
                                  <li class="flex items-start gap-2 text-muted-foreground/70">
-                                    <span class="flex-shrink-0 mt-0.5">×</span>
+                                    <span class="shrink-0 mt-0.5">×</span>
                                     <span>{limitation}</span>
                                  </li>
                               ))}
@@ -262,12 +266,12 @@ const plans = [
       <div class="mt-12 text-center space-y-6">
          <div class="max-w-3xl mx-auto">
             <p class="text-sm text-muted-foreground">
-               <strong class="text-foreground">Todos os planos pagos incluem:</strong> 30 dias de teste grátis 
-               (sem cartão necessário), cancelamento a qualquer momento, migração gratuita entre planos, 
+               <strong class="text-foreground">Todos os planos pagos incluem:</strong> teste grátis de 7-14 dias
+               (sem cartão necessário), cancelamento a qualquer momento, migração gratuita entre planos,
                e upgrade/downgrade imediato. <strong>Free é 100% funcional para sempre.</strong>
             </p>
          </div>
-         
+
          <div class="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
             <span class="flex items-center gap-2">
                <Check class="w-4 h-4 text-primary" />

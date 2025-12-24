@@ -1,13 +1,10 @@
 import {
+   type BatchCsvProgressEvent,
    type CsvColumnMapping,
    parseCsvBatch,
-   type BatchCsvProgressEvent,
 } from "@packages/csv/batch";
-import {
-   parseOfxBatch,
-   type BatchOfxProgressEvent,
-} from "@packages/ofx/batch";
 import type { TransactionType } from "@packages/ofx";
+import { type BatchOfxProgressEvent, parseOfxBatch } from "@packages/ofx/batch";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import { Checkbox } from "@packages/ui/components/checkbox";
@@ -43,12 +40,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "@/integrations/clients";
 import type {
+   BatchDuplicateInfo,
+   BatchParsedTransaction,
    ColumnMapping,
    CsvPreviewData,
    FileType,
    ImportedFile,
-   BatchParsedTransaction,
-   BatchDuplicateInfo,
 } from "../lib/use-import-wizard";
 import { createBatchRowKey } from "../lib/use-import-wizard";
 
@@ -92,7 +89,11 @@ export function PreviewStep({
    const [selectedRows, setSelectedRows] = useState<Set<string>>(
       initialSelectedRows.size > 0
          ? initialSelectedRows
-         : new Set(initialParsedTransactions.map((t) => createBatchRowKey(t.fileIndex, t.rowIndex))),
+         : new Set(
+              initialParsedTransactions.map((t) =>
+                 createBatchRowKey(t.fileIndex, t.rowIndex),
+              ),
+           ),
    );
    const [duplicates, setDuplicates] =
       useState<BatchDuplicateInfo[]>(initialDuplicates);
@@ -127,19 +128,21 @@ export function PreviewStep({
       const parseFiles = async () => {
          try {
             const allTransactions: BatchParsedTransaction[] = [];
-            
+
             // Parse CSV files
             const csvFiles = files.filter((f) => f.fileType === "csv");
             if (csvFiles.length > 0 && columnMapping) {
-               setParseProgress(`Processando ${csvFiles.length} arquivo(s) CSV...`);
-               
+               setParseProgress(
+                  `Processando ${csvFiles.length} arquivo(s) CSV...`,
+               );
+
                const csvInputs = csvFiles.map((f) => {
                   // Decode base64 content and convert to UTF-8 string
                   const binaryString = atob(f.content);
                   const bytes = new Uint8Array(
                      binaryString.split("").map((c) => c.charCodeAt(0)),
                   );
-                  const decodedContent = new TextDecoder('utf-8').decode(bytes);
+                  const decodedContent = new TextDecoder("utf-8").decode(bytes);
                   return {
                      filename: f.filename,
                      content: decodedContent,
@@ -166,7 +169,7 @@ export function PreviewStep({
                for (const row of result.rows) {
                   const originalFile = csvFiles[row.fileIndex];
                   if (!originalFile) continue;
-                  
+
                   allTransactions.push({
                      rowIndex: row.rowIndex,
                      fileIndex: originalFile.fileIndex,
@@ -182,8 +185,10 @@ export function PreviewStep({
             // Parse OFX files
             const ofxFiles = files.filter((f) => f.fileType === "ofx");
             if (ofxFiles.length > 0) {
-               setParseProgress(`Processando ${ofxFiles.length} arquivo(s) OFX...`);
-               
+               setParseProgress(
+                  `Processando ${ofxFiles.length} arquivo(s) OFX...`,
+               );
+
                const ofxInputs = ofxFiles.map((f) => {
                   const decodedContent = atob(f.content);
                   const bytes = new Uint8Array(
@@ -203,19 +208,22 @@ export function PreviewStep({
                   }
                };
 
-               const ofxTransactions = await parseOfxBatch(ofxInputs, { onProgress });
+               const ofxTransactions = await parseOfxBatch(ofxInputs, {
+                  onProgress,
+               });
 
                // Initialize per-file row counters
                const fileRowCounters = new Map<number, number>();
-               
+
                // Map to batch transactions with correct file indices
                for (const trn of ofxTransactions) {
                   const originalFile = ofxFiles[trn.fileIndex];
                   if (!originalFile) continue;
-                  
+
                   // Get current row index for this file (defaults to 0)
-                  const currentRowIndex = fileRowCounters.get(originalFile.fileIndex) ?? 0;
-                  
+                  const currentRowIndex =
+                     fileRowCounters.get(originalFile.fileIndex) ?? 0;
+
                   allTransactions.push({
                      rowIndex: currentRowIndex,
                      fileIndex: originalFile.fileIndex,
@@ -226,25 +234,44 @@ export function PreviewStep({
                      type: trn.type,
                      externalId: trn.fitid,
                   });
-                  
+
                   // Increment counter for this file
-                  fileRowCounters.set(originalFile.fileIndex, currentRowIndex + 1);
+                  fileRowCounters.set(
+                     originalFile.fileIndex,
+                     currentRowIndex + 1,
+                  );
                }
             }
 
             setParsedTransactions(allTransactions);
-            setSelectedRows(new Set(allTransactions.map((t) => createBatchRowKey(t.fileIndex, t.rowIndex))));
+            setSelectedRows(
+               new Set(
+                  allTransactions.map((t) =>
+                     createBatchRowKey(t.fileIndex, t.rowIndex),
+                  ),
+               ),
+            );
             setIsLoading(false);
          } catch (err) {
             console.error("Failed to parse files:", err);
-            setError(err instanceof Error ? err.message : "Erro ao processar arquivos");
+            setError(
+               err instanceof Error
+                  ? err.message
+                  : "Erro ao processar arquivos",
+            );
             setIsLoading(false);
             toast.error("Erro ao processar arquivos");
          }
       };
 
       parseFiles();
-   }, [files, columnMapping, csvPreviewData, parsedTransactions.length, hasCsv]);
+   }, [
+      files,
+      columnMapping,
+      csvPreviewData,
+      parsedTransactions.length,
+      hasCsv,
+   ]);
 
    // Check duplicates after parsing
    useEffect(() => {
@@ -266,13 +293,22 @@ export function PreviewStep({
             description: t.description,
          })),
       });
-   }, [bankAccountId, parsedTransactions, checkDuplicates, checkDuplicatesMutation]);
+   }, [
+      bankAccountId,
+      parsedTransactions,
+      checkDuplicates,
+      checkDuplicatesMutation,
+   ]);
 
    // Toggle duplicate checking
    const handleDuplicateToggle = useCallback(
       (checked: boolean) => {
          setCheckDuplicates(checked);
-         if (checked && duplicates.length === 0 && parsedTransactions.length > 0) {
+         if (
+            checked &&
+            duplicates.length === 0 &&
+            parsedTransactions.length > 0
+         ) {
             hasCheckedDuplicatesRef.current = false;
             checkDuplicatesMutation.mutate({
                bankAccountId,
@@ -286,11 +322,18 @@ export function PreviewStep({
             });
          }
       },
-      [bankAccountId, parsedTransactions, duplicates.length, checkDuplicatesMutation],
+      [
+         bankAccountId,
+         parsedTransactions,
+         duplicates.length,
+         checkDuplicatesMutation,
+      ],
    );
 
    const duplicatesMap = useMemo(() => {
-      return new Map(duplicates.map((d) => [createBatchRowKey(d.fileIndex, d.rowIndex), d]));
+      return new Map(
+         duplicates.map((d) => [createBatchRowKey(d.fileIndex, d.rowIndex), d]),
+      );
    }, [duplicates]);
 
    // Filtered transactions
@@ -302,12 +345,17 @@ export function PreviewStep({
 
    // Per-file transaction counts
    const perFileStats = useMemo(() => {
-      const stats = new Map<number, { filename: string; fileType: FileType; count: number }>();
+      const stats = new Map<
+         number,
+         { filename: string; fileType: FileType; count: number }
+      >();
       for (const file of files) {
          stats.set(file.fileIndex, {
             filename: file.filename,
             fileType: file.fileType,
-            count: parsedTransactions.filter((t) => t.fileIndex === file.fileIndex).length,
+            count: parsedTransactions.filter(
+               (t) => t.fileIndex === file.fileIndex,
+            ).length,
          });
       }
       return stats;
@@ -322,9 +370,15 @@ export function PreviewStep({
       return map;
    }, [files]);
 
-   const allSelected = filteredTransactions.length > 0 && 
-      filteredTransactions.every((t) => selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)));
-   const someSelected = filteredTransactions.some((t) => selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex))) && !allSelected;
+   const allSelected =
+      filteredTransactions.length > 0 &&
+      filteredTransactions.every((t) =>
+         selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)),
+      );
+   const someSelected =
+      filteredTransactions.some((t) =>
+         selectedRows.has(createBatchRowKey(t.fileIndex, t.rowIndex)),
+      ) && !allSelected;
 
    const handleSelectAll = useCallback(() => {
       if (allSelected) {
@@ -344,18 +398,21 @@ export function PreviewStep({
       }
    }, [allSelected, filteredTransactions, selectedRows]);
 
-   const handleRowToggle = useCallback((fileIndex: number, rowIndex: number) => {
-      const key = createBatchRowKey(fileIndex, rowIndex);
-      setSelectedRows((prev) => {
-         const newSelected = new Set(prev);
-         if (newSelected.has(key)) {
-            newSelected.delete(key);
-         } else {
-            newSelected.add(key);
-         }
-         return newSelected;
-      });
-   }, []);
+   const handleRowToggle = useCallback(
+      (fileIndex: number, rowIndex: number) => {
+         const key = createBatchRowKey(fileIndex, rowIndex);
+         setSelectedRows((prev) => {
+            const newSelected = new Set(prev);
+            if (newSelected.has(key)) {
+               newSelected.delete(key);
+            } else {
+               newSelected.add(key);
+            }
+            return newSelected;
+         });
+      },
+      [],
+   );
 
    const formatDate = (date: Date) => {
       return date.toLocaleDateString("pt-BR");
@@ -419,15 +476,17 @@ export function PreviewStep({
             <div className="flex flex-wrap gap-2">
                {[...perFileStats.entries()].map(([fileIndex, stats]) => (
                   <div
-                     key={`stat-${fileIndex}`}
                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg border bg-card text-sm"
+                     key={`stat-${fileIndex}`}
                   >
                      {stats.fileType === "csv" ? (
                         <FileSpreadsheetIcon className="size-4 text-green-600" />
                      ) : (
                         <FileTextIcon className="size-4 text-blue-600" />
                      )}
-                     <span className="truncate max-w-[150px]">{stats.filename}</span>
+                     <span className="truncate max-w-[150px]">
+                        {stats.filename}
+                     </span>
                      <Badge variant="secondary">{stats.count}</Badge>
                   </div>
                ))}
@@ -449,14 +508,17 @@ export function PreviewStep({
             <div className="flex items-center gap-4">
                {/* File filter */}
                {files.length > 1 && (
-                  <Select value={fileFilter} onValueChange={setFileFilter}>
+                  <Select onValueChange={setFileFilter} value={fileFilter}>
                      <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Filtrar por arquivo" />
                      </SelectTrigger>
                      <SelectContent>
                         <SelectItem value="all">Todos os arquivos</SelectItem>
                         {files.map((file) => (
-                           <SelectItem key={`filter-${file.fileIndex}`} value={String(file.fileIndex)}>
+                           <SelectItem
+                              key={`filter-${file.fileIndex}`}
+                              value={String(file.fileIndex)}
+                           >
                               {file.filename}
                            </SelectItem>
                         ))}
@@ -508,7 +570,10 @@ export function PreviewStep({
                   </TableHeader>
                   <TableBody>
                      {filteredTransactions.map((trn) => {
-                        const key = createBatchRowKey(trn.fileIndex, trn.rowIndex);
+                        const key = createBatchRowKey(
+                           trn.fileIndex,
+                           trn.rowIndex,
+                        );
                         const duplicate = duplicatesMap.get(key);
                         const isSelected = selectedRows.has(key);
 
@@ -523,14 +588,18 @@ export function PreviewStep({
                                  <Checkbox
                                     checked={isSelected}
                                     onCheckedChange={() =>
-                                       handleRowToggle(trn.fileIndex, trn.rowIndex)
+                                       handleRowToggle(
+                                          trn.fileIndex,
+                                          trn.rowIndex,
+                                       )
                                     }
                                  />
                               </TableCell>
                               {files.length > 1 && (
                                  <TableCell>
                                     <div className="flex items-center gap-1.5">
-                                       {filesByIndex.get(trn.fileIndex)?.fileType === "csv" ? (
+                                       {filesByIndex.get(trn.fileIndex)
+                                          ?.fileType === "csv" ? (
                                           <FileSpreadsheetIcon className="size-3.5 text-green-600" />
                                        ) : (
                                           <FileTextIcon className="size-3.5 text-blue-600" />
@@ -576,12 +645,16 @@ export function PreviewStep({
                                           variant="outline"
                                        >
                                           <AlertTriangleIcon className="size-3" />
-                                          {duplicate.duplicateType === "within_batch"
+                                          {duplicate.duplicateType ===
+                                          "within_batch"
                                              ? "Duplicata lote"
                                              : "Duplicata"}
                                           {duplicate.matchScore > 0 && (
                                              <span className="ml-1 text-xs">
-                                                {Math.round(duplicate.matchScore * 100)}%
+                                                {Math.round(
+                                                   duplicate.matchScore * 100,
+                                                )}
+                                                %
                                              </span>
                                           )}
                                        </Badge>

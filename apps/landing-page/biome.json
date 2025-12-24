@@ -1,4 +1,25 @@
 {
    "extends": "//",
-   "root": false
+   "root": false,
+   "overrides": [
+      {
+         "includes": [
+            "**/*.svelte",
+            "**/*.astro",
+            "**/*.vue"
+         ],
+         "linter": {
+            "rules": {
+               "style": {
+                  "useConst": "off",
+                  "useImportType": "off"
+               },
+               "correctness": {
+                  "noUnusedVariables": "off",
+                  "noUnusedImports": "off"
+               }
+            }
+         }
+      }
+   ]
 }

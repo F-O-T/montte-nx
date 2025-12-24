@@ -1,12 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import {
+   parseBatchStream,
+   parseBatchStreamToArray,
    parseBufferStream,
    parseStream,
    parseStreamToArray,
-   parseBatchStream,
-   parseBatchStreamToArray,
 } from "../src/stream.ts";
-import type { StreamEvent, BatchCsvStreamEvent, BatchCsvFileInput } from "../src/types.ts";
+import type {
+   BatchCsvFileInput,
+   BatchCsvStreamEvent,
+   StreamEvent,
+} from "../src/types.ts";
 
 describe("parseStream", () => {
    test("streams simple CSV", async () => {
@@ -194,7 +198,10 @@ async function* chunksToIterable(chunks: string[]): AsyncIterable<string> {
 }
 
 // Helper to create batch file input
-function createBatchCsvInput(content: string, filename: string): BatchCsvFileInput {
+function createBatchCsvInput(
+   content: string,
+   filename: string,
+): BatchCsvFileInput {
    return { filename, content };
 }
 
@@ -369,8 +376,14 @@ describe("parseBatchStream", () => {
    test("handles file errors without stopping batch", async () => {
       const files: BatchCsvFileInput[] = [
          createBatchCsvInput("name,age\nJohn,30\nJane,25", "valid1.csv"),
-         createBatchCsvInput("city,country\n\"Unclosed quote,USA", "malformed.csv"),
-         createBatchCsvInput("product,price\nApple,1.50\nBanana,0.75", "valid2.csv"),
+         createBatchCsvInput(
+            'city,country\n"Unclosed quote,USA',
+            "malformed.csv",
+         ),
+         createBatchCsvInput(
+            "product,price\nApple,1.50\nBanana,0.75",
+            "valid2.csv",
+         ),
       ];
 
       const events: BatchCsvStreamEvent[] = [];
@@ -446,7 +459,9 @@ describe("parseBatchStreamToArray", () => {
          createBatchCsvInput("x,y\n5,6", "file2.csv"),
       ];
 
-      const results = await parseBatchStreamToArray(files, { hasHeaders: true });
+      const results = await parseBatchStreamToArray(files, {
+         hasHeaders: true,
+      });
 
       expect(results.length).toBe(2);
       expect(results[0]?.filename).toBe("file1.csv");
@@ -459,7 +474,9 @@ describe("parseBatchStreamToArray", () => {
          createBatchCsvInput("city,country\nNYC,USA", "file2.csv"),
       ];
 
-      const results = await parseBatchStreamToArray(files, { hasHeaders: true });
+      const results = await parseBatchStreamToArray(files, {
+         hasHeaders: true,
+      });
 
       expect(results[0]?.headers).toEqual(["name", "age"]);
       expect(results[0]?.rows.length).toBe(2);
@@ -467,7 +484,10 @@ describe("parseBatchStreamToArray", () => {
 
       expect(results[1]?.headers).toEqual(["city", "country"]);
       expect(results[1]?.rows.length).toBe(1);
-      expect(results[1]?.rows[0]?.record).toEqual({ city: "NYC", country: "USA" });
+      expect(results[1]?.rows[0]?.record).toEqual({
+         city: "NYC",
+         country: "USA",
+      });
    });
 
    test("tracks row counts correctly", async () => {
@@ -476,7 +496,9 @@ describe("parseBatchStreamToArray", () => {
          createBatchCsvInput("x,y\n7,8", "file2.csv"),
       ];
 
-      const results = await parseBatchStreamToArray(files, { hasHeaders: true });
+      const results = await parseBatchStreamToArray(files, {
+         hasHeaders: true,
+      });
 
       expect(results[0]?.totalRows).toBe(3);
       expect(results[1]?.totalRows).toBe(1);

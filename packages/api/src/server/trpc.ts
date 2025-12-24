@@ -346,10 +346,10 @@ const telemetryMiddleware = t.middleware(
                   ...(result.ok
                      ? {}
                      : {
-                        errorCode: result.error.code,
-                        errorMessage: result.error.message,
-                        errorName: result.error.name,
-                     }),
+                          errorCode: result.error.code,
+                          errorMessage: result.error.message,
+                          errorName: result.error.name,
+                       }),
                },
             });
          }

@@ -229,7 +229,7 @@ export function BetterPricingCards() {
                      key={tier.name}
                   >
                      {tier.popular && (
-                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-linear-to-r from-transparent via-primary to-transparent opacity-50" />
                      )}
 
                      <div className="p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
