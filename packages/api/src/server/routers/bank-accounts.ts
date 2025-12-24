@@ -10,6 +10,7 @@ import {
    findBankAccountsByOrganizationIdPaginated,
    getBankAccountBalances,
    getBankAccountStats,
+   getTotalBankAccountsByOrganizationId,
    updateBankAccount,
    updateBankAccountsStatus,
 } from "@packages/database/repositories/bank-account-repository";
@@ -20,11 +21,11 @@ import {
 } from "@packages/database/repositories/transaction-repository";
 import { generateOfxContent } from "@packages/ofx";
 import { renderBankStatement } from "@packages/pdf";
-import { APIError } from "@packages/utils/errors";
-import { 
-	calculateDuplicateScore,
-	DATE_TOLERANCE_DAYS,
+import {
+   calculateDuplicateScore,
+   DATE_TOLERANCE_DAYS,
 } from "@packages/utils/duplicate-detection";
+import { APIError, ErrorCodes } from "@packages/utils/errors";
 import { z } from "zod";
 import {
    checkResourcePermission,
@@ -143,6 +144,19 @@ export const bankAccountRouter = router({
             "manage",
          );
 
+         // Check if this is the last bank account
+         const totalAccounts = await getTotalBankAccountsByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         );
+
+         if (totalAccounts < 2) {
+            throw new APIError(
+               ErrorCodes.BAD_REQUEST,
+               "Cannot delete the last bank account. You must have at least one bank account.",
+            );
+         }
+
          return deleteBankAccount(resolvedCtx.db, input.id);
       }),
 
@@ -165,6 +179,19 @@ export const bankAccountRouter = router({
                "bank_account",
                id,
                "manage",
+            );
+         }
+
+         // Check if deleting all bank accounts
+         const totalAccounts = await getTotalBankAccountsByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         );
+
+         if (totalAccounts <= input.ids.length) {
+            throw new APIError(
+               ErrorCodes.BAD_REQUEST,
+               "Cannot delete all bank accounts. You must have at least one bank account.",
             );
          }
 
@@ -820,8 +847,16 @@ export const bankAccountRouter = router({
                if (!target) continue;
 
                const { scorePercentage, passed } = calculateDuplicateScore(
-                  { date: new Date(candidate.date), amount: candidate.amount, description: candidate.description },
-                  { date: new Date(target.date), amount: target.amount, description: target.description },
+                  {
+                     date: new Date(candidate.date),
+                     amount: candidate.amount,
+                     description: candidate.description,
+                  },
+                  {
+                     date: new Date(target.date),
+                     amount: target.amount,
+                     description: target.description,
+                  },
                );
 
                if (passed) {
@@ -852,24 +887,29 @@ export const bankAccountRouter = router({
             endDate.setHours(23, 59, 59, 999);
 
             // Find potential matches within date range
-            const potentialMatches = await resolvedCtx.db.query.transaction.findMany({
-               where: (transaction, { eq, and, gte, lte }) =>
-                  and(
-                     eq(transaction.bankAccountId, input.bankAccountId),
-                     eq(transaction.amount, trn.amount.toString()),
-                     gte(transaction.date, startDate),
-                     lte(transaction.date, endDate),
-                  ),
-               limit: 10,
-            });
+            const potentialMatches =
+               await resolvedCtx.db.query.transaction.findMany({
+                  where: (transaction, { eq, and, gte, lte }) =>
+                     and(
+                        eq(transaction.bankAccountId, input.bankAccountId),
+                        eq(transaction.amount, trn.amount.toString()),
+                        gte(transaction.date, startDate),
+                        lte(transaction.date, endDate),
+                     ),
+                  limit: 10,
+               });
 
             for (const existingTrn of potentialMatches) {
                const { scorePercentage, passed } = calculateDuplicateScore(
-                  { date: trnDate, amount: trn.amount, description: trn.description },
-                  { 
-                     date: existingTrn.date, 
-                     amount: Number.parseFloat(existingTrn.amount), 
-                     description: existingTrn.description ?? "" 
+                  {
+                     date: trnDate,
+                     amount: trn.amount,
+                     description: trn.description,
+                  },
+                  {
+                     date: existingTrn.date,
+                     amount: Number.parseFloat(existingTrn.amount),
+                     description: existingTrn.description ?? "",
                   },
                );
 
@@ -879,7 +919,8 @@ export const bankAccountRouter = router({
                      fileIndex: trn.fileIndex,
                      existingTransactionId: existingTrn.id,
                      existingTransactionDate: existingTrn.date.toISOString(),
-                     existingTransactionDescription: existingTrn.description ?? "",
+                     existingTransactionDescription:
+                        existingTrn.description ?? "",
                      duplicateType: "existing_database",
                      matchScore: scorePercentage,
                   });

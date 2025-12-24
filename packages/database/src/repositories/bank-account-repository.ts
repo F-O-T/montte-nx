@@ -557,3 +557,22 @@ export async function getBankAccountTransactionsByAccount(
       );
    }
 }
+
+export async function getTotalBankAccountsByOrganizationId(
+   dbClient: DatabaseInstance,
+   organizationId: string,
+) {
+   try {
+      const result = await dbClient
+         .select({ count: sql<number>`count(*)` })
+         .from(bankAccount)
+         .where(eq(bankAccount.organizationId, organizationId));
+
+      return result[0]?.count || 0;
+   } catch (err) {
+      propagateError(err);
+      throw AppError.database(
+         `Failed to get total bank accounts count: ${(err as Error).message}`,
+      );
+   }
+}

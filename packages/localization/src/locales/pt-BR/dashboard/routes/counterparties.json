@@ -5,7 +5,7 @@
       "create-bill": "Criar Conta",
       "edit": "Editar",
       "activate": "Ativar",
-      "deactivate": "Inativar",
+      "deactivate": "Desativar",
       "delete": "Excluir"
    },
    "bulk-actions": {

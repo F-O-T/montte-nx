@@ -1,4 +1,4 @@
-import type { ParsedRow } from "./types.ts";
+import type { ParsedRow } from "./types";
 
 /**
  * Common delimiters to check during auto-detection.
@@ -121,7 +121,7 @@ export function detectLineEnding(content: string): "\n" | "\r\n" {
  * @returns The encoding name and byte offset to skip
  */
 export function detectEncoding(buffer: Uint8Array): {
-   encoding: string;
+   encoding: "utf-8" | "utf-16le" | "utf-16be";
    bomLength: number;
 } {
    // UTF-8 BOM: EF BB BF
@@ -157,7 +157,10 @@ export function detectEncoding(buffer: Uint8Array): {
 export function decodeBuffer(buffer: Uint8Array): string {
    const { encoding, bomLength } = detectEncoding(buffer);
    const data = bomLength > 0 ? buffer.slice(bomLength) : buffer;
-   const decoder = new TextDecoder(encoding);
+   // TextDecoder accepts utf-8, utf-16le, and utf-16be at runtime
+   // TypeScript's type definition is more restrictive, so we use a type assertion
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   const decoder = new TextDecoder(encoding as any);
    return decoder.decode(data);
 }
 
