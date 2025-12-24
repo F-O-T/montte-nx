@@ -1,5 +1,5 @@
-import type { GenerateOptions } from "./types.ts";
-import { escapeField } from "./utils.ts";
+import type { GenerateOptions } from "./types";
+import { escapeField } from "./utils";
 
 /**
  * Default options for CSV generation.

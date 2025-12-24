@@ -1,5 +1,5 @@
 import { translate } from "@packages/localization";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTRPC } from "@/integrations/clients";
 
@@ -11,6 +11,10 @@ export function useBankAccountBulkActions(
    options?: UseBankAccountBulkActionsOptions,
 ) {
    const trpc = useTRPC();
+
+   const { data: allBankAccounts = [] } = useQuery(
+      trpc.bankAccounts.getAll.queryOptions(),
+   );
 
    const updateStatusMutation = useMutation(
       trpc.bankAccounts.updateStatus.mutationOptions({
@@ -74,8 +78,18 @@ export function useBankAccountBulkActions(
       }
    };
 
+   const canDelete = allBankAccounts.length >= 2;
+
    const deleteSelected = async (ids: string[]) => {
       if (ids.length === 0) return;
+
+      // Check if trying to delete all bank accounts
+      if (allBankAccounts.length <= ids.length) {
+         toast.error(
+            "Cannot delete all bank accounts. You must have at least one bank account.",
+         );
+         return;
+      }
 
       try {
          await deleteMutation.mutateAsync({ ids });
@@ -85,16 +99,20 @@ export function useBankAccountBulkActions(
                { count: ids.length },
             ),
          );
-      } catch {
+      } catch (error) {
          toast.error(
-            translate(
-               "dashboard.routes.bank-accounts.bulk-actions.deleted-error",
-            ),
+            error instanceof Error
+               ? error.message
+               : translate(
+                    "dashboard.routes.bank-accounts.bulk-actions.deleted-error",
+                 ),
          );
       }
    };
 
    return {
+      allBankAccounts,
+      canDelete,
       deleteSelected,
       isLoading: updateStatusMutation.isPending || deleteMutation.isPending,
       markAsActive,

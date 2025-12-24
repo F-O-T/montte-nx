@@ -10,6 +10,7 @@ import {
    findBankAccountsByOrganizationIdPaginated,
    getBankAccountBalances,
    getBankAccountStats,
+   getTotalBankAccountsByOrganizationId,
    updateBankAccount,
    updateBankAccountsStatus,
 } from "@packages/database/repositories/bank-account-repository";
@@ -24,7 +25,7 @@ import {
    calculateDuplicateScore,
    DATE_TOLERANCE_DAYS,
 } from "@packages/utils/duplicate-detection";
-import { APIError } from "@packages/utils/errors";
+import { APIError, ErrorCodes } from "@packages/utils/errors";
 import { z } from "zod";
 import {
    checkResourcePermission,
@@ -143,6 +144,19 @@ export const bankAccountRouter = router({
             "manage",
          );
 
+         // Check if this is the last bank account
+         const totalAccounts = await getTotalBankAccountsByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         );
+
+         if (totalAccounts < 2) {
+            throw new APIError(
+               ErrorCodes.BAD_REQUEST,
+               "Cannot delete the last bank account. You must have at least one bank account.",
+            );
+         }
+
          return deleteBankAccount(resolvedCtx.db, input.id);
       }),
 
@@ -165,6 +179,19 @@ export const bankAccountRouter = router({
                "bank_account",
                id,
                "manage",
+            );
+         }
+
+         // Check if deleting all bank accounts
+         const totalAccounts = await getTotalBankAccountsByOrganizationId(
+            resolvedCtx.db,
+            organizationId,
+         );
+
+         if (totalAccounts <= input.ids.length) {
+            throw new APIError(
+               ErrorCodes.BAD_REQUEST,
+               "Cannot delete all bank accounts. You must have at least one bank account.",
             );
          }
 
