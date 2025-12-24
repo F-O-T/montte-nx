@@ -6,16 +6,17 @@
       "activated-error": "Erro ao ativar contas",
       "activated-success": "{{count}} conta(s) ativada(s) com sucesso",
       "confirm": "Confirmar",
-      "deactivate": "Inativar",
-      "deactivate-confirm-description": "Ao inativar {{count}} conta(s), elas não serão mais exibidas nos relatórios e estatísticas.",
-      "deactivate-confirm-title": "Inativar {{count}} conta(s)?",
+      "deactivate": "Desativar",
+      "deactivate-confirm-description": "Ao desativar {{count}} conta(s), elas não serão mais exibidas nos relatórios e estatísticas.",
+      "deactivate-confirm-title": "Desativar {{count}} conta(s)?",
       "delete": "Excluir",
       "delete-confirm-description": "Esta ação não pode ser desfeita. {{count}} conta(s) e todas as suas transações serão excluídas permanentemente.",
       "delete-confirm-title": "Excluir {{count}} conta(s)?",
+      "delete-tooltip-cannot-delete-all": "Você não pode excluir todas as contas bancárias. É necessário manter pelo menos uma conta.",
       "deleted-error": "Erro ao excluir contas",
       "deleted-success": "{{count}} conta(s) excluída(s) com sucesso",
-      "inactivated-error": "Erro ao inativar contas",
-      "inactivated-success": "{{count}} conta(s) inativada(s) com sucesso"
+      "inactivated-error": "Erro ao desativar contas",
+      "inactivated-success": "{{count}} conta(s) desativada(s) com sucesso"
    },
    "list-section": {
       "actions": {
