@@ -5,12 +5,12 @@ import {
    parseBufferStream,
    parseStream,
    parseStreamToArray,
-} from "../src/stream.ts";
+} from "../src/stream";
 import type {
    BatchCsvFileInput,
    BatchCsvStreamEvent,
    StreamEvent,
-} from "../src/types.ts";
+} from "../src/types";
 
 describe("parseStream", () => {
    test("streams simple CSV", async () => {

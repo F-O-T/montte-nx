@@ -1,4 +1,4 @@
-import type { CacheStats } from "../types/state.ts";
+import type { CacheStats } from "../types/state";
 
 export type CacheEntry<T> = {
    value: T;

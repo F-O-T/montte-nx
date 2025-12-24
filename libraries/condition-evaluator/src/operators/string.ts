@@ -1,4 +1,4 @@
-import type { StringOperator } from "../schemas.ts";
+import type { StringOperator } from "../schemas";
 
 type StringEvaluatorFn = (
    actual: string,

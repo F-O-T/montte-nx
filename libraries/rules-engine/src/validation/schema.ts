@@ -6,8 +6,8 @@ import {
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import { type Rule, RuleSchema, RuleSetSchema } from "../types/rule.ts";
+} from "../types/consequence";
+import { type Rule, RuleSchema, RuleSetSchema } from "../types/rule";
 
 export type ValidationError = {
    readonly path: string;

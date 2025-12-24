@@ -45,10 +45,6 @@
          "default": "./src/markdown.ts",
          "types": "./dist/src/markdown.d.ts"
       },
-      "./money": {
-         "default": "./src/money.ts",
-         "types": "./dist/src/money.d.ts"
-      },
       "./number": {
          "default": "./src/numbers.ts",
          "types": "./dist/src/numbers.d.ts"

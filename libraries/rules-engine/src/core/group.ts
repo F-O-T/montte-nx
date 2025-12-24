@@ -1,8 +1,8 @@
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { Rule } from "../types/rule.ts";
+} from "../types/consequence";
+import type { Rule } from "../types/rule";
 
 export type GroupByField = "category" | "priority" | "enabled";
 

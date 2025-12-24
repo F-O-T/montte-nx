@@ -1,9 +1,9 @@
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { Rule } from "../types/rule.ts";
-import { generateId } from "../utils/id.ts";
+} from "../types/consequence";
+import type { Rule } from "../types/rule";
+import { generateId } from "../utils/id";
 
 export type RuleVersion<
    TContext = unknown,

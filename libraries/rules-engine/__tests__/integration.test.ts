@@ -22,7 +22,7 @@ import {
    str,
    validateRule,
    whatIf,
-} from "../src/index.ts";
+} from "../src/index";
 
 const toRule = (input: ReturnType<ReturnType<typeof rule>["build"]>): Rule => ({
    id: input.id ?? `rule-${Date.now()}-${Math.random().toString(36).slice(2)}`,

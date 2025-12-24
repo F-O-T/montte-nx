@@ -4,8 +4,8 @@ import {
    generate,
    generateFromObjects,
    generateRow,
-} from "../src/generator.ts";
-import { parseToArray } from "../src/parser.ts";
+} from "../src/generator";
+import { parseToArray } from "../src/parser";
 
 describe("generate", () => {
    test("generates simple CSV", () => {

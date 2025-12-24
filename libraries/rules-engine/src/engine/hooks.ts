@@ -1,15 +1,15 @@
-import type { EngineHooks } from "../types/config.ts";
+import type { EngineHooks } from "../types/config";
 import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
+} from "../types/consequence";
 import type {
    EngineExecutionResult,
    EvaluationContext,
    RuleEvaluationResult,
-} from "../types/evaluation.ts";
-import type { Rule } from "../types/rule.ts";
+} from "../types/evaluation";
+import type { Rule } from "../types/rule";
 
 export const executeBeforeEvaluation = async <
    TContext = unknown,

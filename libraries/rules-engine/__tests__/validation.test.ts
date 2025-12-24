@@ -1,21 +1,21 @@
 import { describe, expect, test } from "bun:test";
 import type { ConditionGroup } from "@f-o-t/condition-evaluator";
 import { z } from "zod";
-import type { Rule } from "../src/types/rule.ts";
+import type { Rule } from "../src/types/rule";
 import {
    detectConflicts,
    formatConflicts,
    getConflictsByType,
    hasConflicts,
    hasErrors,
-} from "../src/validation/conflicts.ts";
+} from "../src/validation/conflicts";
 import {
    checkIntegrity,
    checkRuleFieldCoverage,
    formatIntegrityResult,
    getUsedFields,
    getUsedOperators,
-} from "../src/validation/integrity.ts";
+} from "../src/validation/integrity";
 import {
    createRuleValidator,
    parseRule,
@@ -23,7 +23,7 @@ import {
    validateConditions,
    validateRule,
    validateRules,
-} from "../src/validation/schema.ts";
+} from "../src/validation/schema";
 
 const createValidConditions = (): ConditionGroup => ({
    id: "group-1",

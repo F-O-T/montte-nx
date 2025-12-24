@@ -1,4 +1,4 @@
-import type { NumberOperator } from "../schemas.ts";
+import type { NumberOperator } from "../schemas";
 
 type NumberEvaluatorFn = (
    actual: number,

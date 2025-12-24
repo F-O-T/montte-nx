@@ -4,15 +4,15 @@ import {
    filterByEnabled,
    filterByTags,
    filterRules,
-} from "../src/core/filter.ts";
+} from "../src/core/filter";
 import {
    groupByCategory,
    groupByCustom,
    groupRules,
-} from "../src/core/group.ts";
-import { sortByName, sortByPriority, sortRules } from "../src/core/sort.ts";
-import type { DefaultConsequences } from "../src/types/consequence.ts";
-import type { Rule } from "../src/types/rule.ts";
+} from "../src/core/group";
+import { sortByName, sortByPriority, sortRules } from "../src/core/sort";
+import type { DefaultConsequences } from "../src/types/consequence";
+import type { Rule } from "../src/types/rule";
 
 type TestRule = Rule<unknown, DefaultConsequences>;
 

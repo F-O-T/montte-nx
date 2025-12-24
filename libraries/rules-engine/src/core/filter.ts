@@ -1,8 +1,8 @@
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { Rule, RuleFilters } from "../types/rule.ts";
+} from "../types/consequence";
+import type { Rule, RuleFilters } from "../types/rule";
 
 export const filterRules = <
    TContext = unknown,

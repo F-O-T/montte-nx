@@ -1,4 +1,4 @@
-import type { ArrayOperator } from "../schemas.ts";
+import type { ArrayOperator } from "../schemas";
 
 type ArrayEvaluatorFn = (
    actual: unknown[],

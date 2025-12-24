@@ -12,9 +12,9 @@ import {
    or,
    resetBuilderIds,
    str,
-} from "../src/builder/conditions.ts";
-import { createRule, rule } from "../src/builder/rule.ts";
-import type { ConsequenceDefinitions } from "../src/types/consequence.ts";
+} from "../src/builder/conditions";
+import { createRule, rule } from "../src/builder/rule";
+import type { ConsequenceDefinitions } from "../src/types/consequence";
 
 type TestContext = {
    age: number;
