@@ -36,7 +36,9 @@ export function useDeleteBankAccount({
    const deleteBankAccount = () => {
       if (allBankAccounts.length < 2) {
          toast.error(
-            "Cannot delete the last bank account. You must have at least one bank account.",
+            translate(
+               "dashboard.routes.bank-accounts.delete.error-last-account",
+            ),
          );
          return;
       }

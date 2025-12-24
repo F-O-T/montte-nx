@@ -18,6 +18,9 @@
       "inactivated-error": "Erro ao desativar contas",
       "inactivated-success": "{{count}} conta(s) desativada(s) com sucesso"
    },
+   "delete": {
+      "error-last-account": "Você deve ter pelo menos uma conta bancária."
+   },
    "list-section": {
       "actions": {
          "add-new": "Nova Conta Bancária",
