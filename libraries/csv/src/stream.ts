@@ -12,9 +12,6 @@ import type {
    ParsedRow,
    StreamEvent,
    StreamOptions,
-   BatchCsvFileInput,
-   BatchCsvStreamEvent,
-   BatchParsedCsvFile,
 } from "./types";
 import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils";
 
