@@ -164,10 +164,16 @@ function BankAccountsListContent({
       return sum + (stats?.balance || 0);
    }, 0);
 
-   const { markAsActive, markAsInactive, deleteSelected, isLoading } =
-      useBankAccountBulkActions({
-         onSuccess: () => setRowSelection({}),
-      });
+   const {
+      allBankAccounts,
+      canDelete,
+      markAsActive,
+      markAsInactive,
+      deleteSelected,
+      isLoading,
+   } = useBankAccountBulkActions({
+      onSuccess: () => setRowSelection({}),
+   });
 
    const handleClearSelection = () => {
       setRowSelection({});
@@ -323,7 +329,12 @@ function BankAccountsListContent({
                )}
             </SelectionActionButton>
             <SelectionActionButton
-               disabled={isLoading}
+               disabled={
+                  isLoading ||
+                  !canDelete ||
+                  selectedIds.length === 0 ||
+                  selectedIds.length >= allBankAccounts.length
+               }
                icon={<Trash2 className="size-3.5" />}
                onClick={() =>
                   openAlertDialog({

@@ -116,7 +116,7 @@ function BankAccountContent() {
       });
    };
 
-   const { deleteBankAccount } = useDeleteBankAccount({
+   const { canDelete, deleteBankAccount } = useDeleteBankAccount({
       bankAccount,
       onSuccess: handleDeleteSuccess,
    });
@@ -191,6 +191,7 @@ function BankAccountContent() {
             </Button>
             <Button
                className="text-destructive hover:text-destructive"
+               disabled={!canDelete}
                onClick={deleteBankAccount}
                size="sm"
                variant="outline"
