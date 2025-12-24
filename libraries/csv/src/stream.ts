@@ -3,7 +3,7 @@ import {
    hasPendingData,
    processChar,
    type StateMachineContext,
-} from "./csv-state-machine.ts";
+} from "./csv-state-machine";
 import type {
    CSVDocument,
    ParsedRow,
@@ -12,8 +12,8 @@ import type {
    BatchCsvFileInput,
    BatchCsvStreamEvent,
    BatchParsedCsvFile,
-} from "./types.ts";
-import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
+} from "./types";
+import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils";
 
 /**
  * Internal streaming parser state.
