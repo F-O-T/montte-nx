@@ -14,10 +14,11 @@
   "dependencies": {
     "@packages/api": "workspace:*",
     "@packages/authentication": "workspace:*",
-    "@packages/stripe": "workspace:*",
     "@packages/environment": "workspace:*",
     "@packages/localization": "workspace:*",
+    "@packages/money": "workspace:*",
     "@packages/posthog": "workspace:*",
+    "@packages/stripe": "workspace:*",
     "@packages/transactional": "workspace:*",
     "@packages/ui": "workspace:*",
     "@packages/utils": "workspace:*",

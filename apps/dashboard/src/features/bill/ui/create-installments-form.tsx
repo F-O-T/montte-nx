@@ -26,7 +26,7 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarCheck, Check, ChevronDown, Minus, Plus } from "lucide-react";
 import { useMemo, useState } from "react";

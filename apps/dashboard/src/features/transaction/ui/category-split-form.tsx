@@ -9,7 +9,7 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import {
    type CategorySplit,
    getRemainingAmount,

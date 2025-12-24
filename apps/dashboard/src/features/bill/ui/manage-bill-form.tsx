@@ -59,7 +59,7 @@ import {
 import { defineStepper } from "@packages/ui/components/stepper";
 import { Textarea } from "@packages/ui/components/textarea";
 import { formatDate } from "@packages/utils/date";
-import { formatCurrency } from "@packages/utils/money";
+import { formatCurrency } from "@packages/money";
 import type { RecurrencePattern } from "@packages/utils/recurrence";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";

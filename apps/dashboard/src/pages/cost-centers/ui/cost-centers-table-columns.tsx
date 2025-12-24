@@ -16,7 +16,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef, Row } from "@tanstack/react-table";
 import {

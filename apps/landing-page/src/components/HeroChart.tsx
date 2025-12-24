@@ -4,7 +4,7 @@ import {
    ChartTooltip,
    ChartTooltipContent,
 } from "@packages/ui/components/chart";
-import { formatCurrency } from "@packages/utils/money";
+import { formatCurrency } from "@packages/money";
 import { Bar, ComposedChart, Line, XAxis } from "recharts";
 
 const chartData = [

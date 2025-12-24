@@ -12,7 +12,7 @@ import {
    calculateInterest,
    type InterestConfig,
 } from "@packages/utils/interest";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, FileText, Percent, TrendingUp } from "lucide-react";

@@ -30,7 +30,7 @@ import {
    TableRow,
 } from "@packages/ui/components/table";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import {

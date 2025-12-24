@@ -10,7 +10,7 @@ import {
 } from "@packages/ui/components/card";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ExternalLink, Receipt } from "lucide-react";

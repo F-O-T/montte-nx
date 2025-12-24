@@ -4,7 +4,7 @@ import {
    AnnouncementTitle,
 } from "@packages/ui/components/announcement";
 import { Badge } from "@packages/ui/components/badge";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useQuery } from "@tanstack/react-query";
 import type { Row } from "@tanstack/react-table";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";

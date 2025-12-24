@@ -42,7 +42,7 @@ const { Stepper } = defineStepper(...steps);
 
 import { getRandomColor } from "@packages/utils/colors";
 import { formatDate } from "@packages/utils/date";
-import { centsToReais } from "@packages/utils/money";
+import { centsToReais } from "@packages/money";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Info, Tag, XCircle } from "lucide-react";

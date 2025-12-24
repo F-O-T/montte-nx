@@ -24,7 +24,7 @@ import {
    TableHeader,
    TableRow,
 } from "@packages/ui/components/table";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useMutation } from "@tanstack/react-query";
 import {
    AlertTriangleIcon,

@@ -7,7 +7,7 @@ import {
 } from "@packages/ui/components/announcement";
 import { Badge } from "@packages/ui/components/badge";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Landmark, Paperclip } from "lucide-react";

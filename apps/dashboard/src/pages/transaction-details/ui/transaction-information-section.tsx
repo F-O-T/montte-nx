@@ -10,7 +10,7 @@ import {
 } from "@packages/ui/components/item";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";

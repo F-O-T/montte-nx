@@ -2,7 +2,7 @@ import { translate } from "@packages/localization";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { StatsCard } from "@packages/ui/components/stats-card";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";

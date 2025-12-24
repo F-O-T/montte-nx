@@ -11,7 +11,7 @@ import {
    TooltipTrigger,
 } from "@packages/ui/components/tooltip";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Check, CheckCheck, Eye, Minus, Split, X } from "lucide-react";

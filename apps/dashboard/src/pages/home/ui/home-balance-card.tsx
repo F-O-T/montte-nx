@@ -8,7 +8,7 @@ import {
 } from "@packages/ui/components/card";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { Suspense } from "react";

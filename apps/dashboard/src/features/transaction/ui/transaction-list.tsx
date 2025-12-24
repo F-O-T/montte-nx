@@ -20,7 +20,7 @@ import {
    SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatDecimalCurrency } from "@packages/utils/money";
+import { formatDecimalCurrency } from "@packages/money";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {
    ArrowLeftRight,
