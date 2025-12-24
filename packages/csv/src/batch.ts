@@ -1,4 +1,4 @@
-import { parseBatchStream, type BatchCsvFileInput } from "@f-o-t/csv";
+import { type BatchCsvFileInput, parseBatchStream } from "@f-o-t/csv";
 import { normalizeText } from "@packages/utils/text";
 
 import { parseAmount, parseDate } from "./parser";

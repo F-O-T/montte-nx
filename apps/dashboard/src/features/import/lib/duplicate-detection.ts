@@ -1,15 +1,16 @@
-import type { BatchDuplicateInfo, BatchParsedTransaction } from "./use-import-wizard";
-import {
-	calculateDuplicateScore,
-} from "@packages/utils/duplicate-detection";
+import { calculateDuplicateScore } from "@packages/utils/duplicate-detection";
+import type {
+   BatchDuplicateInfo,
+   BatchParsedTransaction,
+} from "./use-import-wizard";
 
 export interface DuplicateCandidate {
-	rowIndex: number;
-	fileIndex: number;
-	filename: string;
-	date: Date;
-	amount: number;
-	description: string;
+   rowIndex: number;
+   fileIndex: number;
+   filename: string;
+   date: Date;
+   amount: number;
+   description: string;
 }
 
 export interface ExistingTransaction {
@@ -105,7 +106,10 @@ export function detectAllDuplicates(
    existingTransactions: ExistingTransaction[],
 ): DuplicateMatch[] {
    const withinBatch = detectWithinBatchDuplicates(newTransactions);
-   const existing = detectExistingDuplicates(newTransactions, existingTransactions);
+   const existing = detectExistingDuplicates(
+      newTransactions,
+      existingTransactions,
+   );
 
    return [...withinBatch, ...existing];
 }
@@ -145,8 +149,12 @@ export function toBatchDuplicateInfos(
          rowIndex: match.candidate.rowIndex,
          fileIndex: match.candidate.fileIndex,
          existingTransactionId: existingTrn?.id ?? "",
-         existingTransactionDate: existingTrn?.date.toISOString() ?? batchTrn?.date.toISOString() ?? "",
-         existingTransactionDescription: existingTrn?.description ?? batchTrn?.description ?? "",
+         existingTransactionDate:
+            existingTrn?.date.toISOString() ??
+            batchTrn?.date.toISOString() ??
+            "",
+         existingTransactionDescription:
+            existingTrn?.description ?? batchTrn?.description ?? "",
          duplicateType: match.matchType,
          matchScore: match.scorePercentage,
          matchedFileIndex: batchTrn?.fileIndex,

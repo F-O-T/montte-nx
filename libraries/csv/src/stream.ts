@@ -5,13 +5,13 @@ import {
    type StateMachineContext,
 } from "./csv-state-machine.ts";
 import type {
+   BatchCsvFileInput,
+   BatchCsvStreamEvent,
+   BatchParsedCsvFile,
    CSVDocument,
    ParsedRow,
    StreamEvent,
    StreamOptions,
-   BatchCsvFileInput,
-   BatchCsvStreamEvent,
-   BatchParsedCsvFile,
 } from "./types.ts";
 import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
 

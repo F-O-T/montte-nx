@@ -1,13 +1,13 @@
 import type { TransactionType } from "@packages/ofx";
 import { useCallback } from "react";
 import type {
-	BatchDuplicateInfo,
-	CsvPreviewDataPerFile,
-	ImportedFile,
+   BatchDuplicateInfo,
+   CsvPreviewDataPerFile,
+   ImportedFile,
 } from "@/features/import/lib/use-import-wizard";
 import {
-	createBatchRowKey,
-	parseBatchRowKey,
+   createBatchRowKey,
+   parseBatchRowKey,
 } from "@/features/import/lib/use-import-wizard";
 
 const STORAGE_KEY = "montte:pending-import";
@@ -62,7 +62,7 @@ export type DuplicateInfo = {
 export type PendingImport = {
    // Multi-file support
    files: ImportedFile[];
-   
+
    timestamp: number;
    bankAccountId: string | null;
 

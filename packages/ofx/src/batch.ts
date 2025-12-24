@@ -1,7 +1,7 @@
 import {
-   parseBatchStream,
    type BatchFileInput,
    type OFXTransaction,
+   parseBatchStream,
 } from "@f-o-t/ofx";
 import { normalizeText } from "@packages/utils/text";
 

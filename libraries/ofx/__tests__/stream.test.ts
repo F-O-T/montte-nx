@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
+   type BatchFileInput,
+   type BatchStreamEvent,
    generateBankStatement,
-   parseStream,
-   parseStreamToArray,
    parseBatchStream,
    parseBatchStreamToArray,
+   parseStream,
+   parseStreamToArray,
    type StreamEvent,
-   type BatchStreamEvent,
-   type BatchFileInput,
 } from "../src";
 
 function stringToReadableStream(str: string): ReadableStream<Uint8Array> {
@@ -347,7 +347,9 @@ describe("parseBatchStream", () => {
 
       const eventTypes: string[] = [];
       for await (const event of parseBatchStream(files)) {
-         eventTypes.push(`${event.type}:${event.type === "batch_complete" ? "batch" : "fileIndex" in event ? event.fileIndex : ""}`);
+         eventTypes.push(
+            `${event.type}:${event.type === "batch_complete" ? "batch" : "fileIndex" in event ? event.fileIndex : ""}`,
+         );
       }
 
       // Verify file1 events come before file2 events
@@ -376,8 +378,12 @@ describe("parseBatchStream", () => {
 
       const headerEvents = events.filter((e) => e.type === "header");
       expect(headerEvents.length).toBe(2);
-      expect(headerEvents[0]?.type === "header" && headerEvents[0].fileIndex).toBe(0);
-      expect(headerEvents[1]?.type === "header" && headerEvents[1].fileIndex).toBe(1);
+      expect(
+         headerEvents[0]?.type === "header" && headerEvents[0].fileIndex,
+      ).toBe(0);
+      expect(
+         headerEvents[1]?.type === "header" && headerEvents[1].fileIndex,
+      ).toBe(1);
    });
 });
 

@@ -14,37 +14,39 @@ import { TagsStats } from "./tags-stats";
 export type Tag = RouterOutput["tags"]["getAllPaginated"]["tags"][0];
 
 export function TagsPage() {
-	const { openSheet } = useSheet();
-	const { canAccessTags } = usePlanFeatures();
+   const { openSheet } = useSheet();
+   const { canAccessTags } = usePlanFeatures();
 
-	return (
-		<UpgradeRequired
-			featureName="Tags"
-			hasAccess={canAccessTags}
-			requiredPlan="basic"
-		>
-			<TagListProvider>
-				<main className="space-y-4">
-					<DefaultHeader
-						actions={
-							<Button
-								onClick={() => openSheet({ children: <ManageTagForm /> })}
-							>
-								<Plus className="size-4" />
-								{translate(
-									"dashboard.routes.tags.actions-toolbar.actions.add-new",
-								)}
-							</Button>
-						}
-						description={translate(
-							"dashboard.routes.tags.list-section.description",
-						)}
-						title={translate("dashboard.routes.tags.list-section.title")}
-					/>
-					<TagsStats />
-					<TagsListSection />
-				</main>
-			</TagListProvider>
-		</UpgradeRequired>
-	);
+   return (
+      <UpgradeRequired
+         featureName="Tags"
+         hasAccess={canAccessTags}
+         requiredPlan="basic"
+      >
+         <TagListProvider>
+            <main className="space-y-4">
+               <DefaultHeader
+                  actions={
+                     <Button
+                        onClick={() =>
+                           openSheet({ children: <ManageTagForm /> })
+                        }
+                     >
+                        <Plus className="size-4" />
+                        {translate(
+                           "dashboard.routes.tags.actions-toolbar.actions.add-new",
+                        )}
+                     </Button>
+                  }
+                  description={translate(
+                     "dashboard.routes.tags.list-section.description",
+                  )}
+                  title={translate("dashboard.routes.tags.list-section.title")}
+               />
+               <TagsStats />
+               <TagsListSection />
+            </main>
+         </TagListProvider>
+      </UpgradeRequired>
+   );
 }

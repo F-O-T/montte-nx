@@ -91,7 +91,9 @@ export function NavMain() {
               {
                  icon: Users,
                  id: "counterparties",
-                 title: translate("dashboard.layout.nav-main.bills.counterparties"),
+                 title: translate(
+                    "dashboard.layout.nav-main.bills.counterparties",
+                 ),
                  url: "/$slug/counterparties",
               },
            ]
@@ -101,7 +103,9 @@ export function NavMain() {
               {
                  icon: Percent,
                  id: "interest-templates",
-                 title: translate("dashboard.layout.nav-main.bills.interest-templates"),
+                 title: translate(
+                    "dashboard.layout.nav-main.bills.interest-templates",
+                 ),
                  url: "/$slug/interest-templates",
               },
            ]
@@ -134,7 +138,9 @@ export function NavMain() {
               {
                  icon: Tag,
                  id: "tags",
-                 title: translate("dashboard.layout.nav-main.categorization.tags"),
+                 title: translate(
+                    "dashboard.layout.nav-main.categorization.tags",
+                 ),
                  url: "/$slug/tags",
               },
            ]

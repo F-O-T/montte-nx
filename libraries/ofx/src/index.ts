@@ -46,14 +46,14 @@ export type {
    OFXTransactionType,
 } from "./schemas";
 export {
-   parseStream,
-   parseStreamToArray,
+   type BatchFileInput,
+   type BatchParsedFile,
+   type BatchStreamEvent,
    parseBatchStream,
    parseBatchStreamToArray,
+   parseStream,
+   parseStreamToArray,
    type StreamEvent,
    type StreamOptions,
-   type BatchFileInput,
-   type BatchStreamEvent,
-   type BatchParsedFile,
 } from "./stream";
 export { formatOfxDate } from "./utils";

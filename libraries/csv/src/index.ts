@@ -24,14 +24,17 @@ export {
 } from "./schemas.ts";
 // Streaming exports
 export {
+   parseBatchStream,
+   parseBatchStreamToArray,
    parseBufferStream,
    parseStream,
    parseStreamToArray,
-   parseBatchStream,
-   parseBatchStreamToArray,
 } from "./stream.ts";
 // Type exports
 export type {
+   BatchCsvFileInput,
+   BatchCsvStreamEvent,
+   BatchParsedCsvFile,
    CSVDocument,
    GenerateOptions,
    ParsedRow,
@@ -39,9 +42,6 @@ export type {
    ParseResult,
    StreamEvent,
    StreamOptions,
-   BatchCsvFileInput,
-   BatchCsvStreamEvent,
-   BatchParsedCsvFile,
 } from "./types.ts";
 // Utility exports
 export {

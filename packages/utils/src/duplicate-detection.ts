@@ -7,9 +7,9 @@
  * Weights for duplicate detection scoring (total: 6)
  */
 export const WEIGHTS = {
-	amount: 3, // Most important - exact match
-	date: 2, // Important - within tolerance
-	description: 1, // Less important - similarity
+   amount: 3, // Most important - exact match
+   date: 2, // Important - within tolerance
+   description: 1, // Less important - similarity
 } as const;
 
 /**
@@ -31,27 +31,27 @@ export const DATE_TOLERANCE_DAYS = 1;
  * Stop words to filter out from descriptions (Portuguese and English)
  */
 const STOP_WORDS = new Set([
-	"de",
-	"da",
-	"do",
-	"para",
-	"com",
-	"em",
-	"no",
-	"na",
-	"os",
-	"as",
-	"um",
-	"uma",
-	"the",
-	"a",
-	"an",
-	"of",
-	"to",
-	"in",
-	"for",
-	"on",
-	"at",
+   "de",
+   "da",
+   "do",
+   "para",
+   "com",
+   "em",
+   "no",
+   "na",
+   "os",
+   "as",
+   "um",
+   "uma",
+   "the",
+   "a",
+   "an",
+   "of",
+   "to",
+   "in",
+   "for",
+   "on",
+   "at",
 ]);
 
 /**
@@ -63,18 +63,18 @@ const SPECIAL_CHARS_REGEX = /[^\w\sáàâãéèêíìîóòôõúùûç]/g;
  * Transaction-like object for duplicate detection
  */
 export interface DuplicateDetectionTransaction {
-	date: Date;
-	amount: number;
-	description: string;
+   date: Date;
+   amount: number;
+   description: string;
 }
 
 /**
  * Result of duplicate score calculation
  */
 export interface DuplicateScoreResult {
-	score: number;
-	scorePercentage: number;
-	passed: boolean;
+   score: number;
+   scorePercentage: number;
+   passed: boolean;
 }
 
 /**
@@ -85,13 +85,13 @@ export interface DuplicateScoreResult {
  * @returns True if dates are within tolerance
  */
 export function datesWithinTolerance(
-	date1: Date,
-	date2: Date,
-	toleranceDays = DATE_TOLERANCE_DAYS,
+   date1: Date,
+   date2: Date,
+   toleranceDays = DATE_TOLERANCE_DAYS,
 ): boolean {
-	const diffMs = Math.abs(date1.getTime() - date2.getTime());
-	const diffDays = diffMs / (1000 * 60 * 60 * 24);
-	return diffDays <= toleranceDays;
+   const diffMs = Math.abs(date1.getTime() - date2.getTime());
+   const diffDays = diffMs / (1000 * 60 * 60 * 24);
+   return diffDays <= toleranceDays;
 }
 
 /**
@@ -101,11 +101,11 @@ export function datesWithinTolerance(
  * @returns Array of normalized tokens
  */
 export function extractDescriptionTokens(description: string): string[] {
-	return description
-		.toLowerCase()
-		.replace(SPECIAL_CHARS_REGEX, " ")
-		.split(/\s+/)
-		.filter((token) => token.length > 2 && !STOP_WORDS.has(token));
+   return description
+      .toLowerCase()
+      .replace(SPECIAL_CHARS_REGEX, " ")
+      .split(/\s+/)
+      .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
 }
 
 /**
@@ -115,23 +115,23 @@ export function extractDescriptionTokens(description: string): string[] {
  * @returns Similarity score between 0 and 1
  */
 export function calculateTokenSimilarity(
-	tokens1: string[],
-	tokens2: string[],
+   tokens1: string[],
+   tokens2: string[],
 ): number {
-	if (tokens1.length === 0 || tokens2.length === 0) return 0;
+   if (tokens1.length === 0 || tokens2.length === 0) return 0;
 
-	const set1 = new Set(tokens1);
-	const set2 = new Set(tokens2);
+   const set1 = new Set(tokens1);
+   const set2 = new Set(tokens2);
 
-	let intersectionSize = 0;
-	for (const token of set1) {
-		if (set2.has(token)) intersectionSize++;
-	}
+   let intersectionSize = 0;
+   for (const token of set1) {
+      if (set2.has(token)) intersectionSize++;
+   }
 
-	const unionSize = set1.size + set2.size - intersectionSize;
-	if (unionSize === 0) return 0;
+   const unionSize = set1.size + set2.size - intersectionSize;
+   if (unionSize === 0) return 0;
 
-	return intersectionSize / unionSize;
+   return intersectionSize / unionSize;
 }
 
 /**
@@ -142,33 +142,33 @@ export function calculateTokenSimilarity(
  * @returns Score details with percentage and pass/fail status
  */
 export function calculateDuplicateScore(
-	candidate: DuplicateDetectionTransaction,
-	target: DuplicateDetectionTransaction,
+   candidate: DuplicateDetectionTransaction,
+   target: DuplicateDetectionTransaction,
 ): DuplicateScoreResult {
-	let score = 0;
+   let score = 0;
 
-	// Amount match (exact)
-	if (candidate.amount === target.amount) {
-		score += WEIGHTS.amount;
-	}
+   // Amount match (exact)
+   if (candidate.amount === target.amount) {
+      score += WEIGHTS.amount;
+   }
 
-	// Date match (within tolerance)
-	if (datesWithinTolerance(candidate.date, target.date)) {
-		score += WEIGHTS.date;
-	}
+   // Date match (within tolerance)
+   if (datesWithinTolerance(candidate.date, target.date)) {
+      score += WEIGHTS.date;
+   }
 
-	// Description similarity
-	const candidateTokens = extractDescriptionTokens(candidate.description);
-	const targetTokens = extractDescriptionTokens(target.description);
-	const similarity = calculateTokenSimilarity(candidateTokens, targetTokens);
+   // Description similarity
+   const candidateTokens = extractDescriptionTokens(candidate.description);
+   const targetTokens = extractDescriptionTokens(target.description);
+   const similarity = calculateTokenSimilarity(candidateTokens, targetTokens);
 
-	// Add weighted description score based on similarity
-	if (similarity >= 0.5) {
-		score += WEIGHTS.description * similarity;
-	}
+   // Add weighted description score based on similarity
+   if (similarity >= 0.5) {
+      score += WEIGHTS.description * similarity;
+   }
 
-	const scorePercentage = score / MAX_SCORE;
-	const passed = scorePercentage >= THRESHOLD_PERCENTAGE;
+   const scorePercentage = score / MAX_SCORE;
+   const passed = scorePercentage >= THRESHOLD_PERCENTAGE;
 
-	return { score, scorePercentage, passed };
+   return { score, scorePercentage, passed };
 }

@@ -462,7 +462,9 @@ export function ManageCustomReportForm({
                         <Field>
                            <FieldLabel>Centros de Custo</FieldLabel>
                            <MultiSelect
-                              onChange={(selected) => field.handleChange(selected)}
+                              onChange={(selected) =>
+                                 field.handleChange(selected)
+                              }
                               options={costCenterOptions}
                               placeholder="Todos os centros de custo"
                               selected={field.state.value}
@@ -483,7 +485,9 @@ export function ManageCustomReportForm({
                         <Field>
                            <FieldLabel>Tags</FieldLabel>
                            <MultiSelect
-                              onChange={(selected) => field.handleChange(selected)}
+                              onChange={(selected) =>
+                                 field.handleChange(selected)
+                              }
                               options={tagOptions}
                               placeholder="Todas as tags"
                               selected={field.state.value}
