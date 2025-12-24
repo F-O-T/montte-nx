@@ -2,14 +2,14 @@ import {
    createStateMachineContext,
    flush,
    processChar,
-} from "./csv-state-machine";
+} from "./csv-state-machine.ts";
 import type {
    CSVDocument,
    ParsedRow,
    ParseOptions,
    ParseResult,
-} from "./types";
-import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils";
+} from "./types.ts";
+import { createParsedRow, decodeBuffer, detectDelimiter } from "./utils.ts";
 
 /**
  * Parses raw CSV content into a 2D array of strings using a state machine.

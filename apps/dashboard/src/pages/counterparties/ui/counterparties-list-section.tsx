@@ -239,7 +239,7 @@ function CounterpartiesListContent() {
                icon={<XCircle className="size-3.5" />}
                onClick={() => toggleActiveSelected(selectedIds, false)}
             >
-               Desativar
+               Inativar
             </SelectionActionButton>
             <SelectionActionButton
                disabled={isLoading}

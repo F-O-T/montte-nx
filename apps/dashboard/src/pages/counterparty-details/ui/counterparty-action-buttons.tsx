@@ -154,7 +154,7 @@ function ActionButtonsContent({
             {counterparty.isActive ? (
                <>
                   <XCircle className="size-4" />
-                  Desativar
+                  Inativar
                </>
             ) : (
                <>

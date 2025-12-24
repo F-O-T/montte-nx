@@ -13,11 +13,6 @@ import {
    type TimePeriod,
    type TimePeriodDateRange,
 } from "@packages/ui/components/time-period-chips";
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipTrigger,
-} from "@packages/ui/components/tooltip";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import {
@@ -121,7 +116,7 @@ function BankAccountContent() {
       });
    };
 
-   const { canDelete, deleteBankAccount } = useDeleteBankAccount({
+   const { deleteBankAccount } = useDeleteBankAccount({
       bankAccount,
       onSuccess: handleDeleteSuccess,
    });
@@ -194,29 +189,15 @@ function BankAccountContent() {
                <Edit className="size-4" />
                Editar Conta
             </Button>
-            <Tooltip>
-               <TooltipTrigger>
-                  <Button
-                     className="text-destructive hover:text-destructive"
-                     disabled={!canDelete}
-                     onClick={deleteBankAccount}
-                     size="sm"
-                     variant="outline"
-                  >
-                     <Trash2 className="size-4" />
-                     Excluir Conta
-                  </Button>
-               </TooltipTrigger>
-               {!canDelete && (
-                  <TooltipContent>
-                     <p>
-                        {translate(
-                           "dashboard.routes.bank-accounts.delete.error-last-account",
-                        )}
-                     </p>
-                  </TooltipContent>
-               )}
-            </Tooltip>
+            <Button
+               className="text-destructive hover:text-destructive"
+               onClick={deleteBankAccount}
+               size="sm"
+               variant="outline"
+            >
+               <Trash2 className="size-4" />
+               Excluir Conta
+            </Button>
             <Button
                onClick={() =>
                   openSheet({

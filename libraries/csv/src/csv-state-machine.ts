@@ -1,4 +1,4 @@
-import type { ParserState } from "./types";
+import type { ParserState } from "./types.ts";
 
 /**
  * Callback invoked when a complete row has been parsed.

@@ -6,14 +6,14 @@ export {
    generate,
    generateFromObjects,
    generateRow,
-} from "./generator";
+} from "./generator.ts";
 export {
    parse,
    parseBuffer,
    parseBufferOrThrow,
    parseOrThrow,
    parseToArray,
-} from "./parser";
+} from "./parser.ts";
 // Schema exports
 export {
    csvDocumentSchema,
@@ -21,7 +21,7 @@ export {
    parsedRowSchema,
    parseOptionsSchema,
    streamOptionsSchema,
-} from "./schemas";
+} from "./schemas.ts";
 // Streaming exports
 export {
    parseBufferStream,
@@ -29,7 +29,7 @@ export {
    parseStreamToArray,
    parseBatchStream,
    parseBatchStreamToArray,
-} from "./stream";
+} from "./stream.ts";
 // Type exports
 export type {
    CSVDocument,
@@ -42,7 +42,7 @@ export type {
    BatchCsvFileInput,
    BatchCsvStreamEvent,
    BatchParsedCsvFile,
-} from "./types";
+} from "./types.ts";
 // Utility exports
 export {
    decodeBuffer,
@@ -51,4 +51,4 @@ export {
    detectLineEnding,
    escapeField,
    needsQuoting,
-} from "./utils";
+} from "./utils.ts";

@@ -204,9 +204,7 @@ export function BankAccountExpandedContent({
    const account = row.original;
    const { activeOrganization } = useActiveOrganization();
    const { openSheet } = useSheet();
-   const { canDelete, deleteBankAccount } = useDeleteBankAccount({
-      bankAccount: account,
-   });
+   const { deleteBankAccount } = useDeleteBankAccount({ bankAccount: account });
    const { toggleStatus, isUpdating } = useToggleBankAccountStatus({
       bankAccount: account,
    });
@@ -327,12 +325,7 @@ export function BankAccountExpandedContent({
                "dashboard.routes.bank-accounts.list-section.actions.edit",
             )}
          </Button>
-         <Button
-            disabled={!canDelete}
-            onClick={handleDelete}
-            size="sm"
-            variant="destructive"
-         >
+         <Button onClick={handleDelete} size="sm" variant="destructive">
             <Trash2 className="size-4" />
             {translate(
                "dashboard.routes.bank-accounts.list-section.actions.delete",
