@@ -7,8 +7,7 @@ import Footer from "@/sections/Footer.astro";
 import PricingAnalytics from "@/sections/pricing-page/PricingAnalytics.astro";
 import PricingAutomation from "@/sections/pricing-page/PricingAutomation.astro";
 import PricingCoreFeatures from "@/sections/pricing-page/PricingCoreFeatures.astro";
-import PricingEnterprise from "@/sections/pricing-page/PricingEnterprise.astro";
-import PricingFAQ from "@/sections/pricing-page/PricingFAQ.astro";
+import PricingAddons from "@/sections/pricing-page/PricingAddons.astro";
 import PricingFreeTier from "@/sections/pricing-page/PricingFreeTier.astro";
 import PricingHero from "@/sections/pricing-page/PricingHero.astro";
 import PricingPlanning from "@/sections/pricing-page/PricingPlanning.astro";
@@ -41,13 +40,12 @@ export function getStaticPaths() {
             <main class="flex-1 space-y-16">
                <PricingFreeTier />
                <PricingPlansGrid />
+               <PricingAddons />
                <PricingCoreFeatures />
                <PricingPlanning />
                <PricingAutomation />
                <PricingAnalytics />
                <PricingTeam />
-               <PricingEnterprise />
-               <PricingFAQ />
             </main>
          </div>
       </div>
@@ -55,36 +53,3 @@ export function getStaticPaths() {
 
    <Footer />
 </Landing>
-
-<script>
-   function syncToggles() {
-      const mainToggle = document.getElementById('pricing-toggle') as HTMLInputElement;
-      const sidebarToggle = document.getElementById('pricing-toggle-sidebar') as HTMLInputElement;
-      const monthlyEls = document.querySelectorAll('.price-monthly');
-      const yearlyEls = document.querySelectorAll('.price-yearly');
-
-      function updatePrices(isYearly: boolean) {
-         monthlyEls.forEach(el => el.classList.toggle('hidden', isYearly));
-         yearlyEls.forEach(el => el.classList.toggle('hidden', !isYearly));
-      }
-
-      if (mainToggle && sidebarToggle) {
-         mainToggle.addEventListener('change', (e) => {
-            const isYearly = (e.target as HTMLInputElement).checked;
-            sidebarToggle.checked = isYearly;
-            updatePrices(isYearly);
-         });
-
-         sidebarToggle.addEventListener('change', (e) => {
-            const isYearly = (e.target as HTMLInputElement).checked;
-            mainToggle.checked = isYearly;
-            updatePrices(isYearly);
-         });
-
-         updatePrices(mainToggle.checked);
-      }
-   }
-
-   document.addEventListener('DOMContentLoaded', syncToggles);
-   document.addEventListener('astro:page-load', syncToggles);
-</script>

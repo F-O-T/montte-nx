@@ -1,32 +1,35 @@
 ---
-import { Check, Zap } from "@lucide/astro";
+import { Check, Zap, ArrowRight } from "@lucide/astro";
+import { Card, CardContent } from "@packages/ui/components/card";
+import { Table, TableBody, TableRow, TableCell } from "@packages/ui/components/table";
+import { Button } from "@packages/ui/components/button";
 
 const planningFeatures = {
    title: "Planejamento e Previsibilidade",
-    description:
-       "Não seja pego de surpresa. Controle o futuro do seu caixa, gerencie vencimentos e garanta que as contas fechem no azul.",
-    included: {
-       label: "Incluso no plano Básico",
-       value: "Metas de Gastos Mensais",
-    },
-    addons: [
-       { name: "Orçamento Flexível (Rollover de saldo)", price: "Pro" },
-       { name: "Gestão Completa de Contas a Pagar/Receber", price: "Pro" },
-       { name: "Motor de Cálculo de Juros e Multas", price: "Pro" },
-    ],
-    features: [
-       "Orçamento por Centro de Custo ou Categoria",
-       "Modos de Controle: Flexível (Gamificado) ou Rígido",
-       "Rollover: Acumule o saldo não gasto para o mês seguinte",
-       "Alertas preventivos de estouro de orçamento",
-       "Monitoramento visual de metas (Progress Bars)",
-       "Workflow de Status (Agendado, Pago, Atrasado)",
-       "Gestão de Recorrências e Assinaturas",
-       "Parcelamentos complexos e personalizados",
-       "Cálculo automático de encargos por atraso",
-       "Atualização monetária (IPCA, SELIC, CDI)",
-       "Projeção de saldo futuro",
-    ],
+   description:
+      "Não seja pego de surpresa. Controle o futuro do seu caixa, gerencie vencimentos e garanta que as contas fechem no azul.",
+   included: {
+      label: "Incluso em todos os planos",
+      value: "Metas de Gastos Mensais",
+   },
+   addons: [
+      { name: "Orçamento Flexível (Rollover de saldo)", price: "Incluso" },
+      { name: "Gestão de Contas a Pagar/Receber", price: "Incluso" },
+      { name: "Motor de Cálculo de Juros e Multas", price: "Incluso" },
+   ],
+   features: [
+      "Orçamento por Centro de Custo ou Categoria",
+      "Modos de Controle: Flexível ou Rígido",
+      "Rollover: Acumule saldo não gasto",
+      "Alertas preventivos de estouro",
+      "Monitoramento visual de metas",
+      "Workflow de Status (Agendado, Pago, Atrasado)",
+      "Gestão de Recorrências e Assinaturas",
+      "Parcelamentos complexos",
+      "Cálculo automático de encargos",
+      "Atualização monetária (IPCA, SELIC, CDI)",
+      "Projeção de saldo futuro",
+   ],
 };
 ---
 
@@ -36,24 +39,30 @@ const planningFeatures = {
    <p class="text-muted-foreground mb-8 max-w-2xl">{planningFeatures.description}</p>
 
    <!-- Pricing Table -->
-   <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-         <span class="font-medium text-foreground">{planningFeatures.included.label}</span>
-         <span class="text-sm font-medium text-primary">{planningFeatures.included.value}</span>
-      </div>
-      {planningFeatures.addons.map((addon, index) => (
-         <div class={`flex items-center justify-between px-6 py-4 ${index < planningFeatures.addons.length - 1 ? 'border-b border-dashed border-border' : ''}`}>
-            <div class="flex items-center gap-2">
-               <Zap class="size-4 text-primary" />
-               <span class="text-sm">{addon.name}</span>
-            </div>
-            <span class={`text-sm ${addon.price === 'Pro' ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{addon.price}</span>
-         </div>
-      ))}
-   </div>
+   <Card className="mb-8 py-0 overflow-hidden">
+      <Table>
+         <TableBody>
+            <TableRow className="bg-muted/30">
+               <TableCell className="font-medium text-foreground py-4 px-6">{planningFeatures.included.label}</TableCell>
+               <TableCell className="text-right text-sm font-medium text-primary py-4 px-6">{planningFeatures.included.value}</TableCell>
+            </TableRow>
+            {planningFeatures.addons.map((addon, index) => (
+               <TableRow className={index < planningFeatures.addons.length - 1 ? "border-dashed" : "border-0"}>
+                  <TableCell className="py-4 px-6">
+                     <div class="flex items-center gap-2">
+                        <Zap class="size-4 text-primary" />
+                        <span class="text-sm">{addon.name}</span>
+                     </div>
+                  </TableCell>
+                  <TableCell className="text-right text-sm text-muted-foreground py-4 px-6">{addon.price}</TableCell>
+               </TableRow>
+            ))}
+         </TableBody>
+      </Table>
+   </Card>
 
    <!-- Features Grid -->
-   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-6">
       {planningFeatures.features.map((feature) => (
          <div class="flex items-center gap-2">
             <Check class="size-4 text-primary shrink-0" />
@@ -61,4 +70,19 @@ const planningFeatures = {
          </div>
       ))}
    </div>
+
+   <!-- Enterprise CTA -->
+   <Card className="border-dashed bg-muted/20 py-4">
+      <CardContent className="flex items-center justify-between py-0">
+         <p class="text-sm text-muted-foreground">
+            <span class="font-medium text-foreground">Para empresas:</span> recursos avançados de planejamento no plano Enterprise.
+         </p>
+         <Button asChild variant="link" className="shrink-0 text-primary p-0 h-auto">
+            <a href="/enterprise">
+               Ver Enterprise
+               <ArrowRight class="size-3" />
+            </a>
+         </Button>
+      </CardContent>
+   </Card>
 </section>

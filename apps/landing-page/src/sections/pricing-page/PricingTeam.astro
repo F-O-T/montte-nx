@@ -1,29 +1,28 @@
 ---
-import { Check, ShieldCheck } from "@lucide/astro";
+import { Check, ArrowRight } from "@lucide/astro";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from "@packages/ui/components/card";
+import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
 ---
 
 <!-- TEAM SECTION -->
 <section id="team" class="scroll-mt-24">
-    <h2 class="text-foreground text-3xl font-bold mb-2">Gestão de Time e Acessos</h2>
-    <p class="text-muted-foreground mb-8 max-w-2xl">
-       Delegue o operacional sem perder o controle. Convide sócios, assistentes e contadores com permissões personalizadas.
-    </p>
+   <h2 class="text-foreground text-3xl font-bold mb-2">Gestão de Time e Acessos</h2>
+   <p class="text-muted-foreground mb-8 max-w-2xl">
+      Delegue o operacional sem perder o controle. Convide sócios, assistentes e contadores com permissões personalizadas.
+   </p>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-10">
-       {[
-          "Múltiplas Empresas (CNPJs)",
-          "Convite seguro por e-mail",
-          "Permissões: Leitor, Editor, Admin",
-          "Acesso exclusivo para Contador",
-          "Trilha de Auditoria (Quem fez o quê)",
-          "Workspaces Segregados",
-          "Revogação de acesso em 1 clique",
-          "Sessões ativas por dispositivo",
-          "Alertas de atividades suspeitas",
-          "Notificações de edição de saldo",
-          "Hierarquia de aprovação",
-          "Histórico de alterações",
-       ].map((feature) => (
+   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm mb-10">
+      {[
+         "Convite seguro por e-mail",
+         "Permissões: Leitor, Editor, Admin",
+         "Acesso exclusivo para Contador",
+         "Revogação de acesso em 1 clique",
+         "Sessões ativas por dispositivo",
+         "Alertas de atividades suspeitas",
+         "Notificações de edição de saldo",
+         "Histórico de alterações",
+      ].map((feature) => (
          <div class="flex items-center gap-2">
             <Check class="size-4 text-primary shrink-0" />
             <span class="text-muted-foreground">{feature}</span>
@@ -31,65 +30,64 @@ import { Check, ShieldCheck } from "@lucide/astro";
       ))}
    </div>
 
-   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Card 1: FREE -->
-      <div class="rounded-xl border border-border bg-card/50 p-6 flex flex-col">
-         <div class="mb-4">
-             <h3 class="text-foreground font-bold text-lg">Free</h3>
-             <p class="text-sm text-muted-foreground">Para o "Eu-quipe" (Solo)</p>
-         </div>
-          <div class="flex items-baseline gap-1 mb-6">
-             <span class="text-foreground text-4xl font-bold tracking-tighter">R$0</span>
-             <span class="text-sm text-muted-foreground">/mês</span>
-          </div>
-          <ul class="space-y-3 text-sm text-muted-foreground mt-auto">
-             <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>1 Usuário (Você)</li>
-             <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>1 Workspace Pessoal</li>
-             <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>Segurança Padrão</li>
-          </ul>
-      </div>
+      <Card className="bg-card/50">
+         <CardHeader>
+            <CardTitle className="text-lg">Free</CardTitle>
+            <CardDescription>Para uso individual</CardDescription>
+         </CardHeader>
+         <CardContent>
+            <div class="flex items-baseline gap-1 mb-6">
+               <span class="text-foreground text-4xl font-bold tracking-tighter">R$0</span>
+               <span class="text-sm text-muted-foreground">/mês</span>
+            </div>
+            <ul class="space-y-3 text-sm text-muted-foreground">
+               <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>1 Usuário</li>
+               <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>1 Workspace</li>
+               <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-muted-foreground"></div>Segurança Padrão</li>
+            </ul>
+         </CardContent>
+      </Card>
 
-      <!-- Card 2: PRO -->
-      <div class="rounded-xl border border-primary/40 bg-card p-6 relative flex flex-col shadow-lg shadow-primary/5">
-         <div class="absolute -top-3 left-6 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">
+      <!-- Card 2: Compartilhado -->
+      <Card className="border-primary/40 shadow-lg shadow-primary/5 relative overflow-visible">
+         <Badge className="absolute -top-3 left-6 uppercase tracking-wide">
             Recomendado
-         </div>
-         <div class="mb-4">
-             <h3 class="text-foreground font-bold text-lg">Pro</h3>
-             <p class="text-sm text-muted-foreground">Sócios + Contador</p>
-         </div>
-           <div class="flex items-baseline gap-1 mb-6">
-              <span class="text-foreground text-4xl font-bold tracking-tighter">
-                  <span class="price-monthly">R$39</span>
-                  <span class="price-yearly hidden">R$32</span>
-              </span>
-              <span class="text-sm text-muted-foreground">/mês</span>
-           </div>
-          <ul class="space-y-3 text-sm text-foreground/80 font-medium mt-auto">
-             <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> Até 10 Membros</li>
-             <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> 5 Workspaces (CNPJs)</li>
-             <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> Permissões Avançadas</li>
-          </ul>
-      </div>
-
-      <!-- Card 3: BUSINESS -->
-      <div class="rounded-xl border border-border bg-card/50 p-6 flex flex-col">
-         <div class="mb-4">
-             <h3 class="text-foreground font-bold text-lg">Business</h3>
-             <p class="text-sm text-muted-foreground">Depto. Financeiro Completo</p>
-         </div>
-           <div class="flex items-baseline gap-1 mb-6">
-              <span class="text-foreground text-4xl font-bold tracking-tighter">
-                  <span class="price-monthly">R$99</span>
-                  <span class="price-yearly hidden">R$79</span>
-              </span>
-              <span class="text-sm text-muted-foreground">/mês</span>
-           </div>
-         <ul class="space-y-3 text-sm text-muted-foreground mt-auto">
-            <li class="flex items-center gap-2"><ShieldCheck class="size-4 text-foreground" /> Membros Ilimitados</li>
-            <li class="flex items-center gap-2"><ShieldCheck class="size-4 text-foreground" /> Workspaces Ilimitados</li>
-            <li class="flex items-center gap-2"><ShieldCheck class="size-4 text-foreground" /> Logs de Auditoria Totais</li>
-         </ul>
-      </div>
+         </Badge>
+         <CardHeader>
+            <CardTitle className="text-lg">Compartilhado</CardTitle>
+            <CardDescription>Para casais e famílias</CardDescription>
+         </CardHeader>
+         <CardContent>
+            <div class="flex items-baseline gap-1 mb-6">
+               <span class="text-foreground text-4xl font-bold tracking-tighter">
+                  <span class="price-monthly">R$25</span>
+                  <span class="price-yearly hidden">R$21</span>
+               </span>
+               <span class="text-sm text-muted-foreground">/mês</span>
+            </div>
+            <ul class="space-y-3 text-sm text-foreground/80 font-medium">
+               <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> 2 Usuários inclusos</li>
+               <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> Contas compartilhadas</li>
+               <li class="flex items-center gap-2"><Check class="size-4 text-primary" /> Relatórios conjuntos</li>
+            </ul>
+         </CardContent>
+      </Card>
    </div>
+
+   <!-- Enterprise CTA -->
+   <Card className="mt-6 border-dashed bg-muted/20 py-5">
+      <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-0">
+         <p class="text-sm text-muted-foreground">
+            <span class="font-medium text-foreground">Precisa de mais membros?</span> No plano Enterprise você tem membros ilimitados, workspaces ilimitados e logs de auditoria completos.
+         </p>
+         <Button asChild variant="link" className="shrink-0 text-primary">
+            <a href="/enterprise">
+               Ver Enterprise
+               <ArrowRight class="size-4" />
+            </a>
+         </Button>
+      </CardContent>
+   </Card>
 </section>

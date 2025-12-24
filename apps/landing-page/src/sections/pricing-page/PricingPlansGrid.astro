@@ -1,155 +1,156 @@
 ---
+import { Check, ArrowRight } from "@lucide/astro";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction } from "@packages/ui/components/card";
+import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
+
 const plans = [
    {
-      name: "Pro",
-      priceMonthly: 39,
-      priceYearly: 32,
-      discount: "20%",
-       description: "Poder total: automação, DRE e previsibilidade de caixa para quem leva finanças a sério.",
-       specs: [
-          { label: "Acesso", val: "Até 10 un." },
-          { label: "Histórico", val: "Ilimitado" },
-          { label: "Anexos", val: "5 GB" },
-          { label: "Automações", val: "Ilimitadas" },
-       ],
-       features: [
-          "Fluxo de Caixa (Pagar/Receber)",
-          "Orçamento Flexível (Rollover)",
-          "DRE Gerencial e Fiscal",
-          "Cálculo Automático de Juros",
-          "Automações Ilimitadas",
-          "Relatórios em PDF Personalizados",
-          "Suporte Prioritário",
-       ],
-      highlighted: true,
-   },
-   {
-      name: "Business",
-      priceMonthly: 99,
-      priceYearly: 79,
-      discount: "20%",
-      description: "Governança, centros de custo e controle de aprovações para empresas em expansão.",
-       specs: [
-          { label: "Acesso", val: "Ilimitado" },
-          { label: "Auditoria", val: "Completa" },
-          { label: "Anexos", val: "25 GB" },
-          { label: "API", val: "Liberada" },
-       ],
-       features: [
-          "Gestão de Centros de Custo",
-          "Workflow de Aprovação de Gastos",
-          "Rateio Avançado de Despesas",
-          "API Pública e Webhooks",
-          "Trilha de Auditoria (Logs)",
-          "Backup em Nuvem Dedicado",
-          "Onboarding Assistido",
-       ],
-      highlighted: false,
-   },
-   {
-      name: "Enterprise",
-      priceMonthly: "Sob Consulta",
-      priceYearly: "Sob Consulta",
-       description: "Segurança de nível bancário, ambiente dedicado e SLA garantido em contrato.",
-       specs: [
-          { label: "Acesso", val: "SSO/SAML" },
-          { label: "SLA", val: "Personalizado" },
-          { label: "Anexos", val: "Customizável" },
-          { label: "Suporte", val: "24/7 VIP" },
-       ],
+      name: "Pessoal",
+      planKey: "basic",
+      priceMonthly: 15,
+      priceYearly: 12,
+      description: "Para finanças pessoais e controle individual.",
+      specs: [
+         { label: "Usuários", val: "1" },
+         { label: "Categorias", val: "Ilimitadas" },
+         { label: "Anexos", val: "1 GB" },
+         { label: "Suporte", val: "Email" },
+      ],
       features: [
-         "Single Sign-On (SSO) Corporativo",
-         "Conformidade Total LGPD",
-         "Gestão de Acesso (RBAC) Granular",
-         "Gerente de Conta (CSM) Dedicado",
-         "Contrato e Faturamento Flexível",
-         "Ambiente Isolado (Single-tenant)",
-         "Treinamento In-Company",
+         "Transações ilimitadas",
+         "Categorias e Tags",
+         "Importação OFX/CSV",
+         "Exportação PDF",
+         "Relatórios básicos",
+         "14 dias de teste grátis",
       ],
       highlighted: false,
+      cta: "Começar Teste Grátis",
+   },
+   {
+      name: "Compartilhado",
+      planKey: "shared",
+      priceMonthly: 25,
+      priceYearly: 21,
+      description: "Ideal para casais e famílias que querem organizar juntos.",
+      specs: [
+         { label: "Usuários", val: "2" },
+         { label: "Categorias", val: "Ilimitadas" },
+         { label: "Anexos", val: "5 GB" },
+         { label: "Suporte", val: "Email" },
+      ],
+      features: [
+         "Tudo do plano Pessoal",
+         "2 usuários inclusos",
+         "Ideal para casais",
+         "Contas compartilhadas",
+         "Relatórios conjuntos",
+         "14 dias de teste grátis",
+      ],
+      highlighted: true,
+      cta: "Começar Teste Grátis",
    },
 ];
 ---
 
-<!-- STARTS AT SECTION -->
 <section>
    <div class="mb-10 text-center md:text-left">
       <h2 class="text-foreground text-3xl font-bold mb-3">Planos que escalam com você</h2>
       <p class="text-muted-foreground max-w-2xl">
-         Precisa de mais poder? Escolha o plano ideal para automatizar sua rotina e garantir a governança financeira da sua empresa.
+         Escolha o plano ideal para o seu momento. Faça upgrade ou cancele a qualquer hora.
       </p>
    </div>
 
-   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
       {plans.map((plan) => (
-         <div class={`rounded-xl border p-6 hover:border-primary/40 transition-all duration-300 group flex flex-col h-full relative ${plan.highlighted ? "border-primary/60 bg-card shadow-xl shadow-primary/5 ring-1 ring-primary/20 z-10" : "border-border bg-gradient-to-b from-card to-background/50 hover:shadow-lg"}`}>
-
-            <div class="flex justify-between items-start mb-4">
-               <span class={`text-base font-bold transition-colors ${plan.highlighted ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}>
+         <Card className={`h-full hover:border-primary/40 transition-all duration-300 group ${plan.highlighted ? "border-primary/60 shadow-xl shadow-primary/5 ring-1 ring-primary/20 z-10" : "bg-gradient-to-b from-card to-background/50 hover:shadow-lg"}`}>
+            <CardHeader>
+               <CardTitle className={`text-base font-bold transition-colors ${plan.highlighted ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}>
                   {plan.name}
-               </span>
+               </CardTitle>
                {plan.highlighted && (
-                  <span class="text-xs uppercase font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full tracking-wide">
-                     Mais Escolhido
-                  </span>
+                  <CardAction>
+                     <Badge variant="outline" className="text-xs uppercase font-bold text-primary bg-primary/10 border-primary/20 tracking-wide">
+                        Mais Popular
+                     </Badge>
+                  </CardAction>
                )}
-            </div>
+            </CardHeader>
 
-            <div class="flex items-end gap-2 mb-2">
-               <div class="text-foreground text-4xl font-bold tracking-tighter">
-                  {typeof plan.priceMonthly === 'number' ? (
-                     <>
-                        <span class="price-monthly">R${plan.priceMonthly}</span>
-                        <span class="price-yearly hidden">R${plan.priceYearly}</span>
-                     </>
-                  ) : (
-                     <span class="text-2xl">{plan.priceMonthly}</span>
-                  )}
+            <CardContent className="flex flex-col flex-1">
+               <!-- Price -->
+               <div class="flex items-end gap-2 mb-2">
+                  <div class="text-foreground text-4xl font-bold tracking-tighter">
+                     <span class="price-monthly">R${plan.priceMonthly}</span>
+                     <span class="price-yearly hidden">R${plan.priceYearly}</span>
+                  </div>
+                  <div class="flex flex-col mb-1.5">
+                     <span class="text-xs text-muted-foreground font-medium">/mês</span>
+                  </div>
                </div>
 
-               {typeof plan.priceMonthly === 'number' && (
-                   <div class="flex flex-col mb-1.5">
-                       <span class="text-xs text-muted-foreground font-medium">/mês</span>
-                   </div>
-               )}
-            </div>
+               <!-- Annual savings badge -->
+               <Badge variant="outline" className="self-start text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20 mb-5 price-yearly hidden">
+                  Economize 17% no anual
+               </Badge>
 
-             {plan.discount && (
-                  <div class="self-start text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded mb-5 price-yearly hidden">
-                     Economize {plan.discount} no anual
-                  </div>
-               )}
+               <!-- Description -->
+               <CardDescription className="mb-6 leading-relaxed min-h-10">
+                  {plan.description}
+               </CardDescription>
 
-            <p class="text-sm text-muted-foreground mb-6 leading-relaxed min-h-10">
-               {plan.description}
-            </p>
+               <!-- Specs section -->
+               <div class="space-y-2 py-4 border-t border-dashed border-border bg-muted/20 -mx-6 px-6 mb-6">
+                  {plan.specs.map((spec) => (
+                     <div class="flex justify-between items-center text-xs">
+                        <span class="text-muted-foreground font-medium">{spec.label}</span>
+                        <span class="text-foreground font-mono font-semibold">{spec.val}</span>
+                     </div>
+                  ))}
+               </div>
 
-            <div class="space-y-2 py-4 border-t border-dashed border-border bg-muted/20 -mx-6 px-6 mb-6">
-               {plan.specs.map((spec) => (
-                  <div class="flex justify-between items-center text-xs">
-                     <span class="text-muted-foreground font-medium">{spec.label}</span>
-                     <span class="text-foreground font-mono font-semibold">{spec.val}</span>
-                  </div>
-               ))}
-            </div>
-
-            <ul class="space-y-3 mt-auto mb-6">
-                {plan.features.map((feature) => (
-                    <li class="text-sm text-muted-foreground flex items-start gap-3">
-                        <svg class={`w-4 h-4 shrink-0 mt-0.5 ${plan.highlighted ? "text-primary" : "text-muted-foreground/70"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+               <!-- Features list -->
+               <ul class="space-y-3 mt-auto mb-6">
+                  {plan.features.map((feature) => (
+                     <li class="text-sm text-muted-foreground flex items-start gap-3">
+                        <Check class={`size-4 shrink-0 mt-0.5 ${plan.highlighted ? "text-primary" : "text-muted-foreground/70"}`} />
                         <span class="leading-tight">{feature}</span>
-                    </li>
-                ))}
-            </ul>
+                     </li>
+                  ))}
+               </ul>
+            </CardContent>
 
-             <div class="pt-2 border-t border-border/0">
-                 <a href="#" aria-label={`Selecionar plano ${plan.name}`} class={`block w-full py-3 px-4 rounded-lg text-sm font-bold text-center transition-all hover:scale-[1.02] active:scale-[0.98] ${plan.highlighted ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20" : "bg-muted hover:bg-muted/80 text-foreground"}`}>
-                     {plan.name === "Enterprise" ? "Falar com Consultor" : "Começar Agora"}
-                 </a>
-             </div>
-         </div>
+            <CardFooter>
+               <Button
+                  asChild
+                  className={`w-full ${plan.highlighted ? "shadow-md shadow-primary/20" : ""}`}
+                  variant={plan.highlighted ? "default" : "secondary"}
+               >
+                  <a href={`https://app.montte.co/auth/sign-up?plan=${plan.planKey}`} aria-label={`Selecionar plano ${plan.name}`}>
+                     {plan.cta}
+                  </a>
+               </Button>
+            </CardFooter>
+         </Card>
       ))}
    </div>
+
+   <!-- Enterprise CTA -->
+   <Card className="mt-8 flex-row items-center justify-between bg-gradient-to-r from-card to-muted/30">
+      <CardContent className="flex flex-col md:flex-row items-center justify-between gap-4 py-0">
+         <div>
+            <h3 class="text-foreground font-bold text-lg mb-1">Precisa de mais?</h3>
+            <p class="text-sm text-muted-foreground">
+               Para equipes e empresas, conheça nosso plano Enterprise com recursos avançados, membros ilimitados e suporte prioritário.
+            </p>
+         </div>
+         <Button asChild variant="secondary" className="shrink-0 bg-foreground text-background hover:bg-foreground/90">
+            <a href="/enterprise">
+               Ver Plano Enterprise
+               <ArrowRight className="size-4" />
+            </a>
+         </Button>
+      </CardContent>
+   </Card>
 </section>

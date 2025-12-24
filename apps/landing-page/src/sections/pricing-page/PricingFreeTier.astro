@@ -1,37 +1,43 @@
 ---
 import { Check } from "@lucide/astro";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@packages/ui/components/card";
+import { Badge } from "@packages/ui/components/badge";
+import { Button } from "@packages/ui/components/button";
 
 const freeFeatures = [
-   "Lançamentos e Contas Ilimitadas",
-   "Conciliação Bancária (OFX)",
-   "Categorias e Tags Personalizáveis",
-   "Dashboard de Visão Mensal",
-   "Segurança de Nível Bancário",
-   "50 MB para Comprovantes/Anexos",
-   "Acesso Mobile e Desktop",
+   "Transações ilimitadas",
+   "Categorias básicas",
+   "Importação OFX/CSV",
+   "Exportação CSV/PDF",
+   "Relatórios básicos",
+   "50 MB para anexos",
+   "Acesso web e mobile",
 ];
 ---
 
 <!-- FREE TIER SUMMARY -->
-<section class="rounded-xl border border-border bg-gradient-to-b from-card to-background overflow-hidden shadow-sm">
-   <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<Card className="overflow-hidden shadow-sm bg-gradient-to-b from-card to-background py-0">
+   <CardContent className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
          <div class="flex items-center gap-2 mb-2">
-            <h2 class="text-foreground text-xl font-bold">Ideal para Gestão Pessoal</h2>
-            <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">Para sempre</span>
+            <CardTitle className="text-xl">Plano Gratuito</CardTitle>
+            <Badge className="bg-primary/10 text-primary border-transparent">Para sempre</Badge>
          </div>
          <div class="flex items-baseline gap-2 mb-1">
             <span class="text-foreground text-5xl font-bold tracking-tighter">R$0</span>
-             <span class="text-sm text-muted-foreground">/mês vitalício</span>
-          </div>
-          <p class="text-sm text-muted-foreground">Sem cartão de crédito necessário.</p>
-       </div>
-        <a href="https://app.montte.co/auth/sign-up" aria-label="Criar conta gratuita no Montte" class="shrink-0 inline-flex items-center justify-center px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:bg-foreground/90 transition-all hover:scale-105 shadow-lg shadow-foreground/5">
-           Criar Conta Gratuita
-        </a>
-   </div>
-   <div class="border-t border-dashed border-border px-6 md:px-8 py-6 bg-muted/20">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <span class="text-sm text-muted-foreground">/mês vitalício</span>
+         </div>
+         <p class="text-sm text-muted-foreground">Para começar a organizar suas finanças. Sem cartão necessário.</p>
+      </div>
+      <Button asChild size="lg" variant="secondary" className="shrink-0 bg-foreground text-background hover:bg-foreground/90 shadow-lg shadow-foreground/5">
+         <a href="https://app.montte.co/auth/sign-up" aria-label="Criar conta gratuita no Montte">
+            Criar Conta Gratuita
+         </a>
+      </Button>
+   </CardContent>
+
+   <CardFooter className="border-t border-dashed border-border px-6 md:px-8 py-6 bg-muted/20">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm w-full">
          {freeFeatures.map((feature) => (
             <div class="flex items-center gap-2">
                <Check class="size-4 text-primary shrink-0" />
@@ -40,8 +46,8 @@ const freeFeatures = [
          ))}
          <div class="flex items-center gap-2 text-muted-foreground/60 italic">
             <Check class="size-4 shrink-0 opacity-50" />
-            <span>Open Source</span>
+            <span>1 usuário</span>
          </div>
       </div>
-   </div>
-</section>
+   </CardFooter>
+</Card>

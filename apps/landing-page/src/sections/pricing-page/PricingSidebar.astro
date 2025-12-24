@@ -7,6 +7,7 @@ import {
    Wallet,
    Zap,
 } from "@lucide/astro";
+import { BillingToggle } from "@/components/BillingToggle";
 ---
 
 <!-- LEFT SIDEBAR NAV -->
@@ -53,17 +54,10 @@ import {
 
       <!-- Billing Toggle (Sidebar) -->
       <div class="p-4 rounded-xl bg-gradient-to-br from-card to-muted/30 border border-border shadow-sm">
-         <div class="flex items-center justify-between mb-1">
-            <span class="text-sm font-semibold text-foreground">Economia Anual</span>
-            <label class="relative cursor-pointer">
-               <input type="checkbox" id="pricing-toggle-sidebar" class="peer sr-only" checked />
-               <div class="w-9 h-5 bg-muted border border-border rounded-full peer-checked:bg-primary peer-checked:border-primary peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-muted-foreground peer-checked:after:bg-background after:rounded-full after:h-4 after:w-4 after:transition-all shadow-sm"></div>
-            </label>
+         <div class="mb-3">
+            <span class="text-sm font-semibold text-foreground">Período de cobrança</span>
          </div>
-          <div class="flex items-center gap-2">
-             <span class="text-xs text-muted-foreground">Aplicar desconto de</span>
-             <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">20% OFF</span>
-          </div>
+         <BillingToggle client:load id="pricing-toggle-sidebar" showDiscount={false} />
       </div>
    </div>
 </aside>

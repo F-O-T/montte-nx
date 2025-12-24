@@ -11,27 +11,27 @@ import { Separator } from "@packages/ui/components/separator";
 import enterpriseShield from "@/assets/cards/enterprise-shield.png";
 
 const collaborationFeatures = [
-   { title: "Controle quem vê cada conta e transação", icon: "Lock" },
-   { title: "Rastreie toda alteração com autor e timestamp", icon: "Shield" },
-   { title: "Aprovações de despesas direto na plataforma", icon: "Check" },
+   { title: "Permissões personalizadas por membro", icon: "Lock" },
+   { title: "Histórico de alterações com autor e data", icon: "Shield" },
+   { title: "Convide membros ilimitados sem custo extra", icon: "Check" },
 ];
 ---
 
 <section  class="relative px-8 py-18 md:py-28 flex flex-col gap-12 items-center container max-w-7xl mx-auto overflow-hidden">
   <div class="flex flex-col gap-6 items-center z-10">
     <p class="text-sm uppercase font-bold text-center tracking-widest text-primary">
-      Sua equipe, finalmente sincronizada
+      Membros ilimitados
     </p>
 
     <h2 class="inline-block font-semibold tracking-tight text-center text-3xl md:text-5xl leading-tight max-w-3xl text-foreground">
-      Colaboração sem planilhas.
+      Toda sua equipe.
       <br />
-      Controle sem burocracia.
+      Sem custo adicional.
     </h2>
 
     <p class="sm:text-xl text-center max-w-sm sm:max-w-xl text-foreground/70">
-      CFO, contador e gerente financeiro trabalhando no mesmo dado, ao mesmo tempo. 
-      Comente transações, aprove despesas e compartilhe dashboards em tempo real.
+      Adicione quantos membros precisar sem pagar por usuário.
+      Todos trabalhando juntos, com permissões personalizadas e controle total.
     </p>
   </div>
 
@@ -45,12 +45,12 @@ const collaborationFeatures = [
 
       <CardHeader>
         <CardTitle className="font-semibold text-xl md:text-2xl leading-tight">
-          Quer hospedar na sua própria cloud?
+          Código aberto, seus dados seguros
         </CardTitle>
         <CardDescription className="text-base">
-          Implantamos o Montte na sua conta AWS, Google Cloud ou Azure. 
-          Seus dados ficam no Brasil, você mantém controle total e ainda recebe atualizações automáticas da plataforma.
-          <a class="underline text-primary hover:text-primary/80 transition-colors ml-1" href="mailto:enterprise@montte.co">Falar com especialista</a> sobre implantação dedicada.
+          Por ser open-source, você tem transparência total sobre como seus dados são tratados.
+          Exporte tudo a qualquer momento. Sem lock-in, sem surpresas.
+          <a class="underline text-primary hover:text-primary/80 transition-colors ml-1" href="mailto:contato@montte.co">Falar conosco</a> se tiver dúvidas.
         </CardDescription>
       </CardHeader>
     </Card>
@@ -58,15 +58,15 @@ const collaborationFeatures = [
     <!-- Text + features -->
     <div class="flex flex-col gap-8">
       <h3 class="font-bold text-2xl md:text-3xl leading-[120%] tracking-[-0.01em] text-foreground">
-        Seus dados onde você quiser. Sem compromissos.
+        Controle de acesso simplificado
       </h3>
       <p class="text-lg md:text-xl max-w-[520px] text-muted-foreground">
-        Escolha entre nossa cloud segura ou hospede na sua própria infraestrutura. 
-        Exporte tudo a qualquer momento. Open-source significa que você nunca fica preso.
+        Defina quem pode ver, editar ou aprovar. Cada membro com as permissões certas.
+        Histórico completo de alterações para auditoria.
       </p>
 
-      <a class="inline-flex gap-2 items-center text-lg text-primary group" href="#security">
-        <span>Ver segurança e conformidade</span>
+      <a class="inline-flex gap-2 items-center text-lg text-primary group" href="#faq">
+        <span>Ver perguntas frequentes</span>
         <ArrowRight class="size-4 transition-transform group-hover:translate-x-1" />
       </a>
 

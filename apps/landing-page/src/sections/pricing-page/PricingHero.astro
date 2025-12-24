@@ -1,37 +1,48 @@
-<section class="pt-24 pb-12 px-4 relative overflow-hidden">
-   <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 opacity-50 blur-[120px] rounded-full pointer-events-none"></div>
+---
+import { Image } from "astro:assets";
+import { BillingToggle } from "@/components/BillingToggle";
+import pricingHeroDark from "@/assets/background/pricing-hero-dark.png";
+import pricingHeroLight from "@/assets/background/pricing-hero-light.png";
+---
 
-   <div class="container mx-auto max-w-[1200px] text-center relative z-10">
-       <span class="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4 tracking-wide uppercase">
-          Planos flexíveis
-       </span>
+<link rel="preload" as="image" href={pricingHeroLight.src} type="image/png">
+<link rel="preload" as="image" href={pricingHeroDark.src} type="image/png">
 
-       <h1 class="text-foreground text-5xl md:text-6xl font-bold tracking-tight mb-6">
-          Investimento que se paga <br class="hidden md:block" /> com organização.
-       </h1>
+<section class="relative py-18 md:py-28 overflow-hidden">
+	<!-- Background Images (full width, outside container) -->
+	<div class="absolute inset-0">
+		<Image
+			src={pricingHeroLight}
+			alt="Pricing hero background"
+			class="absolute inset-0 w-full h-full object-cover opacity-100 dark:opacity-0 transition-opacity duration-300"
+			priority={true}
+		/>
+		<Image
+			src={pricingHeroDark}
+			alt="Pricing hero background"
+			class="absolute inset-0 w-full h-full object-cover opacity-0 dark:opacity-100 transition-opacity duration-300"
+			priority={true}
+		/>
+		<!-- Overlay for better text readability -->
+		<div class="absolute inset-0 bg-background/80 dark:bg-background/85 pointer-events-none"></div>
+		<!-- Bottom gradient to fade images to the next section -->
+		<div class="absolute inset-x-0 bottom-0 h-24 pointer-events-none bg-gradient-to-b from-transparent to-background"></div>
+	</div>
 
-       <p class="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-          Escolha o plano ideal para o seu momento atual. Faça upgrade ou cancele a qualquer hora.
-          <span class="block mt-1 text-foreground/80 text-base">Garantia total de devolução em 30 dias.</span>
-       </p>
+	<!-- Content (contained) -->
+	<div class="relative z-10 px-8 container max-w-7xl mx-auto flex flex-col gap-12 items-center">
+		<p class="text-base uppercase font-bold text-center tracking-[0.20em]">
+			<span class="text-primary">Planos</span> e Preços
+		</p>
 
-      <div class="flex flex-col items-center justify-center">
-         <label class="flex items-center gap-4 cursor-pointer group select-none relative">
-            <span class="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors" id="label-monthly">Pagamento Mensal</span>
-            <div class="relative">
-               <input type="checkbox" id="pricing-toggle" class="peer sr-only" checked />
-               <div class="w-14 h-7 bg-muted border border-border rounded-full peer-focus:ring-2 peer-focus:ring-primary/40 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-foreground after:rounded-full after:h-6 after:w-6 after:transition-all shadow-inner"></div>
-            </div>
-            <span class="text-sm font-bold text-foreground transition-colors" id="label-yearly">Pagamento Anual</span>
+		<h1 class="inline-block font-semibold tracking-tight text-center text-4xl sm:text-6xl lg:text-7xl leading-tight max-w-3xl text-foreground">
+			Controle financeiro sem complicação
+		</h1>
 
-            <div class="absolute -right-[100px] -top-6 hidden md:block">
-               <span class="text-xs text-primary font-handwriting rotate-12 block">Melhor opção!</span>
-               <svg class="size-6 text-primary rotate-90 transform translate-y-1 -translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            </div>
-         </label>
-          <span class="mt-3 text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
-             Economize 20% (2 meses grátis)
-          </span>
-      </div>
-   </div>
+		<p class="sm:text-xl text-center max-w-sm sm:max-w-xl text-foreground/70">
+			Planos flexíveis para cada momento. Upgrade ou cancele quando quiser.
+		</p>
+
+		<BillingToggle client:load id="pricing-toggle" showDiscount={true} />
+	</div>
 </section>

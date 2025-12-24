@@ -1,26 +1,28 @@
 ---
 import { Check } from "@lucide/astro";
+import { Card, CardHeader, CardContent } from "@packages/ui/components/card";
+import { Table, TableBody, TableRow, TableCell } from "@packages/ui/components/table";
 
 const coreFeatures = {
    title: "Gestão Financeira Centralizada",
-    description:
-       "O coração do seu financeiro. Organize contas, concilie extratos e tenha controle absoluto sobre cada centavo que entra e sai.",
-    included: {
-       label: "Liberdade total",
-       value: "Transações e Contas Ilimitadas",
-    },
-    features: [
-       "Gestão completa de Receitas e Despesas",
-       "Rateio (Split) de categorias por lançamento",
-       "Arquivo Digital: Anexos de comprovantes/NF",
-       "Edição em massa para alta produtividade",
-       "Conciliação inteligente de transferências",
-       "Controle Multi-contas (Corrente, Caixa, Investimento)",
-       "Suporte a todos os bancos brasileiros",
-       "Importação de Extratos Bancários (OFX)",
-       "Arquivamento de contas com histórico preservado",
-       "Sistema inteligente anti-duplicidade",
-    ],
+   description:
+      "O coração do seu financeiro. Organize contas, concilie extratos e tenha controle absoluto sobre cada centavo que entra e sai.",
+   included: {
+      label: "Liberdade total",
+      value: "Transações e Contas Ilimitadas",
+   },
+   features: [
+      "Gestão completa de Receitas e Despesas",
+      "Rateio (Split) de categorias por lançamento",
+      "Arquivo Digital: Anexos de comprovantes/NF",
+      "Edição em massa para alta produtividade",
+      "Conciliação inteligente de transferências",
+      "Controle Multi-contas (Corrente, Caixa, Investimento)",
+      "Suporte a todos os bancos brasileiros",
+      "Importação de Extratos Bancários (OFX)",
+      "Arquivamento de contas com histórico preservado",
+      "Sistema inteligente anti-duplicidade",
+   ],
 };
 ---
 
@@ -30,12 +32,16 @@ const coreFeatures = {
    <p class="text-muted-foreground mb-8 max-w-2xl">{coreFeatures.description}</p>
 
    <!-- Pricing Table -->
-   <div class="rounded-xl border border-border bg-card overflow-hidden mb-8">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-         <span class="font-medium text-foreground">{coreFeatures.included.label}</span>
-         <span class="text-sm font-medium text-primary">{coreFeatures.included.value}</span>
-      </div>
-   </div>
+   <Card className="mb-8 py-0 overflow-hidden">
+      <Table>
+         <TableBody>
+            <TableRow className="bg-muted/30 border-b">
+               <TableCell className="font-medium text-foreground py-4 px-6">{coreFeatures.included.label}</TableCell>
+               <TableCell className="text-right text-sm font-medium text-primary py-4 px-6">{coreFeatures.included.value}</TableCell>
+            </TableRow>
+         </TableBody>
+      </Table>
+   </Card>
 
    <!-- Features Grid -->
    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
