@@ -137,7 +137,8 @@
             "@tanstack/react-router": "^1.139.1",
             "@tanstack/react-router-devtools": "^1.139.1",
             "@tanstack/router-cli": "^1.139.1",
-            "@tanstack/router-plugin": "^1.139.1"
+            "@tanstack/router-plugin": "^1.139.1",
+            "@tanstack/zod-form-adapter": "^0.42.1"
          },
          "testing": {
             "msw": "^2.10.4",
