@@ -49,21 +49,33 @@ export function evaluateArray(
    return evaluator(actualArray, expected);
 }
 
-function deepEquals(a: unknown, b: unknown): boolean {
+function deepEquals(
+   a: unknown,
+   b: unknown,
+   seen: WeakSet<object> = new WeakSet(),
+): boolean {
    if (a === b) return true;
    if (typeof a !== typeof b) return false;
    if (a === null || b === null) return a === b;
-   if (Array.isArray(a) && Array.isArray(b)) {
-      if (a.length !== b.length) return false;
-      return a.every((item, index) => deepEquals(item, b[index]));
-   }
+
    if (typeof a === "object" && typeof b === "object") {
+      // Circular reference protection
+      if (seen.has(a as object)) return false;
+      seen.add(a as object);
+
+      if (Array.isArray(a) && Array.isArray(b)) {
+         if (a.length !== b.length) return false;
+         return a.every((item, index) => deepEquals(item, b[index], seen));
+      }
+
+      if (Array.isArray(a) || Array.isArray(b)) return false;
+
       const aObj = a as Record<string, unknown>;
       const bObj = b as Record<string, unknown>;
       const aKeys = Object.keys(aObj);
       const bKeys = Object.keys(bObj);
       if (aKeys.length !== bKeys.length) return false;
-      return aKeys.every((key) => deepEquals(aObj[key], bObj[key]));
+      return aKeys.every((key) => deepEquals(aObj[key], bObj[key], seen));
    }
    return false;
 }

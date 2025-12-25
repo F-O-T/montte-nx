@@ -4,6 +4,7 @@ import {
    processChar,
    type StateMachineContext,
 } from "./csv-state-machine";
+import { DEFAULT_MAX_BUFFER_SIZE, streamOptionsSchema } from "./schemas";
 import type {
    BatchCsvFileInput,
    BatchCsvStreamEvent,
@@ -29,6 +30,7 @@ interface StreamingParserState {
    trimFields: boolean;
    skipRows: number;
    skippedRows: number;
+   maxBufferSize: number;
 }
 
 /**
@@ -40,6 +42,15 @@ function* processChunk(
    parserState: StreamingParserState,
 ): Generator<StreamEvent> {
    parserState.buffer += chunk;
+
+   // Check buffer size to prevent memory exhaustion attacks
+   if (parserState.buffer.length > parserState.maxBufferSize) {
+      throw new Error(
+         `Buffer size exceeded maximum of ${parserState.maxBufferSize} bytes. ` +
+            "This may indicate a malformed CSV with an unclosed quoted field. " +
+            "Increase maxBufferSize option if processing legitimate large fields.",
+      );
+   }
 
    // Detect delimiter from first chunk if not already done
    if (!parserState.delimiterDetected && parserState.buffer.length > 0) {
@@ -146,6 +157,11 @@ export async function* parseStream(
    input: ReadableStream<Uint8Array> | AsyncIterable<string>,
    options?: StreamOptions,
 ): AsyncGenerator<StreamEvent> {
+   // Validate options if provided
+   if (options !== undefined) {
+      streamOptionsSchema.parse(options);
+   }
+
    const delimiter = options?.delimiter ?? ",";
    const parserState: StreamingParserState = {
       ctx: createStateMachineContext(delimiter),
@@ -158,6 +174,7 @@ export async function* parseStream(
       trimFields: options?.trimFields ?? false,
       skipRows: options?.skipRows ?? 0,
       skippedRows: 0,
+      maxBufferSize: options?.maxBufferSize ?? DEFAULT_MAX_BUFFER_SIZE,
    };
 
    // Convert ReadableStream to AsyncIterable if needed
@@ -256,6 +273,10 @@ export async function parseStreamToArray(
 /**
  * Creates a streaming parser from a buffer.
  * Useful when you have a buffer but want to use the streaming API.
+ *
+ * **Memory Warning**: This function decodes the entire buffer into a string
+ * before chunking it for streaming. For very large files (e.g., >100MB),
+ * consider using parseStream with a true streaming source instead.
  *
  * @param buffer - The buffer containing CSV data
  * @param options - Parsing options

@@ -219,15 +219,70 @@ const engine = createEngine({
    // Performance monitoring
    slowRuleThresholdMs: 100,
 
+   // Hook timeout (prevents slow hooks from blocking)
+   hookTimeoutMs: 5000, // 5 second timeout
+
    // Lifecycle hooks
    hooks: {
-      onBeforeEvaluation: async (context, rules) => {},
-      onAfterEvaluation: async (result) => {},
+      beforeEvaluation: async (context, rules) => {},
+      afterEvaluation: async (result) => {},
       onRuleMatch: async (rule, context) => {},
       onRuleError: async (rule, error) => {},
       onCacheHit: async (key, result) => {},
+      onSlowRule: async (rule, timeMs, threshold) => {},
+      // Error handler for hook failures
+      onHookError: (hookName, error) => {
+         console.error(`Hook ${hookName} failed:`, error);
+      },
    },
 });
+```
+
+## Zod Schemas
+
+All configuration types are built from Zod schemas, enabling runtime validation and type inference:
+
+```typescript
+import {
+   // Config schemas
+   CacheConfigSchema,
+   ValidationConfigSchema,
+   VersioningConfigSchema,
+   LogLevelSchema,
+
+   // Evaluation schemas
+   ConflictResolutionStrategySchema,
+   EvaluateOptionsSchema,
+
+   // State schemas
+   RuleStatsSchema,
+   CacheStatsSchema,
+   EngineStatsSchema,
+
+   // Validation schemas
+   ValidationErrorSchema,
+   ValidationResultSchema,
+   ValidationOptionsSchema,
+
+   // Helper functions
+   getDefaultCacheConfig,
+   getDefaultValidationConfig,
+   parseCacheConfig,
+} from "@f-o-t/rules-engine";
+
+// Parse and validate config with defaults
+const cacheConfig = parseCacheConfig({ ttl: 30000 });
+// Result: { enabled: true, ttl: 30000, maxSize: 1000 }
+
+// Get default config
+const defaults = getDefaultCacheConfig();
+// Result: { enabled: true, ttl: 60000, maxSize: 1000 }
+
+// Use schemas for custom validation
+const result = CacheConfigSchema.safeParse(userInput);
+if (!result.success) {
+   console.error(result.error.issues);
+}
 ```
 
 ## Validation
@@ -360,10 +415,25 @@ import {
 } from "@f-o-t/rules-engine";
 
 // Export/Import
-const json = exportToJson(rules);
-const { success, rules: imported } = importFromJson(json, {
+const json = exportToJson(rules, ruleSets);
+const result = importFromJson(json, {
    generateNewIds: true, // Generate new IDs on import
 });
+
+if (result.success) {
+   console.log("Imported rules:", result.rules);
+   console.log("Imported ruleSets:", result.ruleSets);
+}
+
+// Check for orphaned references (ruleSets referencing missing rules)
+if (result.orphanedReferences.length > 0) {
+   for (const orphan of result.orphanedReferences) {
+      console.warn(
+         `RuleSet "${orphan.ruleSetName}" references missing rules:`,
+         orphan.missingRuleIds
+      );
+   }
+}
 
 // Clone rule
 const cloned = cloneRule(rule, { generateNewId: true });
@@ -431,15 +501,9 @@ import {
    generateId,
    hashContext,
    hashRules,
-   pipe,
-   compose,
-   identity,
-   always,
-   tap,
    measureTime,
    measureTimeAsync,
    withTimeout,
-   delay,
 } from "@f-o-t/rules-engine";
 
 // Generate unique IDs
@@ -447,13 +511,6 @@ const id = generateId();
 
 // Hash context for caching
 const hash = hashContext({ amount: 100 });
-
-// Functional composition
-const process = pipe(
-   (rules) => filterRules(rules, { enabled: true }),
-   (rules) => sortByPriority(rules, "desc"),
-   (rules) => rules.slice(0, 10)
-);
 
 // Measure execution time
 const { result, durationMs } = measureTime(() => expensiveOperation());
@@ -465,8 +522,9 @@ const { result: asyncResult, durationMs: asyncTime } = await measureTimeAsync(
 
 // Timeout wrapper
 const resultWithTimeout = await withTimeout(
-   () => slowOperation(),
-   5000 // 5 second timeout
+   slowOperationPromise,
+   5000, // 5 second timeout
+   "Operation timed out" // optional error message
 );
 ```
 

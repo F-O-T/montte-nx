@@ -92,7 +92,7 @@ export { format, formatCompact, toDecimal, formatAmount } from "@f-o-t/money";
 // Re-export serialization functions
 // =============================================================================
 export {
-	moneyToJSON,
+	toJSON,
 	fromJSON,
 	toDatabase,
 	fromDatabase,
@@ -121,12 +121,15 @@ export {
 // =============================================================================
 export {
 	MoneySchema,
+	MoneyInternalSchema,
 	CurrencyCodeSchema,
 	AmountStringSchema,
 	DatabaseMoneySchema,
 	MoneyInputSchema,
 	CurrencySchema,
 	AllocationRatiosSchema,
+	FormatOptionsSchema,
+	type AllocationRatios,
 } from "@f-o-t/money";
 
 // =============================================================================

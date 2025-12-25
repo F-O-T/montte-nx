@@ -1,13 +1,10 @@
-import {
-   type Condition,
-   type ConditionGroup,
-   isConditionGroup,
-} from "@f-o-t/condition-evaluator";
+import type { ConditionGroup } from "@f-o-t/condition-evaluator";
 import type {
-   ConsequenceDefinitions,
-   DefaultConsequences,
+	ConsequenceDefinitions,
+	DefaultConsequences,
 } from "../types/consequence";
 import type { Rule } from "../types/rule";
+import { collectConditionFields } from "../utils/conditions";
 
 export type FieldIndex<
    TContext = unknown,
@@ -49,27 +46,10 @@ export type IndexOptions = {
 };
 
 const DEFAULT_OPTIONS: IndexOptions = {
-   indexByField: true,
-   indexByTag: true,
-   indexByCategory: true,
-   indexByPriority: true,
-};
-
-const collectFields = (condition: ConditionGroup): Set<string> => {
-   const fields = new Set<string>();
-
-   const traverse = (c: Condition | ConditionGroup) => {
-      if (isConditionGroup(c)) {
-         for (const child of c.conditions) {
-            traverse(child as Condition | ConditionGroup);
-         }
-      } else {
-         fields.add(c.field);
-      }
-   };
-
-   traverse(condition);
-   return fields;
+	indexByField: true,
+	indexByTag: true,
+	indexByCategory: true,
+	indexByPriority: true,
 };
 
 export const buildIndex = <
@@ -91,7 +71,7 @@ export const buildIndex = <
       byId.set(rule.id, rule);
 
       if (opts.indexByField) {
-         const fields = collectFields(rule.conditions);
+         const fields = collectConditionFields(rule.conditions);
          for (const field of fields) {
             const existing = byField.get(field) ?? [];
             existing.push(rule);
@@ -290,7 +270,7 @@ export const analyzeOptimizations = <
 
    const fieldUsage = new Map<string, number>();
    for (const rule of rules) {
-      const fields = collectFields(rule.conditions);
+      const fields = collectConditionFields(rule.conditions);
       for (const field of fields) {
          fieldUsage.set(field, (fieldUsage.get(field) ?? 0) + 1);
       }

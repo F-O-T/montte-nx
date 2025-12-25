@@ -139,6 +139,7 @@ export {
    importFromJson,
    importRules,
    mergeRuleSets,
+   type OrphanedReference,
    type SerializedRule,
    type SerializedRuleSet,
    serializeRule,
@@ -167,10 +168,18 @@ export type {
    VersioningConfig,
 } from "./types/config";
 export {
-   DEFAULT_CACHE_CONFIG,
-   DEFAULT_ENGINE_CONFIG,
-   DEFAULT_VALIDATION_CONFIG,
-   DEFAULT_VERSIONING_CONFIG,
+   CacheConfigSchema,
+   getDefaultCacheConfig,
+   getDefaultConflictResolution,
+   getDefaultLogLevel,
+   getDefaultValidationConfig,
+   getDefaultVersioningConfig,
+   LogLevelSchema,
+   parseCacheConfig,
+   parseValidationConfig,
+   parseVersioningConfig,
+   ValidationConfigSchema,
+   VersioningConfigSchema,
 } from "./types/config";
 export type {
    AggregatedConsequence,
@@ -189,6 +198,11 @@ export type {
    EvaluationContext,
    RuleEvaluationResult,
 } from "./types/evaluation";
+export {
+   ConflictResolutionStrategySchema,
+   EvaluateConfigSchema,
+   EvaluateOptionsSchema,
+} from "./types/evaluation";
 export type {
    Rule,
    RuleFilters,
@@ -203,22 +217,20 @@ export type {
    CacheStats,
    EngineState,
    EngineStats,
-   MutableEngineState,
-   MutableOptimizerState,
-   MutableRuleStats,
    OptimizerState,
    RuleStats,
 } from "./types/state";
 export {
+   CacheStatsSchema,
    createInitialOptimizerState,
    createInitialRuleStats,
    createInitialState,
+   EngineStatsSchema,
+   RuleStatsSchema,
 } from "./types/state";
 export { hashContext, hashRules } from "./utils/hash";
 export { generateId } from "./utils/id";
-export { always, compose, identity, pipe, tap } from "./utils/pipe";
 export {
-   delay,
    measureTime,
    measureTimeAsync,
    type TimingResult,
@@ -248,10 +260,14 @@ export {
 export {
    createRuleValidator,
    parseRule,
+   type ResolvedValidationOptions,
    safeParseRule,
    type ValidationError,
+   ValidationErrorSchema,
    type ValidationOptions,
+   ValidationOptionsSchema,
    type ValidationResult,
+   ValidationResultSchema,
    validateConditions,
    validateRule,
    validateRuleSet,

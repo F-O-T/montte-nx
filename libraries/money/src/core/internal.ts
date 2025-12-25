@@ -1,4 +1,5 @@
-import type { Money } from "../types";
+import type { Money, RoundingMode } from "../types";
+import { bankersRound } from "./rounding";
 
 /**
  * Create an immutable Money object
@@ -9,21 +10,11 @@ import type { Money } from "../types";
  * @returns Frozen Money object
  */
 export function createMoney(
-	amount: bigint,
-	currency: string,
-	scale: number,
+   amount: bigint,
+   currency: string,
+   scale: number,
 ): Money {
-	return Object.freeze({ amount, currency, scale });
-}
-
-/**
- * Get the scale factor for a given number of decimal places
- *
- * @param scale - Number of decimal places
- * @returns 10^scale as BigInt
- */
-export function getScaleFactor(scale: number): bigint {
-	return 10n ** BigInt(scale);
+   return Object.freeze({ amount, currency, scale });
 }
 
 /**
@@ -31,46 +22,54 @@ export function getScaleFactor(scale: number): bigint {
  *
  * @param amountStr - Decimal string (e.g., "123.45", "100", "-50.5")
  * @param scale - Target scale (decimal places)
+ * @param roundingMode - How to handle excess decimal places (default: "truncate")
  * @returns Amount in minor units as BigInt
  */
 export function parseDecimalToMinorUnits(
-	amountStr: string,
-	scale: number,
+   amountStr: string,
+   scale: number,
+   roundingMode: RoundingMode = "truncate",
 ): bigint {
-	// Normalize the string
-	const normalized = amountStr.trim();
+   // Normalize the string
+   const normalized = amountStr.trim();
 
-	// Check for negative
-	const isNegative = normalized.startsWith("-");
-	const absStr = isNegative ? normalized.slice(1) : normalized;
+   // Check for negative
+   const isNegative = normalized.startsWith("-");
+   const absStr = isNegative ? normalized.slice(1) : normalized;
 
-	// Split by decimal point
-	const parts = absStr.split(".");
-	const intPart = parts[0] || "0";
-	const decPart = parts[1] || "";
+   // Split by decimal point
+   const parts = absStr.split(".");
+   const intPart = parts[0] || "0";
+   const decPart = parts[1] || "";
 
-	// Validate format
-	if (!/^\d*$/.test(intPart) || !/^\d*$/.test(decPart)) {
-		throw new Error(`Invalid amount format: ${amountStr}`);
-	}
+   // Validate format
+   if (!/^\d*$/.test(intPart) || !/^\d*$/.test(decPart)) {
+      throw new Error(`Invalid amount format: ${amountStr}`);
+   }
 
-	// Pad or truncate decimal part to match scale
-	let adjustedDecPart: string;
-	if (decPart.length <= scale) {
-		// Pad with zeros
-		adjustedDecPart = decPart.padEnd(scale, "0");
-	} else {
-		// Truncate (no rounding at this level - rounding happens in arithmetic)
-		adjustedDecPart = decPart.slice(0, scale);
-	}
+   // Pad or truncate/round decimal part to match scale
+   let amount: bigint;
 
-	// Combine integer and decimal parts
-	const combined = intPart + adjustedDecPart;
+   if (decPart.length <= scale) {
+      // Pad with zeros
+      const adjustedDecPart = decPart.padEnd(scale, "0");
+      const combined = intPart + adjustedDecPart;
+      amount = BigInt(combined);
+   } else if (roundingMode === "truncate") {
+      // Truncate excess digits (default behavior)
+      const adjustedDecPart = decPart.slice(0, scale);
+      const combined = intPart + adjustedDecPart;
+      amount = BigInt(combined);
+   } else {
+      // Round using banker's rounding
+      // Parse with full precision, then round
+      const fullAmount = BigInt(intPart + decPart);
+      const extraDigits = decPart.length - scale;
+      const divisor = 10n ** BigInt(extraDigits);
+      amount = bankersRound(fullAmount, divisor);
+   }
 
-	// Parse as BigInt
-	const amount = BigInt(combined);
-
-	return isNegative ? -amount : amount;
+   return isNegative ? -amount : amount;
 }
 
 /**
@@ -81,38 +80,31 @@ export function parseDecimalToMinorUnits(
  * @returns Decimal string representation
  */
 export function minorUnitsToDecimal(amount: bigint, scale: number): string {
-	if (scale === 0) {
-		return amount.toString();
-	}
+   if (scale === 0) {
+      return amount.toString();
+   }
 
-	const isNegative = amount < 0n;
-	const absAmount = isNegative ? -amount : amount;
-	const str = absAmount.toString().padStart(scale + 1, "0");
+   const isNegative = amount < 0n;
+   const absAmount = isNegative ? -amount : amount;
+   const str = absAmount.toString().padStart(scale + 1, "0");
 
-	const intPart = str.slice(0, -scale) || "0";
-	const decPart = str.slice(-scale);
+   const intPart = str.slice(0, -scale) || "0";
+   const decPart = str.slice(-scale);
 
-	const result = `${intPart}.${decPart}`;
-	return isNegative ? `-${result}` : result;
-}
-
-/**
- * Absolute value for BigInt
- */
-export function absBigInt(value: bigint): bigint {
-	return value < 0n ? -value : value;
+   const result = `${intPart}.${decPart}`;
+   return isNegative ? `-${result}` : result;
 }
 
 /**
  * Maximum of two BigInt values
  */
 export function maxBigInt(a: bigint, b: bigint): bigint {
-	return a > b ? a : b;
+   return a > b ? a : b;
 }
 
 /**
  * Minimum of two BigInt values
  */
 export function minBigInt(a: bigint, b: bigint): bigint {
-	return a < b ? a : b;
+   return a < b ? a : b;
 }

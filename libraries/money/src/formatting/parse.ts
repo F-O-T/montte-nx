@@ -1,5 +1,5 @@
-import { getCurrency } from "../currency/registry";
 import { of } from "../core/money";
+import { getCurrency } from "../currency/registry";
 import { InvalidAmountError } from "../errors";
 import type { Money } from "../types";
 
@@ -24,75 +24,86 @@ import type { Money } from "../types";
  * parse("-¥1,234", "ja-JP", "JPY")      // -1234 JPY
  */
 export function parse(
-	formatted: string,
-	locale: string,
-	currency: string,
+   formatted: string,
+   locale: string,
+   currency: string,
 ): Money {
-	// Validate currency exists
-	getCurrency(currency);
+   // Validate currency exists
+   getCurrency(currency);
 
-	// Detect locale-specific separators using Intl.NumberFormat
-	const parts = new Intl.NumberFormat(locale).formatToParts(12345.67);
-	const decimalSep =
-		parts.find((p) => p.type === "decimal")?.value || ".";
-	const groupSep = parts.find((p) => p.type === "group")?.value || ",";
+   // Detect locale-specific separators using Intl.NumberFormat
+   const parts = new Intl.NumberFormat(locale).formatToParts(12345.67);
+   const decimalSep = parts.find((p) => p.type === "decimal")?.value || ".";
+   const groupSep = parts.find((p) => p.type === "group")?.value || ",";
 
-	// Detect if negative is in parentheses format
-	const hasParenthesesNegative =
-		formatted.includes("(") && formatted.includes(")");
-	let isNegative = hasParenthesesNegative || formatted.includes("-");
+   // Detect if negative is in parentheses format
+   const hasParenthesesNegative =
+      formatted.includes("(") && formatted.includes(")");
+   const isNegative = hasParenthesesNegative || formatted.includes("-");
 
-	// Clean the string
-	let cleanStr = formatted;
+   // Clean the string
+   let cleanStr = formatted;
 
-	// Remove parentheses for negative
-	if (hasParenthesesNegative) {
-		cleanStr = cleanStr.replace(/[()]/g, "");
-	}
+   // Remove parentheses for negative
+   if (hasParenthesesNegative) {
+      cleanStr = cleanStr.replace(/[()]/g, "");
+   }
 
-	// Remove currency symbols and codes (keep digits, minus, and separators)
-	// First remove known currency symbols
-	const currencyInfo = getCurrency(currency);
-	if (currencyInfo.symbol) {
-		cleanStr = cleanStr.replace(new RegExp(escapeRegex(currencyInfo.symbol), "g"), "");
-	}
-	cleanStr = cleanStr.replace(new RegExp(currency, "gi"), "");
+   // Remove currency symbols and codes (keep digits, minus, and separators)
+   // First remove known currency symbols
+   const currencyInfo = getCurrency(currency);
+   if (currencyInfo.symbol) {
+      cleanStr = cleanStr.replace(
+         new RegExp(escapeRegex(currencyInfo.symbol), "g"),
+         "",
+      );
+   }
+   cleanStr = cleanStr.replace(new RegExp(currency, "gi"), "");
 
-	// Remove all non-numeric characters except decimal separator, grouping separator, and minus
-	const safeDecimalSep = escapeRegex(decimalSep);
-	const safeGroupSep = escapeRegex(groupSep);
-	cleanStr = cleanStr.replace(
-		new RegExp(`[^\\d${safeDecimalSep}${safeGroupSep}\\-]`, "g"),
-		"",
-	);
+   // Remove all non-numeric characters except decimal separator, grouping separator, and minus
+   const safeDecimalSep = escapeRegex(decimalSep);
+   const safeGroupSep = escapeRegex(groupSep);
+   cleanStr = cleanStr.replace(
+      new RegExp(`[^\\d${safeDecimalSep}${safeGroupSep}\\-]`, "g"),
+      "",
+   );
 
-	// Remove grouping separators
-	cleanStr = cleanStr.replace(new RegExp(safeGroupSep, "g"), "");
+   // Remove grouping separators
+   cleanStr = cleanStr.replace(new RegExp(safeGroupSep, "g"), "");
 
-	// Normalize decimal separator to dot
-	cleanStr = cleanStr.replace(decimalSep, ".");
+   // Validate: should have at most one decimal separator
+   const decimalSepRegex = new RegExp(safeDecimalSep, "g");
+   const decimalMatches = cleanStr.match(decimalSepRegex);
+   if (decimalMatches && decimalMatches.length > 1) {
+      throw new InvalidAmountError(
+         `Multiple decimal separators found in: ${formatted}`,
+      );
+   }
 
-	// Handle minus sign
-	cleanStr = cleanStr.replace(/-/g, "");
+   // Normalize decimal separator to dot (single replacement now guaranteed)
+   cleanStr = cleanStr.replace(new RegExp(safeDecimalSep), ".");
 
-	// Trim whitespace
-	cleanStr = cleanStr.trim();
+   // Handle minus sign
+   cleanStr = cleanStr.replace(/-/g, "");
 
-	if (!cleanStr || cleanStr === ".") {
-		throw new InvalidAmountError(`Could not parse amount from: ${formatted}`);
-	}
+   // Trim whitespace
+   cleanStr = cleanStr.trim();
 
-	// Prepend minus if negative
-	if (isNegative) {
-		cleanStr = `-${cleanStr}`;
-	}
+   if (!cleanStr || cleanStr === ".") {
+      throw new InvalidAmountError(`Could not parse amount from: ${formatted}`);
+   }
 
-	return of(cleanStr, currency);
+   // Prepend minus if negative
+   if (isNegative) {
+      cleanStr = `-${cleanStr}`;
+   }
+
+   return of(cleanStr, currency);
 }
 
 /**
  * Escape special regex characters in a string
  */
 function escapeRegex(str: string): string {
-	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -11,6 +11,7 @@ import {
    ofxHeaderSchema,
    transactionSchema,
 } from "./schemas";
+import { decodeEntities } from "./utils";
 
 export interface StreamOptions {
    encoding?: string;
@@ -65,21 +66,6 @@ export interface BatchParsedFile {
    accounts: (OFXBankAccount | OFXCreditCardAccount)[];
    balances: { ledger?: OFXBalance; available?: OFXBalance }[];
    error?: string;
-}
-
-const ENTITY_MAP: Record<string, string> = {
-   "&amp;": "&",
-   "&apos;": "'",
-   "&gt;": ">",
-   "&lt;": "<",
-   "&quot;": '"',
-};
-
-const ENTITY_REGEX = /&(?:amp|lt|gt|quot|apos);/g;
-
-function decodeEntities(text: string): string {
-   if (!text.includes("&")) return text;
-   return text.replace(ENTITY_REGEX, (match) => ENTITY_MAP[match] ?? match);
 }
 
 interface ParserState {
@@ -162,7 +148,9 @@ export async function* parseStream(
    };
 
    let detectedEncoding: string | undefined = options?.encoding;
-   let decoder = new TextDecoder((detectedEncoding ?? "utf-8") as "utf-8");
+   // TextDecoder supports multiple encodings at runtime, TypeScript types are restrictive
+   // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+   let decoder = new TextDecoder((detectedEncoding ?? "utf-8") as any);
    const tagRegex = /<(\/?)([\w.]+)>([^<]*)/g;
 
    let pendingLedgerBalance: OFXBalance | undefined;
@@ -185,7 +173,8 @@ export async function* parseStream(
                detectedEncoding = getEncodingFromCharset(
                   headerResult.header.CHARSET,
                );
-               decoder = new TextDecoder(detectedEncoding as "utf-8");
+               // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+               decoder = new TextDecoder(detectedEncoding as any);
             }
 
             yield { data: headerResult.header, type: "header" };
@@ -321,9 +310,10 @@ export async function* parseStream(
                offset += chunk.length;
             }
 
-            const headerSection = new TextDecoder(
-               "iso-8859-1" as unknown as "utf-8",
-            ).decode(combined.slice(0, Math.min(combined.length, 1000)));
+            // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+            const headerSection = new TextDecoder("iso-8859-1" as any).decode(
+               combined.slice(0, Math.min(combined.length, 1000)),
+            );
 
             if (
                headerSection.includes("<OFX") ||
@@ -332,7 +322,8 @@ export async function* parseStream(
                const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);
                if (charsetMatch && !detectedEncoding) {
                   detectedEncoding = getEncodingFromCharset(charsetMatch[1]);
-                  decoder = new TextDecoder(detectedEncoding as "utf-8");
+                  // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+                  decoder = new TextDecoder(detectedEncoding as any);
                }
                headerFound = true;
 
@@ -452,7 +443,8 @@ export async function* parseBatchStream(
             : (options?.encoding ?? "utf-8");
 
          // Decode the entire buffer
-         const decoder = new TextDecoder(encoding as "utf-8");
+         // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+         const decoder = new TextDecoder(encoding as any);
          const content = decoder.decode(file.buffer);
 
          // Create chunked async iterable

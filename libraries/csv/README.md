@@ -9,8 +9,9 @@ RFC 4180 compliant CSV parser with streaming support for JavaScript/TypeScript.
 - Automatic delimiter detection
 - Automatic encoding detection (UTF-8, UTF-16, Windows-1252, ISO-8859-1)
 - CSV generation with proper escaping
-- Zero dependencies at runtime (only zod for schema validation)
-- Full TypeScript support with exported types
+- **Security hardened** - protected against prototype pollution and memory exhaustion attacks
+- **Zod validation** - runtime validation of all options with exported schemas
+- Full TypeScript support with Zod-inferred types
 - Works in Bun, Node.js, and browsers
 
 ## Installation
@@ -222,7 +223,55 @@ Properly escapes a field value for CSV output.
 #### `needsQuoting(field, delimiter?)`
 Checks if a field needs to be quoted.
 
+## Security
+
+This library is hardened against common CSV-based attacks:
+
+### Prototype Pollution Prevention
+
+Malicious CSV files with headers like `__proto__`, `constructor`, or `prototype` cannot pollute object prototypes. The `record` object in parsed rows uses `Object.create(null)` and dangerous property names are filtered.
+
+```typescript
+// Safe - malicious headers are ignored
+const csv = "__proto__,constructor,name\nmalicious,evil,safe";
+const doc = parseOrThrow(csv, { hasHeaders: true });
+// doc.rows[0].record = { name: "safe" } - dangerous headers excluded
+```
+
+### Memory Exhaustion Protection
+
+The streaming parser includes a configurable buffer size limit to prevent denial-of-service attacks via malformed CSV files with unclosed quoted fields.
+
+```typescript
+// Default limit is 10MB
+import { DEFAULT_MAX_BUFFER_SIZE } from "@f-o-t/csv";
+
+// Custom limit for large fields
+for await (const event of parseStream(chunks, {
+  maxBufferSize: 50 * 1024 * 1024, // 50MB
+})) {
+  // ...
+}
+```
+
 ## Types
+
+All types are derived from Zod schemas and can be used for runtime validation.
+
+```typescript
+import {
+  parseOptionsSchema,
+  streamOptionsSchema,
+  generateOptionsSchema,
+  type ParseOptions,
+  type StreamOptions,
+} from "@f-o-t/csv";
+
+// Validate options at runtime
+const options = parseOptionsSchema.parse(userInput);
+```
+
+### Core Types
 
 ```typescript
 interface ParseOptions {
@@ -235,6 +284,7 @@ interface ParseOptions {
 
 interface StreamOptions extends ParseOptions {
   chunkSize?: number;      // Chunk size for processing (default: 64KB)
+  maxBufferSize?: number;  // Max buffer size in bytes (default: 10MB)
 }
 
 interface CSVDocument {
@@ -282,6 +332,32 @@ interface BatchParsedCsvFile {
   rows: ParsedRow[];                   // All parsed rows
   error?: string;                      // Error message if parsing failed
 }
+```
+
+### Available Zod Schemas
+
+All schemas are exported for runtime validation:
+
+```typescript
+import {
+  // Option schemas
+  parseOptionsSchema,
+  streamOptionsSchema,
+  generateOptionsSchema,
+
+  // Data schemas
+  parsedRowSchema,
+  csvDocumentSchema,
+
+  // Event schemas
+  streamEventSchema,
+  batchCsvFileInputSchema,
+  batchCsvStreamEventSchema,
+  batchParsedCsvFileSchema,
+
+  // Constants
+  DEFAULT_MAX_BUFFER_SIZE,
+} from "@f-o-t/csv";
 ```
 
 ## RFC 4180 Compliance

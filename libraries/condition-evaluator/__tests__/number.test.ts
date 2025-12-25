@@ -128,5 +128,37 @@ describe("Number Operators", () => {
          expect(evaluateNumber("gt", 1, 0)).toBe(true);
          expect(evaluateNumber("lt", -1, 0)).toBe(true);
       });
+
+      it("handles Infinity", () => {
+         expect(evaluateNumber("gt", Number.POSITIVE_INFINITY, 1000000)).toBe(true);
+         expect(evaluateNumber("lt", Number.NEGATIVE_INFINITY, -1000000)).toBe(true);
+         expect(evaluateNumber("eq", Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY)).toBe(true);
+      });
+
+      it("handles -Infinity", () => {
+         expect(evaluateNumber("lt", Number.NEGATIVE_INFINITY, 0)).toBe(true);
+         expect(evaluateNumber("gt", 0, Number.NEGATIVE_INFINITY)).toBe(true);
+      });
+
+      it("handles MAX_SAFE_INTEGER", () => {
+         expect(evaluateNumber("eq", Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)).toBe(true);
+         expect(evaluateNumber("lt", Number.MAX_SAFE_INTEGER - 1, Number.MAX_SAFE_INTEGER)).toBe(true);
+      });
+
+      it("handles MIN_SAFE_INTEGER", () => {
+         expect(evaluateNumber("eq", Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER)).toBe(true);
+         expect(evaluateNumber("gt", Number.MIN_SAFE_INTEGER + 1, Number.MIN_SAFE_INTEGER)).toBe(true);
+      });
+
+      it("handles very small decimals", () => {
+         expect(evaluateNumber("gt", 0.0001, 0.00001)).toBe(true);
+         expect(evaluateNumber("lt", 0.00001, 0.0001)).toBe(true);
+      });
+
+      it("returns false when comparing NaN values", () => {
+         expect(evaluateNumber("eq", Number.NaN, Number.NaN)).toBe(false);
+         expect(evaluateNumber("gt", Number.NaN, 5)).toBe(false);
+         expect(evaluateNumber("lt", 5, Number.NaN)).toBe(false);
+      });
    });
 });

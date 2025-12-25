@@ -20,16 +20,16 @@
  */
 
 import {
-	moneyEqualsOperator,
-	moneyNotEqualsOperator,
-	moneyGreaterThanOperator,
-	moneyGreaterThanOrEqualOperator,
-	moneyLessThanOperator,
-	moneyLessThanOrEqualOperator,
-	moneyBetweenOperator,
-	moneyPositiveOperator,
-	moneyNegativeOperator,
-	moneyZeroOperator,
+   moneyBetweenOperator,
+   moneyEqualsOperator,
+   moneyGreaterThanOperator,
+   moneyGreaterThanOrEqualOperator,
+   moneyLessThanOperator,
+   moneyLessThanOrEqualOperator,
+   moneyNegativeOperator,
+   moneyNotEqualsOperator,
+   moneyPositiveOperator,
+   moneyZeroOperator,
 } from "../operations/comparison";
 
 /**
@@ -48,30 +48,30 @@ import {
  * - `money_zero` - Is zero
  */
 export const moneyOperators = {
-	money_eq: moneyEqualsOperator,
-	money_neq: moneyNotEqualsOperator,
-	money_gt: moneyGreaterThanOperator,
-	money_gte: moneyGreaterThanOrEqualOperator,
-	money_lt: moneyLessThanOperator,
-	money_lte: moneyLessThanOrEqualOperator,
-	money_between: moneyBetweenOperator,
-	money_positive: moneyPositiveOperator,
-	money_negative: moneyNegativeOperator,
-	money_zero: moneyZeroOperator,
+   money_eq: moneyEqualsOperator,
+   money_neq: moneyNotEqualsOperator,
+   money_gt: moneyGreaterThanOperator,
+   money_gte: moneyGreaterThanOrEqualOperator,
+   money_lt: moneyLessThanOperator,
+   money_lte: moneyLessThanOrEqualOperator,
+   money_between: moneyBetweenOperator,
+   money_positive: moneyPositiveOperator,
+   money_negative: moneyNegativeOperator,
+   money_zero: moneyZeroOperator,
 } as const;
 
 // Re-export individual operators for selective use
 export {
-	moneyEqualsOperator,
-	moneyNotEqualsOperator,
-	moneyGreaterThanOperator,
-	moneyGreaterThanOrEqualOperator,
-	moneyLessThanOperator,
-	moneyLessThanOrEqualOperator,
-	moneyBetweenOperator,
-	moneyPositiveOperator,
-	moneyNegativeOperator,
-	moneyZeroOperator,
+   moneyEqualsOperator,
+   moneyNotEqualsOperator,
+   moneyGreaterThanOperator,
+   moneyGreaterThanOrEqualOperator,
+   moneyLessThanOperator,
+   moneyLessThanOrEqualOperator,
+   moneyBetweenOperator,
+   moneyPositiveOperator,
+   moneyNegativeOperator,
+   moneyZeroOperator,
 };
 
 // Type for the operators map

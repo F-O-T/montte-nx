@@ -5,154 +5,23 @@ import {
 import type {
    Condition,
    ConditionGroup,
-   DiffAnalysis,
    EvaluationContext,
    EvaluationMetadata,
    EvaluationResult,
    GroupEvaluationResult,
 } from "../schemas";
+import {
+   calculateDiff,
+   generateReason,
+   getNestedValue,
+   getWeight,
+} from "../utils";
 import type {
    CustomCondition,
    EvaluatorConfig,
    InferOperatorNames,
    OperatorMap,
 } from "./types";
-
-function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-   const parts = path.split(".");
-   let current: unknown = obj;
-
-   for (const part of parts) {
-      if (current === null || current === undefined) return undefined;
-      if (typeof current !== "object") return undefined;
-      current = (current as Record<string, unknown>)[part];
-   }
-
-   return current;
-}
-
-function formatValue(value: unknown): string {
-   if (value === null) return "null";
-   if (value === undefined) return "undefined";
-   if (typeof value === "string") return `"${value}"`;
-   if (Array.isArray(value)) {
-      if (value.length > 3) {
-         return `[${value.slice(0, 3).map(formatValue).join(", ")}, ...]`;
-      }
-      return `[${value.map(formatValue).join(", ")}]`;
-   }
-   if (value instanceof Date) return value.toISOString();
-   return String(value);
-}
-
-function generateReason(
-   operator: string,
-   passed: boolean,
-   actualValue: unknown,
-   expectedValue: unknown,
-   field: string,
-): string {
-   const actual = formatValue(actualValue);
-   const expected = formatValue(expectedValue);
-
-   if (passed) {
-      return `${field} ${operator} ${expected}: passed`;
-   }
-
-   return `Condition failed: ${field} ${operator} ${expected}, got ${actual}`;
-}
-
-function calculateDiff(
-   type: string,
-   operator: string,
-   actualValue: unknown,
-   expectedValue: unknown,
-): DiffAnalysis | undefined {
-   if (type === "number") {
-      const actual = Number(actualValue);
-      const expected = Number(expectedValue);
-
-      if (Number.isNaN(actual) || Number.isNaN(expected)) {
-         return { type: "numeric", applicable: false };
-      }
-
-      const comparisonOps = ["eq", "neq", "gt", "gte", "lt", "lte"];
-      if (!comparisonOps.includes(operator)) {
-         return { type: "numeric", applicable: false };
-      }
-
-      const distance = actual - expected;
-      const proximity =
-         expected !== 0
-            ? Math.min(Math.abs(actual / expected), 1)
-            : actual === 0
-              ? 1
-              : 0;
-
-      return {
-         type: "numeric",
-         applicable: true,
-         numericDistance: distance,
-         proximity,
-      };
-   }
-
-   if (type === "date") {
-      const parseDate = (v: unknown): Date | null => {
-         if (v instanceof Date) return v;
-         if (typeof v === "string" || typeof v === "number") {
-            const d = new Date(v);
-            return Number.isNaN(d.getTime()) ? null : d;
-         }
-         return null;
-      };
-
-      const actual = parseDate(actualValue);
-      const expected = parseDate(expectedValue);
-
-      if (!actual || !expected) {
-         return { type: "date", applicable: false };
-      }
-
-      const comparisonOps = ["eq", "neq", "before", "after"];
-      if (!comparisonOps.includes(operator)) {
-         return { type: "date", applicable: false };
-      }
-
-      const ms = actual.getTime() - expected.getTime();
-      const absDays = Math.floor(Math.abs(ms) / (1000 * 60 * 60 * 24));
-      const absHours = Math.floor(Math.abs(ms) / (1000 * 60 * 60)) % 24;
-      const direction = ms >= 0 ? "after" : "before";
-
-      let humanReadable: string;
-      if (absDays > 0) {
-         humanReadable = `${absDays} day${absDays > 1 ? "s" : ""} ${direction}`;
-      } else if (absHours > 0) {
-         humanReadable = `${absHours} hour${absHours > 1 ? "s" : ""} ${direction}`;
-      } else {
-         humanReadable = "same time";
-      }
-
-      return {
-         type: "date",
-         applicable: true,
-         milliseconds: ms,
-         humanReadable,
-      };
-   }
-
-   return undefined;
-}
-
-function getWeight(item: Condition | ConditionGroup | CustomCondition): number {
-   if ("weight" in item && typeof item.weight === "number") {
-      return item.weight;
-   }
-   if ("options" in item && item.options && "weight" in item.options) {
-      return (item.options as { weight?: number }).weight ?? 1;
-   }
-   return 1;
-}
 
 export function createEvaluator<T extends OperatorMap = OperatorMap>(
    config: EvaluatorConfig<T> = {},

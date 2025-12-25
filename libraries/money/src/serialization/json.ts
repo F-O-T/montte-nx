@@ -16,10 +16,10 @@ import type { DatabaseMoney, Money, MoneyJSON } from "../types";
  * // { amount: "123.45", currency: "USD" }
  */
 export function toJSON(money: Money): MoneyJSON {
-	return {
-		amount: minorUnitsToDecimal(money.amount, money.scale),
-		currency: money.currency,
-	};
+   return {
+      amount: minorUnitsToDecimal(money.amount, money.scale),
+      currency: money.currency,
+   };
 }
 
 /**
@@ -33,18 +33,18 @@ export function toJSON(money: Money): MoneyJSON {
  * // Money with $123.45
  */
 export function fromJSON(json: MoneyJSON): Money {
-	if (
-		typeof json !== "object" ||
-		json === null ||
-		typeof json.amount !== "string" ||
-		typeof json.currency !== "string"
-	) {
-		throw new InvalidAmountError(
-			`Invalid Money JSON: ${JSON.stringify(json)}`,
-		);
-	}
+   if (
+      typeof json !== "object" ||
+      json === null ||
+      typeof json.amount !== "string" ||
+      typeof json.currency !== "string"
+   ) {
+      throw new InvalidAmountError(
+         `Invalid Money JSON: ${JSON.stringify(json)}`,
+      );
+   }
 
-	return of(json.amount, json.currency);
+   return of(json.amount, json.currency);
 }
 
 /**
@@ -61,10 +61,10 @@ export function fromJSON(json: MoneyJSON): Money {
  * // { amount: "123.45", currency: "USD" }
  */
 export function toDatabase(money: Money): DatabaseMoney {
-	return {
-		amount: minorUnitsToDecimal(money.amount, money.scale),
-		currency: money.currency,
-	};
+   return {
+      amount: minorUnitsToDecimal(money.amount, money.scale),
+      currency: money.currency,
+   };
 }
 
 /**
@@ -74,18 +74,18 @@ export function toDatabase(money: Money): DatabaseMoney {
  * @returns Money instance
  */
 export function fromDatabase(data: DatabaseMoney): Money {
-	if (
-		typeof data !== "object" ||
-		data === null ||
-		typeof data.amount !== "string" ||
-		typeof data.currency !== "string"
-	) {
-		throw new InvalidAmountError(
-			`Invalid database Money: ${JSON.stringify(data)}`,
-		);
-	}
+   if (
+      typeof data !== "object" ||
+      data === null ||
+      typeof data.amount !== "string" ||
+      typeof data.currency !== "string"
+   ) {
+      throw new InvalidAmountError(
+         `Invalid database Money: ${JSON.stringify(data)}`,
+      );
+   }
 
-	return of(data.amount, data.currency);
+   return of(data.amount, data.currency);
 }
 
 /**
@@ -100,7 +100,7 @@ export function fromDatabase(data: DatabaseMoney): Money {
  * serialize(of("123.45", "USD"))  // "123.45 USD"
  */
 export function serialize(money: Money): string {
-	return `${minorUnitsToDecimal(money.amount, money.scale)} ${money.currency}`;
+   return `${minorUnitsToDecimal(money.amount, money.scale)} ${money.currency}`;
 }
 
 /**
@@ -113,15 +113,14 @@ export function serialize(money: Money): string {
  * deserialize("123.45 USD")  // Money with $123.45
  */
 export function deserialize(str: string): Money {
-	const parts = str.trim().split(/\s+/);
+   const parts = str.trim().split(/\s+/);
 
-	if (parts.length !== 2) {
-		throw new InvalidAmountError(
-			`Invalid Money string format: "${str}". Expected "AMOUNT CURRENCY"`,
-		);
-	}
+   if (parts.length !== 2) {
+      throw new InvalidAmountError(
+         `Invalid Money string format: "${str}". Expected "AMOUNT CURRENCY"`,
+      );
+   }
 
-	const amount = parts[0]!;
-	const currency = parts[1]!;
-	return of(amount, currency);
+   const [amount, currency] = parts as [string, string];
+   return of(amount, currency);
 }

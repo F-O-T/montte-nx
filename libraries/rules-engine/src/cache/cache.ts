@@ -45,17 +45,9 @@ export const createCache = <T>(options: CacheOptions): Cache<T> => {
    const evictOldest = (): void => {
       if (entries.size === 0) return;
 
-      let oldestKey: string | undefined;
-      let oldestTime = Number.POSITIVE_INFINITY;
-
-      for (const [key, entry] of entries) {
-         if (entry.createdAt < oldestTime) {
-            oldestTime = entry.createdAt;
-            oldestKey = key;
-         }
-      }
-
-      if (oldestKey) {
+      // ES6 Maps maintain insertion order - first key is oldest (O(1) lookup)
+      const oldestKey = entries.keys().next().value;
+      if (oldestKey !== undefined) {
          const entry = entries.get(oldestKey);
          entries.delete(oldestKey);
          evictions++;

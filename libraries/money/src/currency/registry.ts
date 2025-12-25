@@ -15,17 +15,17 @@ const customCurrencies: Map<string, Currency> = new Map();
  * @throws UnknownCurrencyError if currency is not found
  */
 export function getCurrency(code: string): Currency {
-	const upperCode = code.toUpperCase();
+   const upperCode = code.toUpperCase();
 
-	// Check custom currencies first (allows overriding ISO currencies)
-	const custom = customCurrencies.get(upperCode);
-	if (custom) return custom;
+   // Check custom currencies first (allows overriding ISO currencies)
+   const custom = customCurrencies.get(upperCode);
+   if (custom) return custom;
 
-	// Check ISO 4217 currencies
-	const iso = ISO_4217_CURRENCIES[upperCode];
-	if (iso) return iso;
+   // Check ISO 4217 currencies
+   const iso = ISO_4217_CURRENCIES[upperCode];
+   if (iso) return iso;
 
-	throw new UnknownCurrencyError(`Unknown currency: ${code}`, upperCode);
+   throw new UnknownCurrencyError(`Unknown currency: ${code}`, upperCode);
 }
 
 /**
@@ -36,7 +36,7 @@ export function getCurrency(code: string): Currency {
  * @param currency - Currency definition to register
  */
 export function registerCurrency(currency: Currency): void {
-	customCurrencies.set(currency.code.toUpperCase(), currency);
+   customCurrencies.set(currency.code.toUpperCase(), currency);
 }
 
 /**
@@ -46,8 +46,8 @@ export function registerCurrency(currency: Currency): void {
  * @returns true if currency exists
  */
 export function hasCurrency(code: string): boolean {
-	const upperCode = code.toUpperCase();
-	return customCurrencies.has(upperCode) || upperCode in ISO_4217_CURRENCIES;
+   const upperCode = code.toUpperCase();
+   return customCurrencies.has(upperCode) || upperCode in ISO_4217_CURRENCIES;
 }
 
 /**
@@ -56,15 +56,15 @@ export function hasCurrency(code: string): boolean {
  * @returns Record of all currencies keyed by code
  */
 export function getAllCurrencies(): Record<string, Currency> {
-	return {
-		...ISO_4217_CURRENCIES,
-		...Object.fromEntries(customCurrencies),
-	};
+   return {
+      ...ISO_4217_CURRENCIES,
+      ...Object.fromEntries(customCurrencies),
+   };
 }
 
 /**
  * Clear all custom currencies (useful for testing)
  */
 export function clearCustomCurrencies(): void {
-	customCurrencies.clear();
+   customCurrencies.clear();
 }

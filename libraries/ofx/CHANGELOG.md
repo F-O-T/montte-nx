@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-12-25
+
+### Added
+
+- Zod schemas for generator input validation
+  - `generateHeaderOptionsSchema` - Runtime validation for OFX header generation options
+  - `generateTransactionInputSchema` - Runtime validation for transaction input
+  - `generateBankStatementOptionsSchema` - Runtime validation for bank statement options
+  - `generateCreditCardStatementOptionsSchema` - Runtime validation for credit card statement options
+  - All generator types now use `z.infer<typeof schema>` for type safety
+
+### Security
+
+- **CRITICAL**: Added prototype pollution protection in SGML parser
+  - Prevents malicious OFX files from polluting `__proto__`, `constructor`, or `prototype`
+  - Protects against potential remote code execution via crafted OFX data
+- Improved hash collision resistance in auto-generated FITID values
+  - Changed from `hash & hash` (redundant) to `hash | 0` (proper 32-bit conversion)
+  - Better hash distribution reduces collision probability
+
+### Changed
+
+- Consolidated duplicate entity decoding logic into shared utilities
+  - Removed 20+ lines of duplicate code between `parser.ts` and `stream.ts`
+  - Single source of truth for HTML entity handling (`ENTITY_MAP`, `ENTITY_REGEX`, `decodeEntities`)
+- Made internal-only schemas non-exported from public API
+  - `extendedAccountTypeSchema` and `flexibleBankAccountSchema` remain internal
+  - Added documentation explaining their purpose (Brazilian bank OFX quirks)
+- Converted `DateComponents` from interface to Zod schema for consistency
+- Improved TypeScript type annotations for `TextDecoder` encoding parameters
+  - Replaced awkward `as unknown as "utf-8"` casts with documented `as any` + biome-ignore
+  - Added clear comments explaining runtime vs TypeScript type limitations
+
+### Fixed
+
+- TypeScript compilation errors in strict mode for encoding parameters
+
 ## [2.2.0] - 2025-12-23
 
 ### Added

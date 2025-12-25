@@ -1,11 +1,21 @@
-import type { OFXAccountType, OFXTransactionType } from "./schemas";
+import { z } from "zod";
+import {
+   accountTypeSchema,
+   type OFXAccountType,
+   type OFXTransactionType,
+   transactionTypeSchema,
+} from "./schemas";
 import { escapeOfxText, formatAmount, formatOfxDate } from "./utils";
 
-export interface GenerateHeaderOptions {
-   version?: string;
-   encoding?: string;
-   charset?: string;
-}
+export const generateHeaderOptionsSchema = z
+   .object({
+      version: z.string().optional(),
+      encoding: z.string().optional(),
+      charset: z.string().optional(),
+   })
+   .optional();
+
+export type GenerateHeaderOptions = z.infer<typeof generateHeaderOptionsSchema>;
 
 export function generateHeader(options?: GenerateHeaderOptions): string {
    const version = options?.version ?? "100";
@@ -26,16 +36,20 @@ export function generateHeader(options?: GenerateHeaderOptions): string {
    ].join("\n");
 }
 
-export interface GenerateTransactionInput {
-   type: OFXTransactionType;
-   datePosted: Date;
-   amount: number;
-   fitId: string;
-   name?: string;
-   memo?: string;
-   checkNum?: string;
-   refNum?: string;
-}
+export const generateTransactionInputSchema = z.object({
+   type: transactionTypeSchema,
+   datePosted: z.date(),
+   amount: z.number(),
+   fitId: z.string().min(1),
+   name: z.string().optional(),
+   memo: z.string().optional(),
+   checkNum: z.string().optional(),
+   refNum: z.string().optional(),
+});
+
+export type GenerateTransactionInput = z.infer<
+   typeof generateTransactionInputSchema
+>;
 
 function generateTransaction(trn: GenerateTransactionInput): string {
    const lines: string[] = [
@@ -63,19 +77,33 @@ function generateTransaction(trn: GenerateTransactionInput): string {
    return lines.join("\n");
 }
 
-export interface GenerateBankStatementOptions {
-   bankId: string;
-   accountId: string;
-   accountType: OFXAccountType;
-   currency: string;
-   startDate: Date;
-   endDate: Date;
-   transactions: GenerateTransactionInput[];
-   ledgerBalance?: { amount: number; asOfDate: Date };
-   availableBalance?: { amount: number; asOfDate: Date };
-   financialInstitution?: { org?: string; fid?: string };
-   language?: string;
-}
+const balanceSchema = z.object({
+   amount: z.number(),
+   asOfDate: z.date(),
+});
+
+const financialInstitutionSchema = z.object({
+   org: z.string().optional(),
+   fid: z.string().optional(),
+});
+
+export const generateBankStatementOptionsSchema = z.object({
+   bankId: z.string().min(1),
+   accountId: z.string().min(1),
+   accountType: accountTypeSchema,
+   currency: z.string().min(1),
+   startDate: z.date(),
+   endDate: z.date(),
+   transactions: z.array(generateTransactionInputSchema),
+   ledgerBalance: balanceSchema.optional(),
+   availableBalance: balanceSchema.optional(),
+   financialInstitution: financialInstitutionSchema.optional(),
+   language: z.string().optional(),
+});
+
+export type GenerateBankStatementOptions = z.infer<
+   typeof generateBankStatementOptionsSchema
+>;
 
 export function generateBankStatement(
    options: GenerateBankStatementOptions,
@@ -153,17 +181,21 @@ export function generateBankStatement(
    return parts.join("\n");
 }
 
-export interface GenerateCreditCardStatementOptions {
-   accountId: string;
-   currency: string;
-   startDate: Date;
-   endDate: Date;
-   transactions: GenerateTransactionInput[];
-   ledgerBalance?: { amount: number; asOfDate: Date };
-   availableBalance?: { amount: number; asOfDate: Date };
-   financialInstitution?: { org?: string; fid?: string };
-   language?: string;
-}
+export const generateCreditCardStatementOptionsSchema = z.object({
+   accountId: z.string().min(1),
+   currency: z.string().min(1),
+   startDate: z.date(),
+   endDate: z.date(),
+   transactions: z.array(generateTransactionInputSchema),
+   ledgerBalance: balanceSchema.optional(),
+   availableBalance: balanceSchema.optional(),
+   financialInstitution: financialInstitutionSchema.optional(),
+   language: z.string().optional(),
+});
+
+export type GenerateCreditCardStatementOptions = z.infer<
+   typeof generateCreditCardStatementOptionsSchema
+>;
 
 export function generateCreditCardStatement(
    options: GenerateCreditCardStatementOptions,

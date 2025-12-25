@@ -49,6 +49,12 @@ export type ImportOptions = {
    readonly validateSchema?: boolean;
 };
 
+export type OrphanedReference = {
+   readonly ruleSetId: string;
+   readonly ruleSetName: string;
+   readonly missingRuleIds: ReadonlyArray<string>;
+};
+
 export type ImportResult<
    TContext = unknown,
    TConsequences extends ConsequenceDefinitions = DefaultConsequences,
@@ -62,6 +68,7 @@ export type ImportResult<
       message: string;
    }>;
    readonly idMapping: ReadonlyMap<string, string>;
+   readonly orphanedReferences: ReadonlyArray<OrphanedReference>;
 };
 
 const EXPORT_VERSION = "1.0.0";
@@ -234,12 +241,30 @@ export const importRules = <
       }
    }
 
+   // Detect orphaned references (ruleSets referencing non-existent rules)
+   const importedRuleIds = new Set(rules.map((r) => r.id));
+   const orphanedReferences: OrphanedReference[] = [];
+
+   for (const ruleSet of ruleSets) {
+      const missingRuleIds = ruleSet.ruleIds.filter(
+         (id) => !importedRuleIds.has(id),
+      );
+      if (missingRuleIds.length > 0) {
+         orphanedReferences.push({
+            ruleSetId: ruleSet.id,
+            ruleSetName: ruleSet.name,
+            missingRuleIds,
+         });
+      }
+   }
+
    return {
       success: errors.length === 0,
       rules,
       ruleSets,
       errors,
       idMapping,
+      orphanedReferences,
    };
 };
 
@@ -266,6 +291,7 @@ export const importFromJson = <
             },
          ],
          idMapping: new Map(),
+         orphanedReferences: [],
       };
    }
 };

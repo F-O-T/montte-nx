@@ -1,13 +1,16 @@
+import { z } from "zod";
 import { isConditionGroup } from "./evaluator";
 import type { Condition, ConditionGroup } from "./schemas";
 
-export type DependencyInfo = {
-   fields: string[];
-   references: string[];
-   allPaths: string[];
-   nested: boolean;
-   maxDepth: number;
-};
+export const DependencyInfoSchema = z.object({
+   fields: z.array(z.string()),
+   references: z.array(z.string()),
+   allPaths: z.array(z.string()),
+   nested: z.boolean(),
+   maxDepth: z.number().int().min(0),
+});
+
+export type DependencyInfo = z.infer<typeof DependencyInfoSchema>;
 
 export function extractDependencies(
    input: Condition | ConditionGroup,

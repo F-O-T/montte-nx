@@ -3,6 +3,7 @@ import {
    flush,
    processChar,
 } from "./csv-state-machine";
+import { parseOptionsSchema } from "./schemas";
 import type {
    CSVDocument,
    ParsedRow,
@@ -75,12 +76,17 @@ export function parse(
  * @param content - The CSV string to parse
  * @param options - Parsing options
  * @returns The parsed CSV document
- * @throws Error if parsing fails
+ * @throws Error if parsing fails or options are invalid
  */
 export function parseOrThrow(
    content: string,
    options?: ParseOptions,
 ): CSVDocument {
+   // Validate options if provided
+   if (options !== undefined) {
+      parseOptionsSchema.parse(options);
+   }
+
    const delimiter = options?.delimiter ?? detectDelimiter(content);
    const skipRows = options?.skipRows ?? 0;
    const hasHeaders = options?.hasHeaders ?? false;

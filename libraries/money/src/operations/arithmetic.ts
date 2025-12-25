@@ -1,20 +1,12 @@
+import { assertSameCurrency } from "../core/assertions";
 import { createMoney, parseDecimalToMinorUnits } from "../core/internal";
 import {
-	EXTENDED_PRECISION,
-	PRECISION_FACTOR,
-	bankersRound,
+   bankersRound,
+   EXTENDED_PRECISION,
+   PRECISION_FACTOR,
 } from "../core/rounding";
-import { CurrencyMismatchError, DivisionByZeroError } from "../errors";
+import { DivisionByZeroError } from "../errors";
 import type { Money } from "../types";
-
-/**
- * Assert that two Money values have the same currency
- */
-function assertSameCurrency(a: Money, b: Money): void {
-	if (a.currency !== b.currency) {
-		throw CurrencyMismatchError.create(a.currency, b.currency);
-	}
-}
 
 /**
  * Add two Money values
@@ -28,8 +20,8 @@ function assertSameCurrency(a: Money, b: Money): void {
  * add(of("10.50", "USD"), of("5.25", "USD")) // $15.75
  */
 export function add(a: Money, b: Money): Money {
-	assertSameCurrency(a, b);
-	return createMoney(a.amount + b.amount, a.currency, a.scale);
+   assertSameCurrency(a, b);
+   return createMoney(a.amount + b.amount, a.currency, a.scale);
 }
 
 /**
@@ -44,8 +36,8 @@ export function add(a: Money, b: Money): Money {
  * subtract(of("10.50", "USD"), of("5.25", "USD")) // $5.25
  */
 export function subtract(a: Money, b: Money): Money {
-	assertSameCurrency(a, b);
-	return createMoney(a.amount - b.amount, a.currency, a.scale);
+   assertSameCurrency(a, b);
+   return createMoney(a.amount - b.amount, a.currency, a.scale);
 }
 
 /**
@@ -63,21 +55,21 @@ export function subtract(a: Money, b: Money): Money {
  * multiply(of("33.33", "USD"), 3)      // $99.99
  */
 export function multiply(money: Money, factor: number | string): Money {
-	const factorStr = typeof factor === "number" ? factor.toString() : factor;
+   const factorStr = typeof factor === "number" ? factor.toString() : factor;
 
-	// Parse factor with extended precision
-	const factorMinorUnits = parseDecimalToMinorUnits(
-		factorStr,
-		EXTENDED_PRECISION,
-	);
+   // Parse factor with extended precision
+   const factorMinorUnits = parseDecimalToMinorUnits(
+      factorStr,
+      EXTENDED_PRECISION,
+   );
 
-	// Multiply: result has (scale + EXTENDED_PRECISION) precision
-	const rawResult = money.amount * factorMinorUnits;
+   // Multiply: result has (scale + EXTENDED_PRECISION) precision
+   const rawResult = money.amount * factorMinorUnits;
 
-	// Round back to currency scale using banker's rounding
-	const rounded = bankersRound(rawResult, PRECISION_FACTOR);
+   // Round back to currency scale using banker's rounding
+   const rounded = bankersRound(rawResult, PRECISION_FACTOR);
 
-	return createMoney(rounded, money.currency, money.scale);
+   return createMoney(rounded, money.currency, money.scale);
 }
 
 /**
@@ -95,25 +87,26 @@ export function multiply(money: Money, factor: number | string): Money {
  * divide(of("100.00", "USD"), 4)   // $25.00
  */
 export function divide(money: Money, divisor: number | string): Money {
-	const divisorStr = typeof divisor === "number" ? divisor.toString() : divisor;
+   const divisorStr =
+      typeof divisor === "number" ? divisor.toString() : divisor;
 
-	// Parse divisor with extended precision
-	const divisorMinorUnits = parseDecimalToMinorUnits(
-		divisorStr,
-		EXTENDED_PRECISION,
-	);
+   // Parse divisor with extended precision
+   const divisorMinorUnits = parseDecimalToMinorUnits(
+      divisorStr,
+      EXTENDED_PRECISION,
+   );
 
-	if (divisorMinorUnits === 0n) {
-		throw new DivisionByZeroError();
-	}
+   if (divisorMinorUnits === 0n) {
+      throw new DivisionByZeroError();
+   }
 
-	// Scale up the dividend for precision before dividing
-	const scaledDividend = money.amount * PRECISION_FACTOR;
+   // Scale up the dividend for precision before dividing
+   const scaledDividend = money.amount * PRECISION_FACTOR;
 
-	// Divide using banker's rounding
-	const result = bankersRound(scaledDividend, divisorMinorUnits);
+   // Divide using banker's rounding
+   const result = bankersRound(scaledDividend, divisorMinorUnits);
 
-	return createMoney(result, money.currency, money.scale);
+   return createMoney(result, money.currency, money.scale);
 }
 
 /**
@@ -128,7 +121,7 @@ export function divide(money: Money, divisor: number | string): Money {
  * percentage(of("200.00", "USD"), 7.5)  // $15.00
  */
 export function percentage(money: Money, percent: number): Money {
-	return multiply(money, percent / 100);
+   return multiply(money, percent / 100);
 }
 
 /**
@@ -142,7 +135,7 @@ export function percentage(money: Money, percent: number): Money {
  * negate(of("-5.00", "USD"))   // $5.00
  */
 export function negate(money: Money): Money {
-	return createMoney(-money.amount, money.currency, money.scale);
+   return createMoney(-money.amount, money.currency, money.scale);
 }
 
 /**
@@ -156,6 +149,6 @@ export function negate(money: Money): Money {
  * absolute(of("10.00", "USD"))   // $10.00
  */
 export function absolute(money: Money): Money {
-	const absAmount = money.amount < 0n ? -money.amount : money.amount;
-	return createMoney(absAmount, money.currency, money.scale);
+   const absAmount = money.amount < 0n ? -money.amount : money.amount;
+   return createMoney(absAmount, money.currency, money.scale);
 }

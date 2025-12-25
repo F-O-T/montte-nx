@@ -464,36 +464,95 @@ type StreamEvent =
   | { type: "complete"; transactionCount: number };
 ```
 
-## Schemas
+## Validation & Schemas
 
-All Zod schemas are exported for custom validation:
+All parsing and generation functions use Zod schemas for runtime validation, ensuring type safety and data integrity.
+
+### Input Validation for Generation
+
+When generating OFX files, you can validate your inputs using the exported schemas:
 
 ```typescript
-import { schemas } from "@fot/ofx";
+import {
+  generateBankStatement,
+  generateBankStatementOptionsSchema,
+  type GenerateBankStatementOptions,
+} from "@fot/ofx";
 
-const customTransactionSchema = schemas.transaction.extend({
+// Validate options before generating
+const options: GenerateBankStatementOptions = {
+  bankId: "123456",
+  accountId: "987654321",
+  accountType: "CHECKING",
+  currency: "USD",
+  startDate: new Date("2025-01-01"),
+  endDate: new Date("2025-01-31"),
+  transactions: [],
+};
+
+// Runtime validation
+const validatedOptions = generateBankStatementOptionsSchema.parse(options);
+const statement = generateBankStatement(validatedOptions);
+```
+
+### Available Schemas
+
+All Zod schemas are exported for custom validation and extension:
+
+```typescript
+import {
+  transactionSchema,
+  bankAccountSchema,
+  ofxDocumentSchema,
+} from "@fot/ofx";
+
+// Extend schemas for custom validation
+const customTransactionSchema = transactionSchema.extend({
   customField: z.string(),
 });
 ```
 
-Available schemas:
+**Parsing Schemas:**
+- `ofxDocumentSchema` - Complete OFX document
+- `ofxHeaderSchema` - OFX file header
+- `ofxResponseSchema` - OFX response body
+- `transactionSchema` - Individual transaction
+- `transactionTypeSchema` - Transaction type enum
+- `transactionListSchema` - List of transactions
+- `bankAccountSchema` - Bank account information
+- `creditCardAccountSchema` - Credit card account information
+- `accountTypeSchema` - Account type enum
+- `balanceSchema` - Balance information
+- `statusSchema` - Status response
+- `financialInstitutionSchema` - Financial institution info
+- `signOnResponseSchema` - Sign-on response
+- `ofxDateSchema` - OFX date with timezone
 
-- `schemas.transaction`
-- `schemas.transactionType`
-- `schemas.transactionList`
-- `schemas.bankAccount`
-- `schemas.creditCardAccount`
-- `schemas.accountType`
-- `schemas.balance`
-- `schemas.status`
-- `schemas.financialInstitution`
-- `schemas.signOnResponse`
-- `schemas.bankStatementResponse`
-- `schemas.creditCardStatementResponse`
-- `schemas.ofxDocument`
-- `schemas.ofxHeader`
-- `schemas.ofxResponse`
-- `schemas.ofxDate`
+**Generation Schemas:**
+- `generateHeaderOptionsSchema` - OFX header generation options
+- `generateTransactionInputSchema` - Transaction input for generation
+- `generateBankStatementOptionsSchema` - Bank statement generation options
+- `generateCreditCardStatementOptionsSchema` - Credit card statement generation options
+
+## Security
+
+This library includes several security features to protect against malicious OFX files:
+
+### Prototype Pollution Protection
+
+The SGML parser is protected against prototype pollution attacks. Malicious OFX files attempting to inject `__proto__`, `constructor`, or `prototype` tags are safely ignored, preventing potential remote code execution.
+
+### Input Validation
+
+All parsing functions validate input data against strict Zod schemas, rejecting malformed or invalid OFX data before processing. This prevents:
+- Type confusion attacks
+- Invalid date/number formats
+- Missing required fields
+- Unexpected data structures
+
+### Safe Entity Decoding
+
+HTML entities in OFX text fields are decoded using a whitelist approach, preventing XSS-style attacks through crafted entity sequences
 
 ## Performance
 

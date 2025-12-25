@@ -175,11 +175,23 @@ export function processChar(
  *
  * @param ctx - The state machine context
  * @param onRowComplete - Callback invoked if there's a final row
+ * @throws Error if there's an unclosed quoted field
  */
 export function flush(
    ctx: StateMachineContext,
    onRowComplete: OnRowCompleteCallback,
 ): void {
+   // Check for unclosed quoted field - this is a parse error
+   if (ctx.state === "QUOTED_FIELD") {
+      const partialField =
+         ctx.currentField.length > 50
+            ? `${ctx.currentField.slice(0, 50)}...`
+            : ctx.currentField;
+      throw new Error(
+         `Unclosed quoted field at end of file. Partial content: "${partialField}"`,
+      );
+   }
+
    if (ctx.currentField !== "" || ctx.currentRow.length > 0) {
       ctx.currentRow.push(ctx.currentField);
       onRowComplete(ctx.currentRow);
