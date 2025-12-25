@@ -1636,6 +1636,47 @@ export function ManageCounterpartyForm({
                               </>
                            )}
                         </form.Subscribe>
+                     ) : methods.current.id === "basic-info" ? (
+                        <form.Subscribe
+                           selector={(state) => ({
+                              nameValid: !!state.values.name,
+                           })}
+                        >
+                           {({ nameValid }) => (
+                              <>
+                                 {!isEditMode && (
+                                    <Button
+                                       className="w-full"
+                                       onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          methods.prev();
+                                       }}
+                                       type="button"
+                                       variant="ghost"
+                                    >
+                                       {translate("common.actions.previous")}
+                                    </Button>
+                                 )}
+                                 <Button
+                                    className="w-full"
+                                    onClick={async (e) => {
+                                       e.preventDefault();
+                                       e.stopPropagation();
+
+                                       await form.validateAllFields("blur");
+
+                                       if (form.state.canSubmit && nameValid) {
+                                          methods.next();
+                                       }
+                                    }}
+                                    type="button"
+                                 >
+                                    {translate("common.actions.next")}
+                                 </Button>
+                              </>
+                           )}
+                        </form.Subscribe>
                      ) : (
                         <>
                            {!isEditMode && (

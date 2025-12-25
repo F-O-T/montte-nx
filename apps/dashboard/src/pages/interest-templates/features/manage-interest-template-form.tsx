@@ -177,7 +177,20 @@ export function ManageInterestTemplateForm({
                   )}
                </form.Subscribe>
             ) : (
-               <Button className="w-full" onClick={next} type="button">
+               <Button 
+                  className="w-full" 
+                  onClick={async (e) => {
+                     e.preventDefault();
+                     e.stopPropagation();
+
+                     await form.validateAllFields("blur");
+
+                     if (form.state.canSubmit) {
+                        next();
+                     }
+                  }}
+                  type="button"
+               >
                   {translate("common.actions.next")}
                   <ArrowRight className="size-4 ml-2" />
                </Button>
@@ -214,7 +227,12 @@ export function ManageInterestTemplateForm({
             </div>
 
             <FieldGroup>
-               <form.Field name="name">
+               <form.Field 
+                  name="name"
+                  validators={{
+                     onBlur: z.string().min(1, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;

@@ -2406,55 +2406,38 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                            )}
                         </form.Subscribe>
                      ) : methods.current.id === "details" ? (
-                        <form.Subscribe
-                           selector={(state) => ({
-                              amountValid:
-                                 state.fieldMeta.amount?.isValid !== false,
-                              descriptionValid:
-                                 state.fieldMeta.description?.isValid !== false,
-                              dueDateValid:
-                                 state.fieldMeta.dueDate?.isValid !== false,
-                           })}
-                        >
-                           {({
-                              amountValid,
-                              descriptionValid,
-                              dueDateValid,
-                           }) => (
-                              <>
-                                 {!isEditMode && (
-                                    <Button
-                                       className="w-full"
-                                       onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          methods.prev();
-                                       }}
-                                       type="button"
-                                       variant="ghost"
-                                    >
-                                       {translate("common.actions.previous")}
-                                    </Button>
-                                 )}
-                                 <Button
-                                    className="w-full"
-                                    disabled={
-                                       !amountValid ||
-                                       !descriptionValid ||
-                                       !dueDateValid
-                                    }
-                                    onClick={(e) => {
-                                       e.preventDefault();
-                                       e.stopPropagation();
-                                       methods.next();
-                                    }}
-                                    type="button"
-                                 >
-                                    {translate("common.actions.next")}
-                                 </Button>
-                              </>
+                        <>
+                           {!isEditMode && (
+                              <Button
+                                 className="w-full"
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    methods.prev();
+                                 }}
+                                 type="button"
+                                 variant="ghost"
+                              >
+                                 {translate("common.actions.previous")}
+                              </Button>
                            )}
-                        </form.Subscribe>
+                           <Button
+                              className="w-full"
+                              onClick={async (e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+
+                                 await form.validateAllFields("blur");
+
+                                 if (form.state.canSubmit) {
+                                    methods.next();
+                                 }
+                              }}
+                              type="button"
+                           >
+                              {translate("common.actions.next")}
+                           </Button>
+                        </>
                      ) : methods.isLast ? (
                         <form.Subscribe
                            selector={(state) => ({
