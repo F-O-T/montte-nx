@@ -134,10 +134,15 @@ export function ForgotPasswordPage() {
    });
 
    const handleSubmit = useCallback(
-      (e: React.FormEvent) => {
+      async (e: React.FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
-         form.handleSubmit();
+         
+         await form.validateAllFields("change");
+         
+         if (form.state.canSubmit) {
+            form.handleSubmit();
+         }
       },
       [form],
    );

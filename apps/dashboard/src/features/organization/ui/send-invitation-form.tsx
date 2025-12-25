@@ -130,10 +130,15 @@ const SendInvitationFormContent = () => {
       },
    });
 
-   const handleSubmit = (e: FormEvent) => {
+   const handleSubmit = async (e: FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      form.handleSubmit();
+      
+      await form.validateAllFields("change");
+      
+      if (form.state.canSubmit) {
+         form.handleSubmit();
+      }
    };
 
    return (

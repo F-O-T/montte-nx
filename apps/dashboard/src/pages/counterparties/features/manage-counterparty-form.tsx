@@ -467,10 +467,15 @@ export function ManageCounterpartyForm({
    });
 
    const handleSubmit = useCallback(
-      (e: FormEvent) => {
+      async (e: FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
-         form.handleSubmit();
+         
+         await form.validateAllFields("change");
+         
+         if (form.state.canSubmit) {
+            form.handleSubmit();
+         }
       },
       [form],
    );

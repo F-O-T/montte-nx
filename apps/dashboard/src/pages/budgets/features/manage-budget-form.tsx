@@ -245,10 +245,15 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
    return (
       <form
          className="h-full flex flex-col"
-         onSubmit={(e) => {
+         onSubmit={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            
+            await form.validateAllFields("change");
+            
+            if (form.state.canSubmit) {
+               form.handleSubmit();
+            }
          }}
       >
          <SheetHeader>
