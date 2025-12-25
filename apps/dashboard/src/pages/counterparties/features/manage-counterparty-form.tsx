@@ -1615,10 +1615,9 @@ export function ManageCounterpartyForm({
                            selector={(state) => ({
                               canSubmit: state.canSubmit,
                               isSubmitting: state.isSubmitting,
-                              nameValid: !!state.values.name,
                            })}
                         >
-                           {({ canSubmit, isSubmitting, nameValid }) => (
+                           {({ canSubmit, isSubmitting }) => (
                               <>
                                  <Button
                                     className="w-full"
@@ -1637,8 +1636,7 @@ export function ManageCounterpartyForm({
                                     disabled={
                                        !canSubmit ||
                                        isSubmitting ||
-                                       isPending ||
-                                       !nameValid
+                                       isPending
                                     }
                                     type="submit"
                                  >
@@ -1648,46 +1646,38 @@ export function ManageCounterpartyForm({
                            )}
                         </form.Subscribe>
                      ) : methods.current.id === "basic-info" ? (
-                        <form.Subscribe
-                           selector={(state) => ({
-                              nameValid: !!state.values.name,
-                           })}
-                        >
-                           {({ nameValid }) => (
-                              <>
-                                 {!isEditMode && (
-                                    <Button
-                                       className="w-full"
-                                       onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          methods.prev();
-                                       }}
-                                       type="button"
-                                       variant="ghost"
-                                    >
-                                       {translate("common.actions.previous")}
-                                    </Button>
-                                 )}
-                                 <Button
-                                    className="w-full"
-                                    onClick={async (e) => {
-                                       e.preventDefault();
-                                       e.stopPropagation();
-
-                                       await form.validateAllFields("change");
-
-                                       if (form.state.canSubmit && nameValid) {
-                                          methods.next();
-                                       }
-                                    }}
-                                    type="button"
-                                 >
-                                    {translate("common.actions.next")}
-                                 </Button>
-                              </>
+                        <>
+                           {!isEditMode && (
+                              <Button
+                                 className="w-full"
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    methods.prev();
+                                 }}
+                                 type="button"
+                                 variant="ghost"
+                              >
+                                 {translate("common.actions.previous")}
+                              </Button>
                            )}
-                        </form.Subscribe>
+                           <Button
+                              className="w-full"
+                              onClick={async (e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+
+                                 await form.validateAllFields("change");
+
+                                 if (form.state.canSubmit) {
+                                    methods.next();
+                                 }
+                              }}
+                              type="button"
+                           >
+                              {translate("common.actions.next")}
+                           </Button>
+                        </>
                      ) : (
                         <>
                            {!isEditMode && (

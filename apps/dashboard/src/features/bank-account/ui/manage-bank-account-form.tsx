@@ -292,17 +292,7 @@ export function ManageBankAccountForm({
                   createBankAccountMutation.isPending ||
                   updateBankAccountMutation.isPending
                }
-               onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-
-                  await form.validateAllFields("change");
-
-                  if (form.state.canSubmit) {
-                     form.handleSubmit();
-                  }
-               }}
-               type="button"
+               type="submit"
             >
                {modeTexts.title}
             </Button>

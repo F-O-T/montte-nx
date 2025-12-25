@@ -1,5 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
-import { translate } from "@packages/localization";
+import { getCurrentLanguage, translate } from "@packages/localization";
 import {
    Alert,
    AlertDescription,
@@ -205,10 +205,25 @@ export function ManageTransactionForm({
       createTransactionMutation.isPending ||
       updateTransactionMutation.isPending;
 
-   const descriptionSchema = z.string().min(1, translate("common.validation.required"));
-   const amountSchema = z.number().min(1, translate("common.validation.required"));
-   const bankAccountIdSchema = z.string().min(1, translate("common.validation.required"));
-   const dateSchema = z.date({ message: translate("common.validation.required") });
+   // Memoize validation schemas to avoid recreation on every render
+   // They only need to be recreated when the language changes
+   const currentLanguage = getCurrentLanguage();
+   const descriptionSchema = useMemo(
+      () => z.string().min(1, translate("common.validation.required")),
+      [currentLanguage],
+   );
+   const amountSchema = useMemo(
+      () => z.number().min(1, translate("common.validation.required")),
+      [currentLanguage],
+   );
+   const bankAccountIdSchema = useMemo(
+      () => z.string().min(1, translate("common.validation.required")),
+      [currentLanguage],
+   );
+   const dateSchema = useMemo(
+      () => z.date({ message: translate("common.validation.required") }),
+      [currentLanguage],
+   );
 
    const handleCreateTransaction = useCallback(
       async (values: TransactionFormValues, resetForm: () => void) => {

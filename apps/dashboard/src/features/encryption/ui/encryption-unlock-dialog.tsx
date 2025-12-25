@@ -27,6 +27,7 @@ import { useForm } from "@tanstack/react-form";
 import { Loader2, Lock } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { useEncryptionContext } from "../hooks/use-encryption-context";
 
 interface EncryptionUnlockDialogProps {
@@ -42,10 +43,25 @@ export function EncryptionUnlockDialog({
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [error, setError] = useState<string | null>(null);
 
+   const schema = z.object({
+      passphrase: z
+         .string()
+         .min(
+            1,
+            translate(
+               "dashboard.routes.settings.encryption.errors.passphrase-required",
+            ),
+         ),
+      rememberDevice: z.boolean(),
+   });
+
    const form = useForm({
       defaultValues: {
          passphrase: "",
          rememberDevice: false,
+      },
+      validators: {
+         onBlur: schema,
       },
       onSubmit: async ({ value }) => {
          setIsSubmitting(true);
@@ -110,38 +126,49 @@ export function EncryptionUnlockDialog({
 
             <form className="space-y-4" onSubmit={handleSubmit}>
                <form.Field name="passphrase">
-                  {(field) => (
-                     <FieldGroup>
-                        <Field>
-                           <FieldLabel>
-                              {translate(
-                                 "dashboard.routes.settings.encryption.passphrase",
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched &&
+                        !field.state.meta.isValid;
+                     return (
+                        <FieldGroup>
+                           <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                 {translate(
+                                    "dashboard.routes.settings.encryption.passphrase",
+                                 )}
+                              </FieldLabel>
+                              <Input
+                                 aria-invalid={isInvalid}
+                                 autoComplete="current-password"
+                                 autoFocus
+                                 id={field.name}
+                                 name={field.name}
+                                 onBlur={field.handleBlur}
+                                 onChange={(e) => {
+                                    field.handleChange(e.target.value);
+                                    setError(null);
+                                 }}
+                                 placeholder={translate(
+                                    "dashboard.routes.settings.encryption.passphrase-placeholder",
+                                 )}
+                                 type="password"
+                                 value={field.state.value}
+                              />
+                              {isInvalid && field.state.meta.errors.length > 0 && (
+                                 <FieldDescription className="text-destructive">
+                                    {field.state.meta.errors[0]}
+                                 </FieldDescription>
                               )}
-                           </FieldLabel>
-                           <Input
-                              autoComplete="current-password"
-                              autoFocus
-                              id={field.name}
-                              name={field.name}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => {
-                                 field.handleChange(e.target.value);
-                                 setError(null);
-                              }}
-                              placeholder={translate(
-                                 "dashboard.routes.settings.encryption.passphrase-placeholder",
+                              {error && (
+                                 <FieldDescription className="text-destructive">
+                                    {error}
+                                 </FieldDescription>
                               )}
-                              type="password"
-                              value={field.state.value}
-                           />
-                           {error && (
-                              <FieldDescription className="text-destructive">
-                                 {error}
-                              </FieldDescription>
-                           )}
-                        </Field>
-                     </FieldGroup>
-                  )}
+                           </Field>
+                        </FieldGroup>
+                     );
+                  }}
                </form.Field>
 
                <form.Field name="rememberDevice">
@@ -165,28 +192,28 @@ export function EncryptionUnlockDialog({
                      </div>
                   )}
                </form.Field>
-            </form>
 
-            <DialogFooter>
-               <Button onClick={() => onOpenChange(false)} variant="outline">
-                  {translate("common.actions.cancel")}
-               </Button>
-               <form.Subscribe>
-                  {(formState) => (
-                     <Button
-                        disabled={isSubmitting || !formState.values.passphrase}
-                        onClick={() => form.handleSubmit()}
-                     >
-                        {isSubmitting && (
-                           <Loader2 className="size-4 mr-2 animate-spin" />
-                        )}
-                        {translate(
-                           "dashboard.routes.settings.encryption.unlock.button",
-                        )}
-                     </Button>
-                  )}
-               </form.Subscribe>
-            </DialogFooter>
+               <DialogFooter>
+                  <Button onClick={() => onOpenChange(false)} variant="outline" type="button">
+                     {translate("common.actions.cancel")}
+                  </Button>
+                  <form.Subscribe>
+                     {(formState) => (
+                        <Button
+                           disabled={isSubmitting || !formState.values.passphrase}
+                           type="submit"
+                        >
+                           {isSubmitting && (
+                              <Loader2 className="size-4 mr-2 animate-spin" />
+                           )}
+                           {translate(
+                              "dashboard.routes.settings.encryption.unlock.button",
+                           )}
+                        </Button>
+                     )}
+                  </form.Subscribe>
+               </DialogFooter>
+            </form>
          </DialogContent>
       </Dialog>
    );

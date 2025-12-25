@@ -106,10 +106,6 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
             ],
       },
       onSubmit: async ({ value }) => {
-         if (!value.name || !value.color) {
-            return;
-         }
-
          try {
             if (isEditMode && category) {
                await updateCategoryMutation.mutateAsync({

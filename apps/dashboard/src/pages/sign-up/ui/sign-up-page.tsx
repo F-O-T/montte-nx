@@ -102,9 +102,9 @@ export function SignUpPage() {
          e.preventDefault();
          e.stopPropagation();
          
-         await form.validateAllFields("change");
+         const validationErrors = await form.validateAllFields("change");
          
-         if (form.state.canSubmit) {
+         if (validationErrors.length === 0) {
             form.handleSubmit();
          }
       },
@@ -382,9 +382,9 @@ export function SignUpPage() {
                                  e.preventDefault();
                                  e.stopPropagation();
 
-                                 await form.validateAllFields("change");
+                                 const validationErrors = await form.validateAllFields("change");
 
-                                 if (form.state.canSubmit) {
+                                 if (validationErrors.length === 0) {
                                     methods.next();
                                  }
                               }}

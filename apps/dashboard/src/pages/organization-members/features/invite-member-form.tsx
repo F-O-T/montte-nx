@@ -189,28 +189,27 @@ const InviteMemberFormContent = () => {
                   );
                }}
             </form.Field>
-         </form>
 
-         <SheetFooter>
-            <Button onClick={closeSheet} type="button" variant="outline">
-               Cancel
-            </Button>
-            <form.Subscribe>
-               {(formState) => (
-                  <Button
-                     disabled={
-                        !formState.canSubmit ||
-                        formState.isSubmitting ||
-                        isPending
-                     }
-                     onClick={() => form.handleSubmit()}
-                     type="submit"
-                  >
-                     {isPending ? "Sending..." : "Send Invitation"}
-                  </Button>
-               )}
-            </form.Subscribe>
-         </SheetFooter>
+            <SheetFooter>
+               <Button onClick={closeSheet} type="button" variant="outline">
+                  Cancel
+               </Button>
+               <form.Subscribe>
+                  {(formState) => (
+                     <Button
+                        disabled={
+                           !formState.canSubmit ||
+                           formState.isSubmitting ||
+                           isPending
+                        }
+                        type="submit"
+                     >
+                        {isPending ? "Sending..." : "Send Invitation"}
+                     </Button>
+                  )}
+               </form.Subscribe>
+            </SheetFooter>
+         </form>
       </>
    );
 };
