@@ -463,7 +463,7 @@ export function ManageTransactionForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.description.label")}
                            </FieldLabel>
                            <Textarea
@@ -498,7 +498,7 @@ export function ManageTransactionForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.amount.label")}
                            </FieldLabel>
                            <MoneyInput
@@ -532,7 +532,7 @@ export function ManageTransactionForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.bank.label")}
                            </FieldLabel>
                            <Select
@@ -628,7 +628,7 @@ export function ManageTransactionForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.date.label")}
                            </FieldLabel>
                            <DatePicker

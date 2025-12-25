@@ -188,13 +188,18 @@ export function ManageBankAccountForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="bank">
+               <form.Field 
+                  name="bank"
+                  validators={{
+                     onBlur: z.string().min(1, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.bank.label")}
                            </FieldLabel>
                            <BankAccountCombobox
@@ -212,13 +217,20 @@ export function ManageBankAccountForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="type">
+               <form.Field 
+                  name="type"
+                  validators={{
+                     onBlur: z
+                        .enum(["", "checking", "savings", "investment"])
+                        .refine((val) => val !== "", translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.account-type.label")}
                            </FieldLabel>
                            <Select
@@ -269,22 +281,26 @@ export function ManageBankAccountForm({
          </div>
 
          <SheetFooter>
-            <form.Subscribe>
-               {(state) => (
-                  <Button
-                     className="w-full"
-                     disabled={
-                        !state.canSubmit ||
-                        state.isSubmitting ||
-                        createBankAccountMutation.isPending ||
-                        updateBankAccountMutation.isPending
-                     }
-                     type="submit"
-                  >
-                     {modeTexts.title}
-                  </Button>
-               )}
-            </form.Subscribe>
+            <Button
+               className="w-full"
+               disabled={
+                  createBankAccountMutation.isPending ||
+                  updateBankAccountMutation.isPending
+               }
+               onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  await form.validateAllFields("blur");
+
+                  if (form.state.canSubmit) {
+                     form.handleSubmit();
+                  }
+               }}
+               type="button"
+            >
+               {modeTexts.title}
+            </Button>
          </SheetFooter>
       </form>
    );

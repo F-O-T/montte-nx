@@ -238,7 +238,7 @@ export function ManageInterestTemplateForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel required>
                               {translate(
                                  "dashboard.routes.interest-templates.form.name.label",
                               )}

@@ -519,7 +519,7 @@ export function ManageCustomReportForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
+                           <FieldLabel htmlFor={field.name} required>Nome</FieldLabel>
                            <Input
                               aria-invalid={isInvalid}
                               id={field.name}
@@ -622,7 +622,7 @@ export function ManageCustomReportForm({
                            !field.state.meta.isValid;
                         return (
                            <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
+                              <FieldLabel htmlFor={field.name} required>Nome</FieldLabel>
                               <Input
                                  aria-invalid={isInvalid}
                                  id={field.name}

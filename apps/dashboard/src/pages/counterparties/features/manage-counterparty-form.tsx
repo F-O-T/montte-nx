@@ -601,8 +601,8 @@ export function ManageCounterpartyForm({
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
-                              Nome <span className="text-destructive">*</span>
+                           <FieldLabel htmlFor={field.name} required>
+                              Nome
                            </FieldLabel>
                            <Input
                               id={field.name}

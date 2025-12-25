@@ -156,7 +156,7 @@ export function ForgotPasswordPage() {
                      field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
+                        <FieldLabel htmlFor={field.name} required>
                            {translate("common.form.email.label")}
                         </FieldLabel>
                         <Input
@@ -202,7 +202,7 @@ export function ForgotPasswordPage() {
                      field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
+                        <FieldLabel htmlFor={field.name} required>
                            {translate("common.form.otp.label")}
                         </FieldLabel>
                         <InputOTP
@@ -263,7 +263,7 @@ export function ForgotPasswordPage() {
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.password.label")}
                            </FieldLabel>
                            <PasswordInput
@@ -307,7 +307,7 @@ export function ForgotPasswordPage() {
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.confirm-password.label")}
                            </FieldLabel>
                            <PasswordInput

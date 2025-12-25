@@ -770,7 +770,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.description.label")}
                            </FieldLabel>
                            <Textarea
@@ -800,7 +800,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.amount.label")}
                            </FieldLabel>
                            <MoneyInput
