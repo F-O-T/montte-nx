@@ -157,7 +157,7 @@ export function EncryptionUnlockDialog({
                               />
                               {isInvalid && field.state.meta.errors.length > 0 && (
                                  <FieldDescription className="text-destructive">
-                                    {field.state.meta.errors[0]}
+                                    {String(field.state.meta.errors[0])}
                                  </FieldDescription>
                               )}
                               {error && (

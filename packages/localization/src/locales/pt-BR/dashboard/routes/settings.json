@@ -345,6 +345,7 @@
          "item-3": "Automações não podem ler campos criptografados"
       },
       "errors": {
+         "passphrase-required": "A frase secreta é obrigatória",
          "passphrase-mismatch": "As frases secretas não coincidem",
          "passphrase-too-short": "A frase secreta deve ter pelo menos 8 caracteres",
          "setup-failed": "Falha ao configurar criptografia"
