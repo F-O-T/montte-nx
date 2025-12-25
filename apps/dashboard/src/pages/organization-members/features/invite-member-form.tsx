@@ -92,7 +92,7 @@ const InviteMemberFormContent = () => {
 
    const schema = z.object({
       email: z.string().email("Valid email is required"),
-      organizationId: z.string().default(""),
+      organizationId: z.string(),
       role: z.enum(["member", "admin"]),
    });
 

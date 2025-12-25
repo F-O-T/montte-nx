@@ -68,7 +68,6 @@ export function SignInEmailPage() {
       },
       validators: {
          onBlur: schema,
-         onChange: schema,
       },
    });
 

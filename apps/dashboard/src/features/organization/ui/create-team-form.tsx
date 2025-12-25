@@ -88,13 +88,12 @@ const CreateTeamFormContent = () => {
    const schema = z.object({
       description: z
          .string()
-         .max(200, "Description must be less than 200 characters")
-         .default(""),
+         .max(200, "Description must be less than 200 characters"),
       name: z
          .string()
          .min(1, "Team name is required")
          .max(50, "Team name must be less than 50 characters"),
-      organizationId: z.string().default(""),
+      organizationId: z.string(),
    });
 
    const form = useForm({

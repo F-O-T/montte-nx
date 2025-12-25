@@ -102,10 +102,10 @@ const SendInvitationFormContent = () => {
    );
 
    const schema = z.object({
-      email: z.email("Please enter a valid email address"),
-      organizationId: z.string().optional(),
-      resend: z.boolean().optional(),
-      teamId: z.string().optional(),
+      email: z.string().email("Please enter a valid email address"),
+      organizationId: z.string(),
+      resend: z.boolean(),
+      teamId: z.string(),
    });
 
    const form = useForm({

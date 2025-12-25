@@ -386,7 +386,7 @@ export function ManageInterestTemplateForm({
                                  }
                                  
                                  if (num < 0) {
-                                    return "O valor mínimo é 0";
+                                    return translate("common.validation.min-value", { min: 0 });
                                  }
                                  
                                  return undefined;
@@ -494,14 +494,14 @@ export function ManageInterestTemplateForm({
                                     return translate("common.validation.required");
                                  }
                                  
-                                 const num = Number(value);
-                                 if (isNaN(num)) {
-                                    return translate("common.validation.required");
-                                 }
-                                 
-                                 if (num < 0) {
-                                    return "O valor mínimo é 0";
-                                 }
+                                const num = Number(value);
+                                if (isNaN(num)) {
+                                   return translate("common.validation.required");
+                                }
+                                
+                                if (num < 0) {
+                                   return translate("common.validation.min-value", { min: 0 });
+                                }
                                  
                                  return undefined;
                               },
@@ -613,7 +613,7 @@ export function ManageInterestTemplateForm({
                            return translate("common.validation.required");
                         }
                         if (numValue < 0) {
-                           return "O valor mínimo é 0";
+                           return translate("common.validation.min-value", { min: 0 });
                         }
                         return undefined;
                      },
