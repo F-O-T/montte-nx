@@ -153,12 +153,12 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
          </SheetHeader>
          <div className="grid gap-4 px-4">
             <FieldGroup>
-               <form.Field 
-                  name="name"
-                  validators={{
-                     onBlur: z.string().min(1, translate("common.validation.required")),
-                  }}
-               >
+                  <form.Field 
+                     name="name"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -187,12 +187,12 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field 
-                  name="color"
-                  validators={{
-                     onBlur: z.string().min(1, translate("common.validation.required")),
-                  }}
-               >
+                  <form.Field 
+                     name="color"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -330,7 +330,7 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
                   e.preventDefault();
                   e.stopPropagation();
 
-                  await form.validateAllFields("blur");
+                  await form.validateAllFields("change");
 
                   if (form.state.canSubmit) {
                      form.handleSubmit();

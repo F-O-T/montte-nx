@@ -764,7 +764,12 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
          <div className="space-y-4">
             {/* Required Fields */}
             <FieldGroup>
-               <form.Field name="description">
+               <form.Field 
+                  name="description"
+                  validators={{
+                     onChange: z.string().min(1, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -794,7 +799,12 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="amount">
+               <form.Field 
+                  name="amount"
+                  validators={{
+                     onChange: z.number().min(0.01, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -2427,7 +2437,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                                  e.preventDefault();
                                  e.stopPropagation();
 
-                                 await form.validateAllFields("blur");
+                                 await form.validateAllFields("change");
 
                                  if (form.state.canSubmit) {
                                     methods.next();

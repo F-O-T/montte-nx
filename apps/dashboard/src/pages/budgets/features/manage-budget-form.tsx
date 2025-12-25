@@ -257,12 +257,12 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
          </SheetHeader>
          <div className="grid gap-4 px-4 pb-4">
             <FieldGroup>
-               <form.Field 
-                  name="name"
-                  validators={{
-                     onBlur: z.string().min(1, translate("common.validation.required")),
-                  }}
-               >
+                  <form.Field 
+                     name="name"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -293,12 +293,12 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field 
-                  name="amount"
-                  validators={{
-                     onBlur: z.number().min(0.01, translate("common.validation.required")),
-                  }}
-               >
+                  <form.Field 
+                     name="amount"
+                     validators={{
+                        onChange: z.number().min(0.01, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -564,7 +564,7 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
                   e.preventDefault();
                   e.stopPropagation();
 
-                  await form.validateAllFields("blur");
+                  await form.validateAllFields("change");
 
                   if (form.state.canSubmit) {
                      form.handleSubmit();

@@ -452,12 +452,12 @@ export function ManageTransactionForm({
       return (
          <div className="space-y-4">
             <FieldGroup>
-               <form.Field 
-                  name="description"
-                  validators={{
-                     onBlur: descriptionSchema,
-                  }}
-               >
+                  <form.Field 
+                     name="description"
+                     validators={{
+                        onChange: descriptionSchema,
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -487,12 +487,12 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field 
-                  name="amount"
-                  validators={{
-                     onBlur: amountSchema,
-                  }}
-               >
+                  <form.Field 
+                     name="amount"
+                     validators={{
+                        onChange: amountSchema,
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -524,7 +524,7 @@ export function ManageTransactionForm({
                <form.Field 
                   name="bankAccountId"
                   validators={{
-                     onBlur: bankAccountIdSchema,
+                     onChange: bankAccountIdSchema,
                   }}
                >
                   {(field) => {
@@ -617,12 +617,12 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field 
-                  name="date"
-                  validators={{
-                     onBlur: dateSchema,
-                  }}
-               >
+                  <form.Field 
+                     name="date"
+                     validators={{
+                        onChange: dateSchema,
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -841,7 +841,7 @@ export function ManageTransactionForm({
                               e.preventDefault();
                               e.stopPropagation();
 
-                              await form.validateAllFields("blur");
+                              await form.validateAllFields("change");
 
                               if (form.state.canSubmit) {
                                  methods.next();

@@ -508,12 +508,12 @@ export function ManageCustomReportForm({
       return (
          <div className="grid gap-4">
             <FieldGroup>
-               <form.Field 
-                  name="name"
-                  validators={{
-                     onBlur: z.string().min(1, "Nome é obrigatório"),
-                  }}
-               >
+                     <form.Field 
+                        name="name"
+                        validators={{
+                           onChange: z.string().min(1, "Nome é obrigatório"),
+                        }}
+                     >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -613,7 +613,7 @@ export function ManageCustomReportForm({
                   <form.Field 
                      name="name"
                      validators={{
-                        onBlur: z.string().min(1, "Nome é obrigatório"),
+                        onChange: z.string().min(1, "Nome é obrigatório"),
                      }}
                   >
                      {(field) => {

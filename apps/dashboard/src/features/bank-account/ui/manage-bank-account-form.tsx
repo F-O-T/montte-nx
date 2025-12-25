@@ -188,12 +188,12 @@ export function ManageBankAccountForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field 
-                  name="bank"
-                  validators={{
-                     onBlur: z.string().min(1, translate("common.validation.required")),
-                  }}
-               >
+                  <form.Field 
+                     name="bank"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -220,7 +220,7 @@ export function ManageBankAccountForm({
                <form.Field 
                   name="type"
                   validators={{
-                     onBlur: z
+                     onChange: z
                         .enum(["", "checking", "savings", "investment"])
                         .refine((val) => val !== "", translate("common.validation.required")),
                   }}
@@ -291,7 +291,7 @@ export function ManageBankAccountForm({
                   e.preventDefault();
                   e.stopPropagation();
 
-                  await form.validateAllFields("blur");
+                  await form.validateAllFields("change");
 
                   if (form.state.canSubmit) {
                      form.handleSubmit();

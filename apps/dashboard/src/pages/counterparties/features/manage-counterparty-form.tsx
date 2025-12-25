@@ -595,7 +595,12 @@ export function ManageCounterpartyForm({
             </div>
 
             <FieldGroup>
-               <form.Field name="name">
+               <form.Field 
+                  name="name"
+                  validators={{
+                     onChange: z.string().min(1, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -1664,7 +1669,7 @@ export function ManageCounterpartyForm({
                                        e.preventDefault();
                                        e.stopPropagation();
 
-                                       await form.validateAllFields("blur");
+                                       await form.validateAllFields("change");
 
                                        if (form.state.canSubmit && nameValid) {
                                           methods.next();

@@ -148,7 +148,7 @@ export function ForgotPasswordPage() {
             <form.Field 
                name="email"
                validators={{
-                  onBlur: z.string().email(translate("common.validation.email")),
+                  onChange: z.string().email(translate("common.validation.email")),
                }}
             >
                {(field) => {
@@ -189,7 +189,7 @@ export function ForgotPasswordPage() {
             <form.Field 
                name="otp"
                validators={{
-                  onBlur: z
+                  onChange: z
                      .string()
                      .min(
                         6,
@@ -250,7 +250,7 @@ export function ForgotPasswordPage() {
                <form.Field 
                   name="password"
                   validators={{
-                     onBlur: z
+                     onChange: z
                         .string()
                         .min(
                            8,
@@ -292,8 +292,10 @@ export function ForgotPasswordPage() {
                <form.Field 
                   name="confirmPassword"
                   validators={{
-                     onBlur: z.string().min(1, translate("common.validation.required")),
                      onChange: ({ value, fieldApi }) => {
+                        if (!value) {
+                           return translate("common.validation.required");
+                        }
                         const password = fieldApi.form.getFieldValue("password");
                         if (value && password && value !== password) {
                            return translate("common.validation.password-mismatch");
@@ -420,7 +422,7 @@ export function ForgotPasswordPage() {
                                        e.preventDefault();
                                        e.stopPropagation();
 
-                                       await form.validateAllFields("blur");
+                                       await form.validateAllFields("change");
 
                                        if (form.state.canSubmit) {
                                           await handleSendOtp(emailValue);
@@ -439,7 +441,7 @@ export function ForgotPasswordPage() {
                                  e.preventDefault();
                                  e.stopPropagation();
 
-                                 await form.validateAllFields("blur");
+                                 await form.validateAllFields("change");
 
                                  if (form.state.canSubmit) {
                                     methods.next();

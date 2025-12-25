@@ -113,7 +113,7 @@ export function SignUpPage() {
                <form.Field 
                   name="name"
                   validators={{
-                     onBlur: z
+                     onChange: z
                         .string()
                         .min(
                            2,
@@ -155,7 +155,7 @@ export function SignUpPage() {
                <form.Field 
                   name="email"
                   validators={{
-                     onBlur: z.string().email(translate("common.validation.email")),
+                     onChange: z.string().email(translate("common.validation.email")),
                   }}
                >
                   {(field) => {
@@ -201,7 +201,7 @@ export function SignUpPage() {
                <form.Field 
                   name="password"
                   validators={{
-                     onBlur: z
+                     onChange: z
                         .string()
                         .min(
                            8,
@@ -243,8 +243,10 @@ export function SignUpPage() {
                <form.Field 
                   name="confirmPassword"
                   validators={{
-                     onBlur: z.string().min(1, translate("common.validation.required")),
                      onChange: ({ value, fieldApi }) => {
+                        if (!value) {
+                           return translate("common.validation.required");
+                        }
                         const password = fieldApi.form.getFieldValue("password");
                         if (value && password && value !== password) {
                            return translate("common.validation.password-mismatch");
@@ -375,7 +377,7 @@ export function SignUpPage() {
                                  e.preventDefault();
                                  e.stopPropagation();
 
-                                 await form.validateAllFields("blur");
+                                 await form.validateAllFields("change");
 
                                  if (form.state.canSubmit) {
                                     methods.next();
