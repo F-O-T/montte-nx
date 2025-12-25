@@ -78,6 +78,7 @@ export function EncryptionSetupCredenza({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
       onSubmit: async ({ value }) => {
          setIsSubmitting(true);

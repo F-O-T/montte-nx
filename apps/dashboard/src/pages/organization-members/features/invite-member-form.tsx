@@ -112,7 +112,8 @@ const InviteMemberFormContent = () => {
       },
 
       validators: {
-         onBlur: schema as unknown as undefined,
+         onBlur: schema,
+         onChange: schema,
       },
    });
 

@@ -94,6 +94,7 @@ export function SignUpPage() {
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 

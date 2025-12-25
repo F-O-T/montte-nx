@@ -109,6 +109,7 @@ export function EmailVerificationPage() {
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 

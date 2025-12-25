@@ -128,6 +128,7 @@ export function ManageBankAccountForm({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 

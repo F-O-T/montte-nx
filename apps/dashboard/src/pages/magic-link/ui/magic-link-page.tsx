@@ -58,6 +58,7 @@ export function MagicLinkPage() {
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 

@@ -130,6 +130,7 @@ export function ForgotPasswordPage() {
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 

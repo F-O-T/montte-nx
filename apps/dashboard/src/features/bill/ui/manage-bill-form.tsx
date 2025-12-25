@@ -412,6 +412,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
       defaultValues: editValues,
       validators: {
          onBlur: billSchema,
+         onChange: billSchema,
       },
       onSubmit: async ({ value }) => {
          const amount = Number(value.amount);

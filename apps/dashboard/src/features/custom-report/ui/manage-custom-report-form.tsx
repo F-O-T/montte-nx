@@ -237,6 +237,7 @@ export function ManageCustomReportForm({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 

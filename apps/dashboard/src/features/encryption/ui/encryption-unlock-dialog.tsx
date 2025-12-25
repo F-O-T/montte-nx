@@ -62,6 +62,7 @@ export function EncryptionUnlockDialog({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
       onSubmit: async ({ value }) => {
          setIsSubmitting(true);

@@ -56,7 +56,7 @@ function CompleteBillSheetContent({
    );
 
    useEffect(() => {
-      if (bankAccounts.length > 0) {
+      if (bankAccounts.length > 0 && !bankAccountId) {
          setBankAccountId(bill.bankAccountId || bankAccounts[0]?.id);
       }
    }, [bankAccounts, bill.bankAccountId]);

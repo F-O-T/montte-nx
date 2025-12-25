@@ -255,7 +255,7 @@ export function ManageInterestTemplateForm({
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -264,7 +264,12 @@ export function ManageInterestTemplateForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="isDefault">
+               <form.Field 
+                  name="isDefault"
+                  validators={{
+                     onChange: z.boolean(),
+                  }}
+               >
                   {(field) => (
                      <Field>
                         <div className="flex items-center justify-between">
@@ -311,7 +316,12 @@ export function ManageInterestTemplateForm({
 
             {/* Penalty Section */}
             <FieldGroup>
-               <form.Field name="penaltyType">
+               <form.Field 
+                  name="penaltyType"
+                  validators={{
+                     onChange: z.enum(["none", "percentage", "fixed"]),
+                  }}
+               >
                   {(field) => (
                      <Field>
                         <FieldLabel>
@@ -357,29 +367,61 @@ export function ManageInterestTemplateForm({
                {(penaltyType) =>
                   penaltyType !== "none" && (
                      <FieldGroup>
-                        <form.Field name="penaltyValue">
-                           {(field) => (
-                              <Field>
-                                 <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.interest-templates.form.penalty-value.label",
+                        <form.Field 
+                           name="penaltyValue"
+                           validators={{
+                              onChange: ({ value, fieldApi }) => {
+                                 const penaltyTypeValue = fieldApi.form.getFieldValue("penaltyType");
+                                 if (penaltyTypeValue === "none") {
+                                    return undefined;
+                                 }
+                                 
+                                 if (!value || value.trim() === "") {
+                                    return translate("common.validation.required");
+                                 }
+                                 
+                                 const num = Number(value);
+                                 if (isNaN(num)) {
+                                    return translate("common.validation.required");
+                                 }
+                                 
+                                 if (num < 0) {
+                                    return "O valor mínimo é 0";
+                                 }
+                                 
+                                 return undefined;
+                              },
+                           }}
+                        >
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched && !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel required>
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.penalty-value.label",
+                                       )}
+                                    </FieldLabel>
+                                    <Input
+                                       onBlur={field.handleBlur}
+                                       onChange={(e) =>
+                                          field.handleChange(e.target.value)
+                                       }
+                                       placeholder={
+                                          penaltyType === "percentage"
+                                             ? "2.00"
+                                             : "100.00"
+                                       }
+                                       type="number"
+                                       value={field.state.value}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                                     )}
-                                 </FieldLabel>
-                                 <Input
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder={
-                                       penaltyType === "percentage"
-                                          ? "2.00"
-                                          : "100.00"
-                                    }
-                                    type="number"
-                                    value={field.state.value}
-                                 />
-                              </Field>
-                           )}
+                                 </Field>
+                              );
+                           }}
                         </form.Field>
                      </FieldGroup>
                   )
@@ -388,7 +430,12 @@ export function ManageInterestTemplateForm({
 
             {/* Interest Section */}
             <FieldGroup>
-               <form.Field name="interestType">
+               <form.Field 
+                  name="interestType"
+                  validators={{
+                     onChange: z.enum(["none", "daily", "monthly"]),
+                  }}
+               >
                   {(field) => (
                      <Field>
                         <FieldLabel>
@@ -434,25 +481,57 @@ export function ManageInterestTemplateForm({
                {(interestType) =>
                   interestType !== "none" && (
                      <FieldGroup>
-                        <form.Field name="interestValue">
-                           {(field) => (
-                              <Field>
-                                 <FieldLabel>
-                                    {translate(
-                                       "dashboard.routes.interest-templates.form.interest-value.label",
+                        <form.Field 
+                           name="interestValue"
+                           validators={{
+                              onChange: ({ value, fieldApi }) => {
+                                 const interestTypeValue = fieldApi.form.getFieldValue("interestType");
+                                 if (interestTypeValue === "none") {
+                                    return undefined;
+                                 }
+                                 
+                                 if (!value || value.trim() === "") {
+                                    return translate("common.validation.required");
+                                 }
+                                 
+                                 const num = Number(value);
+                                 if (isNaN(num)) {
+                                    return translate("common.validation.required");
+                                 }
+                                 
+                                 if (num < 0) {
+                                    return "O valor mínimo é 0";
+                                 }
+                                 
+                                 return undefined;
+                              },
+                           }}
+                        >
+                           {(field) => {
+                              const isInvalid =
+                                 field.state.meta.isTouched && !field.state.meta.isValid;
+                              return (
+                                 <Field data-invalid={isInvalid}>
+                                    <FieldLabel required>
+                                       {translate(
+                                          "dashboard.routes.interest-templates.form.interest-value.label",
+                                       )}
+                                    </FieldLabel>
+                                    <Input
+                                       onBlur={field.handleBlur}
+                                       onChange={(e) =>
+                                          field.handleChange(e.target.value)
+                                       }
+                                       placeholder="1.00"
+                                       type="number"
+                                       value={field.state.value}
+                                    />
+                                    {isInvalid && (
+                                       <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                                     )}
-                                 </FieldLabel>
-                                 <Input
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) =>
-                                       field.handleChange(e.target.value)
-                                    }
-                                    placeholder="1.00"
-                                    type="number"
-                                    value={field.state.value}
-                                 />
-                              </Field>
-                           )}
+                                 </Field>
+                              );
+                           }}
                         </form.Field>
                      </FieldGroup>
                   )
@@ -479,7 +558,12 @@ export function ManageInterestTemplateForm({
             </div>
 
             <FieldGroup>
-               <form.Field name="monetaryCorrectionIndex">
+               <form.Field 
+                  name="monetaryCorrectionIndex"
+                  validators={{
+                     onChange: z.enum(["none", "ipca", "selic", "cdi"]),
+                  }}
+               >
                   {(field) => (
                      <Field>
                         <FieldLabel>
@@ -520,31 +604,52 @@ export function ManageInterestTemplateForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="gracePeriodDays">
-                  {(field) => (
-                     <Field>
-                        <FieldLabel>
-                           {translate(
-                              "dashboard.routes.interest-templates.form.grace-period.label",
+               <form.Field 
+                  name="gracePeriodDays"
+                  validators={{
+                     onChange: ({ value }) => {
+                        const numValue = typeof value === "string" ? Number(value) : value;
+                        if (typeof numValue !== "number" || isNaN(numValue)) {
+                           return translate("common.validation.required");
+                        }
+                        if (numValue < 0) {
+                           return "O valor mínimo é 0";
+                        }
+                        return undefined;
+                     },
+                  }}
+               >
+                  {(field) => {
+                     const isInvalid =
+                        field.state.meta.isTouched && !field.state.meta.isValid;
+                     return (
+                        <Field data-invalid={isInvalid}>
+                           <FieldLabel required>
+                              {translate(
+                                 "dashboard.routes.interest-templates.form.grace-period.label",
+                              )}
+                           </FieldLabel>
+                           <Input
+                              min={0}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                 field.handleChange(Number(e.target.value))
+                              }
+                              placeholder="0"
+                              type="number"
+                              value={field.state.value}
+                           />
+                           <FieldDescription>
+                              {translate(
+                                 "dashboard.routes.interest-templates.form.grace-period.description",
+                              )}
+                           </FieldDescription>
+                           {isInvalid && (
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
-                        </FieldLabel>
-                        <Input
-                           min={0}
-                           onBlur={field.handleBlur}
-                           onChange={(e) =>
-                              field.handleChange(Number(e.target.value))
-                           }
-                           placeholder="0"
-                           type="number"
-                           value={field.state.value}
-                        />
-                        <FieldDescription>
-                           {translate(
-                              "dashboard.routes.interest-templates.form.grace-period.description",
-                           )}
-                        </FieldDescription>
-                     </Field>
-                  )}
+                        </Field>
+                     );
+                  }}
                </form.Field>
             </FieldGroup>
          </div>

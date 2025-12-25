@@ -126,7 +126,8 @@ const SendInvitationFormContent = () => {
          formApi.reset();
       },
       validators: {
-         onBlur: (value) => schema.parse(value),
+         onBlur: schema,
+         onChange: schema,
       },
    });
 
