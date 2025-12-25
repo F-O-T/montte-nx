@@ -2,9 +2,9 @@ import type { ConditionGroup } from "@f-o-t/condition-evaluator";
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { Rule, RuleSet } from "../types/rule.ts";
-import { generateId } from "../utils/id.ts";
+} from "../types/consequence";
+import type { Rule, RuleSet } from "../types/rule";
+import { generateId } from "../utils/id";
 
 export type SerializedRule = {
    readonly id: string;

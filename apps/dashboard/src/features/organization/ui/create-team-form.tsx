@@ -88,13 +88,12 @@ const CreateTeamFormContent = () => {
    const schema = z.object({
       description: z
          .string()
-         .max(200, "Description must be less than 200 characters")
-         .default(""),
+         .max(200, "Description must be less than 200 characters"),
       name: z
          .string()
          .min(1, "Team name is required")
          .max(50, "Team name must be less than 50 characters"),
-      organizationId: z.string().default(""),
+      organizationId: z.string(),
    });
 
    const form = useForm({
@@ -113,14 +112,20 @@ const CreateTeamFormContent = () => {
       },
 
       validators: {
-         onBlur: schema as unknown as undefined,
+         onBlur: schema,
+         onChange: schema,
       },
    });
 
-   const handleSubmit = (e: FormEvent) => {
+   const handleSubmit = async (e: FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      form.handleSubmit();
+      
+      await form.validateAllFields("change");
+      
+      if (form.state.canSubmit) {
+         form.handleSubmit();
+      }
    };
 
    return (

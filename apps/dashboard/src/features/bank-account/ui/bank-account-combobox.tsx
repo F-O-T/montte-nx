@@ -53,7 +53,7 @@ function BankAccountComboboxContent({
          onBlur={handleBlur}
          onValueChange={handleValueChange}
          options={formattedBanks}
-         placeholder={translate("common.form.bank.placeholder")}
+         placeholder={translate("common.form.bank-account.placeholder")}
          value={selectedOption}
       />
    );

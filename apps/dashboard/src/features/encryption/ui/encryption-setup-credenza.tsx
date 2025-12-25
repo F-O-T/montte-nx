@@ -78,6 +78,7 @@ export function EncryptionSetupCredenza({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
       onSubmit: async ({ value }) => {
          setIsSubmitting(true);
@@ -104,10 +105,15 @@ export function EncryptionSetupCredenza({
       },
    });
 
-   const handleSubmit = (e: FormEvent) => {
+   const handleSubmit = async (e: FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      form.handleSubmit();
+      
+      await form.validateAllFields("change");
+      
+      if (form.state.canSubmit) {
+         form.handleSubmit();
+      }
    };
 
    const handleContinueToConfirm = async () => {

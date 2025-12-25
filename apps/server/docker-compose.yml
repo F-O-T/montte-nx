@@ -30,7 +30,7 @@ services:
       - "5433:5432"
 
   redis:
-    image: redis:7-alpine
+    image: docker.io/library/redis:7-alpine
     container_name: montte-redis
     ports:
       - "6379:6379"

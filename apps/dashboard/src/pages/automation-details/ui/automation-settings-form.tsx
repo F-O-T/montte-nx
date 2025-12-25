@@ -67,6 +67,7 @@ export function AutomationSettingsForm({
       },
       validators: {
          onChange: automationSettingsSchema,
+         onBlur: automationSettingsSchema,
       },
    });
 

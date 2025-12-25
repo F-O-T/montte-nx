@@ -92,7 +92,7 @@ const InviteMemberFormContent = () => {
 
    const schema = z.object({
       email: z.string().email("Valid email is required"),
-      organizationId: z.string().default(""),
+      organizationId: z.string(),
       role: z.enum(["member", "admin"]),
    });
 
@@ -112,14 +112,20 @@ const InviteMemberFormContent = () => {
       },
 
       validators: {
-         onBlur: schema as unknown as undefined,
+         onBlur: schema,
+         onChange: schema,
       },
    });
 
-   const handleSubmit = (e: FormEvent) => {
+   const handleSubmit = async (e: FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      form.handleSubmit();
+      
+      await form.validateAllFields("change");
+      
+      if (form.state.canSubmit) {
+         form.handleSubmit();
+      }
    };
 
    return (
@@ -184,28 +190,27 @@ const InviteMemberFormContent = () => {
                   );
                }}
             </form.Field>
-         </form>
 
-         <SheetFooter>
-            <Button onClick={closeSheet} type="button" variant="outline">
-               Cancel
-            </Button>
-            <form.Subscribe>
-               {(formState) => (
-                  <Button
-                     disabled={
-                        !formState.canSubmit ||
-                        formState.isSubmitting ||
-                        isPending
-                     }
-                     onClick={() => form.handleSubmit()}
-                     type="submit"
-                  >
-                     {isPending ? "Sending..." : "Send Invitation"}
-                  </Button>
-               )}
-            </form.Subscribe>
-         </SheetFooter>
+            <SheetFooter>
+               <Button onClick={closeSheet} type="button" variant="outline">
+                  Cancel
+               </Button>
+               <form.Subscribe>
+                  {(formState) => (
+                     <Button
+                        disabled={
+                           !formState.canSubmit ||
+                           formState.isSubmitting ||
+                           isPending
+                        }
+                        type="submit"
+                     >
+                        {isPending ? "Sending..." : "Send Invitation"}
+                     </Button>
+                  )}
+               </form.Subscribe>
+            </SheetFooter>
+         </form>
       </>
    );
 };

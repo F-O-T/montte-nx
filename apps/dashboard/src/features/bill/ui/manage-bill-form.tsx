@@ -324,7 +324,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
           }
         : {
              amount: 0,
-             bankAccountId: undefined as string | undefined,
+             bankAccountId: (activeBankAccounts[0]?.id ?? undefined) as string | undefined,
              billCategory: getDefaultBillCategory(),
              billMode: null as BillMode | null,
              category: undefined as string | undefined,
@@ -412,6 +412,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
       defaultValues: editValues,
       validators: {
          onBlur: billSchema,
+         onChange: billSchema,
       },
       onSubmit: async ({ value }) => {
          const amount = Number(value.amount);
@@ -541,11 +542,15 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
       createBillMutation.isPending || updateBillMutation.isPending;
 
    const handleSubmit = useCallback(
-      (e: FormEvent) => {
+      async (e: FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
 
-         form.handleSubmit();
+         await form.validateAllFields("change");
+
+         if (form.state.canSubmit) {
+            form.handleSubmit();
+         }
       },
       [form],
    );
@@ -764,13 +769,18 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
          <div className="space-y-4">
             {/* Required Fields */}
             <FieldGroup>
-               <form.Field name="description">
+               <form.Field 
+                  name="description"
+                  validators={{
+                     onChange: z.string().min(1, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.description.label")}
                            </FieldLabel>
                            <Textarea
@@ -794,13 +804,18 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="amount">
+               <form.Field 
+                  name="amount"
+                  validators={{
+                     onChange: z.number().min(0.01, translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.amount.label")}
                            </FieldLabel>
                            <MoneyInput
@@ -2053,7 +2068,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate("common.form.bank.label")}
+                              {translate("common.form.bank-account.label")}
                            </FieldLabel>
                            <Select
                               onValueChange={(value) =>
@@ -2064,7 +2079,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                               <SelectTrigger id={field.name}>
                                  <SelectValue
                                     placeholder={translate(
-                                       "common.form.bank.placeholder",
+                                       "common.form.bank-account.placeholder",
                                     )}
                                  />
                               </SelectTrigger>
@@ -2406,55 +2421,38 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                            )}
                         </form.Subscribe>
                      ) : methods.current.id === "details" ? (
-                        <form.Subscribe
-                           selector={(state) => ({
-                              amountValid:
-                                 state.fieldMeta.amount?.isValid !== false,
-                              descriptionValid:
-                                 state.fieldMeta.description?.isValid !== false,
-                              dueDateValid:
-                                 state.fieldMeta.dueDate?.isValid !== false,
-                           })}
-                        >
-                           {({
-                              amountValid,
-                              descriptionValid,
-                              dueDateValid,
-                           }) => (
-                              <>
-                                 {!isEditMode && (
-                                    <Button
-                                       className="w-full"
-                                       onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          methods.prev();
-                                       }}
-                                       type="button"
-                                       variant="ghost"
-                                    >
-                                       {translate("common.actions.previous")}
-                                    </Button>
-                                 )}
-                                 <Button
-                                    className="w-full"
-                                    disabled={
-                                       !amountValid ||
-                                       !descriptionValid ||
-                                       !dueDateValid
-                                    }
-                                    onClick={(e) => {
-                                       e.preventDefault();
-                                       e.stopPropagation();
-                                       methods.next();
-                                    }}
-                                    type="button"
-                                 >
-                                    {translate("common.actions.next")}
-                                 </Button>
-                              </>
+                        <>
+                           {!isEditMode && (
+                              <Button
+                                 className="w-full"
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    methods.prev();
+                                 }}
+                                 type="button"
+                                 variant="ghost"
+                              >
+                                 {translate("common.actions.previous")}
+                              </Button>
                            )}
-                        </form.Subscribe>
+                           <Button
+                              className="w-full"
+                              onClick={async (e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+
+                                 await form.validateAllFields("change");
+
+                                 if (form.state.canSubmit) {
+                                    methods.next();
+                                 }
+                              }}
+                              type="button"
+                           >
+                              {translate("common.actions.next")}
+                           </Button>
+                        </>
                      ) : methods.isLast ? (
                         <form.Subscribe
                            selector={(state) => ({

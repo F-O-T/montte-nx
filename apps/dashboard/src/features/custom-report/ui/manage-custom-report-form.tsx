@@ -237,6 +237,7 @@ export function ManageCustomReportForm({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 
@@ -508,13 +509,18 @@ export function ManageCustomReportForm({
       return (
          <div className="grid gap-4">
             <FieldGroup>
-               <form.Field name="name">
+                     <form.Field 
+                        name="name"
+                        validators={{
+                           onChange: z.string().min(1, "Nome é obrigatório"),
+                        }}
+                     >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
+                           <FieldLabel htmlFor={field.name} required>Nome</FieldLabel>
                            <Input
                               aria-invalid={isInvalid}
                               id={field.name}
@@ -605,14 +611,19 @@ export function ManageCustomReportForm({
 
             <div className="grid gap-4 px-4 flex-1">
                <FieldGroup>
-                  <form.Field name="name">
+                  <form.Field 
+                     name="name"
+                     validators={{
+                        onChange: z.string().min(1, "Nome é obrigatório"),
+                     }}
+                  >
                      {(field) => {
                         const isInvalid =
                            field.state.meta.isTouched &&
                            !field.state.meta.isValid;
                         return (
                            <Field data-invalid={isInvalid}>
-                              <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
+                              <FieldLabel htmlFor={field.name} required>Nome</FieldLabel>
                               <Input
                                  aria-invalid={isInvalid}
                                  id={field.name}
@@ -763,7 +774,7 @@ export function ManageCustomReportForm({
                               </Button>
                            )}
                         </form.Subscribe>
-                     ) : (
+                     ) : methods.current.id === "period" ? (
                         <form.Subscribe
                            selector={(state) => ({
                               endDate: state.values.endDate,
@@ -801,7 +812,35 @@ export function ManageCustomReportForm({
                               </>
                            )}
                         </form.Subscribe>
-                     )}
+                     ) : methods.current.id === "filters" ? (
+                        <>
+                           <Button
+                              className="w-full"
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 methods.next();
+                              }}
+                              type="button"
+                           >
+                              Próximo
+                              <ArrowRight className="size-4" />
+                           </Button>
+                           <Button
+                              className="w-full"
+                              onClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 methods.prev();
+                              }}
+                              type="button"
+                              variant="ghost"
+                           >
+                              <ArrowLeft className="size-4" />
+                              Voltar
+                           </Button>
+                        </>
+                     ) : null}
                   </Stepper.Controls>
                </SheetFooter>
             </form>

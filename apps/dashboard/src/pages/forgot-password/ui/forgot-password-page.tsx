@@ -130,14 +130,20 @@ export function ForgotPasswordPage() {
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 
    const handleSubmit = useCallback(
-      (e: React.FormEvent) => {
+      async (e: React.FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
-         form.handleSubmit();
+         
+         await form.validateAllFields("change");
+         
+         if (form.state.canSubmit) {
+            form.handleSubmit();
+         }
       },
       [form],
    );
@@ -145,13 +151,18 @@ export function ForgotPasswordPage() {
    function EmailStep() {
       return (
          <FieldGroup>
-            <form.Field name="email">
+            <form.Field 
+               name="email"
+               validators={{
+                  onChange: z.string().email(translate("common.validation.email")),
+               }}
+            >
                {(field) => {
                   const isInvalid =
                      field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
+                        <FieldLabel htmlFor={field.name} required>
                            {translate("common.form.email.label")}
                         </FieldLabel>
                         <Input
@@ -168,7 +179,7 @@ export function ForgotPasswordPage() {
                            value={field.state.value}
                         />
                         {isInvalid && (
-                           <FieldError errors={field.state.meta.errors} />
+                           <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                         )}
                      </Field>
                   );
@@ -181,13 +192,23 @@ export function ForgotPasswordPage() {
    function OtpStep() {
       return (
          <FieldGroup>
-            <form.Field name="otp">
+            <form.Field 
+               name="otp"
+               validators={{
+                  onChange: z
+                     .string()
+                     .min(
+                        6,
+                        translate("common.validation.min-length").replace("{min}", "6"),
+                     ),
+               }}
+            >
                {(field) => {
                   const isInvalid =
                      field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
+                        <FieldLabel htmlFor={field.name} required>
                            {translate("common.form.otp.label")}
                         </FieldLabel>
                         <InputOTP
@@ -218,7 +239,7 @@ export function ForgotPasswordPage() {
                            </div>
                         </InputOTP>
                         {isInvalid && (
-                           <FieldError errors={field.state.meta.errors} />
+                           <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                         )}
                      </Field>
                   );
@@ -232,13 +253,23 @@ export function ForgotPasswordPage() {
       return (
          <>
             <FieldGroup>
-               <form.Field name="password">
+               <form.Field 
+                  name="password"
+                  validators={{
+                     onChange: z
+                        .string()
+                        .min(
+                           8,
+                           translate("common.validation.min-length").replace("{min}", "8"),
+                        ),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.password.label")}
                            </FieldLabel>
                            <PasswordInput
@@ -256,7 +287,7 @@ export function ForgotPasswordPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -264,13 +295,27 @@ export function ForgotPasswordPage() {
                </form.Field>
             </FieldGroup>
             <FieldGroup>
-               <form.Field name="confirmPassword">
+               <form.Field 
+                  name="confirmPassword"
+                  validators={{
+                     onChange: ({ value, fieldApi }) => {
+                        if (!value) {
+                           return translate("common.validation.required");
+                        }
+                        const password = fieldApi.form.getFieldValue("password");
+                        if (value && password && value !== password) {
+                           return translate("common.validation.password-mismatch");
+                        }
+                        return undefined;
+                     },
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.confirm-password.label")}
                            </FieldLabel>
                            <PasswordInput
@@ -288,7 +333,7 @@ export function ForgotPasswordPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -374,16 +419,21 @@ export function ForgotPasswordPage() {
                         ) : methods.current.id === "enter-email" ? (
                            <form.Subscribe
                               selector={(state) => ({
-                                 emailValid: state.fieldMeta.email?.isValid,
                                  emailValue: state.values.email,
                               })}
                            >
-                              {({ emailValid, emailValue }) => (
+                              {({ emailValue }) => (
                                  <Button
-                                    disabled={!emailValid}
-                                    onClick={async () => {
-                                       await handleSendOtp(emailValue);
-                                       methods.next();
+                                    onClick={async (e) => {
+                                       e.preventDefault();
+                                       e.stopPropagation();
+
+                                       await form.validateAllFields("change");
+
+                                       if (form.state.canSubmit) {
+                                          await handleSendOtp(emailValue);
+                                          methods.next();
+                                       }
                                     }}
                                     type="button"
                                  >
@@ -391,6 +441,22 @@ export function ForgotPasswordPage() {
                                  </Button>
                               )}
                            </form.Subscribe>
+                        ) : methods.current.id === "enter-otp" ? (
+                           <Button 
+                              onClick={async (e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+
+                                 await form.validateAllFields("change");
+
+                                 if (form.state.canSubmit) {
+                                    methods.next();
+                                 }
+                              }}
+                              type="button"
+                           >
+                              {translate("common.actions.next")}
+                           </Button>
                         ) : (
                            <Button onClick={methods.next} type="button">
                               {translate("common.actions.next")}

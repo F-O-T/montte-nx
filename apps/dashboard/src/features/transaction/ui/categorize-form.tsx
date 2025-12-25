@@ -282,6 +282,7 @@ export function CategorizeForm({
       },
       validators: {
          onBlur: categorizeSchema,
+         onChange: categorizeSchema,
       },
    });
 

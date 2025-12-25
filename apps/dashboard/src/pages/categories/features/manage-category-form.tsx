@@ -33,6 +33,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import Color from "color";
 import { useMemo } from "react";
+import { z } from "zod";
 import { TransactionTypesSelector } from "@/features/category/ui/transaction-types-selector";
 import { IconSelector } from "@/features/icon-selector/icon-selector";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
@@ -105,10 +106,6 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
             ],
       },
       onSubmit: async ({ value }) => {
-         if (!value.name || !value.color) {
-            return;
-         }
-
          try {
             if (isEditMode && category) {
                await updateCategoryMutation.mutateAsync({
@@ -140,10 +137,15 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
    return (
       <form
          className="h-full flex flex-col"
-         onSubmit={(e) => {
+         onSubmit={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            
+            await form.validateAllFields("change");
+            
+            if (form.state.canSubmit) {
+               form.handleSubmit();
+            }
          }}
       >
          <SheetHeader>
@@ -152,13 +154,18 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
          </SheetHeader>
          <div className="grid gap-4 px-4">
             <FieldGroup>
-               <form.Field name="name">
+                  <form.Field 
+                     name="name"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel required>
                               {translate("common.form.name.label")}
                            </FieldLabel>
                            <Input
@@ -181,13 +188,18 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="color">
+                  <form.Field 
+                     name="color"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel required>
                               {translate("common.form.color.label")}
                            </FieldLabel>
 
@@ -309,22 +321,26 @@ export function ManageCategoryForm({ category }: ManageCategoryFormProps) {
          </div>
 
          <SheetFooter>
-            <form.Subscribe>
-               {(state) => (
-                  <Button
-                     className="w-full"
-                     disabled={
-                        !state.canSubmit ||
-                        state.isSubmitting ||
-                        createCategoryMutation.isPending ||
-                        updateCategoryMutation.isPending
-                     }
-                     type="submit"
-                  >
-                     {modeTexts.title}
-                  </Button>
-               )}
-            </form.Subscribe>
+            <Button
+               className="w-full"
+               disabled={
+                  createCategoryMutation.isPending ||
+                  updateCategoryMutation.isPending
+               }
+               onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  await form.validateAllFields("change");
+
+                  if (form.state.canSubmit) {
+                     form.handleSubmit();
+                  }
+               }}
+               type="button"
+            >
+               {modeTexts.title}
+            </Button>
          </SheetFooter>
       </form>
    );

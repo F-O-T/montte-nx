@@ -1,8 +1,8 @@
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "./consequence.ts";
-import type { Rule, RuleSet } from "./rule.ts";
+} from "./consequence";
+import type { Rule, RuleSet } from "./rule";
 
 export type EngineState<
    TContext = unknown,

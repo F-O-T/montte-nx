@@ -1,17 +1,17 @@
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
+} from "../types/consequence";
 import type {
    Rule,
    RuleFilters,
    RuleInput,
    RuleSet,
    RuleSetInput,
-} from "../types/rule.ts";
-import type { MutableEngineState } from "../types/state.ts";
-import { createInitialState } from "../types/state.ts";
-import { generateId } from "../utils/id.ts";
+} from "../types/rule";
+import type { MutableEngineState } from "../types/state";
+import { createInitialState } from "../types/state";
+import { generateId } from "../utils/id";
 
 export const addRule = <
    TContext = unknown,

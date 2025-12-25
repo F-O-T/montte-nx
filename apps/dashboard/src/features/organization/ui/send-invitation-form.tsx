@@ -102,10 +102,10 @@ const SendInvitationFormContent = () => {
    );
 
    const schema = z.object({
-      email: z.email("Please enter a valid email address"),
-      organizationId: z.string().optional(),
-      resend: z.boolean().optional(),
-      teamId: z.string().optional(),
+      email: z.string().email("Please enter a valid email address"),
+      organizationId: z.string(),
+      resend: z.boolean(),
+      teamId: z.string(),
    });
 
    const form = useForm({
@@ -126,14 +126,20 @@ const SendInvitationFormContent = () => {
          formApi.reset();
       },
       validators: {
-         onBlur: (value) => schema.parse(value),
+         onBlur: schema,
+         onChange: schema,
       },
    });
 
-   const handleSubmit = (e: FormEvent) => {
+   const handleSubmit = async (e: FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      form.handleSubmit();
+      
+      await form.validateAllFields("change");
+      
+      if (form.state.canSubmit) {
+         form.handleSubmit();
+      }
    };
 
    return (

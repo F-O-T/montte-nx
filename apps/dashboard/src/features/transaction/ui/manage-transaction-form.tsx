@@ -1,5 +1,5 @@
 import type { RouterOutput } from "@packages/api/client";
-import { translate } from "@packages/localization";
+import { getCurrentLanguage, translate } from "@packages/localization";
 import {
    Alert,
    AlertDescription,
@@ -205,16 +205,25 @@ export function ManageTransactionForm({
       createTransactionMutation.isPending ||
       updateTransactionMutation.isPending;
 
-   const transactionSchema = z.object({
-      amount: z.number().min(1, translate("common.validation.required")),
-      bankAccountId: z.string().min(1, translate("common.validation.required")),
-      categoryIds: z.array(z.string()),
-      costCenterId: z.string(),
-      date: z.date({ message: translate("common.validation.required") }),
-      description: z.string().min(1, translate("common.validation.required")),
-      tagIds: z.array(z.string()),
-      type: z.enum(["expense", "income"]),
-   });
+   // Memoize validation schemas to avoid recreation on every render
+   // They only need to be recreated when the language changes
+   const currentLanguage = getCurrentLanguage();
+   const descriptionSchema = useMemo(
+      () => z.string().min(1, translate("common.validation.required")),
+      [currentLanguage],
+   );
+   const amountSchema = useMemo(
+      () => z.number().min(1, translate("common.validation.required")),
+      [currentLanguage],
+   );
+   const bankAccountIdSchema = useMemo(
+      () => z.string().min(1, translate("common.validation.required")),
+      [currentLanguage],
+   );
+   const dateSchema = useMemo(
+      () => z.date({ message: translate("common.validation.required") }),
+      [currentLanguage],
+   );
 
    const handleCreateTransaction = useCallback(
       async (values: TransactionFormValues, resetForm: () => void) => {
@@ -279,7 +288,7 @@ export function ManageTransactionForm({
          amount: transaction?.amount
             ? Math.round(Number(transaction.amount) * 100)
             : 0,
-         bankAccountId: transaction?.bankAccountId || "",
+         bankAccountId: transaction?.bankAccountId || (bankAccounts[0]?.id ?? ""),
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
             defaultCategoryIds,
@@ -318,16 +327,18 @@ export function ManageTransactionForm({
             );
          }
       },
-      validators: {
-         onBlur: transactionSchema,
-      },
    });
 
    const handleSubmit = useCallback(
-      (e: FormEvent) => {
+      async (e: FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
-         form.handleSubmit();
+         
+         await form.validateAllFields("change");
+         
+         if (form.state.canSubmit) {
+            form.handleSubmit();
+         }
       },
       [form],
    );
@@ -461,13 +472,18 @@ export function ManageTransactionForm({
       return (
          <div className="space-y-4">
             <FieldGroup>
-               <form.Field name="description">
+                  <form.Field 
+                     name="description"
+                     validators={{
+                        onChange: descriptionSchema,
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.description.label")}
                            </FieldLabel>
                            <Textarea
@@ -491,13 +507,18 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="amount">
+                  <form.Field 
+                     name="amount"
+                     validators={{
+                        onChange: amountSchema,
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.amount.label")}
                            </FieldLabel>
                            <MoneyInput
@@ -520,14 +541,19 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="bankAccountId">
+               <form.Field 
+                  name="bankAccountId"
+                  validators={{
+                     onChange: bankAccountIdSchema,
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
-                              {translate("common.form.bank.label")}
+                           <FieldLabel htmlFor={field.name} required>
+                              {translate("common.form.bank-account.label")}
                            </FieldLabel>
                            <Select
                               onOpenChange={(open) => {
@@ -541,7 +567,7 @@ export function ManageTransactionForm({
                               <SelectTrigger id={field.name}>
                                  <SelectValue
                                     placeholder={translate(
-                                       "common.form.bank.placeholder",
+                                       "common.form.bank-account.placeholder",
                                     )}
                                  />
                               </SelectTrigger>
@@ -611,13 +637,18 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="date">
+                  <form.Field 
+                     name="date"
+                     validators={{
+                        onChange: dateSchema,
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.date.label")}
                            </FieldLabel>
                            <DatePicker
@@ -824,41 +855,22 @@ export function ManageTransactionForm({
                <SheetFooter className="px-4">
                   <Stepper.Controls className="flex flex-col w-full gap-2">
                      {methods.isFirst ? (
-                        <form.Subscribe
-                           selector={(state) => ({
-                              amountValid: state.fieldMeta.amount?.isValid,
-                              bankAccountIdValid:
-                                 state.fieldMeta.bankAccountId?.isValid,
-                              dateValid: state.fieldMeta.date?.isValid,
-                              descriptionValid:
-                                 state.fieldMeta.description?.isValid,
-                           })}
+                        <Button
+                           className="w-full"
+                           onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+
+                              await form.validateAllFields("change");
+
+                              if (form.state.canSubmit) {
+                                 methods.next();
+                              }
+                           }}
+                           type="button"
                         >
-                           {({
-                              amountValid,
-                              bankAccountIdValid,
-                              dateValid,
-                              descriptionValid,
-                           }) => (
-                              <Button
-                                 className="w-full"
-                                 disabled={
-                                    !amountValid ||
-                                    !bankAccountIdValid ||
-                                    !dateValid ||
-                                    !descriptionValid
-                                 }
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    methods.next();
-                                 }}
-                                 type="button"
-                              >
-                                 {translate("common.actions.next")}
-                              </Button>
-                           )}
-                        </form.Subscribe>
+                           {translate("common.actions.next")}
+                        </Button>
                      ) : (
                         <form.Subscribe
                            selector={(state) => ({

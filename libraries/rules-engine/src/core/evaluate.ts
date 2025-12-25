@@ -6,14 +6,14 @@ import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
+} from "../types/consequence";
 import type {
    EvaluateConfig,
    EvaluationContext,
    RuleEvaluationResult,
-} from "../types/evaluation.ts";
-import type { Rule } from "../types/rule.ts";
-import { measureTime } from "../utils/time.ts";
+} from "../types/evaluation";
+import type { Rule } from "../types/rule";
+import { measureTime } from "../utils/time";
 
 export type EvaluateRuleOptions = {
    readonly skipDisabled?: boolean;

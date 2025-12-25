@@ -94,14 +94,20 @@ export function SignUpPage() {
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 
    const handleSubmit = useCallback(
-      (e: FormEvent) => {
+      async (e: FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
-         form.handleSubmit();
+         
+         const validationErrors = await form.validateAllFields("change");
+         
+         if (validationErrors.length === 0) {
+            form.handleSubmit();
+         }
       },
       [form],
    );
@@ -110,13 +116,23 @@ export function SignUpPage() {
       return (
          <>
             <FieldGroup>
-               <form.Field name="name">
+               <form.Field 
+                  name="name"
+                  validators={{
+                     onChange: z
+                        .string()
+                        .min(
+                           2,
+                           translate("common.validation.min-length").replace("{min}", "2"),
+                        ),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.name.label")}
                            </FieldLabel>
                            <Input
@@ -134,7 +150,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -142,13 +158,18 @@ export function SignUpPage() {
                </form.Field>
             </FieldGroup>
             <FieldGroup>
-               <form.Field name="email">
+               <form.Field 
+                  name="email"
+                  validators={{
+                     onChange: z.string().email(translate("common.validation.email")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.email.label")}
                            </FieldLabel>
                            <Input
@@ -167,7 +188,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -183,13 +204,23 @@ export function SignUpPage() {
       return (
          <>
             <FieldGroup>
-               <form.Field name="password">
+               <form.Field 
+                  name="password"
+                  validators={{
+                     onChange: z
+                        .string()
+                        .min(
+                           8,
+                           translate("common.validation.min-length").replace("{min}", "8"),
+                        ),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.password.label")}
                            </FieldLabel>
                            <PasswordInput
@@ -207,7 +238,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -215,13 +246,27 @@ export function SignUpPage() {
                </form.Field>
             </FieldGroup>
             <FieldGroup>
-               <form.Field name="confirmPassword">
+               <form.Field 
+                  name="confirmPassword"
+                  validators={{
+                     onChange: ({ value, fieldApi }) => {
+                        if (!value) {
+                           return translate("common.validation.required");
+                        }
+                        const password = fieldApi.form.getFieldValue("password");
+                        if (value && password && value !== password) {
+                           return translate("common.validation.password-mismatch");
+                        }
+                        return undefined;
+                     },
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.confirm-password.label")}
                            </FieldLabel>
                            <PasswordInput
@@ -239,7 +284,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -332,23 +377,22 @@ export function SignUpPage() {
                               )}
                            </form.Subscribe>
                         ) : (
-                           <form.Subscribe
-                              selector={(state) => ({
-                                 emailValid: state.fieldMeta.email?.isValid,
-                                 nameValid: state.fieldMeta.name?.isValid,
-                              })}
+                           <Button
+                              className="h-11"
+                              onClick={async (e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+
+                                 const validationErrors = await form.validateAllFields("change");
+
+                                 if (validationErrors.length === 0) {
+                                    methods.next();
+                                 }
+                              }}
+                              type="button"
                            >
-                              {({ nameValid, emailValid }) => (
-                                 <Button
-                                    className="h-11"
-                                    disabled={!nameValid || !emailValid}
-                                    onClick={methods.next}
-                                    type="button"
-                                 >
-                                    {translate("common.actions.next")}
-                                 </Button>
-                              )}
-                           </form.Subscribe>
+                              {translate("common.actions.next")}
+                           </Button>
                         )}
                      </Stepper.Controls>
                   </form>

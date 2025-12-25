@@ -1,8 +1,8 @@
-import { evaluateRule, evaluateRules } from "../core/evaluate.ts";
+import { evaluateRule, evaluateRules } from "../core/evaluate";
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
+} from "../types/consequence";
 import type {
    EvaluationContext,
    RuleEvaluationResult,

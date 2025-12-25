@@ -25,6 +25,7 @@ import {
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { z } from "zod";
 import { useSheet } from "@/hooks/use-sheet";
 import { useTRPC } from "@/integrations/clients";
 import type { Budget } from "../ui/budgets-page";
@@ -244,10 +245,15 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
    return (
       <form
          className="h-full flex flex-col"
-         onSubmit={(e) => {
+         onSubmit={async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            
+            await form.validateAllFields("change");
+            
+            if (form.state.canSubmit) {
+               form.handleSubmit();
+            }
          }}
       >
          <SheetHeader>
@@ -256,13 +262,18 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
          </SheetHeader>
          <div className="grid gap-4 px-4 pb-4">
             <FieldGroup>
-               <form.Field name="name">
+                  <form.Field 
+                     name="name"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel required>
                               {translate(
                                  "dashboard.routes.budgets.form.name.label",
                               )}
@@ -287,13 +298,18 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="amount">
+                  <form.Field 
+                     name="amount"
+                     validators={{
+                        onChange: z.number().min(0.01, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel>
+                           <FieldLabel required>
                               {translate(
                                  "dashboard.routes.budgets.form.amount.label",
                               )}
@@ -543,28 +559,32 @@ export function ManageBudgetForm({ budget }: ManageBudgetFormProps) {
          </div>
 
          <SheetFooter>
-            <form.Subscribe>
-               {(state) => (
-                  <Button
-                     className="w-full"
-                     disabled={
-                        !state.canSubmit ||
-                        state.isSubmitting ||
-                        createBudgetMutation.isPending ||
-                        updateBudgetMutation.isPending
-                     }
-                     type="submit"
-                  >
-                     {isEditMode
-                        ? translate(
-                             "dashboard.routes.budgets.features.edit-budget.title",
-                          )
-                        : translate(
-                             "dashboard.routes.budgets.features.create-budget.title",
-                          )}
-                  </Button>
-               )}
-            </form.Subscribe>
+            <Button
+               className="w-full"
+               disabled={
+                  createBudgetMutation.isPending ||
+                  updateBudgetMutation.isPending
+               }
+               onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  await form.validateAllFields("change");
+
+                  if (form.state.canSubmit) {
+                     form.handleSubmit();
+                  }
+               }}
+               type="button"
+            >
+               {isEditMode
+                  ? translate(
+                       "dashboard.routes.budgets.features.edit-budget.title",
+                    )
+                  : translate(
+                       "dashboard.routes.budgets.features.create-budget.title",
+                    )}
+            </Button>
          </SheetFooter>
       </form>
    );

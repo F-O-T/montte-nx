@@ -1,5 +1,5 @@
-import type { CacheStats } from "../types/state.ts";
-import type { Cache } from "./cache.ts";
+import type { CacheStats } from "../types/state";
+import type { Cache } from "./cache";
 
 export const createNoopCache = <T>(): Cache<T> => {
    return {

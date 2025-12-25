@@ -128,14 +128,20 @@ export function ManageBankAccountForm({
       },
       validators: {
          onBlur: schema,
+         onChange: schema,
       },
    });
 
    const handleSubmit = useCallback(
-      (e: FormEvent) => {
+      async (e: FormEvent) => {
          e.preventDefault();
          e.stopPropagation();
-         form.handleSubmit();
+         
+         await form.validateAllFields("change");
+         
+         if (form.state.canSubmit) {
+            form.handleSubmit();
+         }
       },
       [form],
    );
@@ -188,14 +194,19 @@ export function ManageBankAccountForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="bank">
+                  <form.Field 
+                     name="bank"
+                     validators={{
+                        onChange: z.string().min(1, translate("common.validation.required")),
+                     }}
+                  >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
-                              {translate("common.form.bank.label")}
+                           <FieldLabel htmlFor={field.name} required>
+                              {translate("common.form.bank-account.label")}
                            </FieldLabel>
                            <BankAccountCombobox
                               onBlur={field.handleBlur}
@@ -212,13 +223,20 @@ export function ManageBankAccountForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="type">
+               <form.Field 
+                  name="type"
+                  validators={{
+                     onChange: z
+                        .enum(["", "checking", "savings", "investment"])
+                        .refine((val) => val !== "", translate("common.validation.required")),
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
                      return (
                         <Field data-invalid={isInvalid}>
-                           <FieldLabel htmlFor={field.name}>
+                           <FieldLabel htmlFor={field.name} required>
                               {translate("common.form.account-type.label")}
                            </FieldLabel>
                            <Select
@@ -269,22 +287,16 @@ export function ManageBankAccountForm({
          </div>
 
          <SheetFooter>
-            <form.Subscribe>
-               {(state) => (
-                  <Button
-                     className="w-full"
-                     disabled={
-                        !state.canSubmit ||
-                        state.isSubmitting ||
-                        createBankAccountMutation.isPending ||
-                        updateBankAccountMutation.isPending
-                     }
-                     type="submit"
-                  >
-                     {modeTexts.title}
-                  </Button>
-               )}
-            </form.Subscribe>
+            <Button
+               className="w-full"
+               disabled={
+                  createBankAccountMutation.isPending ||
+                  updateBankAccountMutation.isPending
+               }
+               type="submit"
+            >
+               {modeTexts.title}
+            </Button>
          </SheetFooter>
       </form>
    );

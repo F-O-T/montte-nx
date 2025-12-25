@@ -25,7 +25,7 @@ import {
 import { formatDate } from "@packages/utils/date";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AmountAnnouncement } from "@/features/transaction/ui/amount-announcement";
 import { CategoryAnnouncement } from "@/features/transaction/ui/category-announcement";
@@ -43,16 +43,23 @@ function CompleteBillSheetContent({
    bill,
    onClose,
 }: CompleteBillSheetContentProps) {
-   const [completionDate, setCompletionDate] = useState(new Date());
-   const [bankAccountId, setBankAccountId] = useState(
-      bill.bankAccountId || undefined,
-   );
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
    const { data: bankAccounts = [] } = useQuery(
       trpc.bankAccounts.getAll.queryOptions(),
    );
+
+   const [completionDate, setCompletionDate] = useState(new Date());
+   const [bankAccountId, setBankAccountId] = useState(
+      bill.bankAccountId || bankAccounts[0]?.id,
+   );
+
+   useEffect(() => {
+      if (bankAccounts.length > 0 && !bankAccountId) {
+         setBankAccountId(bill.bankAccountId || bankAccounts[0]?.id);
+      }
+   }, [bankAccounts, bill.bankAccountId]);
 
    const { data: categories = [] } = useQuery(
       trpc.categories.getAll.queryOptions(),
