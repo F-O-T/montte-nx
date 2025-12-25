@@ -2,14 +2,14 @@ import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "./consequence.ts";
+} from "./consequence";
 import type {
    ConflictResolutionStrategy,
    EngineExecutionResult,
    EvaluationContext,
    RuleEvaluationResult,
-} from "./evaluation.ts";
-import type { Rule } from "./rule.ts";
+} from "./evaluation";
+import type { Rule } from "./rule";
 
 export type LogLevel = "none" | "error" | "warn" | "info" | "debug";
 

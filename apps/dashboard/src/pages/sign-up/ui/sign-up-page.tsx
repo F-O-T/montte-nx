@@ -144,7 +144,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -182,7 +182,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -232,7 +232,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -278,7 +278,7 @@ export function SignUpPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );

@@ -69,6 +69,7 @@ import {
    Users,
 } from "lucide-react";
 import { type FormEvent, useCallback, useMemo, useState } from "react";
+import { z } from "zod";
 import type { IconName } from "@/features/icon-selector/lib/available-icons";
 import { IconDisplay } from "@/features/icon-selector/ui/icon-display";
 import { useSheet } from "@/hooks/use-sheet";

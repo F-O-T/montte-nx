@@ -3,8 +3,8 @@ import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "./consequence.ts";
-import type { Rule } from "./rule.ts";
+} from "./consequence";
+import type { Rule } from "./rule";
 
 export type EvaluationContext<TContext = unknown> = {
    readonly data: TContext;

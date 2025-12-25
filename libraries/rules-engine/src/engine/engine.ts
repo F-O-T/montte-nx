@@ -1,41 +1,41 @@
-import { type Cache, createCache } from "../cache/cache.ts";
-import { createNoopCache } from "../cache/noop.ts";
-import { evaluateRule } from "../core/evaluate.ts";
-import { sortRules } from "../core/sort.ts";
-import type { EngineConfig, ResolvedEngineConfig } from "../types/config.ts";
+import { type Cache, createCache } from "../cache/cache";
+import { createNoopCache } from "../cache/noop";
+import { evaluateRule } from "../core/evaluate";
+import { sortRules } from "../core/sort";
+import type { EngineConfig, ResolvedEngineConfig } from "../types/config";
 import {
    DEFAULT_CACHE_CONFIG,
    DEFAULT_ENGINE_CONFIG,
    DEFAULT_VALIDATION_CONFIG,
    DEFAULT_VERSIONING_CONFIG,
-} from "../types/config.ts";
+} from "../types/config";
 import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
+} from "../types/consequence";
 import type {
    EngineExecutionResult,
    EvaluateOptions,
    EvaluationContext,
-} from "../types/evaluation.ts";
+} from "../types/evaluation";
 import type {
    Rule,
    RuleFilters,
    RuleInput,
    RuleSet,
    RuleSetInput,
-} from "../types/rule.ts";
+} from "../types/rule";
 import type {
    CacheStats,
    EngineState,
    EngineStats,
    MutableEngineState,
-} from "../types/state.ts";
-import { createInitialState } from "../types/state.ts";
-import { hashContext, hashRules } from "../utils/hash.ts";
-import { generateId } from "../utils/id.ts";
-import { measureTime } from "../utils/time.ts";
+} from "../types/state";
+import { createInitialState } from "../types/state";
+import { hashContext, hashRules } from "../utils/hash";
+import { generateId } from "../utils/id";
+import { measureTime } from "../utils/time";
 import {
    executeAfterEvaluation,
    executeAfterRuleEvaluation,
@@ -48,7 +48,7 @@ import {
    executeOnRuleMatch,
    executeOnRuleSkip,
    executeOnSlowRule,
-} from "./hooks.ts";
+} from "./hooks";
 import {
    addRule,
    addRuleSet,
@@ -64,7 +64,7 @@ import {
    removeRule,
    removeRuleSet,
    updateRule,
-} from "./state.ts";
+} from "./state";
 
 export type Engine<
    TContext = unknown,

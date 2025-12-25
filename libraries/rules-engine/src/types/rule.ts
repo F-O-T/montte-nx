@@ -4,7 +4,7 @@ import type {
    Consequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "./consequence.ts";
+} from "./consequence";
 
 export type Rule<
    _TContext = unknown,

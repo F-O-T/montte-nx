@@ -443,7 +443,7 @@ export async function* parseBatchStream(
          let fileTransactionCount = 0;
 
          // Detect encoding from the first part of the buffer
-         const headerSection = new TextDecoder("iso-8859-1").decode(
+         const headerSection = new TextDecoder("iso-8859-1" as "utf-8").decode(
             file.buffer.slice(0, Math.min(file.buffer.length, 1000)),
          );
          const charsetMatch = headerSection.match(/CHARSET:(\S+)/i);

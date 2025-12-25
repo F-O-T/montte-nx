@@ -173,7 +173,7 @@ export function ForgotPasswordPage() {
                            value={field.state.value}
                         />
                         {isInvalid && (
-                           <FieldError errors={field.state.meta.errors} />
+                           <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                         )}
                      </Field>
                   );
@@ -233,7 +233,7 @@ export function ForgotPasswordPage() {
                            </div>
                         </InputOTP>
                         {isInvalid && (
-                           <FieldError errors={field.state.meta.errors} />
+                           <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                         )}
                      </Field>
                   );
@@ -281,7 +281,7 @@ export function ForgotPasswordPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
@@ -327,7 +327,7 @@ export function ForgotPasswordPage() {
                               value={field.state.value}
                            />
                            {isInvalid && (
-                              <FieldError errors={field.state.meta.errors} />
+                              <FieldError errors={field.state.meta.errors.map(e => typeof e === 'string' ? { message: e } : e)} />
                            )}
                         </Field>
                      );
