@@ -27,6 +27,7 @@
     "@tanstack/react-query-devtools": "catalog:tanstack",
     "@tanstack/react-router": "catalog:tanstack",
     "@tanstack/react-store": "^0.8.0",
+    "@tanstack/zod-form-adapter": "catalog:tanstack",
     "@trpc/tanstack-react-query": "catalog:trpc",
     "@xyflow/react": "^12.10.0",
     "framer-motion": "catalog:ui",

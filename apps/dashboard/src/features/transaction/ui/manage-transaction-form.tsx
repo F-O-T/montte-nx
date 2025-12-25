@@ -205,16 +205,10 @@ export function ManageTransactionForm({
       createTransactionMutation.isPending ||
       updateTransactionMutation.isPending;
 
-   const transactionSchema = z.object({
-      amount: z.number().min(1, translate("common.validation.required")),
-      bankAccountId: z.string().min(1, translate("common.validation.required")),
-      categoryIds: z.array(z.string()),
-      costCenterId: z.string(),
-      date: z.date({ message: translate("common.validation.required") }),
-      description: z.string().min(1, translate("common.validation.required")),
-      tagIds: z.array(z.string()),
-      type: z.enum(["expense", "income"]),
-   });
+   const descriptionSchema = z.string().min(1, translate("common.validation.required"));
+   const amountSchema = z.number().min(1, translate("common.validation.required"));
+   const bankAccountIdSchema = z.string().min(1, translate("common.validation.required"));
+   const dateSchema = z.date({ message: translate("common.validation.required") });
 
    const handleCreateTransaction = useCallback(
       async (values: TransactionFormValues, resetForm: () => void) => {
@@ -317,9 +311,6 @@ export function ManageTransactionForm({
                ),
             );
          }
-      },
-      validators: {
-         onBlur: transactionSchema,
       },
    });
 
@@ -461,7 +452,12 @@ export function ManageTransactionForm({
       return (
          <div className="space-y-4">
             <FieldGroup>
-               <form.Field name="description">
+               <form.Field 
+                  name="description"
+                  validators={{
+                     onBlur: descriptionSchema,
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -491,7 +487,12 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="amount">
+               <form.Field 
+                  name="amount"
+                  validators={{
+                     onBlur: amountSchema,
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -520,7 +521,12 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="bankAccountId">
+               <form.Field 
+                  name="bankAccountId"
+                  validators={{
+                     onBlur: bankAccountIdSchema,
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -611,7 +617,12 @@ export function ManageTransactionForm({
             </FieldGroup>
 
             <FieldGroup>
-               <form.Field name="date">
+               <form.Field 
+                  name="date"
+                  validators={{
+                     onBlur: dateSchema,
+                  }}
+               >
                   {(field) => {
                      const isInvalid =
                         field.state.meta.isTouched && !field.state.meta.isValid;
@@ -824,41 +835,22 @@ export function ManageTransactionForm({
                <SheetFooter className="px-4">
                   <Stepper.Controls className="flex flex-col w-full gap-2">
                      {methods.isFirst ? (
-                        <form.Subscribe
-                           selector={(state) => ({
-                              amountValid: state.fieldMeta.amount?.isValid,
-                              bankAccountIdValid:
-                                 state.fieldMeta.bankAccountId?.isValid,
-                              dateValid: state.fieldMeta.date?.isValid,
-                              descriptionValid:
-                                 state.fieldMeta.description?.isValid,
-                           })}
+                        <Button
+                           className="w-full"
+                           onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+
+                              await form.validateAllFields("blur");
+
+                              if (form.state.canSubmit) {
+                                 methods.next();
+                              }
+                           }}
+                           type="button"
                         >
-                           {({
-                              amountValid,
-                              bankAccountIdValid,
-                              dateValid,
-                              descriptionValid,
-                           }) => (
-                              <Button
-                                 className="w-full"
-                                 disabled={
-                                    !amountValid ||
-                                    !bankAccountIdValid ||
-                                    !dateValid ||
-                                    !descriptionValid
-                                 }
-                                 onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    methods.next();
-                                 }}
-                                 type="button"
-                              >
-                                 {translate("common.actions.next")}
-                              </Button>
-                           )}
-                        </form.Subscribe>
+                           {translate("common.actions.next")}
+                        </Button>
                      ) : (
                         <form.Subscribe
                            selector={(state) => ({
