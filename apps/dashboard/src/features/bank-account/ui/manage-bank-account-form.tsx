@@ -200,7 +200,7 @@ export function ManageBankAccountForm({
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name} required>
-                              {translate("common.form.bank.label")}
+                              {translate("common.form.bank-account.label")}
                            </FieldLabel>
                            <BankAccountCombobox
                               onBlur={field.handleBlur}

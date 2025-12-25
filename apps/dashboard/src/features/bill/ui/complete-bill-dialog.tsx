@@ -43,15 +43,16 @@ function CompleteBillSheetContent({
    bill,
    onClose,
 }: CompleteBillSheetContentProps) {
-   const [completionDate, setCompletionDate] = useState(new Date());
-   const [bankAccountId, setBankAccountId] = useState(
-      bill.bankAccountId || undefined,
-   );
    const trpc = useTRPC();
    const queryClient = useQueryClient();
 
    const { data: bankAccounts = [] } = useQuery(
       trpc.bankAccounts.getAll.queryOptions(),
+   );
+
+   const [completionDate, setCompletionDate] = useState(new Date());
+   const [bankAccountId, setBankAccountId] = useState(
+      bill.bankAccountId || bankAccounts[0]?.id,
    );
 
    const { data: categories = [] } = useQuery(

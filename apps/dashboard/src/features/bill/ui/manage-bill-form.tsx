@@ -324,7 +324,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
           }
         : {
              amount: 0,
-             bankAccountId: undefined as string | undefined,
+             bankAccountId: (activeBankAccounts[0]?.id ?? undefined) as string | undefined,
              billCategory: getDefaultBillCategory(),
              billMode: null as BillMode | null,
              category: undefined as string | undefined,
@@ -2063,7 +2063,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name}>
-                              {translate("common.form.bank.label")}
+                              {translate("common.form.bank-account.label")}
                            </FieldLabel>
                            <Select
                               onValueChange={(value) =>
@@ -2074,7 +2074,7 @@ export function ManageBillForm({ bill, fromTransaction }: ManageBillFormProps) {
                               <SelectTrigger id={field.name}>
                                  <SelectValue
                                     placeholder={translate(
-                                       "common.form.bank.placeholder",
+                                       "common.form.bank-account.placeholder",
                                     )}
                                  />
                               </SelectTrigger>

@@ -273,7 +273,7 @@ export function ManageTransactionForm({
          amount: transaction?.amount
             ? Math.round(Number(transaction.amount) * 100)
             : 0,
-         bankAccountId: transaction?.bankAccountId || "",
+         bankAccountId: transaction?.bankAccountId || (bankAccounts[0]?.id ?? ""),
          categoryIds:
             transaction?.transactionCategories?.map((tc) => tc.category.id) ||
             defaultCategoryIds,
@@ -533,7 +533,7 @@ export function ManageTransactionForm({
                      return (
                         <Field data-invalid={isInvalid}>
                            <FieldLabel htmlFor={field.name} required>
-                              {translate("common.form.bank.label")}
+                              {translate("common.form.bank-account.label")}
                            </FieldLabel>
                            <Select
                               onOpenChange={(open) => {
@@ -547,7 +547,7 @@ export function ManageTransactionForm({
                               <SelectTrigger id={field.name}>
                                  <SelectValue
                                     placeholder={translate(
-                                       "common.form.bank.placeholder",
+                                       "common.form.bank-account.placeholder",
                                     )}
                                  />
                               </SelectTrigger>
