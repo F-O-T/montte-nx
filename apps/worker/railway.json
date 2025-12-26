@@ -3,11 +3,7 @@
    "build": {
       "builder": "DOCKERFILE",
       "dockerfilePath": "/apps/worker/Dockerfile",
-      "watchPatterns": [
-         "/packages/**",
-         "/apps/worker/**",
-         "/libraries/condition-evaluator/**"
-      ]
+      "watchPatterns": ["/packages/**", "/apps/worker/**", "/libraries/**"]
    },
    "deploy": {
       "numReplicas": 1,
