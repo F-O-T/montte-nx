@@ -48,6 +48,8 @@ COPY packages/stripe/package.json ./packages/stripe/
 COPY packages/arcjet/package.json ./packages/arcjet/
 COPY packages/logging/package.json ./packages/logging/
 COPY packages/csv/package.json ./packages/csv/
+COPY packages/money/package.json ./packages/money/
+COPY libraries/money/package.json ./libraries/money/
 COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY libraries/csv/package.json ./libraries/csv/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
@@ -68,6 +70,10 @@ RUN bun run build
 WORKDIR /app
 
 WORKDIR /app/libraries/csv
+RUN bun run build
+WORKDIR /app
+
+WORKDIR /app/libraries/money
 RUN bun run build
 WORKDIR /app
 
