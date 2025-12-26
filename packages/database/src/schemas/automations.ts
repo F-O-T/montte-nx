@@ -1,18 +1,11 @@
 import type {
-   ArrayOperator as LibArrayOperator,
-   BooleanOperator as LibBooleanOperator,
-   Condition as LibCondition,
-   ConditionGroup as LibConditionGroup,
-   ConditionGroupInput as LibConditionGroupInput,
-   DateOperator as LibDateOperator,
-   EvaluationContext as LibEvaluationContext,
-   EvaluationResult as LibEvaluationResult,
-   GroupEvaluationResult as LibGroupEvaluationResult,
-   GroupEvaluationResultInput as LibGroupEvaluationResultInput,
-   LogicalOperator as LibLogicalOperator,
-   NumberOperator as LibNumberOperator,
-   StringOperator as LibStringOperator,
-} from "@f-o-t/condition-evaluator";
+   ArrayOperator,
+   BooleanOperator,
+   ConditionGroup,
+   DateOperator,
+   NumberOperator,
+   StringOperator,
+} from "@f-o-t/rules-engine";
 import { relations, sql } from "drizzle-orm";
 import {
    boolean,
@@ -26,20 +19,6 @@ import {
    uuid,
 } from "drizzle-orm/pg-core";
 import { organization, user } from "./auth";
-
-export type StringOperator = LibStringOperator;
-export type NumberOperator = LibNumberOperator;
-export type BooleanOperator = LibBooleanOperator;
-export type DateOperator = LibDateOperator;
-export type ArrayOperator = LibArrayOperator;
-export type LogicalOperator = LibLogicalOperator;
-export type Condition = LibCondition;
-export type ConditionGroup = LibConditionGroup;
-export type ConditionGroupInput = LibConditionGroupInput;
-export type EvaluationContext = LibEvaluationContext;
-export type EvaluationResult = LibEvaluationResult;
-export type GroupEvaluationResult = LibGroupEvaluationResult;
-export type GroupEvaluationResultInput = LibGroupEvaluationResultInput;
 
 export type ConditionOperator =
    | StringOperator

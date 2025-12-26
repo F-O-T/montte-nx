@@ -14,18 +14,21 @@ interface OFXDateValue {
    toDate: () => Date;
 }
 
-interface DateComponents {
-   year: number;
-   month: number;
-   day: number;
-   hour: number;
-   minute: number;
-   second: number;
-}
+const dateComponentsSchema = z.object({
+   year: z.number(),
+   month: z.number(),
+   day: z.number(),
+   hour: z.number(),
+   minute: z.number(),
+   second: z.number(),
+});
+
+type DateComponents = z.infer<typeof dateComponentsSchema>;
 
 const DATE_REGEX = /^(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?(\d{2})?/;
 const TIMEZONE_REGEX = /\[([+-]?\d+):(\w+)\]/;
 
+// Exported for testing purposes only - not part of public API
 export function parseDateComponents(val: string): DateComponents {
    const m = DATE_REGEX.exec(val);
    if (!m) return { day: 0, hour: 0, minute: 0, month: 0, second: 0, year: 0 };
@@ -39,6 +42,7 @@ export function parseDateComponents(val: string): DateComponents {
    };
 }
 
+// Exported for testing purposes only - not part of public API
 export function parseTimezone(val: string): { offset: number; name: string } {
    const match = TIMEZONE_REGEX.exec(val);
    return {
@@ -144,7 +148,10 @@ export const accountTypeSchema = z.enum([
 
 export type OFXAccountType = z.infer<typeof accountTypeSchema>;
 
-export const extendedAccountTypeSchema = z.enum([
+// Extended account type schema that includes CREDITCARD
+// Some OFX files (especially from certain banks) include credit card accounts
+// in the BANKACCTFROM tag instead of CCACCTFROM, requiring this extended schema
+const extendedAccountTypeSchema = z.enum([
    "CHECKING",
    "SAVINGS",
    "MONEYMRKT",
@@ -163,7 +170,9 @@ export const bankAccountSchema = z.object({
 
 export type OFXBankAccount = z.infer<typeof bankAccountSchema>;
 
-export const flexibleBankAccountSchema = z.object({
+// Flexible bank account schema used for credit card statements
+// that may include account info in BANKACCTFROM instead of CCACCTFROM
+const flexibleBankAccountSchema = z.object({
    ACCTID: z.string(),
    ACCTKEY: z.string().optional(),
    ACCTTYPE: extendedAccountTypeSchema.optional(),

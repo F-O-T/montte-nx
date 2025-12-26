@@ -1,8 +1,52 @@
+import { z } from "zod";
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "./consequence.ts";
-import type { Rule, RuleSet } from "./rule.ts";
+} from "./consequence";
+import type { Rule, RuleSet } from "./rule";
+
+// ============================================================================
+// Zod Schemas - Define schemas first, then infer types
+// ============================================================================
+
+export const RuleStatsSchema = z.object({
+   evaluations: z.number().int().nonnegative(),
+   matches: z.number().int().nonnegative(),
+   errors: z.number().int().nonnegative(),
+   totalTimeMs: z.number().nonnegative(),
+   avgTimeMs: z.number().nonnegative(),
+   lastEvaluated: z.date().optional(),
+});
+export type RuleStats = z.infer<typeof RuleStatsSchema>;
+
+export const CacheStatsSchema = z.object({
+   size: z.number().int().nonnegative(),
+   maxSize: z.number().int().positive(),
+   hits: z.number().int().nonnegative(),
+   misses: z.number().int().nonnegative(),
+   hitRate: z.number().min(0).max(1),
+   evictions: z.number().int().nonnegative(),
+});
+export type CacheStats = z.infer<typeof CacheStatsSchema>;
+
+export const EngineStatsSchema = z.object({
+   totalRules: z.number().int().nonnegative(),
+   enabledRules: z.number().int().nonnegative(),
+   disabledRules: z.number().int().nonnegative(),
+   totalRuleSets: z.number().int().nonnegative(),
+   totalEvaluations: z.number().int().nonnegative(),
+   totalMatches: z.number().int().nonnegative(),
+   totalErrors: z.number().int().nonnegative(),
+   avgEvaluationTimeMs: z.number().nonnegative(),
+   cacheHits: z.number().int().nonnegative(),
+   cacheMisses: z.number().int().nonnegative(),
+   cacheHitRate: z.number().min(0).max(1),
+});
+export type EngineStats = z.infer<typeof EngineStatsSchema>;
+
+// ============================================================================
+// Types that cannot be Zod schemas (contain Maps or complex generics)
+// ============================================================================
 
 export type EngineState<
    TContext = unknown,
@@ -13,6 +57,7 @@ export type EngineState<
    readonly ruleOrder: ReadonlyArray<string>;
 };
 
+// Internal mutable version - not exported from index.ts
 export type MutableEngineState<
    TContext = unknown,
    TConsequences extends ConsequenceDefinitions = DefaultConsequences,
@@ -22,15 +67,7 @@ export type MutableEngineState<
    ruleOrder: string[];
 };
 
-export type RuleStats = {
-   readonly evaluations: number;
-   readonly matches: number;
-   readonly errors: number;
-   readonly totalTimeMs: number;
-   readonly avgTimeMs: number;
-   readonly lastEvaluated?: Date;
-};
-
+// Internal mutable version - not exported from index.ts
 export type MutableRuleStats = {
    evaluations: number;
    matches: number;
@@ -45,33 +82,15 @@ export type OptimizerState = {
    readonly lastOptimized?: Date;
 };
 
+// Internal mutable version - not exported from index.ts
 export type MutableOptimizerState = {
    ruleStats: Map<string, MutableRuleStats>;
    lastOptimized?: Date;
 };
 
-export type EngineStats = {
-   readonly totalRules: number;
-   readonly enabledRules: number;
-   readonly disabledRules: number;
-   readonly totalRuleSets: number;
-   readonly totalEvaluations: number;
-   readonly totalMatches: number;
-   readonly totalErrors: number;
-   readonly avgEvaluationTimeMs: number;
-   readonly cacheHits: number;
-   readonly cacheMisses: number;
-   readonly cacheHitRate: number;
-};
-
-export type CacheStats = {
-   readonly size: number;
-   readonly maxSize: number;
-   readonly hits: number;
-   readonly misses: number;
-   readonly hitRate: number;
-   readonly evictions: number;
-};
+// ============================================================================
+// Factory functions
+// ============================================================================
 
 export const createInitialState = <
    TContext = unknown,

@@ -1,4 +1,4 @@
-import type { DateOperator } from "../schemas.ts";
+import type { DateOperator } from "../schemas";
 
 type DateValue = string | Date | number;
 type DateRangeTuple = [DateValue, DateValue];

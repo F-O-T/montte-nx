@@ -1,15 +1,26 @@
 export type {
    ArrayCondition,
+   ArrayOperator,
    BooleanCondition,
+   BooleanOperator,
    Condition,
    ConditionGroup,
+   ConditionGroupInput,
    CustomCondition,
    DateCondition,
+   DateOperator,
    EvaluationResult,
    GroupEvaluationResult,
+   GroupEvaluationResultInput,
    LogicalOperator,
    NumberCondition,
+   NumberOperator,
    StringCondition,
+   StringOperator,
+} from "@f-o-t/condition-evaluator";
+export {
+   ConditionGroup as ConditionGroupSchema,
+   isConditionGroup,
 } from "@f-o-t/condition-evaluator";
 export {
    analyzeConsequenceUsage,
@@ -25,7 +36,7 @@ export {
    type OperatorUsage,
    type RuleComplexity,
    type RuleSetAnalysis,
-} from "./analyzer/analysis.ts";
+} from "./analyzer/analysis";
 export {
    all,
    and,
@@ -40,34 +51,34 @@ export {
    or,
    resetBuilderIds,
    str,
-} from "./builder/conditions.ts";
+} from "./builder/conditions";
 export {
    createRule,
    type RuleBuilder,
    type RuleBuilderState,
    rule,
-} from "./builder/rule.ts";
+} from "./builder/rule";
 export {
    type Cache,
    type CacheEntry,
    type CacheOptions,
    createCache,
-} from "./cache/cache.ts";
-export { createNoopCache } from "./cache/noop.ts";
+} from "./cache/cache";
+export { createNoopCache } from "./cache/noop";
 export {
    type EvaluateRuleOptions,
    type EvaluateRulesOptions,
    type EvaluateRulesResult,
    evaluateRule,
    evaluateRules,
-} from "./core/evaluate.ts";
+} from "./core/evaluate";
 export {
    filterByCategory,
    filterByEnabled,
    filterByIds,
    filterByTags,
    filterRules,
-} from "./core/filter.ts";
+} from "./core/filter";
 export {
    type GroupByField,
    type GroupedRules,
@@ -76,7 +87,7 @@ export {
    groupByEnabled,
    groupByPriority,
    groupRules,
-} from "./core/group.ts";
+} from "./core/group";
 export {
    type SortDirection,
    type SortField,
@@ -86,8 +97,8 @@ export {
    sortByPriority,
    sortByUpdatedAt,
    sortRules,
-} from "./core/sort.ts";
-export { createEngine, type Engine } from "./engine/engine.ts";
+} from "./core/sort";
+export { createEngine, type Engine } from "./engine/engine";
 export {
    addRule,
    addRuleSet,
@@ -104,7 +115,7 @@ export {
    removeRule,
    removeRuleSet,
    updateRule,
-} from "./engine/state.ts";
+} from "./engine/state";
 export {
    analyzeOptimizations,
    buildIndex,
@@ -125,7 +136,7 @@ export {
    type PriorityIndex,
    type RuleIndex,
    type TagIndex,
-} from "./optimizer/index-builder.ts";
+} from "./optimizer/index-builder";
 export {
    cloneRule,
    deserializeRule,
@@ -139,11 +150,12 @@ export {
    importFromJson,
    importRules,
    mergeRuleSets,
+   type OrphanedReference,
    type SerializedRule,
    type SerializedRuleSet,
    serializeRule,
    serializeRuleSet,
-} from "./serialization/serializer.ts";
+} from "./serialization/serializer";
 export {
    type BatchSimulationResult,
    batchSimulate,
@@ -155,7 +167,7 @@ export {
    simulateSingleRule,
    type WhatIfResult,
    whatIf,
-} from "./simulation/simulator.ts";
+} from "./simulation/simulator";
 export type {
    CacheConfig,
    EngineConfig,
@@ -165,13 +177,21 @@ export type {
    ResolvedEngineConfig,
    ValidationConfig,
    VersioningConfig,
-} from "./types/config.ts";
+} from "./types/config";
 export {
-   DEFAULT_CACHE_CONFIG,
-   DEFAULT_ENGINE_CONFIG,
-   DEFAULT_VALIDATION_CONFIG,
-   DEFAULT_VERSIONING_CONFIG,
-} from "./types/config.ts";
+   CacheConfigSchema,
+   getDefaultCacheConfig,
+   getDefaultConflictResolution,
+   getDefaultLogLevel,
+   getDefaultValidationConfig,
+   getDefaultVersioningConfig,
+   LogLevelSchema,
+   parseCacheConfig,
+   parseValidationConfig,
+   parseVersioningConfig,
+   ValidationConfigSchema,
+   VersioningConfigSchema,
+} from "./types/config";
 export type {
    AggregatedConsequence,
    Consequence,
@@ -180,7 +200,7 @@ export type {
    DefaultConsequences,
    InferConsequencePayload,
    InferConsequenceType,
-} from "./types/consequence.ts";
+} from "./types/consequence";
 export type {
    ConflictResolutionStrategy,
    EngineExecutionResult,
@@ -188,7 +208,12 @@ export type {
    EvaluateOptions,
    EvaluationContext,
    RuleEvaluationResult,
-} from "./types/evaluation.ts";
+} from "./types/evaluation";
+export {
+   ConflictResolutionStrategySchema,
+   EvaluateConfigSchema,
+   EvaluateOptionsSchema,
+} from "./types/evaluation";
 export type {
    Rule,
    RuleFilters,
@@ -197,33 +222,31 @@ export type {
    RuleSet,
    RuleSetInput,
    RuleSetSchemaType,
-} from "./types/rule.ts";
-export { RuleSchema, RuleSetSchema } from "./types/rule.ts";
+} from "./types/rule";
+export { RuleSchema, RuleSetSchema } from "./types/rule";
 export type {
    CacheStats,
    EngineState,
    EngineStats,
-   MutableEngineState,
-   MutableOptimizerState,
-   MutableRuleStats,
    OptimizerState,
    RuleStats,
-} from "./types/state.ts";
+} from "./types/state";
 export {
+   CacheStatsSchema,
    createInitialOptimizerState,
    createInitialRuleStats,
    createInitialState,
-} from "./types/state.ts";
-export { hashContext, hashRules } from "./utils/hash.ts";
-export { generateId } from "./utils/id.ts";
-export { always, compose, identity, pipe, tap } from "./utils/pipe.ts";
+   EngineStatsSchema,
+   RuleStatsSchema,
+} from "./types/state";
+export { hashContext, hashRules } from "./utils/hash";
+export { generateId } from "./utils/id";
 export {
-   delay,
    measureTime,
    measureTimeAsync,
    type TimingResult,
    withTimeout,
-} from "./utils/time.ts";
+} from "./utils/time";
 export {
    type Conflict,
    type ConflictDetectionOptions,
@@ -234,7 +257,7 @@ export {
    getConflictsByType,
    hasConflicts,
    hasErrors,
-} from "./validation/conflicts.ts";
+} from "./validation/conflicts";
 export {
    checkIntegrity,
    checkRuleFieldCoverage,
@@ -244,19 +267,23 @@ export {
    type IntegrityCheckOptions,
    type IntegrityCheckResult,
    type IntegrityIssue,
-} from "./validation/integrity.ts";
+} from "./validation/integrity";
 export {
    createRuleValidator,
    parseRule,
+   type ResolvedValidationOptions,
    safeParseRule,
    type ValidationError,
+   ValidationErrorSchema,
    type ValidationOptions,
+   ValidationOptionsSchema,
    type ValidationResult,
+   ValidationResultSchema,
    validateConditions,
    validateRule,
    validateRuleSet,
    validateRules,
-} from "./validation/schema.ts";
+} from "./validation/schema";
 export {
    addVersion,
    compareVersions,
@@ -273,4 +300,4 @@ export {
    rollbackToVersion,
    type VersionHistory,
    type VersionStore,
-} from "./versioning/version-store.ts";
+} from "./versioning/version-store";

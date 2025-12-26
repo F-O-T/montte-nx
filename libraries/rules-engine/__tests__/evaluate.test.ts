@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import type { ConditionGroup } from "@f-o-t/condition-evaluator";
-import { evaluateRule, evaluateRules } from "../src/core/evaluate.ts";
-import type { DefaultConsequences } from "../src/types/consequence.ts";
-import type { Rule } from "../src/types/rule.ts";
+import { evaluateRule, evaluateRules } from "../src/core/evaluate";
+import type { DefaultConsequences } from "../src/types/consequence";
+import type { Rule } from "../src/types/rule";
 
 type TestRule = Rule<unknown, DefaultConsequences>;
 

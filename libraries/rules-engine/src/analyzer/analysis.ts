@@ -6,8 +6,14 @@ import {
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { Rule } from "../types/rule.ts";
+} from "../types/consequence";
+import type { Rule } from "../types/rule";
+import {
+   calculateMaxDepth,
+   collectConditionFields,
+   countConditionGroups,
+   countConditions,
+} from "../utils/conditions";
 
 export type RuleComplexity = {
    readonly ruleId: string;
@@ -63,64 +69,6 @@ export type ConsequenceUsage = {
    readonly rules: ReadonlyArray<{ id: string; name: string }>;
 };
 
-const countConditions = (condition: Condition | ConditionGroup): number => {
-   if (isConditionGroup(condition)) {
-      return condition.conditions.reduce(
-         (sum, c) => sum + countConditions(c as Condition | ConditionGroup),
-         0,
-      );
-   }
-   return 1;
-};
-
-const calculateMaxDepth = (
-   condition: Condition | ConditionGroup,
-   currentDepth = 1,
-): number => {
-   if (isConditionGroup(condition)) {
-      if (condition.conditions.length === 0) return currentDepth;
-      return Math.max(
-         ...condition.conditions.map((c) =>
-            calculateMaxDepth(
-               c as Condition | ConditionGroup,
-               currentDepth + 1,
-            ),
-         ),
-      );
-   }
-   return currentDepth;
-};
-
-const countGroups = (condition: Condition | ConditionGroup): number => {
-   if (isConditionGroup(condition)) {
-      return (
-         1 +
-         condition.conditions.reduce(
-            (sum, c) => sum + countGroups(c as Condition | ConditionGroup),
-            0,
-         )
-      );
-   }
-   return 0;
-};
-
-const collectFields = (condition: Condition | ConditionGroup): Set<string> => {
-   const fields = new Set<string>();
-
-   const traverse = (c: Condition | ConditionGroup) => {
-      if (isConditionGroup(c)) {
-         for (const child of c.conditions) {
-            traverse(child as Condition | ConditionGroup);
-         }
-      } else {
-         fields.add(c.field);
-      }
-   };
-
-   traverse(condition);
-   return fields;
-};
-
 const collectOperators = (
    condition: Condition | ConditionGroup,
 ): Set<string> => {
@@ -160,8 +108,8 @@ export const analyzeRuleComplexity = <
 ): RuleComplexity => {
    const totalConditions = countConditions(rule.conditions);
    const maxDepth = calculateMaxDepth(rule.conditions);
-   const groupCount = countGroups(rule.conditions);
-   const uniqueFields = collectFields(rule.conditions).size;
+   const groupCount = countConditionGroups(rule.conditions);
+   const uniqueFields = collectConditionFields(rule.conditions).size;
    const uniqueOperators = collectOperators(rule.conditions).size;
    const consequenceCount = rule.consequences.length;
 
@@ -214,7 +162,7 @@ export const analyzeRuleSet = <
 
       if (rule.enabled) enabledCount++;
 
-      for (const field of collectFields(rule.conditions)) {
+      for (const field of collectConditionFields(rule.conditions)) {
          allFields.add(field);
       }
 

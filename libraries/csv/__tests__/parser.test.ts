@@ -5,7 +5,7 @@ import {
    parseBufferOrThrow,
    parseOrThrow,
    parseToArray,
-} from "../src/parser.ts";
+} from "../src/parser";
 
 describe("parseToArray", () => {
    describe("basic parsing", () => {

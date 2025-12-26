@@ -1,4 +1,4 @@
-import { ConditionGroup as ConditionGroupSchema } from "@f-o-t/condition-evaluator";
+import { type ConditionGroup, ConditionGroupSchema } from "@f-o-t/rules-engine";
 import {
    findAutomationLogsByOrganizationIdPaginated,
    findAutomationLogsByRuleId,
@@ -26,13 +26,12 @@ import {
    getVersionHistory,
 } from "@packages/database/repositories/automation-version-repository";
 import type {
-   ConditionGroup,
+   AutomationRuleVersionSnapshot,
    Consequence,
    FlowData,
    TriggerConfig,
    TriggerType,
 } from "@packages/database/schema";
-import type { AutomationRuleVersionSnapshot } from "@packages/database/schemas/automations";
 import { APIError } from "@packages/utils/errors";
 import { enqueueManualWorkflowRun } from "@packages/workflows/queue/producer";
 import {

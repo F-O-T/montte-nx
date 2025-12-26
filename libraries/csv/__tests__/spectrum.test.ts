@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { parseOrThrow } from "../src/parser.ts";
+import { parseOrThrow } from "../src/parser";
 
 interface SpectrumTest {
    name: string;

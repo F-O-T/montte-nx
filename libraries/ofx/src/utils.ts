@@ -5,6 +5,21 @@ export const toFloat = (val: string): number => Number.parseFloat(val);
 export const toArray = <T>(value: T | T[]): T[] =>
    Array.isArray(value) ? value : [value];
 
+export const ENTITY_MAP: Record<string, string> = {
+   "&amp;": "&",
+   "&apos;": "'",
+   "&gt;": ">",
+   "&lt;": "<",
+   "&quot;": '"',
+};
+
+export const ENTITY_REGEX = /&(?:amp|lt|gt|quot|apos);/g;
+
+export function decodeEntities(text: string): string {
+   if (!text.includes("&")) return text;
+   return text.replace(ENTITY_REGEX, (match) => ENTITY_MAP[match] ?? match);
+}
+
 export const pad = (n: number, width = 2): string =>
    n.toString().padStart(width, "0");
 

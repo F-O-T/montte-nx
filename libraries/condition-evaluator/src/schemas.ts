@@ -244,23 +244,23 @@ export const LogicalOperator = z.enum(["AND", "OR"]);
 
 export type LogicalOperator = z.infer<typeof LogicalOperator>;
 
-export type ConditionGroupInput = {
-   id: string;
-   operator: LogicalOperator;
-   conditions: (Condition | ConditionGroupInput)[];
-   scoringMode?: "binary" | "weighted";
-   threshold?: number;
-   weight?: number;
+// Recursive type for ConditionGroup - the Zod schema is self-referential
+// We define the base shape first, then use z.lazy for recursion
+const ConditionGroupBase = z.object({
+   id: z.string(),
+   operator: LogicalOperator,
+   scoringMode: z.enum(["binary", "weighted"]).optional(),
+   threshold: z.number().optional(),
+   weight: z.number().min(0).optional(),
+});
+
+type ConditionGroupShape = z.infer<typeof ConditionGroupBase> & {
+   conditions: (Condition | ConditionGroupShape)[];
 };
 
-export const ConditionGroup: z.ZodType<ConditionGroupInput> = z.lazy(() =>
-   z.object({
-      id: z.string(),
-      operator: LogicalOperator,
+export const ConditionGroup: z.ZodType<ConditionGroupShape> = z.lazy(() =>
+   ConditionGroupBase.extend({
       conditions: z.array(z.union([Condition, ConditionGroup])),
-      scoringMode: z.enum(["binary", "weighted"]).optional(),
-      threshold: z.number().optional(),
-      weight: z.number().min(0).optional(),
    }),
 );
 
@@ -315,30 +315,26 @@ export const EvaluationResult = z.object({
 
 export type EvaluationResult = z.infer<typeof EvaluationResult>;
 
-export type GroupEvaluationResultInput = {
-   groupId: string;
-   operator: LogicalOperator;
-   passed: boolean;
-   results: (EvaluationResult | GroupEvaluationResultInput)[];
-   scoringMode?: "binary" | "weighted";
-   totalScore?: number;
-   maxPossibleScore?: number;
-   threshold?: number;
-   scorePercentage?: number;
+// Recursive type for GroupEvaluationResult - the Zod schema is self-referential
+const GroupEvaluationResultBase = z.object({
+   groupId: z.string(),
+   operator: LogicalOperator,
+   passed: z.boolean(),
+   scoringMode: z.enum(["binary", "weighted"]).optional(),
+   totalScore: z.number().optional(),
+   maxPossibleScore: z.number().optional(),
+   threshold: z.number().optional(),
+   scorePercentage: z.number().optional(),
+});
+
+type GroupEvaluationResultShape = z.infer<typeof GroupEvaluationResultBase> & {
+   results: (EvaluationResult | GroupEvaluationResultShape)[];
 };
 
-export const GroupEvaluationResult: z.ZodType<GroupEvaluationResultInput> =
+export const GroupEvaluationResult: z.ZodType<GroupEvaluationResultShape> =
    z.lazy(() =>
-      z.object({
-         groupId: z.string(),
-         operator: LogicalOperator,
-         passed: z.boolean(),
+      GroupEvaluationResultBase.extend({
          results: z.array(z.union([EvaluationResult, GroupEvaluationResult])),
-         scoringMode: z.enum(["binary", "weighted"]).optional(),
-         totalScore: z.number().optional(),
-         maxPossibleScore: z.number().optional(),
-         threshold: z.number().optional(),
-         scorePercentage: z.number().optional(),
       }),
    );
 

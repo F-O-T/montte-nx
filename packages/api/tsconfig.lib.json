@@ -67,6 +67,9 @@
       "path": "../arcjet/tsconfig.lib.json"
     },
     {
+      "path": "../../libraries/rules-engine"
+    },
+    {
       "path": "../../libraries/condition-evaluator"
     }
   ]

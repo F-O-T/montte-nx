@@ -1,4 +1,4 @@
-import type { BooleanOperator } from "../schemas.ts";
+import type { BooleanOperator } from "../schemas";
 
 type BooleanEvaluatorFn = (
    actual: boolean,

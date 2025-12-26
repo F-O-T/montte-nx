@@ -11,8 +11,12 @@ export {
    type GenerateHeaderOptions,
    type GenerateTransactionInput,
    generateBankStatement,
+   generateBankStatementOptionsSchema,
    generateCreditCardStatement,
+   generateCreditCardStatementOptionsSchema,
    generateHeader,
+   generateHeaderOptionsSchema,
+   generateTransactionInputSchema,
 } from "./generator";
 export {
    getEncodingFromCharset,

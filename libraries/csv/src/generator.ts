@@ -1,3 +1,4 @@
+import { generateOptionsSchema } from "./schemas";
 import type { GenerateOptions } from "./types";
 import { escapeField } from "./utils";
 
@@ -17,8 +18,14 @@ const DEFAULT_OPTIONS: Required<GenerateOptions> = {
  * @param rows - The rows to convert to CSV
  * @param options - Generation options
  * @returns The generated CSV string
+ * @throws Error if options are invalid
  */
 export function generate(rows: string[][], options?: GenerateOptions): string {
+   // Validate options if provided
+   if (options !== undefined) {
+      generateOptionsSchema.parse(options);
+   }
+
    const opts = { ...DEFAULT_OPTIONS, ...options };
 
    if (rows.length === 0) {
@@ -44,11 +51,20 @@ export function generate(rows: string[][], options?: GenerateOptions): string {
  * @param data - Array of objects to convert to CSV
  * @param options - Generation options
  * @returns The generated CSV string
+ * @throws Error if options are invalid
  */
 export function generateFromObjects<T extends Record<string, unknown>>(
    data: T[],
    options?: GenerateOptions & { headers?: string[] },
 ): string {
+   // Validate base options if provided (headers is an extension, not validated)
+   if (options !== undefined) {
+      const { headers: _, ...baseOptions } = options;
+      if (Object.keys(baseOptions).length > 0) {
+         generateOptionsSchema.parse(baseOptions);
+      }
+   }
+
    if (data.length === 0) {
       return "";
    }
@@ -96,11 +112,17 @@ export function generateFromObjects<T extends Record<string, unknown>>(
  * @param fields - The field values
  * @param options - Generation options
  * @returns The generated CSV row string (without line ending)
+ * @throws Error if options are invalid
  */
 export function generateRow(
    fields: string[],
    options?: Omit<GenerateOptions, "lineEnding" | "includeHeaders">,
 ): string {
+   // Validate options if provided
+   if (options !== undefined) {
+      generateOptionsSchema.partial().parse(options);
+   }
+
    const opts = { ...DEFAULT_OPTIONS, ...options };
 
    const escapedFields = fields.map((field) =>
@@ -114,8 +136,13 @@ export function generateRow(
  * Creates a CSV generator that can be used to build CSV content incrementally.
  * Useful for streaming generation of large files.
  *
+ * Note: The toStream() method captures a snapshot of rows at call time.
+ * If the stream is created but not consumed, it holds references to the data.
+ * Ensure streams are consumed or discarded to avoid memory retention.
+ *
  * @param options - Generation options
  * @returns A generator object with methods to add rows
+ * @throws Error if options are invalid
  */
 export function createGenerator(options?: GenerateOptions): {
    addRow: (fields: string[]) => void;
@@ -126,6 +153,11 @@ export function createGenerator(options?: GenerateOptions): {
    toString: () => string;
    toStream: () => ReadableStream<string>;
 } {
+   // Validate options if provided
+   if (options !== undefined) {
+      generateOptionsSchema.parse(options);
+   }
+
    const opts = { ...DEFAULT_OPTIONS, ...options };
    const rows: string[] = [];
 

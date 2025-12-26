@@ -34,6 +34,8 @@ COPY libraries/condition-evaluator/package.json ./libraries/condition-evaluator/
 COPY packages/stripe/package.json ./packages/stripe/
 COPY packages/arcjet/package.json ./packages/arcjet/
 COPY packages/csv/package.json ./packages/csv/
+COPY packages/money/package.json ./packages/money/
+COPY libraries/money/package.json ./libraries/money/
 COPY libraries/csv/package.json ./libraries/csv/
 COPY libraries/rules-engine/package.json ./libraries/rules-engine/
 
@@ -57,6 +59,11 @@ WORKDIR /app
 WORKDIR /app/libraries/csv
 RUN bun run build
 WORKDIR /app
+
+WORKDIR /app/libraries/money
+RUN bun run build
+WORKDIR /app
+
 
 WORKDIR /app/libraries/rules-engine
 RUN bun run build

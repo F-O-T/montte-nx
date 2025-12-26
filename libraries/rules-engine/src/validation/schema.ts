@@ -3,34 +3,49 @@ import {
    type ConditionGroup,
    isConditionGroup,
 } from "@f-o-t/condition-evaluator";
+import { z } from "zod";
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import { type Rule, RuleSchema, RuleSetSchema } from "../types/rule.ts";
+} from "../types/consequence";
+import { type Rule, RuleSchema, RuleSetSchema } from "../types/rule";
 
-export type ValidationError = {
-   readonly path: string;
-   readonly message: string;
-   readonly code: string;
+// ============================================================================
+// Zod Schemas - Define schemas first, then infer types
+// ============================================================================
+
+export const ValidationErrorSchema = z.object({
+   path: z.string(),
+   message: z.string(),
+   code: z.string(),
+});
+export type ValidationError = z.infer<typeof ValidationErrorSchema>;
+
+export const ValidationResultSchema = z.object({
+   valid: z.boolean(),
+   errors: z.array(ValidationErrorSchema),
+});
+export type ValidationResult = z.infer<typeof ValidationResultSchema>;
+
+export const ValidationOptionsSchema = z.object({
+   validateConditions: z.boolean().optional(),
+   validateConsequences: z.boolean().optional(),
+   strictMode: z.boolean().optional(),
+});
+export type ValidationOptions = z.infer<typeof ValidationOptionsSchema>;
+
+// Resolved options with defaults applied
+export type ResolvedValidationOptions = {
+   validateConditions: boolean;
+   validateConsequences: boolean;
+   strictMode: boolean;
 };
 
-export type ValidationResult = {
-   readonly valid: boolean;
-   readonly errors: ReadonlyArray<ValidationError>;
-};
+// ============================================================================
+// Default options (derived from schema)
+// ============================================================================
 
-export type ValidationOptions = {
-   readonly validateConditions?: boolean;
-   readonly validateConsequences?: boolean;
-   readonly strictMode?: boolean;
-};
-
-const DEFAULT_OPTIONS: ValidationOptions = {
-   validateConditions: true,
-   validateConsequences: true,
-   strictMode: false,
-};
+const DEFAULT_OPTIONS: ValidationOptions = ValidationOptionsSchema.parse({});
 
 const createError = (
    path: string,
@@ -51,7 +66,7 @@ const invalidResult = (
    errors: ReadonlyArray<ValidationError>,
 ): ValidationResult => ({
    valid: false,
-   errors,
+   errors: [...errors],
 });
 
 const validateConditionStructure = (
@@ -240,14 +255,14 @@ export const validateRule = <
       errors.push(...conditionErrors);
    }
 
-   if (opts.validateConsequences) {
+   if (opts.validateConsequences || opts.strictMode) {
       const consequenceErrors = validateConsequenceStructure(
          validRule.consequences as ReadonlyArray<{
             type: unknown;
             payload: unknown;
          }>,
          opts.consequenceSchemas,
-         opts.strictMode,
+         opts.strictMode ?? false,
       );
       errors.push(...consequenceErrors);
    }

@@ -1,5 +1,6 @@
 import type { BillWithRelations } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import {
    Alert,
    AlertDescription,
@@ -26,7 +27,6 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarCheck, Check, ChevronDown, Minus, Plus } from "lucide-react";
 import { useMemo, useState } from "react";

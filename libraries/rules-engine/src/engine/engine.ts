@@ -1,41 +1,42 @@
-import { type Cache, createCache } from "../cache/cache.ts";
-import { createNoopCache } from "../cache/noop.ts";
-import { evaluateRule } from "../core/evaluate.ts";
-import { sortRules } from "../core/sort.ts";
-import type { EngineConfig, ResolvedEngineConfig } from "../types/config.ts";
+import { type Cache, createCache } from "../cache/cache";
+import { createNoopCache } from "../cache/noop";
+import { evaluateRule } from "../core/evaluate";
 import {
-   DEFAULT_CACHE_CONFIG,
-   DEFAULT_ENGINE_CONFIG,
-   DEFAULT_VALIDATION_CONFIG,
-   DEFAULT_VERSIONING_CONFIG,
-} from "../types/config.ts";
+   type EngineConfig,
+   getDefaultCacheConfig,
+   getDefaultConflictResolution,
+   getDefaultLogLevel,
+   getDefaultValidationConfig,
+   getDefaultVersioningConfig,
+   type ResolvedEngineConfig,
+} from "../types/config";
 import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
+} from "../types/consequence";
 import type {
    EngineExecutionResult,
    EvaluateOptions,
    EvaluationContext,
-} from "../types/evaluation.ts";
+} from "../types/evaluation";
 import type {
    Rule,
    RuleFilters,
    RuleInput,
    RuleSet,
    RuleSetInput,
-} from "../types/rule.ts";
+} from "../types/rule";
 import type {
    CacheStats,
    EngineState,
    EngineStats,
    MutableEngineState,
-} from "../types/state.ts";
-import { createInitialState } from "../types/state.ts";
-import { hashContext, hashRules } from "../utils/hash.ts";
-import { generateId } from "../utils/id.ts";
-import { measureTime } from "../utils/time.ts";
+} from "../types/state";
+import { createInitialState } from "../types/state";
+import { hashContext, hashRules } from "../utils/hash";
+import { generateId } from "../utils/id";
+import { measureTime } from "../utils/time";
 import {
    executeAfterEvaluation,
    executeAfterRuleEvaluation,
@@ -48,7 +49,7 @@ import {
    executeOnRuleMatch,
    executeOnRuleSkip,
    executeOnSlowRule,
-} from "./hooks.ts";
+} from "./hooks";
 import {
    addRule,
    addRuleSet,
@@ -64,7 +65,7 @@ import {
    removeRule,
    removeRuleSet,
    updateRule,
-} from "./state.ts";
+} from "./state";
 
 export type Engine<
    TContext = unknown,
@@ -117,27 +118,25 @@ const resolveConfig = <
    return {
       consequences: config.consequences,
       conflictResolution:
-         config.conflictResolution ?? DEFAULT_ENGINE_CONFIG.conflictResolution,
+         config.conflictResolution ?? getDefaultConflictResolution(),
       cache: {
-         ...DEFAULT_CACHE_CONFIG,
+         ...getDefaultCacheConfig(),
          ...config.cache,
       },
       validation: {
-         ...DEFAULT_VALIDATION_CONFIG,
+         ...getDefaultValidationConfig(),
          ...config.validation,
       },
       versioning: {
-         ...DEFAULT_VERSIONING_CONFIG,
+         ...getDefaultVersioningConfig(),
          ...config.versioning,
       },
       hooks: config.hooks ?? {},
-      logLevel: config.logLevel ?? DEFAULT_ENGINE_CONFIG.logLevel,
+      logLevel: config.logLevel ?? getDefaultLogLevel(),
       logger: config.logger ?? console,
-      continueOnError:
-         config.continueOnError ?? DEFAULT_ENGINE_CONFIG.continueOnError,
-      slowRuleThresholdMs:
-         config.slowRuleThresholdMs ??
-         DEFAULT_ENGINE_CONFIG.slowRuleThresholdMs,
+      continueOnError: config.continueOnError ?? true,
+      slowRuleThresholdMs: config.slowRuleThresholdMs ?? 10,
+      hookTimeoutMs: config.hookTimeoutMs,
    };
 };
 
@@ -188,12 +187,7 @@ export const createEngine = <
          rulesToEvaluate = rulesToEvaluate.filter((r) => ruleSetIds.has(r.id));
       }
 
-      rulesToEvaluate = [
-         ...sortRules<TContext, TConsequences>({
-            field: "priority",
-            direction: "desc",
-         })(rulesToEvaluate),
-      ];
+      // Rules are already sorted by priority via state.ruleOrder (sorted on add/update)
 
       if (options.maxRules && options.maxRules > 0) {
          rulesToEvaluate = rulesToEvaluate.slice(0, options.maxRules);
@@ -207,20 +201,30 @@ export const createEngine = <
          const cached = cache.get(cacheKey);
          if (cached) {
             cacheHits++;
-            await executeOnCacheHit(resolvedConfig.hooks, cacheKey, cached);
+            await executeOnCacheHit(
+               resolvedConfig.hooks,
+               cacheKey,
+               cached,
+               resolvedConfig.hookTimeoutMs,
+            );
             return { ...cached, cacheHit: true };
          }
       }
 
       if (cacheKey) {
          cacheMisses++;
-         await executeOnCacheMiss(resolvedConfig.hooks, cacheKey);
+         await executeOnCacheMiss(
+            resolvedConfig.hooks,
+            cacheKey,
+            resolvedConfig.hookTimeoutMs,
+         );
       }
 
       await executeBeforeEvaluation(
          resolvedConfig.hooks,
          context,
          rulesToEvaluate,
+         resolvedConfig.hookTimeoutMs,
       );
 
       const { result: evaluationResult, durationMs } = measureTime(() => {
@@ -250,13 +254,23 @@ export const createEngine = <
          options.conflictResolution ?? resolvedConfig.conflictResolution;
 
       for (const { rule, result } of evaluationResult) {
-         await executeBeforeRuleEvaluation(resolvedConfig.hooks, rule, context);
+         await executeBeforeRuleEvaluation(
+            resolvedConfig.hooks,
+            rule,
+            context,
+            resolvedConfig.hookTimeoutMs,
+         );
 
          ruleResults.push(result);
 
          if (result.error) {
             rulesErrored++;
-            await executeOnRuleError(resolvedConfig.hooks, rule, result.error);
+            await executeOnRuleError(
+               resolvedConfig.hooks,
+               rule,
+               result.error,
+               resolvedConfig.hookTimeoutMs,
+            );
             if (!resolvedConfig.continueOnError) {
                break;
             }
@@ -267,6 +281,7 @@ export const createEngine = <
                resolvedConfig.hooks,
                rule,
                result.skipReason ?? "Unknown",
+               resolvedConfig.hookTimeoutMs,
             );
          }
 
@@ -276,10 +291,16 @@ export const createEngine = <
                rule,
                result.evaluationTimeMs,
                resolvedConfig.slowRuleThresholdMs,
+               resolvedConfig.hookTimeoutMs,
             );
          }
 
-         await executeAfterRuleEvaluation(resolvedConfig.hooks, rule, result);
+         await executeAfterRuleEvaluation(
+            resolvedConfig.hooks,
+            rule,
+            result,
+            resolvedConfig.hookTimeoutMs,
+         );
 
          if (result.matched) {
             matchedRules.push(rule);
@@ -290,10 +311,16 @@ export const createEngine = <
                   resolvedConfig.hooks,
                   rule,
                   consequence,
+                  resolvedConfig.hookTimeoutMs,
                );
             }
 
-            await executeOnRuleMatch(resolvedConfig.hooks, rule, context);
+            await executeOnRuleMatch(
+               resolvedConfig.hooks,
+               rule,
+               context,
+               resolvedConfig.hookTimeoutMs,
+            );
 
             if (rule.stopOnMatch) {
                stoppedEarly = true;
@@ -333,7 +360,11 @@ export const createEngine = <
          cache.set(cacheKey, executionResult);
       }
 
-      await executeAfterEvaluation(resolvedConfig.hooks, executionResult);
+      await executeAfterEvaluation(
+         resolvedConfig.hooks,
+         executionResult,
+         resolvedConfig.hookTimeoutMs,
+      );
 
       return executionResult;
    };

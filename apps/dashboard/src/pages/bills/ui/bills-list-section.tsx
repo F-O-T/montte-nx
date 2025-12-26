@@ -1,5 +1,6 @@
 import type { BillWithRelations } from "@packages/database/repositories/bill-repository";
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
 import {
@@ -21,7 +22,6 @@ import {
    SelectionActionButton,
 } from "@packages/ui/components/selection-action-bar";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { keepPreviousData, useSuspenseQueries } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
 import { Receipt, Search, Trash2, Wallet } from "lucide-react";

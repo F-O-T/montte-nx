@@ -1,9 +1,9 @@
+import { formatDecimalCurrency } from "@packages/money";
 import {
    Announcement,
    AnnouncementTag,
    AnnouncementTitle,
 } from "@packages/ui/components/announcement";
-import { formatDecimalCurrency } from "@packages/utils/money";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
 type AmountAnnouncementProps = {

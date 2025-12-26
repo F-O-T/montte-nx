@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-12-24
+
+### Breaking Changes
+
+- **Removed type exports**: `ConditionGroupInput` and `GroupEvaluationResultInput` are no longer exported
+  - Use `ConditionGroup` and `GroupEvaluationResult` (Zod-inferred types) instead
+- All evaluation functions now accept an optional `EvaluationOptions` parameter
+
+### Added
+
+- **Performance Options**: New `EvaluationOptions` interface with:
+  - `skipValidation`: Skip Zod schema validation for pre-validated conditions (up to 78% faster)
+  - `maxDepth`: Configure maximum nesting depth (default: 10) to prevent stack overflow
+- **New Zod Schema Exports**:
+  - `EvaluationOptionsSchema` - Schema for evaluation options
+  - `DependencyInfoSchema` - Schema for dependency extraction results
+  - `ConditionTypeSchema` - Schema for condition types
+  - `CustomOperatorConfigDataSchema` - Schema for custom operator config data
+  - `PluginCustomConditionSchema` - Schema for plugin custom conditions
+  - `EvaluatorConfigSchema` - Schema for evaluator configuration
+- **Shared Utility Exports**: `getNestedValue`, `formatValue`, `generateReason`, `calculateDiff`, `getWeight`
+- **Comprehensive Test Coverage**: 345 tests (up from 195)
+  - New `date.test.ts` with 47 tests for all date operators
+  - New `array.test.ts` with 55 tests for all array operators
+  - New `performance.test.ts` with benchmark tests
+  - Edge case tests for Infinity, MAX_SAFE_INTEGER, NaN handling
+
+### Fixed
+
+- **Circular Reference Bug**: `deepEquals` in array operators now handles circular references without infinite loops
+- **Recursion Depth Limit**: Prevents stack overflow with deeply nested condition groups (throws at maxDepth)
+
+### Changed
+
+- **Types Fully Zod-Based**: All types are now derived from Zod schemas (no hand-defined duplicates)
+- **Internal Refactor**: Extracted shared utilities to `src/utils.ts`, reducing code duplication
+- **Plugin Types**: Added Zod schemas for plugin system types while preserving TypeScript generics
+
+### Performance
+
+- Single condition evaluation: ~0.007ms average
+- 100 conditions: ~0.5ms average
+- 1000 conditions: ~2.9ms average
+- `skipValidation` option provides up to 78% speedup
+
 ## [1.4.1] - 2025-12-10
 
 ### Changed

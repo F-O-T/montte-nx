@@ -1,10 +1,48 @@
 import type { GroupEvaluationResult } from "@f-o-t/condition-evaluator";
+import { z } from "zod";
 import type {
    AggregatedConsequence,
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "./consequence.ts";
-import type { Rule } from "./rule.ts";
+} from "./consequence";
+import type { Rule } from "./rule";
+
+// ============================================================================
+// Zod Schemas - Define schemas first, then infer types
+// ============================================================================
+
+export const ConflictResolutionStrategySchema = z.enum([
+   "priority",
+   "first-match",
+   "all",
+   "most-specific",
+]);
+export type ConflictResolutionStrategy = z.infer<
+   typeof ConflictResolutionStrategySchema
+>;
+
+export const EvaluateOptionsSchema = z.object({
+   conflictResolution: ConflictResolutionStrategySchema.optional(),
+   maxRules: z.number().int().positive().optional(),
+   timeout: z.number().int().positive().optional(),
+   skipDisabled: z.boolean().optional(),
+   tags: z.array(z.string()).optional(),
+   category: z.string().optional(),
+   ruleSetId: z.string().optional(),
+   bypassCache: z.boolean().optional(),
+});
+export type EvaluateOptions = z.infer<typeof EvaluateOptionsSchema>;
+
+export const EvaluateConfigSchema = z.object({
+   conflictResolution: ConflictResolutionStrategySchema,
+   continueOnError: z.boolean(),
+   collectAllConsequences: z.boolean(),
+});
+export type EvaluateConfig = z.infer<typeof EvaluateConfigSchema>;
+
+// ============================================================================
+// Types that cannot be Zod schemas (contain complex generics)
+// ============================================================================
 
 export type EvaluationContext<TContext = unknown> = {
    readonly data: TContext;
@@ -46,27 +84,4 @@ export type EngineExecutionResult<
    readonly stoppedEarly: boolean;
    readonly stoppedByRuleId?: string;
    readonly cacheHit: boolean;
-};
-
-export type ConflictResolutionStrategy =
-   | "priority"
-   | "first-match"
-   | "all"
-   | "most-specific";
-
-export type EvaluateOptions = {
-   readonly conflictResolution?: ConflictResolutionStrategy;
-   readonly maxRules?: number;
-   readonly timeout?: number;
-   readonly skipDisabled?: boolean;
-   readonly tags?: ReadonlyArray<string>;
-   readonly category?: string;
-   readonly ruleSetId?: string;
-   readonly bypassCache?: boolean;
-};
-
-export type EvaluateConfig = {
-   readonly conflictResolution: ConflictResolutionStrategy;
-   readonly continueOnError: boolean;
-   readonly collectAllConsequences: boolean;
 };

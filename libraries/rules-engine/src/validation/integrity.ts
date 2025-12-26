@@ -6,8 +6,8 @@ import {
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { Rule, RuleSet } from "../types/rule.ts";
+} from "../types/consequence";
+import type { Rule, RuleSet } from "../types/rule";
 
 export type IntegrityIssue = {
    readonly code: string;

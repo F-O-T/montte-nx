@@ -4,8 +4,6 @@ import type {
    Condition,
    ConditionGroup,
    ConditionGroupInput,
-   ConditionOperator,
-   ConditionType,
    DateOperator,
    EvaluationContext,
    EvaluationResult,
@@ -13,7 +11,8 @@ import type {
    LogicalOperator,
    NumberOperator,
    StringOperator,
-} from "@packages/database/schema";
+} from "@f-o-t/rules-engine";
+import type { ConditionOperator, ConditionType } from "@packages/database/schema";
 
 export type {
    ArrayOperator,

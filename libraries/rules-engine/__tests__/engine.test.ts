@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import type { Condition, ConditionGroup } from "@f-o-t/condition-evaluator";
 import { z } from "zod";
-import { createEngine, type Engine } from "../src/engine/engine.ts";
-import type { ConsequenceDefinitions } from "../src/types/consequence.ts";
+import { createEngine, type Engine } from "../src/engine/engine";
+import type { ConsequenceDefinitions } from "../src/types/consequence";
 
 type TestContext = {
    age: number;

@@ -5,7 +5,7 @@ import {
    ofxHeaderSchema,
    ofxResponseSchema,
 } from "./schemas";
-import { toArray } from "./utils";
+import { decodeEntities, toArray } from "./utils";
 
 interface TagStackItem {
    name: string;
@@ -32,25 +32,16 @@ export function getEncodingFromCharset(charset?: string): string {
    return CHARSET_MAP[normalized] ?? "windows-1252";
 }
 
-const ENTITY_MAP: Record<string, string> = {
-   "&amp;": "&",
-   "&apos;": "'",
-   "&gt;": ">",
-   "&lt;": "<",
-   "&quot;": '"',
-};
-
-const ENTITY_REGEX = /&(?:amp|lt|gt|quot|apos);/g;
-
-function decodeEntities(text: string): string {
-   return text.replace(ENTITY_REGEX, (match) => ENTITY_MAP[match] ?? match);
-}
-
 function addToContent(
    content: Record<string, unknown>,
    key: string,
    value: unknown,
 ): void {
+   // Prevent prototype pollution
+   if (key === "__proto__" || key === "constructor" || key === "prototype") {
+      return;
+   }
+
    const existing = content[key];
    if (existing !== undefined) {
       if (Array.isArray(existing)) {
@@ -127,7 +118,7 @@ function generateFitId(txn: Record<string, unknown>, index: number): string {
    let hash = 0;
    for (let i = 0; i < input.length; i++) {
       hash = (hash << 5) - hash + input.charCodeAt(i);
-      hash = hash & hash;
+      hash = hash | 0; // Convert to 32-bit integer
    }
    return `AUTO${Math.abs(hash).toString(16).toUpperCase().padStart(8, "0")}`;
 }
@@ -360,9 +351,11 @@ function parseHeaderFromBuffer(buffer: Uint8Array): {
    encoding: string;
 } {
    const maxHeaderSize = Math.min(buffer.length, 1000);
-   const headerSection = new TextDecoder(
-      "iso-8859-1" as unknown as "utf-8",
-   ).decode(buffer.slice(0, maxHeaderSize));
+   // TextDecoder supports multiple encodings at runtime, TypeScript types are restrictive
+   // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+   const headerSection = new TextDecoder("iso-8859-1" as any).decode(
+      buffer.slice(0, maxHeaderSize),
+   );
 
    const header: Record<string, string> = {};
 
@@ -444,7 +437,9 @@ export function parseBuffer(buffer: Uint8Array): ParseResult<OFXDocument> {
       }
 
       const { encoding } = parseHeaderFromBuffer(buffer);
-      const decoder = new TextDecoder(encoding as "utf-8");
+      // TextDecoder supports multiple encodings at runtime, TypeScript types are restrictive
+      // biome-ignore lint/suspicious/noExplicitAny: TextDecoder runtime supports more encodings than TypeScript types
+      const decoder = new TextDecoder(encoding as any);
       const content = decoder.decode(buffer);
 
       return parse(content);

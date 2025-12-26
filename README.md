@@ -82,48 +82,114 @@
 
 The Montte project is a full-stack application built within an **Nx** monorepo using **Bun**.
 
-| Category      | Technology                                                                                                  |
-| :------------ | :---------------------------------------------------------------------------------------------------------- |
-| **Frontend**  | **React**, **Vite**, **TypeScript**, **TanStack Router**, **TanStack Query**, **shadcn/ui**, **Tailwind CSS** |
-| **Backend**   | **ElysiaJS**, **Bun**, **tRPC**, **Drizzle ORM**, **PostgreSQL**                                              |
-| **Auth**      | **Better Auth**                                                                                             |
-| **Storage**   | **MinIO** (S3 compatible for file/logo storage)                                                             |
-| **Analytics** | **PostHog**                                                                                                 |
-| **Email**     | **Resend** (Transactional emails)                                                                           |
-| **Documentation**| **Astro** (Starlight)                                                                                      |
-| **Tooling**   | **Nx**, **Biome**, **Docker**, **Husky**                                                                    |
+| Category       | Technology                                                                                                      |
+| :------------- | :-------------------------------------------------------------------------------------------------------------- |
+| **Frontend**   | **React**, **Vite**, **TypeScript**, **TanStack Router**, **TanStack Query**, **shadcn/ui**, **Tailwind CSS**   |
+| **Backend**    | **ElysiaJS**, **Bun**, **tRPC**, **Drizzle ORM**, **PostgreSQL**                                                |
+| **Auth**       | **Better Auth**                                                                                                 |
+| **Jobs**       | **BullMQ**, **Redis**                                                                                           |
+| **Storage**    | **MinIO** (S3 compatible for file/logo storage)                                                                 |
+| **Security**   | **Arcjet** (Rate limiting & DDoS protection)                                                                    |
+| **Analytics**  | **PostHog**                                                                                                     |
+| **Email**      | **Resend** (Transactional emails)                                                                               |
+| **Landing**    | **Astro** (Static marketing site)                                                                               |
+| **Tooling**    | **Nx**, **Biome**, **Docker**, **Husky**                                                                        |
 
 ## 📂 Project Structure
 
 This project is a monorepo managed by Nx.
 
 ### Apps (`apps/`)
+
 The deployable applications and websites.
 
--   **`dashboard`**: The core finance tracking single-page application (SPA) built with React.
--   **`server`**: The ElysiaJS backend server providing the tRPC API and authentication endpoints.
+```
+apps/
+├── dashboard/     # React/Vite SPA - main user interface
+├── server/        # Elysia backend API server
+├── worker/        # BullMQ background job processor
+└── landing-page/  # Astro marketing website
+```
+
+-   **`dashboard`**: The core finance tracking single-page application (SPA) built with React, featuring file-based routing with TanStack Router and PWA support.
+-   **`server`**: The ElysiaJS backend server providing the tRPC API, authentication endpoints, and file storage integration.
+-   **`worker`**: Background job processor using BullMQ for handling async tasks like email delivery, notifications, and data processing.
+-   **`landing-page`**: Astro-based static marketing site with i18n support (Portuguese/English).
 
 ### Packages (`packages/`)
-Shared internal libraries used to modularize the application logic.
 
--   **`api`**: Defines the tRPC routers, root router, context creation, and client-side API wrappers.
--   **`authentication`**: Centralized configuration for Better Auth, including database adapters and plugins.
--   **`database`**: Drizzle ORM setup, database schemas, repository pattern implementations, and migrations.
--   **`ui`**: Shared React components library (shadcn/ui), hooks, and Tailwind configuration.
--   **`environment`**: Type-safe environment variable validation using Zod. Handles parsing for both client and server environments to ensure runtime safety.
--   **`files`**: Abstraction layer for file storage (MinIO/S3) and image processing (Sharp).
--   **`localization`**: i18n configuration, language detectors, and translation JSON resources.
--   **`transactional`**: React Email templates and Resend client for sending transactional emails.
--   **`utils`**: General utility functions for dates, currency formatting, error handling, and text manipulation.
--   **`posthog`**: Analytics integration setup for both client-side and server-side tracking.
--   **`brasil-api`**: Integration wrapper for BrasilAPI to fetch bank data.
--   **`ofx`**: Utilities for parsing and processing OFX (Open Financial Exchange) bank statement files.
+Shared internal libraries organized by concern. All packages use explicit exports in `package.json`.
 
-### Libraries (`libraries/`)
-Standalone libraries developed within the repo that could potentially be published separately.
+#### Core Services
 
--   **`ofx`**: Core logic and types for extracting data from OFX file formats.
--   **`condition-evaluator`**: Rule engine for evaluating complex conditional logic in automation rules.
+| Package          | Purpose                                           |
+| ---------------- | ------------------------------------------------- |
+| `api`            | tRPC routers and type-safe API layer              |
+| `authentication` | Better Auth setup with OAuth, magic links, 2FA    |
+| `database`       | Drizzle ORM schemas and repositories              |
+| `environment`    | Zod-validated environment variables               |
+| `logging`        | Structured logging with Pino and Logtail          |
+
+#### External Integrations
+
+| Package        | Purpose                                |
+| -------------- | -------------------------------------- |
+| `arcjet`       | Rate limiting and DDoS protection      |
+| `brasil-api`   | Brazilian bank data API integration    |
+| `cache`        | Redis caching layer                    |
+| `files`        | MinIO S3-compatible file storage       |
+| `posthog`      | Analytics tracking (client & server)   |
+| `queue`        | BullMQ job queue abstractions          |
+| `stripe`       | Stripe payments SDK wrapper            |
+| `transactional`| React Email templates with Resend      |
+
+#### Feature Modules
+
+| Package        | Purpose                                |
+| -------------- | -------------------------------------- |
+| `csv`          | CSV parsing and batch processing       |
+| `encryption`   | E2E encryption with NaCl (TweetNaCl)   |
+| `notifications`| Push notifications and alerts          |
+| `ofx`          | OFX file parsing and processing        |
+| `pdf`          | PDF report generation                  |
+| `workflows`    | Visual automation rule engine          |
+
+#### Frontend
+
+| Package        | Purpose                                |
+| -------------- | -------------------------------------- |
+| `localization` | i18next with en-US/pt-BR support       |
+| `ui`           | Radix + Tailwind component library     |
+
+#### Utilities
+
+| Package | Purpose                                     |
+| ------- | ------------------------------------------- |
+| `utils` | Shared utilities (dates, money, errors)     |
+
+### Dashboard Features (`apps/dashboard/src/features/`)
+
+The dashboard organizes functionality into feature modules, each with its own hooks, UI components, and utilities.
+
+| Feature           | Purpose                                      |
+| ----------------- | -------------------------------------------- |
+| `bank-account`    | Bank account CRUD and selection              |
+| `bill`            | Bill tracking with recurrence and installments |
+| `category`        | Transaction type and category selection      |
+| `cookie-consent`  | GDPR cookie consent banner                   |
+| `custom-report`   | Custom financial report builder              |
+| `encryption`      | E2E encryption setup and unlock UI           |
+| `error-report`    | User error feedback modal                    |
+| `expense-split`   | Team expense splitting and settlements       |
+| `export`          | Multi-format data export wizard              |
+| `file-upload`     | File uploads with compression                |
+| `icon-selector`   | Icon picker for categories/accounts          |
+| `import`          | CSV/OFX import with duplicate detection      |
+| `notifications`   | Push notification preferences                |
+| `organization`    | Team and member management                   |
+| `permissions`     | Bank account access control                  |
+| `stripe-disclosure` | Stripe payment disclaimer                  |
+| `transaction`     | Transaction CRUD with categorization         |
 
 ## 🤝 Contributing
 

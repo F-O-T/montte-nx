@@ -3,12 +3,12 @@ import type { z } from "zod";
 import type {
    ConsequenceDefinitions,
    DefaultConsequences,
-} from "../types/consequence.ts";
-import type { RuleInput } from "../types/rule.ts";
+} from "../types/consequence";
+import type { RuleInput } from "../types/rule";
 import {
    type ConditionBuilder,
    conditions as createConditions,
-} from "./conditions.ts";
+} from "./conditions";
 
 export type RuleBuilderState<
    _TContext = unknown,

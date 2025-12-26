@@ -10,7 +10,10 @@
       "path": "../utils/tsconfig.lib.json"
     },
     {
-      "path": "../../libraries/condition-evaluator"
+      "path": "../money"
+    },
+    {
+      "path": "../../libraries/rules-engine"
     }
   ]
 }

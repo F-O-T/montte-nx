@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { createCache } from "../src/cache/cache.ts";
-import { createNoopCache } from "../src/cache/noop.ts";
+import { createCache } from "../src/cache/cache";
+import { createNoopCache } from "../src/cache/noop";
 
 describe("createCache", () => {
    test("should store and retrieve values", () => {

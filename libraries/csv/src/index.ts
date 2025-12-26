@@ -1,5 +1,3 @@
-// Parser exports
-
 // Generator exports
 export {
    createGenerator,
@@ -7,6 +5,8 @@ export {
    generateFromObjects,
    generateRow,
 } from "./generator";
+
+// Parser exports
 export {
    parse,
    parseBuffer,
@@ -14,14 +14,21 @@ export {
    parseOrThrow,
    parseToArray,
 } from "./parser";
+
 // Schema exports
 export {
+   batchCsvFileInputSchema,
+   batchCsvStreamEventSchema,
+   batchParsedCsvFileSchema,
    csvDocumentSchema,
+   DEFAULT_MAX_BUFFER_SIZE,
    generateOptionsSchema,
    parsedRowSchema,
    parseOptionsSchema,
+   streamEventSchema,
    streamOptionsSchema,
 } from "./schemas";
+
 // Streaming exports
 export {
    parseBatchStream,
@@ -30,7 +37,8 @@ export {
    parseStream,
    parseStreamToArray,
 } from "./stream";
-// Type exports
+
+// Type exports (all derived from Zod schemas, re-exported from types.ts)
 export type {
    BatchCsvFileInput,
    BatchCsvStreamEvent,
@@ -43,6 +51,7 @@ export type {
    StreamEvent,
    StreamOptions,
 } from "./types";
+
 // Utility exports
 export {
    decodeBuffer,

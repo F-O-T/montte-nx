@@ -201,6 +201,11 @@ export function escapeField(
 }
 
 /**
+ * Dangerous property names that could cause prototype pollution.
+ */
+const DANGEROUS_PROPS = new Set(["__proto__", "constructor", "prototype"]);
+
+/**
  * Creates a ParsedRow from raw field values.
  *
  * @param fields - The raw field values from the CSV row
@@ -223,10 +228,13 @@ export function createParsedRow(
    };
 
    if (headers) {
-      row.record = {};
+      // Use Object.create(null) to prevent prototype pollution attacks
+      // from malicious CSV headers like "__proto__" or "constructor"
+      row.record = Object.create(null) as Record<string, string>;
       for (let i = 0; i < headers.length; i++) {
          const header = headers[i];
-         if (header !== undefined) {
+         // Skip undefined headers and dangerous property names
+         if (header !== undefined && !DANGEROUS_PROPS.has(header)) {
             row.record[header] = processedFields[i] ?? "";
          }
       }
