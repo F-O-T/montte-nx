@@ -27,6 +27,13 @@ COPY libraries/money/package.json ./libraries/money/
 
 RUN bun install
 
+WORKDIR /app/libraries/money
+RUN bun run build
+WORKDIR /app
+WORKDIR /app/libraries/money
+RUN bun run build
+WORKDIR /app
+
 COPY . .
 
 ENV NODE_ENV=production
