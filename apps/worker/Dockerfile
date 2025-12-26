@@ -30,7 +30,7 @@ RUN bun install
 WORKDIR /app/libraries/money
 RUN bun run build
 WORKDIR /app
-WORKDIR /app/libraries/money
+WORKDIR /app/libraries/condition-evaluator
 RUN bun run build
 WORKDIR /app
 
