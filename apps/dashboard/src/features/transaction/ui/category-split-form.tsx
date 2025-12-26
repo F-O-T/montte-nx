@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import { Button } from "@packages/ui/components/button";
 import { Field, FieldGroup, FieldLabel } from "@packages/ui/components/field";
 import { MoneyInput } from "@packages/ui/components/money-input";
@@ -9,7 +10,6 @@ import {
    SheetHeader,
    SheetTitle,
 } from "@packages/ui/components/sheet";
-import { formatDecimalCurrency } from "@packages/money";
 import {
    type CategorySplit,
    getRemainingAmount,

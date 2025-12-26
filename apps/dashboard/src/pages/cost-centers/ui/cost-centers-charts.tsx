@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import {
    Card,
    CardContent,
@@ -15,7 +16,6 @@ import {
 } from "@packages/ui/components/chart";
 import { createErrorFallback } from "@packages/ui/components/error-fallback";
 import { Skeleton } from "@packages/ui/components/skeleton";
-import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useMemo } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";

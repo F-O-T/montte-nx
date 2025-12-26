@@ -30,7 +30,11 @@ export function assertAllSameCurrency(moneys: Money[]): void {
          throw CurrencyMismatchError.create(first.currency, current.currency);
       }
       if (current.scale !== first.scale) {
-         throw ScaleMismatchError.create(first.currency, first.scale, current.scale);
+         throw ScaleMismatchError.create(
+            first.currency,
+            first.scale,
+            current.scale,
+         );
       }
    }
 }

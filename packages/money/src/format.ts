@@ -1,11 +1,11 @@
+import type { FormatOptions, Money } from "@f-o-t/money";
 import {
-	format,
-	formatCompact,
-	formatAmount,
-	of,
-	fromMinorUnits,
+   format,
+   formatAmount,
+   formatCompact,
+   fromMinorUnits,
+   of,
 } from "@f-o-t/money";
-import type { Money, FormatOptions } from "@f-o-t/money";
 
 const DEFAULT_CURRENCY = "BRL";
 const DEFAULT_LOCALE = "pt-BR";
@@ -22,10 +22,10 @@ const DEFAULT_LOCALE = "pt-BR";
  * formatCurrency(100, "USD") // "$1.00"
  */
 export function formatCurrency(
-	cents: number,
-	currency = DEFAULT_CURRENCY,
+   cents: number,
+   currency = DEFAULT_CURRENCY,
 ): string {
-	return format(fromMinorUnits(cents, currency), DEFAULT_LOCALE);
+   return format(fromMinorUnits(cents, currency), DEFAULT_LOCALE);
 }
 
 /**
@@ -39,10 +39,10 @@ export function formatCurrency(
  * formatDecimalCurrency(1234.56) // "R$ 1.234,56"
  */
 export function formatDecimalCurrency(
-	amount: number,
-	currency = DEFAULT_CURRENCY,
+   amount: number,
+   currency = DEFAULT_CURRENCY,
 ): string {
-	return format(of(String(amount), currency), DEFAULT_LOCALE);
+   return format(of(String(amount), currency), DEFAULT_LOCALE);
 }
 
 /**
@@ -56,10 +56,10 @@ export function formatDecimalCurrency(
  * formatCompactCurrency(123456789) // "R$ 1,2M"
  */
 export function formatCompactCurrency(
-	cents: number,
-	currency = DEFAULT_CURRENCY,
+   cents: number,
+   currency = DEFAULT_CURRENCY,
 ): string {
-	return formatCompact(fromMinorUnits(cents, currency), DEFAULT_LOCALE);
+   return formatCompact(fromMinorUnits(cents, currency), DEFAULT_LOCALE);
 }
 
 /**
@@ -73,7 +73,7 @@ export function formatCompactCurrency(
  * formatMoney(of("1234.56", "BRL")) // "R$ 1.234,56"
  */
 export function formatMoney(money: Money, options?: FormatOptions): string {
-	return format(money, DEFAULT_LOCALE, options);
+   return format(money, DEFAULT_LOCALE, options);
 }
 
 /**
@@ -83,5 +83,5 @@ export function formatMoney(money: Money, options?: FormatOptions): string {
  * @returns Formatted amount without symbol (e.g., "1.234,56")
  */
 export function formatAmountOnly(money: Money): string {
-	return formatAmount(money, DEFAULT_LOCALE);
+   return formatAmount(money, DEFAULT_LOCALE);
 }

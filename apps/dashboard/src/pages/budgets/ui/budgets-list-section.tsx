@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { DataTable } from "@packages/ui/components/data-table";
@@ -26,7 +27,6 @@ import {
    ToggleGroupItem,
 } from "@packages/ui/components/toggle-group";
 import { useIsMobile } from "@packages/ui/hooks/use-mobile";
-import { formatDecimalCurrency } from "@packages/money";
 import { keepPreviousData, useSuspenseQuery } from "@tanstack/react-query";
 import type { RowSelectionState } from "@tanstack/react-table";
 import {

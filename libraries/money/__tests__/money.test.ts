@@ -40,9 +40,9 @@ import {
    min,
    multiply,
    negate,
+   OverflowError,
    of,
    ofRounded,
-   OverflowError,
    parse,
    percentage,
    registerCurrency,
@@ -550,7 +550,9 @@ describe("Allocation", () => {
          const total = result.reduce((acc, m) => acc + m.amount, 0n);
          expect(total).toBe(10000n);
          // Most should go to the large ratio
-         expect((result[2] as { amount: bigint }).amount).toBeGreaterThan(9990n);
+         expect((result[2] as { amount: bigint }).amount).toBeGreaterThan(
+            9990n,
+         );
       });
 
       test("handles very large ratios", () => {
@@ -566,7 +568,9 @@ describe("Allocation", () => {
          const total = result.reduce((acc, m) => acc + m.amount, 0n);
          expect(total).toBe(100000n);
          // Middle ratio dominates
-         expect((result[1] as { amount: bigint }).amount).toBeGreaterThan(99900n);
+         expect((result[1] as { amount: bigint }).amount).toBeGreaterThan(
+            99900n,
+         );
       });
    });
 
@@ -1174,7 +1178,9 @@ describe("Scale Validation", () => {
       const b = of("20.00", "USD");
       const c = Object.freeze({ amount: 3000n, currency: "USD", scale: 4 });
 
-      expect(() => assertAllSameCurrency([a, b, c])).toThrow(ScaleMismatchError);
+      expect(() => assertAllSameCurrency([a, b, c])).toThrow(
+         ScaleMismatchError,
+      );
    });
 
    test("factory functions create correct scales", () => {

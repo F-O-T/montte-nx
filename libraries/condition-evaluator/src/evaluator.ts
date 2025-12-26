@@ -114,7 +114,6 @@ export function evaluateConditionValue(
    }
 }
 
-
 export function evaluateCondition(
    condition: Condition,
    context: EvaluationContext,

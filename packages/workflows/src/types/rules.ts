@@ -1,7 +1,7 @@
+import type { ConditionGroup } from "@f-o-t/rules-engine";
 import type {
 	ActionType,
 	automationRule,
-	ConditionGroup,
 	Consequence,
 	TriggerConfig,
 	TriggerType,

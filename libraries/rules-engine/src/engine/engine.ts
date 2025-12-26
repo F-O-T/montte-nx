@@ -2,13 +2,13 @@ import { type Cache, createCache } from "../cache/cache";
 import { createNoopCache } from "../cache/noop";
 import { evaluateRule } from "../core/evaluate";
 import {
-	type EngineConfig,
-	type ResolvedEngineConfig,
-	getDefaultCacheConfig,
-	getDefaultConflictResolution,
-	getDefaultLogLevel,
-	getDefaultValidationConfig,
-	getDefaultVersioningConfig,
+   type EngineConfig,
+   getDefaultCacheConfig,
+   getDefaultConflictResolution,
+   getDefaultLogLevel,
+   getDefaultValidationConfig,
+   getDefaultVersioningConfig,
+   type ResolvedEngineConfig,
 } from "../types/config";
 import type {
    AggregatedConsequence,
@@ -110,34 +110,34 @@ export type Engine<
 };
 
 const resolveConfig = <
-	TContext = unknown,
-	TConsequences extends ConsequenceDefinitions = DefaultConsequences,
+   TContext = unknown,
+   TConsequences extends ConsequenceDefinitions = DefaultConsequences,
 >(
-	config: EngineConfig<TContext, TConsequences>,
+   config: EngineConfig<TContext, TConsequences>,
 ): ResolvedEngineConfig<TContext, TConsequences> => {
-	return {
-		consequences: config.consequences,
-		conflictResolution:
-			config.conflictResolution ?? getDefaultConflictResolution(),
-		cache: {
-			...getDefaultCacheConfig(),
-			...config.cache,
-		},
-		validation: {
-			...getDefaultValidationConfig(),
-			...config.validation,
-		},
-		versioning: {
-			...getDefaultVersioningConfig(),
-			...config.versioning,
-		},
-		hooks: config.hooks ?? {},
-		logLevel: config.logLevel ?? getDefaultLogLevel(),
-		logger: config.logger ?? console,
-		continueOnError: config.continueOnError ?? true,
-		slowRuleThresholdMs: config.slowRuleThresholdMs ?? 10,
-		hookTimeoutMs: config.hookTimeoutMs,
-	};
+   return {
+      consequences: config.consequences,
+      conflictResolution:
+         config.conflictResolution ?? getDefaultConflictResolution(),
+      cache: {
+         ...getDefaultCacheConfig(),
+         ...config.cache,
+      },
+      validation: {
+         ...getDefaultValidationConfig(),
+         ...config.validation,
+      },
+      versioning: {
+         ...getDefaultVersioningConfig(),
+         ...config.versioning,
+      },
+      hooks: config.hooks ?? {},
+      logLevel: config.logLevel ?? getDefaultLogLevel(),
+      logger: config.logger ?? console,
+      continueOnError: config.continueOnError ?? true,
+      slowRuleThresholdMs: config.slowRuleThresholdMs ?? 10,
+      hookTimeoutMs: config.hookTimeoutMs,
+   };
 };
 
 export const createEngine = <
@@ -201,14 +201,23 @@ export const createEngine = <
          const cached = cache.get(cacheKey);
          if (cached) {
             cacheHits++;
-            await executeOnCacheHit(resolvedConfig.hooks, cacheKey, cached, resolvedConfig.hookTimeoutMs);
+            await executeOnCacheHit(
+               resolvedConfig.hooks,
+               cacheKey,
+               cached,
+               resolvedConfig.hookTimeoutMs,
+            );
             return { ...cached, cacheHit: true };
          }
       }
 
       if (cacheKey) {
          cacheMisses++;
-         await executeOnCacheMiss(resolvedConfig.hooks, cacheKey, resolvedConfig.hookTimeoutMs);
+         await executeOnCacheMiss(
+            resolvedConfig.hooks,
+            cacheKey,
+            resolvedConfig.hookTimeoutMs,
+         );
       }
 
       await executeBeforeEvaluation(
@@ -245,13 +254,23 @@ export const createEngine = <
          options.conflictResolution ?? resolvedConfig.conflictResolution;
 
       for (const { rule, result } of evaluationResult) {
-         await executeBeforeRuleEvaluation(resolvedConfig.hooks, rule, context, resolvedConfig.hookTimeoutMs);
+         await executeBeforeRuleEvaluation(
+            resolvedConfig.hooks,
+            rule,
+            context,
+            resolvedConfig.hookTimeoutMs,
+         );
 
          ruleResults.push(result);
 
          if (result.error) {
             rulesErrored++;
-            await executeOnRuleError(resolvedConfig.hooks, rule, result.error, resolvedConfig.hookTimeoutMs);
+            await executeOnRuleError(
+               resolvedConfig.hooks,
+               rule,
+               result.error,
+               resolvedConfig.hookTimeoutMs,
+            );
             if (!resolvedConfig.continueOnError) {
                break;
             }
@@ -276,7 +295,12 @@ export const createEngine = <
             );
          }
 
-         await executeAfterRuleEvaluation(resolvedConfig.hooks, rule, result, resolvedConfig.hookTimeoutMs);
+         await executeAfterRuleEvaluation(
+            resolvedConfig.hooks,
+            rule,
+            result,
+            resolvedConfig.hookTimeoutMs,
+         );
 
          if (result.matched) {
             matchedRules.push(rule);
@@ -291,7 +315,12 @@ export const createEngine = <
                );
             }
 
-            await executeOnRuleMatch(resolvedConfig.hooks, rule, context, resolvedConfig.hookTimeoutMs);
+            await executeOnRuleMatch(
+               resolvedConfig.hooks,
+               rule,
+               context,
+               resolvedConfig.hookTimeoutMs,
+            );
 
             if (rule.stopOnMatch) {
                stoppedEarly = true;
@@ -331,7 +360,11 @@ export const createEngine = <
          cache.set(cacheKey, executionResult);
       }
 
-      await executeAfterEvaluation(resolvedConfig.hooks, executionResult, resolvedConfig.hookTimeoutMs);
+      await executeAfterEvaluation(
+         resolvedConfig.hooks,
+         executionResult,
+         resolvedConfig.hookTimeoutMs,
+      );
 
       return executionResult;
    };

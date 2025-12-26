@@ -130,9 +130,19 @@ describe("Number Operators", () => {
       });
 
       it("handles Infinity", () => {
-         expect(evaluateNumber("gt", Number.POSITIVE_INFINITY, 1000000)).toBe(true);
-         expect(evaluateNumber("lt", Number.NEGATIVE_INFINITY, -1000000)).toBe(true);
-         expect(evaluateNumber("eq", Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY)).toBe(true);
+         expect(evaluateNumber("gt", Number.POSITIVE_INFINITY, 1000000)).toBe(
+            true,
+         );
+         expect(evaluateNumber("lt", Number.NEGATIVE_INFINITY, -1000000)).toBe(
+            true,
+         );
+         expect(
+            evaluateNumber(
+               "eq",
+               Number.POSITIVE_INFINITY,
+               Number.POSITIVE_INFINITY,
+            ),
+         ).toBe(true);
       });
 
       it("handles -Infinity", () => {
@@ -141,13 +151,37 @@ describe("Number Operators", () => {
       });
 
       it("handles MAX_SAFE_INTEGER", () => {
-         expect(evaluateNumber("eq", Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER)).toBe(true);
-         expect(evaluateNumber("lt", Number.MAX_SAFE_INTEGER - 1, Number.MAX_SAFE_INTEGER)).toBe(true);
+         expect(
+            evaluateNumber(
+               "eq",
+               Number.MAX_SAFE_INTEGER,
+               Number.MAX_SAFE_INTEGER,
+            ),
+         ).toBe(true);
+         expect(
+            evaluateNumber(
+               "lt",
+               Number.MAX_SAFE_INTEGER - 1,
+               Number.MAX_SAFE_INTEGER,
+            ),
+         ).toBe(true);
       });
 
       it("handles MIN_SAFE_INTEGER", () => {
-         expect(evaluateNumber("eq", Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER)).toBe(true);
-         expect(evaluateNumber("gt", Number.MIN_SAFE_INTEGER + 1, Number.MIN_SAFE_INTEGER)).toBe(true);
+         expect(
+            evaluateNumber(
+               "eq",
+               Number.MIN_SAFE_INTEGER,
+               Number.MIN_SAFE_INTEGER,
+            ),
+         ).toBe(true);
+         expect(
+            evaluateNumber(
+               "gt",
+               Number.MIN_SAFE_INTEGER + 1,
+               Number.MIN_SAFE_INTEGER,
+            ),
+         ).toBe(true);
       });
 
       it("handles very small decimals", () => {

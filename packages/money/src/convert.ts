@@ -1,5 +1,5 @@
-import { of, fromMinorUnits, toMinorUnits, toDecimal } from "@f-o-t/money";
 import type { Money } from "@f-o-t/money";
+import { fromMinorUnits, of, toDecimal, toMinorUnits } from "@f-o-t/money";
 
 const DEFAULT_CURRENCY = "BRL";
 
@@ -14,7 +14,7 @@ const DEFAULT_CURRENCY = "BRL";
  * centsToReais(100) // 1.00
  */
 export function centsToReais(cents: number): number {
-	return cents / 100;
+   return cents / 100;
 }
 
 /**
@@ -30,7 +30,7 @@ export function centsToReais(cents: number): number {
  * centsToReaisString(100) // "1.00"
  */
 export function centsToReaisString(cents: number): string {
-	return toDecimal(fromMinorUnits(cents, DEFAULT_CURRENCY));
+   return toDecimal(fromMinorUnits(cents, DEFAULT_CURRENCY));
 }
 
 /**
@@ -44,8 +44,8 @@ export function centsToReaisString(cents: number): string {
  * reaisToCents("1.00") // 100
  */
 export function reaisToCents(reais: number | string): number {
-	const amount = typeof reais === "number" ? String(reais) : reais;
-	return toMinorUnits(of(amount, DEFAULT_CURRENCY));
+   const amount = typeof reais === "number" ? String(reais) : reais;
+   return toMinorUnits(of(amount, DEFAULT_CURRENCY));
 }
 
 /**
@@ -59,7 +59,7 @@ export function reaisToCents(reais: number | string): number {
  * fromCents(12345) // Money { amount: 12345n, currency: "BRL", scale: 2 }
  */
 export function fromCents(cents: number, currency = DEFAULT_CURRENCY): Money {
-	return fromMinorUnits(cents, currency);
+   return fromMinorUnits(cents, currency);
 }
 
 /**
@@ -74,11 +74,11 @@ export function fromCents(cents: number, currency = DEFAULT_CURRENCY): Money {
  * fromDecimal("99.99", "USD") // Money { amount: 9999n, currency: "USD", scale: 2 }
  */
 export function fromDecimal(
-	amount: number | string,
-	currency = DEFAULT_CURRENCY,
+   amount: number | string,
+   currency = DEFAULT_CURRENCY,
 ): Money {
-	const amountStr = typeof amount === "number" ? String(amount) : amount;
-	return of(amountStr, currency);
+   const amountStr = typeof amount === "number" ? String(amount) : amount;
+   return of(amountStr, currency);
 }
 
 /**
@@ -91,5 +91,5 @@ export function fromDecimal(
  * toCents(of("123.45", "BRL")) // 12345
  */
 export function toCents(money: Money): number {
-	return toMinorUnits(money);
+   return toMinorUnits(money);
 }

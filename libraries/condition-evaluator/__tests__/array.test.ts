@@ -24,7 +24,11 @@ describe("Array Operators", () => {
       });
 
       it("returns true when array contains nested array (deep equality)", () => {
-         const arr = [[1, 2], [3, 4], [5, 6]];
+         const arr = [
+            [1, 2],
+            [3, 4],
+            [5, 6],
+         ];
          expect(evaluateArray("contains", arr, [3, 4])).toBe(true);
       });
 
@@ -69,7 +73,9 @@ describe("Array Operators", () => {
    // ==========================================================================
    describe("contains_all", () => {
       it("returns true when array contains all expected values", () => {
-         expect(evaluateArray("contains_all", [1, 2, 3, 4, 5], [2, 4])).toBe(true);
+         expect(evaluateArray("contains_all", [1, 2, 3, 4, 5], [2, 4])).toBe(
+            true,
+         );
       });
 
       it("returns false when array is missing some expected values", () => {
@@ -90,9 +96,9 @@ describe("Array Operators", () => {
 
       it("handles objects with deep equality", () => {
          const arr = [{ id: 1 }, { id: 2 }, { id: 3 }];
-         expect(evaluateArray("contains_all", arr, [{ id: 1 }, { id: 3 }])).toBe(
-            true,
-         );
+         expect(
+            evaluateArray("contains_all", arr, [{ id: 1 }, { id: 3 }]),
+         ).toBe(true);
       });
    });
 
@@ -105,7 +111,9 @@ describe("Array Operators", () => {
       });
 
       it("returns false when array contains none of expected values", () => {
-         expect(evaluateArray("contains_any", [1, 2, 3], [4, 5, 6])).toBe(false);
+         expect(evaluateArray("contains_any", [1, 2, 3], [4, 5, 6])).toBe(
+            false,
+         );
       });
 
       it("returns false when expected array is empty", () => {
@@ -122,9 +130,9 @@ describe("Array Operators", () => {
 
       it("handles objects with deep equality", () => {
          const arr = [{ id: 1 }, { id: 2 }, { id: 3 }];
-         expect(evaluateArray("contains_any", arr, [{ id: 5 }, { id: 2 }])).toBe(
-            true,
-         );
+         expect(
+            evaluateArray("contains_any", arr, [{ id: 5 }, { id: 2 }]),
+         ).toBe(true);
       });
    });
 
@@ -166,7 +174,9 @@ describe("Array Operators", () => {
       });
 
       it("returns false for non-array input (treated as empty array)", () => {
-         expect(evaluateArray("is_not_empty", undefined, undefined)).toBe(false);
+         expect(evaluateArray("is_not_empty", undefined, undefined)).toBe(
+            false,
+         );
       });
    });
 
@@ -187,7 +197,9 @@ describe("Array Operators", () => {
       });
 
       it("handles string number input", () => {
-         expect(evaluateArray("length_eq", [1, 2, 3], "3" as unknown as number)).toBe(true);
+         expect(
+            evaluateArray("length_eq", [1, 2, 3], "3" as unknown as number),
+         ).toBe(true);
       });
 
       it("returns true for non-array input with length 0", () => {
@@ -243,26 +255,46 @@ describe("Array Operators", () => {
    describe("deep equality", () => {
       it("handles nested objects", () => {
          const arr = [{ user: { name: "John", age: 30 } }];
-         expect(evaluateArray("contains", arr, { user: { name: "John", age: 30 } })).toBe(
-            true,
-         );
+         expect(
+            evaluateArray("contains", arr, { user: { name: "John", age: 30 } }),
+         ).toBe(true);
       });
 
       it("handles nested arrays", () => {
-         const arr = [[[1, 2], [3, 4]]];
-         expect(evaluateArray("contains", arr, [[1, 2], [3, 4]])).toBe(true);
+         const arr = [
+            [
+               [1, 2],
+               [3, 4],
+            ],
+         ];
+         expect(
+            evaluateArray("contains", arr, [
+               [1, 2],
+               [3, 4],
+            ]),
+         ).toBe(true);
       });
 
       it("detects differences in nested objects", () => {
          const arr = [{ user: { name: "John", age: 30 } }];
-         expect(evaluateArray("contains", arr, { user: { name: "John", age: 31 } })).toBe(
-            false,
-         );
+         expect(
+            evaluateArray("contains", arr, { user: { name: "John", age: 31 } }),
+         ).toBe(false);
       });
 
       it("detects differences in nested arrays", () => {
-         const arr = [[[1, 2], [3, 4]]];
-         expect(evaluateArray("contains", arr, [[1, 2], [3, 5]])).toBe(false);
+         const arr = [
+            [
+               [1, 2],
+               [3, 4],
+            ],
+         ];
+         expect(
+            evaluateArray("contains", arr, [
+               [1, 2],
+               [3, 5],
+            ]),
+         ).toBe(false);
       });
 
       it("handles arrays with different lengths", () => {
@@ -282,9 +314,9 @@ describe("Array Operators", () => {
 
       it("handles mixed types in arrays", () => {
          const arr = [[1, "two", null, { three: 3 }]];
-         expect(evaluateArray("contains", arr, [1, "two", null, { three: 3 }])).toBe(
-            true,
-         );
+         expect(
+            evaluateArray("contains", arr, [1, "two", null, { three: 3 }]),
+         ).toBe(true);
       });
    });
 
@@ -315,7 +347,9 @@ describe("Array Operators", () => {
    // ==========================================================================
    describe("edge cases", () => {
       it("handles undefined in array", () => {
-         expect(evaluateArray("contains", [undefined, 1, 2], undefined)).toBe(true);
+         expect(evaluateArray("contains", [undefined, 1, 2], undefined)).toBe(
+            true,
+         );
       });
 
       it("handles null in array", () => {
@@ -336,7 +370,9 @@ describe("Array Operators", () => {
 
       it("handles NaN (note: NaN !== NaN)", () => {
          // NaN is never equal to NaN, so this should be false
-         expect(evaluateArray("contains", [Number.NaN, 1, 2], Number.NaN)).toBe(false);
+         expect(evaluateArray("contains", [Number.NaN, 1, 2], Number.NaN)).toBe(
+            false,
+         );
       });
 
       it("handles very large arrays", () => {
@@ -345,7 +381,8 @@ describe("Array Operators", () => {
       });
 
       it("handles sparse arrays", () => {
-         const sparse = [1, , , 4]; // biome-ignore lint/suspicious/noSparseArray: Testing sparse array behavior
+         // biome-ignore lint/suspicious/noSparseArray: Testing sparse array behavior
+         const sparse = [1, , , 4];
          expect(evaluateArray("length_eq", sparse, 4)).toBe(true);
       });
 
@@ -356,7 +393,9 @@ describe("Array Operators", () => {
 
       it("handles array vs non-array comparison", () => {
          const arr = [[1, 2, 3]];
-         expect(evaluateArray("contains", arr, { 0: 1, 1: 2, 2: 3 })).toBe(false);
+         expect(evaluateArray("contains", arr, { 0: 1, 1: 2, 2: 3 })).toBe(
+            false,
+         );
       });
    });
 });

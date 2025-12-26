@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseOrThrow, parseStream, generate } from "../src";
+import { generate, parseOrThrow, parseStream } from "../src";
 import { DEFAULT_MAX_BUFFER_SIZE } from "../src/schemas";
 
 describe("Security", () => {
@@ -142,9 +142,7 @@ describe("Security", () => {
 
    describe("Input Validation", () => {
       test("throws on invalid delimiter length", () => {
-         expect(() =>
-            parseOrThrow("a,b,c", { delimiter: "ab" }),
-         ).toThrow();
+         expect(() => parseOrThrow("a,b,c", { delimiter: "ab" })).toThrow();
       });
 
       test("throws on negative skipRows", () => {
@@ -152,9 +150,7 @@ describe("Security", () => {
       });
 
       test("throws on invalid generate options", () => {
-         expect(() =>
-            generate([["a", "b"]], { delimiter: "ab" }),
-         ).toThrow();
+         expect(() => generate([["a", "b"]], { delimiter: "ab" })).toThrow();
       });
 
       test("accepts valid options", () => {

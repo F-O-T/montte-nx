@@ -1,12 +1,12 @@
-import { z } from "zod";
 import {
-	type Condition,
-	type ConditionGroup,
-	isConditionGroup,
+   type Condition,
+   type ConditionGroup,
+   isConditionGroup,
 } from "@f-o-t/condition-evaluator";
+import { z } from "zod";
 import type {
-	ConsequenceDefinitions,
-	DefaultConsequences,
+   ConsequenceDefinitions,
+   DefaultConsequences,
 } from "../types/consequence";
 import { type Rule, RuleSchema, RuleSetSchema } from "../types/rule";
 
@@ -15,30 +15,30 @@ import { type Rule, RuleSchema, RuleSetSchema } from "../types/rule";
 // ============================================================================
 
 export const ValidationErrorSchema = z.object({
-	path: z.string(),
-	message: z.string(),
-	code: z.string(),
+   path: z.string(),
+   message: z.string(),
+   code: z.string(),
 });
 export type ValidationError = z.infer<typeof ValidationErrorSchema>;
 
 export const ValidationResultSchema = z.object({
-	valid: z.boolean(),
-	errors: z.array(ValidationErrorSchema),
+   valid: z.boolean(),
+   errors: z.array(ValidationErrorSchema),
 });
 export type ValidationResult = z.infer<typeof ValidationResultSchema>;
 
 export const ValidationOptionsSchema = z.object({
-	validateConditions: z.boolean().optional(),
-	validateConsequences: z.boolean().optional(),
-	strictMode: z.boolean().optional(),
+   validateConditions: z.boolean().optional(),
+   validateConsequences: z.boolean().optional(),
+   strictMode: z.boolean().optional(),
 });
 export type ValidationOptions = z.infer<typeof ValidationOptionsSchema>;
 
 // Resolved options with defaults applied
 export type ResolvedValidationOptions = {
-	validateConditions: boolean;
-	validateConsequences: boolean;
-	strictMode: boolean;
+   validateConditions: boolean;
+   validateConsequences: boolean;
+   strictMode: boolean;
 };
 
 // ============================================================================

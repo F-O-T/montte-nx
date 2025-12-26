@@ -1,7 +1,7 @@
 import type { ConditionGroup } from "@f-o-t/condition-evaluator";
 import type {
-	ConsequenceDefinitions,
-	DefaultConsequences,
+   ConsequenceDefinitions,
+   DefaultConsequences,
 } from "../types/consequence";
 import type { Rule } from "../types/rule";
 import { collectConditionFields } from "../utils/conditions";
@@ -46,10 +46,10 @@ export type IndexOptions = {
 };
 
 const DEFAULT_OPTIONS: IndexOptions = {
-	indexByField: true,
-	indexByTag: true,
-	indexByCategory: true,
-	indexByPriority: true,
+   indexByField: true,
+   indexByTag: true,
+   indexByCategory: true,
+   indexByPriority: true,
 };
 
 export const buildIndex = <

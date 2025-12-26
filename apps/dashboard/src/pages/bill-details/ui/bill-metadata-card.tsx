@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Announcement,
@@ -14,7 +15,6 @@ import {
 } from "@packages/ui/components/card";
 import { Skeleton } from "@packages/ui/components/skeleton";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { AlertCircle, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { Suspense } from "react";

@@ -8,9 +8,9 @@ describe("Date Operators", () => {
    describe("eq", () => {
       it("returns true when dates are equal (Date objects)", () => {
          const date = new Date("2024-06-15T12:00:00Z");
-         expect(evaluateDate("eq", date, new Date("2024-06-15T12:00:00Z"))).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("eq", date, new Date("2024-06-15T12:00:00Z")),
+         ).toBe(true);
       });
 
       it("returns true when dates are equal (ISO strings)", () => {
@@ -66,19 +66,31 @@ describe("Date Operators", () => {
    describe("before", () => {
       it("returns true when actual is before expected", () => {
          expect(
-            evaluateDate("before", "2024-06-15T12:00:00Z", "2024-06-16T12:00:00Z"),
+            evaluateDate(
+               "before",
+               "2024-06-15T12:00:00Z",
+               "2024-06-16T12:00:00Z",
+            ),
          ).toBe(true);
       });
 
       it("returns false when actual is after expected", () => {
          expect(
-            evaluateDate("before", "2024-06-17T12:00:00Z", "2024-06-16T12:00:00Z"),
+            evaluateDate(
+               "before",
+               "2024-06-17T12:00:00Z",
+               "2024-06-16T12:00:00Z",
+            ),
          ).toBe(false);
       });
 
       it("returns false when dates are equal", () => {
          expect(
-            evaluateDate("before", "2024-06-15T12:00:00Z", "2024-06-15T12:00:00Z"),
+            evaluateDate(
+               "before",
+               "2024-06-15T12:00:00Z",
+               "2024-06-15T12:00:00Z",
+            ),
          ).toBe(false);
       });
 
@@ -95,19 +107,31 @@ describe("Date Operators", () => {
    describe("after", () => {
       it("returns true when actual is after expected", () => {
          expect(
-            evaluateDate("after", "2024-06-17T12:00:00Z", "2024-06-16T12:00:00Z"),
+            evaluateDate(
+               "after",
+               "2024-06-17T12:00:00Z",
+               "2024-06-16T12:00:00Z",
+            ),
          ).toBe(true);
       });
 
       it("returns false when actual is before expected", () => {
          expect(
-            evaluateDate("after", "2024-06-15T12:00:00Z", "2024-06-16T12:00:00Z"),
+            evaluateDate(
+               "after",
+               "2024-06-15T12:00:00Z",
+               "2024-06-16T12:00:00Z",
+            ),
          ).toBe(false);
       });
 
       it("returns false when dates are equal", () => {
          expect(
-            evaluateDate("after", "2024-06-15T12:00:00Z", "2024-06-15T12:00:00Z"),
+            evaluateDate(
+               "after",
+               "2024-06-15T12:00:00Z",
+               "2024-06-15T12:00:00Z",
+            ),
          ).toBe(false);
       });
 
@@ -169,7 +193,11 @@ describe("Date Operators", () => {
 
       it("returns false when range is invalid (not an array)", () => {
          expect(
-            evaluateDate("between", "2024-06-15T00:00:00Z", "2024-06-10T00:00:00Z"),
+            evaluateDate(
+               "between",
+               "2024-06-15T00:00:00Z",
+               "2024-06-10T00:00:00Z",
+            ),
          ).toBe(false);
       });
 
@@ -239,30 +267,30 @@ describe("Date Operators", () => {
    describe("is_weekend", () => {
       it("returns true for Saturday", () => {
          // 2024-06-15 is a Saturday
-         expect(evaluateDate("is_weekend", "2024-06-15T12:00:00Z", undefined)).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("is_weekend", "2024-06-15T12:00:00Z", undefined),
+         ).toBe(true);
       });
 
       it("returns true for Sunday", () => {
          // 2024-06-16 is a Sunday
-         expect(evaluateDate("is_weekend", "2024-06-16T12:00:00Z", undefined)).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("is_weekend", "2024-06-16T12:00:00Z", undefined),
+         ).toBe(true);
       });
 
       it("returns false for Monday", () => {
          // 2024-06-17 is a Monday
-         expect(evaluateDate("is_weekend", "2024-06-17T12:00:00Z", undefined)).toBe(
-            false,
-         );
+         expect(
+            evaluateDate("is_weekend", "2024-06-17T12:00:00Z", undefined),
+         ).toBe(false);
       });
 
       it("returns false for Friday", () => {
          // 2024-06-14 is a Friday
-         expect(evaluateDate("is_weekend", "2024-06-14T12:00:00Z", undefined)).toBe(
-            false,
-         );
+         expect(
+            evaluateDate("is_weekend", "2024-06-14T12:00:00Z", undefined),
+         ).toBe(false);
       });
    });
 
@@ -272,37 +300,37 @@ describe("Date Operators", () => {
    describe("is_weekday", () => {
       it("returns true for Monday", () => {
          // 2024-06-17 is a Monday
-         expect(evaluateDate("is_weekday", "2024-06-17T12:00:00Z", undefined)).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("is_weekday", "2024-06-17T12:00:00Z", undefined),
+         ).toBe(true);
       });
 
       it("returns true for Friday", () => {
          // 2024-06-14 is a Friday
-         expect(evaluateDate("is_weekday", "2024-06-14T12:00:00Z", undefined)).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("is_weekday", "2024-06-14T12:00:00Z", undefined),
+         ).toBe(true);
       });
 
       it("returns true for Wednesday", () => {
          // 2024-06-19 is a Wednesday
-         expect(evaluateDate("is_weekday", "2024-06-19T12:00:00Z", undefined)).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("is_weekday", "2024-06-19T12:00:00Z", undefined),
+         ).toBe(true);
       });
 
       it("returns false for Saturday", () => {
          // 2024-06-15 is a Saturday
-         expect(evaluateDate("is_weekday", "2024-06-15T12:00:00Z", undefined)).toBe(
-            false,
-         );
+         expect(
+            evaluateDate("is_weekday", "2024-06-15T12:00:00Z", undefined),
+         ).toBe(false);
       });
 
       it("returns false for Sunday", () => {
          // 2024-06-16 is a Sunday
-         expect(evaluateDate("is_weekday", "2024-06-16T12:00:00Z", undefined)).toBe(
-            false,
-         );
+         expect(
+            evaluateDate("is_weekday", "2024-06-16T12:00:00Z", undefined),
+         ).toBe(false);
       });
    });
 
@@ -312,38 +340,44 @@ describe("Date Operators", () => {
    describe("day_of_week", () => {
       it("returns true when day matches single value (Sunday = 0)", () => {
          // 2024-06-16 is a Sunday
-         expect(evaluateDate("day_of_week", "2024-06-16T12:00:00Z", 0)).toBe(true);
+         expect(evaluateDate("day_of_week", "2024-06-16T12:00:00Z", 0)).toBe(
+            true,
+         );
       });
 
       it("returns true when day matches single value (Saturday = 6)", () => {
          // 2024-06-15 is a Saturday
-         expect(evaluateDate("day_of_week", "2024-06-15T12:00:00Z", 6)).toBe(true);
+         expect(evaluateDate("day_of_week", "2024-06-15T12:00:00Z", 6)).toBe(
+            true,
+         );
       });
 
       it("returns false when day does not match single value", () => {
          // 2024-06-17 is a Monday (1)
-         expect(evaluateDate("day_of_week", "2024-06-17T12:00:00Z", 5)).toBe(false);
-      });
-
-      it("returns true when day is in array of values", () => {
-         // 2024-06-17 is a Monday (1)
-         expect(evaluateDate("day_of_week", "2024-06-17T12:00:00Z", [1, 3, 5])).toBe(
-            true,
-         );
-      });
-
-      it("returns false when day is not in array of values", () => {
-         // 2024-06-17 is a Monday (1)
-         expect(evaluateDate("day_of_week", "2024-06-17T12:00:00Z", [2, 4, 6])).toBe(
+         expect(evaluateDate("day_of_week", "2024-06-17T12:00:00Z", 5)).toBe(
             false,
          );
       });
 
+      it("returns true when day is in array of values", () => {
+         // 2024-06-17 is a Monday (1)
+         expect(
+            evaluateDate("day_of_week", "2024-06-17T12:00:00Z", [1, 3, 5]),
+         ).toBe(true);
+      });
+
+      it("returns false when day is not in array of values", () => {
+         // 2024-06-17 is a Monday (1)
+         expect(
+            evaluateDate("day_of_week", "2024-06-17T12:00:00Z", [2, 4, 6]),
+         ).toBe(false);
+      });
+
       it("handles weekend days array", () => {
          // 2024-06-15 is a Saturday (6)
-         expect(evaluateDate("day_of_week", "2024-06-15T12:00:00Z", [0, 6])).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("day_of_week", "2024-06-15T12:00:00Z", [0, 6]),
+         ).toBe(true);
       });
    });
 
@@ -376,7 +410,9 @@ describe("Date Operators", () => {
       });
 
       it("handles first day of month", () => {
-         expect(evaluateDate("day_of_month", "2024-06-01T12:00:00Z", 1)).toBe(true);
+         expect(evaluateDate("day_of_month", "2024-06-01T12:00:00Z", 1)).toBe(
+            true,
+         );
       });
 
       it("handles last day of month", () => {
@@ -399,9 +435,9 @@ describe("Date Operators", () => {
    // ==========================================================================
    describe("edge cases", () => {
       it("returns false for invalid date string", () => {
-         expect(evaluateDate("eq", "invalid-date", "2024-06-15T12:00:00Z")).toBe(
-            false,
-         );
+         expect(
+            evaluateDate("eq", "invalid-date", "2024-06-15T12:00:00Z"),
+         ).toBe(false);
       });
 
       it("returns false for null input", () => {
@@ -409,48 +445,70 @@ describe("Date Operators", () => {
       });
 
       it("returns false for undefined input", () => {
-         expect(evaluateDate("eq", undefined, "2024-06-15T12:00:00Z")).toBe(false);
+         expect(evaluateDate("eq", undefined, "2024-06-15T12:00:00Z")).toBe(
+            false,
+         );
       });
 
       it("handles leap year date", () => {
          // Feb 29, 2024 is a valid leap year date
-         expect(evaluateDate("eq", "2024-02-29T12:00:00Z", "2024-02-29T12:00:00Z")).toBe(
-            true,
-         );
+         expect(
+            evaluateDate("eq", "2024-02-29T12:00:00Z", "2024-02-29T12:00:00Z"),
+         ).toBe(true);
       });
 
       it("handles year boundary - New Year's Eve", () => {
-         expect(evaluateDate("before", "2023-12-31T23:59:59Z", "2024-01-01T00:00:00Z")).toBe(
-            true,
-         );
+         expect(
+            evaluateDate(
+               "before",
+               "2023-12-31T23:59:59Z",
+               "2024-01-01T00:00:00Z",
+            ),
+         ).toBe(true);
       });
 
       it("handles year boundary - New Year's Day", () => {
-         expect(evaluateDate("after", "2024-01-01T00:00:01Z", "2023-12-31T23:59:59Z")).toBe(
-            true,
-         );
+         expect(
+            evaluateDate(
+               "after",
+               "2024-01-01T00:00:01Z",
+               "2023-12-31T23:59:59Z",
+            ),
+         ).toBe(true);
       });
 
       it("handles very old date", () => {
-         expect(evaluateDate("before", "1900-01-01T00:00:00Z", "2024-01-01T00:00:00Z")).toBe(
-            true,
-         );
+         expect(
+            evaluateDate(
+               "before",
+               "1900-01-01T00:00:00Z",
+               "2024-01-01T00:00:00Z",
+            ),
+         ).toBe(true);
       });
 
       it("handles future date", () => {
-         expect(evaluateDate("after", "2050-01-01T00:00:00Z", "2024-01-01T00:00:00Z")).toBe(
-            true,
-         );
+         expect(
+            evaluateDate(
+               "after",
+               "2050-01-01T00:00:00Z",
+               "2024-01-01T00:00:00Z",
+            ),
+         ).toBe(true);
       });
 
       it("handles timestamp as number", () => {
          const timestamp = new Date("2024-06-15T12:00:00Z").getTime();
-         expect(evaluateDate("eq", timestamp, "2024-06-15T12:00:00Z")).toBe(true);
+         expect(evaluateDate("eq", timestamp, "2024-06-15T12:00:00Z")).toBe(
+            true,
+         );
       });
 
       it("handles Date object with invalid time", () => {
          const invalidDate = new Date("invalid");
-         expect(evaluateDate("eq", invalidDate, "2024-06-15T12:00:00Z")).toBe(false);
+         expect(evaluateDate("eq", invalidDate, "2024-06-15T12:00:00Z")).toBe(
+            false,
+         );
       });
 
       it("handles empty string as date", () => {
@@ -475,7 +533,9 @@ describe("Date Operators", () => {
 
       it("compares ISO string with timestamp", () => {
          const timestamp = new Date("2024-06-15T12:00:00Z").getTime();
-         expect(evaluateDate("eq", "2024-06-15T12:00:00Z", timestamp)).toBe(true);
+         expect(evaluateDate("eq", "2024-06-15T12:00:00Z", timestamp)).toBe(
+            true,
+         );
       });
    });
 });

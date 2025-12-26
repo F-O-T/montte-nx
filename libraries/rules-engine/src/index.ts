@@ -1,15 +1,26 @@
 export type {
    ArrayCondition,
+   ArrayOperator,
    BooleanCondition,
+   BooleanOperator,
    Condition,
    ConditionGroup,
+   ConditionGroupInput,
    CustomCondition,
    DateCondition,
+   DateOperator,
    EvaluationResult,
    GroupEvaluationResult,
+   GroupEvaluationResultInput,
    LogicalOperator,
    NumberCondition,
+   NumberOperator,
    StringCondition,
+   StringOperator,
+} from "@f-o-t/condition-evaluator";
+export {
+   ConditionGroup as ConditionGroupSchema,
+   isConditionGroup,
 } from "@f-o-t/condition-evaluator";
 export {
    analyzeConsequenceUsage,

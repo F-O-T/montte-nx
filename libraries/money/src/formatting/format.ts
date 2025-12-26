@@ -22,7 +22,9 @@ const MAX_CACHE_SIZE = 100;
  * We use 15 as a conservative limit.
  */
 function isSafeForFloat(decimalStr: string): boolean {
-   const absDecimal = decimalStr.startsWith("-") ? decimalStr.slice(1) : decimalStr;
+   const absDecimal = decimalStr.startsWith("-")
+      ? decimalStr.slice(1)
+      : decimalStr;
    const [intPart = "", fracPart = ""] = absDecimal.split(".");
 
    // Count significant digits (strip leading zeros from integer, trailing zeros from fraction)
@@ -30,9 +32,10 @@ function isSafeForFloat(decimalStr: string): boolean {
    const trimmedFrac = fracPart.replace(/0+$/, "");
 
    // Total significant digits
-   const significantDigits = trimmedInt === "0"
-      ? trimmedFrac.replace(/^0+/, "").length
-      : trimmedInt.length + trimmedFrac.length;
+   const significantDigits =
+      trimmedInt === "0"
+         ? trimmedFrac.replace(/^0+/, "").length
+         : trimmedInt.length + trimmedFrac.length;
 
    // Safe if total significant digits is <= 15 (conservative for double precision)
    return significantDigits <= 15;
@@ -87,7 +90,9 @@ function formatLargeAmount(
    const intFormatter = getCachedFormatter(locale, money.currency, {
       style: options.hideSymbol ? undefined : "currency",
       currency: options.hideSymbol ? undefined : money.currency,
-      currencyDisplay: options.hideSymbol ? undefined : (options.currencyDisplay ?? "symbol"),
+      currencyDisplay: options.hideSymbol
+         ? undefined
+         : (options.currencyDisplay ?? "symbol"),
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
    });

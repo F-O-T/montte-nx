@@ -1,8 +1,5 @@
-import type {
-   ConditionGroup,
-   Consequence,
-   TriggerType,
-} from "@packages/database/schema";
+import type { ConditionGroup } from "@f-o-t/rules-engine";
+import type { Consequence, TriggerType } from "@packages/database/schema";
 import { Button } from "@packages/ui/components/button";
 import { Card, CardContent } from "@packages/ui/components/card";
 import { Skeleton } from "@packages/ui/components/skeleton";

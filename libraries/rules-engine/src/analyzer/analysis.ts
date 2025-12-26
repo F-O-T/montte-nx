@@ -1,18 +1,18 @@
 import {
-	type Condition,
-	type ConditionGroup,
-	isConditionGroup,
+   type Condition,
+   type ConditionGroup,
+   isConditionGroup,
 } from "@f-o-t/condition-evaluator";
 import type {
-	ConsequenceDefinitions,
-	DefaultConsequences,
+   ConsequenceDefinitions,
+   DefaultConsequences,
 } from "../types/consequence";
 import type { Rule } from "../types/rule";
 import {
-	calculateMaxDepth,
-	collectConditionFields,
-	countConditionGroups,
-	countConditions,
+   calculateMaxDepth,
+   collectConditionFields,
+   countConditionGroups,
+   countConditions,
 } from "../utils/conditions";
 
 export type RuleComplexity = {

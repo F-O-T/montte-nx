@@ -44,8 +44,9 @@ function createLargeGroup(
    numConditions: number,
    operator: "AND" | "OR" = "AND",
 ): ConditionGroup {
-   const conditions: Condition[] = Array.from({ length: numConditions }, (_, i) =>
-      createStringCondition(`cond-${i}`, `field${i}`),
+   const conditions: Condition[] = Array.from(
+      { length: numConditions },
+      (_, i) => createStringCondition(`cond-${i}`, `field${i}`),
    );
 
    return {
@@ -112,7 +113,9 @@ describe("Performance Benchmarks", () => {
 
          // Should be less than 0.1ms per evaluation
          expect(avgTime).toBeLessThan(0.1);
-         console.log(`Average time per string condition: ${avgTime.toFixed(4)}ms`);
+         console.log(
+            `Average time per string condition: ${avgTime.toFixed(4)}ms`,
+         );
       });
 
       it("evaluates with skipValidation faster than with validation", () => {
@@ -125,7 +128,9 @@ describe("Performance Benchmarks", () => {
 
          const withoutValidation = measureTime(
             () =>
-               evaluateCondition(simpleCondition, context, { skipValidation: true }),
+               evaluateCondition(simpleCondition, context, {
+                  skipValidation: true,
+               }),
             iterations,
          );
 
@@ -156,7 +161,9 @@ describe("Performance Benchmarks", () => {
          );
 
          expect(avgTime).toBeLessThan(0.1);
-         console.log(`Average time per number condition: ${avgTime.toFixed(4)}ms`);
+         console.log(
+            `Average time per number condition: ${avgTime.toFixed(4)}ms`,
+         );
       });
 
       it("evaluates boolean condition within performance threshold", () => {
@@ -175,7 +182,9 @@ describe("Performance Benchmarks", () => {
          );
 
          expect(avgTime).toBeLessThan(0.1);
-         console.log(`Average time per boolean condition: ${avgTime.toFixed(4)}ms`);
+         console.log(
+            `Average time per boolean condition: ${avgTime.toFixed(4)}ms`,
+         );
       });
    });
 
@@ -195,7 +204,9 @@ describe("Performance Benchmarks", () => {
 
          // Should be less than 10ms for 100 conditions
          expect(avgTime).toBeLessThan(10);
-         console.log(`Average time for 100 conditions: ${avgTime.toFixed(2)}ms`);
+         console.log(
+            `Average time for 100 conditions: ${avgTime.toFixed(2)}ms`,
+         );
       });
 
       it("evaluates 1000 conditions within performance threshold", () => {
@@ -210,7 +221,9 @@ describe("Performance Benchmarks", () => {
 
          // Should be less than 100ms for 1000 conditions
          expect(avgTime).toBeLessThan(100);
-         console.log(`Average time for 1000 conditions: ${avgTime.toFixed(2)}ms`);
+         console.log(
+            `Average time for 1000 conditions: ${avgTime.toFixed(2)}ms`,
+         );
       });
 
       it("evaluates 1000 conditions with skipValidation faster", () => {
@@ -266,7 +279,9 @@ describe("Performance Benchmarks", () => {
          const elapsed = performance.now() - start;
 
          expect(result.passed).toBe(true);
-         console.log(`10 levels of nesting completed in ${elapsed.toFixed(2)}ms`);
+         console.log(
+            `10 levels of nesting completed in ${elapsed.toFixed(2)}ms`,
+         );
       });
 
       it("throws at maxDepth exceeded (default 10)", () => {
@@ -323,7 +338,9 @@ describe("Performance Benchmarks", () => {
          // This test mainly checks that we don't crash or hang
          // Actual memory profiling would require more sophisticated tools
          expect(true).toBe(true);
-         console.log(`Completed ${iterations} evaluations without memory issues`);
+         console.log(
+            `Completed ${iterations} evaluations without memory issues`,
+         );
       });
    });
 
@@ -332,13 +349,16 @@ describe("Performance Benchmarks", () => {
    // ==========================================================================
    describe("validation overhead", () => {
       it("measures validation vs skipValidation difference", () => {
-         const conditions: Condition[] = Array.from({ length: 100 }, (_, i) => ({
-            id: `cond-${i}`,
-            type: "string" as const,
-            field: `field${i}`,
-            operator: "eq" as const,
-            value: "test",
-         }));
+         const conditions: Condition[] = Array.from(
+            { length: 100 },
+            (_, i) => ({
+               id: `cond-${i}`,
+               type: "string" as const,
+               field: `field${i}`,
+               operator: "eq" as const,
+               value: "test",
+            }),
+         );
 
          const groups: ConditionGroup[] = [
             {
@@ -433,24 +453,59 @@ describe("Performance Benchmarks", () => {
                id: "high-amount",
                operator: "AND",
                conditions: [
-                  { id: "c1", type: "number", field: "amount", operator: "gt", value: 10000 },
-                  { id: "c2", type: "string", field: "country", operator: "neq", value: "US" },
+                  {
+                     id: "c1",
+                     type: "number",
+                     field: "amount",
+                     operator: "gt",
+                     value: 10000,
+                  },
+                  {
+                     id: "c2",
+                     type: "string",
+                     field: "country",
+                     operator: "neq",
+                     value: "US",
+                  },
                ],
             },
             {
                id: "velocity-check",
                operator: "AND",
                conditions: [
-                  { id: "c3", type: "number", field: "txCount24h", operator: "gt", value: 5 },
-                  { id: "c4", type: "number", field: "uniqueMerchants", operator: "gt", value: 3 },
+                  {
+                     id: "c3",
+                     type: "number",
+                     field: "txCount24h",
+                     operator: "gt",
+                     value: 5,
+                  },
+                  {
+                     id: "c4",
+                     type: "number",
+                     field: "uniqueMerchants",
+                     operator: "gt",
+                     value: 3,
+                  },
                ],
             },
             {
                id: "time-check",
                operator: "OR",
                conditions: [
-                  { id: "c5", type: "date", field: "timestamp", operator: "between", value: ["2024-01-01T00:00:00Z", "2024-01-01T05:00:00Z"] },
-                  { id: "c6", type: "boolean", field: "isWeekend", operator: "is_true" },
+                  {
+                     id: "c5",
+                     type: "date",
+                     field: "timestamp",
+                     operator: "between",
+                     value: ["2024-01-01T00:00:00Z", "2024-01-01T05:00:00Z"],
+                  },
+                  {
+                     id: "c6",
+                     type: "boolean",
+                     field: "isWeekend",
+                     operator: "is_true",
+                  },
                ],
             },
          ];

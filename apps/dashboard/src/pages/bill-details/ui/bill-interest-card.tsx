@@ -1,4 +1,5 @@
 import { translate } from "@packages/localization";
+import { formatDecimalCurrency } from "@packages/money";
 import { Alert, AlertDescription } from "@packages/ui/components/alert";
 import {
    Card,
@@ -12,7 +13,6 @@ import {
    calculateInterest,
    type InterestConfig,
 } from "@packages/utils/interest";
-import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, FileText, Percent, TrendingUp } from "lucide-react";

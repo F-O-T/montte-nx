@@ -10,7 +10,13 @@ export {
 } from "./core/internal";
 
 // Factory functions
-export { fromMajorUnits, fromMinorUnits, of, ofRounded, zero } from "./core/money";
+export {
+   fromMajorUnits,
+   fromMinorUnits,
+   of,
+   ofRounded,
+   zero,
+} from "./core/money";
 // Core utilities (for advanced use cases)
 export {
    bankersRound,

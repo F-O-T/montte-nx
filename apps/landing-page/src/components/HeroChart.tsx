@@ -1,10 +1,10 @@
+import { formatCurrency } from "@packages/money";
 import {
    type ChartConfig,
    ChartContainer,
    ChartTooltip,
    ChartTooltipContent,
 } from "@packages/ui/components/chart";
-import { formatCurrency } from "@packages/money";
 import { Bar, ComposedChart, Line, XAxis } from "recharts";
 
 const chartData = [

@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@f-o-t/rules-engine": "workspace:*",
     "@packages/api": "workspace:*",
     "@packages/authentication": "workspace:*",
     "@packages/environment": "workspace:*",

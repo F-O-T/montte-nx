@@ -5,11 +5,7 @@ import {
    filterByTags,
    filterRules,
 } from "../src/core/filter";
-import {
-   groupByCategory,
-   groupByCustom,
-   groupRules,
-} from "../src/core/group";
+import { groupByCategory, groupByCustom, groupRules } from "../src/core/group";
 import { sortByName, sortByPriority, sortRules } from "../src/core/sort";
 import type { DefaultConsequences } from "../src/types/consequence";
 import type { Rule } from "../src/types/rule";

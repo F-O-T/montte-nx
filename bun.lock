@@ -23,6 +23,7 @@
       "name": "dashboard",
       "version": "0.15.0",
       "dependencies": {
+        "@f-o-t/rules-engine": "workspace:*",
         "@packages/api": "workspace:*",
         "@packages/authentication": "workspace:*",
         "@packages/environment": "workspace:*",
@@ -243,6 +244,7 @@
       "version": "0.9.1",
       "dependencies": {
         "@f-o-t/condition-evaluator": "workspace:*",
+        "@f-o-t/rules-engine": "workspace:*",
         "@packages/arcjet": "workspace:*",
         "@packages/authentication": "workspace:*",
         "@packages/brasil-api": "workspace:*",
@@ -335,7 +337,7 @@
       "name": "@packages/database",
       "version": "0.12.1",
       "dependencies": {
-        "@f-o-t/condition-evaluator": "workspace:*",
+        "@f-o-t/rules-engine": "workspace:*",
         "@packages/money": "workspace:*",
         "@packages/utils": "workspace:*",
         "drizzle-orm": "catalog:database",

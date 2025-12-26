@@ -2,23 +2,23 @@
 // Evaluation Functions
 // =============================================================================
 
+export type { EvaluationOptions } from "./evaluator";
 export {
+   EvaluationOptionsSchema,
    evaluate,
    evaluateCondition,
    evaluateConditionGroup,
    evaluateConditions,
    evaluateConditionValue,
-   EvaluationOptionsSchema,
    isConditionGroup,
 } from "./evaluator";
-export type { EvaluationOptions } from "./evaluator";
 
 // =============================================================================
 // Static Analysis
 // =============================================================================
 
-export { DependencyInfoSchema, extractDependencies } from "./dependencies";
 export type { DependencyInfo } from "./dependencies";
+export { DependencyInfoSchema, extractDependencies } from "./dependencies";
 
 // =============================================================================
 // Low-level Operator Functions
@@ -36,13 +36,6 @@ export { evaluateString } from "./operators/string";
 
 export { createEvaluator } from "./plugins/create-evaluator";
 export { createOperator } from "./plugins/create-operator";
-export {
-   ConditionTypeSchema,
-   CustomOperatorConfigDataSchema,
-   EvaluatorConfigSchema,
-   PluginCustomConditionOptionsSchema,
-   PluginCustomConditionSchema,
-} from "./plugins/types";
 export type {
    ConditionType,
    CustomCondition as PluginCustomCondition,
@@ -53,6 +46,13 @@ export type {
    InferOperatorNames,
    OperatorMap,
    PluginCustomConditionOptions,
+} from "./plugins/types";
+export {
+   ConditionTypeSchema,
+   CustomOperatorConfigDataSchema,
+   EvaluatorConfigSchema,
+   PluginCustomConditionOptionsSchema,
+   PluginCustomConditionSchema,
 } from "./plugins/types";
 
 // =============================================================================

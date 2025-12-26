@@ -31,151 +31,139 @@
 // Re-export core types from @f-o-t/money
 // =============================================================================
 export type {
-	Money,
-	FormatOptions,
-	MoneyJSON,
-	DatabaseMoney,
-	Currency,
-	MoneyInput,
-	CurrencyInput,
+   Currency,
+   CurrencyInput,
+   DatabaseMoney,
+   FormatOptions,
+   Money,
+   MoneyInput,
+   MoneyJSON,
 } from "@f-o-t/money";
-
 // =============================================================================
 // Re-export factory functions
 // =============================================================================
-export { of, fromMinorUnits, zero, fromMajorUnits, parse } from "@f-o-t/money";
-
 // =============================================================================
 // Re-export arithmetic operations
 // =============================================================================
-export {
-	add,
-	subtract,
-	multiply,
-	divide,
-	percentage,
-	negate,
-	absolute,
-} from "@f-o-t/money";
-
 // =============================================================================
 // Re-export comparison operations
 // =============================================================================
-export {
-	equals,
-	greaterThan,
-	greaterThanOrEqual,
-	lessThan,
-	lessThanOrEqual,
-	isPositive,
-	isNegative,
-	isZero,
-	compare,
-} from "@f-o-t/money";
-
 // =============================================================================
 // Re-export allocation operations
 // =============================================================================
-export { allocate, split } from "@f-o-t/money";
-
 // =============================================================================
 // Re-export aggregation operations
 // =============================================================================
-export { sum, sumOrZero, min, max, average, median } from "@f-o-t/money";
-
 // =============================================================================
 // Re-export formatting functions
 // =============================================================================
-export { format, formatCompact, toDecimal, formatAmount } from "@f-o-t/money";
-
 // =============================================================================
 // Re-export serialization functions
 // =============================================================================
-export {
-	toJSON,
-	fromJSON,
-	toDatabase,
-	fromDatabase,
-	serialize,
-	deserialize,
-	toMinorUnits,
-	toMinorUnitsBigInt,
-	toMajorUnits,
-	toMinorUnitsString,
-} from "@f-o-t/money";
-
 // =============================================================================
 // Re-export currency registry
 // =============================================================================
-export {
-	getCurrency,
-	registerCurrency,
-	hasCurrency,
-	getAllCurrencies,
-	clearCustomCurrencies,
-	ISO_4217_CURRENCIES,
-} from "@f-o-t/money";
-
 // =============================================================================
 // Re-export schemas
 // =============================================================================
-export {
-	MoneySchema,
-	MoneyInternalSchema,
-	CurrencyCodeSchema,
-	AmountStringSchema,
-	DatabaseMoneySchema,
-	MoneyInputSchema,
-	CurrencySchema,
-	AllocationRatiosSchema,
-	FormatOptionsSchema,
-	type AllocationRatios,
-} from "@f-o-t/money";
-
 // =============================================================================
 // Re-export errors
 // =============================================================================
-export {
-	MoneyError,
-	CurrencyMismatchError,
-	InvalidAmountError,
-	DivisionByZeroError,
-	UnknownCurrencyError,
-	OverflowError,
-} from "@f-o-t/money";
-
 // =============================================================================
 // Re-export comparison operators (for condition-evaluator integration)
 // =============================================================================
 export {
-	moneyEqualsOperator,
-	moneyNotEqualsOperator,
-	moneyGreaterThanOperator,
-	moneyGreaterThanOrEqualOperator,
-	moneyLessThanOperator,
-	moneyLessThanOrEqualOperator,
-	moneyBetweenOperator,
-	moneyPositiveOperator,
-	moneyNegativeOperator,
-	moneyZeroOperator,
+   type AllocationRatios,
+   AllocationRatiosSchema,
+   AmountStringSchema,
+   absolute,
+   add,
+   allocate,
+   average,
+   CurrencyCodeSchema,
+   CurrencyMismatchError,
+   CurrencySchema,
+   clearCustomCurrencies,
+   compare,
+   DatabaseMoneySchema,
+   DivisionByZeroError,
+   deserialize,
+   divide,
+   equals,
+   FormatOptionsSchema,
+   format,
+   formatAmount,
+   formatCompact,
+   fromDatabase,
+   fromJSON,
+   fromMajorUnits,
+   fromMinorUnits,
+   getAllCurrencies,
+   getCurrency,
+   greaterThan,
+   greaterThanOrEqual,
+   hasCurrency,
+   InvalidAmountError,
+   ISO_4217_CURRENCIES,
+   isNegative,
+   isPositive,
+   isZero,
+   lessThan,
+   lessThanOrEqual,
+   MoneyError,
+   MoneyInputSchema,
+   MoneyInternalSchema,
+   MoneySchema,
+   max,
+   median,
+   min,
+   moneyBetweenOperator,
+   moneyEqualsOperator,
+   moneyGreaterThanOperator,
+   moneyGreaterThanOrEqualOperator,
+   moneyLessThanOperator,
+   moneyLessThanOrEqualOperator,
+   moneyNegativeOperator,
+   moneyNotEqualsOperator,
+   moneyPositiveOperator,
+   moneyZeroOperator,
+   multiply,
+   negate,
+   OverflowError,
+   of,
+   parse,
+   percentage,
+   registerCurrency,
+   serialize,
+   split,
+   subtract,
+   sum,
+   sumOrZero,
+   toDatabase,
+   toDecimal,
+   toJSON,
+   toMajorUnits,
+   toMinorUnits,
+   toMinorUnitsBigInt,
+   toMinorUnitsString,
+   UnknownCurrencyError,
+   zero,
 } from "@f-o-t/money";
-
+export {
+   centsToReais,
+   centsToReaisString,
+   fromCents,
+   fromDecimal,
+   reaisToCents,
+   toCents,
+} from "./convert";
 // =============================================================================
 // App-specific helpers with BRL defaults
 // =============================================================================
 export {
-	formatCurrency,
-	formatDecimalCurrency,
-	formatCompactCurrency,
-	formatMoney,
-	formatAmountOnly,
+   formatAmountOnly,
+   formatCompactCurrency,
+   formatCurrency,
+   formatDecimalCurrency,
+   formatMoney,
 } from "./format";
-
-export {
-	centsToReais,
-	centsToReaisString,
-	reaisToCents,
-	fromCents,
-	fromDecimal,
-	toCents,
-} from "./convert";

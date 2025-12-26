@@ -3,6 +3,7 @@ import {
    type CsvColumnMapping,
    parseCsvBatch,
 } from "@packages/csv/batch";
+import { formatDecimalCurrency } from "@packages/money";
 import type { TransactionType } from "@packages/ofx";
 import { type BatchOfxProgressEvent, parseOfxBatch } from "@packages/ofx/batch";
 import { Badge } from "@packages/ui/components/badge";
@@ -24,7 +25,6 @@ import {
    TableHeader,
    TableRow,
 } from "@packages/ui/components/table";
-import { formatDecimalCurrency } from "@packages/money";
 import { useMutation } from "@tanstack/react-query";
 import {
    AlertTriangleIcon,

@@ -1,9 +1,11 @@
-import { isConditionGroup } from "@f-o-t/condition-evaluator";
+import {
+   type Condition,
+   type ConditionGroup,
+   isConditionGroup,
+} from "@f-o-t/rules-engine";
 import type {
    ActionConfig,
    ActionType,
-   Condition,
-   ConditionGroup,
    ConditionOperator,
    ConditionType,
    Consequence,

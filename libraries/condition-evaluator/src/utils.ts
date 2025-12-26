@@ -1,9 +1,5 @@
-import type {
-   Condition,
-   ConditionGroup,
-   DiffAnalysis,
-} from "./schemas";
 import type { CustomCondition } from "./plugins/types";
+import type { Condition, ConditionGroup, DiffAnalysis } from "./schemas";
 
 /**
  * Gets a nested value from an object using dot notation path.

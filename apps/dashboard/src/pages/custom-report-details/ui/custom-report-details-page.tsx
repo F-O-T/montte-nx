@@ -2,6 +2,7 @@ import type {
    DRESnapshotData,
    TransactionSnapshot,
 } from "@packages/database/schemas/custom-reports";
+import { formatDecimalCurrency } from "@packages/money";
 import { Badge } from "@packages/ui/components/badge";
 import { Button } from "@packages/ui/components/button";
 import {
@@ -30,7 +31,6 @@ import {
    TableRow,
 } from "@packages/ui/components/table";
 import { formatDate } from "@packages/utils/date";
-import { formatDecimalCurrency } from "@packages/money";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import {
