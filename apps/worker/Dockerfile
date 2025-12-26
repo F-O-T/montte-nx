@@ -27,14 +27,14 @@ COPY libraries/money/package.json ./libraries/money/
 
 RUN bun install
 
+COPY . .
+
 WORKDIR /app/libraries/money
 RUN bun run build
 WORKDIR /app
 WORKDIR /app/libraries/condition-evaluator
 RUN bun run build
 WORKDIR /app
-
-COPY . .
 
 ENV NODE_ENV=production
 

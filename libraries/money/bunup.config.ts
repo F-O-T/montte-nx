@@ -4,5 +4,5 @@ export default defineConfig({
    dts: {
       inferTypes: true,
    },
-   entry: ["src/index.ts"],
+   entry: ["src/index.ts", "src/operators/index.ts"],
 });
